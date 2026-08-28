@@ -1,0 +1,5 @@
+# LF everywhere, on every OS. Prettier checks line endings, the golden sim diff
+# is a byte diff, and a fresh Windows clone with autocrlf would fail both.
+* text=auto eol=lf
+*.png binary
+*.woff2 binary
