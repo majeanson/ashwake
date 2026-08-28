@@ -1,0 +1,23 @@
+# ashwake — Cloudflare Worker (static assets only)
+#
+# No `main`: the game is a client-side bundle with no server logic, so this
+# Worker exists purely to serve `apps/game/dist` from Cloudflare's edge — the
+# same shape as Ashwake 1's. Account is selected at deploy time via
+# CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN, so nothing account-specific is
+# committed. The same narrow token as Ashwake 1 suffices (Workers Scripts +
+# Routes on the zone; no KV/D1/R2).
+name = "ashwake"
+compatibility_date = "2026-07-31"
+
+# The workers.dev URL stays alive beside the custom domain: the zone's bot
+# protection 403s plain fetches from CI runner IPs, and the deploy check falls
+# back to this WAF-free host when that happens.
+workers_dev = true
+
+routes = [{ pattern = "ashwake.marcportal.com", custom_domain = true }]
+
+[assets]
+directory = "./apps/game/dist"
+# One page. SPA fallback means a deep link or a stale bookmark still loads it
+# instead of a Cloudflare 404.
+not_found_handling = "single-page-application"

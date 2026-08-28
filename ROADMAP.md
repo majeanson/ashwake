@@ -15,7 +15,11 @@ sessions; S2 and S3 are the fat ones.
       a test; the DOM left the core. _Question: can the prose move without a
       single English string changing? Yes ( Session 2). Marc has not
       read the French yet._
-- [ ] **S2 — the board exists in 3D, and a tap means what it means today.**
+- [x] **S2 — the board exists in 3D, and a tap means what it means today.**
+      Shipped 2026-08-28 (`LOG.md` Session 3): instanced prisms, the stroke
+      ladder as rings, labels in the self-hosted font, the leap, the camera
+      contract, gestures, the WebGL smoke in CI. `?tilt=` is the open question,
+      with two screenshots in `docs/shots/`. The plan for it, kept below:
       R3F `<Canvas frameloop="demand">`; one `InstancedMesh` per material
       (four terrains, stone, wall, empty, remembered); `layout.ts`'s `place()`
       positions instances (pointy-top axial, unchanged); raycast to the board

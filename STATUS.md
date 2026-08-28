@@ -4,7 +4,25 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-28, later — Stage 1b: the core speaks two languages,
+Last checkpoint: **2026-08-28, last — Stage 2: the board exists in 3D, and a
+tap means what it means today.** `apps/game/src/board/`: one `InstancedMesh`
+per kind of ground with colour per instance, the stroke ladder as flat rings,
+`labelFor`'s glyphs and numbers in the self-hosted Cinzel (as TTF — troika
+does not read woff2), the torch as the view's `light`, the pop as the JUMP.
+`camera.ts` carries Ashwake 1's contract (zoom 1 = fit, 34px-per-hex ceiling,
+drag with the finger, eased flights) and is tested without a canvas; the rig
+owns the camera in a ref; one finger drags past 8px, two pinch, a wheel zooms,
+a tap is an R3F click with `delta ≤ 8`. `shell/store.ts` holds the run outside
+React. **Verified:** 697 tests / 41 files; typecheck, lint, format, build
+clean; **`e2e/board.spec.ts` in headless Chromium at 390×844 draws a picture,
+places a tile by tapping, zooms and fits, no console errors, and opens in the
+phone's language.** Bundle 369KB gzip (over estimate; drei's `Text` — weigh
+in S5). Deploy job and `wrangler.toml` readied, gated on `DEPLOY_ENABLED`;
+**secrets, variable and domain are Marc's.** **NOT played on a phone; NOT
+deployed.** The camera question (`?tilt=`) is open with two screenshots in
+`docs/shots/`.
+
+Previous checkpoint: **2026-08-28, later — Stage 1b: the core speaks two languages,
 and English did not move.** `packages/core/src/text/` holds one typed catalogue
 per language (`fr-CA.ts`, `en.ts`), ≈250 sentences each. The rule: **facts in
 `view/` and `meta/`, words in the catalogue** — a catalogue function never

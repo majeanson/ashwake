@@ -104,3 +104,64 @@ typography and format tests, `pickLocale`); typecheck, lint, format, build
 green; golden sim identical; CI green.
 
 **Next:** Marc reads the French; S2 — the 3D board.
+
+### Session 3 — the board exists in 3D, and a tap means what it means today (2026-08-28)
+
+**Question:** can the same `BoardView` the Pixi renderer drew be drawn as a lit
+3D board, on a phone, with a tap still reaching the same reducer?
+
+**Answer: yes — the smoke test plays it.** `apps/game/src/board/`:
+
+- **`HexField.tsx`** — one `InstancedMesh` per KIND of ground (tile, empty,
+  stone, wall, remembered, beacon), each its own prism height; colour per
+  instance, so the four terrains are four colours on one draw call. The stroke
+  ladder (targeted › ripe › unclaimed landmark › rare › legal › lensed › home)
+  is a second family of instances: flat hexagonal rings a hair above the
+  ground. `labelFor` (core) says what a cell prints; drei's `Text` prints it
+  in the self-hosted Cinzel — **woff2 is not a format troika reads**, so the
+  font ships as TTF. The torch is the view's `light` pulling each colour toward
+  the board's background. The pop is the JUMP: popped cells rise and fall by
+  the direction's `popLift` while the field asks for frames, then stop asking.
+- **`camera.ts`** — the arithmetic apart from three.js, tested without a
+  canvas: zoom 1 is the fit, the ceiling is `HEX_PX_MAX` (34px) so it rises as
+  the board grows, a drag moves the world with the finger, flights ease out.
+  World units are hex radii; `fit.size` is what a radius is worth in pixels.
+- **`Board.tsx`** — one `<Canvas frameloop="demand">`, orthographic, mounted
+  once. The rig owns the camera in a ref (gestures write it many times a
+  second and React never re-renders for them), re-fits a board that grew at
+  zoom 1, and exposes `zoomBy / flyToHex / flyToFit / zoomLevel / zoomMax` —
+  Ashwake 1's contract. One finger drags past an 8px slop, two pinch, a wheel
+  zooms; a tap is R3F's click with `delta ≤ 8`, on the instance it hit.
+  **`?tilt=35`** leans the camera: the open question for Marc, answerable by
+  looking at `docs/shots/s2-board-top.png` beside `s2-board-tilt35.png`.
+- **`shell/store.ts`** — the run outside React: the reducer, one snapshot
+  per dispatch (`BoardView` + `HudView` from one `renderContext`), and
+  `useSyncExternalStore`. No persistence yet (Stage 4).
+
+**Two things the first screenshot taught.** The canvas was black: troika had
+refused the woff2 and the `Text` failure took the frame with it — a font that
+cannot load is a board that cannot draw, which is the argument for the smoke
+test being a picture check and not a "no errors" check alone. And the rings
+stood on edge, invisible to a top-down camera, because `RingGeometry` lies in
+XY; they are rotated flat now.
+
+**Verified:** 697 tests / 41 files (the camera's own four); typecheck, lint,
+format, build clean; **`e2e/board.spec.ts` in headless Chromium at 390×844:
+boots, draws a picture (not a flat colour), places a tile by tapping, zooms
+and fits, no console errors — and opens in French on a French phone and in
+English on an English one.** Golden sim untouched. **Bundle: 369KB gzip** —
+over the plan's ~280KB estimate; drei's `Text` (troika) is most of the excess
+and is the first thing to weigh in Stage 5's look-and-perf pass.
+
+**Deploy readied, not fired.** `wrangler.toml` (worker `ashwake`,
+`ashwake.marcportal.com`, assets from `apps/game/dist`) and a `deploy` job
+gated on the `DEPLOY_ENABLED` repository variable, with a live check that the
+served index names the bundle just built. **Needs Marc:** the two secrets
+(`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` — the same as Ashwake 1's)
+and the variable on `majeanson/ashwake`, plus the custom domain on the zone.
+
+**Not played on a phone.** The board has been seen only through Playwright's
+eyes, which is exactly the thing `CLAUDE.md` says is not the gate.
+
+**Next:** Marc picks top-down or tilt from the two shots, reads the French;
+S3 — the chrome.

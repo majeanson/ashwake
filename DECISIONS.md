@@ -96,7 +96,12 @@ reviews the French on the snapshot files, then on the phone.
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.
-- **Camera: top-down or a tilt?** Offered with screenshots in Stage 2.
+- **Camera: top-down or a tilt?** The two screenshots are in `docs/shots/`
+  (`s2-board-top.png`, `s2-board-tilt35.png`, seed 7 after twelve placements),
+  and `?tilt=<degrees>` shows any angle live. Marc's, by looking.
+- **Deploy secrets.** The `deploy` job exists and is gated on the
+  `DEPLOY_ENABLED` variable; the two Cloudflare secrets and the custom domain
+  `ashwake.marcportal.com` are Marc's to set.
 - **The visual direction** (Stage 5), by looking, on the phone.
 - **Session C** — v2.0's gate. Unattempted on either body.
 - Ashwake 1's D22 (telemetry and the privacy line) and D23 (the first-run
