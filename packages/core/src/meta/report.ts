@@ -74,6 +74,11 @@ export function crashEnvelope(
  */
 export async function sendCrashReport(
   report: CrashReport,
+  // The one network call in the core, injectable so the test never touches
+  // the network. The DOM ban covers all of packages/core since 2026-08-28;
+  // this default is the edge the shell passes in, and it moves to the app with
+  // the rest of the crash reporter in Stage 4.
+  // eslint-disable-next-line no-restricted-globals
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
   const eventId = newEventId();

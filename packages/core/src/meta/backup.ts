@@ -1,3 +1,4 @@
+import type { Strings } from '@text/Strings';
 /**
  * The backup: every world, purse and perk this device holds, as one string.
  *
@@ -133,7 +134,7 @@ export const isOwnKey = (key: string): boolean => key.startsWith(PREFIX);
  * than keys, because "3 worlds · 412 relics" is a thing a player recognises
  * as theirs and "17 keys" is not.
  */
-export function describeBackup(backup: Backup): string {
+export function describeBackup(backup: Backup, s: Strings): string {
   const worlds = Object.keys(backup.keys).filter((k) => /^tiles\.world(\.s\d)?\.v\d+$/.test(k));
   let relics = 0;
   const progress = backup.keys['tiles.progress.v1'];
@@ -149,6 +150,5 @@ export function describeBackup(backup: Backup): string {
       // be summarised. The number is a courtesy, not the contract.
     }
   }
-  const when = backup.at === '' ? '' : ` · ${backup.at.slice(0, 10)}`;
-  return `${worlds.length} world${worlds.length === 1 ? '' : 's'} · ${relics} relics${when}`;
+  return s.backup.describe(worlds.length, relics, backup.at === '' ? null : backup.at.slice(0, 10));
 }

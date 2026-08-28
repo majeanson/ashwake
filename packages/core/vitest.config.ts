@@ -12,6 +12,7 @@ export default defineConfig({
       '@render': alias('./src/render'),
       '@theme': alias('./src/theme'),
       '@view': alias('./src/view'),
+      '@text': alias('./src/text'),
       '@sim': alias('./src/sim'),
     },
   },

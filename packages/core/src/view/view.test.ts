@@ -7,6 +7,7 @@ import { harvestMultiplier, harvestValue, legalPlacements, ripeKeys, scoreOf } f
 import type { GameState } from '@engine/state';
 import { destinationsWithin, findAt } from '@engine/world';
 import { arcNote, toBoardView, toHudView } from './view';
+import { STRINGS_EN as EN } from '@text/en';
 
 /**
  * The selector is where the UI could start disagreeing with the engine — a
@@ -123,7 +124,7 @@ describe('the board view', () => {
 describe('the hud', () => {
   it('reports the run in the engine own numbers', () => {
     const s = reduce(newRun(5), { type: 'PLACE', hex: key(1, 0) });
-    const hud = toHudView(s);
+    const hud = toHudView(s, EN);
     expect(hud.tiles).toBe(s.tiles);
     expect(hud.points).toBe(s.points);
     expect(hud.placements).toBe(1);
@@ -131,13 +132,13 @@ describe('the hud', () => {
 
   // Gate D: the end screen names the cause of death in one sentence.
   it('writes an epitaph only once the run is over', () => {
-    const alive = toHudView(newRun(1));
+    const alive = toHudView(newRun(1), EN);
     expect(alive.ended).toBe(false);
     expect(alive.epitaph).toBeNull();
 
     const broke = fill({ ...newRun(11, TINY), tiles: 2 });
     const dead = broke;
-    const hud = toHudView(dead);
+    const hud = toHudView(dead, EN);
     expect(hud.ended).toBe(true);
     // A pool since 2026-08-26 — whichever framing this run drew, the facts
     // must be in it: the run's length, and (for a broke death) the final
@@ -151,10 +152,10 @@ describe('the hud', () => {
   // and different runs should not all speak the first one.
   it('picks the epitaph deterministically, and varies it across runs', () => {
     const one = fill({ ...newRun(11, TINY), tiles: 2 });
-    expect(toHudView(one).epitaph).toBe(toHudView(one).epitaph);
+    expect(toHudView(one, EN).epitaph).toBe(toHudView(one, EN).epitaph);
     const epitaphs = new Set(
       [3, 5, 7, 11, 13, 17, 19, 23].map(
-        (seed) => toHudView(fill({ ...newRun(seed, TINY), tiles: 2 })).epitaph,
+        (seed) => toHudView(fill({ ...newRun(seed, TINY), tiles: 2 }), EN).epitaph,
       ),
     );
     expect(epitaphs.size).toBeGreaterThan(1);
@@ -178,14 +179,14 @@ describe('the hud', () => {
     });
 
     it('stays silent under three pops, or when nothing scored', () => {
-      expect(arcNote(summary({ harvests: 2, biggestAt: 0.9 }))).toBeNull();
-      expect(arcNote(summary({ biggestHarvest: 0, biggestAt: 0.9 }))).toBeNull();
+      expect(arcNote(summary({ harvests: 2, biggestAt: 0.9 }), EN)).toBeNull();
+      expect(arcNote(summary({ biggestHarvest: 0, biggestAt: 0.9 }), EN)).toBeNull();
     });
 
     it('names the third of the run the big pop landed in', () => {
-      expect(arcNote(summary({ biggestAt: 0.9 }))).toMatch(/final stretch/);
-      expect(arcNote(summary({ biggestAt: 0.5 }))).toMatch(/mid-run/);
-      expect(arcNote(summary({ biggestAt: 0.1 }))).toMatch(/came early/);
+      expect(arcNote(summary({ biggestAt: 0.9 }), EN)).toMatch(/final stretch/);
+      expect(arcNote(summary({ biggestAt: 0.5 }), EN)).toMatch(/mid-run/);
+      expect(arcNote(summary({ biggestAt: 0.1 }), EN)).toMatch(/came early/);
     });
   });
 
@@ -193,7 +194,7 @@ describe('the hud', () => {
   // pocket and a 2-tile one are each one thing to choose between.
   it('counts ripe POCKETS, not ripe tiles', () => {
     const full = fill(newRun(11, TINY));
-    const hud = toHudView(full);
+    const hud = toHudView(full, EN);
     expect(hud.pocketsReady).toBeGreaterThan(0);
     expect(hud.pocketsReady).toBeLessThanOrEqual(hud.ripeCount);
   });
@@ -203,7 +204,7 @@ describe('the hud', () => {
   // SAME multiplier the reducer would actually pay, not a restatement.
   it('prices the depth of the pocket the harvest buttons are pointing at', () => {
     const full = fill(newRun(11, TINY));
-    const hud = toHudView(full);
+    const hud = toHudView(full, EN);
     expect(hud.harvestAt).not.toBeNull();
     if (hud.harvestAt === null) return;
     const value = harvestValue(full, hud.harvestAt);
@@ -227,7 +228,7 @@ describe('the hud', () => {
       pointsPerPop: 0.35,
     });
     const full = fill(newRun(11, scaled));
-    const hud = toHudView(full);
+    const hud = toHudView(full, EN);
     expect(hud.harvestAt).not.toBeNull();
     if (hud.harvestAt === null) return;
     const value = harvestValue(full, hud.harvestAt);
@@ -272,7 +273,7 @@ describe('destinations and rarity in the view', () => {
   });
 
   it('says where to go, in words, with a distance', () => {
-    const hud = toHudView(seeded().state);
+    const hud = toHudView(seeded().state, EN);
     expect(hud.hint).toMatch(/glows \d+ out/);
   });
 
@@ -282,18 +283,18 @@ describe('destinations and rarity in the view', () => {
   // glows" means once the run is over. Null while the run lives.
   it('names the nearest unreached destination past the run’s edge, only when the run has ended', () => {
     const { state } = seeded();
-    const live = toHudView(state);
+    const live = toHudView(state, EN);
     expect(live.glowBeyondEdge).toBeNull();
 
     const ended: GameState = { ...state, phase: 'ended', death: 'broke' };
-    const hud = toHudView(ended);
+    const hud = toHudView(ended, EN);
     expect(hud.glowBeyondEdge).toMatch(/still glows \d+ past your edge\./);
   });
 
   it('shows the odds, and says nothing where there is no rarity to have', () => {
-    expect(toHudView(newRun(1, TUNING)).odds).toMatch(/magic .+ unique/);
+    expect(toHudView(newRun(1, TUNING), EN).odds).toMatch(/magic .+ unique/);
     const plain = tuned({ magicChance: 0, uniqueChance: 0 });
-    expect(toHudView(newRun(1, plain)).odds).toBeNull();
+    expect(toHudView(newRun(1, plain), EN).odds).toBeNull();
   });
 });
 

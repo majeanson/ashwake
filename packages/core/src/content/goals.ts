@@ -27,9 +27,8 @@ export type GoalId = 'reach20' | 'territories4' | 'known40' | 'shrinesAll' | 'pe
 
 export type Goal = {
   readonly id: GoalId;
-  readonly label: string;
   readonly reward: number;
-  /** What `label` already says in words. Omitted where the real target is a pool size (see above). */
+  /** What the goal's sentence (`text/`) already says in words. Omitted where the real target is a pool size (see above). */
   readonly target?: number;
 };
 
@@ -37,11 +36,11 @@ export type Goal = {
 // harder overall to get relics") — same ~35% cut as the per-run sources,
 // so a milestone still feels like a bonus rung, just not a free one.
 export const GOALS: readonly Goal[] = [
-  { id: 'reach20', label: 'Reach 20 hexes from home', reward: 25, target: 20 },
-  { id: 'territories4', label: 'Hold 4 territories', reward: 30, target: 4 },
-  { id: 'known40', label: 'Know 40% of the world', reward: 35, target: 0.4 },
-  { id: 'shrinesAll', label: 'Wake every shrine', reward: 25 },
-  { id: 'perksAll', label: 'Find every perk', reward: 40 },
+  { id: 'reach20', reward: 25, target: 20 },
+  { id: 'territories4', reward: 30, target: 4 },
+  { id: 'known40', reward: 35, target: 0.4 },
+  { id: 'shrinesAll', reward: 25 },
+  { id: 'perksAll', reward: 40 },
 ];
 
 /**

@@ -1,4 +1,5 @@
 import { PERK_DIALS, UPGRADE_STEPS } from '@content/goals';
+import type { Strings } from '@text/Strings';
 import type { Tuning } from '@content/tuning';
 import { rngNext, stream } from '@engine/rng';
 
@@ -40,9 +41,6 @@ export type UpgradeId = 'tiles' | 'odds' | 'world' | 'pace' | 'sense';
 
 export type Upgrade = {
   readonly id: UpgradeId;
-  readonly name: string;
-  /** What it does, in the words the shop prints. */
-  readonly note: string;
   /** Relics for the first level; each level after costs `cost * (level + 1)`. */
   readonly cost: number;
   /** How many times it can be bought. */
@@ -60,68 +58,41 @@ export type Upgrade = {
  * the shop sells the nose, never the prize.
  */
 export const UPGRADES: readonly Upgrade[] = [
-  {
-    id: 'tiles',
-    name: 'DEEPER PURSE',
-    note: `+${UPGRADE_STEPS.tiles} tiles to start every run.`,
-    cost: 20,
-    levels: 8,
-  },
-  {
-    id: 'odds',
-    name: 'KEENER EYE',
-    note: 'Magic and unique tiles turn up more often, on every run, for good.',
-    cost: 35,
-    levels: 5,
-  },
-  {
-    id: 'world',
-    name: 'RICHER WORLDS',
-    note: 'More caches, sites and territories out there to find — and richer caches when you reach them.',
-    cost: 50,
-    levels: 4,
-  },
-  {
-    id: 'pace',
-    name: 'STEADY PACE',
-    note: 'Placements stay cheap for longer, on every run, for good.',
-    cost: 30,
-    levels: 4,
-  },
-  {
-    id: 'sense',
-    name: 'KEEN NOSE',
-    note: `Hidden finds shimmer when your ground grows near — +${UPGRADE_STEPS.sense} hexes farther each level.`,
-    cost: 40,
-    levels: 3,
-  },
+  { id: 'tiles', cost: 20, levels: 8 },
+  { id: 'odds', cost: 35, levels: 5 },
+  { id: 'world', cost: 50, levels: 4 },
+  { id: 'pace', cost: 30, levels: 4 },
+  { id: 'sense', cost: 40, levels: 3 },
 ];
+
+/** What an upgrade is called and what it does, in the words the shop prints —
+ *  from `text/`, per language, quoting `UPGRADE_STEPS` so it cannot describe
+ *  a shop that is not being sold. */
+export const upgradeText = (id: UpgradeId, s: Strings): Strings['upgrade'][UpgradeId] =>
+  s.upgrade[id];
 
 export type PerkId = 'rootbound' | 'secondwind' | 'stonewalker' | 'wallbreaker' | 'openhand';
 
 export type Perk = {
   readonly id: PerkId;
-  readonly name: string;
-  /** What it does, in one line — the summary WHAT YOU CARRY still speaks. */
-  readonly note: string;
-  /**
-   * The three lines a perk actually takes to use (Marc, 2026-08-27: "a quick
-   * help card of how to use it properly, what you gain what you lose style").
-   *
-   * `note` was the whole of what a found perk ever said, and it is a
-   * DESCRIPTION — it states the dial and stops. A perk is the one thing in
-   * this game that can make you worse at it if you carry on playing the way
-   * you were, and neither the find card nor the shelf ever said so. `lose` is
-   * written even where the honest answer is "Nothing", because that is a fact
-   * a player is entitled to read rather than infer from a missing line.
-   *
-   * Numbers come from `PERK_DIALS` like `note`'s do, so a card cannot
-   * describe an economy that is not being played.
-   */
-  readonly gain: string;
-  readonly lose: string;
-  readonly play: string;
 };
+
+/**
+ * A perk's five lines — its name, the one-line note WHAT YOU CARRY speaks,
+ * and the three a card takes to use it (Marc, 2026-08-27: "a quick help card
+ * of how to use it properly, what you gain what you lose style").
+ *
+ * `note` was the whole of what a found perk ever said, and it is a
+ * DESCRIPTION — it states the dial and stops. A perk is the one thing in this
+ * game that can make you worse at it if you carry on playing the way you were,
+ * and neither the find card nor the shelf ever said so. `lose` is written even
+ * where the honest answer is "Nothing", because that is a fact a player is
+ * entitled to read rather than infer from a missing line.
+ *
+ * Numbers come from `PERK_DIALS`, so a card cannot describe an economy that
+ * is not being played; the words come from `text/`, per language.
+ */
+export const perkText = (id: PerkId, s: Strings): Strings['perk'][PerkId] => s.perk[id];
 
 /**
  * The findable pool, in the order the shelf lists it. Names in the shop's
@@ -131,57 +102,11 @@ export type Perk = {
  * anywhere an unowned perk is being described.
  */
 export const PERKS: readonly Perk[] = [
-  {
-    id: 'rootbound',
-    name: 'ROOTBOUND',
-    note: `Native ground pays up to ${PERK_DIALS.rootboundNativeMax}×, and ground that is not yours pays less — both sharpen as your luck fills.`,
-    // `rules.ts`: `rootboundGrip` walks native from `rootboundNative` to
-    // `rootboundNativeMax` and stray from `rootboundStray` to zero as luck
-    // fills. Repriced 2026-08-27: it used to be a flat ×2 / ×0 from the
-    // first placement, which doubled a score before it had been earned.
-    // Both halves are stated because the second one is the sharpest edge
-    // any perk has — it is just no longer sharp on turn one.
-    gain: `Your own ground pays ${PERK_DIALS.rootboundNative}× to start and ${PERK_DIALS.rootboundNativeMax}× at full luck — the ground’s own bonus is counted in first, then the lot multiplies.`,
-    lose: `Ground that is not yours pays ${PERK_DIALS.rootboundStray}× to start, and NOTHING once your luck is full. The better your odds get, the less the plane forgives.`,
-    play: 'Grow along ONE colour’s field and pop inside it. Early on a strayed pocket still pays something; bank enough luck and it stops paying at all, so the rule gets stricter exactly as you get richer.',
-  },
-  {
-    id: 'secondwind',
-    name: 'SECOND WIND',
-    note: `The first time a run would end broke, a coin is flipped: ${Math.round(PERK_DIALS.secondWindChance * 100)}% of the time you carry on with ${PERK_DIALS.secondWindTiles} tiles, and the rest of the time you do not.`,
-    gain: `The first time a run would end BROKE, a coin is flipped: ${Math.round(PERK_DIALS.secondWindChance * 100)}% of the time you carry on with ${PERK_DIALS.secondWindTiles} tiles.`,
-    // `reduce.ts` guards on `!usedSecondWind && death === 'broke'`, and the
-    // coin is spent whichever way it lands. Both are easy to misread as "a
-    // free life", which is the reading that gets a run killed.
-    lose: 'Nothing you had — but the coin is flipped once a run, and only for running BROKE. Any other ending is still an ending.',
-    play: `A reprieve you cannot count on, so it is worth one placement more than you would dare, not ten. If the coin lands, reach a pocket and POP before the ${PERK_DIALS.secondWindTiles} tiles are gone.`,
-  },
-  {
-    id: 'stonewalker',
-    name: 'STONEWALKER',
-    note: `Placements beside stone cost ${PERK_DIALS.stoneDiscount} less.`,
-    gain: `Placements next to stone cost ${PERK_DIALS.stoneDiscount} less — down to free, never below it.`,
-    lose: 'Nothing. This one is pure discount.',
-    play: 'Stone stops being ground to route around and becomes the cheapest ground there is. Build ALONG a ridge rather than away from one.',
-  },
-  {
-    id: 'wallbreaker',
-    name: 'WALLBREAKER',
-    note: `Walls can be built on, at ${PERK_DIALS.wallBuildCostMult}× cost.`,
-    gain: 'Walls can be built ON, which nothing else in the game can do.',
-    lose: `A wall placement costs ${PERK_DIALS.wallBuildCostMult}× a normal one, and the tiles are spent whether or not the pocket ever ripens.`,
-    play: 'A wall surrounds without ever matching, so breaking one JOINS two pockets that could never have touched. Worth it to close a big pocket; never worth it to save a step.',
-  },
-  {
-    id: 'openhand',
-    name: 'OPEN HAND',
-    note: `Draft ${PERK_DIALS.openHandDraft} tiles. No stash.`,
-    gain: `You draft ${PERK_DIALS.openHandDraft} tiles every hand instead of the usual deal.`,
-    // `perkTuning` sets `holdSlots: 0` — the shelf is not merely unused, it
-    // is gone, and a player who has learned to stash needs telling.
-    lose: 'NO STASH. The shelf disappears while this is worn — nothing can be put by for later.',
-    play: `More choice now, none saved. Take the best of ${PERK_DIALS.openHandDraft} every single turn instead of banking a tile for a pocket two moves away.`,
-  },
+  { id: 'rootbound' },
+  { id: 'secondwind' },
+  { id: 'stonewalker' },
+  { id: 'wallbreaker' },
+  { id: 'openhand' },
 ];
 
 /*  removed 2026-08-21 — unused. The shelf and the find-grant both

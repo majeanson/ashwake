@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`the prose pins — every other word, exactly as it reads today > pins every sentence in both epitaph pools, and the spent one 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins every sentence in both epitaph pools, and the spent one 1`] = `
 [
   "1 placements, and the last tile went down alone. The next would have cost 1.",
   "12 placements, then the hand came up empty. Tiles were 1 apiece at the end.",
@@ -135,7 +135,7 @@ exports[`the prose pins — every other word, exactly as it reads today > pins e
 ]
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the daily badge and the ordinals 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the daily badge and the ordinals 1`] = `
 {
   "badges": [
     "DAILY #2",
@@ -173,7 +173,7 @@ exports[`the prose pins — every other word, exactly as it reads today > pins t
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the figure captions and the lesson names 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the figure captions and the lesson names 1`] = `
 {
   "captions": {
     "destinations": "Lit is unclaimed and still pays. Faint means you have already spent it.",
@@ -257,7 +257,7 @@ exports[`the prose pins — every other word, exactly as it reads today > pins t
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the guide, hint, odds and what-still-glows lines 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the guide, hint, odds and what-still-glows lines 1`] = `
 {
   "glows · ended · BARE_TUNING": null,
   "glows · ended · TUNING": null,
@@ -296,7 +296,7 @@ exports[`the prose pins — every other word, exactly as it reads today > pins t
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the pocket note and every harvest receipt on a ripe board 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the pocket note and every harvest receipt on a ripe board 1`] = `
 {
   "harvest · burn · BARE_TUNING": "POPPED 1 — total worth 1
 +1 pts = worth 1 × pocket 1 × distance 1",
@@ -326,7 +326,7 @@ The score: worth 1 × pocket 1 × distance 1.",
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the purse card over both tunings and both directions 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the purse card over both tunings and both directions 1`] = `
 {
   "BARE_TUNING · daylight": {
     "rows": [],
@@ -403,7 +403,7 @@ Every button under your hand is priced in luck — and you CAN lose it all: the 
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the rarity lines 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the rarity lines 1`] = `
 [
   "MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
   "UNIQUE — wild and heavy: every match it is part of counts DOUBLE, for both sides.",
@@ -411,7 +411,7 @@ exports[`the prose pins — every other word, exactly as it reads today > pins t
 ]
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins the small labels: goals, unlocks, the shed ladder, features, the tagline 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the small labels: goals, unlocks, the shed ladder, features, the tagline 1`] = `
 {
   "features": [
     [
@@ -491,7 +491,7 @@ exports[`the prose pins — every other word, exactly as it reads today > pins t
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today > pins what tapping a hex says, on and off the board 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins what tapping a hex says, on and off the board 1`] = `
 {
   "BARE_TUNING · detour · -1,-1": "EMBER tile, worth 2. It ripens when all six sides are covered.",
   "BARE_TUNING · detour · -1,-2": "▦ Wall — cannot be built on. It surrounds (so it helps things ripen) but never matches.",
@@ -615,5 +615,623 @@ MOSS — CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbou
 MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
   "TUNING · home · 3,-2": "TIDE tile, worth 2. It ripens when all six sides are covered.
 TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins every sentence in both epitaph pools, and the spent one 1`] = `
+[
+  "1 placements, and the last tile went down alone. The next would have cost 1.",
+  "12 placements, then the hand came up empty. Tiles were 1 apiece at the end.",
+  "15 placements, and the walls had the last word.",
+  "17 placements, and the last tile went down alone. The next would have cost 1.",
+  "20 placements, then the hand came up empty. Tiles were 1 apiece at the end.",
+  "23 placements, and the walls had the last word.",
+  "25 placements, and the last tile went down alone. The next would have cost 2.",
+  "28 placements, then the hand came up empty. Tiles were 2 apiece at the end.",
+  "31 placements, and the walls had the last word.",
+  "33 placements, and the last tile went down alone. The next would have cost 2.",
+  "36 placements, then the hand came up empty. Tiles were 2 apiece at the end.",
+  "39 placements, and the walls had the last word.",
+  "4 placements, then the hand came up empty. Tiles were 1 apiece at the end.",
+  "41 placements, and the last tile went down alone. The next would have cost 2.",
+  "41 placements, and the walls had the last word.",
+  "44 placements, then the hand came up empty. Tiles were 3 apiece at the end.",
+  "47 placements, and the walls had the last word.",
+  "49 placements, and the last tile went down alone. The next would have cost 3.",
+  "49 placements, and the walls had the last word.",
+  "52 placements, then the hand came up empty. Tiles were 3 apiece at the end.",
+  "55 placements, and the walls had the last word.",
+  "57 placements, and the last tile went down alone. The next would have cost 3.",
+  "57 placements, and the walls had the last word.",
+  "60 placements, then the hand came up empty. Tiles were 3 apiece at the end.",
+  "63 placements, and the walls had the last word.",
+  "7 placements, and the walls had the last word.",
+  "9 placements, and the last tile went down alone. The next would have cost 1.",
+  "Every tile spent — 13 placements, with the cost at 1 and the purse at nothing.",
+  "Every tile spent — 21 placements, with the cost at 1 and the purse at nothing.",
+  "Every tile spent — 29 placements, with the cost at 2 and the purse at nothing.",
+  "Every tile spent — 37 placements, with the cost at 2 and the purse at nothing.",
+  "Every tile spent — 45 placements, with the cost at 3 and the purse at nothing.",
+  "Every tile spent — 5 placements, with the cost at 1 and the purse at nothing.",
+  "Every tile spent — 53 placements, with the cost at 3 and the purse at nothing.",
+  "Every tile spent — 61 placements, with the cost at 3 and the purse at nothing.",
+  "No tiles left after 15 placements. The plane was charging 1 each by then.",
+  "No tiles left after 23 placements. The plane was charging 2 each by then.",
+  "No tiles left after 31 placements. The plane was charging 2 each by then.",
+  "No tiles left after 39 placements. The plane was charging 2 each by then.",
+  "No tiles left after 47 placements. The plane was charging 3 each by then.",
+  "No tiles left after 55 placements. The plane was charging 3 each by then.",
+  "No tiles left after 63 placements. The plane was charging 3 each by then.",
+  "No tiles left after 7 placements. The plane was charging 1 each by then.",
+  "Nowhere left to stand after 12 placements — the plane walled the run in.",
+  "Nowhere left to stand after 20 placements — the plane walled the run in.",
+  "Nowhere left to stand after 22 placements — the plane walled the run in.",
+  "Nowhere left to stand after 28 placements — the plane walled the run in.",
+  "Nowhere left to stand after 30 placements — the plane walled the run in.",
+  "Nowhere left to stand after 36 placements — the plane walled the run in.",
+  "Nowhere left to stand after 38 placements — the plane walled the run in.",
+  "Nowhere left to stand after 4 placements — the plane walled the run in.",
+  "Nowhere left to stand after 44 placements — the plane walled the run in.",
+  "Nowhere left to stand after 46 placements — the plane walled the run in.",
+  "Nowhere left to stand after 54 placements — the plane walled the run in.",
+  "Nowhere left to stand after 62 placements — the plane walled the run in.",
+  "Out of tiles on the plane, after 11 placements. They cost 1 each by the end.",
+  "Out of tiles on the plane, after 19 placements. They cost 1 each by the end.",
+  "Out of tiles on the plane, after 27 placements. They cost 2 each by the end.",
+  "Out of tiles on the plane, after 3 placements. They cost 1 each by the end.",
+  "Out of tiles on the plane, after 35 placements. They cost 2 each by the end.",
+  "Out of tiles on the plane, after 43 placements. They cost 2 each by the end.",
+  "Out of tiles on the plane, after 51 placements. They cost 3 each by the end.",
+  "Out of tiles on the plane, after 59 placements. They cost 3 each by the end.",
+  "Stone on every side after 0 placements. The way out never opened.",
+  "Stone on every side after 14 placements. The way out never opened.",
+  "Stone on every side after 16 placements. The way out never opened.",
+  "Stone on every side after 24 placements. The way out never opened.",
+  "Stone on every side after 32 placements. The way out never opened.",
+  "Stone on every side after 40 placements. The way out never opened.",
+  "Stone on every side after 48 placements. The way out never opened.",
+  "Stone on every side after 56 placements. The way out never opened.",
+  "Stone on every side after 6 placements. The way out never opened.",
+  "Stone on every side after 8 placements. The way out never opened.",
+  "The expedition is over — 9 placements spent. 23 tiles left standing, never popped.",
+  "The expedition is over — 9 placements spent. Everything you built was popped.",
+  "The expedition spent itself: 0 placements, the price risen to 1.",
+  "The expedition spent itself: 16 placements, the price risen to 1.",
+  "The expedition spent itself: 24 placements, the price risen to 2.",
+  "The expedition spent itself: 32 placements, the price risen to 2.",
+  "The expedition spent itself: 40 placements, the price risen to 2.",
+  "The expedition spent itself: 48 placements, the price risen to 3.",
+  "The expedition spent itself: 56 placements, the price risen to 3.",
+  "The expedition spent itself: 8 placements, the price risen to 1.",
+  "The purse ran dry after 10 placements — 1 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 18 placements — 1 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 2 placements — 1 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 26 placements — 2 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 34 placements — 2 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 42 placements — 2 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 50 placements — 3 a tile at the end, and nothing left to pay it.",
+  "The purse ran dry after 58 placements — 3 a tile at the end, and nothing left to pay it.",
+  "The run built itself into a corner: 1 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 11 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 17 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 19 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 25 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 27 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 33 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 35 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 43 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 51 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 59 placements, and no ground a tile could take.",
+  "The run built itself into a corner: 9 placements, and no ground a tile could take.",
+  "The stone closed in at 10 placements. Every open hex was spoken for.",
+  "The stone closed in at 18 placements. Every open hex was spoken for.",
+  "The stone closed in at 2 placements. Every open hex was spoken for.",
+  "The stone closed in at 26 placements. Every open hex was spoken for.",
+  "The stone closed in at 34 placements. Every open hex was spoken for.",
+  "The stone closed in at 42 placements. Every open hex was spoken for.",
+  "The stone closed in at 50 placements. Every open hex was spoken for.",
+  "The stone closed in at 52 placements. Every open hex was spoken for.",
+  "The stone closed in at 58 placements. Every open hex was spoken for.",
+  "The stone closed in at 60 placements. Every open hex was spoken for.",
+  "The torch carried 14 placements out. At 1 a tile, the dark had the last one.",
+  "The torch carried 22 placements out. At 2 a tile, the dark had the last one.",
+  "The torch carried 30 placements out. At 2 a tile, the dark had the last one.",
+  "The torch carried 38 placements out. At 2 a tile, the dark had the last one.",
+  "The torch carried 46 placements out. At 3 a tile, the dark had the last one.",
+  "The torch carried 54 placements out. At 3 a tile, the dark had the last one.",
+  "The torch carried 6 placements out. At 1 a tile, the dark had the last one.",
+  "The torch carried 62 placements out. At 3 a tile, the dark had the last one.",
+  "Walled in after 13 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 21 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 29 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 3 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 37 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 45 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 5 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 53 placements — nowhere left to build, nothing left to pop.",
+  "Walled in after 61 placements — nowhere left to build, nothing left to pop.",
+]
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the daily badge and the ordinals 1`] = `
+{
+  "badges": [
+    "DAILY #2",
+    "DAILY #2 · best 900 · 1 try",
+    "DAILY #2 · best 900 · 2 tries",
+    "DAILY 2026-08-20",
+  ],
+  "ordinals": [
+    "1er",
+    "2e",
+    "3e",
+    "4e",
+    "5e",
+    "6e",
+    "7e",
+    "8e",
+    "9e",
+    "10e",
+    "11e",
+    "12e",
+    "13e",
+    "14e",
+    "15e",
+    "16e",
+    "17e",
+    "18e",
+    "19e",
+    "20e",
+    "21e",
+    "22e",
+    "23e",
+    "24e",
+    "25e",
+  ],
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the figure captions and the lesson names 1`] = `
+{
+  "captions": {
+    "destinations": "Lit is unclaimed and still pays. Faint means you have already spent it.",
+    "place": "Glowing edges are where a tile may go. The faint number is what it would pay.",
+    "pop": "Ripe tiles that touch are ONE pocket — they pop together, and leave stone.",
+    "rare": "A placed rare wears a star in its own colour: magic, then unique.",
+    "ripen": "Six sides covered: the middle tile is ripe, and worth what matches it.",
+    "stash": "The dashed slot is the stash. Tap it to keep the selected card for later.",
+  },
+  "names": [
+    [
+      "ripe",
+      "RIPE",
+    ],
+    [
+      "pop",
+      "POP",
+    ],
+    [
+      "pocket",
+      "POCKET",
+    ],
+    [
+      "worth",
+      "WORTH",
+    ],
+    [
+      "cache",
+      "CACHE",
+    ],
+    [
+      "site",
+      "SITE",
+    ],
+    [
+      "shrine",
+      "SHRINE",
+    ],
+    [
+      "territory",
+      "TERRITORY",
+    ],
+    [
+      "stone",
+      "STONE",
+    ],
+    [
+      "rare",
+      "MAGIC",
+    ],
+    [
+      "rareUnique",
+      "UNIQUE",
+    ],
+    [
+      "luck",
+      "LUCK",
+    ],
+    [
+      "relic",
+      "RELICS",
+    ],
+    [
+      "bounty",
+      "BOUNTY",
+    ],
+    [
+      "stash",
+      "STASH",
+    ],
+    [
+      "sizeBonus",
+      "SIZE BONUS",
+    ],
+  ],
+  "shared": {
+    "LAST_GASP_RULE": "You may place while ANY tiles remain — the difference is forgiven at zero, and it cannot chain: only a pop can lift you back above zero.",
+    "LUCK_CORE": "LUCK — a purse, not a score.",
+    "RARE_STAR": "A placed rare tile wears a star, so its power stays findable on a full map.",
+  },
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the guide, hint, odds and what-still-glows lines 1`] = `
+{
+  "glows · ended · BARE_TUNING": null,
+  "glows · ended · TUNING": null,
+  "glows · fresh · BARE_TUNING": null,
+  "glows · fresh · TUNING": null,
+  "glows · low · BARE_TUNING": null,
+  "glows · low · TUNING": null,
+  "glows · ripe · BARE_TUNING": null,
+  "glows · ripe · TUNING": null,
+  "guide · ended · BARE_TUNING": "Low on tiles — POP a pocket for tiles",
+  "guide · ended · TUNING": "Low on tiles — POP a pocket now",
+  "guide · fresh · BARE_TUNING": null,
+  "guide · fresh · TUNING": null,
+  "guide · low · BARE_TUNING": "Low on tiles — POP a pocket for tiles",
+  "guide · low · TUNING": "Low on tiles — POP a pocket now",
+  "guide · ripe · BARE_TUNING": "Pocket ready — tap one, then POP for tiles or pts",
+  "guide · ripe · TUNING": "Pocket ready — tap one to price it, then POP or sacrifice it",
+  "hint · ended · BARE_TUNING": null,
+  "hint · ended · TUNING": "A territory to claim glows 5 out",
+  "hint · fresh · BARE_TUNING": null,
+  "hint · fresh · TUNING": "A territory to claim glows 5 out",
+  "hint · low · BARE_TUNING": null,
+  "hint · low · TUNING": "A territory to claim glows 5 out",
+  "hint · ripe · BARE_TUNING": null,
+  "hint · ripe · TUNING": "A territory to claim glows 5 out",
+  "odds · ended · BARE_TUNING": null,
+  "odds · ended · TUNING": "magic 2.5% · unique 0.5%",
+  "odds · fresh · BARE_TUNING": null,
+  "odds · fresh · TUNING": "magic 2.5% · unique 0.5%",
+  "odds · low · BARE_TUNING": null,
+  "odds · low · TUNING": "magic 2.5% · unique 0.5%",
+  "odds · ripe · BARE_TUNING": null,
+  "odds · ripe · TUNING": "magic 2.5% · unique 0.5%",
+  "whatGlows · at edge · BARE_TUNING": null,
+  "whatGlows · at edge · TUNING": "A territory to claim still glows 2 past your edge.",
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the pocket note and every harvest receipt on a ripe board 1`] = `
+{
+  "harvest · burn · BARE_TUNING": "POPPED 1 — total worth 1
++1 pts = worth 1 × pocket 1 × distance 1",
+  "harvest · burn · TUNING": "POPPED 1 — total worth 1
++1 pts = worth 1 × pocket 1 × distance 1",
+  "harvest · points · BARE_TUNING": "POPPED 1 — total worth 1
++1 pts = worth 1 × pocket 1 × distance 1",
+  "harvest · points · TUNING": "POPPED 1 — total worth 1
++1 pts = worth 1 × pocket 1 × distance 1",
+  "harvest · tiles · BARE_TUNING": "POPPED 1 — total worth 1
++1 tiles: 1 per tile, +1 more per 2 worth.
+Luck +1.",
+  "harvest · tiles · TUNING": "POPPED 1 — total worth 1
++1 tiles: 1 per tile, +1 more per 2 worth.
++1 pts.
+Luck +10.",
+  "harvest · treasure · BARE_TUNING": "POPPED 1 — total worth 1
+A NULL tile goes to your stash — no tiles, no points.",
+  "harvest · treasure · TUNING": "POPPED 1 — total worth 1
+A NULL tile goes to your stash — no tiles, no points.",
+  "pocket · BARE_TUNING": "POCKET OF 1 — total worth 1.
+POP pays +1 tiles and 1 pts.
+The score: worth 1 × pocket 1 × distance 1.",
+  "pocket · TUNING": "POCKET OF 1 — total worth 1.
+POP pays +1 tiles and 1 pts.
+The score: worth 1 × pocket 1 × distance 1.",
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the purse card over both tunings and both directions 1`] = `
+{
+  "BARE_TUNING · daylight": {
+    "rows": [],
+    "text": "✤  LUCK IS FOR SPENDING
+Every button under your hand is priced in luck — and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
+  },
+  "BARE_TUNING · torchlit": {
+    "rows": [],
+    "text": "✤  LUCK IS FOR SPENDING
+Every button under your hand is priced in luck — and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
+  },
+  "TUNING · daylight": {
+    "rows": [
+      {
+        "text": "REDRAW · 12 — throw this hand away for a new one.",
+      },
+      {
+        "colour": "green",
+        "text": "▲ LICHEN · 30 — a hand leaning LICHEN, and the next 6 draws with it.",
+      },
+      {
+        "colour": "yellow",
+        "text": "◆ TISONS · 30 — a hand leaning TISONS, and the next 6 draws with it.",
+      },
+      {
+        "colour": "red",
+        "text": "■ CENDRES · 30 — a hand leaning CENDRES, and the next 6 draws with it.",
+      },
+      {
+        "colour": "blue",
+        "text": "● RIVIÈRES · 30 — a hand leaning RIVIÈRES, and the next 6 draws with it.",
+      },
+      {
+        "text": "FORGE · 75 — turn the card you have selected UNIQUE.",
+      },
+      {
+        "text": "SACRIFICE LUCK — the WHOLE purse traded for relics at 15%, better than dying on it.",
+      },
+    ],
+    "text": "✤  LUCK IS FOR SPENDING
+Every button under your hand is priced in luck — and you CAN lose it all: the run's end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
+  },
+  "TUNING · torchlit": {
+    "rows": [
+      {
+        "text": "REDRAW · 12 — throw this hand away for a new one.",
+      },
+      {
+        "colour": "green",
+        "text": "▲ LICHEN · 30 — a hand leaning LICHEN, and the next 6 draws with it.",
+      },
+      {
+        "colour": "yellow",
+        "text": "◆ TISONS · 30 — a hand leaning TISONS, and the next 6 draws with it.",
+      },
+      {
+        "colour": "red",
+        "text": "■ CENDRES · 30 — a hand leaning CENDRES, and the next 6 draws with it.",
+      },
+      {
+        "colour": "blue",
+        "text": "● RIVIÈRES · 30 — a hand leaning RIVIÈRES, and the next 6 draws with it.",
+      },
+      {
+        "text": "FORGE · 75 — turn the card you have selected UNIQUE.",
+      },
+      {
+        "text": "SACRIFICE LUCK — the WHOLE purse traded for relics at 15%, better than dying on it.",
+      },
+    ],
+    "text": "✤  LUCK IS FOR SPENDING
+Every button under your hand is priced in luck — and you CAN lose it all: the run's end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
+  },
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the rarity lines 1`] = `
+[
+  "MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "UNIQUE — wild and heavy: every match it is part of counts DOUBLE, for both sides.",
+  null,
+]
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the small labels: goals, unlocks, the shed ladder, features, the tagline 1`] = `
+{
+  "features": [
+    [
+      "debug.overlay",
+      "Debug overlay",
+      "Prints the run’s raw numbers under the board, for reporting a bug.",
+    ],
+    [
+      "ui.sound",
+      "Sound",
+      "A few quiet notes as you pop and claim. The ♪ button on the board is this switch.",
+    ],
+  ],
+  "goals": [
+    [
+      "reach20",
+      "Reach 20 hexes from home",
+    ],
+    [
+      "territories4",
+      "Hold 4 territories",
+    ],
+    [
+      "known40",
+      "Know 40% of the world",
+    ],
+    [
+      "shrinesAll",
+      "Wake every shrine",
+    ],
+    [
+      "perksAll",
+      "Find every perk",
+    ],
+  ],
+  "shed": [
+    [
+      "lastError",
+      "Storage was full — a diagnostic record was cleared so your run could be saved.",
+    ],
+    [
+      "otherReceipts",
+      "Storage was full — some notes from your other worlds were cleared so your run could be saved.",
+    ],
+    [
+      "timeline",
+      "Storage was full — your diary was cleared so your run could be saved. Your worlds, relics and perks are untouched.",
+    ],
+    [
+      "otherWorlds",
+      "Storage was full — your OTHER worlds were forgotten so this run could be saved. The world you are in is untouched.",
+    ],
+  ],
+  "tagline": "An expedition into a dark plane. Place, ripen, pop, and push on.",
+  "unlocks": [
+    [
+      "draft",
+      "A fourth draft card",
+    ],
+    [
+      "hold",
+      "A second stash slot",
+    ],
+    [
+      "luck",
+      "Twice the rare-tile odds",
+    ],
+    [
+      "reach",
+      "Destinations glow from twice as far",
+    ],
+    [
+      "camp",
+      "Camps — later runs may begin at your farthest territory",
+    ],
+  ],
+}
+`;
+
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins what tapping a hex says, on and off the board 1`] = `
+{
+  "BARE_TUNING · detour · -1,-1": "TISONS tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -1,-2": "▦ Wall — cannot be built on. It surrounds (so it helps things ripen) but never matches.",
+  "BARE_TUNING · detour · -2,1": "RIVIÈRES tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -2,2": "CENDRES tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -3,-1": "Ground native to TISONS — a TISONS tile here is worth one more.",
+  "BARE_TUNING · detour · -3,0": "LICHEN tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -3,2": "CENDRES tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -3,3": "LICHEN tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -4,0": "Open ground — you can build here once something of yours touches it.",
+  "BARE_TUNING · detour · -4,4": "Ground native to CENDRES — a CENDRES tile here is worth one more.",
+  "BARE_TUNING · detour · -6,0": "Remembered from an earlier run — this run has not grown here yet.",
+  "BARE_TUNING · detour · -6,1": "Dark ground — nothing any run has seen yet. Grow toward it.",
+  "BARE_TUNING · detour · 0,1": "TISONS tile, worth 3. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 1,1": "CENDRES tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 2,-1": "RIVIÈRES tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 2,-3": "TISONS tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 2,0": "RIVIÈRES tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -1,-1": "TISONS tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -1,-2": "▦ Wall — cannot be built on. It surrounds (so it helps things ripen) but never matches.",
+  "BARE_TUNING · home · -2,1": "RIVIÈRES tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -2,2": "CENDRES tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -3,-1": "Ground native to TISONS — a TISONS tile here is worth one more.",
+  "BARE_TUNING · home · -3,0": "LICHEN tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -3,2": "CENDRES tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -3,3": "LICHEN tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -4,0": "Open ground — you can build here once something of yours touches it.",
+  "BARE_TUNING · home · -4,4": "Ground native to CENDRES — a CENDRES tile here is worth one more.",
+  "BARE_TUNING · home · -6,0": "Remembered from an earlier run — this run has not grown here yet.",
+  "BARE_TUNING · home · -6,1": "Dark ground — nothing any run has seen yet. Grow toward it.",
+  "BARE_TUNING · home · 0,1": "TISONS tile, worth 3. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 1,1": "CENDRES tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 2,-1": "RIVIÈRES tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 2,-3": "TISONS tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 2,0": "RIVIÈRES tile, worth 1. It ripens when all six sides are covered.",
+  "TUNING · detour · -1,-1": "TISONS tile, worth 5. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · -1,-2": "▦ Wall — cannot be built on. It surrounds (so it helps things ripen) but never matches, except for CENDRES, which counts it as one.",
+  "TUNING · detour · -1,0": "LICHEN tile, worth 0. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.",
+  "TUNING · detour · -1,1": "CENDRES tile, worth 1. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · detour · -2,-1": "Ground native to TISONS — a TISONS tile here is worth one more.",
+  "TUNING · detour · -2,0": "CENDRES tile, worth 0. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · detour · -2,1": "RIVIÈRES tile, worth 1. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · -2,2": "CENDRES tile, worth 3. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
+MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "TUNING · detour · -2,4": "✚ CACHE — build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
+  "TUNING · detour · -3,0": "Open ground — you can build here once something of yours touches it.",
+  "TUNING · detour · -6,0": "Remembered from an earlier run — this run has not grown here yet.",
+  "TUNING · detour · -6,1": "Dark ground — nothing any run has seen yet. Grow toward it.",
+  "TUNING · detour · 0,-1": "RIVIÈRES tile, worth 0. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · 0,-2": "TISONS tile, worth 2. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · 0,0": "TISONS tile, worth 6. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · 0,2": "TISONS tile, worth 3. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · 0,3": "Ground native to RIVIÈRES — a RIVIÈRES tile here is worth one more.",
+  "TUNING · detour · 1,-1": "LICHEN tile, worth 1. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.",
+  "TUNING · detour · 1,1": "CENDRES tile, worth 2. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · detour · 2,-1": "RIVIÈRES tile, worth 3. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · 2,0": "RIVIÈRES tile, worth 4. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · 2,1": "LICHEN tile, worth 3. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.
+MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "TUNING · detour · 3,-1": "LICHEN tile, worth 4. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.
+MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "TUNING · detour · 3,-2": "RIVIÈRES tile, worth 2. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · -1,-1": "TISONS tile, worth 5. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · -1,-2": "▦ Wall — cannot be built on. It surrounds (so it helps things ripen) but never matches, except for CENDRES, which counts it as one.",
+  "TUNING · home · -1,0": "LICHEN tile, worth 0. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.",
+  "TUNING · home · -1,1": "CENDRES tile, worth 1. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · home · -2,-1": "Ground native to TISONS — a TISONS tile here is worth one more.",
+  "TUNING · home · -2,0": "CENDRES tile, worth 0. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · home · -2,1": "RIVIÈRES tile, worth 1. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · -2,2": "CENDRES tile, worth 3. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
+MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "TUNING · home · -2,4": "✚ CACHE — build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
+  "TUNING · home · -3,0": "Open ground — you can build here once something of yours touches it.",
+  "TUNING · home · -6,0": "Remembered from an earlier run — this run has not grown here yet.",
+  "TUNING · home · -6,1": "Dark ground — nothing any run has seen yet. Grow toward it.",
+  "TUNING · home · 0,-1": "RIVIÈRES tile, worth 0. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 0,-2": "TISONS tile, worth 2. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · 0,0": "TISONS tile, worth 6. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · 0,2": "TISONS tile, worth 3. It ripens when all six sides are covered.
+TISONS — COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · 0,3": "Ground native to RIVIÈRES — a RIVIÈRES tile here is worth one more.",
+  "TUNING · home · 1,-1": "LICHEN tile, worth 1. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.",
+  "TUNING · home · 1,1": "CENDRES tile, worth 2. It ripens when all six sides are covered.
+CENDRES — ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · home · 2,-1": "RIVIÈRES tile, worth 3. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 2,0": "RIVIÈRES tile, worth 4. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 2,1": "LICHEN tile, worth 3. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.
+MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "TUNING · home · 3,-1": "LICHEN tile, worth 4. It ripens when all six sides are covered.
+LICHEN — CROWDS. Wants one big mob of its own colour: +1 worth per LICHEN neighbour past the first.
+MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+  "TUNING · home · 3,-2": "RIVIÈRES tile, worth 2. It ripens when all six sides are covered.
+RIVIÈRES — TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
 }
 `;

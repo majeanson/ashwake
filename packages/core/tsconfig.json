@@ -8,6 +8,7 @@
       "@render/*": ["./src/render/*"],
       "@theme/*": ["./src/theme/*"],
       "@view/*": ["./src/view/*"],
+      "@text/*": ["./src/text/*"],
       "@sim/*": ["./src/sim/*"]
     }
   },

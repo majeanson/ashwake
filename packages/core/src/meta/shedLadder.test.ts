@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SHED_LADDER } from './shedLadder';
+import { STRINGS_EN as EN } from '@text/en';
+import { SHED_LADDER, shedNote } from './shedLadder';
 
 /**
  * Pinning the ORDER and the wording exactly (2026-08-26), extracted out of
@@ -22,7 +23,7 @@ describe('SHED_LADDER', () => {
   });
 
   it('gives every rung its own honest sentence — none share text, none are empty', () => {
-    const notes = SHED_LADDER.map((r) => r.note);
+    const notes = SHED_LADDER.map((r) => shedNote(r.id, EN));
     expect(new Set(notes).size).toBe(notes.length);
     for (const note of notes) {
       expect(note.length).toBeGreaterThan(0);
@@ -31,14 +32,12 @@ describe('SHED_LADDER', () => {
   });
 
   it('is honest about the diary rung: it says what was cleared, not "some history"', () => {
-    const timeline = SHED_LADDER.find((r) => r.id === 'timeline');
-    expect(timeline?.note).toContain('diary');
-    expect(timeline?.note).toContain('relics and perks are untouched');
+    expect(shedNote('timeline', EN)).toContain('diary');
+    expect(shedNote('timeline', EN)).toContain('relics and perks are untouched');
   });
 
   it('is honest about the world rung: only the OTHER worlds, never the one in play', () => {
-    const otherWorlds = SHED_LADDER.find((r) => r.id === 'otherWorlds');
-    expect(otherWorlds?.note).toContain('OTHER worlds');
-    expect(otherWorlds?.note).toContain('world you are in is untouched');
+    expect(shedNote('otherWorlds', EN)).toContain('OTHER worlds');
+    expect(shedNote('otherWorlds', EN)).toContain('world you are in is untouched');
   });
 });

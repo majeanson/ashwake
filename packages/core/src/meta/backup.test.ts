@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { STRINGS_EN as EN } from '@text/en';
 import {
   buildBackup,
   decodeBackup,
@@ -125,7 +126,7 @@ describe('describing one', () => {
       },
       META,
     );
-    const line = describeBackup(backup);
+    const line = describeBackup(backup, EN);
     expect(line).toContain('3 worlds');
     expect(line).toContain('412 relics');
     expect(line).toContain('2026-08-21');
@@ -136,7 +137,7 @@ describe('describing one', () => {
       { 'tiles.world.v1': '{"worldSeed":1}', 'tiles.progress.v1': 'not json' },
       { sha: 'x', at: '' },
     );
-    const line = describeBackup(one);
+    const line = describeBackup(one, EN);
     expect(line).toContain('1 world ');
     expect(line).toContain('0 relics');
   });

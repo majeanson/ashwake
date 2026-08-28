@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { shareOf } from './share';
+import { STRINGS_EN as EN } from '@text/en';
 import { DAILY_EPOCH } from './daily';
 
 /**
@@ -10,13 +11,17 @@ import { DAILY_EPOCH } from './daily';
 
 describe('a run', () => {
   it('says the score, the length, the shape, and carries only its seed', () => {
-    const { text, params } = shareOf('Ashwake', {
-      kind: 'run',
-      points: 7795,
-      placements: 166,
-      seed: 1234567,
-      arc: '▁▂▄▃█▅▂',
-    });
+    const { text, params } = shareOf(
+      'Ashwake',
+      {
+        kind: 'run',
+        points: 7795,
+        placements: 166,
+        seed: 1234567,
+        arc: '▁▂▄▃█▅▂',
+      },
+      EN,
+    );
     expect(text).toBe('Ashwake: 7795 pts in 166 placements · ▁▂▄▃█▅▂. Beat my run:');
     // ONLY the seed. A link built from the sender's full URL drags their own
     // overrides along — `?ff=`, `?theme=`, `?hex=`, `?camp=` — and an
@@ -28,13 +33,17 @@ describe('a run', () => {
   });
 
   it('omits the arc rather than printing an empty gap', () => {
-    const { text } = shareOf('Ashwake', {
-      kind: 'run',
-      points: 12,
-      placements: 3,
-      seed: 7,
-      arc: '',
-    });
+    const { text } = shareOf(
+      'Ashwake',
+      {
+        kind: 'run',
+        points: 12,
+        placements: 3,
+        seed: 7,
+        arc: '',
+      },
+      EN,
+    );
     expect(text).toBe('Ashwake: 12 pts in 3 placements. Beat my run:');
   });
 
@@ -42,7 +51,7 @@ describe('a run', () => {
     // A hand-typed seed can be negative, and the settle path was bitten once
     // by a 31-bit mask that quietly changed which world travelled.
     expect(
-      shareOf('Ashwake', { kind: 'run', points: 1, placements: 1, seed: -42, arc: '' }).params,
+      shareOf('Ashwake', { kind: 'run', points: 1, placements: 1, seed: -42, arc: '' }, EN).params,
     ).toEqual({
       seed: '-42',
     });
@@ -51,14 +60,18 @@ describe('a run', () => {
 
 describe('a daily', () => {
   it('reads as a scoreboard line, and confesses the try', () => {
-    const { text, params } = shareOf('Ashwake', {
-      kind: 'daily',
-      date: DAILY_EPOCH,
-      points: 1204,
-      reach: 12,
-      arc: '▁▂▄▃█▅▂',
-      tries: 2,
-    });
+    const { text, params } = shareOf(
+      'Ashwake',
+      {
+        kind: 'daily',
+        date: DAILY_EPOCH,
+        points: 1204,
+        reach: 12,
+        arc: '▁▂▄▃█▅▂',
+        tries: 2,
+      },
+      EN,
+    );
     expect(text).toContain('Ashwake #1');
     expect(text).toContain('1204 pts');
     expect(text).toContain('reach 12');
@@ -73,14 +86,18 @@ describe('a daily', () => {
   });
 
   it('omits the arc rather than printing an empty gap', () => {
-    const { text } = shareOf('Ashwake', {
-      kind: 'daily',
-      date: DAILY_EPOCH,
-      points: 0,
-      reach: 0,
-      arc: '',
-      tries: 1,
-    });
+    const { text } = shareOf(
+      'Ashwake',
+      {
+        kind: 'daily',
+        date: DAILY_EPOCH,
+        points: 0,
+        reach: 0,
+        arc: '',
+        tries: 1,
+      },
+      EN,
+    );
     expect(text).not.toContain('·  ·');
     expect(text).toContain('1st try');
   });
@@ -88,14 +105,18 @@ describe('a daily', () => {
   it('names a rehearsal-week date rather than a #0', () => {
     // Dates before the epoch are playable but pre-calendar (Marc's 2026-08-20
     // ruling): they print their DATE, because "#0" reads as broken.
-    const { text } = shareOf('Ashwake', {
-      kind: 'daily',
-      date: '2026-08-20',
-      points: 10,
-      reach: 1,
-      arc: '',
-      tries: 1,
-    });
+    const { text } = shareOf(
+      'Ashwake',
+      {
+        kind: 'daily',
+        date: '2026-08-20',
+        points: 10,
+        reach: 1,
+        arc: '',
+        tries: 1,
+      },
+      EN,
+    );
     expect(text).toContain('2026-08-20');
     expect(text).not.toContain('#');
   });

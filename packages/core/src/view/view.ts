@@ -34,16 +34,9 @@ import {
   findsWithin,
   terrainAt,
 } from '@engine/world';
-import {
-  brightness,
-  COLOUR_MARK,
-  CONCEPT_MARK,
-  LANDMARK_GLYPH,
-  type Light,
-  type Theme,
-} from '@theme/tokens';
+import { brightness, COLOUR_MARK, namesOf, type Light, type Theme } from '@theme/tokens';
 import type { BoardView, CellKind, CellView } from '@render/Renderer';
-import { LUCK_CORE } from './lessons';
+import type { Strings } from '@text/Strings';
 
 /** A direction that wants no falloff at all — and every test that has no theme. */
 const NO_FALLOFF: Light = { radius: Infinity, fade: 1, floor: 1 };
@@ -792,6 +785,7 @@ export type HudView = {
 
 export function toHudView(
   state: GameState,
+  s: Strings,
   harvestAt: HexKey | null = null,
   spotlight: Colour | null = null,
   // Shareable with `toBoardView` — see the parameter there.
@@ -860,13 +854,13 @@ export function toHudView(
 
     canHarvest: state.phase === 'placing' && value.count > 0,
 
-    guide: guideFor(state, ctx),
-    hint: hintFor(state, ctx.reach),
-    odds: oddsFor(state),
+    guide: guideFor(state, ctx, s),
+    hint: hintFor(state, ctx.reach, s),
+    odds: oddsFor(state, s),
 
     ended: state.phase === 'ended',
-    epitaph: state.phase === 'ended' ? epitaphFor(state) : null,
-    glowBeyondEdge: state.phase === 'ended' ? whatGlows(state, ctx.reach) : null,
+    epitaph: state.phase === 'ended' ? epitaphFor(state, s) : null,
+    glowBeyondEdge: state.phase === 'ended' ? whatGlows(state, ctx.reach, s) : null,
     summary: state.phase === 'ended' ? summariseRun(state) : null,
   };
 }
@@ -1025,15 +1019,11 @@ type Mutable<T> = {
  * half-shown. Earned, not constant: null until the run popped at least three
  * times, because a shape needs more than two points to have one.
  */
-export function arcNote(summary: NonNullable<HudView['summary']>): string | null {
+export function arcNote(summary: NonNullable<HudView['summary']>, s: Strings): string | null {
   if (summary.harvests < 3 || summary.biggestHarvest <= 0) return null;
-  if (summary.biggestAt >= 2 / 3) {
-    return 'The run built to it — your biggest pop landed in the final stretch.';
-  }
-  if (summary.biggestAt >= 1 / 3) {
-    return 'Your biggest pop came mid-run; the tail never topped it.';
-  }
-  return 'Your biggest pop came early — everything after grew in its shadow.';
+  if (summary.biggestAt >= 2 / 3) return s.view.arc.late;
+  if (summary.biggestAt >= 1 / 3) return s.view.arc.mid;
+  return s.view.arc.early;
 }
 
 /**
@@ -1106,31 +1096,29 @@ function colourPotentials(state: GameState): ColourPotential[] {
  * forced; a warning that fires while three comfortable placements remain is
  * a warning that teaches fear rather than danger. See `RUNWAY_ALARM`.
  */
-function guideFor(state: GameState, ctx: RenderContext): string | null {
+function guideFor(state: GameState, ctx: RenderContext, s: Strings): string | null {
   if (state.phase !== 'placing') return null;
 
   const ripe = ctx.ripe.size > 0;
   const single = state.tuning.singlePayout;
+  const g = s.view.guide;
   if (runwayOf(state) <= RUNWAY_ALARM) {
-    if (ripe)
-      return single ? 'Low on tiles — POP a pocket now' : 'Low on tiles — POP a pocket for tiles';
-    return 'Low on tiles — ripen something to POP';
+    if (ripe) return single ? g.lowPopNow : g.lowPopTiles;
+    return g.lowRipen;
   }
   if (ripe) {
     // The DEFAULT pocket, deliberately — this line's words must not change
     // because a different pocket happens to be tapped. See `defaultValue`.
     const value = ctx.defaultValue;
-    if (value.questPays) return 'BOUNTY READY — POP this pocket as pts';
+    if (value.questPays) return g.bountyReady;
     // More tiles than the clock can spend: the survival button is dead and
     // saying so is the whole job of this line.
-    if (tilesSpareIn(state)) return 'More tiles than you can spend — POP for PTS from here on';
+    if (tilesSpareIn(state)) return g.tilesSpare;
     // POP · N pockets ready: how many separate decisions are sitting on the
     // board right now, not how many tiles — a 12-tile pocket is one of them,
     // same as a 2-tile one. Singular wording stays where there is only one.
-    const pockets = ctx.pocketCount > 1 ? `${ctx.pocketCount} pockets ready` : 'Pocket ready';
-    return single
-      ? `${pockets} — tap one to price it, then POP or sacrifice it`
-      : `${pockets} — tap one, then POP for tiles or pts`;
+    const pockets = g.pockets(ctx.pocketCount);
+    return single ? g.readySingle(pockets) : g.readyFork(pockets);
   }
   // No standing default any more (Marc, 2026-08-26: "remove place tiles
   // surround one on all six sides text"). The teaching cards own that
@@ -1224,28 +1212,28 @@ function nameDestination(
   at: HexKey,
   t: Tuning,
   home: { q: number; r: number },
+  s: Strings,
 ): string {
+  const d = s.view.destination;
   return reward === 'cache'
     ? // Priced from HOME, like the payment and the two banners (2026-08-21).
-      `a cache of ${cachePaysAt(at, t, home)} tiles`
+      d.cache(cachePaysAt(at, t, home))
     : reward === 'site'
-      ? 'a scoring site'
+      ? d.site
       : reward === 'shrine'
-        ? 'a shrine'
-        : 'a territory to claim';
+        ? d.shrine
+        : d.territory;
 }
-
-const capitalize = (s: string): string => `${s[0]!.toUpperCase()}${s.slice(1)}`;
 
 /**
  * The nearest unclaimed destination — revealed or beacon — named and priced
  * in the one unit the player already reads the board in: hexes out.
  */
-function hintFor(state: GameState, reach: number): string | null {
+function hintFor(state: GameState, reach: number, s: Strings): string | null {
   const best = nearestUnclaimed(state, reach);
   if (best === null) return null;
   const { reward, dist, at } = best;
-  return `${capitalize(nameDestination(reward, at, state.tuning, homeOf(state)))} glows ${dist} out`;
+  return s.view.hint(nameDestination(reward, at, state.tuning, homeOf(state), s), dist);
 }
 
 /**
@@ -1255,7 +1243,7 @@ function hintFor(state: GameState, reach: number): string | null {
  * is over. Reuses `hintFor`'s language and its never-a-find rule exactly;
  * the only thing that changes is the distance the sentence reports.
  */
-export function whatGlows(state: GameState, reach: number): string | null {
+export function whatGlows(state: GameState, reach: number, s: Strings): string | null {
   const best = nearestUnclaimed(state, reach);
   if (best === null) return null;
   const { reward, dist, at } = best;
@@ -1263,20 +1251,23 @@ export function whatGlows(state: GameState, reach: number): string | null {
   // "0 past your edge" is a sentence only a computer would say (Marc's
   // phone, 2026-08-26) — a destination the run drew level with but never
   // touched gets its own words.
-  const name = capitalize(nameDestination(reward, at, state.tuning, homeOf(state)));
-  if (beyond === 0) return `${name} still glows right at your edge.`;
-  return `${name} still glows ${beyond} past your edge.`;
+  const name = nameDestination(reward, at, state.tuning, homeOf(state), s);
+  if (beyond === 0) return s.view.glows.atEdge(name);
+  return s.view.glows.past(name, beyond);
 }
 
 /** "magic 6% · unique 1.2%", or null while the rarity system is off. */
-function oddsFor(state: GameState): string | null {
+function oddsFor(state: GameState, s: Strings): string | null {
   const odds = rarityOdds(state.tuning, state.luck);
   if (odds.magic + odds.unique <= 0) return null;
-  const pct = (v: number): string => {
+  // Whole percents from ten up, one decimal under it — the rounding is a
+  // fact about the odds, so it is decided here and the catalogue only
+  // spells the number.
+  const pct = (v: number): number => {
     const p = v * 100;
-    return `${p >= 10 ? Math.round(p) : Math.round(p * 10) / 10}%`;
+    return p >= 10 ? Math.round(p) : Math.round(p * 10) / 10;
   };
-  return `magic ${pct(odds.magic)} · unique ${pct(odds.unique)}`;
+  return s.view.odds(pct(odds.magic), pct(odds.unique));
 }
 
 /**
@@ -1294,57 +1285,28 @@ function oddsFor(state: GameState): string | null {
  * reading as one stamp. Every sentence still says WHY, with the same facts
  * (the placements, the final cost); only the framing varies. The pick is a
  * pure hash of the run's own facts, never a die roll, because the same ended
- * run must speak the same sentence every time it is re-rendered.
+ * run must speak the same sentence every time it is re-rendered. The pools
+ * themselves are in `text/`, one per language, the same size in each so the
+ * hash lands on the same framing whichever language reads it.
  */
-const BROKE_EPITAPHS: readonly ((placements: number, cost: number) => string)[] = [
-  (p, cost) =>
-    `Out of tiles on the plane, after ${p} placements. They cost ${cost} each by the end.`,
-  (p, cost) =>
-    `The purse ran dry after ${p} placements — ${cost} a tile at the end, and nothing left to pay it.`,
-  (p, cost) =>
-    `${p} placements, and the last tile went down alone. The next would have cost ${cost}.`,
-  (p, cost) => `The expedition spent itself: ${p} placements, the price risen to ${cost}.`,
-  (p, cost) => `No tiles left after ${p} placements. The plane was charging ${cost} each by then.`,
-  (p, cost) =>
-    `The torch carried ${p} placements out. At ${cost} a tile, the dark had the last one.`,
-  (p, cost) =>
-    `Every tile spent — ${p} placements, with the cost at ${cost} and the purse at nothing.`,
-  (p, cost) =>
-    `${p} placements, then the hand came up empty. Tiles were ${cost} apiece at the end.`,
-];
-
-const WALLED_EPITAPHS: readonly ((placements: number) => string)[] = [
-  (p) => `Walled in after ${p} placements — nowhere left to build, nothing left to pop.`,
-  (p) => `The stone closed in at ${p} placements. Every open hex was spoken for.`,
-  (p) => `${p} placements, and the walls had the last word.`,
-  (p) => `Nowhere left to stand after ${p} placements — the plane walled the run in.`,
-  (p) => `The run built itself into a corner: ${p} placements, and no ground a tile could take.`,
-  (p) => `Stone on every side after ${p} placements. The way out never opened.`,
-];
-
-/** The deterministic pick: the world and the run's length, hashed, never rolled. */
 function epitaphIndex(state: GameState, poolSize: number): number {
   return (Math.imul(state.rootSeed ^ state.placements, 2654435761) >>> 0) % poolSize;
 }
 
-export function epitaphFor(state: GameState): string {
+export function epitaphFor(state: GameState, s: Strings): string {
+  const e = s.view.epitaph;
   if (state.death === 'spent') {
     // Unreachable in the shipped economy (`runLength: 0`), kept for the day
     // a clock returns — one sentence is honest cover for a door nobody
     // walks through.
     const unripe = Object.values(state.cells).filter((c) => c.kind === 'tile').length;
-    return (
-      `The expedition is over — ${state.placements} placements spent. ` +
-      (unripe > 0
-        ? `${unripe} tile${unripe === 1 ? '' : 's'} left standing, never popped.`
-        : `Everything you built was popped.`)
-    );
+    return e.spent(state.placements, unripe);
   }
   if (state.death === 'walled') {
-    return WALLED_EPITAPHS[epitaphIndex(state, WALLED_EPITAPHS.length)]!(state.placements);
+    return e.walled[epitaphIndex(state, e.walled.length)]!(state.placements);
   }
   const cost = costOf(state.placements, state.tuning);
-  return BROKE_EPITAPHS[epitaphIndex(state, BROKE_EPITAPHS.length)]!(state.placements, cost);
+  return e.broke[epitaphIndex(state, e.broke.length)]!(state.placements, cost);
 }
 
 /**
@@ -1378,22 +1340,10 @@ export function rememberedNativeAt(state: GameState, hex: HexKey): Colour | null
   return ground.native;
 }
 
-/**
- * The last-gasp rule, one clause for its three doors (the toast, the manual,
- * the COST tap note) — the same cannot-drift contract RELIC_LESSON (in
- * `game.ts`) and `colourLesson` keep for their own multi-door words.
- */
-export const LAST_GASP_RULE =
-  'You may place while ANY tiles remain — the difference is forgiven at zero, and it cannot chain: only a pop can lift you back above zero.';
-
 /** A rare tile's power, in one line, or null for an ordinary one. */
-export function rarityLine(rarity: Rarity | undefined): string | null {
-  if (rarity === 'magic') {
-    return 'MAGIC — wild: it matches every neighbouring tile, whatever the colour, and they match it back.';
-  }
-  if (rarity === 'unique') {
-    return 'UNIQUE — wild and heavy: every match it is part of counts DOUBLE, for both sides.';
-  }
+export function rarityLine(rarity: Rarity | undefined, s: Strings): string | null {
+  if (rarity === 'magic') return s.view.rarity.magic;
+  if (rarity === 'unique') return s.view.rarity.unique;
   return null;
 }
 
@@ -1403,7 +1353,7 @@ export function rarityLine(rarity: Rarity | undefined): string | null {
  * the numbers; this says where those numbers come FROM, which is the part a
  * player has to learn once and then never again.
  */
-export function pocketNote(state: GameState, at: HexKey): string {
+export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
   const t = state.tuning;
   const value = harvestValue(state, at);
   const home = homeOf(state);
@@ -1413,11 +1363,6 @@ export function pocketNote(state: GameState, at: HexKey): string {
   // Rare tiles inside the pocket, and what each kind does — a ripe rare
   // tile cannot be tapped for its own explanation, because tapping it
   // prices the pocket, so the pocket has to carry the explanation.
-  const rarities = new Set<Rarity>();
-  for (const k of value.keys) {
-    const cell = state.cells[k];
-    if (cell?.kind === 'tile' && cell.rarity !== undefined) rarities.add(cell.rarity);
-  }
   const rares = value.keys.filter((k) => {
     const cell = state.cells[k];
     return cell?.kind === 'tile' && cell.rarity !== undefined;
@@ -1427,30 +1372,24 @@ export function pocketNote(state: GameState, at: HexKey): string {
   // they read "POP for tiles" and "POP for pts" as if the two were a fork
   // to choose between, and the points button has been hidden since the
   // payout became one thing. A pop pays both, so the note prices both.
+  const p = s.view.pocket;
   const pocketBonus = Math.min(value.count, t.harvestSizeCap > 0 ? t.harvestSizeCap : value.count);
   const lines = [
-    `POCKET OF ${value.count} — total worth ${worth}.`,
-    `POP pays +${value.tiles} tiles and ${scoreOf(value.points, t)} pts.`,
-    `The score: worth ${worth} × pocket ${pocketBonus} × distance ${multiplier}${value.questPays ? ` × bounty ${t.questBonus}` : ''}.`,
+    p.head(value.count, worth),
+    p.pays(value.tiles, scoreOf(value.points, t)),
+    p.score(worth, pocketBonus, multiplier, value.questPays ? t.questBonus : null),
   ];
   // The pocket bar (2026-08-18): the priced pocket's count against the size
   // bonus's cap — "POCKET 14/20" — once it is within reach of mattering.
   // Always showing "1/20" is noise nobody reads twice; 2+ is the point a
   // pocket has started becoming a decision rather than a single tile.
-  if (t.harvestSizeCap > 0 && value.count >= 2) {
-    lines.push(`POCKET ${value.count}/${t.harvestSizeCap}`);
-  }
-  if (value.treasure !== null)
-    lines.push(`POP for treasure: a ${value.treasure.toUpperCase()} tile.`);
+  if (t.harvestSizeCap > 0 && value.count >= 2) lines.push(p.bar(value.count, t.harvestSizeCap));
+  if (value.treasure !== null) lines.push(p.treasure(value.treasure));
   if (value.questPays)
     // Every pop scores under the single payout, so the bounty rides on any
     // of them — this rider named a button that no longer exists.
-    lines.push(
-      `${LANDMARK_GLYPH.site} This pocket collects the bounty: ×${t.questBonus} on its score.`,
-    );
-  if (rares > 0) {
-    lines.push(`${rares} rare tile${rares === 1 ? '' : 's'} in here will be spent by popping it.`);
-  }
+    lines.push(p.bounty(t.questBonus));
+  if (rares > 0) lines.push(p.rares(rares));
   return lines.join('\n');
 }
 
@@ -1466,15 +1405,17 @@ export function harvestNote(
   before: GameState,
   choice: HarvestChoice,
   value: ReturnType<typeof harvestValue>,
+  s: Strings,
 ): string {
   const t = before.tuning;
+  const h = s.view.harvest;
   const homeBefore = homeOf(before);
   const worth = value.keys.reduce(
     (n, k) => n + worthOf(before.cells, k, t, homeBefore, before.luck),
     0,
   );
   const multiplier = harvestMultiplier(before, value.keys);
-  const head = `POPPED ${value.count} — total worth ${worth}`;
+  const head = h.head(value.count, worth);
 
   // The bounty answers EVERY pop while it is live (Marc, Day 2: "when we
   // pop, the ×3 applied or not — success or not — with points or +0"):
@@ -1488,8 +1429,8 @@ export function harvestNote(
     before.quest === null || choice === 'treasure' || choice === 'burn'
       ? ''
       : value.questPays
-        ? `\n${LANDMARK_GLYPH.site} Bounty ×${before.quest.bonus} — COLLECTED.`
-        : `\n${LANDMARK_GLYPH.site} Bounty ×${before.quest.bonus} — missed (+0). Pop ${before.quest.need}+ tiles within ${before.quest.radius} of the ${LANDMARK_GLYPH.site}.`;
+        ? `\n${h.bountyCollected(before.quest.bonus)}`
+        : `\n${h.bountyMissed(before.quest.bonus, before.quest.need, before.quest.radius)}`;
 
   if (choice === 'tiles') {
     // The true gain, matching `reduce.ts`'s own arithmetic exactly (flat
@@ -1504,13 +1445,11 @@ export function harvestNote(
     // The odds claim is only true when luck actually moves the draft's
     // rare-tile chances — in the shipped economy it does not, and saying
     // so anyway was the other half of this line lying.
-    const odds =
-      t.luckMagicPerPop + t.luckUniquePerPop > 0 ? ' Your rare-tile odds just rose.' : '';
-    const luck = `\nLuck +${gained}.${odds}`;
+    const oddsRose = t.luckMagicPerPop + t.luckUniquePerPop > 0;
+    const luck = `\n${h.luck(gained, oddsRose)}`;
     // The depth grade, shown only when it actually paid something — the
     // arithmetic on screen has to sum to the number on screen.
     const rings = Math.floor(value.count * t.popTilesPerRing * (multiplier - 1));
-    const depth = rings > 0 ? `, +${rings} for the depth` : '';
     // Under the single payout the pop SCORES too — say the number here
     // rather than leaving it to the stat row (the bounty line below
     // needs a points figure to be about).
@@ -1519,21 +1458,17 @@ export function harvestNote(
     // would have gone on printing the zero the engine stopped banking the
     // day a scoring pop gained its floor of one.
     const scored =
-      t.singlePayout && t.pointsPerPop > 0 ? `\n+${scoreOf(value.points, t)} pts.` : '';
-    return `${head}\n+${value.tiles} tiles: ${t.tilesPerPop} per tile, +1 more per ${t.worthPerExtraTile} worth${depth}.${scored}${luck}${bounty}`;
+      t.singlePayout && t.pointsPerPop > 0 ? `\n${h.scored(scoreOf(value.points, t))}` : '';
+    return `${head}\n${h.tiles(value.tiles, t.tilesPerPop, t.worthPerExtraTile, rings > 0 ? rings : null)}${scored}${luck}${bounty}`;
   }
   if (choice === 'treasure') {
-    return `${head}\nA ${String(value.treasure).toUpperCase()} tile goes to your stash — no tiles, no points.`;
+    return `${head}\n${h.treasure(String(value.treasure))}`;
   }
 
   const counted = t.harvestSizeCap > 0 ? Math.min(value.count, t.harvestSizeCap) : value.count;
-  const capped =
-    t.harvestSizeCap > 0 && value.count > t.harvestSizeCap
-      ? ` (the size bonus stops at ${t.harvestSizeCap})`
-      : '';
+  const capped = t.harvestSizeCap > 0 && value.count > t.harvestSizeCap ? t.harvestSizeCap : null;
   return (
-    `${head}\n+${value.points} pts = worth ${worth} × pocket ${counted}${capped} × distance ${multiplier}` +
-    (value.questPays ? ` × BOUNTY ${t.questBonus}` : '') +
+    `${head}\n${h.points(value.points, worth, counted, capped, multiplier, value.questPays ? t.questBonus : null)}` +
     bounty
   );
 }
@@ -1590,7 +1525,7 @@ export type SetLesson = { readonly text: string; readonly rows: readonly TipRow[
  * and its own price, and the four steers wearing the ground colours the
  * buttons are bordered with.
  */
-export function purseLesson(t: Tuning, theme: Theme): SetLesson {
+export function purseLesson(t: Tuning, theme: Theme, s: Strings): SetLesson {
   // Named as the BUTTONS are named (2026-08-27, Marc: "first luck drawer
   // expand we should explain all actions" — a second time, because the
   // first answer did not land). The card used to say "a fresh hand
@@ -1599,11 +1534,10 @@ export function purseLesson(t: Tuning, theme: Theme): SetLesson {
   // names, with the word STEER nowhere on screen. It explained all the
   // actions in a vocabulary that matched none of them, which is the same
   // as explaining none. Every row below now quotes its own button face.
-  const n = theme.terrainNames;
+  const n = namesOf(theme, s.locale);
+  const p = s.view.purse;
   const rows: TipRow[] = [
-    ...(t.luckRerollCost > 0
-      ? [{ text: `REDRAW · ${t.luckRerollCost} — throw this hand away for a new one.` }]
-      : []),
+    ...(t.luckRerollCost > 0 ? [{ text: p.redraw(t.luckRerollCost) }] : []),
     // One row per BUTTON, in the order the fold draws them (`spendsFor`):
     // redraw, the four grounds, forge, tithe. The steers were a parenthesised
     // list inside somebody else's sentence; they are four buttons on screen,
@@ -1611,23 +1545,11 @@ export function purseLesson(t: Tuning, theme: Theme): SetLesson {
     ...(t.luckSteerCost > 0
       ? COLOURS.map((colour): TipRow => ({
           colour,
-          text:
-            `${COLOUR_MARK[colour]} ${n[colour]} · ${t.luckSteerCost} — a hand leaning ` +
-            `${n[colour]}, and the next ${t.colourBiasDraws} draws with it.`,
+          text: p.steer(COLOUR_MARK[colour], n[colour], t.luckSteerCost, t.colourBiasDraws),
         }))
       : []),
-    ...(t.luckForgeCost > 0
-      ? [{ text: `FORGE · ${t.luckForgeCost} — turn the card you have selected UNIQUE.` }]
-      : []),
-    ...(t.titheRate > 0
-      ? [
-          {
-            text:
-              `SACRIFICE LUCK — the WHOLE purse traded for relics at ` +
-              `${Math.round(t.titheRate * 100)}%, better than dying on it.`,
-          },
-        ]
-      : []),
+    ...(t.luckForgeCost > 0 ? [{ text: p.forge(t.luckForgeCost) }] : []),
+    ...(t.titheRate > 0 ? [{ text: p.sacrifice(Math.round(t.titheRate * 100)) }] : []),
   ];
   // One paragraph, then the list — the use-it-or-lose-it fact is the REASON
   // to read the rows, so it goes above them rather than below (2026-08-27:
@@ -1636,16 +1558,8 @@ export function purseLesson(t: Tuning, theme: Theme): SetLesson {
   // "You CAN lose it all" is Marc's own phrasing (2026-08-20: "explain all
   // and that you can lose it all too") and is pinned by name — the rows
   // print their prices, and this is the one thing a price cannot say.
-  const lost =
-    t.luckToRelics > 0
-      ? `the run's end pays back only ${Math.round(t.luckToRelics * 100)}% of whatever is left, so a full purse you die on is mostly gone`
-      : 'whatever is left when the run ends is lost outright';
-  return {
-    text:
-      `${CONCEPT_MARK.luck}  LUCK IS FOR SPENDING\n` +
-      `Every button under your hand is priced in luck — and you CAN lose it all: ${lost}. Spend it.`,
-    rows,
-  };
+  const lost = t.luckToRelics > 0 ? p.lostPartly(Math.round(t.luckToRelics * 100)) : p.lostAll;
+  return { text: p.lead(lost), rows };
 }
 
 /**
@@ -1654,45 +1568,34 @@ export function purseLesson(t: Tuning, theme: Theme): SetLesson {
  * for by hand: you are reading it deliberately, and a timer would be a
  * race against your own eyes.
  */
-export function statNote(id: string, hud: HudView, t: Tuning): string {
+export function statNote(id: string, hud: HudView, t: Tuning, s: Strings): string {
+  const st = s.view.stat;
   switch (id) {
     case 'tiles':
-      return 'TILES — what keeps you alive. Every placement spends them; pops, caches and territories pay them back. At zero with nothing ripe to pop, the run ends.';
+      return st.tiles;
     case 'points':
-      return 'POINTS — the score. A pocket popped for points pays its worth × its size × its distance from home.';
+      return st.points;
     case 'luck':
-      // Shares its opening clause with the LUCK teach card
-      // (`lessons.ts`'s `LUCK_CORE`, read by the LUCK lesson itself)
-      // and appends the one thing that clause never says: the live rate.
-      return (
-        `${LUCK_CORE} The row under your hand spends it` +
-        (t.luckToRelics > 0
-          ? `; whatever is left when the run ends comes home as relics, at ${Math.round(t.luckToRelics * 100)}%.`
-          : '.')
-      );
+      // Shares its opening clause with the LUCK teach card (`s.luckCore`,
+      // read by the LUCK lesson itself) and appends the one thing that
+      // clause never says: the live rate.
+      return st.luck(t.luckToRelics > 0 ? Math.round(t.luckToRelics * 100) : null);
     case 'map':
-      return `REACH — how far from home you have built. Every ${t.distanceStep} hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops.`;
+      return st.reach(t.distanceStep);
     case 'cost': {
       const curve =
         t.costGrace > 0
-          ? `It stays ${t.baseCost} for the first ${t.costGrace} placements, then rises +1 every ${t.costRisesEvery} placed`
-          : `It rises +1 every ${t.costRisesEvery} placed`;
-      return `COST — the next placement's price: ${hud.cost}. ${curve}, and it never comes back down — the clock that ends every run. ${LAST_GASP_RULE}`;
+          ? st.costCurveGrace(t.baseCost, t.costGrace, t.costRisesEvery)
+          : st.costCurvePlain(t.costRisesEvery);
+      return st.cost(hud.cost, curve);
     }
     case 'left':
-      return 'LEFT — placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.';
+      return st.left;
     default:
       return '';
   }
 }
 
-/**
- * One colour's personality as a whole sentence, in the theme's own words
- * and the live tuning's numbers — the text the colour's first-contact
- * toast, the selected card's second tap and a tapped placed tile all
- * share, so the three doors cannot drift apart. Null while that colour's
- * power dial is zeroed: a personality that is off must not be taught.
- */
 /**
  * "NAME — PERSONALITY", except where a direction has already named the ground
  * after its personality.
@@ -1717,26 +1620,28 @@ export function groundHead(name: string, word: string): string {
   return name.toLowerCase() === word.toLowerCase() ? `${name}.` : `${name} — ${word}.`;
 }
 
-export function colourLesson(colour: Colour, t: Tuning, theme: Theme): string | null {
-  const n = theme.terrainNames[colour];
-  const head = (word: string): string => groundHead(n, word);
+/**
+ * One colour's personality as a whole sentence, in the theme's own words
+ * and the live tuning's numbers — the text the colour's first-contact
+ * toast, the selected card's second tap and a tapped placed tile all
+ * share, so the three doors cannot drift apart. Null while that colour's
+ * power dial is zeroed: a personality that is off must not be taught.
+ */
+export function colourLesson(colour: Colour, t: Tuning, theme: Theme, s: Strings): string | null {
+  const n = namesOf(theme, s.locale)[colour];
+  const head = groundHead(n, s.view.colourWord[colour]);
+  const c = s.view.colour;
   switch (colour) {
     case 'green':
-      return t.greenCrowdBonus > 0
-        ? `${head('CROWDS')} Wants one big mob of its own colour: +${t.greenCrowdBonus} worth per ${n} neighbour past the first.`
-        : null;
+      return t.greenCrowdBonus > 0 ? c.green(head, n, t.greenCrowdBonus) : null;
     case 'yellow':
       return t.yellowCompanyBonus > 0
-        ? `${head('COMPANY')} Scores in messy mixed ground: +${t.yellowCompanyBonus} worth per ${t.yellowCompanyAll ? 'differently-coloured neighbour' : 'different colour beside it'}.`
+        ? c.yellow(head, t.yellowCompanyBonus, t.yellowCompanyAll)
         : null;
     case 'red':
-      return t.redAshMatches
-        ? `${head('ASH')} Stone${t.redAshWalls ? ' and walls' : ''} count as matches for it: it feeds on the spent ground everyone else abandons.`
-        : null;
+      return t.redAshMatches ? c.red(head, t.redAshWalls) : null;
     case 'blue':
-      return t.blueTideEvery > 0
-        ? `${head('TIDE')} Worth little at home, a lot on the frontier: +1 worth per ${t.blueTideEvery} hexes from home.`
-        : null;
+      return t.blueTideEvery > 0 ? c.blue(head, t.blueTideEvery) : null;
   }
 }
 
@@ -1745,22 +1650,17 @@ export function colourLesson(colour: Colour, t: Tuning, theme: Theme): string | 
  * tuning — same no-staleness contract as the manual. Empty string when the
  * personalities are off (the bounded game), so the tip stays honest there.
  */
-export function powerOf(colour: Colour, t: Tuning): string {
+export function powerOf(colour: Colour, t: Tuning, s: Strings): string {
+  const p = s.view.power;
   switch (colour) {
     case 'green':
-      return t.greenCrowdBonus > 0
-        ? ` · crowds: +${t.greenCrowdBonus} worth per green neighbour past the first`
-        : '';
+      return t.greenCrowdBonus > 0 ? p.green(t.greenCrowdBonus) : '';
     case 'yellow':
-      return t.yellowCompanyBonus > 0
-        ? ` · company: +${t.yellowCompanyBonus} worth per ${t.yellowCompanyAll ? 'differently-coloured neighbour' : 'different colour beside it'}`
-        : '';
+      return t.yellowCompanyBonus > 0 ? p.yellow(t.yellowCompanyBonus, t.yellowCompanyAll) : '';
     case 'red':
-      return t.redAshMatches
-        ? ` · ash: stone${t.redAshWalls ? ' and walls' : ''} beside red count as matches`
-        : '';
+      return t.redAshMatches ? p.red(t.redAshWalls) : '';
     case 'blue':
-      return t.blueTideEvery > 0 ? ` · tide: +1 worth per ${t.blueTideEvery} hexes from home` : '';
+      return t.blueTideEvery > 0 ? p.blue(t.blueTideEvery) : '';
   }
 }
 
@@ -1769,13 +1669,15 @@ export function powerOf(colour: Colour, t: Tuning): string {
  * `#describe` used to read off `Game`'s own instance fields. Not
  * `RenderContext`: that bundle is board-render data derivable from `state`
  * alone, and every field here is something only the SESSION knows (the
- * theme in play, whether this run is a detour, how many shrines it has
- * claimed this run, and the two shrine-ledger/crossing hooks the shell
- * owns) — `state` rides along inside it so the whole call is `(ctx, hex)`.
+ * theme in play, the language, whether this run is a detour, how many
+ * shrines it has claimed this run, and the two shrine-ledger/crossing hooks
+ * the shell owns) — `state` rides along inside it so the whole call is
+ * `(ctx, hex)`.
  */
 export type DescribeContext = {
   readonly state: GameState;
   readonly theme: Theme;
+  readonly strings: Strings;
   readonly detour: boolean;
   /** Shrines claimed THIS run, so the tap names the right unlock. */
   readonly shrinesClaimed: number;
@@ -1795,51 +1697,42 @@ export type DescribeContext = {
  * remembers.
  */
 export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
-  const { state } = ctx;
+  const { state, strings: s } = ctx;
   const t = state.tuning;
-  const name = (c: Colour): string => ctx.theme.terrainNames[c];
+  const names = namesOf(ctx.theme, s.locale);
+  const name = (c: Colour): string => names[c];
   const cell = state.cells[hex];
+  const x = s.view.hex;
 
   const destination = (reward: LandmarkReward, colour: Colour | null, claimed: boolean): string => {
     if (reward === 'cache') {
-      return claimed
-        ? `${LANDMARK_GLYPH.cache} CACHE — already claimed. It gave its tiles.`
-        : `${LANDMARK_GLYPH.cache} CACHE — build a tile touching it to claim ${cachePaysAt(hex, t, homeOf(state))} tiles on the spot.`;
+      return claimed ? x.cacheClaimed : x.cache(cachePaysAt(hex, t, homeOf(state)));
     }
     if (reward === 'site') {
-      return claimed
-        ? `${LANDMARK_GLYPH.site} SITE — already claimed.`
-        : `${LANDMARK_GLYPH.site} SITE — claim it for ${t.sitePays} pts × its distance, and it opens a bounty worth ×${t.questBonus}.`;
+      return claimed ? x.siteClaimed : x.site(t.sitePays, t.questBonus);
     }
     if (reward === 'shrine') {
       // A detour has no ledger to narrate (fresh-eyes finding 5): say what
       // shrines ARE, not what the home world would have unlocked.
-      if (ctx.detour) {
-        return claimed
-          ? `${LANDMARK_GLYPH.shrine} SHRINE — woken. On your own world, this switches a system on for good.`
-          : `${LANDMARK_GLYPH.shrine} SHRINE — touch it with a tile. On your own world, waking one switches a system on for good.`;
-      }
+      if (ctx.detour) return claimed ? x.shrineDetourClaimed : x.shrineDetour;
       const next = ctx.unlockLabel?.(ctx.shrinesClaimed) ?? null;
-      if (claimed)
-        return `${LANDMARK_GLYPH.shrine} SHRINE — woken. It switched a system on for this world.`;
+      if (claimed) return x.shrineClaimed;
       // Fully awake with the crossing available: the shrine's remaining
       // gift is the way onward, and its tap explanation says so.
       if (next === null && ctx.crossingDowry !== undefined) {
-        return `${LANDMARK_GLYPH.shrine} SHRINE — this world is fully awake, so reaching it offers the crossing: a NEW WORLD, with ${ctx.crossingDowry()} relics carried for what you leave.`;
+        return x.shrineCrossing(ctx.crossingDowry());
       }
-      return `${LANDMARK_GLYPH.shrine} SHRINE — claim it to unlock ${next ?? 'a system'} for this world, permanently.`;
+      return x.shrine(next);
     }
     if (reward === 'find') {
       // Mysterious but honest: what a find gives is the one thing the
       // board never says out loud.
-      return claimed
-        ? `${LANDMARK_GLYPH.find} A hidden find — spent. It gave what it had.`
-        : `${LANDMARK_GLYPH.find} Something is here. Touch it with a tile.`;
+      return claimed ? x.findClaimed : x.find;
     }
-    const owns = colour === null ? 'a colour' : name(colour);
+    const owns = colour === null ? x.someColour : name(colour);
     return claimed
-      ? `${LANDMARK_GLYPH.territory} TERRITORY — yours. The ground within ${t.territoryRadius} hexes is native to ${owns}.`
-      : `${LANDMARK_GLYPH.territory} TERRITORY — claim it and the ground within ${t.territoryRadius} hexes becomes native to ${owns}, for good.`;
+      ? x.territoryClaimed(t.territoryRadius, owns)
+      : x.territory(t.territoryRadius, owns);
   };
 
   if (cell === undefined) {
@@ -1852,9 +1745,7 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
     // walking there PAYS — the world's memory of what used to stand
     // here is the diary's business, not the map's.
     const reborn = state.rearmed[hex];
-    if (reborn !== undefined) {
-      return `${destination(reborn, null, false)} Build your chain out to it.`;
-    }
+    if (reborn !== undefined) return x.chainOut(destination(reborn, null, false));
     const dest = destinationAt(state.rootSeed, q, r, t);
     if (dest !== null) {
       // Named only where the world has actually SHOWN it (Marc,
@@ -1867,7 +1758,7 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
         const claimed = state.claimed.includes(hex);
         return claimed
           ? destination(dest.reward, dest.colour, true)
-          : `${destination(dest.reward, dest.colour, false)} Build your chain out to it.`;
+          : x.chainOut(destination(dest.reward, dest.colour, false));
       }
     }
     // Only a hex the shimmer is actually drawing gets this answer — with
@@ -1885,11 +1776,9 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
       const near = Object.keys(state.cells).some(
         (k) => distance(parse(k), { q, r }) <= t.findSense,
       );
-      if (near) return 'Something shimmers here. Grow your ground to it.';
+      if (near) return x.shimmers;
     }
-    return remembered
-      ? 'Remembered from an earlier run — this run has not grown here yet.'
-      : 'Dark ground — nothing any run has seen yet. Grow toward it.';
+    return remembered ? x.remembered : x.dark;
   }
 
   switch (cell.kind) {
@@ -1898,32 +1787,25 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
     case 'wall': {
       // WALLBREAKER rewrites this sentence while it is worn — a rule the
       // perk breaks must not go on being stated as a rule.
-      const standing =
-        t.wallBuildCostMult > 0
-          ? `${CONCEPT_MARK.wall} Wall — you can build on it, at ${t.wallBuildCostMult}× the placement cost.`
-          : `${CONCEPT_MARK.wall} Wall — cannot be built on.`;
-      return t.redAshWalls
-        ? `${standing} It surrounds (so it helps things ripen) but never matches, except for ${name('red')}, which counts it as one.`
-        : `${standing} It surrounds (so it helps things ripen) but never matches.`;
+      const standing = t.wallBuildCostMult > 0 ? x.wallBuildable(t.wallBuildCostMult) : x.wall;
+      return t.redAshWalls ? x.wallAsh(standing, name('red')) : x.wallPlain(standing);
     }
     case 'stone':
-      return `${CONCEPT_MARK.stone} Spent ground — a popped tile. It surrounds but never matches, except for ${name('red')}, which feeds on it.`;
+      return x.stone(name('red'));
     case 'tile': {
       const worth = worthOf(state.cells, hex, t, homeOf(state), state.luck);
-      const power = rarityLine(cell.rarity);
+      const power = rarityLine(cell.rarity, s);
       // The colour's personality rides along (2026-08-19, "the colors are
       // not explained") — a tapped tile is the cheapest place to learn
       // what its colour wants, right where it is wanting it.
-      const personality = colourLesson(cell.colour, t, ctx.theme);
+      const personality = colourLesson(cell.colour, t, ctx.theme, s);
       return (
-        `${name(cell.colour)} tile, worth ${worth}. It ripens when all six sides are covered.` +
+        x.tile(name(cell.colour), worth) +
         (personality === null ? '' : `\n${personality}`) +
         (power === null ? '' : `\n${power}`)
       );
     }
     case 'empty':
-      return cell.native === undefined
-        ? 'Open ground — you can build here once something of yours touches it.'
-        : `Ground native to ${name(cell.native)} — a ${name(cell.native)} tile here is worth one more.`;
+      return cell.native === undefined ? x.open : x.native(name(cell.native));
   }
 }

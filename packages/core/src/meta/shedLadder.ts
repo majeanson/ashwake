@@ -1,3 +1,4 @@
+import type { Strings } from '@text/Strings';
 /**
  * The shed ladder: what a storage-full write triages away, in order.
  *
@@ -40,29 +41,19 @@ export type ShedRungId =
 
 export type ShedRung = {
   readonly id: ShedRungId;
-  /** The one sentence this rung reports if it is the one that freed enough room. */
-  readonly note: string;
 };
+
+/** The one sentence a rung reports if it is the one that freed enough room —
+ *  from `text/`, per language. */
+export const shedNote = (id: ShedRungId, s: Strings): string => s.shed[id];
 
 /**
  * Cheapest and least missed first; the active world is never a rung at all,
  * because it is what the whole ladder exists to protect.
  */
 export const SHED_LADDER: readonly ShedRung[] = [
-  {
-    id: 'lastError',
-    note: 'Storage was full — a diagnostic record was cleared so your run could be saved.',
-  },
-  {
-    id: 'otherReceipts',
-    note: 'Storage was full — some notes from your other worlds were cleared so your run could be saved.',
-  },
-  {
-    id: 'timeline',
-    note: 'Storage was full — your diary was cleared so your run could be saved. Your worlds, relics and perks are untouched.',
-  },
-  {
-    id: 'otherWorlds',
-    note: 'Storage was full — your OTHER worlds were forgotten so this run could be saved. The world you are in is untouched.',
-  },
+  { id: 'lastError' },
+  { id: 'otherReceipts' },
+  { id: 'timeline' },
+  { id: 'otherWorlds' },
 ];

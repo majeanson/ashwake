@@ -16,8 +16,12 @@ import { surface, type Theme } from '../tokens';
  */
 export const PLACEHOLDER: Theme = {
   id: 'placeholder',
-  name: 'Placeholder',
-  note: 'Not a direction. Four hues you can tell apart, and nothing else claimed. The default until Gate E opens.',
+  name: { en: 'Placeholder', 'fr-CA': 'Provisoire' },
+  note: {
+    en: 'Not a direction. Four hues you can tell apart, and nothing else claimed. The default until Gate E opens.',
+    'fr-CA':
+      'Pas une direction. Quatre teintes qu’on distingue, et rien d’autre de promis. Le défaut jusqu’à l’ouverture de la porte E.',
+  },
   source: 'src/render/PixiRenderer.ts, sessions 0–1',
 
   orientation: 'pointy',
@@ -123,10 +127,8 @@ export const PLACEHOLDER: Theme = {
     blue: surface(0x304a70),
   },
   terrainNames: {
-    green: 'GREEN',
-    yellow: 'YELLOW',
-    red: 'RED',
-    blue: 'BLUE',
+    en: { green: 'GREEN', yellow: 'YELLOW', red: 'RED', blue: 'BLUE' },
+    'fr-CA': { green: 'VERT', yellow: 'JAUNE', red: 'ROUGE', blue: 'BLEU' },
   },
 
   wall: surface(0x2b303b),

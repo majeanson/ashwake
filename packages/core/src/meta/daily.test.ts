@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { STRINGS_EN as EN } from '@text/en';
+import { ordinal } from '@text/format';
 import {
   DAILY_EPOCH,
   DAILY_FIRST,
@@ -15,7 +17,6 @@ import {
   encodeDailyBook,
   isDailyDate,
   isPlayableDaily,
-  ordinal,
   previousDate,
   recordDaily,
 } from './daily';
@@ -135,26 +136,26 @@ describe('the share line', () => {
   });
 
   it('confesses the retry in words', () => {
-    expect(ordinal(1)).toBe('1st');
-    expect(ordinal(2)).toBe('2nd');
-    expect(ordinal(3)).toBe('3rd');
-    expect(ordinal(4)).toBe('4th');
-    expect(ordinal(11)).toBe('11th');
-    expect(ordinal(12)).toBe('12th');
-    expect(ordinal(13)).toBe('13th');
-    expect(ordinal(22)).toBe('22nd');
+    expect(ordinal(1, 'en')).toBe('1st');
+    expect(ordinal(2, 'en')).toBe('2nd');
+    expect(ordinal(3, 'en')).toBe('3rd');
+    expect(ordinal(4, 'en')).toBe('4th');
+    expect(ordinal(11, 'en')).toBe('11th');
+    expect(ordinal(12, 'en')).toBe('12th');
+    expect(ordinal(13, 'en')).toBe('13th');
+    expect(ordinal(22, 'en')).toBe('22nd');
   });
 });
 
 describe('the badge and the playability rule (the simplify pass, 2026-08-19)', () => {
   it('prints one badge for every door, pluralised honestly', () => {
-    expect(dailyBadge({}, '2026-08-26')).toBe('DAILY #2');
+    expect(dailyBadge({}, '2026-08-26', EN)).toBe('DAILY #2');
     const once = recordDaily({}, '2026-08-26', 900).book;
-    expect(dailyBadge(once, '2026-08-26')).toBe('DAILY #2 · best 900 · 1 try');
+    expect(dailyBadge(once, '2026-08-26', EN)).toBe('DAILY #2 · best 900 · 1 try');
     const twice = recordDaily(once, '2026-08-26', 400).book;
-    expect(dailyBadge(twice, '2026-08-26')).toBe('DAILY #2 · best 900 · 2 tries');
+    expect(dailyBadge(twice, '2026-08-26', EN)).toBe('DAILY #2 · best 900 · 2 tries');
     // A rehearsal-week badge names the date, not a #0 (Marc's ruling).
-    expect(dailyBadge({}, '2026-08-20')).toBe('DAILY 2026-08-20');
+    expect(dailyBadge({}, '2026-08-20', EN)).toBe('DAILY 2026-08-20');
   });
 
   it('refuses a date before the daily EXISTED, plays the rehearsal week', () => {

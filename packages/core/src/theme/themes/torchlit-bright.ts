@@ -34,8 +34,12 @@ import { surface, type Theme } from '../tokens';
  */
 export const TORCHLIT_BRIGHT: Theme = {
   id: 'torchlit-bright',
-  name: 'Torchlit — Lamps Lit',
-  note: 'Torchlit with the lamps lit. Same grim room, same gold and blood, but the light reaches the corners: a wide value ladder, warm-white ink, and a falloff that dims the far map without swallowing it. For sunlight, for tired eyes, and for anyone whose phone asked for more contrast.',
+  name: { en: 'Torchlit — Lamps Lit', 'fr-CA': 'Torche — lampes allumées' },
+  note: {
+    en: 'Torchlit with the lamps lit. Same grim room, same gold and blood, but the light reaches the corners: a wide value ladder, warm-white ink, and a falloff that dims the far map without swallowing it. For sunlight, for tired eyes, and for anyone whose phone asked for more contrast.',
+    'fr-CA':
+      'La même pièce grave, le même or et sang, mais la lumière atteint les coins : une échelle de valeurs large, une encre blanc chaud, et une chute qui tamise le fond sans l’avaler. Pour le soleil, pour les yeux fatigués, et pour un téléphone qui a demandé plus de contraste.',
+  },
   source: 'Art Directions.dc.html §2c (torch2), widened for contrast 2026-08-25',
 
   orientation: 'flat',
@@ -151,10 +155,9 @@ export const TORCHLIT_BRIGHT: Theme = {
     }),
   },
   terrainNames: {
-    green: 'MOSS',
-    yellow: 'EMBER',
-    red: 'ASH',
-    blue: 'TIDE',
+    en: { green: 'MOSS', yellow: 'EMBER', red: 'ASH', blue: 'TIDE' },
+    // Marc's own words (2026-08-28): each still names its power.
+    'fr-CA': { green: 'LICHEN', yellow: 'TISONS', red: 'CENDRES', blue: 'RIVIÈRES' },
   },
 
   // Lifted with everything else, and by more than everything else: against a

@@ -1,3 +1,4 @@
+import type { Locale } from '@content/locale';
 import type { Colour } from '@content/tuning';
 
 /**
@@ -570,9 +571,10 @@ export type Voice = {
 
 export type Theme = {
   readonly id: ThemeId;
-  readonly name: string;
+  /** What the direction is called, in each language the game speaks. */
+  readonly name: Readonly<Record<Locale, string>>;
   /** The mood, in the direction's own words. Shown in the gallery. */
-  readonly note: string;
+  readonly note: Readonly<Record<Locale, string>>;
   /** Where this came from, so a value can be argued with rather than guessed at. */
   readonly source: string;
 
@@ -586,8 +588,13 @@ export type Theme = {
 
   /** The four playable colours. Every key is required — a missing one is a bug. */
   readonly terrain: Readonly<Record<Colour, Surface>>;
-  /** What this direction calls them. `CRYPT`, or `GREEN` if it has no fiction. */
-  readonly terrainNames: Readonly<Record<Colour, string>>;
+  /**
+   * What this direction calls them, per language. `CRYPT`, or `GREEN` if it has
+   * no fiction — and a direction names its ground by its own fiction in EVERY
+   * language, so the French of torchlit is LICHEN, not a translation of MOSS
+   * (Marc, 2026-08-28). Read through `namesOf`.
+   */
+  readonly terrainNames: Readonly<Record<Locale, Readonly<Record<Colour, string>>>>;
 
   /** Never buildable, never matches. The design documents call it blocked ground. */
   readonly wall: Surface;
@@ -1175,3 +1182,7 @@ export function brightness(light: Light, dist: number): number {
   const t = Math.min(1, (dist - light.radius) / light.fade);
   return light.floor + (1 - light.floor) * (1 - t) ** 2;
 }
+
+/** The four ground names this direction uses in one language. */
+export const namesOf = (theme: Theme, locale: Locale): Readonly<Record<Colour, string>> =>
+  theme.terrainNames[locale];

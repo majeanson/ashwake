@@ -21,7 +21,9 @@ import {
   type PerkId,
   type Progress,
   type UpgradeId,
+  perkText,
 } from './progress';
+import { STRINGS_EN as EN } from '@text/en';
 
 /**
  * The roguelite layer (2026-08-15, reshaped 2026-08-18). Relics buy boring
@@ -111,20 +113,20 @@ describe('perks: found, and one worn', () => {
   it('gives every perk all three lines of its card', () => {
     for (const perk of PERKS) {
       for (const [field, line] of [
-        ['gain', perk.gain],
-        ['lose', perk.lose],
-        ['play', perk.play],
+        ['gain', perkText(perk.id, EN).gain],
+        ['lose', perkText(perk.id, EN).lose],
+        ['play', perkText(perk.id, EN).play],
       ] as const) {
         // A whole sentence, not a fragment: these are read as prose beside a
         // reserved mark column, and a dangling clause reads as a bug there.
-        expect(`${perk.name}.${field}: ${line}`).toMatch(/: \S.*[.]$/);
+        expect(`${perkText(perk.id, EN).name}.${field}: ${line}`).toMatch(/: \S.*[.]$/);
       }
       // The cost line is never quietly dropped for the perks that have no
       // cost — "Nothing" is the answer, said out loud.
-      expect(perk.lose.length).toBeGreaterThan(0);
+      expect(perkText(perk.id, EN).lose.length).toBeGreaterThan(0);
       // `play` is advice, so it must not simply restate the dial `gain`
       // already gave.
-      expect(perk.play).not.toBe(perk.gain);
+      expect(perkText(perk.id, EN).play).not.toBe(perkText(perk.id, EN).gain);
     }
   });
 
@@ -135,7 +137,7 @@ describe('perks: found, and one worn', () => {
    * in, one layer down.
    */
   it('quotes the dials rather than hardcoding them', () => {
-    const perk = (id: PerkId): (typeof PERKS)[number] => PERKS.find((p) => p.id === id)!;
+    const perk = (id: PerkId) => perkText(id, EN);
     expect(perk('stonewalker').gain).toContain(String(PERK_DIALS.stoneDiscount));
     expect(perk('wallbreaker').lose).toContain(String(PERK_DIALS.wallBuildCostMult));
     expect(perk('openhand').gain).toContain(String(PERK_DIALS.openHandDraft));
@@ -154,14 +156,14 @@ describe('perks: found, and one worn', () => {
    */
   it('says ROOTBOUND ends at NOTHING off native ground, and names the end it starts at', () => {
     const rootbound = PERKS.find((p) => p.id === 'rootbound')!;
-    expect(rootbound.lose).toMatch(/NOTHING/);
+    expect(perkText(rootbound.id, EN).lose).toMatch(/NOTHING/);
     // The soft end, quoted from the dial rather than written out — the same
     // rule the test above holds every other perk to.
-    expect(rootbound.lose).toContain(String(PERK_DIALS.rootboundStray));
+    expect(perkText(rootbound.id, EN).lose).toContain(String(PERK_DIALS.rootboundStray));
     // And what MOVES between the two ends, because a player who does not know
     // it moves cannot plan around it.
-    expect(rootbound.lose).toMatch(/luck/i);
-    expect(rootbound.play).toMatch(/luck/i);
+    expect(perkText(rootbound.id, EN).lose).toMatch(/luck/i);
+    expect(perkText(rootbound.id, EN).play).toMatch(/luck/i);
   });
 
   /**
@@ -170,9 +172,9 @@ describe('perks: found, and one worn', () => {
    */
   it('quotes both ends of ROOTBOUND’s grip', () => {
     const rootbound = PERKS.find((p) => p.id === 'rootbound')!;
-    expect(rootbound.gain).toContain(String(PERK_DIALS.rootboundNative));
-    expect(rootbound.gain).toContain(String(PERK_DIALS.rootboundNativeMax));
-    expect(rootbound.note).toContain(String(PERK_DIALS.rootboundNativeMax));
+    expect(perkText(rootbound.id, EN).gain).toContain(String(PERK_DIALS.rootboundNative));
+    expect(perkText(rootbound.id, EN).gain).toContain(String(PERK_DIALS.rootboundNativeMax));
+    expect(perkText(rootbound.id, EN).note).toContain(String(PERK_DIALS.rootboundNativeMax));
   });
 });
 

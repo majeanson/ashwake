@@ -1,3 +1,4 @@
+import type { Strings } from '@text/Strings';
 import { distance, parse, type HexKey } from '@engine/hex';
 import { rngNext, stream } from '@engine/rng';
 import { homeOf } from '@engine/rules';
@@ -128,11 +129,13 @@ export const newWorld = (
  * REAL system one slot earlier than before — a one-time generosity, not a
  * bug, and nobody's progress moves backward.
  */
-export const UNLOCKS: readonly { readonly id: string; readonly label: string }[] = [
-  { id: 'draft', label: 'A fourth draft card' },
-  { id: 'hold', label: 'A second stash slot' },
-  { id: 'luck', label: 'Twice the rare-tile odds' },
-  { id: 'reach', label: 'Destinations glow from twice as far' },
+export type UnlockId = 'draft' | 'hold' | 'luck' | 'reach' | 'camp';
+
+export const UNLOCKS: readonly { readonly id: UnlockId }[] = [
+  { id: 'draft' },
+  { id: 'hold' },
+  { id: 'luck' },
+  { id: 'reach' },
   // Camps (waypoints, 2026-08-19 — `ideas/waypoints.md`, anchor decided by
   // Marc: every camp restarts the climb). APPENDED, per this ledger's own
   // rule above: the four woken rungs stay woken and nobody moves backward —
@@ -141,8 +144,12 @@ export const UNLOCKS: readonly { readonly id: string; readonly label: string }[]
   // dial: it gates the BEGIN AT CAMP button in the door's WORLDS panel
   // (main.ts), and the
   // engine's own `wakeAt` does the rest.
-  { id: 'camp', label: 'Camps — later runs may begin at your farthest territory' },
+  { id: 'camp' },
 ];
+
+/** What a shrine unlocks, in words — the label the shrine's tap and the WORLDS
+ *  panel print, from `text/`. */
+export const unlockLabel = (id: UnlockId, s: Strings): string => s.unlock[id];
 
 /** The unlocks a world has earned, in ledger order. */
 export const unlockedBy = (world: WorldMemory): readonly string[] =>

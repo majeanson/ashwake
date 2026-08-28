@@ -33,8 +33,12 @@ const WEBFONT = null;
  */
 export const TORCHLIT: Theme = {
   id: 'torchlit',
-  name: 'Torchlit Map',
-  note: 'Torchlight in a dark room. The light source is doing the fog-of-war job: a warm pool over the middle of the map, deep falloff, everything past it dark and blurred. Grim, heavy, gold-and-blood chrome; the map is endless because the darkness is.',
+  name: { en: 'Torchlit Map', 'fr-CA': 'Carte à la torche' },
+  note: {
+    en: 'Torchlight in a dark room. The light source is doing the fog-of-war job: a warm pool over the middle of the map, deep falloff, everything past it dark and blurred. Grim, heavy, gold-and-blood chrome; the map is endless because the darkness is.',
+    'fr-CA':
+      'Une torche dans une pièce noire. C’est la lumière qui fait le brouillard : une flaque chaude au milieu de la carte, une chute rapide, tout le reste sombre et flou. Grave, lourd, du chrome or et sang; la carte est sans fin parce que la noirceur l’est.',
+  },
   source: 'Art Directions.dc.html §2c (torch2)',
 
   orientation: 'flat',
@@ -255,10 +259,9 @@ export const TORCHLIT: Theme = {
    * Same register, four distinct silhouettes, and a name that teaches.
    */
   terrainNames: {
-    green: 'MOSS',
-    yellow: 'EMBER',
-    red: 'ASH',
-    blue: 'TIDE',
+    en: { green: 'MOSS', yellow: 'EMBER', red: 'ASH', blue: 'TIDE' },
+    // Marc's own words (2026-08-28): each still names its power.
+    'fr-CA': { green: 'LICHEN', yellow: 'TISONS', red: 'CENDRES', blue: 'RIVIÈRES' },
   },
 
   // Lifted 2026-08-15: the dark band was 0.007 above the background in L* —

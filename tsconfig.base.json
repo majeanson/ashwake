@@ -30,6 +30,7 @@
       "@render/*": ["./packages/core/src/render/*"],
       "@theme/*": ["./packages/core/src/theme/*"],
       "@view/*": ["./packages/core/src/view/*"],
+      "@text/*": ["./packages/core/src/text/*"],
       "@sim/*": ["./packages/core/src/sim/*"]
     }
   }

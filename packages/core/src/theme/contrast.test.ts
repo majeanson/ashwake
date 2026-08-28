@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '@content/tuning';
 import { THEMES } from './index';
-import { contrastRatio, edgeCasing, mix, type Rgb, type Surface, type Theme } from './tokens';
+import {
+  contrastRatio,
+  edgeCasing,
+  mix,
+  namesOf,
+  type Rgb,
+  type Surface,
+  type Theme,
+} from './tokens';
 
 /**
  * The contrast budget.
@@ -59,7 +67,7 @@ function grounds(theme: Theme): readonly (readonly [string, Rgb])[] {
   const add = (name: string, s: Surface): void => {
     for (const paint of ends(s)) out.push([name, paint]);
   };
-  for (const colour of COLOURS) add(theme.terrainNames[colour], theme.terrain[colour]);
+  for (const colour of COLOURS) add(namesOf(theme, 'en')[colour], theme.terrain[colour]);
   add('stone', theme.stone);
   add('wall', theme.wall);
   add('empty', theme.empty);
@@ -82,7 +90,7 @@ function remembered(theme: Theme, ground: Rgb): Rgb {
   return mix(bg, mix(ground, bg, theme.fog.veil), theme.fog.alpha);
 }
 
-describe.each(THEMES.map((t) => [t.name, t] as const))('%s', (_name, theme: Theme) => {
+describe.each(THEMES.map((t) => [t.name.en, t] as const))('%s', (_name, theme: Theme) => {
   /**
    * The chrome, against the two things it is ever set on.
    *

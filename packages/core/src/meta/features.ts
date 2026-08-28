@@ -1,3 +1,4 @@
+import type { Strings } from '@text/Strings';
 /**
  * The progressive-unlock spine.
  *
@@ -16,19 +17,6 @@
 
 export type FeatureDef = {
   readonly id: string;
-  readonly label: string;
-  /**
-   * What turning it on changes, in one line a PLAYER can read (2026-08-27).
-   *
-   * It used to be the whole decision record — why the flag exists, what moved
-   * its default and on what date — because SETTINGS was a developer fold and
-   * the registry was the only place that record lived. SETTINGS is a public
-   * screen now, and a player reading "Marc chose a silent 1.0 (2026-08-15)"
-   * under a SOUND switch is reading somebody else's notebook. The record did
-   * not go anywhere: it is in the comments above each entry, where the people
-   * it is for already read.
-   */
-  readonly note: string;
   readonly defaultOn: boolean;
   /**
    * Whether anything actually reads this flag yet. The settings panel shows
@@ -57,8 +45,6 @@ export const FEATURES = [
   // — so it keeps its `?ff=` door and gives up its row (2026-08-27).
   {
     id: 'debug.overlay',
-    label: 'Debug overlay',
-    note: 'Prints the run’s raw numbers under the board, for reporting a bug.',
     defaultOn: false,
     wired: true,
     player: false,
@@ -83,8 +69,6 @@ export const FEATURES = [
   // is the same wire (2026-08-20).
   {
     id: 'ui.sound',
-    label: 'Sound',
-    note: 'A few quiet notes as you pop and claim. The ♪ button on the board is this switch.',
     defaultOn: false,
     wired: true,
     player: true,
@@ -95,6 +79,18 @@ export const FEATURES = [
 export const PLAYER_FEATURES = FEATURES.filter((f) => f.player);
 
 export type FeatureId = (typeof FEATURES)[number]['id'];
+
+/**
+ * A flag's name and what turning it on changes, in one line a PLAYER can read
+ * (2026-08-27) — from `text/`, per language. It used to be the whole decision
+ * record — why the flag exists, what moved its default and on what date —
+ * because SETTINGS was a developer fold and the registry was the only place
+ * that record lived. SETTINGS is a public screen now, and a player reading
+ * "Marc chose a silent 1.0 (2026-08-15)" under a SOUND switch is reading
+ * somebody else's notebook. The record is in the comments above each entry.
+ */
+export const featureText = (id: FeatureId, s: Strings): Strings['feature'][FeatureId] =>
+  s.feature[id];
 export type FeatureSet = Readonly<Record<FeatureId, boolean>>;
 
 const IDS = FEATURES.map((f) => f.id) as readonly FeatureId[];

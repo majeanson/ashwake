@@ -22,14 +22,9 @@ import { MARK_SVG } from './mark';
 
 export const NAME = 'Ashwake';
 
-/**
- * One line, for the page description, the share sheet and the readme. "Pop"
- * rather than "cash" (2026-08-18, the Stage 2 word pass: one voice for the
- * one action — cash/take/burn/harvest all meant this and none of them agreed
- * with what the buttons say) — the tagline is player-facing copy too, and it
- * was the one place still using the old word.
- */
-export const TAGLINE = 'An expedition into a dark plane. Place, ripen, pop, and push on.';
+// The tagline — one line for the page description, the share sheet and the
+// readme — is player-facing copy and lives in `text/` (`s.tagline`) since
+// 2026-08-28, one per language.
 
 /**
  * Where the game lives, for the surfaces that leave the phone — the share

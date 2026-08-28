@@ -15,6 +15,7 @@ export default defineConfig({
       '@render': core('render'),
       '@theme': core('theme'),
       '@view': core('view'),
+      '@text': core('text'),
       '@sim': core('sim'),
     },
   },

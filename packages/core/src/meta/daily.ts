@@ -1,3 +1,4 @@
+import type { Strings } from '@text/Strings';
 /**
  * The daily seed (`ideas/daily.md`: decided 2026-08-18 on Marc's option
  * sets, built 2026-08-19 when he called it): one shared fresh world per
@@ -244,14 +245,9 @@ export function arcSparkline(
  * door's button and the end screen's badge used to build it separately, with
  * the pluralisation copied. The streak rider is the front door's own.
  */
-export function dailyBadge(book: DailyBook, date: string): string {
+export function dailyBadge(book: DailyBook, date: string, s: Strings): string {
   const record = book[date];
-  return (
-    `DAILY ${dailyName(date)}` +
-    (record === undefined
-      ? ''
-      : ` · best ${record.best} · ${record.tries} ${record.tries === 1 ? 'try' : 'tries'}`)
-  );
+  return s.daily.badge(dailyName(date), record === undefined ? null : record);
 }
 
 /**
@@ -264,10 +260,6 @@ export function dailyBadge(book: DailyBook, date: string): string {
 export const isPlayableDaily = (date: string): boolean =>
   isDailyDate(date) && daysFromCivil(date) >= daysFromCivil(DAILY_FIRST);
 
-/** "1st", "2nd", "3rd", "4th"… for the share text's confessed retries. */
-export function ordinal(n: number): string {
-  const tens = n % 100;
-  if (tens >= 11 && tens <= 13) return `${n}th`;
-  const ones = n % 10;
-  return `${n}${ones === 1 ? 'st' : ones === 2 ? 'nd' : ones === 3 ? 'rd' : 'th'}`;
-}
+// "1st", "2nd", "3rd"… for the share text's confessed retries lives in
+// `text/format.ts` as `ordinal(n, locale)` since 2026-08-28 — French counts
+// differently, and a suffix is a fact of the language.

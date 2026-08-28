@@ -4,6 +4,7 @@ import { decodeManifest, manifestHas } from './assets';
 import { themeCssVars } from './css';
 import { DEFAULT_THEME_ID, parseThemeId, resolveTheme, THEMES } from './index';
 import {
+  namesOf,
   clearance,
   fieldDots,
   fieldGround,
@@ -98,7 +99,7 @@ describe('the registry', () => {
   // opened, and this keeps any future direction from repeating the mistake.
   it('gives its colours four names nobody could confuse', () => {
     for (const theme of THEMES) {
-      const names = COLOURS.map((c) => theme.terrainNames[c]);
+      const names = COLOURS.map((c) => namesOf(theme, 'en')[c]);
       expect(new Set(names).size).toBe(names.length);
       for (const name of names) {
         expect(name.length).toBeGreaterThan(0);
@@ -142,11 +143,11 @@ describe('the registry', () => {
   });
 });
 
-describe.each(THEMES.map((t) => [t.name, t] as const))('%s', (_name, theme: Theme) => {
+describe.each(THEMES.map((t) => [t.name.en, t] as const))('%s', (_name, theme: Theme) => {
   it('paints all four colours and names all four', () => {
     for (const colour of COLOURS) {
       expect(theme.terrain[colour]).toBeDefined();
-      expect(theme.terrainNames[colour].length).toBeGreaterThan(0);
+      expect(namesOf(theme, 'en')[colour].length).toBeGreaterThan(0);
     }
   });
 
@@ -201,7 +202,7 @@ describe.each(THEMES.map((t) => [t.name, t] as const))('%s', (_name, theme: Them
         const gap = clearance(paint, bg);
         expect(
           gap,
-          `${theme.terrainNames[colour]}'s ${end} sits ${gap.toFixed(3)} from the board; ` +
+          `${namesOf(theme, 'en')[colour]}'s ${end} sits ${gap.toFixed(3)} from the board; ` +
             `${MIN_GROUND_CLEARANCE} is the floor that keeps a placed tile a visible shape`,
         ).toBeGreaterThanOrEqual(MIN_GROUND_CLEARANCE);
       }
@@ -368,106 +369,109 @@ describe('the asset manifest', () => {
  * colours. They were drawn in each colour's own fill at a flat alpha, so
  * their legibility was whatever that colour's contrast happened to be.
  */
-describe.each(THEMES.map((t) => [t.name, t] as const))('%s field dots', (_name, theme: Theme) => {
-  it('reads every colour’s field at the same strength, against its own ground', () => {
-    for (const colour of COLOURS) {
-      const { ink, alpha } = fieldDots(theme, colour);
-      // Distance from the ground, not height above it (2026-08-25) — the same
-      // correction the wall clearance needed. On a pale board a field is
-      // DARKER than the ground it marks, and the signed form scored
-      // `daylight` at -0.250 against a floor of +0.25: a perfect field, read
-      // upside down.
-      const lift = alpha * clearance(ink, theme.empty.fill);
-      expect(
-        lift,
-        `${colour} field dots lift ${lift.toFixed(3)} over the ground; ` +
-          `${MIN_FIELD_LIFT} is the floor that keeps a field visible`,
-      ).toBeGreaterThanOrEqual(MIN_FIELD_LIFT - 0.001);
-      // And never so loud that ground reads as a placed tile.
-      expect(alpha).toBeLessThanOrEqual(0.5);
-    }
-  });
-
-  it('keeps the four fields telling you WHICH colour owns the ground', () => {
-    // Brightening for contrast must not converge the four on one pale grey:
-    // the whole point of a field is that it names a colour, and Marc's second
-    // report was that blue and green fields still read as each other. Being
-    // merely UNEQUAL is not enough — they have to be far apart in the channels
-    // an eye actually compares.
-    const inks = COLOURS.map((c) => fieldDots(theme, c).ink);
-    const apart = (a: number, b: number): number =>
-      Math.abs(((a >> 16) & 0xff) - ((b >> 16) & 0xff)) +
-      Math.abs(((a >> 8) & 0xff) - ((b >> 8) & 0xff)) +
-      Math.abs((a & 0xff) - (b & 0xff));
-
-    for (let i = 0; i < inks.length; i++) {
-      for (let j = i + 1; j < inks.length; j++) {
-        const gap = apart(inks[i]!, inks[j]!);
+describe.each(THEMES.map((t) => [t.name.en, t] as const))(
+  '%s field dots',
+  (_name, theme: Theme) => {
+    it('reads every colour’s field at the same strength, against its own ground', () => {
+      for (const colour of COLOURS) {
+        const { ink, alpha } = fieldDots(theme, colour);
+        // Distance from the ground, not height above it (2026-08-25) — the same
+        // correction the wall clearance needed. On a pale board a field is
+        // DARKER than the ground it marks, and the signed form scored
+        // `daylight` at -0.250 against a floor of +0.25: a perfect field, read
+        // upside down.
+        const lift = alpha * clearance(ink, theme.empty.fill);
         expect(
-          gap,
-          ` and  field dots are  apart in RGB; ` + 'fields that close read as the same ground',
-        ).toBeGreaterThanOrEqual(60);
+          lift,
+          `${colour} field dots lift ${lift.toFixed(3)} over the ground; ` +
+            `${MIN_FIELD_LIFT} is the floor that keeps a field visible`,
+        ).toBeGreaterThanOrEqual(MIN_FIELD_LIFT - 0.001);
+        // And never so loud that ground reads as a placed tile.
+        expect(alpha).toBeLessThanOrEqual(0.5);
       }
-    }
-  });
+    });
 
-  /**
-   * Art may not cost a field its marks (2026-08-27).
-   *
-   * When a terrain slot has a PNG, `fieldGround` ghosts it under the ground so
-   * a claimed hex and the field around it read as one material. For a week it
-   * ALSO replaced the field's pattern with that ghost, and the ghost is the one
-   * layer nothing equalises: it is whatever the PNG's average happens to be
-   * against `empty`, and then the torch multiplies that difference too.
-   * Torchlit's MOSS field ended up 0.020 in L* from bare ground over most of
-   * the board — the rule was still in the engine and gone from the screen.
-   *
-   * The marks are the channel `MIN_FIELD_LIFT` is a floor for, so this asserts
-   * the structure that keeps that floor connected to something drawn: both
-   * branches of `fieldGround` carry the pattern, art or no art.
-   */
-  it('never trades a field’s marks for its art', () => {
-    for (const colour of COLOURS) {
-      for (const hasArt of [false, true]) {
-        const ground = fieldGround(theme, colour, hasArt);
-        const base = ground.kind === 'art' ? ground.base : ground.surface;
+    it('keeps the four fields telling you WHICH colour owns the ground', () => {
+      // Brightening for contrast must not converge the four on one pale grey:
+      // the whole point of a field is that it names a colour, and Marc's second
+      // report was that blue and green fields still read as each other. Being
+      // merely UNEQUAL is not enough — they have to be far apart in the channels
+      // an eye actually compares.
+      const inks = COLOURS.map((c) => fieldDots(theme, c).ink);
+      const apart = (a: number, b: number): number =>
+        Math.abs(((a >> 16) & 0xff) - ((b >> 16) & 0xff)) +
+        Math.abs(((a >> 8) & 0xff) - ((b >> 8) & 0xff)) +
+        Math.abs((a & 0xff) - (b & 0xff));
+
+      for (let i = 0; i < inks.length; i++) {
+        for (let j = i + 1; j < inks.length; j++) {
+          const gap = apart(inks[i]!, inks[j]!);
+          expect(
+            gap,
+            ` and  field dots are  apart in RGB; ` + 'fields that close read as the same ground',
+          ).toBeGreaterThanOrEqual(60);
+        }
+      }
+    });
+
+    /**
+     * Art may not cost a field its marks (2026-08-27).
+     *
+     * When a terrain slot has a PNG, `fieldGround` ghosts it under the ground so
+     * a claimed hex and the field around it read as one material. For a week it
+     * ALSO replaced the field's pattern with that ghost, and the ghost is the one
+     * layer nothing equalises: it is whatever the PNG's average happens to be
+     * against `empty`, and then the torch multiplies that difference too.
+     * Torchlit's MOSS field ended up 0.020 in L* from bare ground over most of
+     * the board — the rule was still in the engine and gone from the screen.
+     *
+     * The marks are the channel `MIN_FIELD_LIFT` is a floor for, so this asserts
+     * the structure that keeps that floor connected to something drawn: both
+     * branches of `fieldGround` carry the pattern, art or no art.
+     */
+    it('never trades a field’s marks for its art', () => {
+      for (const colour of COLOURS) {
+        for (const hasArt of [false, true]) {
+          const ground = fieldGround(theme, colour, hasArt);
+          const base = ground.kind === 'art' ? ground.base : ground.surface;
+          expect(
+            base.pattern.kind,
+            `the ${colour} field ${hasArt ? 'with' : 'without'} art draws no pattern; ` +
+              `the ghost is the material layer and the pattern is the readable one`,
+          ).not.toBe('none');
+        }
+      }
+    });
+
+    /**
+     * And the torch may not eat what the pattern earns.
+     *
+     * The renderer dims a cell by tinting the whole sprite toward the board —
+     * `mix(background, white, light)` used as a multiply — so outside the light
+     * pool a field and the bare ground beside it are BOTH scaled down, and the
+     * gap between them with them. Reproduced here from the same two tokens the
+     * renderer reads, at each direction's own `light.floor`, which is the
+     * brightness most of an endless board is at.
+     */
+    it('keeps a native field readable at its own light floor', () => {
+      const floor = theme.light.floor;
+      const tint = mix(theme.board.background, 0xffffff, floor);
+      const under = (c: Rgb): Rgb => {
+        const ch = (shift: number): number =>
+          Math.round((((c >> shift) & 0xff) * ((tint >> shift) & 0xff)) / 255) & 0xff;
+        return (ch(16) << 16) | (ch(8) << 8) | ch(0);
+      };
+
+      for (const colour of COLOURS) {
+        const { ink, alpha } = fieldDots(theme, colour);
+        const marked = mix(theme.empty.fill, ink, alpha);
+        const lift = clearance(under(marked), under(theme.empty.fill));
         expect(
-          base.pattern.kind,
-          `the ${colour} field ${hasArt ? 'with' : 'without'} art draws no pattern; ` +
-            `the ghost is the material layer and the pattern is the readable one`,
-        ).not.toBe('none');
+          lift,
+          `the ${colour} field lifts ${lift.toFixed(3)} off bare ground at a light floor of ` +
+            `${floor}; ${MIN_LIT_FIELD_LIFT} is what keeps the rule visible off the torch`,
+        ).toBeGreaterThanOrEqual(MIN_LIT_FIELD_LIFT);
       }
-    }
-  });
-
-  /**
-   * And the torch may not eat what the pattern earns.
-   *
-   * The renderer dims a cell by tinting the whole sprite toward the board —
-   * `mix(background, white, light)` used as a multiply — so outside the light
-   * pool a field and the bare ground beside it are BOTH scaled down, and the
-   * gap between them with them. Reproduced here from the same two tokens the
-   * renderer reads, at each direction's own `light.floor`, which is the
-   * brightness most of an endless board is at.
-   */
-  it('keeps a native field readable at its own light floor', () => {
-    const floor = theme.light.floor;
-    const tint = mix(theme.board.background, 0xffffff, floor);
-    const under = (c: Rgb): Rgb => {
-      const ch = (shift: number): number =>
-        Math.round((((c >> shift) & 0xff) * ((tint >> shift) & 0xff)) / 255) & 0xff;
-      return (ch(16) << 16) | (ch(8) << 8) | ch(0);
-    };
-
-    for (const colour of COLOURS) {
-      const { ink, alpha } = fieldDots(theme, colour);
-      const marked = mix(theme.empty.fill, ink, alpha);
-      const lift = clearance(under(marked), under(theme.empty.fill));
-      expect(
-        lift,
-        `the ${colour} field lifts ${lift.toFixed(3)} off bare ground at a light floor of ` +
-          `${floor}; ${MIN_LIT_FIELD_LIFT} is what keeps the rule visible off the torch`,
-      ).toBeGreaterThanOrEqual(MIN_LIT_FIELD_LIFT);
-    }
-  });
-});
+    });
+  },
+);

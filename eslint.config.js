@@ -108,13 +108,18 @@ export default tseslint.config(
   },
   { files: ['eslint.config.js'], extends: [tseslint.configs.disableTypeChecked] },
 
-  // The whole core package: never the app, never a framework, never a canvas.
+  // The whole core package: never the app, never a framework, never a canvas,
+  // never the DOM (2026-08-28: view/tips.ts and view/figure.ts had been calling
+  // document.createElement under a lint that only watched engine/ and content/).
   {
     files: ['packages/core/src/**/*.ts'],
-    rules: deny(
-      APP,
-      'packages/core is the rules of the game. It may not import the app, React, three or a canvas.',
-    ),
+    rules: {
+      'no-restricted-globals': pure['no-restricted-globals'],
+      ...deny(
+        APP,
+        'packages/core is the rules of the game. It may not import the app, React, three or a canvas.',
+      ),
+    },
   },
 
   {
@@ -124,6 +129,7 @@ export default tseslint.config(
       ...deny(
         [
           ...layer('view'),
+          ...layer('text'),
           ...layer('render'),
           ...layer('theme'),
           ...layer('meta'),
@@ -142,6 +148,7 @@ export default tseslint.config(
       ...deny(
         [
           ...layer('view'),
+          ...layer('text'),
           ...layer('render'),
           ...layer('theme'),
           ...layer('meta'),
@@ -154,11 +161,32 @@ export default tseslint.config(
     },
   },
 
+  // text/ is the words. It may read content/ (dials, the Locale type) and the
+  // glyph registries in theme/tokens — never a rule, a state or a screen.
+  {
+    files: ['packages/core/src/text/**/*.ts'],
+    rules: {
+      ...pure,
+      ...deny(
+        [
+          ...layer('view'),
+          ...layer('render'),
+          ...layer('meta'),
+          ...layer('sim'),
+          ...layer('engine'),
+          ...APP,
+        ],
+        'text/ is the words. It may import content/ and theme/tokens, and nothing else.',
+      ),
+    },
+  },
+
   {
     files: ['packages/core/src/theme/**/*.ts'],
     rules: deny(
       [
         ...layer('view'),
+        ...layer('text'),
         ...layer('render'),
         ...layer('meta'),
         ...layer('sim'),

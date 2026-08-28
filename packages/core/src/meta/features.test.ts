@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { STRINGS_EN as EN } from '@text/en';
+import { featureText } from './features';
 import {
   decodeFeatures,
   defaultFeatures,
@@ -44,8 +46,8 @@ describe('the registry', () => {
 
   it('describes every flag, so the registry never becomes a list of mystery ids', () => {
     for (const f of FEATURES) {
-      expect(f.label.length).toBeGreaterThan(0);
-      expect(f.note.length).toBeGreaterThan(0);
+      expect(featureText(f.id, EN).label.length).toBeGreaterThan(0);
+      expect(featureText(f.id, EN).note.length).toBeGreaterThan(0);
     }
   });
 
@@ -62,9 +64,9 @@ describe('the registry', () => {
       expect(f.wired).toBe(true);
       // Short enough to read at a glance, and free of the dates and names
       // that belong in the comments above each entry.
-      expect(f.note.length).toBeLessThan(120);
-      expect(f.note).not.toMatch(/20\d\d-\d\d-\d\d/);
-      expect(f.note).not.toContain('Marc');
+      expect(featureText(f.id, EN).note.length).toBeLessThan(120);
+      expect(featureText(f.id, EN).note).not.toMatch(/20\d\d-\d\d-\d\d/);
+      expect(featureText(f.id, EN).note).not.toContain('Marc');
     }
   });
 

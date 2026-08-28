@@ -1,4 +1,5 @@
-import { dailyName, ordinal } from './daily';
+import type { Strings } from '@text/Strings';
+import { dailyName } from './daily';
 
 /**
  * The words and the link a shared run travels as.
@@ -49,25 +50,28 @@ export type Shared = {
  * stale override would install itself on every phone the link ever reached.
  * Handing back only the params makes that mistake impossible to make here.
  */
-export function shareOf(name: string, subject: ShareSubject): Shared {
+export function shareOf(name: string, subject: ShareSubject, s: Strings): Shared {
   if (subject.kind === 'daily') {
     // The daily's line is a scoreboard entry: which day, the score, how far,
     // the shape of the run, and the try count — confessed rather than hidden,
     // which is the design's own honesty rule (`ideas/daily.md`).
-    const arc = subject.arc === '' ? '' : ` · ${subject.arc}`;
     return {
-      text:
-        `${name} ${dailyName(subject.date)} · ${subject.points} pts · ` +
-        `reach ${subject.reach}${arc} · ${ordinal(subject.tries)} try · beat it:`,
+      text: s.share.daily(
+        name,
+        dailyName(subject.date),
+        subject.points,
+        subject.reach,
+        subject.arc,
+        subject.tries,
+      ),
       params: { daily: subject.date },
     };
   }
   // The run's shape rides along the way the daily's always has (2026-08-26):
   // the sparkline was stored on every timeline row and drawn in the daily's
   // line, while the game's MAIN share string never carried it.
-  const arc = subject.arc === '' ? '' : ` · ${subject.arc}`;
   return {
-    text: `${name}: ${subject.points} pts in ${subject.placements} placements${arc}. Beat my run:`,
+    text: s.share.run(name, subject.points, subject.placements, subject.arc),
     params: { seed: String(subject.seed) },
   };
 }
