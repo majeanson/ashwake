@@ -1,0 +1,11 @@
+{
+  "name": "@ashwake/core",
+  "private": true,
+  "version": "2.0.0-dev",
+  "type": "module",
+  "description": "The rules of Ashwake: engine, content, meta, the balance harness, the props layer and the teaching registry. No DOM, no clock, no randomness outside an RngStream.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "sim": "tsx scripts/sim.ts"
+  }
+}

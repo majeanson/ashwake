@@ -1,0 +1,235 @@
+import type { Hex } from '@engine/hex';
+import type { Orientation } from '@theme/tokens';
+
+/**
+ * Fitting a board to a viewport.
+ *
+ * Pure geometry, deliberately kept out of the Pixi code: it is the part most
+ * likely to be wrong on a phone, and it is the only part that can be tested
+ * without a canvas. Regions are generated at varying sizes and shapes, so the
+ * board is scaled to fit rather than drawn at a fixed hex size.
+ *
+ * **Orientation lives here, not in the engine.** Axial coordinates mean the same
+ * thing either way up and `DIRECTIONS` still names the same six neighbours — only
+ * the projection to pixels differs. So which way up the hexes sit is a rendering
+ * decision a theme can hold, and swapping it cannot change the game. Every art
+ * direction handed down so far asks for flat-top; the placeholder is pointy-top
+ * because that is what shipped. Both are exact, and both are tested.
+ */
+
+export type Layout = {
+  /**
+   * Hex "size" — centre to corner, i.e. the circumradius.
+   * Pointy-top is √3·size wide and 2·size tall; flat-top is the transpose.
+   */
+  readonly size: number;
+  readonly originX: number;
+  readonly originY: number;
+  readonly orientation: Orientation;
+};
+
+const SQRT3 = Math.sqrt(3);
+
+/** Half-extent of a single hex at size 1, as [x, y]. */
+const halfExtent = (o: Orientation): readonly [number, number] =>
+  o === 'pointy' ? [SQRT3 / 2, 1] : [1, SQRT3 / 2];
+
+/**
+ * Axial to pixel, at size 1.
+ *
+ * The pointy-top case is the same mapping as `engine/hex.ts`'s `toPixel`, which
+ * that file keeps for its own tests; it is restated rather than imported so the
+ * two orientations sit side by side and can be read against each other.
+ */
+function project(q: number, r: number, o: Orientation): { x: number; y: number } {
+  return o === 'pointy'
+    ? { x: SQRT3 * q + (SQRT3 / 2) * r, y: 1.5 * r }
+    : { x: 1.5 * q, y: SQRT3 * (r + q / 2) };
+}
+
+/** Where a cell's centre lands on screen. */
+export const place = (h: Hex, l: Layout): { x: number; y: number } => {
+  const p = project(h.q, h.r, l.orientation);
+  return { x: p.x * l.size + l.originX, y: p.y * l.size + l.originY };
+};
+
+/**
+ * Confine `x` to `[lo, hi]`. The renderer's camera and edge-chip geometry lean
+ * on this shape — a pinch has a floor and a ceiling, a pan has to leave board
+ * on screen, a chip has to stay inside the safe rect — often enough that the
+ * name is worth having; the arithmetic is exactly `Math.min(hi, Math.max(lo, x))`.
+ */
+export const clamp = (x: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, x));
+
+/**
+ * Which hex contains a screen point — the inverse of `place`.
+ *
+ * Rounding in CUBE space rather than axial is the part that is easy to get
+ * wrong: rounding q and r independently picks the wrong hex in the triangular
+ * slivers near each corner, which on a phone reads as taps landing on the tile
+ * next to the one you touched. Rounding all three cube coordinates and
+ * repairing whichever moved furthest is exact everywhere.
+ */
+export function hexAt(x: number, y: number, l: Layout): Hex {
+  if (l.size <= 0) return { q: 0, r: 0 };
+
+  const px = (x - l.originX) / l.size;
+  const py = (y - l.originY) / l.size;
+
+  const q = l.orientation === 'pointy' ? (SQRT3 / 3) * px - py / 3 : (2 / 3) * px;
+  const r = l.orientation === 'pointy' ? (2 / 3) * py : -px / 3 + (SQRT3 / 3) * py;
+  const s = -q - r;
+
+  let rq = Math.round(q);
+  let rr = Math.round(r);
+  const rs = Math.round(s);
+
+  const dq = Math.abs(rq - q);
+  const dr = Math.abs(rr - r);
+  const ds = Math.abs(rs - s);
+
+  if (dq > dr && dq > ds) rq = -rr - rs;
+  else if (dr > ds) rr = -rq - rs;
+
+  // `Math.round(-0.2)` is -0, and -0 is not 0 to anything that compares by
+  // Object.is. Harmless in a hex key, which stringifies both to "0", and not
+  // harmless at all in a Set or a === against a coordinate computed the other
+  // way — so it is normalised once, here, rather than guarded against later.
+  return { q: rq === 0 ? 0 : rq, r: rr === 0 ? 0 : rr };
+}
+
+/**
+ * A layout zoomed by `zoom` about a fixed screen point.
+ *
+ * Pure camera maths, kept beside the fit it modifies: the anchor is the one
+ * point whose hex does not move when the zoom changes, which is what makes a
+ * zoom button feel like leaning closer instead of the board jumping. Panning
+ * is NOT here — a pan is a plain translation the renderer applies to its
+ * containers, because translating never changes what a cell looks like.
+ */
+export function zoomLayout(l: Layout, zoom: number, anchorX: number, anchorY: number): Layout {
+  return {
+    size: l.size * zoom,
+    originX: anchorX + (l.originX - anchorX) * zoom,
+    originY: anchorY + (l.originY - anchorY) * zoom,
+    orientation: l.orientation,
+  };
+}
+
+/**
+ * The six corners of a hex, as a flat [x, y, …] list.
+ *
+ * Pointy-top puts a corner at the top; flat-top puts a corner at the right. Both
+ * wind clockwise in screen space, which matters only because Pixi's `poly` is
+ * happier with a consistent winding.
+ */
+export function corners(cx: number, cy: number, size: number, o: Orientation = 'pointy'): number[] {
+  const offset = o === 'pointy' ? -90 : 0;
+  const pts: number[] = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i + offset);
+    pts.push(cx + size * Math.cos(angle), cy + size * Math.sin(angle));
+  }
+  return pts;
+}
+
+/**
+ * Scale and centre `cells` inside a `width × height` box.
+ *
+ * `padding` is in pixels and applied on every side. The board is fitted by its
+ * full extent — cell centres plus the half-hex that sticks out past the outermost
+ * ones — so edge tiles are never clipped, which is exactly the bug you get from
+ * fitting centres alone and only notice on a narrow phone.
+ *
+ * `maxSize` (2026-08-25) caps how BIG a hex the fit may choose. Unbounded fit
+ * was harmless while the fitted set always included the beacon disc — dozens of
+ * hexes across, so the computed size was always small. Fit frames only the
+ * played structure now, and a three-tile opening board fitted to a phone screen
+ * is a hex ninety pixels wide: past readable and into comic. The cap is stated
+ * by the caller in the same currency as the zoom ceiling (pixels a hex), and
+ * the centring math runs on the capped size so the board stays centred rather
+ * than anchored to a corner sized for a bigger hex.
+ */
+export function fitLayout(
+  cells: readonly Hex[],
+  width: number,
+  height: number,
+  padding = 0,
+  orientation: Orientation = 'pointy',
+  maxSize = Infinity,
+): Layout {
+  if (cells.length === 0) {
+    return { size: 0, originX: width / 2, originY: height / 2, orientation };
+  }
+
+  // Measure at size 1, then scale — the mapping is linear in size.
+  const [halfW, halfH] = halfExtent(orientation);
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const c of cells) {
+    const p = project(c.q, c.r, orientation);
+    if (p.x - halfW < minX) minX = p.x - halfW;
+    if (p.x + halfW > maxX) maxX = p.x + halfW;
+    if (p.y - halfH < minY) minY = p.y - halfH;
+    if (p.y + halfH > maxY) maxY = p.y + halfH;
+  }
+
+  const availW = Math.max(0, width - padding * 2);
+  const availH = Math.max(0, height - padding * 2);
+  const size = Math.min(maxSize, availW / (maxX - minX), availH / (maxY - minY));
+
+  // Centre the scaled extent in the box.
+  return {
+    size,
+    originX: padding + availW / 2 - ((minX + maxX) / 2) * size,
+    originY: padding + availH / 2 - ((minY + maxY) / 2) * size,
+    orientation,
+  };
+}
+
+/**
+ * The zoom ceiling for a board fitted at `fitSize` pixels a hex.
+ *
+ * Marc, on a phone: "there is a point on mobile where the map grows and i
+ * cant zoom in to see numbers anymore, there is a max zoom in and its not
+ * enough". The ceiling was a flat multiple of FIT, and fit shrinks as the
+ * world grows — so the more board there was, the less the camera could lean
+ * in, which is exactly backwards. Late runs fitted at ~5px a hex, and 4x of
+ * that is 18px: the worth numbers were being drawn and could not be read.
+ *
+ * So the ceiling is stated in PIXELS instead: zoom until a hex is `maxHexPx`,
+ * however big the world is. `floor` keeps the old generous range on a
+ * small board, which already fits at a comfortable size and should still be
+ * allowed to go closer than life-size.
+ */
+export function zoomCeiling(fitSize: number, floor: number, maxHexPx: number): number {
+  if (!(fitSize > 0)) return floor;
+  return Math.max(floor, maxHexPx / fitSize);
+}
+
+/**
+ * How far OUT the camera may go — the floor, stated the same way the ceiling
+ * above is, in pixels of hex rather than as a multiple of anything.
+ *
+ * Marc, 2026-08-27, on a fresh run framed at FIT: "allow zoom out a bit at
+ * this stage". The floor was a flat 1 — FIT exactly, never a pixel wider —
+ * so on an opening board there was no way to see the space you were about to
+ * build into. But a flat multiple below 1 would be wrong at the other end:
+ * once a run is deep, FIT already shows the whole structure and everything
+ * past it is void, so "out" would buy nothing but a smaller picture.
+ *
+ * Stating it in pixels makes it self-limiting, and does it with the ceiling's
+ * own logic run backwards. Early, FIT is capped at `HEX_PX_MAX` and a hex is
+ * big, so there is room to pull back before hexes reach `minHexPx` — a real
+ * zoom-out. Late, FIT is already only a few pixels a hex, `minHexPx / fitSize`
+ * exceeds 1, and `ceiling` clamps the floor back to FIT: no zoom-out at all,
+ * because there is none worth having. One number, one meaning: as small as a
+ * hex is ever worth drawing.
+ */
+export function zoomFloor(fitSize: number, ceiling: number, minHexPx: number): number {
+  if (!(fitSize > 0)) return ceiling;
+  return Math.min(ceiling, minHexPx / fitSize);
+}

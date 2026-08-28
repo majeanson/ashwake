@@ -1,0 +1,1177 @@
+import type { Colour } from '@content/tuning';
+
+/**
+ * The visual contract, as data.
+ *
+ * Everything on screen is going to change — the art direction is not settled and
+ * Gate E has not opened (see LOG.md). So the shape of this file matters more than
+ * any value in it: a theme is a plain, serialisable description of HOW to paint
+ * roles the game already has, and swapping one for another is a single import.
+ *
+ * Two rules keep it honest:
+ *
+ *   1. **Roles, never looks.** There is a token for "the tile you must not miss",
+ *      not for "white outline". A theme that wants to signal ripeness with a warm
+ *      fill instead of an outline changes its own values; no other file learns.
+ *   2. **No behaviour.** This is data. It imports one type and nothing else, it
+ *      runs nowhere, and `src/theme/theme.test.ts` can check every direction we
+ *      have without a canvas, a browser or a phone.
+ *
+ * A number here may never affect balance — that lives in `src/content/tuning.ts`
+ * and is a separate axis on purpose. You can repaint the whole game without
+ * re-running the harness, which is the entire point of the split.
+ */
+
+/** `0xRRGGBB`. Pixi wants a number; CSS wants a string; `hex()` bridges them. */
+export type Rgb = number;
+
+export const hex = (c: Rgb): string => `#${c.toString(16).padStart(6, '0')}`;
+
+export const rgba = (c: Rgb, alpha: number): string =>
+  `rgba(${(c >> 16) & 0xff},${(c >> 8) & 0xff},${c & 0xff},${alpha})`;
+
+/** Blend two colours channel-wise. `t` 0 is all `a`, 1 is all `b`. */
+export function mix(a: Rgb, b: Rgb, t: number): Rgb {
+  const k = Math.min(1, Math.max(0, t));
+  const lerp = (shift: number): number => {
+    const from = (a >> shift) & 0xff;
+    const to = (b >> shift) & 0xff;
+    return Math.round(from + (to - from) * k) & 0xff;
+  };
+  return (lerp(16) << 16) | (lerp(8) << 8) | lerp(0);
+}
+
+/**
+ * Perceptual lightness, 0..1 — CIE L* over Rec. 709 relative luminance.
+ *
+ * Load-bearing rather than a utility. Every art direction we have been handed
+ * insists the four terrains must be tellable apart in GREYSCALE — "value spacing
+ * does most of the work" — because a hue-only board dies in sunlight and for
+ * colour-blind players. That claim is checkable, so `theme.test.ts` checks it.
+ *
+ * **L*, not luminance, and the difference is the whole point.** Relative
+ * luminance is linear in light, so on a board this dark it crowds every terrain
+ * into the bottom tenth of its range and reports two plainly different greys as
+ * nearly identical. The first version of this function did exactly that and
+ * failed all four directions, including the placeholder that had already shipped
+ * and is legible. L* applies the cube-root the eye applies, so a fixed threshold
+ * means the same thing at the dark end as at the light end — which is the only
+ * way one number can be a bar for four directions that share no palette.
+ */
+export function luma(c: Rgb): number {
+  const y = luminance(c);
+  const f = y > 0.008856 ? Math.cbrt(y) : 7.787 * y + 16 / 116;
+  return (116 * f - 16) / 100;
+}
+
+/**
+ * Rec. 709 relative luminance, 0..1 — the linear-light half of `luma`.
+ *
+ * Extracted rather than duplicated (2026-08-25). It was computed inside `luma`
+ * and thrown away; `contrastRatio` below needs exactly this number and no other,
+ * because WCAG's ratio is defined on linear light rather than on L*. Two
+ * functions, one gamma decode, no chance of the two disagreeing.
+ */
+export function luminance(c: Rgb): number {
+  const srgb = [(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff].map((v) => {
+    const s = v / 255;
+    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  }) as [number, number, number];
+
+  return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+}
+
+/**
+ * WCAG contrast ratio, 1..21.
+ *
+ * `luma` answers "are these two greys tellable apart" — the greyscale question
+ * every direction is graded on. This answers a different one: "can a player READ
+ * this thing against that thing", and it has an agreed-on bar (4.5 for text, 3
+ * for a mark) that is not a number this project gets to invent.
+ *
+ * Added 2026-08-25, when a phone screenshot showed a tile's own number at
+ * **1.46:1** against EMBER — pale gold on pale sand. Nothing in the repo could
+ * have failed for that: `theme.test.ts` asserted crude L* deltas for `ink` and
+ * `inkDim` against the background and nothing at all about ink against GROUND.
+ * `contrast.test.ts` is what this function exists for.
+ */
+export function contrastRatio(a: Rgb, b: Rgb): number {
+  const x = luminance(a);
+  const y = luminance(b);
+  const [hi, lo] = x > y ? [x, y] : [y, x];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * How far a colour sits from the ground, in L*, **whichever way up the theme is**.
+ *
+ * The distinction this file was missing (2026-08-25). Several rules were written
+ * as "lighter than the background" — the wall must clear the fog, ripe must be
+ * louder than legal — and on a dark board lighter and louder are the same word,
+ * so the sign went unnoticed. On a pale board they are opposites: a wall that
+ * blocks is DARKER than the ground, and the loudest edge on the board is the
+ * darkest one. Distance is what those rules always meant; `luma(a) - luma(b)` is
+ * what they happened to say.
+ */
+export function clearance(c: Rgb, ground: Rgb): number {
+  return Math.abs(luma(c) - luma(ground));
+}
+
+/**
+ * WCAG's floor for a mark — geometry you have to SEE rather than prose you
+ * have to read. `contrast.test.ts` has spent this number since 2026-08-25;
+ * `edgeCasing` needs the same one, so it stops being a literal in a test.
+ */
+export const MIN_MARK_CONTRAST = 3;
+
+/**
+ * The colour to lay UNDER an outline that its own ground would swallow, or
+ * `null` when the outline can carry itself (2026-08-27).
+ *
+ * This is the halo rule, applied to edges. `Ink.halo` exists because one ink
+ * over eight grounds cannot clear 4.5:1 in any direction — a light ink dies on
+ * the pale terrains, a dark one on the dark ones — so a label is drawn as a
+ * PAIR and the rule is stated on the pair. Every outline on the board had the
+ * same problem and nothing was saying so: torchlit's ripe edge, the loudest
+ * mark in the direction and the whole harvest decision, sits at **1.69:1** over
+ * EMBER; daylight's accent — the outline that says a shrine is unclaimed — sits
+ * at **1.02:1** over the wall ground a landmark actually stands on, which is
+ * the same as not drawing it. Neither is a palette that can be fixed by moving
+ * one colour, for exactly the reason the halo was invented.
+ *
+ * So: casing under, stroke over, and only where the stroke needs it — a cased
+ * edge is two draws, and every edge on the board wearing one would be a
+ * cartoon. The bar is against the GROUND, because that is the failure being
+ * fixed: what has to become visible is the ring, and it becomes visible the
+ * moment any part of it separates from the ground it sits on. Separation from
+ * the stroke only breaks ties — it decides whether the stroke's own colour
+ * still reads INSIDE the ring it now has, which is the difference between
+ * "that tile is outlined" and "that tile is outlined in the unique's orange".
+ * `halo` and `ink` are the two candidates because between them every theme
+ * already owns one colour at each end of its own range. `null` when neither
+ * clears the ground, because a casing nobody can see is only cost.
+ */
+export function edgeCasing(theme: Theme, stroke: Rgb, ground: Rgb): Rgb | null {
+  if (contrastRatio(stroke, ground) >= MIN_MARK_CONTRAST) return null;
+  let best: Rgb | null = null;
+  let score = 0;
+  let tie = 0;
+  for (const candidate of [theme.ink.halo, theme.ink.ink]) {
+    const onGround = contrastRatio(candidate, ground);
+    if (onGround < MIN_MARK_CONTRAST) continue;
+    const onStroke = contrastRatio(candidate, stroke);
+    if (onGround > score || (onGround === score && onStroke > tie)) {
+      score = onGround;
+      tie = onStroke;
+      best = candidate;
+    }
+  }
+  return best;
+}
+
+/**
+ * Which way up the hexes sit.
+ *
+ * The engine has no opinion — axial coordinates are the same either way, and
+ * `DIRECTIONS` still means the same six neighbours. Only the projection to pixels
+ * differs, which is why this lives here and not in `engine/hex.ts`. Every art
+ * direction we have been given specifies flat-top; the placeholder is pointy-top
+ * because that is what shipped. Being able to hold both is the cheapest possible
+ * insurance against the decision moving again.
+ */
+export type Orientation = 'pointy' | 'flat';
+
+/**
+ * A procedural surface texture, described rather than drawn.
+ *
+ * Four kinds, and they are four because that is exactly what the three art
+ * directions between them ask for: diagonal hatch (crypt), smooth (cemetery),
+ * dotted (burial ground), horizontal rule (catacomb), and opaque alternating
+ * bands (blocked ground — the only cross-hatch on the board). Resist adding a
+ * fifth until a direction needs it; a texture vocabulary that grows per-tile is
+ * a bitmap set with extra steps, and there is a slot for bitmaps already.
+ *
+ * `hatch` and `dots` are INK OVER the fill, so a theme can change its palette
+ * without re-deriving its textures. `bands` replaces the fill, because rubble is
+ * not a tint of anything.
+ */
+export type Pattern =
+  | { readonly kind: 'none' }
+  | {
+      readonly kind: 'hatch';
+      readonly angleDeg: number;
+      readonly ink: Rgb;
+      readonly alpha: number;
+      /** Stripe thickness and the clear space after it, in texture pixels. */
+      readonly bar: number;
+      readonly gap: number;
+    }
+  | {
+      readonly kind: 'dots';
+      readonly ink: Rgb;
+      readonly alpha: number;
+      readonly radius: number;
+      /** Centre-to-centre spacing of the dot grid. */
+      readonly pitch: number;
+    }
+  /**
+   * A repeating SHAPE rather than a repeating dot (Marc, 2026-08-16: "instead
+   * of dots we could have a symbol per color and this symbol could repeat so
+   * its coilor + symbol, good for all humans").
+   *
+   * Colour alone carries the meaning of native ground, and roughly one man in
+   * twelve cannot read the green/red half of it. Four hard-edged shapes stay
+   * apart at three pixels where four hues do not, and they cost nothing to
+   * anyone who can see the hues — the colour is still there, the shape is a
+   * second channel saying the same thing.
+   */
+  | {
+      readonly kind: 'glyphs';
+      readonly shape: GlyphShape;
+      readonly ink: Rgb;
+      readonly alpha: number;
+      /** Half-extent of one symbol, in texture pixels. */
+      readonly size: number;
+      /** Centre-to-centre spacing of the grid. */
+      readonly pitch: number;
+    }
+  | {
+      readonly kind: 'bands';
+      readonly angleDeg: number;
+      readonly a: Rgb;
+      readonly b: Rgb;
+      readonly width: number;
+    };
+
+/**
+ * The four shapes, chosen for how well they survive being small: a filled
+ * circle, a triangle, a square and a diamond differ in silhouette rather than
+ * in detail, so they stay apart at the size a native field is drawn.
+ */
+export type GlyphShape = 'circle' | 'triangle' | 'square' | 'diamond';
+
+export const NO_PATTERN: Pattern = { kind: 'none' };
+
+/**
+ * How one kind of cell is painted.
+ *
+ * Precedence is `asset` beats `pattern` beats `fill`, and the fallbacks are the
+ * whole point: a theme is playable with no bitmaps at all, gets better as art
+ * lands slot by slot, and never breaks in between. That is the same contract as
+ * the design document's drop-target slots, which is where the idea came from.
+ */
+export type Surface = {
+  readonly fill: Rgb;
+  /** Vertical gradient end. `null` is a flat fill, which most surfaces are. */
+  readonly fillTo: Rgb | null;
+  readonly pattern: Pattern;
+  /**
+   * A second pattern, drawn over the first (2026-08-19, WORKPLAN Stage 3).
+   *
+   * `pattern` carries the AXIS identity — the thing that keeps MOSS reading
+   * as diagonal and TIDE as horizontal at a glance — and stays load-bearing
+   * on its own; `overlay` is a second, independent layer at its own kind,
+   * ink and alpha that adds material depth without moving the axis a colour
+   * is told apart by. Same closed vocabulary (`Pattern`), so nothing new to
+   * bake: a hatch over a hatch, dots over dots, or either crossed with the
+   * other, is still just `paintPattern` called twice.
+   */
+  readonly overlay: Pattern;
+  /** Bitmap slot that supersedes fill and pattern once the file exists. */
+  readonly asset: AssetId | null;
+  /** 0..1 of the hex radius. A gutter is what makes the grid read as cells. */
+  readonly inset: number;
+  /** Drawn at this alpha. Only the ghost/preview surface is below 1. */
+  readonly alpha: number;
+  /**
+   * A soft dark blot off the hex's own centre (2026-08-19, WORKPLAN Stage
+   * 3): the one thing that makes `terrain.stone` read as the AFTERMATH of a
+   * pop rather than a fourth flavour of furniture. Off for everything else —
+   * a scorch mark on live ground would say something happened there that
+   * never did.
+   */
+  readonly scorch: boolean;
+};
+
+/**
+ * The bitmap slots this game can use, by stable mechanical id.
+ *
+ * Ids are named for the ROLE in the rules (`terrain.green`), never for what a
+ * direction calls it (`crypt`) — the theme supplies the label. Rename the art
+ * direction twice more and these ids do not move, which is what lets a folder of
+ * PNGs survive a change of mind.
+ */
+export type AssetId =
+  | 'terrain.green'
+  | 'terrain.yellow'
+  | 'terrain.red'
+  | 'terrain.blue'
+  | 'terrain.wall'
+  | 'terrain.stone'
+  | 'terrain.ghost'
+  | 'fog.hard'
+  | 'fog.soft'
+  | 'fx.pop'
+  | 'ui.cardFrame'
+  | 'ui.logo'
+  | 'ui.runEnd';
+
+/** Ink roles. Named for the job, so a direction can move any of them anywhere. */
+export type Ink = {
+  /** Page and canvas background. */
+  readonly bg: Rgb;
+  /** Primary reading colour — the big numbers. */
+  readonly ink: Rgb;
+  /** Secondary — labels, units, the things beside a number. */
+  readonly inkDim: Rgb;
+  /** Tertiary — the build stamp, hints, anything you should be able to ignore. */
+  readonly inkFaint: Rgb;
+  /**
+   * The direction's one signature colour. Selection, focus, the live edge.
+   * Rationed by convention: if everything is accent, nothing is.
+   */
+  readonly accent: Rgb;
+  /**
+   * What an unclaimed destination is LIT with (2026-08-28).
+   *
+   * Split off `accent` because the two are the same colour only on a dark
+   * board, and every direction until daylight was dark. `accent` answers to
+   * the CHROME — it is read as text on panels and on the board background, so
+   * on a pale direction it has to be dark (daylight's is 0x64491c, 6.16:1 on
+   * vellum). A destination is the opposite job: it is a mark, on the wall's
+   * own dark ground, and it has to say "worth walking to" from across the
+   * map. Torchlit got both for free because its gold is bright and its board
+   * is black; daylight got neither — its accent sits at **1.02:1** over the
+   * ground a landmark stands on, so the ring, the lit dots and the whole
+   * "this is live" signal were invisible, and the marker read as spent
+   * stone. Marc, from the phone (2026-08-28): "the + and star, they are not
+   * yellow but grey and they seem inactive in light skin."
+   *
+   * `edgeCasing` had already found half of this on 2026-08-27 and names the
+   * same 1.02:1 in its own doc — but a casing makes a ring VISIBLE, not warm,
+   * and what was missing was the colour, not the outline. Every dark
+   * direction sets this to its own accent and nothing about them moves.
+   *
+   * The bar is `MIN_MARK_CONTRAST` against the destination's own ground, at
+   * both opacities it is ever drawn at — solid, and faded to a beacon. That
+   * is stated and checked in `contrast.test.ts`.
+   */
+  readonly lit: Rgb;
+  /**
+   * The two rarities' OWN colours (Marc, 2026-08-20: "make sure magic and
+   * unique have their own color, distinctive of the normal selected tile
+   * color") — in torchlit the selected ring and the accent were the same
+   * gold, so a rare card and a selected card were saying different things
+   * in one voice. MAGIC is the wild card; UNIQUE the crown — card border,
+   * badge, board edge and the placed star all speak these two, and
+   * nothing else does.
+   */
+  readonly magic: Rgb;
+  readonly unique: Rgb;
+  /**
+   * Loss. Every direction reserves one warm colour for the tile count, because
+   * the tile count is the thing that kills you. Never used decoratively.
+   */
+  readonly danger: Rgb;
+  /** Chrome behind the controls. */
+  readonly panel: Rgb;
+  readonly panelEdge: Rgb;
+  /** The border of the card you have picked. */
+  readonly panelEdgeActive: Rgb;
+  /**
+   * What a board label is outlined in (2026-08-25).
+   *
+   * A tile's number is drawn in ONE ink over eight different grounds, each with
+   * a gradient, and no single colour clears 4.5:1 against all of them — a light
+   * ink dies on EMBER and TIDE, a dark one dies on MOSS and STONE, and ASH sits
+   * squarely in the middle where neither works at both ends of its own fill.
+   *
+   * So the ink does not work alone. It works as a PAIR with this: where the ink
+   * vanishes into the ground the halo carries the letterform, and where the halo
+   * vanishes the ink does. `contrast.test.ts` states the rule as exactly that —
+   * `max(contrast(ink, ground), contrast(halo, ground)) >= 4.5` — over every
+   * surface and both ends of every gradient.
+   *
+   * The board's own background is the natural answer for both poles of theme:
+   * it is already the furthest thing from whatever a direction paints on top of
+   * it. The rare-tile star has been doing this since 2026-08-19 ("a small disc
+   * of the board's own dark so the accent reads on pale terrain"); the number
+   * standing next to it never was.
+   */
+  readonly halo: Rgb;
+  /** Halo thickness, as a fraction of the label's font size. */
+  readonly haloWidth: number;
+};
+
+export type Type = {
+  /** Numbers and headings. */
+  readonly display: string;
+  /** Small tracked labels — TILES, POINTS, MAP, COST. */
+  readonly label: string;
+  /** Sentences. The epitaph, the leave hint. */
+  readonly body: string;
+  /** Tracking for `label`, as a CSS length. */
+  readonly labelTracking: string;
+  /**
+   * Webfont stylesheet to inject when this theme is applied, or `null`.
+   *
+   * `null` on the placeholder deliberately: the default theme must not make a
+   * cold start wait on a third-party host, and the game has to be playable in a
+   * tunnel. A direction that wants Spectral pays for Spectral.
+   */
+  readonly webfontHref: string | null;
+};
+
+/**
+ * How the board is composed, as distinct from what the cells look like.
+ */
+export type Board = {
+  readonly background: Rgb;
+  /** Gap between hexes, as a fraction of the hex radius. */
+  readonly seam: number;
+  /** Outline every cell gets. */
+  readonly edge: Rgb;
+  readonly edgeWidth: number;
+  /** Ground you may build on this turn. */
+  readonly legalEdge: Rgb;
+  /**
+   * Ripe. The loudest thing on the board by policy — it is the entire harvest
+   * decision, and a player who misses it is playing a different game.
+   */
+  readonly ripeEdge: Rgb;
+  readonly ripeEdgeWidth: number;
+  /**
+   * Darkening toward the edges of the canvas. Every handed-down direction wants
+   * the board to fall off into fog rather than stop at a border; there is no fog
+   * mechanic yet, so this is the honest half of it — atmosphere, no information.
+   * `null` switches it off entirely.
+   */
+  readonly vignette: { readonly colour: Rgb; readonly strength: number } | null;
+  /**
+   * Home (2026-08-19): the origin hex — the thing REACH and every distance-based
+   * reward measure from — had no visual identity of its own. A quiet permanent
+   * ring, drawn by `PixiRenderer`'s stroke ladder at the LOWEST priority that
+   * ladder has: it never competes with a targeted, ripe, unclaimed-landmark or
+   * rare-tile edge, all of which are checked first and return before home is
+   * ever asked. Every theme gets a value — there is no "off" here, the way there
+   * is for the vignette — because a marker every direction can render is the
+   * whole point; torchlit's is its own warm ember tone, the rest reuse their own
+   * accent, which is the "sensible default" this token exists to make possible
+   * without inventing a new colour for directions that never asked for one.
+   */
+  readonly home: { readonly ring: Rgb; readonly ringWidth: number };
+  /**
+   * How solid a BEACON is — a destination glowing through ground that has not
+   * been drawn yet (2026-08-28).
+   *
+   * One hard-typed 0.55 in `PixiRenderer` until now, and it is the same
+   * inversion `clearance` was written for: a beacon fades toward the board so
+   * it reads as "out there, not here", and on a black board a 45% wash of
+   * black keeps the tablet dark and every gold mark on it intact. On vellum
+   * the identical rule washes the tablet 45% of the way to 0.88 L*, landing
+   * it in the mid-greys — which is where a warm mark and a dark glyph both
+   * die, and is exactly what Marc's light-skin screenshot shows. Same intent,
+   * different amount, so the amount becomes a token the direction states.
+   */
+  readonly beaconFade: number;
+  /**
+   * The depth pass every baked surface wears (2026-08-25, promoted out of
+   * `render/bake.ts` where both numbers were hand-typed).
+   *
+   * `bake.ts`'s `paintDepth` runs a light wash down the top of every hex and a
+   * dark one along the bottom, so a cell reads as a physical thing in a lit room
+   * rather than a flat swatch. Both were fixed constants, which is fine while
+   * every direction is dark and wrong the moment one is not: a black wash at the
+   * foot of a pale hex reads as grime, not as shade.
+   *
+   * Two alphas, so a direction states how hard its own light falls. `isLight`
+   * decides which END of the hex gets which — that is geometry, not taste, and
+   * belongs in the baker.
+   */
+  readonly sheen: number;
+  readonly shade: number;
+};
+
+/**
+ * Timings, in milliseconds.
+ *
+ * The renderer owns time — the engine is synchronous and has no clock. Kept in
+ * the theme because pace is art direction: the same pop is a reward at 90ms and
+ * a disturbance at 400ms, and that is a decision the directions disagree on.
+ */
+export type Motion = {
+  /** The harvest flash: how long one popped hex burns for. */
+  readonly popMs: number;
+  /** Stagger between hexes in one harvest, so a big harvest reads as a cascade. */
+  readonly popStaggerMs: number;
+  readonly popColour: Rgb;
+  /** Peak alpha of the flash. */
+  readonly popAlpha: number;
+  /**
+   * How high a popped tile JUMPS, as a fraction of the hex size; 0 turns the
+   * jump off. Marc's answer to prompt.md Q3 was both at once — reward in the
+   * energy, disturbance in the meaning — so the tile itself leaps and falls
+   * away while the flash burns underneath it.
+   */
+  readonly popLift: number;
+  /**
+   * How far the pop's own light spills, as a multiplier of the hex size — the
+   * light-pool answering the burst rather than a decal sitting on top of it
+   * (WORKPLAN Stage 4, 2026-08-20). Replaces a hand-typed `3.2` that used to
+   * live in `PixiRenderer.ts`; the ripen pulse rides the same dial at its own
+   * fixed ratio so the two keep the proportion they always had.
+   */
+  readonly popGlowScale: number;
+  /**
+   * How hard a rising ember gets pulled back down before it fades, as a
+   * fraction of the hex size (WORKPLAN Stage 4). An ember used to drift in a
+   * straight line and never come back — reads as smoke, not fire. Zero would
+   * restore that straight drift; every direction gives it some gravity so the
+   * burn reads as rise-and-settle rather than rise-and-vanish. Never enough
+   * to overshoot back past where it started — see `#advanceEmbers`.
+   */
+  readonly emberGravity: number;
+  /**
+   * Base lifetime of one ember, in milliseconds, before render-side jitter
+   * (WORKPLAN Stage 4). Longer is a slower smoulder, not a bigger burst —
+   * the ember count is tuned once in `PixiRenderer.ts` for every direction.
+   */
+  readonly emberLifeMs: number;
+};
+
+export type ThemeId = string;
+
+/**
+ * The direction's VOICE (`ideas/sound.md`, built 2026-08-19 behind
+ * `ui.sound`, off by default — Marc chose a silent 1.0): three synthesised
+ * moments, parameterised as data so sound is art direction like everything
+ * else in this file. The greyscale rule's cousin applies — a direction that
+ * cannot be told apart with eyes closed has no voice — so each theme states
+ * its own numbers. Frequencies in Hz, times in seconds, gains 0..1.
+ */
+export type Voice = {
+  /** The pop: a rising run of bells, one per popped tile. */
+  readonly pop: {
+    readonly baseHz: number;
+    /** Pitch step per extra tile in the pocket — the size, audible. */
+    readonly stepHz: number;
+    readonly decay: number;
+    readonly wave: OscillatorType;
+  };
+  /** One struck note per claim kind — cache warm, site bright, territory low, shrine strange, find rare. */
+  readonly claim: Readonly<Record<'cache' | 'site' | 'territory' | 'shrine' | 'find', number>>;
+  readonly claimDecay: number;
+  readonly claimWave: OscillatorType;
+  /** Running dry: the low fade when the purse first nears the next cost. */
+  readonly dry: { readonly hz: number; readonly decay: number };
+  /** Master gain — the whole voice's loudness ceiling. */
+  readonly gain: number;
+};
+
+export type Theme = {
+  readonly id: ThemeId;
+  readonly name: string;
+  /** The mood, in the direction's own words. Shown in the gallery. */
+  readonly note: string;
+  /** Where this came from, so a value can be argued with rather than guessed at. */
+  readonly source: string;
+
+  readonly orientation: Orientation;
+  readonly board: Board;
+  readonly ink: Ink;
+  readonly type: Type;
+  readonly motion: Motion;
+  /** The direction's voice. Silent until `ui.sound` is switched on. */
+  readonly voice: Voice;
+
+  /** The four playable colours. Every key is required — a missing one is a bug. */
+  readonly terrain: Readonly<Record<Colour, Surface>>;
+  /** What this direction calls them. `CRYPT`, or `GREEN` if it has no fiction. */
+  readonly terrainNames: Readonly<Record<Colour, string>>;
+
+  /** Never buildable, never matches. The design documents call it blocked ground. */
+  readonly wall: Surface;
+  /** A popped tile. Surrounds, never matches — the reason to move on. */
+  readonly stone: Surface;
+  /** Ground with nothing on it. */
+  readonly empty: Surface;
+  /** What the selected tile would look like here. Drawn under the preview number. */
+  readonly ghost: Surface;
+
+  /**
+   * Remembered ground (2026-08-19, promoted out of `PixiRenderer` where both
+   * numbers used to be hand-typed constants — the same drift risk `mark.ts`
+   * closed for the favicon, paid here instead in two magic numbers nobody
+   * could argue with per direction). `veil` is how far a remembered tile's
+   * hue is pulled toward the board's own background before drawing (0..1);
+   * `alpha` is what the whole tinted sprite then draws at. Two steps because
+   * they answer different questions — is this ground memory, and how hard
+   * should memory compete with the live board — and every direction gets to
+   * answer both.
+   */
+  readonly fog: Fog;
+
+  /**
+   * The torch (2026-08-16; the light the structure carries, 2026-08-18/19).
+   * Light falls off with distance from the nearest hex you have actually
+   * BUILT — every tile and stone lights its own edge, not just the one you
+   * last placed — which is what makes the plane read as a room you are
+   * carrying a light through rather than a chart on black. `radius` and
+   * `fade` are measured from that edge now; the numbers themselves are
+   * unchanged by the mechanism under them.
+   *
+   * Marc set the rule: DIM, NEVER HIDDEN. Distance drains light, but every
+   * number, symbol and beacon stays readable — atmosphere must not cost a
+   * player information, and a phone in daylight has to stay playable. That is
+   * what `floor` is for, and it is a floor rather than a suggestion.
+   */
+  readonly light: Light;
+};
+
+export type Light = {
+  /** Hexes of full brightness around the structure's edge before any falloff starts. */
+  readonly radius: number;
+  /** Hexes over which brightness falls from full to the floor. */
+  readonly fade: number;
+  /** The dimmest a cell may ever be drawn, 0-1. Never 0: see above. */
+  readonly floor: number;
+};
+
+/** See `Theme.fog`'s own doc for what the two numbers mean. */
+export type Fog = {
+  readonly veil: number;
+  readonly alpha: number;
+};
+
+/**
+ * Which way up this direction is (2026-08-25).
+ *
+ * DERIVED, not a token, and deliberately: it is a fact about the palette rather
+ * than a claim a theme file gets to make, so it can never disagree with the
+ * colours underneath it. A direction that paints a pale background IS a light
+ * direction; there is nothing to keep in sync and nothing to get wrong.
+ *
+ * Used only where polarity genuinely changes the ANSWER — which way `fieldDots`
+ * brightens, which end of a hex `bake.ts` shades, which way a card's text shadow
+ * falls. Everywhere else the right fix was `clearance`, not a branch.
+ */
+export function isLight(theme: Theme): boolean {
+  return luma(theme.ink.bg) > 0.5;
+}
+
+/**
+ * Everything `bake.ts` needs to know about a direction's light, and nothing else.
+ *
+ * The baker is deliberately Pixi-free and theme-free — it takes a described
+ * surface and paints exactly that — so handing it a whole `Theme` to read two
+ * numbers off would be the wrong shape. Three values, derived in one place, so
+ * the board and the gallery cannot disagree about which way up a hex is lit.
+ */
+export type Depth = {
+  readonly sheen: number;
+  readonly shade: number;
+  /** Which end of the hex the highlight goes on. See `isLight`. */
+  readonly light: boolean;
+};
+
+export function depthOf(theme: Theme): Depth {
+  return { sheen: theme.board.sheen, shade: theme.board.shade, light: isLight(theme) };
+}
+
+/**
+ * How much lighter the field dots must READ than the ground they sit on, in
+ * L* after the alpha is applied. This is the number Marc's report is about:
+ * the dots were drawn in each colour's own fill at a flat 0.22 alpha, so
+ * their legibility was whatever that colour's contrast happened to be —
+ * torchlit's yellow landed at 0.147 and read fine, its blue at 0.039 and was
+ * invisible. A field you cannot see is a rule you cannot use.
+ *
+ * Raised 0.2 → 0.25 on 2026-08-21 (Marc, on the phone: "make sure biomes
+ * when placing tiles are more visible, bump opacity"). The equalising is
+ * what this number does — every colour is pushed to the SAME readable lift,
+ * whatever its own contrast happens to be — so raising the target raises all
+ * four together and cannot re-open the gap between them that it was written
+ * to close. The floor and ceiling in `fieldDots` moved with it: the floor
+ * because a high-contrast colour clamps there and would otherwise not have
+ * moved at all, the ceiling so the low-contrast ones still have somewhere to
+ * go.
+ */
+export const MIN_FIELD_LIFT = 0.25;
+
+/**
+ * The same lift, measured where the player is actually standing — under the
+ * torch rather than in full light (2026-08-27).
+ *
+ * `MIN_FIELD_LIFT` grades a field against bare ground at FULL brightness, and
+ * most of the board is not at full brightness: the renderer tints every sprite
+ * toward the board by `light.floor` outside the light pool, and a multiply
+ * shrinks the DIFFERENCE between two colours exactly as hard as it shrinks
+ * either one. Torchlit's floor is 0.42, so a field that clears 0.25 in the lab
+ * arrives at about 0.11 on the board; daylight's floor is 0.94 and it arrives
+ * at 0.24. That gap is what Marc saw when he said native ground was easier to
+ * tell from plain ground on the light map than on the dark ones.
+ *
+ * 0.10 rather than something prouder because this is a FLOOR under an existing
+ * ladder, not a new target: every direction in the registry passes it today
+ * (torchlit at 0.112, torchlit-bright at 0.190, daylight at 0.240) and it is
+ * here to stop a future `light.floor` being lowered for atmosphere without
+ * anyone noticing what it costs the one rule the ground carries.
+ */
+export const MIN_LIT_FIELD_LIFT = 0.1;
+
+/**
+ * The same colour at full strength: every channel scaled up until the
+ * brightest one is maxed.
+ *
+ * This is the difference between "lighter" and "brighter", and it is the
+ * whole fix for Marc's second report — that blue and green fields were still
+ * hard to tell apart. Mixing toward white raises lightness by REMOVING
+ * colour, so four brightened terrains converge on four pale greys and the
+ * only thing that made a field say its name is the first thing spent. Scaling
+ * to full saturation raises lightness while keeping the hue exactly, so blue
+ * gets bluer rather than paler.
+ */
+function vivid(c: Rgb): Rgb {
+  const channels = [(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff];
+  const peak = Math.max(...channels, 1);
+  const scaled = channels.map((v) => Math.min(255, Math.round((v * 255) / peak)));
+  return ((scaled[0] ?? 0) << 16) | ((scaled[1] ?? 0) << 8) | (scaled[2] ?? 0);
+}
+
+/**
+ * `vivid`'s mirror: the same colour at full strength, reached by going DOWN.
+ *
+ * `vivid` maxes the brightest channel, which raises lightness — the right first
+ * move on a dark board and precisely the wrong one on a pale board, where it
+ * walks every field toward the ground it is supposed to separate from. This
+ * zeroes the DIMMEST channel instead: same hue, same gain in saturation, the
+ * lightness spent rather than bought.
+ *
+ * Written as `vivid` in the complement so there is one saturation rule in this
+ * file rather than two that could drift apart.
+ */
+function deep(c: Rgb): Rgb {
+  return 0xffffff & ~vivid(0xffffff & ~c);
+}
+
+/**
+ * The dots that mark ground native to a colour, as ink and alpha.
+ *
+ * Two jobs at once, and they pull against each other: the dots must SAY which
+ * colour owns this ground (so they keep its hue) and must be equally visible
+ * for all four (so they cannot keep its lightness — the four terrains are
+ * spaced apart in L* on purpose, and that spacing is exactly what made the
+ * dark ones vanish).
+ *
+ * So: brighten toward white, which keeps hue and buys contrast, until the
+ * colour clears the ground by a workable margin — then choose the alpha that
+ * makes the FINAL lift the same for every colour. Bright fields stop
+ * shouting, dark fields become readable, and all four still say their name.
+ */
+/*
+ * COLOUR_GLYPH — a per-colour SHAPE repeated over native ground — lived here
+ * from 2026-08-16 to 2026-08-18. Marc asked for it ("a symbol per color")
+ * and Marc retired it after playing it: at ground scale the shapes collapsed
+ * into lookalike dots ("blue and green are too lookalike"). Fields now carry
+ * their colour's own TEXTURE instead — see `fieldPattern` below — which
+ * keeps the non-hue channel (orientation survives smallness better than
+ * silhouette) and makes ground read as its terrain. The cards keep
+ * COLOUR_MARK; the `glyphs` pattern kind stays in the vocabulary, currently
+ * unreferenced by any theme.
+ */
+
+/** The same four as characters, for the places that draw text rather than textures. */
+export const COLOUR_MARK: Readonly<Record<Colour, string>> = {
+  green: '▲',
+  yellow: '◆',
+  red: '■',
+  blue: '●',
+};
+
+/**
+ * The destination glyphs — fixed across directions for the same reason the
+ * colour marks are: a symbol language that changes with the art direction is
+ * a language nobody learns. `✚` pays tiles (the HEAVY cross since
+ * 2026-08-26 — Marc, from the phone: "I can clearly see the stars one, the
+ * + cache not so much"; a thin typographic plus was the one glyph in the
+ * set with hairline strokes, so it vanished at beacon sizes where every
+ * filled mark survived), `★` pays points, `◈` wakes an unlock, `❖` is
+ * ground to claim (a CLUSTER of diamonds since 2026-08-26 — the solid `◆`
+ * was also yellow's colour mark, so one shape meant two things; the cluster
+ * keeps the diamond family the board already taught while reading as what a
+ * territory is, several grounds claimed as one), `✦` is a hidden find — a
+ * four-pointed spark, distinct from the star and both diamonds at the sizes
+ * a phone draws them. Keyed by plain strings so the theme layer needs
+ * nothing from the engine. A find only ever wears its glyph once REVEALED:
+ * the shimmer draws no glyph at all, by design. No glyph may be shared with
+ * `COLOUR_MARK` — pinned by test, because the collision shipped once.
+ */
+export const LANDMARK_GLYPH: Readonly<
+  Record<'cache' | 'site' | 'shrine' | 'territory' | 'find', string>
+> = {
+  cache: '✚',
+  site: '★',
+  shrine: '◈',
+  territory: '❖',
+  find: '✦',
+};
+
+/**
+ * The voice the teaching cards lead with when the lesson is about the game
+ * itself rather than one landmark or colour — a hex, because the game is
+ * hexes. One constant (2026-08-26) instead of the nine prose strings that
+ * each hardcoded it, so the symbol language has one registry: colours in
+ * `COLOUR_MARK`, landmarks in `LANDMARK_GLYPH`, and the game's own voice
+ * here.
+ */
+export const TILE_GLYPH = '⬢';
+
+/**
+ * The fourth registry (2026-08-27, WORKPLAN's symbol & glossary pipeline,
+ * Stage 1): cross-screen CONCEPTS, as distinct from the four colours
+ * (`COLOUR_MARK`), the five destinations (`LANDMARK_GLYPH`) and the game's
+ * own voice (`TILE_GLYPH`). Moderate vocabulary, Marc's own ruling on option
+ * sets (2026-08-27) — marks only for ideas that recur across screens, stats
+ * stay words:
+ *
+ *   - `relic` ◉ and `luck` ✤ — the two currencies that follow a player
+ *     between the board, the shop and the end screen, and had no character
+ *     of their own before this stage (Stage 2 puts them on screen).
+ *   - `wall` ▦ and `stone` ▨ — the two grounds that are never playable,
+ *     spoken today only in prose (Stage 2 gives `describeHexOf` and the
+ *     manual their lead).
+ *   - `fame` ❋ **retires `✦` as a highlight mark** — its sixth meaning. `✦`
+ *     was already `LANDMARK_GLYPH.find` (a hidden find on the board) AND the
+ *     hall of fame's own diary mark (a NEW BEST, a perk found, a shrine
+ *     woken) at once, so one glyph answered two different questions
+ *     depending which screen you were reading it on. `❋` is fame and only
+ *     fame now: the timeline's run rows, the perk shelf, every highlight.
+ *     `✦` goes back to meaning one thing — a find, on the board or in
+ *     `describeHexOf`'s prose — which is what Stage 1's question is asking:
+ *     can a player tell the two apart at arm's length.
+ *   - `met` ✓ and `notYet` ◇ formalize a ruling already made in code
+ *     (2026-08-26, see `session.ts`'s survey ledger): a goal met used to
+ *     borrow the shrine's own `◈`, so one mark meant two different
+ *     earned-things (a shrine woken, a goal met) depending on which ledger
+ *     you were reading. `✓`/`◇` already existed as literals at that call
+ *     site; this registry is that ruling, named, so every ledger — shrines,
+ *     goals, whatever comes next — draws from the same two marks instead of
+ *     re-deciding it.
+ *
+ * Fallbacks, if Marc's phone shows tofu or a lookalike for any of the new
+ * five: `relic` ◉ → ▣, `luck` ✤ → ✥, `fame` ❋ → ✻, `stone` ▨ → ▤. `wall`,
+ * `met` and `notYet` are already in wide use elsewhere in the registry's
+ * neighbourhood and are not expected to need one.
+ *
+ * Same collision rule as the other three: no glyph here may repeat one
+ * already spoken by `COLOUR_MARK`, `LANDMARK_GLYPH` or `TILE_GLYPH` —
+ * `tokens.test.ts`'s one-symbol-language test checks all four together.
+ */
+export const CONCEPT_MARK: Readonly<
+  Record<'relic' | 'luck' | 'wall' | 'stone' | 'fame' | 'met' | 'notYet', string>
+> = {
+  relic: '◉',
+  luck: '✤',
+  wall: '▦',
+  stone: '▨',
+  fame: '❋',
+  met: '✓',
+  notYet: '◇',
+};
+
+/**
+ * How much one elevation band lifts a hex's light, multiplicatively.
+ *
+ * Deliberately gentle: elevation is Marc's purely-cosmetic call, and a slope
+ * that reads louder than the tiles is a board you cannot read. It lives here
+ * with `brightness` because the two ride the same channel — and so the
+ * gallery can draw the bands with the same number the board uses.
+ */
+export const BAND_LIFT = 0.06;
+
+export function fieldDots(theme: Theme, colour: Colour): { ink: Rgb; alpha: number } {
+  // Away from the ground, not toward white (2026-08-25). On a dark board those
+  // are the same direction and the loop below could say either; on a pale one
+  // they are opposites, and mixing toward white would walk every field INTO its
+  // own ground until all four were invisible at once.
+  const light = isLight(theme);
+  const away = light ? 0x000000 : 0xffffff;
+
+  // Full saturation first — hue kept, lightness spent or bought depending on
+  // which way this direction is up, the four kept apart. Only if that still is
+  // not enough does black or white get involved, and by then the colour is as
+  // saturated as it can be, so the wash is as small as possible.
+  let ink = light ? deep(theme.terrain[colour].fill) : vivid(theme.terrain[colour].fill);
+  // The target is `MIN_FIELD_LIFT / 0.5`, not a hand-typed 0.45 (2026-08-25).
+  // 0.5 is the alpha ceiling three lines down, so a colour that stops short of
+  // this clearance clamps there and lands UNDER the lift it was pushed toward —
+  // `lift = 0.5 * gap`, which at a gap of 0.45 is 0.225 against a floor of 0.25.
+  // Torchlit never noticed because its inks overshot the old number on the first
+  // step; a direction whose ink lands inside [0.45, 0.5) failed silently. The
+  // loop's target and the clamp are now the same number by construction.
+  for (let step = 0; step < 12 && clearance(ink, theme.empty.fill) < MIN_FIELD_LIFT / 0.5; step++) {
+    ink = mix(ink, away, 0.1);
+  }
+
+  const gap = Math.max(0.001, clearance(ink, theme.empty.fill));
+  // Floor 0.18 → 0.24 with the lift above (2026-08-21): a colour whose own
+  // contrast already clears the target sits ON the floor, so leaving it
+  // would have made the quietest fields the only ones that did not move.
+  //
+  // The ceiling is 0.5 rather than the old 0.65, and that is a TIGHTENING:
+  // 0.5 is the point past which ground starts reading as a placed tile,
+  // which the theme tests have asserted since fields were built while the
+  // code allowed 0.65. The invariant belongs in the code that has to hold
+  // it — raising the lift is exactly the change that would have found the
+  // gap the hard way.
+  return { ink, alpha: Math.min(0.5, Math.max(0.24, MIN_FIELD_LIFT / gap)) };
+}
+
+/**
+ * When a theme's terrain has no pattern of its own, its fields still need a
+ * distinct mark — and the fallback keeps all four apart in ANY theme: two
+ * hatch angles, verticals, and dots can never collide the way two smooth
+ * terrains would.
+ */
+const FIELD_FALLBACK: Readonly<
+  Record<Colour, { kind: 'hatch'; angleDeg: number } | { kind: 'dots' }>
+> = {
+  green: { kind: 'hatch', angleDeg: 60 },
+  yellow: { kind: 'hatch', angleDeg: 90 },
+  red: { kind: 'dots' },
+  blue: { kind: 'hatch', angleDeg: 0 },
+};
+
+/** Fixed ground-weight geometry for a field's own pattern (unchanged since 2026-08-18). */
+const FIELD_WEIGHT = { dots: { radius: 1.4, pitch: 6 }, hatch: { bar: 1, gap: 5 } };
+
+/**
+ * A second, looser ground-weight geometry for a field's OVERLAY layer
+ * (2026-08-20). Deliberately different numbers from `FIELD_WEIGHT` — a
+ * field overlay stacked at the same pitch as the field's own pattern would
+ * draw the identical dot or bar grid twice in the same spot, which reads as
+ * one flat layer rather than the "second frequency" every terrain's own
+ * `overlay` is written to add (see `torchlit.ts`'s per-colour comments: "a
+ * pitch that shares no common factor with the first"). Wider/lighter than
+ * `FIELD_WEIGHT` for the same reason the terrain overlays themselves read
+ * looser than their base pattern.
+ */
+const FIELD_OVERLAY_WEIGHT = { dots: { radius: 1.0, pitch: 11 }, hatch: { bar: 1, gap: 9 } };
+
+/**
+ * Thin one geometry (a terrain's `pattern` or its `overlay`) to ground
+ * weight, sharing the ink/alpha every field on this theme is equalised to.
+ * The shared half of `fieldPattern` and `fieldOverlayPattern` below — one
+ * place that turns "a terrain's own texture" into "a whisper about what
+ * grows well here", called twice with two different weight tables so the
+ * two layers a field can carry never collide.
+ */
+function thinnedField(
+  theme: Theme,
+  colour: Colour,
+  terrain: Pattern | (typeof FIELD_FALLBACK)[Colour],
+  weight: typeof FIELD_WEIGHT,
+): Pattern {
+  const { ink, alpha } = fieldDots(theme, colour);
+  const geometry =
+    terrain.kind === 'hatch' || terrain.kind === 'dots' ? terrain : FIELD_FALLBACK[colour];
+  return geometry.kind === 'dots'
+    ? { kind: 'dots', ink, alpha, radius: weight.dots.radius, pitch: weight.dots.pitch }
+    : {
+        kind: 'hatch',
+        angleDeg: geometry.angleDeg,
+        ink,
+        alpha,
+        bar: weight.hatch.bar,
+        gap: weight.hatch.gap,
+      };
+}
+
+/**
+ * The pattern a native field wears: the COLOUR'S OWN terrain texture, thinned
+ * to ground weight (Marc, 2026-08-18: "they should use the proper pattern —
+ * dots, diagonal, verticals — so its easier on the eyes").
+ *
+ * A field is a promise about what grows well there, so it speaks the same
+ * texture language as the tile it wants: moss ground carries moss's diagonal
+ * hatch, ash ground its dots, tide ground its horizontals. Ink and alpha come
+ * from `fieldDots`, which equalises how strongly all four read against this
+ * theme's ground; the geometry comes from the terrain, with a per-colour
+ * fallback where a terrain is smooth. One function, used by the renderer and
+ * the gallery both, so the workbench can never disagree with the board.
+ */
+export function fieldPattern(theme: Theme, colour: Colour): Pattern {
+  // Two terrains may share a texture ON THE TILE — EMBER and ASH both lead
+  // with dots since 2026-08-20 ("a texture maybe dotted for ember its
+  // clearer"), kept apart there by polarity: bright sparks against dark
+  // pits. Ground has no polarity — every field's ink is equalised by
+  // `fieldDots` — so geometry is the only channel left down here, and a
+  // collision falls back to the colour's OWN distinct ground mark. For
+  // ember that is the vertical dry grass its sparks sit in, which is also
+  // what a field is: the ground a colour grows from, not the gleam on top.
+  const own = theme.terrain[colour].pattern;
+  const ground = (p: Pattern): string | null =>
+    p.kind === 'hatch' ? `hatch:${p.angleDeg}` : p.kind === 'dots' ? 'dots' : null;
+  const mine = ground(own);
+  const collides =
+    mine !== null &&
+    (Object.keys(FIELD_FALLBACK) as Colour[]).some(
+      (c) => c !== colour && ground(theme.terrain[c].pattern) === mine,
+    );
+  return thinnedField(theme, colour, collides ? FIELD_FALLBACK[colour] : own, FIELD_WEIGHT);
+}
+
+/**
+ * The field's second layer: the terrain's own Stage-3 `overlay`
+ * (2026-08-19, WORKPLAN Stage 3), thinned the same way `fieldPattern` thins
+ * the base texture (2026-08-20, Marc: "the background tiles of territories
+ * colors have not switched textures like the others"). Stage 3 gave board
+ * TILES a second, deepening layer over their axis pattern; fields carried
+ * only the axis, so ground fell one layer behind the tiles standing on it.
+ * `NO_PATTERN` where the terrain has no overlay at all — nothing to thin —
+ * which is exactly the placeholder direction's case today.
+ */
+export function fieldOverlayPattern(theme: Theme, colour: Colour): Pattern {
+  const overlay = theme.terrain[colour].overlay;
+  if (overlay.kind === 'none') return NO_PATTERN;
+  const thinned = thinnedField(theme, colour, overlay, FIELD_OVERLAY_WEIGHT);
+  // The two layers must stay two GEOMETRIES (fresh-eyes, 2026-08-20):
+  // ember's collision fallback made its field base hatch@90 — the same
+  // bars its own overlay carries — which is the identical-grid-twice this
+  // weight table's doc forbids. When the thinned overlay lands on the
+  // base's geometry, the terrain's PATTERN steps in as the second layer
+  // instead: ember ground gets its spark dots back over the grass, and
+  // the field speaks its tile's full texture again.
+  const base = fieldPattern(theme, colour);
+  const shape = (p: Pattern): string => (p.kind === 'hatch' ? `hatch:${p.angleDeg}` : p.kind);
+  if (shape(thinned) === shape(base)) {
+    return thinnedField(theme, colour, theme.terrain[colour].pattern, FIELD_OVERLAY_WEIGHT);
+  }
+  return thinned;
+}
+
+/**
+ * The ground a native field draws, WITH slot art or WITHOUT (2026-08-20).
+ *
+ * Marc's report: Stage 3 gave board tiles baked PNGs and a second procedural
+ * `overlay`; `fieldPattern` saw neither, because it only ever read
+ * `theme.terrain[colour].pattern`. Territory ground kept the pre-Stage-3
+ * look while everything standing on it moved on. This is the one place that
+ * decides what a field looks like, so the renderer and `/gallery` derive
+ * the identical answer from the identical inputs — a new PNG dropped in a
+ * slot, or a token retune, reaches the ground with no other file touched.
+ *
+ * BOTH ways it wears `fieldPattern` plus `fieldOverlayPattern` — the
+ * terrain's own texture thinned to ground weight, inked at the alpha
+ * `fieldDots` equalises every colour to. That is the part a player reads.
+ *
+ * WITH art (`hasArt` true and the colour's terrain slot names one) it ALSO
+ * carries that PNG ghosted under the marks at `ghostAlpha` — the same file
+ * the board's TILES draw at full strength, at a fraction of it, so a claimed
+ * hex and the field around it read as one material at two weights rather
+ * than two eras of art. Material under, marks over: see `bakeSurface`.
+ */
+export type FieldGround =
+  | {
+      readonly kind: 'art';
+      readonly base: Surface;
+      readonly asset: AssetId;
+      readonly ghostAlpha: number;
+    }
+  | { readonly kind: 'procedural'; readonly surface: Surface };
+
+/**
+ * How much louder a GHOSTED PNG has to be than a dot pattern to read the
+ * same (Marc, 2026-08-21, on the phone: "when we're playing and putting tiles
+ * on ground that has moss (newly found) they are hard to see, I'd like more
+ * opacity for these cases" — remembered ground, he said, was fine).
+ *
+ * `fieldGround` reused `fieldDots`' alpha directly, and the reasoning for
+ * that is still right: the alpha must be EQUALISED per colour, because a
+ * flat number reads differently against four different ground lightnesses.
+ * What it got wrong is the magnitude. A dot pattern spends its alpha on a
+ * few high-contrast marks against bare ground; a ghosted terrain PNG spends
+ * the same alpha across a whole mid-tone photograph, so the same number
+ * lands far quieter. Same question, same per-colour answer, scaled for the
+ * medium — and capped, because past this the ground starts reading as a
+ * placed tile, which is the same wall `fieldDots` stops at.
+ *
+ * ONE number to tune if it overshoots on glass. Remembered ground rides the
+ * same baked texture, so it brightens with this; `Theme.fog`'s `veil` and
+ * `alpha` are the dials that hold memory where it is if it does.
+ */
+const FIELD_GHOST_GAIN = 1.5;
+const FIELD_GHOST_MAX = 0.62;
+
+export function fieldGround(theme: Theme, colour: Colour, hasArt: boolean): FieldGround {
+  const asset = theme.terrain[colour].asset;
+  // The marks are the field's LEGIBILITY channel and the ghost is its MATERIAL
+  // channel; the art path used to trade the first for the second (2026-08-27,
+  // Marc: native ground is easier to tell from plain ground on the light board
+  // than on the dark ones). It was — and the reason is arithmetic. The ghost is
+  // an un-equalised mid-tone photograph of the terrain, so how far it lands from
+  // bare ground is whatever that PNG's average happens to be; then the torch
+  // multiplies the whole sprite by `light.floor`, which multiplies that distance
+  // too. Torchlit's MOSS field ended up 0.020 in L* from plain ground over most
+  // of the board, where daylight's floor of 0.94 left its fields at 0.14-0.22.
+  // `fieldDots` exists to answer exactly this question and the art path stopped
+  // asking it. Both branches build the same base now: the equalised pattern and
+  // overlay, ghost or no ghost, which puts torchlit's worst field back at 0.14.
+  const base: Surface = {
+    ...theme.empty,
+    pattern: fieldPattern(theme, colour),
+    overlay: fieldOverlayPattern(theme, colour),
+  };
+  if (hasArt && asset !== null) {
+    // Reuses `fieldDots`' own equalised alpha rather than one flat number
+    // for all four colours — the exact reasoning `fieldDots`' doc gives for
+    // the dots it was built for: a fixed alpha reads differently against
+    // four different ground lightnesses (torchlit's own history: blue at a
+    // flat 0.22 was invisible, yellow at the same number shouted). The
+    // ghost asks the identical question — "how strongly must this colour's
+    // mark show against ITS OWN ground to read the same as the other
+    // three" — so it gets the identical answer.
+    return {
+      kind: 'art',
+      base,
+      asset,
+      ghostAlpha: Math.min(FIELD_GHOST_MAX, fieldDots(theme, colour).alpha * FIELD_GHOST_GAIN),
+    };
+  }
+  return { kind: 'procedural', surface: base };
+}
+
+/**
+ * A surface with the boring answers filled in, so a theme states only what it
+ * means. Written as a function rather than a spread-able constant because
+ * `exactOptionalPropertyTypes` makes partial objects genuinely annoying, and
+ * because the defaults are a decision worth having one home for.
+ */
+export function surface(fill: Rgb, over: Partial<Surface> = {}): Surface {
+  return {
+    fill,
+    fillTo: over.fillTo ?? null,
+    pattern: over.pattern ?? NO_PATTERN,
+    overlay: over.overlay ?? NO_PATTERN,
+    asset: over.asset ?? null,
+    inset: over.inset ?? 0.06,
+    alpha: over.alpha ?? 1,
+    scorch: over.scorch ?? false,
+  };
+}
+
+/**
+ * How brightly a hex `dist` hexes from the torch is drawn, 0-1.
+ *
+ * Full inside `radius`, falling to `floor` over `fade` hexes, and never below
+ * the floor — Marc's rule is dim, never hidden, so this function has no way
+ * to reach zero. The curve is squared rather than linear because linear
+ * falloff reads as a flat grey disc: the eye wants the light to hold near the
+ * source and give way quickly at the edge.
+ */
+export function brightness(light: Light, dist: number): number {
+  if (dist <= light.radius) return 1;
+  if (light.fade <= 0) return light.floor;
+  const t = Math.min(1, (dist - light.radius) / light.fade);
+  return light.floor + (1 - light.floor) * (1 - t) ** 2;
+}

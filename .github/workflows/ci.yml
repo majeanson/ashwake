@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      # The rules did not move: the harness in this repo must print exactly what
+      # Ashwake 1's did. `sim.golden.txt` is that output, captured from
+      # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
+      - run: pnpm --filter @ashwake/core --silent sim > sim.out.txt && diff -u packages/core/sim.golden.txt sim.out.txt

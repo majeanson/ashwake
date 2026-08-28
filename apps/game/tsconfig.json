@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+    "paths": {
+      "@engine/*": ["../../packages/core/src/engine/*"],
+      "@content/*": ["../../packages/core/src/content/*"],
+      "@meta/*": ["../../packages/core/src/meta/*"],
+      "@render/*": ["../../packages/core/src/render/*"],
+      "@theme/*": ["../../packages/core/src/theme/*"],
+      "@view/*": ["../../packages/core/src/view/*"],
+      "@sim/*": ["../../packages/core/src/sim/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

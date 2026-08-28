@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@engine/*": ["./src/engine/*"],
+      "@content/*": ["./src/content/*"],
+      "@meta/*": ["./src/meta/*"],
+      "@render/*": ["./src/render/*"],
+      "@theme/*": ["./src/theme/*"],
+      "@view/*": ["./src/view/*"],
+      "@sim/*": ["./src/sim/*"]
+    }
+  },
+  "include": ["src", "scripts", "vitest.config.ts"]
+}

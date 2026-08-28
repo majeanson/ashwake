@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    // One alias set for the whole workspace. The names are the layers, and
+    // `eslint.config.js` is what makes the arrows between them a fact.
+    "paths": {
+      "@engine/*": ["./packages/core/src/engine/*"],
+      "@content/*": ["./packages/core/src/content/*"],
+      "@meta/*": ["./packages/core/src/meta/*"],
+      "@render/*": ["./packages/core/src/render/*"],
+      "@theme/*": ["./packages/core/src/theme/*"],
+      "@view/*": ["./packages/core/src/view/*"],
+      "@sim/*": ["./packages/core/src/sim/*"]
+    }
+  }
+}
