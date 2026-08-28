@@ -57,6 +57,42 @@ is shared; the app's restore is the migration path, and the daily's epoch stays
 2026-08-25 (Ashwake 1's D20), so daily numbers keep meaning the same thing on
 both bodies.
 
+### D4 — Two languages, Québec French first — RULED 2026-08-28
+
+Marc: **"introduce i18n for fr(qc) first, then en (what we did)"**, and on
+the forks put to him:
+
+1. **Default language: the device's, falling back to fr-CA.** Any French tag
+   opens Québec French, any English tag opens English, anything else opens
+   French. A LANGUE / LANGUAGE row in SETTINGS overrides it and is remembered
+   (Stage 3).
+2. **The four grounds in French, his words: LICHEN · TISONS · CENDRES ·
+   RIVIÈRES.** Each still names its power (the crowd, the live coals, what
+   feeds on stone, what pays far from home). Names are per direction AND per
+   language (`Theme.terrainNames[locale]`), because a direction names its
+   ground by its own fiction in every language rather than translating
+   another direction's.
+3. **The glossary:** RIPE→MÛR · POP→RÉCOLTER · BURN→BRÛLER · POCKET→POCHE ·
+   STASH→RÉSERVE · RELICS→RELIQUES · LUCK→CHANCE · BEGIN→COMMENCER · NEW
+   RUN→NOUVELLE PARTIE · WORLD→MONDE · THE DAILY→LE QUOTIDIEN ·
+   SHRINE→SANCTUAIRE · TERRITORY→TERRITOIRE · SACRIFICE LUCK→SACRIFIER LA
+   CHANCE. He chose POCHE over GRAPPE and RÉCOLTER over ÉCLATER.
+4. **"FARM · MARKET · ? · ROADS"** — his thought while naming the colours —
+   is a _direction_, not a translation, and is parked for Stage 5 as a
+   candidate ("settlement": FARM · MARKET · QUARRY · ROADS), to be chosen by
+   looking.
+
+**How it is built** (`packages/core/src/text/`): one typed catalogue per
+language — no library, no string keys — so a missing French sentence is a
+type error. **Facts are computed in `view/` and `meta/`; words are looked
+up**: a catalogue function takes numbers and names and returns a sentence,
+never reads state and never decides whether to speak, so the two languages
+cannot disagree about WHEN a rule applies. English is the prose exactly as it
+was, proved by the pre-move snapshots passing byte-identical. Québec
+typography is a test (`text.test.ts`): the fine space before `:` and `%` and
+nowhere else, the typographic apostrophe, accents kept on capitals. Marc
+reviews the French on the snapshot files, then on the phone.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

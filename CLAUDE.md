@@ -41,6 +41,13 @@ Hard rules — all inherited, all still enforced:
   marks) and the greyscale ladder in `packages/core/src/theme/*.test.ts` run
   over every direction, and — once the board is lit — over the materials a
   hex actually renders in. Do not relax a threshold to pass; darken something.
+- **Two languages, and the catalogue never decides** (D4). Every sentence a
+  player reads lives in `packages/core/src/text/` — `fr-CA.ts` first, `en.ts`
+  second — as a typed object, so a missing sentence is a type error. Facts
+  are computed in `view/` and `meta/`; a catalogue function takes numbers and
+  names and returns words, never reads state, never decides whether to speak.
+  Québec typography is a test (`text.test.ts`). The English snapshots are
+  never re-recorded silently; the French ones are Marc's review surface.
 - **The board host never remounts.** The R3F `<Canvas>` lives once, above
   every scene; losing it loses the WebGL context.
 - **No PR gate.** Land on `main`; CI gates the deploy.

@@ -1,0 +1,152 @@
+import { describe, expect, it } from 'vitest';
+import { LOCALES, pickLocale } from '@content/locale';
+import { STRINGS_EN } from './en';
+import { STRINGS_FR } from './fr-CA';
+import { fmtInt, fmtPct, NNBSP, ordinal } from './format';
+import { stringsFor } from './index';
+import type { Strings } from './Strings';
+
+/**
+ * The rules of each language, held where a test can hold them (2026-08-28).
+ *
+ * The catalogue is a typed object, so a MISSING sentence is already a type
+ * error; what a type cannot say is whether a sentence is written the way its
+ * language writes. Québec French puts a narrow no-break space before a colon
+ * and never uses a typewriter apostrophe; English does neither. A catalogue
+ * that got those wrong would read as translated rather than written, on the
+ * one screen a stranger meets first.
+ */
+
+/** Every string a catalogue can produce, with its functions called on sample
+ *  facts — enough to see each sentence at least once. */
+function everyString(value: unknown, out: string[] = []): string[] {
+  if (typeof value === 'string') out.push(value);
+  else if (typeof value === 'function') {
+    const fn = value as (...args: unknown[]) => unknown;
+    // Two calls, so both branches of a `n === 1` fork are seen.
+    for (const n of [1, 3]) {
+      const args = Array.from({ length: fn.length }, (_, i) =>
+        i === 0 && fn.length > 1 && fn.name === '' ? n : n,
+      );
+      try {
+        everyString(fn(...args.map((a, i) => (i % 2 === 1 ? 'X' : a))), out);
+        everyString(fn(...args), out);
+      } catch {
+        // A function wanting a string where we passed a number: the other
+        // call shape above will have covered it.
+      }
+    }
+  } else if (Array.isArray(value)) for (const v of value) everyString(v, out);
+  else if (typeof value === 'object' && value !== null && !(value instanceof RegExp)) {
+    for (const v of Object.values(value)) everyString(v, out);
+  }
+  return out;
+}
+
+const CATALOGUES: readonly Strings[] = [STRINGS_EN, STRINGS_FR];
+/** The ordinary no-break space, the one French puts inside « ». */
+const NBSP = String.fromCharCode(0xa0);
+
+describe('the catalogues', () => {
+  it('exist for every locale, and each says which one it is', () => {
+    for (const locale of LOCALES) expect(stringsFor(locale).locale).toBe(locale);
+  });
+
+  it('never leave a sentence empty', () => {
+    for (const s of CATALOGUES) {
+      for (const text of everyString(s)) expect(text.trim(), `${s.locale}: empty`).not.toBe('');
+    }
+  });
+});
+
+describe('Québec French', () => {
+  const strings = everyString(STRINGS_FR);
+
+  it('uses the typographic apostrophe, never the typewriter one', () => {
+    for (const text of strings) expect(text, text).not.toContain("'");
+  });
+
+  /**
+   * OQLF, Québec usage: a narrow no-break space before `:` and `%` — and,
+   * unlike the French of France, NONE before `;` `!` `?`. Checked on the two
+   * signs the English never carries a space before, so a sentence that was
+   * translated by ear rather than written gets caught either way.
+   */
+  it('puts the fine space before a colon and a percent sign, and nowhere else', () => {
+    for (const text of strings) {
+      expect(text, `"${text}" — a colon without its fine space`).not.toMatch(/[\p{L}\p{N})]:/u);
+      expect(text, `"${text}" — a plain space before a colon`).not.toMatch(/ :/);
+      expect(text, `"${text}" — a percent without its fine space`).not.toMatch(/\d%/);
+      expect(text, `"${text}" — a space before ; ! or ?, which Québec does not write`).not.toMatch(
+        new RegExp(`[\\s${NNBSP}${NBSP}][;!?]`, 'u'),
+      );
+    }
+  });
+
+  it('keeps its accents on capitals', () => {
+    // The glossary Marc set; spelled without the accent these would be the
+    // words a term matcher never finds.
+    expect(STRINGS_FR.lesson.stash.name).toBe('RÉSERVE');
+    expect(STRINGS_FR.lesson.ripe.terms).toContain('MÛRIT');
+    expect(STRINGS_FR.lesson.pop.name).toBe('RÉCOLTER');
+  });
+
+  it('names the four grounds by Marc’s words', () => {
+    expect(STRINGS_FR.view.colourWord).toEqual({
+      green: 'FOULE',
+      yellow: 'COMPAGNIE',
+      red: 'CENDRES',
+      blue: 'COURANT',
+    });
+  });
+});
+
+describe('English', () => {
+  it('carries no fine space — it never did', () => {
+    for (const text of everyString(STRINGS_EN)) expect(text).not.toContain(NNBSP);
+  });
+});
+
+describe('the formats', () => {
+  it('groups French thousands with the fine space from five digits, English never', () => {
+    expect(fmtInt(1204, 'fr-CA')).toBe('1204');
+    expect(fmtInt(12345, 'fr-CA')).toBe(`12${NNBSP}345`);
+    expect(fmtInt(1234567, 'fr-CA')).toBe(`1${NNBSP}234${NNBSP}567`);
+    expect(fmtInt(-12345, 'fr-CA')).toBe(`-12${NNBSP}345`);
+    expect(fmtInt(12345, 'en')).toBe('12345');
+  });
+
+  it('writes a percent each language’s way', () => {
+    expect(fmtPct(12, 'en')).toBe('12%');
+    expect(fmtPct(1.2, 'en')).toBe('1.2%');
+    expect(fmtPct(12, 'fr-CA')).toBe(`12${NNBSP}%`);
+    expect(fmtPct(1.2, 'fr-CA')).toBe(`1,2${NNBSP}%`);
+  });
+
+  it('counts retries each language’s way', () => {
+    expect([1, 2, 3, 4, 11, 21].map((n) => ordinal(n, 'en'))).toEqual([
+      '1st',
+      '2nd',
+      '3rd',
+      '4th',
+      '11th',
+      '21st',
+    ]);
+    expect([1, 2, 3, 21].map((n) => ordinal(n, 'fr-CA'))).toEqual(['1er', '2e', '3e', '21e']);
+  });
+});
+
+describe('which language a device opens in', () => {
+  it('follows the device, any French to Québec French, any English to English', () => {
+    expect(pickLocale(['fr-FR', 'en-US'])).toBe('fr-CA');
+    expect(pickLocale(['fr'])).toBe('fr-CA');
+    expect(pickLocale(['en-GB'])).toBe('en');
+    expect(pickLocale(['EN'])).toBe('en');
+    expect(pickLocale(['de-DE', 'en-US'])).toBe('en');
+  });
+
+  it('falls back to French — Marc’s ruling — when the device speaks neither', () => {
+    expect(pickLocale(['de-DE'])).toBe('fr-CA');
+    expect(pickLocale([])).toBe('fr-CA');
+  });
+});

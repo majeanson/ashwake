@@ -4,7 +4,25 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-28 — Stage 1: the core is a package, and the rules
+Last checkpoint: **2026-08-28, later — Stage 1b: the core speaks two languages,
+and English did not move.** `packages/core/src/text/` holds one typed catalogue
+per language (`fr-CA.ts`, `en.ts`), ≈250 sentences each. The rule: **facts in
+`view/` and `meta/`, words in the catalogue** — a catalogue function never
+reads state and never decides whether to speak. English is the prose exactly
+as it was: the 15 snapshots recorded before the move are byte-identical to the
+new `· en` blocks, checked key by key against the pre-move commit. Québec
+French under Marc's glossary (D4: LICHEN · TISONS · CENDRES · RIVIÈRES; MÛR ·
+RÉCOLTER · POCHE · RÉSERVE · RELIQUES · CHANCE), tutoiement, OQLF typography
+held by `text.test.ts` (fine space before `:` and `%` only, `’` throughout,
+accents on capitals). Theme names per locale (`namesOf`); `pickLocale` pure,
+device language with fr-CA as the fallback. **Findings:** the core was not
+DOM-free (`tips.ts`, `figure.ts` — element builders removed, the ban now covers
+all of core); `\b` is ASCII (term matcher rewritten with Unicode classes, and a
+new invariant: every term occurs in its own lesson). **Verified:** 693 tests /
+40 files, typecheck / lint / format / build clean, golden sim identical. **The
+French has NOT been read by Marc.** Nothing playable.
+
+Previous checkpoint: **2026-08-28 — Stage 1: the core is a package, and the rules
 did not move.** The DOM-free half of Ashwake 1 was lifted into
 `packages/core` **verbatim**: `engine`, `content`, `meta`, `sim`, the pure
 geometry (`render/layout.ts`), the `BoardView` contract (`render/Renderer.ts`),

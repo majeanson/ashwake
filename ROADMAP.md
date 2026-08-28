@@ -8,6 +8,13 @@ sessions; S2 and S3 are the fat ones.
       verbatim; 646 tests; `pnpm sim` byte-identical to `tiles@42d4da3`, diffed
       by CI. _Question: can the core be lifted without editing a rule? Yes —
       two findings, no rules (`LOG.md` Session 1)._
+- [x] **S1b — the core speaks two languages, and English did not move.**
+      : one typed catalogue per language, facts computed in view/meta and
+      words looked up; the 15 pre-move snapshots byte-identical after the move;
+      Québec French written under Marc's glossary (D4) and its typography held by
+      a test; the DOM left the core. _Question: can the prose move without a
+      single English string changing? Yes ( Session 2). Marc has not
+      read the French yet._
 - [ ] **S2 — the board exists in 3D, and a tap means what it means today.**
       R3F `<Canvas frameloop="demand">`; one `InstancedMesh` per material
       (four terrains, stone, wall, empty, remembered); `layout.ts`'s `place()`
@@ -18,12 +25,13 @@ sessions; S2 and S3 are the fat ones.
       (fit, fly, zoom 1–4×, pinch, drag past 8px slop). Playwright WebGL smoke
       from day one. _Question: does a 3D board stay readable at 390×844 with
       the contrast budget applied to lit materials?_
-- [ ] **S3 — the chrome, in React, from the props that exist.** Components
+- [ ] **S3 — the chrome, in React, bilingual from the first component.** Components
       over `HudView`/`SpendView`/`toBoardView`/`LESSONS`: front door, HUD, one
       hand + one action bar, teaching cards with figures, the `?` manual, shop,
       end screen, settings. The DRY pass lives here: one `Panel`, one `Card`,
       one `TipRows`, one `Confirming` two-tap control, one `Door`. Testing
-      Library over props; no id selectors. _Question: does the manual / card /
+      Library over props; no id selectors; every label from , and SETTINGS
+      gains LANGUE / LANGUAGE above APPEARANCE. _Question: does the manual / card /
       term trio still say one sentence one way? (`teaching.pin` snapshots are
       the pin.)_
 - [ ] **S4 — one page, many sessions, offline, shareable.** Store + session +
