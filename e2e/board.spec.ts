@@ -70,3 +70,18 @@ test('speaks French to a French phone, English to an English one', async ({ brow
     await context.close();
   }
 });
+
+test('takes a placement with the board leaned and turned', async ({ page }) => {
+  // The tap is a raycast now, not a hex-from-pixel inversion, so the angle is
+  // exactly the thing that could quietly break it: at 45 degrees, turned 45
+  // more, with the ground standing at different heights, a finger has to
+  // still land on the hex under it.
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&place=12&tilt=45&yaw=45&relief=0.35');
+  await expect(page.locator('canvas')).toBeVisible();
+  await page.waitForTimeout(600);
+  const before = await tiles(page);
+  await placeOneTile(page);
+  expect(await tiles(page)).toBeLessThan(before);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

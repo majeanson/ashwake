@@ -165,3 +165,93 @@ eyes, which is exactly the thing `CLAUDE.md` says is not the gate.
 
 **Next:** Marc picks top-down or tilt from the two shots, reads the French;
 S3 — the chrome.
+
+### Session 4 — the board has depth, and no rule can see it (2026-08-28)
+
+**Question:** Marc answered Stage 2's camera question with "tilt 35, and show
+me 45 too, and consider elevation — no change in rules, just a 3D map with
+tiles." So: **can the board lean, turn and stand at different heights without
+any of it reaching a rule — and does a leaned board still fit, still drag with
+the thumb, and still take a tap on the hex under the finger?**
+
+**Answer: yes, and three of those four were arithmetic that had to move.**
+
+**The lean is camera arithmetic, not rig code.** `tilt` leans the eye back,
+`yaw` turns the board under it, and both live in `camera.ts` because both
+change things the Stage 2 contract already promised:
+
+1. **The fit.** A tilted board is foreshortened — and everything standing on
+   it leans INTO the top of the frame, so a fit that measures floors crops the
+   far edge with the board's own walls. `Lean.tallest` is what the rig now
+   hands the fit, and `frameFor` reserves `tallest · sin(tilt)` of sky. The
+   test is the honest one: at four angles, every corner of every hex, at the
+   floor and at the top, lands inside 390×844.
+2. **The drag.** "The world moves with the finger" stopped being "along x and
+   z" the moment the board could turn, and stopped being one-pixel-one-unit
+   the moment it could foreshorten. Both are one screen mapping now, inverted
+   for the pan: turned 90°, a drag right moves the centre along z; at 60°, a
+   drag of one hex's worth of pixels covers two hexes of board.
+3. **Straight down needed its own branch, and does not any more.** The rig
+   carried `camera.up.set(0, tilt < 0.5 ? -1 : 1, …)` followed by a second
+   `set` that undid half of it — a camera looking along its own up vector has
+   no orientation, so the top-down case was special-cased twice. `eyeOf` is
+   one expression for every angle, tested at 0°, 90° and a quarter turn.
+
+**Elevation is a thickness, not a float.** The first attempt lifted a hex's
+prism off the ground, and a lifted tile reads as a tile hovering over a hole.
+Relief STRETCHES the prism instead: a raised hex is a column standing on the
+same floor as its neighbours, which is what makes the board read as terrain.
+The lift is mostly the ground's own colour and only a little the hex's — a
+height channel that repeats the colour channel is a second way to tell two
+grounds apart for anyone who cannot tell them apart by hue, and noise alone
+would spend the geometry and say nothing. A small deterministic jitter per hex
+keeps a field of one colour from being a plateau; it is a hash of `q,r`, never
+`Math.random`, because the same world has to look the same twice.
+
+**Nothing here can reach a rule.** `relief.ts` is in `apps/game`, not the core;
+it reads `CellView` and returns a number of hex radii; the golden sim is
+byte-identical. The ladder itself (rivers low, embers high) is a placeholder
+with a shape, not a decision — Stage 5 picks the numbers by looking and moves
+them into `Theme` with the rest of the materials.
+
+**A finding, and the reason there is a shot set at all.** The two Stage 2
+screenshots were not comparable: taps are placed by ringing the canvas, where
+a ring lands depends on the very angle the shot is meant to show, so each shot
+was a different board. `?place=n` plays a fixed opening through the same
+reducer a finger would — highest preview, ties by coordinate — so eight
+pictures are eight pictures of ONE board and the only thing that differs is
+the look. It is not an AI and is not trying to play well; it is a fixed hand.
+
+**A second finding: a number lying on a turned board is a number read at an
+angle.** Labels lie flat on the hex's top, which is right for a map and wrong
+the moment the map turns; they are turned back by the yaw now, so 45° costs
+nothing in legibility. The tilt still foreshortens them, exactly as it did at
+35° in Stage 2.
+
+**Eight shots in `docs/shots/`**, all at 390×844, all seed 7 after the same
+twelve placements: `top`, `tilt35`, `tilt45`, `tilt35-yaw45`, `tilt45-yaw45`,
+`tilt35-relief`, `tilt45-relief`, `tilt45-relief-high`. Each one is also a
+smoke test — a board that draws at 0° can still draw nothing at 45°, so every
+angle has to be a picture with no console error — and `board.spec.ts` gained a
+placement taken at 45° tilt, 45° yaw and relief on, because the tap is a
+raycast and the angle is exactly what could quietly break it.
+
+**Where the depth does NOT yet read.** The prism sides are lit by one
+near-overhead key light against a near-black background, so a side face and a
+gap look alike and the relief reads softer than it is. That is a lighting
+number, and lighting is Stage 5's; nothing was relaxed here to flatter a shot.
+
+**Defaults.** Tilt is 35 — Marc's pick, so it is the default rather than a
+query string. Yaw and relief default to 0, which is the flat map Stage 2
+shipped: the tuning dial every system ships behind.
+
+**Verified:** 713 tests / 42 files (+16: the lean's six, relief's seven, the
+fixed hand's three); typecheck, lint, format, build clean; `pnpm sim`
+byte-identical to the golden; nine Playwright tests green in headless Chromium
+at 390×844, including a placement taken with the board leaned and turned.
+Bundle 370KB gzip (+1KB).
+
+**Still not played on a phone.**
+
+**Next:** Marc picks the yaw and the relief from the shot set, reads the
+French; S3 — the chrome.

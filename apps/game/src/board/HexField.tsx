@@ -1,12 +1,13 @@
 import { Text } from '@react-three/drei';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import { Color, Matrix4, Object3D, type InstancedMesh } from 'three';
+import { Color, Object3D, type InstancedMesh } from 'three';
 import type { HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
 import { labelFor } from '@render/labels';
 import { place, type Layout } from '@render/layout';
 import { type Theme } from '@theme/tokens';
+import { HEIGHT, KINDS, kindOf, liftOf, topOf, type Kind } from './relief';
 
 /**
  * The board, as instances (Stage 2, 2026-08-28).
@@ -24,6 +25,11 @@ import { type Theme } from '@theme/tokens';
  * worth in pixels. The engine never learns a pixel exists, and neither does
  * this file — it learns a metre.
  *
+ * The RELIEF (Stage 2b) is the one number that moves any of this: it lifts a
+ * hex's floor by what its ground is, so `relief.ts` — not this file — decides
+ * how tall anything stands, and the rings, the labels and the leap all ride
+ * the top it computes. Zero is the flat board, and no rule can see the dial.
+ *
  * `labelFor` (core) says what a cell prints; `Text` prints it. The font is
  * self-hosted (`/fonts/cinzel.ttf`), because a default font would fetch from
  * a CDN and make "nothing leaves your phone" a lie — the same trap Ashwake 1
@@ -32,31 +38,8 @@ import { type Theme } from '@theme/tokens';
 
 export const UNIT: Layout = { size: 1, originX: 0, originY: 0, orientation: 'pointy' };
 
-/** How tall each kind of ground stands, in hex radii. */
-const HEIGHT = { tile: 0.34, empty: 0.06, stone: 0.16, wall: 0.7, remembered: 0.04, beacon: 0.05 };
 /** The seam between hexes, as a shrink of the prism's radius. */
 const SEAM = 0.06;
-
-type Kind = keyof typeof HEIGHT;
-
-const KINDS: readonly Kind[] = ['tile', 'empty', 'stone', 'wall', 'remembered', 'beacon'];
-
-function kindOf(cell: CellView): Kind | null {
-  if (cell.beacon) return 'beacon';
-  if (cell.remembered) return 'remembered';
-  switch (cell.kind) {
-    case 'tile':
-      return 'tile';
-    case 'landmark':
-      return 'empty';
-    case 'empty':
-      return 'empty';
-    case 'stone':
-      return 'stone';
-    case 'wall':
-      return 'wall';
-  }
-}
 
 /** A cell's base colour under the direction, before the torch. */
 function fillOf(cell: CellView, theme: Theme): number {
@@ -69,7 +52,6 @@ function fillOf(cell: CellView, theme: Theme): number {
 
 const scratchColor = new Color();
 const scratchBg = new Color();
-const scratchMatrix = new Matrix4();
 const dummy = new Object3D();
 
 /** The torch: a cell's colour pulled toward the board's background by how
@@ -113,6 +95,10 @@ export type HexFieldProps = {
   readonly view: BoardView;
   readonly theme: Theme;
   readonly orientation: Layout['orientation'];
+  /** How high the ground itself varies, in hex radii; 0 is the flat board. */
+  readonly relief: number;
+  /** Degrees the board is turned under the camera — the labels turn back. */
+  readonly yaw: number;
   /** The pop's leap in flight, if any — the cells that just left, rising. */
   readonly leap: Leap | null;
   readonly onTap: (key: HexKey, cell: CellView) => void;
@@ -121,35 +107,34 @@ export type HexFieldProps = {
 /** Round up to a capacity, so the instanced meshes are not rebuilt per placement. */
 const capacityFor = (n: number): number => Math.max(64, 1 << Math.ceil(Math.log2(n + 1)));
 
-export function HexField({ view, theme, orientation, leap, onTap }: HexFieldProps) {
+export function HexField({ view, theme, orientation, relief, yaw, leap, onTap }: HexFieldProps) {
   const layout = useMemo<Layout>(() => ({ ...UNIT, orientation }), [orientation]);
   const invalidate = useThree((s) => s.invalidate);
 
   // Cells by kind, positioned once per view.
   const groups = useMemo(() => {
-    const out = new Map<Kind, { cell: CellView; x: number; z: number }[]>();
+    const out = new Map<Kind, { cell: CellView; x: number; z: number; lift: number }[]>();
     for (const kind of KINDS) out.set(kind, []);
     for (const cell of view.cells) {
       const kind = kindOf(cell);
       if (kind === null) continue;
       const p = place({ q: cell.q, r: cell.r }, layout);
-      out.get(kind)!.push({ cell, x: p.x, z: p.y });
+      out.get(kind)!.push({ cell, x: p.x, z: p.y, lift: liftOf(cell, relief) });
     }
     return out;
-  }, [view, layout]);
+  }, [view, layout, relief]);
 
   const rings = useMemo(() => {
     const out: (Ring & { x: number; z: number; top: number })[] = [];
     for (const cell of view.cells) {
       const ring = ringOf(cell, theme);
       if (ring === null) continue;
-      const kind = kindOf(cell);
-      if (kind === null) continue;
+      if (kindOf(cell) === null) continue;
       const p = place({ q: cell.q, r: cell.r }, layout);
-      out.push({ ...ring, x: p.x, z: p.y, top: HEIGHT[kind] });
+      out.push({ ...ring, x: p.x, z: p.y, top: topOf(cell, relief) });
     }
     return out;
-  }, [view, theme, layout]);
+  }, [view, theme, layout, relief]);
 
   const labels = useMemo(() => {
     const out: { key: HexKey; text: string; faint: boolean; x: number; z: number; top: number }[] =
@@ -158,8 +143,7 @@ export function HexField({ view, theme, orientation, leap, onTap }: HexFieldProp
       if (cell.dimmed) continue;
       const label = labelFor(cell);
       if (label === null) continue;
-      const kind = kindOf(cell);
-      if (kind === null) continue;
+      if (kindOf(cell) === null) continue;
       const p = place({ q: cell.q, r: cell.r }, layout);
       out.push({
         key: cell.key,
@@ -167,11 +151,11 @@ export function HexField({ view, theme, orientation, leap, onTap }: HexFieldProp
         faint: label.faint,
         x: p.x,
         z: p.y,
-        top: HEIGHT[kind],
+        top: topOf(cell, relief),
       });
     }
     return out;
-  }, [view, layout]);
+  }, [view, layout, relief]);
 
   // The pop's leap: while one is in flight, the tiles that popped rise and
   // fall (`popLift` per direction) and the field asks for frames.
@@ -191,8 +175,13 @@ export function HexField({ view, theme, orientation, leap, onTap }: HexFieldProp
       if (mesh === undefined) continue;
       items.forEach((item, i) => {
         const h = HEIGHT[kind];
-        dummy.position.set(item.x, h / 2, item.z);
-        dummy.scale.set(1, 1, 1);
+        // Relief makes the ground THICKER, not floating: a lifted hex is a
+        // column standing on the same floor as its neighbours, so the board
+        // reads as terrain with depth rather than as tiles hovering over a
+        // hole. The prism is stretched, never moved off the ground.
+        const total = h + item.lift;
+        dummy.position.set(item.x, total / 2, item.z);
+        dummy.scale.set(1, total / h, 1);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
         const light = kind === 'beacon' ? 1 - theme.board.beaconFade : item.cell.light;
@@ -235,10 +224,10 @@ export function HexField({ view, theme, orientation, leap, onTap }: HexFieldProp
       if (!active.keys.has(item.cell.key)) return;
       any = true;
       const k = Math.min(1, Math.max(0, t));
-      const lift = theme.motion.popLift * Math.sin(Math.PI * k);
-      mesh.getMatrixAt(i, scratchMatrix);
-      dummy.matrix.copy(scratchMatrix);
-      dummy.position.set(item.x, HEIGHT.stone / 2 + lift, item.z);
+      const jump = theme.motion.popLift * Math.sin(Math.PI * k);
+      const total = HEIGHT.stone + item.lift;
+      dummy.position.set(item.x, total / 2 + jump, item.z);
+      dummy.scale.set(1, total / HEIGHT.stone, 1);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     });
@@ -309,7 +298,11 @@ export function HexField({ view, theme, orientation, leap, onTap }: HexFieldProp
           anchorX="center"
           anchorY="middle"
           position={[label.x, label.top + 0.02, label.z]}
-          rotation={[-Math.PI / 2, 0, 0]}
+          // Lying flat on the hex's top, and turned back by the yaw: a number
+          // printed on the ground of a board that has been turned 45 degrees
+          // is a number read at 45 degrees, and a number on a hex has to be
+          // read at a glance or it is not doing its job.
+          rotation={[-Math.PI / 2, 0, (yaw * Math.PI) / 180]}
           raycast={() => null}
         >
           {label.text}

@@ -96,9 +96,16 @@ reviews the French on the snapshot files, then on the phone.
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.
-- **Camera: top-down or a tilt?** The two screenshots are in `docs/shots/`
-  (`s2-board-top.png`, `s2-board-tilt35.png`, seed 7 after twelve placements),
-  and `?tilt=<degrees>` shows any angle live. Marc's, by looking.
+- **How far the board turns, and how high the ground stands.** The TILT is
+  settled: 35 degrees, Marc's pick from the Stage 2 shots, and the angle the
+  board now boots at. Two dials are open beside it, both defaulting to the flat
+  map: `?yaw=` turns the board under the camera, `?relief=` gives the ground
+  height. Eight shots in `docs/shots/`, all seed 7 after the same twelve
+  placements (`?place=12`), so the only thing that differs between them is the
+  look — `top`, `tilt35`, `tilt45`, `tilt35-yaw45`, `tilt45-yaw45`,
+  `tilt35-relief`, `tilt45-relief`, `tilt45-relief-high`. Marc's, by looking,
+  and then on the phone. The relief LADDER — which ground stands above which —
+  is a placeholder with a shape, and belongs to Stage 5 with the materials.
 - **Deploy secrets.** The `deploy` job exists and is gated on the
   `DEPLOY_ENABLED` variable; the two Cloudflare secrets and the custom domain
   `ashwake.marcportal.com` are Marc's to set.

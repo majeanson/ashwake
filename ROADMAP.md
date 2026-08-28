@@ -29,6 +29,20 @@ sessions; S2 and S3 are the fat ones.
       (fit, fly, zoom 1–4×, pinch, drag past 8px slop). Playwright WebGL smoke
       from day one. _Question: does a 3D board stay readable at 390×844 with
       the contrast budget applied to lit materials?_
+- [x] **S2b — the board has depth, and no rule can see it.** Shipped
+      2026-08-28 (`LOG.md` Session 4), on Marc's answer to S2's question: tilt
+      35 as the default, a yaw beside it, and elevation with no rule moved.
+      `Lean` in `camera.ts` (a fit that reserves sky for what stands on the far
+      ground, a pan inverted through the same screen mapping, `eyeOf` as one
+      expression for every angle); `board/relief.ts` stretches a hex's prism
+      rather than lifting it, off at zero; labels turn back by the yaw;
+      `shell/walk.ts` (`?place=n`) plays a fixed opening so eight shots are
+      eight pictures of one board. _Question: can the board lean, turn and
+      stand at different heights without any of it reaching a rule — and does a
+      leaned board still fit, still drag with the thumb, and still take a tap
+      on the hex under the finger? Yes; three of the four were arithmetic that
+      had to move (`LOG.md` Session 4). The yaw and the relief numbers are
+      Marc's, by looking._
 - [ ] **S3 — the chrome, in React, bilingual from the first component.** Components
       over `HudView`/`SpendView`/`toBoardView`/`LESSONS`: front door, HUD, one
       hand + one action bar, teaching cards with figures, the `?` manual, shop,

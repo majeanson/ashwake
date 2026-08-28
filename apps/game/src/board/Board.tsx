@@ -7,6 +7,7 @@ import type { BoardView, CellView } from '@render/Renderer';
 import { hex as cssHex, type Theme } from '@theme/tokens';
 import {
   cameraAt,
+  eyeOf,
   fitCamera,
   frameFor,
   lerpCamera,
@@ -15,8 +16,10 @@ import {
   zoomedBy,
   type CameraState,
   type Frame,
+  type Lean,
 } from './camera';
 import { HexField, UNIT, type Leap } from './HexField';
+import { tallestOf } from './relief';
 
 /**
  * The board (Stage 2, 2026-08-28): one `<Canvas>`, mounted once, above every
@@ -25,9 +28,12 @@ import { HexField, UNIT, type Leap } from './HexField';
  * while a leap or a flight is in the air, and never otherwise, because a
  * phone that draws sixty idle frames a second is a phone that is warm.
  *
- * The camera looks straight down by default. `tilt` leans it back in degrees
- * — offered as a dial so Marc can see both with a screenshot (the open
- * question in `DECISIONS.md`) rather than have one chosen for him.
+ * The camera leans back by `tilt` degrees — 35, Marc's answer to Stage 2's
+ * open question, chosen from `docs/shots/` — and the board may be turned under
+ * it by `yaw`. `relief` is how much the ground itself rises and falls. All
+ * three are dials whose zero is the flat map the board shipped as, and all
+ * three are look and never rule: the reducer, the view and the golden sim
+ * cannot tell which angle the board is being watched from.
  */
 
 export type BoardHandle = {
@@ -43,7 +49,12 @@ export type BoardProps = {
   readonly theme: Theme;
   /** The last pop — the store's counter and keys — so the leap can play. */
   readonly popped: { readonly keys: readonly HexKey[]; readonly id: number } | null;
+  /** Degrees the camera leans back from straight down. */
   readonly tilt?: number;
+  /** Degrees the board is turned under it. */
+  readonly yaw?: number;
+  /** How high the ground varies, in hex radii; 0 is a flat board. */
+  readonly relief?: number;
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
@@ -51,9 +62,12 @@ export type BoardProps = {
 
 const FLIGHT_MS = 320;
 const TAP_SLOP = 8;
+/** How far back the eye stands. Orthographic, so this only has to clear the
+ *  near plane and stay inside the far one — it changes nothing on screen. */
+const EYE_DISTANCE = 200;
 
 export function Board(props: BoardProps) {
-  const { theme, tilt = 0 } = props;
+  const { theme, tilt = 0, yaw = 0, relief = 0 } = props;
   const wrapper = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -106,6 +120,8 @@ export function Board(props: BoardProps) {
             width={size.width}
             height={size.height}
             tilt={tilt}
+            yaw={yaw}
+            relief={relief}
             reducedMotion={props.reducedMotion === true}
             handle={props.handle}
             wrapper={wrapper}
@@ -114,6 +130,8 @@ export function Board(props: BoardProps) {
             view={props.view}
             theme={theme}
             orientation={theme.orientation}
+            relief={relief}
+            yaw={yaw}
             leap={leap}
             onTap={props.onTap}
           />
@@ -129,6 +147,8 @@ type RigProps = {
   readonly width: number;
   readonly height: number;
   readonly tilt: number;
+  readonly yaw: number;
+  readonly relief: number;
   readonly reducedMotion: boolean;
   readonly handle: Ref<BoardHandle> | undefined;
   readonly wrapper: React.RefObject<HTMLDivElement | null>;
@@ -138,20 +158,37 @@ type RigProps = {
  * Owns the camera: the fit, the clamps, the gestures and the flights. Lives
  * inside the Canvas so it can reach the camera and ask for frames.
  */
-function Rig({ view, theme, width, height, tilt, reducedMotion, handle, wrapper }: RigProps) {
+function Rig({
+  view,
+  theme,
+  width,
+  height,
+  tilt,
+  yaw,
+  relief,
+  reducedMotion,
+  handle,
+  wrapper,
+}: RigProps) {
   const camera = useThree((s) => s.camera) as OrthographicCamera;
   const invalidate = useThree((s) => s.invalidate);
 
   // The fit frames the STRUCTURE, never the beacon disc (Ashwake 1's rule).
   const frame = useMemo<Frame>(() => {
     const anchored = view.cells.filter((c) => !c.beacon);
+    const framed = anchored.length > 0 ? anchored : view.cells;
+    // A leaning camera has to be told how tall the board is: what stands on
+    // the far ground leans into the top of the frame and would be cropped by
+    // a fit that only measured floors.
+    const lean: Lean = { tilt, yaw, tallest: tallestOf(framed, relief) };
     return frameFor(
-      (anchored.length > 0 ? anchored : view.cells).map((c) => ({ q: c.q, r: c.r })),
+      framed.map((c) => ({ q: c.q, r: c.r })),
       width,
       height,
       theme.orientation,
+      lean,
     );
-  }, [view, width, height, theme.orientation]);
+  }, [view, width, height, theme.orientation, tilt, yaw, relief]);
 
   // Camera state lives in a ref: gestures write it many times a second and
   // React must not re-render for any of them.
@@ -171,13 +208,10 @@ function Rig({ view, theme, width, height, tilt, reducedMotion, handle, wrapper 
   const apply = (): void => {
     const c = cam.current;
     const f = frameRef.current;
-    const px = f.fit.size * c.zoom;
-    const rad = (tilt * Math.PI) / 180;
-    const dist = 200;
-    camera.zoom = px;
-    camera.position.set(c.cx, Math.cos(rad) * dist, c.cz + Math.sin(rad) * dist);
-    camera.up.set(0, tilt < 0.5 ? -1 : 1, tilt < 0.5 ? 0 : 0);
-    if (tilt < 0.5) camera.up.set(0, 0, -1);
+    const eye = eyeOf(f.lean, EYE_DISTANCE);
+    camera.zoom = f.fit.size * c.zoom;
+    camera.position.set(c.cx + eye.x, eye.y, c.cz + eye.z);
+    camera.up.set(eye.upX, eye.upY, eye.upZ);
     camera.lookAt(c.cx, 0, c.cz);
     camera.updateProjectionMatrix();
   };

@@ -4,7 +4,30 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-28, last — Stage 2: the board exists in 3D, and a
+Last checkpoint: **2026-08-28, last — Stage 2b: the board has depth, and no
+rule can see it.** The camera's tilt is **settled at 35°** (Marc's pick) and is
+the default; `?yaw=` turns the board under it and `?relief=` gives the ground
+height, both defaulting to the flat map. The lean is arithmetic, not rig code:
+`camera.ts` gained `Lean`, a fit that reserves `tallest · sin(tilt)` of sky so
+a leaned board is not cropped by its own walls, a pan inverted through the same
+screen mapping (turned 90°, a drag right moves the centre along z; at 60°, one
+hex of pixels covers two hexes of board), and `eyeOf` — **one expression for
+every angle, which retired the top-down special case the rig carried twice.**
+`board/relief.ts` STRETCHES a hex's prism rather than lifting it, so a raised
+hex is a column on the same floor as its neighbours; the lift is mostly the
+ground's colour (a height channel repeating the colour channel) plus a
+deterministic `q,r` hash so a field of one colour is not a plateau. Labels turn
+back by the yaw. `shell/walk.ts` (`?place=n`) plays a fixed opening through the
+reducer so every shot is a picture of ONE board. **Verified:** 713 tests / 42
+files; typecheck, lint, format, build clean; **golden sim byte-identical**;
+**nine Playwright tests at 390×844, including a placement taken at 45° tilt,
+45° yaw with relief on** — the raycast survives the lean. **Eight shots in
+`docs/shots/`** are Marc's surface for the yaw and the relief. Bundle 370KB
+gzip. **The prism sides are lit by one near-overhead key against a near-black
+background, so the relief reads softer than it is — a Stage 5 lighting number,
+not relaxed here to flatter a shot. Still NOT played on a phone; NOT deployed.**
+
+Previous checkpoint: **2026-08-28, later — Stage 2: the board exists in 3D, and a
 tap means what it means today.** `apps/game/src/board/`: one `InstancedMesh`
 per kind of ground with colour per instance, the stroke ladder as flat rings,
 `labelFor`'s glyphs and numbers in the self-hosted Cinzel (as TTF — troika
@@ -22,7 +45,7 @@ in S5). Deploy job and `wrangler.toml` readied, gated on `DEPLOY_ENABLED`;
 deployed.** The camera question (`?tilt=`) is open with two screenshots in
 `docs/shots/`.
 
-Previous checkpoint: **2026-08-28, later — Stage 1b: the core speaks two languages,
+Previous checkpoint: **2026-08-28, mid — Stage 1b: the core speaks two languages,
 and English did not move.** `packages/core/src/text/` holds one typed catalogue
 per language (`fr-CA.ts`, `en.ts`), ≈250 sentences each. The rule: **facts in
 `view/` and `meta/`, words in the catalogue** — a catalogue function never
@@ -76,7 +99,7 @@ playable. Nothing has been seen on a phone.**
 
 ## Not started
 
-Stages 2–6 of `ROADMAP.md`: the 3D board, the React chrome, the shell and PWA,
-the look, the playtest console and the two phone sessions. `theme/apply.ts`
+Stages 3–6 of `ROADMAP.md`: the React chrome, the shell and PWA, the look, the
+playtest console and the two phone sessions. `theme/apply.ts`
 (sets CSS variables on `document`) was deliberately left in Ashwake 1; the app
 will grow its own edge for it in Stage 3.

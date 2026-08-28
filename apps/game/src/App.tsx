@@ -7,6 +7,7 @@ import { parseThemeId, resolveTheme } from '@theme/index';
 import { hex as cssHex, namesOf } from '@theme/tokens';
 import { Board, type BoardHandle } from './board/Board';
 import { createSession, useSession } from './shell/store';
+import { walk } from './shell/walk';
 
 /**
  * Stage 2's App: the board, playable, and the LEAST chrome that lets a run be
@@ -14,25 +15,55 @@ import { createSession, useSession } from './shell/store';
  * POP button, the camera buttons. All of it is replaced by Stage 3's chrome;
  * none of it is styled beyond legibility on purpose.
  *
- * `?tilt=35` leans the camera for the screenshot Marc will choose from;
- * `?seed=` picks a world; `?theme=` a direction, as in Ashwake 1.
+ * The board's three look dials are read off the query string so an angle can
+ * be argued with by looking at it: `?tilt=` leans the camera back (35 by
+ * default — Marc's pick from `docs/shots/`), `?yaw=` turns the board under it,
+ * `?relief=` gives the ground its height. Each one's zero is the flat map
+ * Stage 2 shipped, and none of them can reach a rule. `?seed=` picks a world;
+ * `?theme=` a direction, as in Ashwake 1; `?place=` plays a fixed opening so
+ * two angles can be photographed over one board.
  */
+
+/** The default lean: Marc chose the tilt by looking, the rest are open. */
+const TILT = 35;
+const YAW = 0;
+const RELIEF = 0;
+
+/** A number off the query string, where zero is a real answer and `?x=` alone
+ *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
+function dial(params: URLSearchParams, name: string, fallback: number): number {
+  const raw = params.get(name);
+  if (raw === null || raw.trim() === '') return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
 export function App() {
   const session = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const seed = Number(params.get('seed') ?? '1') || 1;
-    return createSession({
+    const made = createSession({
       seed,
       theme: resolveTheme(parseThemeId(location.search)),
       strings: stringsFor(pickLocale(navigator.languages)),
     });
+    // `?place=n` plays a fixed opening, so two screenshots of two camera
+    // angles are two pictures of ONE board. Off unless asked for.
+    walk(made, Math.max(0, Math.trunc(dial(params, 'place', 0))));
+    return made;
   }, []);
   const snap = useSession(session);
   const board = useRef<BoardHandle>(null);
   const s = session.strings;
   const theme = session.theme;
   const names = namesOf(theme, s.locale);
-  const tilt = Number(new URLSearchParams(location.search).get('tilt') ?? '0') || 0;
+  const look = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      tilt: dial(params, 'tilt', TILT),
+      yaw: dial(params, 'yaw', YAW),
+      relief: dial(params, 'relief', RELIEF),
+    };
+  }, []);
 
   const onTap = (key: string, cell: CellView): void => {
     if (cell.legal) session.dispatch({ type: 'PLACE', hex: key });
@@ -100,7 +131,9 @@ export function App() {
           view={snap.board}
           theme={theme}
           popped={snap.popped}
-          tilt={tilt}
+          tilt={look.tilt}
+          yaw={look.yaw}
+          relief={look.relief}
           onTap={onTap}
           handle={board}
         />
