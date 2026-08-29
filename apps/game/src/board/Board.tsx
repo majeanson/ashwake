@@ -18,6 +18,7 @@ import {
   type Frame,
   type Lean,
 } from './camera';
+import { GL_PROPS } from './gl';
 import { HexField, UNIT, type Leap } from './HexField';
 import { tallestOf } from './relief';
 
@@ -106,7 +107,12 @@ export function Board(props: BoardProps) {
           frameloop="demand"
           orthographic
           dpr={[1, 2]}
-          gl={{ antialias: true, powerPreference: 'low-power' }}
+          // `flat` turns OFF tone mapping. R3F applies ACES otherwise, which
+          // would sit between the graded palette and the screen — see `gl.ts`
+          // for why that made the contrast budget describe a board that did
+          // not exist.
+          flat
+          gl={GL_PROPS}
           camera={{ position: [0, 100, 0], zoom: 30, near: 0.1, far: 1000 }}
           style={{ width: size.width, height: size.height }}
         >

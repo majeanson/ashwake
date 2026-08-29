@@ -255,3 +255,11 @@ Bundle 370KB gzip (+1KB).
 
 **Next:** Marc picks the yaw and the relief from the shot set, reads the
 French; S3 — the chrome.
+
+### Session 5 — the board earns its third dimension (2026-08-29)
+
+**Question, written before building:** can the colour a hex actually renders in
+be computed by a pure function in the core — and does every direction still
+pass the contrast budget and the greyscale ladder once it is?
+
+_(Answer written after the work.)_
