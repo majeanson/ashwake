@@ -53,36 +53,38 @@ a plain pinch. **The tilt and yaw questions in the table below are half
 retired by this** — the answer can be the player's hands rather than a
 number — but the DEFAULT the board opens at is still yours, and it is still 35.
 
-**The Cloudflare API token.** CI's deploy job runs and fails: the
-`CLOUDFLARE_API_TOKEN` secret exists on `majeanson/ashwake` but is EMPTY — the
-Actions log prints `CLOUDFLARE_API_TOKEN:` with nothing after it, while
-`CLOUDFLARE_ACCOUNT_ID` is masked. A `gh secret set` through the interactive
-prompt got EOF instead of a paste. Fix:
+**~~The Cloudflare API token.~~ DONE — the deploy is automatic again.**
+Corrected 2026-08-29 by looking rather than trusting: `CLOUDFLARE_API_TOKEN`
+was re-set on 2026-08-29, `DEPLOY_ENABLED` is `true`, and CI's **deploy job ran
+and verified green** on the push that closed this session. This entry claimed
+the secret was empty and every deploy manual; both were true when written and
+neither is now. A push to `main` deploys and verifies itself.
 
-```
-gh secret set CLOUDFLARE_API_TOKEN -R majeanson/ashwake --body "PASTE"
-```
+A hand deploy is still there when you want one, and is what this session used
+before the CI run caught up: `pnpm build && pnpm run deploy:prod && pnpm
+verify:deploy`. **Build AFTER committing** — the bundle stamps the sha it was
+built at, so building before the commit deploys the previous one and
+`verify:deploy` correctly refuses it.
 
-Make a NEW token rather than reusing Ashwake 1's — rolling that one would
-break `majeanson/tiles`. `dash.cloudflare.com/profile/api-tokens` → **Edit
-Cloudflare Workers** template, account = Marc's, zone = `marcportal.com`.
-Until then every deploy is manual (`pnpm build && pnpm run deploy:prod &&
-pnpm verify:deploy`) and it works fine.
+**The look numbers, by looking, on a phone.** Corrected 2026-08-29: this
+entry used to say every dial defaults to 0 and `the plain URL is still the flat
+board`. It has not been true since Stage 3 — the plain URL opens at **tilt 35,
+light 1, materials 1, art 1, relief 0.35**, which are working defaults rather
+than rulings (`App.tsx`). So the question is no longer "turn them on and look"
+but "are these the numbers", and the dials are how you argue with them:
 
-**The look numbers, by looking, on a phone.** Every dial defaults to 0, so the
-plain URL is still the flat board. These are not questions code can answer:
+|                           |                                              |
+| ------------------------- | -------------------------------------------- |
+| what everyone gets today  | `/` — nothing in the query string            |
+| the flat map, for compare | `?tilt=0&light=0&materials=0&art=0&relief=0` |
+| without the painted art   | `?art=0`                                     |
+| without the relief        | `?relief=0`                                  |
+| the yaw, still open       | `?yaw=45`                                    |
 
-|                                  |                                                  |
-| -------------------------------- | ------------------------------------------------ |
-| the lit board                    | `?tilt=35&light=1`                               |
-| with materials                   | `&materials=1`                                   |
-| with Ashwake 1's painted terrain | `&art=1`                                         |
-| with relief (height = rarity)    | `&relief=0.35`                                   |
-| everything                       | `?tilt=35&light=1&materials=1&art=1&relief=0.35` |
-| the yaw, still open              | `&yaw=45`                                        |
-
-Pick a number for each. They become the defaults, and then they move into
-`Theme` where the rest of the materials live.
+The tilt and the yaw are half retired by the camera gesture above — two fingers
+set them now — but the DEFAULT the board opens at is still a number and still
+yours. When you pick them they move into `Theme` beside the rest of the
+materials.
 
 **One number the tests could not settle.** At the full rig, torchlit's darkest
 terrain SIDE sits 0.070 in L* from the board and torchlit-bright's 0.072 —
