@@ -34,8 +34,12 @@ export function Tile({ colour, rarity, theme, s, selected, held, onPick, onLens 
   return (
     <button
       type="button"
+      className="tile"
       data-colour={colour}
       data-rarity={rarity}
+      // The label is haloed rather than re-coloured — see `.tile` in ui.css.
+      // The audit cannot measure a halo, so it is told the halo is there.
+      data-audit-halo=""
       aria-pressed={selected === true}
       onClick={onPick}
       onContextMenu={

@@ -214,8 +214,15 @@ export const AUDIT_IN_PAGE = (): Finding[] => {
         (el as HTMLButtonElement).disabled === true ||
         el.getAttribute('aria-disabled') === 'true' ||
         el.closest('[disabled], [aria-disabled="true"]') !== null;
+      // A HALOED label is its own class too, for the same reason `imaged` is:
+      // the ratio is real but it is not the whole picture, because an outline
+      // is what the board itself uses to make ink readable over terrain and a
+      // two-colour ratio cannot see one. Marked at the source
+      // (`data-audit-halo`), so it is a claim the code makes rather than a
+      // guess this file makes about the design.
+      const haloed = el.closest('[data-audit-halo]') !== null;
       findings.push({
-        kind: off ? 'contrast-disabled' : 'contrast',
+        kind: off ? 'contrast-disabled' : haloed ? 'contrast-haloed' : 'contrast',
         where: nameOf(el),
         text: text.slice(0, 60),
         detail: `${style.color} on rgb(${ground.map(Math.round).join(', ')}) at ${px}px`,
@@ -272,8 +279,14 @@ export const AUDIT_IN_PAGE = (): Finding[] => {
     // precision in a report someone has to act on.
     const small = Math.round(Math.min(box.w, box.h));
     if (small < 44) {
+      // An argued exception is still reported, and still counted — just not
+      // in the same column as an unhandled one. Thirty-nine copies of a rule
+      // somebody already decided will drown the two rows that need deciding,
+      // and a report nobody can read is a report nobody reads. The claim is
+      // made at the source (`data-audit-compact`) with its reason beside it.
+      const allowed = el.closest('[data-audit-compact]') !== null;
       findings.push({
-        kind: 'tap-target',
+        kind: allowed ? 'tap-target-allowed' : 'tap-target',
         where: nameOf(el),
         text: (el.textContent ?? '').trim().slice(0, 60),
         detail: `${Math.round(box.w)}×${Math.round(box.h)}px, pseudo-target included`,

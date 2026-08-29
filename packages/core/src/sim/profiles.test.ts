@@ -18,70 +18,91 @@ import { summarise } from './report';
  * claim a designer would want to KNOW broke.
  */
 
+/**
+ * How long a simulation may take before it counts as HUNG.
+ *
+ * Not a performance assertion. Every test in this file plays whole runs over
+ * six seeds — about a second each on a developer's machine and five to nine
+ * times that on a shared CI runner — and vitest's 5s default was sitting
+ * inside that margin: the maxed-ladder and every-perk sims both tripped it on
+ * 2026-08-29 while passing locally in under a second.
+ *
+ * Ashwake 1's lesson is the reason this is generous rather than tuned: a
+ * wall-clock assertion measured on a dev machine held its deploys shut for
+ * nine commits. The number here exists so a genuine infinite loop still fails
+ * the suite instead of hanging it; it is not a claim about speed, and it must
+ * never be read as one.
+ */
+const SIM_TIMEOUT = 60_000;
+
 const SEEDS = 6;
 const stats = (policy: typeof timid, tuning: Tuning = TUNING): ReturnType<typeof summarise> =>
   summarise(policy.name, playMany(policy, SEEDS, { tuning }));
 
-describe('player profiles — the economy holds for every kind of hands', () => {
-  // The termination clause is already pinned for every registered policy in
-  // sim.test.ts (the profiles joined POLICIES); everything here is about
-  // what KIND of run each profile gets.
+describe(
+  'player profiles — the economy holds for every kind of hands',
+  { timeout: SIM_TIMEOUT },
+  () => {
+    // The termination clause is already pinned for every registered policy in
+    // sim.test.ts (the profiles joined POLICIES); everything here is about
+    // what KIND of run each profile gets.
 
-  it('makes timidity survivable: the cautious first-timer gets a long run', () => {
-    // Marc's own Gate B experience, scripted: mostly-tiles, pop-everything-
-    // small. If this line dies fast, a stranger's careful first run is a
-    // punishment and the teaching pack is teaching the wrong game. At 200
-    // seeds timid lives 97 placements over 31 harvests — a real expedition,
-    // not a stay of execution. (Its margin over greedy is only ~25%, which
-    // was itself a finding: the caches keep even a greedy line alive for a
-    // while, so caution buys length but not an epoch — pinned loosely here
-    // so a rebalance that KILLS the careful line is what trips it.)
-    const cautious = stats(timid);
-    expect(cautious.medianPlacements).toBeGreaterThan(60);
-    expect(cautious.medianHarvests).toBeGreaterThanOrEqual(10);
-  });
+    it('makes timidity survivable: the cautious first-timer gets a long run', () => {
+      // Marc's own Gate B experience, scripted: mostly-tiles, pop-everything-
+      // small. If this line dies fast, a stranger's careful first run is a
+      // punishment and the teaching pack is teaching the wrong game. At 200
+      // seeds timid lives 97 placements over 31 harvests — a real expedition,
+      // not a stay of execution. (Its margin over greedy is only ~25%, which
+      // was itself a finding: the caches keep even a greedy line alive for a
+      // while, so caution buys length but not an epoch — pinned loosely here
+      // so a rebalance that KILLS the careful line is what trips it.)
+      const cautious = stats(timid);
+      expect(cautious.medianPlacements).toBeGreaterThan(60);
+      expect(cautious.medianHarvests).toBeGreaterThanOrEqual(10);
+    });
 
-  it('makes greed fail faster than packing, but legibly — a lesson, not a wall', () => {
-    // Popping everything as points the moment it ripens must end the run
-    // sooner than a packer's (78 vs 114 placements at 200 seeds) yet still
-    // put a number on the end screen: a zero-score death reads as a broken
-    // game, not a mistake. Compared against `farm` rather than `timid` —
-    // the packer's margin is wide enough to hold at six seeds.
-    const child = stats(greedy);
-    const packer = stats(farm);
-    expect(child.tilesShare).toBe(0);
-    expect(child.medianPlacements).toBeLessThan(packer.medianPlacements * 0.9);
-    expect(child.bestPoints).toBeGreaterThan(0);
-  });
+    it('makes greed fail faster than packing, but legibly — a lesson, not a wall', () => {
+      // Popping everything as points the moment it ripens must end the run
+      // sooner than a packer's (78 vs 114 placements at 200 seeds) yet still
+      // put a number on the end screen: a zero-score death reads as a broken
+      // game, not a mistake. Compared against `farm` rather than `timid` —
+      // the packer's margin is wide enough to hold at six seeds.
+      const child = stats(greedy);
+      const packer = stats(farm);
+      expect(child.tilesShare).toBe(0);
+      expect(child.medianPlacements).toBeLessThan(packer.medianPlacements * 0.9);
+      expect(child.bestPoints).toBeGreaterThan(0);
+    });
 
-  it('pays the wanderer in distance, which is the score-vs-feel ruling as a pin', () => {
-    // Walking out every turn must out-REACH the nester by a distance (22 vs
-    // 10 at 200 seeds) — the plane has to be worth crossing for the player
-    // whose score is the horizon. The wanderer's run is SHORT (a chain
-    // encloses nothing, so nothing ever ripens — the beeline lesson from
-    // P1, still true) and that is the honest shape: reach is what the
-    // walk buys, not length and not points.
-    const walker = stats(tourist);
-    const nester = stats(timid);
-    expect(walker.medianReach).toBeGreaterThan(nester.medianReach);
-    expect(walker.medianPoints).toBeLessThan(nester.medianPoints * 2);
-  });
+    it('pays the wanderer in distance, which is the score-vs-feel ruling as a pin', () => {
+      // Walking out every turn must out-REACH the nester by a distance (22 vs
+      // 10 at 200 seeds) — the plane has to be worth crossing for the player
+      // whose score is the horizon. The wanderer's run is SHORT (a chain
+      // encloses nothing, so nothing ever ripens — the beeline lesson from
+      // P1, still true) and that is the honest shape: reach is what the
+      // walk buys, not length and not points.
+      const walker = stats(tourist);
+      const nester = stats(timid);
+      expect(walker.medianReach).toBeGreaterThan(nester.medianReach);
+      expect(walker.medianPoints).toBeLessThan(nester.medianPoints * 2);
+    });
 
-  it('lets the veteran probe out-score every naive profile', () => {
-    // `chooser` prices every pocket both ways — the player who has
-    // understood the game. If a caricature matches it, understanding the
-    // game is worth nothing and the depth is decoration. At 200 seeds the
-    // veteran holds 1402 against 1034/880/582; the greedy and wandering
-    // margins are wide enough to pin outright, the timid one is pinned at
-    // "keeps up" so six noisy seeds cannot cry wolf.
-    const veteran = stats(chooser);
-    expect(veteran.medianPoints).toBeGreaterThan(stats(greedy).medianPoints);
-    expect(veteran.medianPoints).toBeGreaterThan(stats(tourist).medianPoints);
-    expect(veteran.medianPoints).toBeGreaterThanOrEqual(stats(timid).medianPoints * 0.7);
-  });
-});
+    it('lets the veteran probe out-score every naive profile', () => {
+      // `chooser` prices every pocket both ways — the player who has
+      // understood the game. If a caricature matches it, understanding the
+      // game is worth nothing and the depth is decoration. At 200 seeds the
+      // veteran holds 1402 against 1034/880/582; the greedy and wandering
+      // margins are wide enough to pin outright, the timid one is pinned at
+      // "keeps up" so six noisy seeds cannot cry wolf.
+      const veteran = stats(chooser);
+      expect(veteran.medianPoints).toBeGreaterThan(stats(greedy).medianPoints);
+      expect(veteran.medianPoints).toBeGreaterThan(stats(tourist).medianPoints);
+      expect(veteran.medianPoints).toBeGreaterThanOrEqual(stats(timid).medianPoints * 0.7);
+    });
+  },
+);
 
-describe('balance across the progression ladder', () => {
+describe('balance across the progression ladder', { timeout: SIM_TIMEOUT }, () => {
   const MAXED: Progress = {
     ...EMPTY_PROGRESS,
     bought: Object.fromEntries(UPGRADES.map((u) => [u.id, u.levels])),

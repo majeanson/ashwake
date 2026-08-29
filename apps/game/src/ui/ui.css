@@ -174,7 +174,6 @@ button[disabled] {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  box-shadow: var(--card-text-shadow, none);
 }
 
 .card-lead {
@@ -486,6 +485,25 @@ button[disabled] {
 .hand > button {
   min-height: 3.4rem;
   padding: 0.3rem 0.2rem;
+}
+
+/*
+ * The draft card's label wears the board's halo (2026-08-29).
+ *
+ * A selected card paints itself in its own terrain fill and, until now, left
+ * the label in the ink chosen against the PANEL — which on torchlit put EMBER
+ * at 1.66:1 on its own ground, found by the first run of `pnpm audit:screens`.
+ * A draft card is a board tile that happens to be DOM, so it gets the answer
+ * the board already has: `theme.ink.ink` over a `theme.ink.halo` outline,
+ * here as a text-shadow. `--card-text-shadow` was ported for exactly this and
+ * had been doing duty as a teaching card's drop shadow instead.
+ *
+ * A halo is not a colour, so the audit still measures the raw ratio and still
+ * reports it. That is correct and the row is marked `data-audit-halo` so it is
+ * counted apart rather than mistaken for an unhandled one.
+ */
+.tile {
+  text-shadow: var(--card-text-shadow);
 }
 
 .tile.hold {

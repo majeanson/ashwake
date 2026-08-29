@@ -554,4 +554,23 @@ photographed and measured (contrast, tap targets, overflow, clipped text), in
 its own config with an `*.audit.ts` suffix so `pnpm test:e2e` cannot see it. It
 is a report, not a gate.
 
+**The audit's first run found two real things and 114 decided ones.** The real
+ones: the draft card's label sat at 1.66:1 on torchlit, because a selected card
+paints itself in its own terrain fill and left the label in the ink chosen
+against the PANEL — a draft card is a board tile that happens to be DOM, so it
+now gets the board's own answer, `ink` over an `ink.halo` outline.
+`--card-text-shadow` was ported for exactly this and had been doing duty as a
+teaching card's drop shadow. The other 114 are decided: the stat row's 28px
+targets (argued in `.stat` since Stage 3 — a stat is an explanation, never an
+action) and disabled controls. Both now say so at the source
+(`data-audit-compact`, `data-audit-halo`) and are counted in their own columns,
+because thirty-nine copies of a rule somebody already decided will drown the
+two rows that need deciding.
+
+**CI failed on two balance sims timing out at 5000ms** — vitest's default,
+which the maxed-ladder and every-perk simulations sit inside on a shared
+runner while passing locally in under a second. They now carry a 60s bound
+that says what it is: a guard against a hang, not a claim about speed. Ashwake
+1's wall-clock assertion held its deploys shut for nine commits.
+
 **Not played on a phone.** Again.

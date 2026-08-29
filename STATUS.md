@@ -25,9 +25,14 @@ the door since Stage 3 — scenes now sit below panels and go `inert` while one
 is open; `.end`'s flex children shrank content out of their own boxes and a
 paragraph swallowed the taps meant for a button; a crashed vitest worker
 reported GREEN with its file silently missing (runner capped at eight); and the
-colour lens was dead code the shell passed `null` to. **Verified:** 823 tests /
-54 files; typecheck, lint, format, build clean; golden sim byte-identical.
-**Still not played on a phone.**
+colour lens was dead code the shell passed `null` to. `pnpm audit:screens` landed with it — fourteen screens × three directions,
+photographed and measured, in its own config so it can never gate a deploy —
+and its first run found the draft card's label at 1.66:1 on its own terrain
+fill, now wearing the board's own halo. **Verified:** 829 tests / 55 files; 31
+Playwright at 390×844; typecheck, lint, format, build clean; golden sim
+byte-identical; the audit reports zero unhandled findings (39 argued compact
+tap targets, 2 haloed labels, 75 disabled controls, no overflow, no clipped
+text). **Still not played on a phone.**
 
 Previous checkpoint: **2026-08-29 — Stage 3 + S2d: a first minute exists, and
 the loop closes.** Front door, stat row, hand, action bar, purse drawer, camera
@@ -186,8 +191,6 @@ playable. Nothing has been seen on a phone.**
   ship, shot, and picked on a phone.
 - **S6 — the console, Session A on v2, then the stranger.** `/playtest` with
   COPY SHEET; Session A re-run against the deployed v2; fixes; Session C.
-- **The screen audit harness** (`pnpm audit:screens`), owed since S3 and
-  cheapest built beside the screens rather than after them.
 
 Marc's own list, which no amount of building here clears: set
 `CLOUDFLARE_API_TOKEN` with `--body` (the interactive prompt took an EOF and

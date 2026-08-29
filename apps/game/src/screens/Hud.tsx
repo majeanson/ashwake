@@ -31,7 +31,14 @@ export function Hud({ hud, s, onNote }: HudProps) {
   const [rose, setRose] = useState<StatId | null>(null);
 
   return (
-    <div className="hud" data-hud="stats">
+    <div
+      className="hud"
+      /* Below the 44px floor on purpose — see `.stat` in ui.css. A stat is an
+         explanation, never an action, and the row would eat a third of the
+         screen at tap size. Stated here so the audit counts it as decided. */
+      data-audit-compact=""
+      data-hud="stats"
+    >
       {STATS.map((id) => {
         const shown = valueOf(id, hud);
         if (shown === null) return null;
