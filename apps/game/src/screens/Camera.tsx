@@ -14,6 +14,13 @@ import type { BoardHandle } from '../board/Board';
  * **FIT ⇄ HERE.** FIT shows the whole structure; HERE leans in on the last
  * tile placed. One button, and its label says which way it will go, so it is
  * never a question of which state you are in.
+ *
+ * **LEVEL is the third, and it is not always there** (2026-08-29). Two fingers
+ * now turn and lean the board as well as pinch it, so there has to be a way
+ * back to the angle the direction opens at — an angle a player wandered into
+ * by accident is one they cannot undo by feel. It appears only once the board
+ * IS off that angle, which keeps the cluster at two controls for everybody who
+ * never leans it, and is the same rule HERE already follows.
  */
 
 export type CameraProps = {
@@ -21,13 +28,15 @@ export type CameraProps = {
   readonly s: Strings;
   /** Where the last tile went, so HERE has somewhere to go. */
   readonly here: string | null;
+  /** Whether the board is off its default angle — see LEVEL above. */
+  readonly leaned: boolean;
   readonly onHelp: () => void;
 };
 
 /** Ashwake 1's number: close enough to read a hex, far enough to see a pocket. */
 const HERE_ZOOM = 2.4;
 
-export function Camera({ board, s, here, onHelp }: CameraProps) {
+export function Camera({ board, s, here, leaned, onHelp }: CameraProps) {
   const [fitted, setFitted] = useState(true);
 
   return (
@@ -35,6 +44,11 @@ export function Camera({ board, s, here, onHelp }: CameraProps) {
       <button type="button" className="help" aria-label={s.ui.howToPlay} onClick={onHelp}>
         ?
       </button>
+      {leaned && (
+        <button type="button" data-action="level" onClick={() => board.current?.resetLean()}>
+          {s.ui.levelView}
+        </button>
+      )}
       <button
         type="button"
         data-action="camera"

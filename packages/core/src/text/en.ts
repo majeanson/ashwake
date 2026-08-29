@@ -543,6 +543,9 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     howToPlay: 'HOW TO PLAY',
+    /** The camera cluster's third control, shown only once the board has been
+     *  turned or leaned away from the angle its direction opens at. */
+    levelView: 'LEVEL',
     resume: 'RESUME',
     gotIt: 'GOT IT',
     thisDevice: 'THIS DEVICE',

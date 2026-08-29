@@ -44,6 +44,15 @@ source of an asset that ships now has the maker beside it (§5).
 
 ## 1. Needs Marc, and only Marc
 
+**The camera, by feel.** Two fingers now lean and turn the board as well as
+pinch it (`LOG.md` Session 15), and three things about it are arithmetic
+waiting on a hand: whether `PX_PER_DEGREE = 4` makes the lean feel like
+pushing a horizon or like fighting one, whether the 55° ceiling is where the
+board stops reading as a map, and whether the deadzones let a plain pinch stay
+a plain pinch. **The tilt and yaw questions in the table below are half
+retired by this** — the answer can be the player's hands rather than a
+number — but the DEFAULT the board opens at is still yours, and it is still 35.
+
 **The Cloudflare API token.** CI's deploy job runs and fails: the
 `CLOUDFLARE_API_TOKEN` secret exists on `majeanson/ashwake` but is EMPTY — the
 Actions log prints `CLOUDFLARE_API_TOKEN:` with nothing after it, while

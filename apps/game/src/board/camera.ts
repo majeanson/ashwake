@@ -342,3 +342,109 @@ export const glidedBy = (cam: CameraState, dx: number, dz: number): CameraState 
   cx: cam.cx - dx,
   cz: cam.cz - dz,
 });
+
+/* ---- the two-finger gesture ------------------------------------------------ */
+
+/**
+ * How far the camera may lean, and why there is a ceiling at all.
+ *
+ * Zero is the map. The ceiling is READABILITY, not a budget: a hex's colours
+ * are the rig's and do not change with the camera — `render/materials.test.ts`
+ * grades the top and the shaded side against the board whatever angle they are
+ * seen from, so no camera can walk the board out of the contrast budget.
+ *
+ * What the angle changes is how much of each surface you are looking at, and
+ * that is the argument for a limit. Past about here a prism shows more SIDE
+ * than top, and the side carries the thinnest margin in the project — torchlit
+ * clears the wall floor by 0.070, torchlit-bright by 0.072 — so a board laid
+ * nearly flat is a board asking its weakest surface to do most of the work.
+ * The far rows compress into each other at the same time, and a pocket three
+ * hexes deep stops reading as three hexes.
+ *
+ * 55 rather than 60 because the number wants a margin of its own: it is a
+ * ceiling chosen from arithmetic and it has not been looked at on a phone.
+ */
+export const TILT_MIN = 0;
+export const TILT_MAX = 55;
+
+export const clampTilt = (deg: number): number =>
+  Math.min(TILT_MAX, Math.max(TILT_MIN, Number.isFinite(deg) ? deg : TILT_MIN));
+
+/** Yaw is a circle: it wraps rather than clamping, so a turn never hits a wall. */
+export const wrapYaw = (deg: number): number => {
+  if (!Number.isFinite(deg)) return 0;
+  const d = deg % 360;
+  return d < 0 ? d + 360 : d;
+};
+
+export type Finger = { readonly x: number; readonly y: number };
+
+/**
+ * What two fingers just did, as three independent numbers.
+ *
+ * The maps vocabulary, and the reason it is worth copying is that nobody has
+ * to be taught it: pinch to zoom, twist to turn, drag up and down to lean.
+ * All three ride the same two pointers at once — no modes, no third control,
+ * no screen given up.
+ *
+ * Pure, and in this file rather than in the rig, for the reason the whole
+ * `Lean` model is here: it is arithmetic that has to agree with the fit, the
+ * pan and the raycast, and none of it needs a canvas to be wrong.
+ *
+ * **The tilt is read off the MIDPOINT, not off either finger.** A twist moves
+ * both fingers vertically in opposite directions and their midpoint not at
+ * all, so measuring one finger would read every rotation as a lean. Dragging
+ * up leans the camera back, the way a map does — the hand pushes the horizon
+ * away.
+ */
+export type TwoFinger = {
+  /** Multiplier on the zoom: the distance between the fingers, then and now. */
+  readonly scale: number;
+  /** Degrees the pair rotated, signed, in (-180, 180]. */
+  readonly turn: number;
+  /** Degrees to add to the tilt. */
+  readonly lean: number;
+};
+
+/** Pixels of midpoint travel per degree of tilt. Ashwake 1 had no equivalent;
+ *  this is set so a comfortable thumb-length drag covers the whole range. */
+const PX_PER_DEGREE = 4;
+
+export function twoFinger(
+  from: readonly [Finger, Finger],
+  to: readonly [Finger, Finger],
+): TwoFinger {
+  const span = (p: readonly [Finger, Finger]): number =>
+    Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+  const angle = (p: readonly [Finger, Finger]): number =>
+    (Math.atan2(p[1].y - p[0].y, p[1].x - p[0].x) * 180) / Math.PI;
+  const midY = (p: readonly [Finger, Finger]): number => (p[0].y + p[1].y) / 2;
+
+  const was = span(from);
+  const now = span(to);
+  // A zero span is two fingers reported at one point — no scale can be read
+  // from it, and 1 is the honest answer rather than an Infinity.
+  const scale = was > 0 && now > 0 ? now / was : 1;
+
+  let turn = angle(to) - angle(from);
+  // The short way round. Without this a gesture crossing the ±180 seam spins
+  // the board a full turn in one frame.
+  if (turn > 180) turn -= 360;
+  if (turn <= -180) turn += 360;
+
+  return { scale, turn, lean: (midY(from) - midY(to)) / PX_PER_DEGREE };
+}
+
+/**
+ * The deadzones, and why a gesture LATCHES.
+ *
+ * Two fingers are never perfectly still: a pinch rotates a degree or two and
+ * drifts a few pixels, and applying all three every frame makes the board
+ * wobble under a gesture that meant only one of them. So each channel has to
+ * be asked for before it engages — and once engaged it stays engaged for the
+ * rest of the gesture, because a threshold re-tested every frame is a channel
+ * that stutters in and out exactly when a player slows down to be precise.
+ */
+export const TURN_DEADZONE = 8;
+export const LEAN_DEADZONE = 3;
+export const ZOOM_DEADZONE = 0.06;

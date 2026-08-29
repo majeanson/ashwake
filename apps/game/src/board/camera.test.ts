@@ -3,6 +3,7 @@ import { disc } from '@engine/hex';
 import { corners, place } from '@render/layout';
 import {
   cameraAt,
+  clampTilt,
   eyeOf,
   fitCamera,
   FLAT,
@@ -12,8 +13,13 @@ import {
   pannedBy,
   pxPerUnit,
   screenOf,
+  TILT_MAX,
+  TILT_MIN,
+  twoFinger,
+  wrapYaw,
   zoomMaxOf,
   zoomedBy,
+  type Finger,
   type Frame,
   type Lean,
 } from './camera';
@@ -194,5 +200,80 @@ describe('the lean', () => {
     const flat = frameFor(disc(3), PHONE.width, PHONE.height, 'pointy', FLAT);
     expect(flat.fit).toEqual(before.fit);
     expect(fitCamera(flat)).toEqual(fitCamera(before));
+  });
+});
+
+describe('two fingers', () => {
+  const at = (ax: number, ay: number, bx: number, by: number): [Finger, Finger] => [
+    { x: ax, y: ay },
+    { x: bx, y: by },
+  ];
+
+  it('reads a pinch as a scale and nothing else', () => {
+    // Same midpoint, same angle, twice the span.
+    const g = twoFinger(at(90, 100, 110, 100), at(80, 100, 120, 100));
+    expect(g.scale).toBeCloseTo(2, 5);
+    expect(g.turn).toBeCloseTo(0, 5);
+    expect(g.lean).toBeCloseTo(0, 5);
+  });
+
+  it('reads a twist as a turn and nothing else', () => {
+    // A quarter turn about the midpoint: the span and the midpoint are both
+    // untouched, so neither the zoom nor the lean may move.
+    const g = twoFinger(at(90, 100, 110, 100), at(100, 90, 100, 110));
+    expect(g.turn).toBeCloseTo(90, 5);
+    expect(g.scale).toBeCloseTo(1, 5);
+    expect(g.lean).toBeCloseTo(0, 5);
+  });
+
+  it('reads a two-finger drag as a lean, and up leans BACK', () => {
+    // Both fingers up by 40px: the midpoint rises, the span and angle hold.
+    const g = twoFinger(at(90, 200, 110, 200), at(90, 160, 110, 160));
+    expect(g.lean).toBeGreaterThan(0);
+    expect(g.scale).toBeCloseTo(1, 5);
+    expect(g.turn).toBeCloseTo(0, 5);
+    // And down leans forward again, by the same amount.
+    const back = twoFinger(at(90, 160, 110, 160), at(90, 200, 110, 200));
+    expect(back.lean).toBeCloseTo(-g.lean, 5);
+  });
+
+  it('measures the lean off the MIDPOINT, so a twist is not a lean', () => {
+    // The failure this guards: a twist moves each finger vertically, hard, in
+    // opposite directions. Reading either one alone would report a big lean
+    // for a gesture that meant a turn.
+    const g = twoFinger(at(90, 100, 110, 100), at(100, 60, 100, 140));
+    expect(Math.abs(g.turn)).toBeGreaterThan(45);
+    expect(g.lean).toBeCloseTo(0, 5);
+  });
+
+  it('turns the SHORT way across the seam', () => {
+    // atan2 flips sign at ±180. Without the wrap this reads as a full spin in
+    // a single frame — the board snapping round under two barely-moved fingers.
+    const g = twoFinger(at(0, 0, -100, -1), at(0, 0, -100, 1));
+    expect(Math.abs(g.turn)).toBeLessThan(5);
+  });
+
+  it('answers 1 rather than Infinity for two fingers at one point', () => {
+    const g = twoFinger(at(50, 50, 50, 50), at(50, 50, 60, 50));
+    expect(g.scale).toBe(1);
+    expect(Number.isFinite(g.lean)).toBe(true);
+  });
+});
+
+describe('the lean, bounded', () => {
+  it('keeps the tilt inside the range the material budget was graded at', () => {
+    expect(clampTilt(-20)).toBe(TILT_MIN);
+    expect(clampTilt(999)).toBe(TILT_MAX);
+    expect(clampTilt(35)).toBe(35);
+    // A NaN out of a degenerate gesture must not become the camera's angle.
+    expect(clampTilt(Number.NaN)).toBe(TILT_MIN);
+  });
+
+  it('wraps the yaw rather than stopping it', () => {
+    // A turn has no ends: a player spinning the board past north keeps going.
+    expect(wrapYaw(0)).toBe(0);
+    expect(wrapYaw(370)).toBeCloseTo(10, 5);
+    expect(wrapYaw(-10)).toBeCloseTo(350, 5);
+    expect(wrapYaw(Number.NaN)).toBe(0);
   });
 });

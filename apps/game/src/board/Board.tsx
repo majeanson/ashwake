@@ -18,6 +18,7 @@ import { rigFor } from '@theme/rig';
 import { hex as cssHex, type Theme } from '@theme/tokens';
 import {
   cameraAt,
+  clampTilt,
   eyeOf,
   fitCamera,
   frameFor,
@@ -25,11 +26,17 @@ import {
   glidedBy,
   isFlick,
   isResting,
+  LEAN_DEADZONE,
   lerpCamera,
   pannedBy,
+  TURN_DEADZONE,
+  twoFinger,
+  wrapYaw,
+  ZOOM_DEADZONE,
   zoomMaxOf,
   zoomedBy,
   type CameraState,
+  type Finger,
   type Frame,
   type Glide,
   type Lean,
@@ -64,6 +71,8 @@ export type BoardHandle = {
   flyToFit(): void;
   zoomLevel(): number;
   zoomMax(): number;
+  /** Back to the direction's own angle. The cluster's third control. */
+  resetLean(): void;
 };
 
 export type BoardProps = {
@@ -86,6 +95,9 @@ export type BoardProps = {
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
+  /** Told when the board is, or stops being, off its default angle — so the
+   *  camera cluster can offer a way back only when there is one. */
+  readonly onLeanChange?: ((leaned: boolean) => void) | undefined;
 };
 
 const FLIGHT_MS = 320;
@@ -98,8 +110,49 @@ const EDGE_SWIPE_PX = 28;
  *  near plane and stay inside the far one — it changes nothing on screen. */
 const EYE_DISTANCE = 200;
 
+/** Half a degree, which is the finest step worth re-fitting a board for. */
+const round2 = (deg: number): number => Math.round(deg * 2) / 2;
+
 export function Board(props: BoardProps) {
   const { theme, tilt = 0, yaw = 0, relief = 0, light = 0, materials = 0, art = false } = props;
+
+  /*
+   * The angle the player is holding the board at (2026-08-29, Marc: "anyway we
+   * could tilt, drag cameras as we want? 3d style").
+   *
+   * `tilt` and `yaw` above are the DEFAULT — Marc's 35 and the query dials —
+   * and this is where the board actually is. It lives in state rather than in
+   * the camera ref, unlike the pan and the zoom, because three things read the
+   * angle and only one of them is the camera: the fit reserves sky by the
+   * tilt, the light rig turns with the yaw, and the labels turn BACK by it so
+   * they stay readable. A ref could not tell any of them.
+   *
+   * It resets to the default on a new run rather than being remembered, which
+   * keeps the opening board one known picture — the shot set, the screen audit
+   * and Session C all measure the same first minute for everybody. The reset
+   * control in the camera cluster is how you get back mid-run.
+   */
+  const [lean, setLean] = useState({ tilt, yaw });
+  const leaned = lean.tilt !== tilt || lean.yaw !== yaw;
+  const resetLean = useCallback(() => setLean({ tilt, yaw }), [tilt, yaw]);
+  const leanBy = useCallback(
+    (turn: number, back: number) =>
+      setLean((was) => ({
+        // Quantised to a half degree: two fingers are never still, and a frame
+        // that moved the board by a hundredth of a degree is a re-render (and
+        // a whole re-fit) bought for something no eye can see.
+        tilt: round2(clampTilt(was.tilt + back)),
+        yaw: round2(wrapYaw(was.yaw + turn)),
+      })),
+    [],
+  );
+
+  // Told only when the ANSWER changes, not on every degree — the cluster only
+  // needs to know whether there is anything to reset.
+  const { onLeanChange } = props;
+  useEffect(() => {
+    onLeanChange?.(leaned);
+  }, [leaned, onLeanChange]);
   const assets = useAssets(theme.id, art);
   // One cache for both layers, so a leaping ASH tile is painted by the very
   // texture that was under it a frame ago rather than by a second bake of it.
@@ -164,18 +217,20 @@ export function Board(props: BoardProps) {
           style={{ width: size.width, height: size.height }}
         >
           <color attach="background" args={[theme.board.background]} />
-          <LightRig rig={rigFor(light)} yaw={yaw} />
+          <LightRig rig={rigFor(light)} yaw={lean.yaw} />
           <Rig
             view={props.view}
             theme={theme}
             width={size.width}
             height={size.height}
-            tilt={tilt}
-            yaw={yaw}
+            tilt={lean.tilt}
+            yaw={lean.yaw}
             relief={relief}
             reducedMotion={props.reducedMotion === true}
             handle={props.handle}
             wrapper={wrapper}
+            onLeanBy={leanBy}
+            onResetLean={resetLean}
           />
           <HexField
             view={props.view}
@@ -185,7 +240,7 @@ export function Board(props: BoardProps) {
             materials={materials}
             assets={assets}
             textures={textures}
-            yaw={yaw}
+            yaw={lean.yaw}
             reducedMotion={props.reducedMotion === true}
             onTap={props.onTap}
           />
@@ -221,6 +276,9 @@ type RigProps = {
   readonly reducedMotion: boolean;
   readonly handle: Ref<BoardHandle> | undefined;
   readonly wrapper: React.RefObject<HTMLDivElement | null>;
+  /** Two fingers turning and leaning: degrees to ADD, not absolutes. */
+  readonly onLeanBy: (turn: number, back: number) => void;
+  readonly onResetLean: () => void;
 };
 
 /**
@@ -238,6 +296,8 @@ function Rig({
   reducedMotion,
   handle,
   wrapper,
+  onLeanBy,
+  onResetLean,
 }: RigProps) {
   const camera = useThree((s) => s.camera) as OrthographicCamera;
   const invalidate = useThree((s) => s.invalidate);
@@ -356,8 +416,11 @@ function Rig({
       },
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),
+      // The angle lives a level up, in `Board` — three things read it and only
+      // one of them is this camera — so the handle passes the ask along.
+      resetLean: onResetLean,
     }),
-    [invalidate, fly, theme.orientation],
+    [invalidate, fly, theme.orientation, onResetLean],
   );
 
   // Gestures, on the wrapper: one finger drags past the slop, two pinch, a
@@ -368,7 +431,59 @@ function Rig({
     const pointers = new Map<number, { x: number; y: number }>();
     let last: { x: number; y: number } | null = null;
     let moved = false;
-    let pinch: number | null = null;
+    /*
+     * The two-finger gesture: pinch, twist and lean, all at once.
+     *
+     * `pair` is where the two fingers were on the previous move, so every
+     * frame reads a DELTA rather than a total — the same shape the pan uses,
+     * and for the same reason: a total measured from where the gesture began
+     * fights any correction the hand makes halfway through.
+     *
+     * `since` accumulates the whole gesture, and is only ever compared against
+     * the deadzones. Two fingers are never still — a pinch rotates a degree or
+     * two and drifts a few pixels — so a channel has to be ASKED for before it
+     * engages, and once engaged it stays engaged for the rest of the gesture.
+     * A threshold re-tested every frame is a channel that stutters in and out
+     * exactly when somebody slows down to be precise.
+     */
+    let pair: [Finger, Finger] | null = null;
+    let since = { scale: 1, turn: 0, lean: 0 };
+    let on = { zoom: false, turn: false, lean: false };
+    const twoDown = (): [Finger, Finger] | null => {
+      const [a, b] = [...pointers.values()];
+      return a === undefined || b === undefined ? null : [a, b];
+    };
+    /*
+     * Start the two-finger gesture over from wherever the fingers are NOW.
+     *
+     * Called every time the SET of pointers changes, which is the whole rule
+     * and is the pinch bug's lesson generalised: a gesture's reference point
+     * belongs to the fingers that are down, so the moment that set changes the
+     * old reference describes a hand that no longer exists. Two fingers, a
+     * third landing, then one lifting would otherwise measure the next move
+     * against positions several events old — and against a possibly different
+     * pair, since the two being read are the first two still down. That is a
+     * zoom, a turn and a lean all jumping in a single frame.
+     *
+     * The accumulator resets with it, because the deadzones describe how far
+     * THIS gesture has come and a new set of fingers is a new gesture.
+     *
+     * **The three-finger path is reasoned, not tested, and that is a gap worth
+     * naming.** Chrome's `Input.dispatchTouchEvent` identifies touch points by
+     * their INDEX in the array it is handed, not by identity — asking it to
+     * end the third point ends the FIRST one and merely reports it at the
+     * third one's coordinates (verified 2026-08-29). So "a palm lands and
+     * leaves" cannot be expressed faithfully to the driver `e2e/board.spec.ts`
+     * drives with, and a test that appeared to cover it would be describing a
+     * different gesture. The honest fix, if this ever bites, is the one this
+     * repo has reached for twice already: lift the bookkeeping out of the
+     * handler into a pure tracker and unit-test it there.
+     */
+    const seedPair = (): void => {
+      pair = pointers.size === 2 ? twoDown() : null;
+      since = { scale: 1, turn: 0, lean: 0 };
+      on = { zoom: false, turn: false, lean: false };
+    };
     // The last few moves, so a flick is measured over a gesture rather than
     // over whatever jitter the final event happened to carry — one sample
     // reads as the board flying off when a finger merely lifted crookedly.
@@ -379,25 +494,43 @@ function Rig({
       if (pointers.size === 1) {
         last = { x: e.clientX, y: e.clientY };
         moved = false;
-      } else if (pointers.size === 2) {
-        const [a, b] = [...pointers.values()];
-        pinch = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+      } else {
+        // Any second-or-later finger changes the set, so the gesture restarts.
+        seedPair();
       }
     };
     const move = (e: PointerEvent): void => {
       if (!pointers.has(e.pointerId)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      if (pointers.size === 2 && pinch !== null) {
-        const [a, b] = [...pointers.values()];
-        const d = Math.hypot(a!.x - b!.x, a!.y - b!.y);
-        if (d > 0 && pinch > 0) {
-          wasFit.current = false;
-          flight.current = null;
-          glide.current = null;
-          cam.current = zoomedBy(frameRef.current, cam.current, d / pinch);
-          invalidate();
+      if (pointers.size === 2 && pair !== null) {
+        const now = twoDown();
+        if (now !== null) {
+          const g = twoFinger(pair, now);
+          since = {
+            scale: since.scale * g.scale,
+            turn: since.turn + g.turn,
+            lean: since.lean + g.lean,
+          };
+          if (Math.abs(since.scale - 1) > ZOOM_DEADZONE) on.zoom = true;
+          if (Math.abs(since.turn) > TURN_DEADZONE) on.turn = true;
+          if (Math.abs(since.lean) > LEAN_DEADZONE) on.lean = true;
+
+          if (on.zoom || on.turn || on.lean) {
+            flight.current = null;
+            glide.current = null;
+          }
+          if (on.zoom) {
+            wasFit.current = false;
+            cam.current = zoomedBy(frameRef.current, cam.current, g.scale);
+          }
+          // The turn and the lean go OUT to React — three things read the
+          // angle and only one of them is the camera. A board that was fitted
+          // stays fitted through it: the frame effect re-fits on every lean,
+          // which is what keeps a tilting board from walking off its own edge.
+          if (on.turn || on.lean) onLeanBy(on.turn ? g.turn : 0, on.lean ? g.lean : 0);
+          if (on.zoom) invalidate();
+          pair = now;
         }
-        pinch = d;
         // A pinch is not a tap, and it is not a throw either. `moved` stops
         // the lift placing a tile; clearing the samples stops the lift
         // launching a GLIDE built from whatever pan happened before the
@@ -428,7 +561,9 @@ function Rig({
     };
     const up = (e: PointerEvent): void => {
       pointers.delete(e.pointerId);
-      if (pointers.size < 2) pinch = null;
+      // A lift changes the set too — including 3 fingers down to 2, which is
+      // the case a `size < 2` check silently left holding a stale pair.
+      seedPair();
 
       if (pointers.size !== 0) {
         /*
@@ -510,7 +645,7 @@ function Rig({
     // `reducedMotion` is read by the flick, so the listeners are rebound when
     // it changes — a phone that turns motion off mid-run should stop throwing
     // the board on the next lift, not the next reload.
-  }, [wrapper, invalidate, reducedMotion]);
+  }, [wrapper, invalidate, reducedMotion, onLeanBy]);
 
   return null;
 }

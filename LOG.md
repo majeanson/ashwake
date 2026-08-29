@@ -1036,3 +1036,77 @@ compact targets, 3 haloed labels, 84 disabled controls — no clipped, no
 overflow). **Every direction's art has changed and NONE of it has been seen on
 a phone. The daylight correction in particular is a contrast fix nobody has
 looked at.**
+
+### Session 15 — the camera comes off its rail (2026-08-29)
+
+**The question, written first:** _The tilt has been a settled number and the yaw
+an open one, both answered by looking at screenshots. If the arithmetic already
+works at every angle, is there any reason the ANSWER has to be a constant rather
+than the player's hands?_
+
+Marc: _"anyway we could tilt, drag cameras as we want? 3d style"_. There was
+not, and the expensive half turned out to be already built. `camera.ts` has
+been angle-general since Stage 2b: `Lean` feeds one screen mapping used
+forwards and backwards by every extent, centre and drag, the fit already
+reserves `tallest · sin(tilt)` of sky, and a Playwright test has been taking
+placements at 45°/45° with relief on since the day it landed. **What was
+missing was a gesture.** The angles arrived as props from the query string and
+nothing on screen could move them.
+
+**The maps vocabulary, on the two pointers that were already there:** pinch
+zooms, a twist turns, a two-finger drag leans. No modes, no third control, no
+screen given up, and nobody has to be taught it. `twoFinger()` is pure and in
+`camera.ts` with the rest of the lean arithmetic, and the one subtlety is
+written into a test: **the lean is read off the MIDPOINT**, because a twist
+moves both fingers hard in opposite directions and their midpoint not at all —
+measuring either finger alone would report every rotation as a lean.
+
+**Each channel latches past a deadzone.** Two fingers are never still: a pinch
+rotates a degree or two and drifts a few pixels, so all three applied every
+frame makes the board wobble under a gesture that meant one of them. And a
+threshold re-tested per frame is a channel that stutters in and out exactly
+when somebody slows down to be precise, so once engaged it stays engaged.
+
+**The angle is state, not a ref** — the one place this board departs from "the
+camera lives in a ref and React never re-renders for it". Three things read the
+angle and only one is the camera: the fit reserves sky by the tilt, the light
+rig turns with the yaw, and the labels turn back by it. Quantised to a half
+degree so a hundredth-degree frame does not buy a re-fit.
+
+**LEVEL is the third control, and it is not always there.** Marc asked for the
+reset and it earns the cluster's own rule — the doc comment there argues hard
+for two controls rather than four — by appearing only once the board IS off its
+angle, which is the rule HERE already follows. The angle resets on a new run
+rather than persisting, so the opening board stays one known picture for the
+shot set, the audit and Session C.
+
+**Reviewing it found the pinch bug's shape again, before it shipped.** The two
+fingers a gesture reads are the first two still down, so a third finger landing
+and then the FIRST lifting leaves the pair `[B, C]` while the remembered
+reference describes `[A, B]` — a delta between two different pairs of fingers,
+a fifty-degree turn in one frame from a hand that barely moved. The fix is the
+general rule rather than a third special case: **when the SET of pointers
+changes, the gesture starts over from where the fingers are now.**
+
+**And the test for that path could not be made honest, which is worth recording
+rather than papering over.** Two drafts of it passed for the wrong reasons —
+the first because the `down` path already prevented the spin, the second
+because Chrome's `Input.dispatchTouchEvent` identifies touch points **by their
+index in the array**, so asking it to end the third point ends the FIRST and
+merely reports it at the third one's coordinates. A palm landing and leaving
+cannot be expressed to that driver. The fix stays (it is right by construction
+and cheap), the gap is named where the code is, and the escape if it ever bites
+is the one this repo has taken twice: lift the bookkeeping into a pure tracker
+and test it there.
+
+The same review corrected the camera e2e itself: its first draft compared
+screenshots and would have passed against a gesture doing nothing at all,
+because the board is never still — embers and beacons animate. It measures
+through LEVEL now, which appears exactly when the angle has moved.
+
+**Verified:** 946 tests / 64 files; 54 Playwright at 390×844 — including the
+pinch-bug test, still green, which is the one that mattered here since the new
+gesture lives in its handler; typecheck, lint, format, build clean; golden sim
+byte-identical; bake idempotent; the audit unchanged at argued classes only.
+**The ceiling of 55° is arithmetic and has not been looked at on a phone**, and
+neither has the gesture.

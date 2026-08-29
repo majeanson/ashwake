@@ -428,3 +428,94 @@ test('the first pop of a device holds the screen', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+/**
+ * The board's two-finger camera (2026-08-29, Marc: "anyway we could tilt, drag
+ * cameras as we want? 3d style").
+ *
+ * The maps vocabulary on the two pointers that were already there: pinch
+ * zooms, a twist turns, a two-finger drag leans. The arithmetic is unit tested
+ * in `camera.test.ts`; what only a browser can say is that the gesture reaches
+ * the board, that an angle wandered into can be undone, and — the part worth
+ * the most — that none of it broke the pan or the pinch, which live in the
+ * same handler and have produced a real bug on a real phone once already.
+ *
+ * **Measured through LEVEL rather than through pixels.** The obvious test
+ * compares screenshots, and the first draft of this did: it passed while the
+ * gesture was doing nothing at all, because the board is never still — embers
+ * and beacons animate, so two shots of an unchanged board differ anyway. LEVEL
+ * appears exactly when the board is off its default angle and vanishes when it
+ * is back, which makes it the one witness here that cannot say yes by accident.
+ *
+ * Raw CDP touch, because `page.mouse` cannot express two pointers. **The
+ * `touchEnd` list is the points that ENDED**, not the ones still down — worth
+ * writing down, because reading it the other way silently leaves fingers on
+ * the glass and every gesture after it lands on a hand with four.
+ */
+async function twoFingerBoard(page: Page) {
+  await page.goto('/?seed=7&taught=1&place=16');
+  await begin(page);
+  await page.waitForTimeout(600);
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cdp = await page.context().newCDPSession(page);
+  return {
+    cx: Math.round(box.x + box.width / 2),
+    cy: Math.round(box.y + box.height / 2),
+    touch: (
+      type: 'touchStart' | 'touchMove' | 'touchEnd',
+      pts: readonly { x: number; y: number }[],
+    ) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map((p) => ({ ...p })) }),
+  };
+}
+
+test('two fingers lean and turn the board, and LEVEL puts it back', async ({ page }) => {
+  const errors = watchErrors(page);
+  const { cx, cy, touch } = await twoFingerBoard(page);
+  const level = page.locator('[data-action="level"]');
+
+  // Nothing to level yet: the control is absent until the board is off its own
+  // angle, which keeps the cluster at two buttons for anyone who never leans it.
+  await expect(level).toHaveCount(0);
+
+  // A two-finger drag UP. The midpoint rises while the span and the angle
+  // hold, so this is a lean and neither a zoom nor a turn.
+  let a = { x: cx - 60, y: cy + 70 };
+  let b = { x: cx + 60, y: cy + 70 };
+  await touch('touchStart', [a]);
+  await touch('touchStart', [a, b]);
+  for (const dy of [20, 40, 60, 80]) {
+    a = { x: cx - 60, y: cy + 70 - dy };
+    b = { x: cx + 60, y: cy + 70 - dy };
+    await touch('touchMove', [a, b]);
+  }
+  await touch('touchEnd', [a, b]);
+  await expect(level, 'the two-finger drag did not lean the board').toHaveCount(1);
+
+  // Back to the direction's own angle, so the twist below is measured from a
+  // known one rather than from wherever the drag happened to land.
+  await level.click();
+  await expect(level).toHaveCount(0);
+
+  // A twist about the midpoint: both fingers rotate, the midpoint and the span
+  // hold, so this is a turn and neither a lean nor a zoom.
+  a = { x: cx - 60, y: cy };
+  b = { x: cx + 60, y: cy };
+  await touch('touchStart', [a]);
+  await touch('touchStart', [a, b]);
+  for (const deg of [15, 30, 45]) {
+    const rad = (deg * Math.PI) / 180;
+    const ox = Math.round(60 * Math.cos(rad));
+    const oy = Math.round(60 * Math.sin(rad));
+    a = { x: cx - ox, y: cy - oy };
+    b = { x: cx + ox, y: cy + oy };
+    await touch('touchMove', [a, b]);
+  }
+  await touch('touchEnd', [a, b]);
+  await expect(level, 'the twist did not turn the board').toHaveCount(1);
+
+  await level.click();
+  await expect(level).toHaveCount(0);
+  assertLooksLikeAPicture(await page.locator('canvas').screenshot(), 'the levelled board');
+  expect(errors).toEqual([]);
+});

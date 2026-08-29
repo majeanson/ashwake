@@ -4,7 +4,26 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the look comes back.** The chrome had no
+Last checkpoint: **2026-08-29, last — the camera comes off its rail.** Marc:
+_"anyway we could tilt, drag cameras as we want? 3d style"_. The expensive half
+was already built — `camera.ts` has been angle-general since Stage 2b — so what
+landed is the GESTURE: the maps vocabulary on the two pointers that were
+already there, pinch to zoom, twist to turn, two-finger drag to lean, each
+latching past its own deadzone so a pinch cannot wobble the board. The angle is
+state rather than a ref, because three things read it and only one is the
+camera. **LEVEL** is the cluster's third control and appears only once the board
+is off its angle; the angle resets on a new run, so the opening board stays one
+known picture. **Reviewing it found the pinch bug's shape again before it
+shipped** — a third finger landing and the first lifting left the gesture
+measuring between two different pairs of fingers — fixed by the general rule:
+when the set of pointers changes, start over from where the fingers are.
+**That path is reasoned, not tested, and it is written down where the code is:**
+Chrome's touch driver identifies points by array index, so a palm landing and
+leaving cannot be expressed to it. **Verified:** 946 tests / 64 files; 54
+Playwright including the pinch-bug test; golden sim byte-identical. **The 55°
+ceiling is arithmetic and the gesture has not been felt on a phone.**
+
+Previous checkpoint: **2026-08-29 — the look comes back.** The chrome had no
 `@font-face` at all: `ui.css` names Cinzel and EB Garamond twenty-one times and
 the only font shipped was troika's `cinzel.ttf`, so **every DOM screen rendered
 in fallback serif** while the board was correct. Three files, three rules, four

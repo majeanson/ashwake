@@ -453,6 +453,7 @@ export type Strings = {
     readonly details: string;
     /** The door into the manual, from MORE and from the board's `?`. */
     readonly howToPlay: string;
+    readonly levelView: string;
     /** The front door when a run is already in progress. */
     readonly resume: string;
     /** What a card is dismissed with, once it has been read. */
