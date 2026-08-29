@@ -54,6 +54,8 @@ const ANGLES = [
   // direction has ever been chosen here.
   ['s5-settlement', 'theme=settlement&tilt=35&light=1&materials=1&relief=0.35&taught=1'],
   ['s5-settlement-deep', 'theme=settlement&tilt=35&light=1&materials=1&relief=0.35&taught=1'],
+  // The workbench itself, so the strip is judged for how much board it costs.
+  ['s5-directions', 'themes=1&theme=settlement&tilt=35&light=1&materials=1&taught=1'],
 ] as const;
 
 test.use({ viewport: { width: 390, height: 844 } });

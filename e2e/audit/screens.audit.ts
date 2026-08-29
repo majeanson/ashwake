@@ -28,8 +28,13 @@ import { AUDIT_IN_PAGE, type Finding } from './audit';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'audit-shots');
 
-/** The three directions that ship. A screen is only as good as its worst one. */
-const DIRECTIONS = ['torchlit', 'daylight', 'torchlit-bright'] as const;
+/**
+ * Every direction offered, candidates included. A screen is only as good as
+ * its worst one, and a direction nobody audits is a direction whose chrome
+ * nobody has looked at — which is how a candidate gets chosen on the strength
+ * of its BOARD and then ships with an unreadable settings panel.
+ */
+const DIRECTIONS = ['torchlit', 'daylight', 'torchlit-bright', 'settlement'] as const;
 
 /**
  * A device with history, so the screens that only exist once you have played

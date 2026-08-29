@@ -182,3 +182,38 @@ test('a run can be handed to somebody', async ({ page }) => {
   expect(said).not.toContain('end=1');
   expect(errors).toEqual([]);
 });
+
+test('?themes=1 puts every direction one tap from the board', async ({ page }) => {
+  // The workbench. SETTINGS could always switch directions; the panel doing
+  // the switching COVERS the board being judged, which made comparing five of
+  // them five round trips through a menu. Here the board never leaves.
+  const errors = watchErrors(page);
+  await page.goto('/?themes=1&taught=1&place=12');
+  // Through the door first: the strip lives over the BOARD, because a board is
+  // what a direction is judged on. The front door has its own SETTINGS route
+  // for the chrome half.
+  await begin(page);
+
+  const strip = page.locator('[data-hud="directions"]');
+  await strip.waitFor({ state: 'visible' });
+
+  // Every direction that ships, plus AUTO — and the board still showing.
+  expect(await strip.locator('[data-theme-pick]').count()).toBeGreaterThanOrEqual(5);
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('[data-theme-pick="settlement"]')).toBeVisible();
+
+  const groundOf = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await page.locator('[data-theme-pick="daylight"]').click();
+  await expect.poll(groundOf).toBe('rgb(232, 220, 196)');
+  await page.locator('[data-theme-pick="settlement"]').click();
+  await expect.poll(groundOf).toBe('rgb(20, 16, 12)');
+
+  // Remembered, because the way this gets used is to leave the phone on one
+  // direction and come back to it.
+  await page.reload();
+  await expect
+    .poll(async () => page.locator('[data-theme-pick="settlement"]').getAttribute('aria-pressed'))
+    .toBe('true');
+
+  expect(errors).toEqual([]);
+});

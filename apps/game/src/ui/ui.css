@@ -822,3 +822,52 @@ button[disabled] {
 .swatch-ink {
   border-inline-start: 1px solid currentColor;
 }
+
+/*
+ * The direction strip (`?themes=1`).
+ *
+ * Over the board, at the top, clear of both the stat row above it and
+ * everything a thumb reaches for below — the point is to compare BOARDS, so
+ * it must cover as little of one as it can. Horizontally scrollable rather
+ * than wrapping, because a sixth direction should lengthen the strip and not
+ * take another row of board.
+ */
+.directions {
+  position: absolute;
+  top: var(--gap);
+  left: 0;
+  right: 0;
+  z-index: 11;
+  display: flex;
+  gap: 0.35rem;
+  padding: 0 var(--gap);
+  overflow-x: auto;
+  scrollbar-width: none;
+  justify-content: center;
+}
+
+.directions::-webkit-scrollbar {
+  display: none;
+}
+
+.directions button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0.25rem;
+  border: 1px solid var(--panel-edge);
+  border-radius: 0.3rem;
+  background: var(--panel);
+  color: var(--ink-dim);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.65rem;
+}
+
+.directions button[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+
+.directions .swatch {
+  width: 3.2rem;
+  height: 1.1rem;
+}

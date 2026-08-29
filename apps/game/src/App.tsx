@@ -12,6 +12,7 @@ import type { LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
 import { ActionBar } from './screens/ActionBar';
 import { Camera } from './screens/Camera';
+import { Directions } from './screens/Directions';
 import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
 import { Hud } from './screens/Hud';
@@ -66,7 +67,8 @@ import './ui/ui.css';
  * why the front door is a sibling rather than a route.
  *
  * The look dials are read off the query string so an angle can be argued with
- * by looking: `?tilt=`, `?yaw=`, `?relief=`, `?light=`, `?materials=`, `?art=`.
+ * by looking: `?tilt=`, `?yaw=`, `?relief=`, `?light=`, `?materials=`, `?art=`,
+ * and `?themes=1` for a direction strip over the board.
  * `?seed=` picks a world, `?theme=` a direction, `?place=` plays a fixed
  * opening so two screenshots are two pictures of one board, `?end=1` plays a
  * whole run, and `?taught=1` is a device that has met every lesson.
@@ -267,6 +269,10 @@ function Game() {
       light: dial(params, 'light', LIGHT),
       materials: dial(params, 'materials', MATERIALS),
       art: dial(params, 'art', ART) > 0,
+      // `?themes=1` puts a direction strip over the board — the workbench for
+      // the one look question that is not a number. Off by default like every
+      // other dial here.
+      directions: dial(params, 'themes', 0) > 0,
     };
   }, []);
 
@@ -469,6 +475,7 @@ function Game() {
           onTap={onTap}
           handle={board}
         />
+        {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
         {playing && (
           <Camera
             board={board}
