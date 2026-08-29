@@ -27,7 +27,14 @@ import {
  * terrain ladder on 2026-08-28 to fix "ember has no contrast", never re-baked,
  * and this body inherited PNGs still rendering the OLD ladder. A contrast fix
  * that goes missing twice is the argument for keeping the recipe rather than
- * the loaf; CI now re-bakes and diffs, so it cannot happen a third time.
+ * the loaf.
+ *
+ * CI runs this baker on every push, which keeps the pipeline from rotting
+ * unnoticed and grades the palette through the renderer — the guardrail at the
+ * bottom throws if the baked ordering contradicts the L* test's. It does NOT
+ * diff the result against the committed PNGs: `sharp` does not rasterise SVG
+ * byte-identically across platforms, so a Linux runner never reproduces a
+ * Windows bake. **Re-bake when a palette moves — nothing will tell you.**
  *
  * Same spirit as `scripts/icons.ts` and `scripts/social.ts`: one composed
  * SVG per file, rasterised by `sharp`, reading colour straight off the theme

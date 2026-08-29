@@ -29,21 +29,29 @@ jobs:
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from
       # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
       - run: pnpm --filter @ashwake/core --silent sim > sim.out.txt && diff -u packages/core/sim.golden.txt sim.out.txt
-      # The ART still matches the THEME it was baked from.
+      # The art can still be BAKED, and the baking still agrees with the L* test.
       #
-      # `scripts/terrain.ts` reads colour off the theme objects rather than a
-      # copied palette, so re-baking is idempotent until a palette moves — and
-      # then the committed PNGs are stale and nothing says so. Ashwake 1 proved
-      # that is not hypothetical: it darkened daylight's terrain ladder on
-      # 2026-08-28 to fix "ember has no contrast", never re-baked, and shipped
-      # art rendering the OLD ladder. This body then inherited the stale files
-      # as frozen copies, which is how a contrast fix goes missing twice.
+      # `scripts/terrain.ts` throws if the baked greyscale ordering contradicts
+      # the token ordering `theme.test.ts` enforces, so running it here grades
+      # the live palette through the renderer rather than through its numbers
+      # alone — and it keeps the pipeline itself from rotting unnoticed, which
+      # is how it came to be missing from this body in the first place.
       #
-      # The bake also carries its own guardrail — it throws if the baked
-      # greyscale ordering contradicts the token ordering the L* test enforces
-      # — so this one step checks both that the art is current and that it is
-      # still legible in the order the palette promises.
-      - run: pnpm bake && git diff --exit-code -- apps/game/public
+      # It deliberately does NOT diff the result against the committed PNGs,
+      # and the reason is worth keeping: `sharp` does not rasterise SVG
+      # byte-identically across platforms, so a fresh bake on this Linux runner
+      # never equals one made on a Windows machine. The first version of this
+      # step did diff, and failed for that reason alone (2026-08-29).
+      #
+      # **So "the committed art is current" is not checked here, and that gap
+      # is real.** Ashwake 1 proved it is not hypothetical: it darkened
+      # daylight's terrain ladder on 2026-08-28, never re-baked, and shipped
+      # art rendering the OLD ladder, which this body then inherited. What
+      # stands against it today is that `pnpm bake` is one command and every
+      # palette change should end with it. Closing it properly means committing
+      # a measured ladder derived from the THEME and grading the committed PNGs
+      # against that — measurable portably, unlike bytes.
+      - run: pnpm bake
 
   # No PR gate: land on main, and CI gates the prod deploy. Set the
   # DEPLOY_ENABLED repository variable to 'true' to arm this job, and the

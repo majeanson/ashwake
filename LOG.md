@@ -1030,8 +1030,8 @@ two markers for one idea is how two checks come to disagree about which controls
 may be small. One marker now, read by both.
 
 **Verified:** 938 tests / 64 files; 53 Playwright at 390×844; typecheck, lint,
-format, build clean; golden sim byte-identical; `pnpm bake` idempotent and the
-new CI step passes; `audit:screens` back to argued classes only (52 declared
+format, build clean; golden sim byte-identical; `pnpm bake` idempotent on this
+machine; `audit:screens` back to argued classes only (52 declared
 compact targets, 3 haloed labels, 84 disabled controls — no clipped, no
 overflow). **Every direction's art has changed and NONE of it has been seen on
 a phone. The daylight correction in particular is a contrast fix nobody has
@@ -1117,3 +1117,41 @@ gesture lives in its handler; typecheck, lint, format, build clean; golden sim
 byte-identical; bake idempotent; the audit unchanged at argued classes only.
 **The ceiling of 55° is arithmetic and has not been looked at on a phone**, and
 neither has the gesture.
+
+### Session 15b — the CI art check was wrong, and CI said so (2026-08-29)
+
+The step added in Session 14 — `pnpm bake && git diff --exit-code` — failed on
+its first real run, and the failure was the check's rather than the art's.
+**`sharp` does not rasterise SVG byte-identically across platforms**, so a bake
+on the Linux runner never reproduces one made on Windows, and the diff could
+only ever be red. Everything else on that run was green: install, format, lint,
+typecheck, 946 tests, 54 e2e, the golden sim.
+
+Two portable replacements were measured and rejected, which is worth recording
+so nobody re-derives them:
+
+- **Baked mean luma against the token value.** The gap between them runs from
+  −0.073 to −0.238 depending on how much texture a colour carries, so no single
+  tolerance separates "textured" from "stale".
+- **The NORMALISED ladder shape.** Closer, and still not clean: the four
+  directions disagree with their own tokens by up to 0.057 once normalised,
+  which is the same size as the drift it would need to catch.
+
+So the step is now `pnpm bake` alone. That still does real work — it keeps the
+pipeline from rotting unnoticed, which is exactly how it went missing from this
+body, and terrain's guardrail throws if the baked greyscale ordering
+contradicts the one `theme.test.ts` enforces. **What it does not do is prove
+the committed PNGs are current, and the comments and ledgers that claimed
+otherwise are corrected rather than left standing.** The honest way to close it
+is a measured ladder derived from the THEME, committed like `sim.golden.txt`,
+and graded against the committed art — measurable portably, unlike bytes. It is
+written down in the workflow for whoever wants it.
+
+The same review pass caught a second overclaim: the camera's angle was
+documented as resetting on a new run, and nothing reset it — `Board` never
+remounts, by ruling. The behaviour is right and the sentence was wrong; both
+are now the same thing.
+
+**Verified:** 946 tests / 64 files; 54 Playwright; typecheck, lint, format,
+build clean; golden sim byte-identical; deployed and `verify:deploy` green
+against `ashwake.marcportal.com`.

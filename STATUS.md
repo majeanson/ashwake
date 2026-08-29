@@ -37,10 +37,14 @@ already sitting in the repo: Ashwake 1 darkened daylight's terrain ladder on
 2026-08-28 to fix "ember has no contrast", never re-baked, and this body
 inherited PNGs rendering the OLD ladder — re-baking moved exactly green, yellow
 and blue, and left red, which is the one colour that release did not touch. CI
-now runs `pnpm bake` and diffs `apps/game/public`, which checks both that the
-art matches its theme and, via terrain's own guardrail, that the greyscale
-ordering has not inverted. **Torchlit re-bakes byte-identical**, which is how
-the port proved itself. **SETTLEMENT has art for the first time** — it could
+runs `pnpm bake` on every push, which keeps the pipeline from rotting unnoticed
+and grades the palette through the renderer via terrain's own guardrail. It
+does **not** diff the committed PNGs — `sharp` does not rasterise SVG
+byte-identically across platforms, which the first version of that step
+discovered by failing on the Linux runner — so **re-baking after a palette move
+is a discipline, not a gate**, and closing that properly is written up in the
+workflow. **Torchlit re-bakes byte-identical on one machine**, which is how the
+port proved itself faithful. **SETTLEMENT has art for the first time** — it could
 never have had any, because the maker lived in the other repo. `ui.logo` and
 `ui.runEnd` are baked AND WIRED through `shell/art.ts`; `fx.pop` stays
 deliberately unbaked, because this body's pop is one tinted disc and a
