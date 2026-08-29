@@ -625,4 +625,64 @@ byte-identical.
 including the install surface. It used the local wrangler OAuth login, not a CI
 token — **CI's deploy job is still failing** and still needs Marc.
 
+### Session 9 — the game stops promising things it cannot do (2026-08-29)
+
+**Question, written before building:** the privacy sentence a player reads
+says _"Sharing sends only what you see in the share sheet, and a crash report
+only if you tap SEND REPORT"_ — can both halves be made true?
+
+**Both are true now.**
+
+**SHARE is the game's entire distribution mechanism**, and it had no button.
+No backend, no account, no store listing: a run reaches another person because
+somebody pasted a sentence and a link. `meta/share.ts` has owned both since
+the rules were lifted and was reachable from nothing. The edge it refused to
+be — `location`, the share sheet, the clipboard — is `shell/share.ts`, and
+**the link is built from the ORIGIN**: one built from `location.href` would
+drag `?end=1&taught=1&tilt=` along and hand a stranger somebody else's
+debugging. The e2e asserts exactly that.
+
+**The failure panel is plain DOM, and that is the design.** It exists for the
+moments React and WebGL are what broke, so a panel built out of either is a
+panel that cannot appear. Every decision in it is Ashwake 1's, paid for on
+Marc's phone: an OVERLAY rather than a body replacement (one transient throw
+used to destroy a perfectly good end screen), CONTINUE beside RELOAD, repeats
+counted rather than stacked, the actual error shown because a phone has no
+console, theme vars with their old literals as fallbacks because it can fire
+before the theme has written a property, and the honest no-WebGL split — a
+browser that cannot draw at all is not helped by being told its run is saved.
+
+**The privacy contract is the load-bearing part**, and it is now a test: a
+recorded failure must touch the network **zero** times. Nothing runs at boot,
+on error, or on a timer. The tap is the consent.
+
+**`sendCrashReport` moved to the app**, which is what its own comment asked
+for in Ashwake 1. The envelope is arithmetic and stays in the core; `fetch`
+was the only network call in `packages/core` and the only place it reached for
+a global the DOM ban would otherwise have caught. Its tests moved with it.
+
+**SETTINGS ▸ LAST ERROR** is the door that stays open: a player who tapped
+CONTINUE an hour ago is a bug report that walked away, unless what they saw is
+still there to send.
+
+**The appearance picker was a list of words.** The one decision on that screen
+whose answer is entirely visual, and it asked the player to read. Each row now
+carries the direction's own four grounds and its ink, drawn from that theme's
+tokens rather than from CSS variables — the variables belong to the direction
+currently APPLIED, so every swatch would have come out the same colour. The
+ink stripe is there deliberately: a direction whose grounds are lovely and
+whose ink is unreadable should look wrong in the picker. **Adding a direction
+is still one file and one entry in `THEMES`; it arrives with a swatch and
+needs no code** — which is what S5's settlement direction will land into.
+
+**`AUTO` was hard-coded English**, on the screen whose row directly above it
+is the language picker.
+
+**`__BUILD_SHA__` was undefined under vitest** — a crash inside the crash
+reporter, which is the one place a second failure is least welcome. The app's
+vitest config defines it now.
+
+**Verified:** 847 tests / 57 files; typecheck, lint, format clean; golden sim
+byte-identical.
+
 **Not played on a phone.** Again.

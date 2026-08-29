@@ -4,7 +4,25 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the stash, wired.** Marc asked about the
+Last checkpoint: **2026-08-29, last — the game stops promising things it
+cannot do.** The privacy sentence a player reads promised a share sheet and a
+SEND REPORT that did not exist; both are real now. **SHARE** is the game's
+entire distribution mechanism and had no button — the link is built from the
+ORIGIN, so a shared run cannot drag the sender's own `?end=1&taught=1` along.
+**The failure panel** is plain DOM because it exists for the moments React and
+WebGL are what broke: an overlay rather than a body replacement, CONTINUE
+beside RELOAD, repeats counted, the real error shown, and the honest no-WebGL
+split. **The privacy contract is a test** — a recorded failure touches the
+network zero times; the tap is the consent. `sendCrashReport` moved to the app,
+which its own comment asked for: the envelope is arithmetic, `fetch` is an
+edge, and it was the last network call in `packages/core`. **SETTINGS ▸ LAST
+ERROR** keeps the door open after CONTINUE. And **the appearance picker shows
+each direction** rather than naming it — four grounds and the ink, from that
+theme's own tokens, so **adding a direction is still one file and one `THEMES`
+entry and arrives with a swatch**. **Verified:** 847 tests / 57 files; golden
+sim byte-identical.
+
+Previous checkpoint: **2026-08-29 — the stash, wired.** Marc asked about the
 hold mechanism and its hand ergonomics; both answers were bugs on the first
 screen a stranger meets. **The stash was inert** — nothing dispatched `HOLD`,
 the empty slot was a `disabled` button and the held card had no tap, so a

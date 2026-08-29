@@ -1,4 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { markBoardAlive } from '../shell/failure';
 import {
   useCallback,
   useEffect,
@@ -150,6 +151,11 @@ export function Board(props: BoardProps) {
           // not exist.
           flat
           gl={GL_PROPS}
+          // The board says when it is up, so the failure panel never blames a
+          // crash on "this browser has no WebGL" while WebGL is plainly
+          // working — and never probes for a context while three holds one,
+          // which on a phone at its context limit drops the oldest: the board.
+          onCreated={markBoardAlive}
           camera={{ position: [0, 100, 0], zoom: 30, near: 0.1, far: 1000 }}
           style={{ width: size.width, height: size.height }}
         >

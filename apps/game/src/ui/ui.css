@@ -775,3 +775,50 @@ button[disabled] {
   letter-spacing: var(--label-tracking);
   font-size: 0.75rem;
 }
+
+/* The kept error, in SETTINGS. Monospace and selectable, because the one
+   thing a player can do with it besides SEND is read it out. */
+.crash-detail {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  text-align: start;
+  user-select: text;
+  -webkit-user-select: text;
+  margin: 0 0 var(--gap);
+}
+
+/*
+ * The appearance picker: a direction per row, shown rather than named.
+ *
+ * The swatch sits at the START of the row so the eye runs down a column of
+ * looks and the names read as captions — the other way round makes it a list
+ * of words with decoration. Fixed width, so the names line up whatever they
+ * are called in either language.
+ */
+.themes button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: start;
+}
+
+.swatch {
+  display: inline-grid;
+  grid-template-columns: repeat(4, 1fr) 0.4fr;
+  align-items: stretch;
+  flex: 0 0 auto;
+  width: 4.5rem;
+  height: 1.4rem;
+  border: 1px solid;
+  border-radius: 0.2rem;
+  overflow: hidden;
+}
+
+/* The ink stripe is narrower than a ground on purpose: it is a sample of the
+   writing, not a fifth terrain. */
+.swatch-ink {
+  border-inline-start: 1px solid currentColor;
+}

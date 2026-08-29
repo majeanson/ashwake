@@ -19,6 +19,18 @@ const core = (layer: string): string =>
  */
 export default defineConfig({
   plugins: [react()],
+  define: {
+    /*
+     * The build stamp, under test.
+     *
+     * `vite.config.ts` replaces this at build time; vitest never runs that
+     * config, so anything reading it threw `__BUILD_SHA__ is not defined` —
+     * which is a crash INSIDE the crash reporter, the one place a second
+     * failure is least welcome. A literal here rather than a real sha: what
+     * the tests check is that the field is carried, not what it says.
+     */
+    __BUILD_SHA__: JSON.stringify('testtest'),
+  },
   resolve: {
     alias: {
       '@engine': core('engine'),

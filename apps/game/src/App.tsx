@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Colour } from '@content/tuning';
-import { dailyBadge, dailySeed } from '@meta/daily';
+import { arcSparkline, dailyBadge, dailySeed } from '@meta/daily';
+import { NAME } from '@meta/identity';
+import type { ShareSubject } from '@meta/share';
 import type { GameState } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
@@ -41,6 +43,7 @@ import {
 import { useLedgers } from './shell/ledgers';
 import { registerWorker } from './shell/worker';
 import { settle, settleDaily } from './shell/settle';
+import { share, type ShareResult } from './shell/share';
 import { createSession, useSession } from './shell/store';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
@@ -363,6 +366,38 @@ function Game() {
     [session, snap.hud.draft.length, snap.hud.held, s],
   );
 
+  /**
+   * Hand this run to somebody — the game's entire distribution mechanism.
+   *
+   * A daily and a world run share nothing but the verb: the daily's line is a
+   * scoreboard entry that carries its DATE, so the receiver plays the same
+   * board, and a world run carries its SEED. `shareOf` writes both; this only
+   * decides which one this run is and hands over the numbers.
+   */
+  const onShare = useCallback((): Promise<ShareResult> => {
+    const arc = arcSparkline(snap.state.log.harvests);
+    const subject: ShareSubject =
+      daily === null
+        ? {
+            kind: 'run',
+            points: snap.hud.points,
+            placements: snap.hud.placements,
+            seed: snap.state.rootSeed,
+            arc,
+          }
+        : {
+            kind: 'daily',
+            date: daily,
+            points: snap.hud.points,
+            reach: snap.hud.depthValue,
+            arc,
+            // The try this was, confessed rather than hidden — the daily's own
+            // honesty rule. Read after settling, so it counts this run.
+            tries: readDailyBook()[daily]?.tries ?? 1,
+          };
+    return share(subject, s, NAME);
+  }, [snap.state, snap.hud, daily, s]);
+
   const newRun = useCallback(() => {
     setDaily(null);
     banked.current = null;
@@ -518,6 +553,7 @@ function Game() {
             onNewRun={newRun}
             onProgress={setProgress}
             onMore={() => more.show()}
+            onShare={onShare}
           />
         </div>
       )}

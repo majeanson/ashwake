@@ -127,3 +127,58 @@ test("today's board is one tap from the front door", async ({ page }) => {
   await page.locator('[data-hud="hand"]').waitFor({ state: 'visible' });
   expect(errors).toEqual([]);
 });
+
+test('the appearance picker shows each direction, and switching one repaints', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+
+  await page.locator('[data-door="settings"]').click();
+  await panel(page, 'settings').waitFor({ state: 'visible' });
+
+  // Every direction is SHOWN, not just named: a swatch each, drawn from that
+  // theme's own tokens. AUTO is the one row without one — it has no look of
+  // its own.
+  const picks = page.locator('[data-theme-pick]');
+  expect(await picks.count()).toBeGreaterThan(2);
+  expect(await page.locator('[data-theme-pick] .swatch').count()).toBe((await picks.count()) - 1);
+
+  // Two directions do not paint the same board.
+  const groundOf = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await page.locator('[data-theme-pick="daylight"]').click();
+  // Polled rather than read once: applying a direction is a React render and
+  // then a paint, and a single read can land between the two.
+  await expect.poll(groundOf).toBe('rgb(232, 220, 196)');
+  const light = await groundOf();
+  await page.locator('[data-theme-pick="torchlit"]').click();
+  await expect.poll(groundOf).not.toBe(light);
+
+  // And the choice is remembered, which is what makes it a setting.
+  await expect(page.locator('[data-theme-pick="torchlit"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  expect(errors).toEqual([]);
+});
+
+test('a run can be handed to somebody', async ({ page }) => {
+  const errors = watchErrors(page);
+  // No share sheet in headless Chromium, so this walks the clipboard path —
+  // which is the desktop path anyway, and the one that can silently do
+  // nothing.
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/?end=1&taught=1&seed=7');
+  await begin(page);
+
+  const share = page.locator('[data-action="share"]');
+  await share.waitFor({ state: 'visible' });
+  await share.click();
+
+  const said = await page.evaluate(() => navigator.clipboard.readText());
+  // The sentence, and a link that carries the SEED rather than this session's
+  // own query — a shared link must not drag `?end=1&taught=1` along.
+  expect(said).toMatch(/Ashwake/);
+  expect(said).toContain('seed=7');
+  expect(said).not.toContain('taught');
+  expect(said).not.toContain('end=1');
+  expect(errors).toEqual([]);
+});

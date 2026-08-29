@@ -66,44 +66,10 @@ export function crashEnvelope(
   return { url, body };
 }
 
-/**
- * POST one report. Resolves false instead of throwing on every failure —
- * the caller is a button on a screen that exists because something already
- * broke, and a send that cannot land turns into "TRY COPY", never a second
- * error. `fetcher` is injectable so the test never touches the network.
+/*
+ * `sendCrashReport` moved to `apps/game/src/shell/failure.ts` on 2026-08-29,
+ * which is what the note above asked for: the envelope is arithmetic and
+ * belongs here, `fetch` is an edge and belongs in the shell. It was the only
+ * network call in the core, and the only place `packages/core` reached for a
+ * global the DOM ban would otherwise have caught.
  */
-export async function sendCrashReport(
-  report: CrashReport,
-  // The one network call in the core, injectable so the test never touches
-  // the network. The DOM ban covers all of packages/core since 2026-08-28;
-  // this default is the edge the shell passes in, and it moves to the app with
-  // the rest of the crash reporter in Stage 4.
-  // eslint-disable-next-line no-restricted-globals
-  fetcher: typeof fetch = fetch,
-): Promise<boolean> {
-  const eventId = newEventId();
-  const { url, body } = crashEnvelope(report, eventId, new Date().toISOString());
-  try {
-    const res = await fetcher(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-sentry-envelope' },
-      body,
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-/** 32 hex chars, the id format Sentry wants. `crypto.randomUUID` exists in
- * every secure context this game ships to; the fallback is for the odd
- * embedded webview, where a weaker random id still beats a lost report. */
-function newEventId(): string {
-  try {
-    return crypto.randomUUID().replace(/-/g, '');
-  } catch {
-    let id = '';
-    while (id.length < 32) id += Math.floor(Math.random() * 16).toString(16);
-    return id;
-  }
-}

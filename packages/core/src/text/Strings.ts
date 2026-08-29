@@ -326,6 +326,10 @@ export type Strings = {
     readonly language: string;
     readonly languages: Readonly<Record<Locale, string>>;
     readonly appearance: string;
+    /** The absence of a choice: let the device decide. Hard-coded English in
+     *  the settings panel until 2026-08-29, on the screen whose whole job is
+     *  the language row directly above it. */
+    readonly auto: string;
     readonly sound: string;
     readonly resetTeaching: string;
     /** The disclosure a manual section folds its finer print into. */

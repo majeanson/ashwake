@@ -5,6 +5,7 @@ import type { LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Prose } from '../ui/Prose';
+import { useState } from 'react';
 import { Payout } from './Payout';
 import { Shop } from './Shop';
 import { statLabel } from './Hud';
@@ -39,6 +40,12 @@ export type EndScreenProps = {
   readonly onTerm: (id: LessonId) => void;
   readonly onProgress: (next: (was: Progress) => Progress) => void;
   readonly onMore: () => void;
+  /**
+   * Hand this run to somebody. Returns what happened so the button can say
+   * COPIED where there was no share sheet — a tap that appears to do nothing
+   * is the whole reason this needs a return value.
+   */
+  readonly onShare: () => Promise<'shared' | 'copied' | 'failed'>;
 };
 
 export function EndScreen({
@@ -51,7 +58,18 @@ export function EndScreen({
   onTerm,
   onProgress,
   onMore,
+  onShare,
 }: EndScreenProps) {
+  // What the share button says after it has been tapped. A share sheet needs
+  // no word — the sheet IS the feedback — but a silent copy is a tap that
+  // looks like it did nothing.
+  const [said, setSaid] = useState<string | null>(null);
+  const onShare2 = () => {
+    void onShare().then((how) => {
+      setSaid(how === 'copied' ? s.ui.copied : null);
+    });
+  };
+
   const summary = hud.summary;
   const arc = summary === null ? null : arcNote(summary, s);
 
@@ -101,6 +119,13 @@ export function EndScreen({
       <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
 
       <nav className="panel-menu">
+        {/* SHARE is the game's entire distribution mechanism: it has no store
+            listing and no account, so a run reaches another person because
+            somebody pasted this. It sits under the score rather than beside
+            NEW RUN, which is the one button the v2.0 gate turns on. */}
+        <button type="button" data-action="share" onClick={onShare2}>
+          {said ?? s.ui.share}
+        </button>
         <button type="button" data-door="more" onClick={onMore}>
           {s.ui.more}
         </button>

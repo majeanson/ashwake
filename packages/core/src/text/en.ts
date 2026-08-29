@@ -472,6 +472,7 @@ export const STRINGS_EN: Strings = {
     language: 'LANGUAGE',
     languages: { 'fr-CA': 'FRANÇAIS', en: 'ENGLISH' },
     appearance: 'APPEARANCE',
+    auto: 'AUTO',
     sound: 'SOUND',
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',

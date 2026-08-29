@@ -21,14 +21,11 @@ misses of one shape: a screen that renders a thing without connecting it. Worth
 a standing check — **before calling a screen done, grep for a consumer of every
 action it can produce.**
 
-Still unconsumed by the app, verified 2026-08-29: `share`, `route`, `goals`,
-`report`, `shedLadder`, `shopLevels`, `mark`. Two of those are live
-inconsistencies rather than gaps — the privacy sentence a player reads today
-promises a share sheet and a SEND REPORT that do not exist, and `storage.ts`
-drops a write on a full quota where `shedLadder` is the module written to
-decide what to drop instead. `share` and `report` were half-built when the
-hold question arrived: `shell/share.ts` and the whole catalogue for both are
-in, the buttons and the failure panel are not.
+`share` and `report` are wired as of 2026-08-29, and the privacy sentence is
+true. Still unconsumed by the app: `route`, `goals`, `shedLadder`,
+`shopLevels`, `mark`. One is still a live inconsistency rather than a gap —
+`storage.ts` drops a write on a full quota, where `shedLadder` is the module
+written to decide what to drop instead.
 
 ## 1. Needs Marc, and only Marc
 

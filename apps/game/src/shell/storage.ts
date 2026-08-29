@@ -58,6 +58,15 @@ const DEVICE = {
   slot: `${NS}.slot.v1`,
   /** The teaching ledger is a DEVICE fact: you learn what RIPE means once. */
   progress: `${NS}.progress.v1`,
+  /**
+   * The last thing that broke, for SETTINGS ▸ LAST ERROR.
+   *
+   * Kept so a player who hit something an hour ago can still send it — a
+   * failure panel a stranger tapped CONTINUE on is a bug report that walked
+   * away. Overwritten rather than appended: the newest failure is the one
+   * somebody can still describe.
+   */
+  lastError: `${NS}.error.v1`,
 } as const;
 
 export type Slot = 1 | 2 | 3;
@@ -149,6 +158,40 @@ export function activeSlot(): Slot {
 }
 
 export const setActiveSlot = (slot: Slot): void => write(DEVICE.slot, String(slot));
+
+/* ---- the last failure ----------------------------------------------------- */
+
+export type LastError = {
+  readonly text: string;
+  /** Short sha, so an issue names the build it came from. */
+  readonly sha: string;
+  readonly at: string;
+  readonly count: number;
+};
+
+export function readLastError(): LastError | null {
+  const raw = read(DEVICE.lastError);
+  if (raw === null) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    const { text, sha, at, count } = parsed as Record<string, unknown>;
+    if (typeof text !== 'string' || text === '') return null;
+    return {
+      text,
+      sha: typeof sha === 'string' ? sha : 'unknown',
+      at: typeof at === 'string' ? at : '',
+      count: typeof count === 'number' && Number.isFinite(count) ? count : 1,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export const writeLastError = (error: LastError): void =>
+  write(DEVICE.lastError, JSON.stringify(error));
+
+export const clearLastError = (): void => drop(DEVICE.lastError);
 
 /* ---- the daily ------------------------------------------------------------ */
 

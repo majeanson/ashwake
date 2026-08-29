@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CRASH_DSN, crashEnvelope, sendCrashReport, type CrashReport } from './report';
+import { CRASH_DSN, crashEnvelope, type CrashReport } from './report';
 
 const report: CrashReport = {
   build: 'abc1234',
@@ -56,27 +56,9 @@ describe('crashEnvelope', () => {
   });
 });
 
-describe('sendCrashReport', () => {
-  it('resolves true on a 2xx and posts the envelope content type', async () => {
-    let posted: { url: string; init: RequestInit | undefined } | null = null;
-    const ok = await sendCrashReport(report, (input, init) => {
-      posted = { url: input instanceof Request ? input.url : input.toString(), init };
-      return Promise.resolve(new Response(null, { status: 200 }));
-    });
-    expect(ok).toBe(true);
-    expect(posted!.url).toContain('envelope');
-    expect(posted!.init?.method).toBe('POST');
-    expect((posted!.init?.headers as Record<string, string>)['content-type']).toBe(
-      'application/x-sentry-envelope',
-    );
-  });
-
-  it('resolves false — never throws — on a refusal or a dead network', async () => {
-    await expect(
-      sendCrashReport(report, () => Promise.resolve(new Response(null, { status: 429 }))),
-    ).resolves.toBe(false);
-    await expect(sendCrashReport(report, () => Promise.reject(new Error('offline')))).resolves.toBe(
-      false,
-    );
-  });
-});
+/*
+ * `sendCrashReport`'s own tests moved with it, to
+ * `apps/game/src/shell/failure.test.ts` (2026-08-29). What stays here is the
+ * ENVELOPE, which is the part that has to be right and the part a test can
+ * check without a network.
+ */
