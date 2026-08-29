@@ -128,6 +128,38 @@ Both halves are the ruling. A scene sits below the panels (15), **and** it goes
 `inert` while one is open: a z-index alone leaves focus and taps reaching a
 screen the player cannot see, which is the half a repaint would not fix.
 
+### D7 — SETTLEMENT is built, and it is a CANDIDATE — 2026-08-29
+
+Marc's own reading of the colours (D4.4) exists as a direction now: FARM ·
+MARKET · QUARRY · ROADS, in `theme/themes/settlement.ts`. The fiction is the
+third thing that can happen to a place — torchlit is standing in the dark plane
+with a torch, daylight is the survey you draw afterwards, and this is somebody
+having **stayed**.
+
+The names still name their powers, which D4.2 requires. QUARRY is the one that
+says its rule BETTER than the old name did: red feeds on stone, and spent
+ground is a quarry's whole supply.
+
+**It is not the default and Gate E is not reopened.** It ships as a fifth
+entry in `THEMES` and a fifth row in SETTINGS, which is what makes it
+choosable rather than imposed. Whether it BECOMES the direction is Marc's, on
+a phone, against `docs/shots/s5-settlement*.png` — a direction earns its place
+by passing the budgets and then by being looked at, in that order.
+
+**How it was built is the part worth keeping.** The four L* stops
+(0.34 · 0.43 · 0.53 · 0.70) were chosen before a single hue, because
+`theme.test` asks a direction to separate its terrains by VALUE and not by
+hue; spent ground then went in the widest gap left. Three colours moved to
+clear the budget and **no threshold did**: the faint ink (4.31:1 on its own
+panel), the danger ink (4.32:1 on the same panel), and the fog's veil, deepened
+so a remembered MARKET stops landing in the dead band. The last one is also the
+truer sentence — a settlement forgets more completely than a survey does.
+
+**Bands are for the wall.** An opaque `bands` pattern reaches the middle of a
+face, so a banded terrain puts a third colour under a centred label;
+`paint.test` caught it on the first run. Every terrain in every direction uses
+a translucent ink, and now there is a written reason.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

@@ -49,6 +49,11 @@ const ANGLES = [
   // gives it daylight — and a lit destination on a pale board is a pale thing
   // on a pale thing. The props are meant to glow.
   ['s2d-props', 'theme=torchlit&tilt=35&light=1&materials=1&art=1&relief=0.35&taught=1'],
+  // S5's candidate direction, shot beside the three that ship so it can be
+  // judged by looking rather than by argument — which is the only way a
+  // direction has ever been chosen here.
+  ['s5-settlement', 'theme=settlement&tilt=35&light=1&materials=1&relief=0.35&taught=1'],
+  ['s5-settlement-deep', 'theme=settlement&tilt=35&light=1&materials=1&relief=0.35&taught=1'],
 ] as const;
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -56,7 +61,9 @@ test.use({ viewport: { width: 390, height: 844 } });
 for (const [name, query] of ANGLES) {
   test(`draws ${name}`, async ({ page }) => {
     const errors = watchErrors(page);
-    await page.goto(`/?seed=7&place=${name === 's2d-props' ? 45 : 12}&${query}`);
+    await page.goto(
+      `/?seed=7&place=${name === 's2d-props' || name.endsWith('-deep') ? 45 : 12}&${query}`,
+    );
     await expect(page.locator('canvas')).toBeVisible();
     await begin(page);
     // The board is drawn on demand, so give the first frame and the font time

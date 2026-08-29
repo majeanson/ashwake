@@ -1,4 +1,5 @@
 import { DAYLIGHT } from './themes/daylight';
+import { SETTLEMENT } from './themes/settlement';
 import { PLACEHOLDER } from './themes/placeholder';
 import { TORCHLIT } from './themes/torchlit';
 import { TORCHLIT_BRIGHT } from './themes/torchlit-bright';
@@ -29,7 +30,13 @@ import type { Theme, ThemeId } from './tokens';
  * difference is that these two answer to `pickForScheme` and to
  * `contrast.test.ts`, and a candidate direction answers to taste.
  */
-export const THEMES: readonly Theme[] = [PLACEHOLDER, TORCHLIT, TORCHLIT_BRIGHT, DAYLIGHT];
+export const THEMES: readonly Theme[] = [
+  PLACEHOLDER,
+  TORCHLIT,
+  TORCHLIT_BRIGHT,
+  DAYLIGHT,
+  SETTLEMENT,
+];
 
 /**
  * `auto` — let the device answer (2026-08-25).

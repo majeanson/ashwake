@@ -87,11 +87,14 @@ sessions; S2 and S3 are the fat ones.
       now knows its PLACE, so a daily cannot write a world's memory either —
       the rule lives in the one thing that writes._ **Left:** the History-API
       router, which `NEXT.md` argues may not be wanted at all.
-- [ ] **S5 — the look.** Materials and lighting landed in S2c; what is left is
-      the DIRECTION — the parked "settlement" reading of the colours (FARM ·
-      MARKET · QUARRY · ROADS) built as an option set beside the three that
-      ship, shot, and picked on the phone. _Question: which direction, and does
-      it pass the budgets without relaxing one?_
+- [~] **S5 — the look.** Materials and lighting landed in S2c; what is left is
+  the DIRECTION. The parked "settlement" reading (FARM · MARKET · QUARRY ·
+  ROADS) is **built** as of 2026-08-29 (`LOG.md` Session 10, D7): a fifth
+  entry in `THEMES`, a fifth row in SETTINGS with its own swatch, shot into
+  `docs/shots/s5-settlement*.png`. _Question: does it pass the budgets
+  without relaxing one? **Yes** — all 152 palette assertions, with three
+  colours moved and no threshold._ **What is left is the choosing**, which
+  is Marc's and only happens on a phone.
 - [ ] **S6 — the console, Session A on v2, then the stranger.** `/playtest`
       route with COPY SHEET; Session A re-run against the deployed v2; fixes;
       Session C.

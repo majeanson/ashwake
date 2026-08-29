@@ -685,4 +685,50 @@ vitest config defines it now.
 **Verified:** 847 tests / 57 files; typecheck, lint, format clean; golden sim
 byte-identical.
 
-**Not played on a phone.** Again.
+### Session 10 — the settlement exists (2026-08-29)
+
+**Question, written before building:** can Marc's own reading of the colours —
+FARM · MARKET · QUARRY · ROADS — be a direction that passes every budget
+without a single threshold moving?
+
+**Yes, and three colours moved instead.**
+
+**The fiction is the third thing that can happen to a place.** Torchlit is
+standing in the dark plane with a torch; daylight is the survey you draw when
+you get back; settlement is somebody having STAYED. Every ground is named for
+what it is FOR rather than what it is made of, and each still names its power
+(D4.2). QUARRY is the one that says its rule better than the old name did: red
+feeds on stone, and spent ground is a quarry's whole supply.
+
+**The ladder was chosen as values first and coloured second.** `theme.test`
+asks a direction to separate its terrains by VALUE, not by hue, so the four L*
+stops (0.34 · 0.43 · 0.53 · 0.70) were placed before a single hue was picked
+and spent ground went in the widest gap left. The first draft did it the other
+way round — four colours chosen for their fiction — and FARM and QUARRY landed
+0.004 apart with stone sitting on both. Designing to the test's SHAPE rather
+than iterating against its output is what made the rest of it one pass.
+
+**Nothing was relaxed.** The faint ink read 4.31:1 on its own panel and 2.36:1
+over a remembered MARKET; the danger ink read 4.32:1 on the panel. Both were
+lifted. The fog's veil was deepened 0.34 → 0.45 for the same failure, and that
+one is the truer sentence as well as the fix: a settlement forgets more
+completely than a survey does. A number that only just clears was refused too
+— the first solved faint ink cleared the fogged floor at exactly 3.00, which
+is tuned-to-pass rather than passing.
+
+**Bands are for the wall.** An opaque `bands` pattern reaches the middle of a
+face, so a banded terrain puts a third colour under a centred label —
+`paint.test` caught MARKET's awning stripes and ROADS' paving on the first
+run. Both are translucent hatches now, which is what every terrain in every
+shipped direction already was and now has a written reason to be.
+
+**It is a CANDIDATE, not the default** (D7). Gate E is not reopened: it is a
+fifth entry in `THEMES` and a fifth row in SETTINGS, and whether it becomes
+the direction is Marc's, on a phone, against `docs/shots/s5-settlement*.png`.
+Adding it needed one file and one line, which is what the swatch picker was
+rebuilt for last session.
+
+**Verified:** 876 tests / 57 files; 152 of them the palette budget, over five
+directions now; golden sim byte-identical.
+
+**Not played on a phone.** Again — and this is the one that most needs to be.

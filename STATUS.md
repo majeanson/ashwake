@@ -4,7 +4,20 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the game stops promising things it
+Last checkpoint: **2026-08-29, last — the settlement exists.** Marc's own
+reading of the colours (D4.4) is a direction now: **FARM · MARKET · QUARRY ·
+ROADS**, the third thing that can happen to a place — torchlit is standing in
+the dark with a torch, daylight is the survey drawn afterwards, this is
+somebody having stayed. It passes all 152 palette assertions and **no threshold
+moved**: the faint ink, the danger ink and the fog's veil did. The four L* stops
+were chosen BEFORE any hue, because the test asks for separation by value and
+not by hue — the first draft picked colours for their fiction and put two
+terrains 0.004 apart. `paint.test` caught opaque bands putting a third colour
+under a centred label. **It is a candidate, not the default** (D7): a fifth row
+in SETTINGS, judged on a phone against `docs/shots/s5-settlement*.png`.
+**Verified:** 876 tests / 57 files; golden sim byte-identical.
+
+Previous checkpoint: **2026-08-29 — the game stops promising things it
 cannot do.** The privacy sentence a player reads promised a share sheet and a
 SEND REPORT that did not exist; both are real now. **SHARE** is the game's
 entire distribution mechanism and had no button — the link is built from the
