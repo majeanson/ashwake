@@ -18,7 +18,7 @@ import { walk } from './shell/walk';
  * The board's three look dials are read off the query string so an angle can
  * be argued with by looking at it: `?tilt=` leans the camera back (35 by
  * default — Marc's pick from `docs/shots/`), `?yaw=` turns the board under it,
- * `?relief=` gives the ground its height. Each one's zero is the flat map
+ * `?relief=` gives the ground its height, `?light=` shades it. Each zero is the flat map
  * Stage 2 shipped, and none of them can reach a rule. `?seed=` picks a world;
  * `?theme=` a direction, as in Ashwake 1; `?place=` plays a fixed opening so
  * two angles can be photographed over one board.
@@ -28,6 +28,7 @@ import { walk } from './shell/walk';
 const TILT = 35;
 const YAW = 0;
 const RELIEF = 0;
+const LIGHT = 0;
 
 /** A number off the query string, where zero is a real answer and `?x=` alone
  *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
@@ -62,6 +63,7 @@ export function App() {
       tilt: dial(params, 'tilt', TILT),
       yaw: dial(params, 'yaw', YAW),
       relief: dial(params, 'relief', RELIEF),
+      light: dial(params, 'light', LIGHT),
     };
   }, []);
 
@@ -134,6 +136,7 @@ export function App() {
           tilt={look.tilt}
           yaw={look.yaw}
           relief={look.relief}
+          light={look.light}
           onTap={onTap}
           handle={board}
         />

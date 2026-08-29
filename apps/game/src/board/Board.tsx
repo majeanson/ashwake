@@ -4,6 +4,7 @@ import type { OrthographicCamera } from 'three';
 import { parse, type HexKey } from '@engine/hex';
 import { place } from '@render/layout';
 import type { BoardView, CellView } from '@render/Renderer';
+import { rigFor } from '@theme/rig';
 import { hex as cssHex, type Theme } from '@theme/tokens';
 import {
   cameraAt,
@@ -20,6 +21,7 @@ import {
 } from './camera';
 import { GL_PROPS } from './gl';
 import { HexField, UNIT, type Leap } from './HexField';
+import { LightRig } from './LightRig';
 import { tallestOf } from './relief';
 
 /**
@@ -31,10 +33,11 @@ import { tallestOf } from './relief';
  *
  * The camera leans back by `tilt` degrees — 35, Marc's answer to Stage 2's
  * open question, chosen from `docs/shots/` — and the board may be turned under
- * it by `yaw`. `relief` is how much the ground itself rises and falls. All
- * three are dials whose zero is the flat map the board shipped as, and all
- * three are look and never rule: the reducer, the view and the golden sim
- * cannot tell which angle the board is being watched from.
+ * it by `yaw`. `relief` is how much the ground itself rises and falls, and
+ * `light` how hard the rig shades it. All four are dials whose zero is the flat
+ * map the board shipped as, and all four are look and never rule: the reducer,
+ * the view and the golden sim cannot tell which angle the board is being
+ * watched from or how brightly it is lit.
  */
 
 export type BoardHandle = {
@@ -56,6 +59,8 @@ export type BoardProps = {
   readonly yaw?: number;
   /** How high the ground varies, in hex radii; 0 is a flat board. */
   readonly relief?: number;
+  /** How hard the rig lights the board, 0..1; 0 renders every face as authored. */
+  readonly light?: number;
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
@@ -68,7 +73,7 @@ const TAP_SLOP = 8;
 const EYE_DISTANCE = 200;
 
 export function Board(props: BoardProps) {
-  const { theme, tilt = 0, yaw = 0, relief = 0 } = props;
+  const { theme, tilt = 0, yaw = 0, relief = 0, light = 0 } = props;
   const wrapper = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -117,9 +122,7 @@ export function Board(props: BoardProps) {
           style={{ width: size.width, height: size.height }}
         >
           <color attach="background" args={[theme.board.background]} />
-          <ambientLight intensity={0.55} />
-          <directionalLight position={[3, 10, 4]} intensity={1.1} />
-          <directionalLight position={[-4, 6, -2]} intensity={0.25} />
+          <LightRig rig={rigFor(light)} yaw={yaw} />
           <Rig
             view={props.view}
             theme={theme}

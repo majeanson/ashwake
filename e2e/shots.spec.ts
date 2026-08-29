@@ -29,6 +29,14 @@ const ANGLES = [
   ['s2-board-tilt35-relief', 'tilt=35&relief=0.35'],
   ['s2-board-tilt45-relief', 'tilt=45&relief=0.35'],
   ['s2-board-tilt45-relief-high', 'tilt=45&relief=0.8'],
+  // Stage 2c: the rig. `light=0` is every face as the direction authored it —
+  // the same board as `s2-board-tilt35`, which is what makes it the honest
+  // zero rather than a dimmer setting.
+  ['s2c-light-half', 'tilt=35&light=0.5'],
+  ['s2c-light-full', 'tilt=35&light=1'],
+  ['s2c-light-half-relief', 'tilt=35&light=0.5&relief=0.35'],
+  ['s2c-light-full-relief', 'tilt=35&light=1&relief=0.35'],
+  ['s2c-light-full-relief-high', 'tilt=45&light=1&relief=0.8'],
 ] as const;
 
 test.use({ viewport: { width: 390, height: 844 } });

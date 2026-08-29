@@ -66,6 +66,21 @@ export function luma(c: Rgb): number {
 }
 
 /**
+ * The sRGB transfer function, one channel, on 0..1 — and its inverse.
+ *
+ * Extracted 2026-08-29, for the same reason `luminance` was extracted out of
+ * `luma` in the first place: it had one caller, and then the lit-colour
+ * arithmetic in `rig.ts` needed the identical curve to take a rendered colour
+ * back to display space. Three copies of a transfer function is three chances
+ * for two of them to disagree about what a colour is.
+ */
+export const srgbToLinear = (s: number): number =>
+  s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+
+export const linearToSrgb = (l: number): number =>
+  l <= 0.0031308 ? l * 12.92 : 1.055 * Math.pow(l, 1 / 2.4) - 0.055;
+
+/**
  * Rec. 709 relative luminance, 0..1 — the linear-light half of `luma`.
  *
  * Extracted rather than duplicated (2026-08-25). It was computed inside `luma`
@@ -74,10 +89,11 @@ export function luma(c: Rgb): number {
  * functions, one gamma decode, no chance of the two disagreeing.
  */
 export function luminance(c: Rgb): number {
-  const srgb = [(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff].map((v) => {
-    const s = v / 255;
-    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  }) as [number, number, number];
+  const srgb = [(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff].map((v) => srgbToLinear(v / 255)) as [
+    number,
+    number,
+    number,
+  ];
 
   return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
 }
