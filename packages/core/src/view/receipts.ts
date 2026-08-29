@@ -67,6 +67,11 @@ export type Receipt = {
   readonly text: string;
   /** The leading claim's marked list, when it has one. Only a find has one. */
   readonly rows?: readonly TipRow[];
+  /**
+   * An offer the receipt makes, which the shell must carry out. Only the
+   * crossing has one — and it is a two-tap arm, because it forgets a world.
+   */
+  readonly offers?: 'crossing';
 };
 
 export type ReceiptContext = {
@@ -90,6 +95,15 @@ export type ReceiptContext = {
   /** Whether it is already worn, so the receipt tells the truth about where
    *  it changes. */
   readonly worn?: (perk: PerkId) => boolean;
+  /**
+   * What crossing would carry, when a fully-awake world's shrine can offer it.
+   *
+   * A function rather than a number, so the offer is priced at the moment the
+   * shrine is reached. Absent means there is nowhere onward — the world says
+   * it is awake and stops, which is what this body did before the crossing
+   * existed.
+   */
+  readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
 };
 
 /**
@@ -115,7 +129,11 @@ export function claimsBetween(
     const was = before.cells[hex];
     if (was?.kind === 'landmark' && was.claimed) continue;
 
-    const text = receiptFor(hex, cell.reward, cell.colour, after, ctx, shrinesSoFar);
+    // Which shrine of this world THIS one is, captured before the counter
+    // moves — it decides both the unlock named and whether there is any
+    // unlock left to name.
+    const nth = shrinesSoFar;
+    const text = receiptFor(hex, cell.reward, cell.colour, after, ctx, nth);
     if (cell.reward === 'shrine') shrinesSoFar++;
 
     // The perk's own three lines — YOU GAIN / YOU LOSE / PLAY IT — from the
@@ -123,10 +141,22 @@ export function claimsBetween(
     // in one voice, wherever you meet it.
     const perk = cell.reward === 'find' ? (ctx.perkAt?.(hex) ?? null) : null;
     const rows = perk === null ? undefined : perkRows(perk, ctx.strings);
+    // The crossing is offered by a shrine past the end of the ledger, on
+    // your own world, when the shell has one to offer. The same three
+    // conditions `receiptFor` used to write the sentence — read here rather
+    // than returned from there, so the words and the offer cannot disagree
+    // about whether there is a door.
+    const offersCrossing =
+      cell.reward === 'shrine' &&
+      !ctx.detour &&
+      UNLOCKS[nth] === undefined &&
+      ctx.crossingCarries !== undefined;
+
     found.push({
       reward: cell.reward,
       text,
       ...(rows === undefined ? {} : { rows }),
+      ...(offersCrossing ? { offers: 'crossing' as const } : {}),
     });
   }
 
@@ -139,15 +169,23 @@ export function claimsBetween(
  *
  * One card with one subject — see `RANK`.
  */
-export function saidOf(
-  receipts: readonly Receipt[],
-): { readonly text: string; readonly card: boolean; readonly rows?: readonly TipRow[] } | null {
+export function saidOf(receipts: readonly Receipt[]): {
+  readonly text: string;
+  readonly card: boolean;
+  readonly rows?: readonly TipRow[];
+  readonly offers?: 'crossing';
+} | null {
   const lead = receipts[0];
   if (lead === undefined) return null;
+  // An OFFER is taken from whichever receipt makes one, never only from the
+  // lead: a placement that reaches a find and the last shrine at once still
+  // has to offer the crossing, and the find is what takes the heading.
+  const offer = receipts.find((r) => r.offers !== undefined)?.offers;
   return {
     text: receipts.map((r) => r.text).join('\n\n'),
     card: HOLDS_THE_SCREEN[lead.reward],
     ...(lead.rows === undefined ? {} : { rows: lead.rows }),
+    ...(offer === undefined ? {} : { offers: offer }),
   };
 }
 
@@ -196,13 +234,14 @@ function receiptFor(
     case 'shrine': {
       if (ctx.detour) return `${glyph}  ${c.shrineDetour}`;
       const next = UNLOCKS[shrinesSoFar];
-      // Past the end of the ledger there is nothing left to switch on. Ashwake
-      // 1 offers the CROSSING here; this body has no crossing yet (S4's
-      // remainder), so it says the true half and stops rather than promising
-      // a door that is not built.
-      return next === undefined
+      if (next !== undefined) return `${glyph}  ${c.shrine(unlockLabel(next.id, s))}`;
+      // Past the end of the ledger there is nothing left to switch ON, so the
+      // shrine becomes the way ONWARD instead — which is the whole reason a
+      // fully-awake world is not a dead end.
+      const onward = ctx.crossingCarries?.();
+      return onward === undefined
         ? `${glyph}  ${c.shrineAwake}`
-        : `${glyph}  ${c.shrine(unlockLabel(next.id, s))}`;
+        : `${glyph}  ${c.shrineCrossing(onward.dowry, onward.carried)}`;
     }
 
     case 'find': {

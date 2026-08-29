@@ -3,6 +3,7 @@ import type { TipRow } from '@view/view';
 import type { LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { Card } from '../ui/Card';
+import { Confirming } from '../ui/Confirming';
 import { ProseLines } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
 
@@ -28,9 +29,16 @@ export type SaidCardProps = {
   readonly s: Strings;
   readonly onDismiss: () => void;
   readonly onTerm: (id: LessonId) => void;
+  /**
+   * An offer the receipt makes. Only the crossing has one, and it is a
+   * two-tap arm because it forgets a world — the dismiss button becomes STAY
+   * rather than GOT IT, so the two choices read as a choice.
+   */
+  readonly offer?:
+    { readonly label: string; readonly armed: string; readonly onTake: () => void } | undefined;
 };
 
-export function SaidCard({ text, rows, theme, s, onDismiss, onTerm }: SaidCardProps) {
+export function SaidCard({ text, rows, theme, s, onDismiss, onTerm, offer }: SaidCardProps) {
   // The glyph and the heading are the receipt's own first line — `receipts.ts`
   // writes `{glyph}  {HEADING}` and the body under it. Split rather than
   // passed separately, so there is one place the sentence is composed and one
@@ -43,8 +51,13 @@ export function SaidCard({ text, rows, theme, s, onDismiss, onTerm }: SaidCardPr
       id="said"
       glyph={glyph}
       name={heading.join(' ')}
-      dismiss={s.ui.gotIt}
+      dismiss={offer === undefined ? s.ui.gotIt : s.claim.stay}
       onDismiss={onDismiss}
+      {...(offer === undefined
+        ? {}
+        : {
+            action: <Confirming label={offer.label} armed={offer.armed} onConfirm={offer.onTake} />,
+          })}
     >
       <ProseLines text={rest.join('\n')} s={s} onTerm={onTerm} />
       {rows !== undefined && <TipRows rows={rows} theme={theme} s={s} onTerm={onTerm} />}

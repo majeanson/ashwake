@@ -216,6 +216,11 @@ export const STRINGS_EN: Strings = {
       rares: (n) => `${n} rare tile${plural(n, '', 's')} in here will be spent by popping it.`,
     },
     harvest: {
+      firstPop: `YOUR FIRST POP
+The pocket turned to STONE — it still surrounds, but never matches. Ground you have already cashed grows poorer; the world stays rich farther out.`,
+      firstPopWhen:
+        'Small-and-often buys LUCK and steers your draws. Big-and-late buys tiles and score.',
+
       head: (count, worth) => `POPPED ${count} — total worth ${worth}`,
       bountyCollected: (bonus) => `${LANDMARK_GLYPH.site} Bounty ×${bonus} — COLLECTED.`,
       bountyMissed: (bonus, need, radius) =>
@@ -455,6 +460,12 @@ Ground within ${radius} hexes is native to ${owns} now — and it stays yours be
     shrine: (unlock) => `SHRINE WOKEN
 ${unlock}
 Yours from your next run on, in this world for good.`,
+    shrineCrossing: (dowry, carried) =>
+      `THE WORLD IS AWAKE
+Every unlock is yours — and this shrine is a way onward. Cross to a NEW WORLD carrying ${dowry} relics for what you leave${carried > dowry ? `, plus ${carried - dowry} from this run` : ''}. Your relics and the perks you have found come with you. The ground, the territories, the shrines you woke here and everything you have BOUGHT stay behind. Or stay, and keep building this world.`,
+    crossLabel: (carried) => `CROSS — carry ${carried} relics`,
+    crossArmed: 'TAP AGAIN — this world is forgotten',
+    stay: 'STAY',
     shrineAwake: `SHRINE WOKEN
 This world is fully awake — every unlock is yours.`,
     shrineDetour: `SHRINE WOKEN
@@ -489,6 +500,7 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     restart: 'RESTART',
     newWorld: 'NEW WORLD',
     back: 'BACK',
+    closeAll: 'CLOSE ALL',
     more: 'MORE',
     daily: 'DAILY',
     shop: 'THE SHOP',

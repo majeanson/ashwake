@@ -75,6 +75,8 @@ export type Said = {
   readonly card: boolean;
   /** The leading claim's marked list, when it has one. */
   readonly rows?: readonly TipRow[] | undefined;
+  /** An offer the shell must carry out. Only the crossing makes one. */
+  readonly offers?: 'crossing' | undefined;
   /** Distinct per utterance, so a component can tell "said again" from "still
    *  saying" — the identity trick `popped` uses for the same reason. */
   readonly id: number;
@@ -125,6 +127,9 @@ export function createSession(opts: {
    *  the session only reports. */
   readonly perkAt?: (hex: HexKey) => PerkId | null;
   readonly wornPerk?: (perk: PerkId) => boolean;
+  /** What crossing would carry, priced at the moment a fully-awake world's
+   *  shrine is reached. Absent means there is nowhere onward. */
+  readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
 }): Session {
   const tuning = opts.tuning ?? TUNING;
   let state = opts.resume ?? newRun(opts.seed, tuning);
@@ -194,12 +199,18 @@ export function createSession(opts: {
         detour: false,
         ...(opts.perkAt === undefined ? {} : { perkAt: opts.perkAt }),
         ...(opts.wornPerk === undefined ? {} : { worn: opts.wornPerk }),
+        ...(opts.crossingCarries === undefined ? {} : { crossingCarries: opts.crossingCarries }),
       }),
     );
+    let offers: 'crossing' | undefined;
     if (claims !== null) {
       lines.push(claims.text);
       card = claims.card;
       rows = claims.rows;
+      offers = claims.offers;
+      // An offer always holds the screen: it is a choice, and a choice that
+      // scrolls past in a toast is a choice nobody made.
+      if (offers !== undefined) card = true;
     }
 
     if (lines.length === 0) return null;
@@ -209,6 +220,7 @@ export function createSession(opts: {
       text: lines.join('\n\n'),
       card,
       ...(rows === undefined ? {} : { rows }),
+      ...(offers === undefined ? {} : { offers }),
       id: ++saidCount,
     };
   }

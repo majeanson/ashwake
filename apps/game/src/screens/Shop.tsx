@@ -120,7 +120,7 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
 
   if (onBack === undefined) return body;
   return (
-    <Panel id="shop" title={s.ui.shop} back={s.ui.back} onBack={onBack}>
+    <Panel id="shop" title={s.ui.shop} back={s.ui.back} closeAll={s.ui.closeAll} onBack={onBack}>
       {body}
     </Panel>
   );

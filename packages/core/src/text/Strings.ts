@@ -131,6 +131,18 @@ export type Strings = {
     };
     readonly harvest: {
       readonly head: (count: number, worth: number) => string;
+      /**
+       * The first pop a device ever makes, which is a CARD rather than a
+       * toast (Marc's call, 2026-08-29).
+       *
+       * It teaches the one rule that changes how the rest of the run is
+       * played and that nothing else says out loud: a popped pocket turns to
+       * STONE, which still surrounds but never matches — so the ground you
+       * have already cashed grows poorer, and the world stays rich farther
+       * out. A toast is too quiet for a rule that reshapes the board.
+       */
+      readonly firstPop: string;
+      readonly firstPopWhen: string;
       readonly bountyCollected: (bonus: number) => string;
       readonly bountyMissed: (bonus: number, need: number, radius: number) => string;
       readonly tiles: (
@@ -295,8 +307,22 @@ export type Strings = {
     readonly site: (pts: number, need: number, radius: number, bonus: number) => string;
     readonly territory: (radius: number, owns: string) => string;
     readonly shrine: (unlock: string) => string;
-    /** Past the end of the ledger: nothing left to switch on. */
+    /** Past the end of the ledger, with nowhere onward to go. */
     readonly shrineAwake: string;
+    /**
+     * Past the end of the ledger, WITH the crossing on offer.
+     *
+     * The honest half is the second sentence and it was rewritten on Marc's
+     * own evidence (2026-08-28): losing hard-found perks for 75 relics was
+     * "not worth it", and the card had been saying the opposite. What stays
+     * is the PLACE — the ground, the territories, the shrines woken here,
+     * everything bought. The relics and the perks come with you.
+     */
+    readonly shrineCrossing: (dowry: number, carried: number) => string;
+    /** The offer itself, and the arming word under it. */
+    readonly crossLabel: (carried: number) => string;
+    readonly crossArmed: string;
+    readonly stay: string;
     /** A shared seed or a daily has no ledger to narrate. */
     readonly shrineDetour: string;
     readonly found: (perk: string, worn: boolean) => string;
@@ -337,6 +363,8 @@ export type Strings = {
     readonly restart: string;
     readonly newWorld: string;
     readonly back: string;
+    /** Leave every open panel at once — the escape hatch out of a deep stack. */
+    readonly closeAll: string;
     readonly more: string;
     readonly daily: string;
     readonly shop: string;

@@ -48,7 +48,7 @@ export function More({
   onRestored,
 }: MoreProps) {
   return (
-    <Panel id="more" title={s.ui.more} back={s.ui.back} onBack={onBack}>
+    <Panel id="more" title={s.ui.more} back={s.ui.back} closeAll={s.ui.closeAll} onBack={onBack}>
       <PanelMenu>
         <button type="button" data-go="manual" onClick={onHowToPlay}>
           {s.ui.howToPlay}

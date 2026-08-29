@@ -66,6 +66,7 @@ export function Manual({ theme, s, onBack, onTerm, menu }: ManualProps) {
       id="manual"
       title={NAME}
       back={s.ui.back}
+      closeAll={s.ui.closeAll}
       onBack={onBack}
       head={
         <Tabs

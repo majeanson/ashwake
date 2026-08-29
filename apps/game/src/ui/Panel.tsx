@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { CHROME_MARK } from '@theme/tokens';
 import { useDialogStack } from './dialog';
 
 /**
@@ -19,15 +20,17 @@ export type PanelProps = {
   /** Stack identity — also what `useDoor` opens and closes. */
   readonly id: string;
   readonly title: string;
-  /** What BACK says. Every panel has one; there is no tap-to-close. */
+  /** What ← says to a screen reader. Every panel has one; no tap-to-close. */
   readonly back: string;
+  /** What ✕ says to a screen reader, when the stack is deep enough to show it. */
+  readonly closeAll: string;
   readonly onBack: () => void;
   readonly children: ReactNode;
   /** A row of its own under the head — the manual's tabs live here. */
   readonly head?: ReactNode;
 };
 
-export function Panel({ id, title, back, onBack, children, head }: PanelProps) {
+export function Panel({ id, title, back, closeAll, onBack, children, head }: PanelProps) {
   const sheet = useRef<HTMLDivElement>(null);
   const stack = useDialogStack();
   const top = stack.isTop(id);
@@ -52,12 +55,28 @@ export function Panel({ id, title, back, onBack, children, head }: PanelProps) {
       {...(top ? {} : { inert: true })}
     >
       <div className="panel-head">
+        {/*
+          ← goes back one, ✕ leaves entirely — two different promises, so the
+          ✕ only appears when there is more than one step to undo. On a single
+          panel it would be a second button making the first one's promise.
+        */}
+        <button type="button" className="panel-back" onClick={onBack} aria-label={back}>
+          <span aria-hidden="true">{CHROME_MARK.back}</span>
+        </button>
         <h1 className="panel-title" id={`${id}-title`}>
           {title}
         </h1>
-        <button type="button" className="panel-back" onClick={onBack}>
-          {back}
-        </button>
+        {stack.depth > 1 && (
+          <button
+            type="button"
+            className="panel-close"
+            data-close-all=""
+            onClick={stack.closeAll}
+            aria-label={closeAll}
+          >
+            <span aria-hidden="true">{CHROME_MARK.closeAll}</span>
+          </button>
+        )}
       </div>
       {/* Tabs get their own row. Crammed in beside the title and BACK they
           overflow the moment there are more than two, and the one control a

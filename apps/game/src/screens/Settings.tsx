@@ -59,7 +59,13 @@ export function Settings({
   const [sent, setSent] = useState<string | null>(null);
 
   return (
-    <Panel id="settings" title={s.ui.settings} back={s.ui.back} onBack={onBack}>
+    <Panel
+      id="settings"
+      title={s.ui.settings}
+      back={s.ui.back}
+      closeAll={s.ui.closeAll}
+      onBack={onBack}
+    >
       <section>
         <h2 className="fact-label">{s.ui.language}</h2>
         <div className="panel-menu" role="group" aria-label={s.ui.language}>

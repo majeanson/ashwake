@@ -336,3 +336,95 @@ test('the reward loop speaks: a pop pays out in words', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('lifting one finger of a pinch does not throw the board away', async ({ page }) => {
+  /*
+   * Marc, on a phone, 2026-08-29: "when zooming in and out with pinch, the map
+   * flies away at the end so we can't see anything anymore."
+   *
+   * Two defects, and the first is the flying map. `last` held where the FIRST
+   * finger was, so when one finger of a pinch lifted, the survivor's next move
+   * measured its delta from the OTHER finger's position — the gap between two
+   * fingers, applied as a pan, in one frame. The second: a pinch never marked
+   * the gesture as moved and never cleared the velocity samples, so the lift
+   * could launch a glide built from a pan that happened before the pinch even
+   * started.
+   *
+   * Driven with raw CDP touch events, because `page.mouse` cannot express two
+   * pointers and this bug only exists with two.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=16');
+  await begin(page);
+  await page.waitForTimeout(600);
+
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cx = Math.round(box.x + box.width / 2);
+  const cy = Math.round(box.y + box.height / 2);
+
+  const cdp = await page.context().newCDPSession(page);
+  const touch = (
+    type: 'touchStart' | 'touchMove' | 'touchEnd',
+    points: readonly { x: number; y: number }[],
+  ) =>
+    cdp.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints: points.map((p) => ({ x: p.x, y: p.y })),
+    });
+
+  const board = () => page.locator('canvas').screenshot();
+  const before = await board();
+
+  // Pinch out, then lift ONE finger and move the other a little — the exact
+  // sequence that used to hurl the board off screen.
+  await touch('touchStart', [
+    { x: cx - 40, y: cy },
+    { x: cx + 40, y: cy },
+  ]);
+  await touch('touchMove', [
+    { x: cx - 90, y: cy },
+    { x: cx + 90, y: cy },
+  ]);
+  await touch('touchEnd', [{ x: cx + 90, y: cy }]);
+  await touch('touchMove', [{ x: cx + 95, y: cy }]);
+  await touch('touchEnd', []);
+  await page.waitForTimeout(700);
+
+  const after = await board();
+  // Still a picture of a board, not of empty space: the whole failure was the
+  // map leaving the screen entirely.
+  assertLooksLikeAPicture(after, 'the board after a pinch');
+  // And the pinch DID something — a test that passes because nothing happened
+  // would be no test at all.
+  expect(Buffer.compare(before, after)).not.toBe(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the first pop of a device holds the screen', async ({ page }) => {
+  // Marc's call, 2026-08-29. The first pop teaches the one rule that reshapes
+  // the board — a popped pocket turns to STONE, which surrounds but never
+  // matches — and a toast is too quiet for that. Every pop after is a toast.
+  const errors = watchErrors(page);
+  // A virgin device, and an opening the scripted walk has NOT already
+  // harvested — `walk` pops when it cannot place, so a long opening spends
+  // the very first pop before the player ever taps.
+  await page.goto('/?seed=7&place=12');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  const pop = page.getByRole('button', { name: /POP/ }).first();
+  await expect(pop).toBeVisible();
+  await pop.click();
+
+  // Exactly one card: a receipt outranks a lesson, so the pop's card is the
+  // only thing holding the screen.
+  const card = page.locator('.card-scrim .card');
+  await expect(card).toHaveCount(1);
+  // The stone rule, in the card that just held the screen.
+  await expect(card).toContainText(/STONE|PIERRE/);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

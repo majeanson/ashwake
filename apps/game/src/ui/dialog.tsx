@@ -36,6 +36,10 @@ type Stack = {
   readonly push: (id: string, opener: HTMLElement | null) => void;
   readonly pop: (id: string) => void;
   readonly isTop: (id: string) => boolean;
+  /** How many panels are open. A panel shows its ✕ only past the first. */
+  readonly depth: number;
+  /** Leave every open panel at once. */
+  readonly closeAll: () => void;
 };
 
 const StackContext = createContext<Stack | null>(null);
@@ -58,9 +62,30 @@ export function DialogStack({ children }: { readonly children: ReactNode }) {
     if (opener !== null && opener !== undefined && opener.isConnected) opener.focus();
   }, []);
 
+  /**
+   * Empty the stack.
+   *
+   * Marc, 2026-08-29, on menus three deep: *"add a x that escape all too"*.
+   * The openers map is cleared with it rather than walked — returning focus to
+   * whichever control opened the BOTTOM panel would be a jump from a screen
+   * the player has just said they are done with. The board takes focus back
+   * because the board is what is left.
+   */
+  const closeAll = useCallback(() => {
+    openers.current.clear();
+    setOpen([]);
+  }, []);
+
   const value = useMemo<Stack>(
-    () => ({ open, push, pop, isTop: (id) => open.at(-1) === id }),
-    [open, push, pop],
+    () => ({
+      open,
+      push,
+      pop,
+      isTop: (id) => open.at(-1) === id,
+      depth: open.length,
+      closeAll,
+    }),
+    [open, push, pop, closeAll],
   );
 
   return <StackContext.Provider value={value}>{children}</StackContext.Provider>;

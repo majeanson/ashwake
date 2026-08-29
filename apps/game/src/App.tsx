@@ -8,6 +8,7 @@ import type { CellView } from '@render/Renderer';
 import { namesOf } from '@theme/tokens';
 import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
 import { EMPTY_PROGRESS, hasMet, meet, TEACH_IDS, type Progress } from '@meta/progress';
+import { ONLY_WORLD } from '@meta/records';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import type { LessonId } from '@view/lessons';
@@ -28,6 +29,7 @@ import { Settings } from './screens/Settings';
 import { Shop } from './screens/Shop';
 import { Worlds } from './screens/Worlds';
 import {
+  activeSlot,
   clearDailyRun,
   clearEverything,
   clearRun,
@@ -48,6 +50,7 @@ import {
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
 import { registerWorker } from './shell/worker';
+import { carriedBy, cross, dowryOf } from './shell/cross';
 import { settle, settleDaily } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
 import { createSession, useSession, type Said } from './shell/store';
@@ -225,6 +228,17 @@ function Game() {
       theme,
       strings: s,
       resume: scripted ? null : readRun(slot),
+      /*
+       * What crossing would carry, priced at the moment a fully-awake world's
+       * shrine is reached — so the card's offer and the amount banked are the
+       * same number by construction. Read through the session's OWN state
+       * rather than a captured one, because the run has moved by then.
+       */
+      crossingCarries: () => {
+        const world = readWorld(activeSlot());
+        const here = made.get().state;
+        return { dowry: dowryOf(world), carried: carriedBy(here, world) };
+      },
     });
     // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so
     // the end screen can be looked at without playing for ten minutes.
@@ -377,15 +391,52 @@ function Game() {
    */
   const act = useCallback(
     (action: Action) => {
+      // Counted BEFORE, because "the first" is a fact about what had not
+      // happened yet.
+      const poppedBefore = session.get().state.log.popped;
       session.dispatch(action);
       const said = session.get().said;
       if (said === null) return;
+
+      /*
+       * The FIRST pop a device ever makes is a card (Marc's call, 2026-08-29).
+       *
+       * It teaches the one rule that reshapes the board and that nothing else
+       * says out loud: a popped pocket turns to STONE, which still surrounds
+       * but never matches — so ground you have cashed grows poorer and the
+       * world stays rich farther out. A toast is too quiet for that.
+       *
+       * Gated on the pop COUNT rather than on the `pop` teaching id, which
+       * is a different moment: that lesson fires the instant a pocket becomes
+       * poppable — "you can pop now" — so by the time a player actually pops,
+       * the ledger is already spent. First pop of the first run is: this run
+       * has popped nothing, and no run before it banked a harvest.
+       */
+      const first =
+        action.type === 'HARVEST' &&
+        poppedBefore === 0 &&
+        (ledgers.records[ONLY_WORLD]?.tilesHarvests ?? 0) +
+          (ledgers.records[ONLY_WORLD]?.pointsHarvests ?? 0) ===
+          0;
+      if (first) {
+        setSaidCard({
+          ...said,
+          text: `${s.view.harvest.firstPop}
+
+${said.text}
+
+${s.view.harvest.firstPopWhen}`,
+          card: true,
+        });
+        return;
+      }
+
       // A claim rare enough to change what you carry holds the screen; the
       // rest go where every other passing sentence goes.
       if (said.card) setSaidCard(said);
       else setNote(said.text);
     },
-    [session],
+    [session, ledgers, s],
   );
 
   const onTap = useCallback(
@@ -584,6 +635,38 @@ function Game() {
           };
     return share(subject, s, NAME);
   }, [snap.state, snap.hud, daily, s]);
+
+  /**
+   * Take the crossing: forget this world, and step into a fresh one carrying
+   * what it paid.
+   *
+   * Banked before the world is replaced, in this order — relics first, then
+   * the diary, then the world, then the run — because a crash between any two
+   * of them must never leave a player who paid for a crossing standing in the
+   * world they paid to leave.
+   */
+  const takeCrossing = useCallback(() => {
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    const after = cross({
+      state: snap.state,
+      world: ledgers.worlds[slot],
+      progress,
+      timeline: readTimeline(),
+      seed,
+      at: Date.now(),
+    });
+    setProgress(() => after.progress);
+    writeTimeline(after.timeline);
+    keeper.saveWorld(after.world);
+    keeper.flush();
+    clearRun(slot);
+
+    setSaidCard(null);
+    banked.current = snap.state;
+    session.restart(seed);
+    setLens(null);
+    setStarted(true);
+  }, [snap.state, ledgers, slot, progress, setProgress, keeper, session]);
 
   const newRun = useCallback(() => {
     setDaily(null);
@@ -872,10 +955,28 @@ function Game() {
           s={s}
           onTerm={setTerm}
           onDismiss={() => setSaidCard(null)}
+          {...(saidCard.offers === 'crossing'
+            ? {
+                offer: {
+                  label: s.claim.crossLabel(carriedBy(snap.state, ledgers.worlds[slot])),
+                  armed: s.claim.crossArmed,
+                  onTake: takeCrossing,
+                },
+              }
+            : {})}
         />
       )}
 
-      {card !== null && (
+      {/*
+        One card at a time, and a RECEIPT outranks a lesson.
+        
+        A receipt is about something the player just did; a lesson is about
+        something they could do. Stacking both is two modal dialogs over one
+        board — the "menus over menus" problem in card form — and the lesson
+        is the one that can wait, because its moment stays true until it is
+        told.
+      */}
+      {card !== null && saidCard === null && (
         <LessonCard
           id={card}
           theme={theme}

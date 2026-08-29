@@ -26,7 +26,7 @@ function Door({ onOpen }: { readonly onOpen?: () => void }) {
         WORLDS
       </button>
       {door.open && (
-        <Panel id="worlds" title="WORLDS" back="BACK" onBack={door.hide}>
+        <Panel id="worlds" title="WORLDS" back="BACK" closeAll="CLOSE ALL" onBack={door.hide}>
           <PanelMenu>
             <button type="button">WORLD 1</button>
           </PanelMenu>

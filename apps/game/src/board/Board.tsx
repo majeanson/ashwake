@@ -398,6 +398,13 @@ function Rig({
           invalidate();
         }
         pinch = d;
+        // A pinch is not a tap, and it is not a throw either. `moved` stops
+        // the lift placing a tile; clearing the samples stops the lift
+        // launching a GLIDE built from whatever pan happened before the
+        // second finger landed — the board sailing off after the fingers are
+        // already gone.
+        moved = true;
+        recent.length = 0;
         return;
       }
       if (pointers.size !== 1 || last === null) return;
@@ -422,7 +429,28 @@ function Rig({
     const up = (e: PointerEvent): void => {
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch = null;
-      if (pointers.size !== 0) return;
+
+      if (pointers.size !== 0) {
+        /*
+         * One finger left of a pinch, and this is the bug that made the map
+         * fly away (Marc, on a phone, 2026-08-29).
+         *
+         * `last` still holds where the FIRST finger was. The surviving
+         * finger's next move measured `dx` from there — the distance between
+         * two fingers, not the distance that finger travelled — and panned
+         * the board that far in a single frame. Lifting one finger of a pinch
+         * has to CONTINUE as a pan from where the remaining finger actually
+         * is.
+         *
+         * The velocity samples go with it: they describe a gesture that has
+         * just ended, and carrying them into the next one is how a pinch
+         * turns into a throw.
+         */
+        const [remaining] = [...pointers.values()];
+        if (remaining !== undefined) last = { x: remaining.x, y: remaining.y };
+        recent.length = 0;
+        return;
+      }
       last = null;
 
       // A lift is a throw if the board was still moving when the finger left.

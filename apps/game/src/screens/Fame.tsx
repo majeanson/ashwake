@@ -51,6 +51,7 @@ export function Fame({ timeline, records, s, onBack }: FameProps) {
       id="fame"
       title={`${CONCEPT_MARK.fame} ${s.ui.tabs.after}`}
       back={s.ui.back}
+      closeAll={s.ui.closeAll}
       onBack={onBack}
       head={
         <Tabs

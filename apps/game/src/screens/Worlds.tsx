@@ -34,7 +34,13 @@ export type WorldsProps = {
 
 export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon }: WorldsProps) {
   return (
-    <Panel id="worlds" title={s.ui.worlds} back={s.ui.back} onBack={onBack}>
+    <Panel
+      id="worlds"
+      title={s.ui.worlds}
+      back={s.ui.back}
+      closeAll={s.ui.closeAll}
+      onBack={onBack}
+    >
       <PanelMenu>
         {SLOTS.map((slot) => {
           const world = worlds[slot];

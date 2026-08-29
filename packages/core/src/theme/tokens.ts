@@ -890,6 +890,26 @@ export const TILE_GLYPH = '⬢';
  * already spoken by `COLOUR_MARK`, `LANDMARK_GLYPH` or `TILE_GLYPH` —
  * `tokens.test.ts`'s one-symbol-language test checks all four together.
  */
+/**
+ * The chrome's own two marks: go back one, and leave entirely.
+ *
+ * A fifth registry, and deliberately NOT part of the game's vocabulary — these
+ * say something about the SCREEN rather than about the plane, which is why an
+ * arrow and a cross are the right shapes and why they are exempt from the
+ * no-collision rule that binds the other four. Nothing on the board may ever
+ * be an arrow or a cross.
+ *
+ * Marc, 2026-08-29, on menus nesting three deep: *"add a x that escape all
+ * too, left arrow for back"*. The two are different promises — ← undoes one
+ * step, ✕ undoes all of them — so ✕ only appears when there is more than one
+ * step to undo. On a single panel it would be a second button making the same
+ * promise as the first.
+ */
+export const CHROME_MARK = {
+  back: '←',
+  closeAll: '✕',
+} as const;
+
 export const CONCEPT_MARK: Readonly<
   Record<'relic' | 'luck' | 'wall' | 'stone' | 'fame' | 'met' | 'notYet', string>
 > = {

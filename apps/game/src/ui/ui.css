@@ -894,3 +894,33 @@ button[disabled] {
   width: 3.2rem;
   height: 1.1rem;
 }
+
+/*
+ * The panel head: ← title ✕.
+ *
+ * The title sits BETWEEN them and takes the slack, so a long name in either
+ * language pushes neither control off its edge and the two never move — a back
+ * button that shifts with the heading is a back button you have to look for.
+ */
+.panel-back,
+.panel-close {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.panel-head .panel-title {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+/* ✕ is quieter than ←: leaving one screen is the ordinary act, leaving all of
+   them is the exception, and the louder mark should be the ordinary one. */
+.panel-close {
+  color: var(--ink-dim);
+}

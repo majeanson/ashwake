@@ -236,6 +236,11 @@ export const STRINGS_FR: Strings = {
         `${n} tuile${pl(n, '', 's')} rare${pl(n, '', 's')} là-dedans ser${pl(n, 'a', 'ont')} dépensée${pl(n, '', 's')} par la récolte.`,
     },
     harvest: {
+      firstPop: `TA PREMIÈRE RÉCOLTE
+La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie jamais. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
+      firstPopWhen:
+        'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
+
       head: (count, worth) => `RÉCOLTÉ ${count} — valeur totale ${worth}`,
       bountyCollected: (bonus) => `${LANDMARK_GLYPH.site} Prime ×${bonus} — ENCAISSÉE.`,
       bountyMissed: (bonus, need, radius) =>
@@ -483,6 +488,12 @@ Le sol à moins de ${radius} hexes est natif de ${owns} maintenant — et il te 
       `SANCTUAIRE ÉVEILLÉ
 ${unlock}
 À toi dès ta prochaine partie, dans ce monde pour de bon.`,
+    shrineCrossing: (dowry, carried) =>
+      `LE MONDE EST ÉVEILLÉ
+Chaque déblocage est à toi — et ce sanctuaire est un passage. Traverse vers un NOUVEAU MONDE en emportant ${nb(dowry)} reliques pour ce que tu laisses${carried > dowry ? `, plus ${nb(carried - dowry)} de cette partie` : ''}. Tes reliques et tes trouvailles te suivent. Le sol, les territoires, les sanctuaires éveillés ici et tout ce que tu as ACHETÉ restent derrière. Ou reste, et continue de bâtir ce monde.`,
+    crossLabel: (carried) => `TRAVERSER — emporter ${nb(carried)} reliques`,
+    crossArmed: 'TOUCHE ENCORE — ce monde est oublié',
+    stay: 'RESTER',
     shrineAwake: `SANCTUAIRE ÉVEILLÉ
 Ce monde est entièrement éveillé — chaque déblocage est à toi.`,
     shrineDetour: `SANCTUAIRE ÉVEILLÉ
@@ -517,6 +528,7 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     restart: 'RECOMMENCER',
     newWorld: 'NOUVEAU MONDE',
     back: 'RETOUR',
+    closeAll: 'TOUT FERMER',
     more: 'PLUS',
     daily: 'QUOTIDIEN',
     shop: 'LA BOUTIQUE',
