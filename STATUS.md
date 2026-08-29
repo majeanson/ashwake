@@ -4,7 +4,33 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-28, last — Stage 2b: the board has depth, and no
+Last checkpoint: **2026-08-29 — Stage 2c: the board earns its third dimension.**
+The lighting is DATA (`theme/rig.ts`), normalised so a face pointing up is
+exposed at exactly 1 — so **a hex top at full torch renders exactly the colour
+the direction authored**, and `contrast.test.ts` became literally true of a
+rendered pixel. `render/paint.ts` carries every layer of Ashwake 1's `bake.ts`
+as a closed union of ops with a key DERIVED from the plan; `bakeCanvas.ts`
+walks them and decides nothing. Batches are a kind AND a surface (~20 meshes).
+`theme/torch.ts` multiplies in DISPLAY space via one `onBeforeCompile` chunk,
+because `light.floor` was tuned against Pixi's sRGB tint. **Three verified
+findings:** R3F applied ACES tone mapping unless given `flat` (so the label ink
+on screen was never `ink.ink`); `cylinderGeometry` shades a six-sided prism as
+a rounded blob without `flatShading`; its cap UVs are transposed.
+**`render/materials.test.ts` grades the colours a hex ACTUALLY contains** and
+failed on first run — samples now split into `label` (where a centred label
+sits) at 4.5:1 and `face` (wash ends, translucent inks) at 3:1, and a shaded
+side is graded at the WALL floor with the margin recorded: **torchlit 0.070,
+torchlit-bright 0.072** clearance, above 0.045 and below 0.1. Ashwake 1's seven
+terrain PNGs ship for three directions behind `?art=1`.
+**A bug a human found:** `InstancedMesh` caches its bounding sphere on the
+first raycast forever, so the frontier went deaf as the board grew — eleven
+green e2e tests missed it because none tapped a board that had grown.
+**Verified:** 766 tests / 49 files; typecheck, lint, format, build clean;
+golden sim byte-identical; 21 Playwright tests at 390×844; bundle 375KB gzip.
+**Dials `?light= ?materials= ?art=` all default 0; NOT played on a phone since
+the click fix.**
+
+Previous checkpoint: **2026-08-28, last — Stage 2b: the board has depth, and no
 rule can see it.** The camera's tilt is **settled at 35°** (Marc's pick) and is
 the default; `?yaw=` turns the board under it and `?relief=` gives the ground
 height, both defaulting to the flat map. The lean is arithmetic, not rig code:

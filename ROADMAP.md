@@ -43,6 +43,22 @@ sessions; S2 and S3 are the fat ones.
       on the hex under the finger? Yes; three of the four were arithmetic that
       had to move (`LOG.md` Session 4). The yaw and the relief numbers are
       Marc's, by looking._
+- [x] **S2c — the board earns its third dimension.** Shipped 2026-08-29
+      (`LOG.md` Session 5): the lighting is data, normalised so a lit hex top
+      renders exactly the colour the direction authored; Ashwake 1's baker
+      split into a pure plan in the core and a canvas in the app; the torch
+      multiplies in display space; the contrast budget now grades the colours a
+      hex ACTUALLY contains, and failed on three of four directions the first
+      time it ran. Ashwake 1's terrain art ships behind `?art=1`. _Question: can
+      the colour a hex renders in be computed by a pure function in the core,
+      and does every direction still pass? Yes, once the samples split into
+      where a label sits and where a mark can land — and the shaded-side margin
+      is thin enough to be Marc's, by looking._
+- [ ] **S2d — the board moves, and things stand in the world.** Tile motion,
+      camera feel, ambient life, and landmark props: a built thing per landmark
+      kind standing on the hex, with `LANDMARK_GLYPH` still the authority on
+      what each one MEANS. _Question: does motion make the board easier to
+      read, or only busier?_
 - [ ] **S3 — the chrome, in React, bilingual from the first component.** Components
       over `HudView`/`SpendView`/`toBoardView`/`LESSONS`: front door, HUD, one
       hand + one action bar, teaching cards with figures, the `?` manual, shop,
@@ -58,10 +74,11 @@ sessions; S2 and S3 are the fat ones.
       (epoch 2026-08-25), the crossing, `?seed=` links, PWA + service worker,
       backup/restore as the v1 → v2 bridge. _Question: does the relic-farm
       class stay structurally impossible?_
-- [ ] **S5 — the look.** Theme as data extended with materials and lighting;
-      two or three directions as an option set; Marc picks on the phone;
-      budgets enforced. _Question: which direction, and does it pass the
-      budgets without relaxing one?_
+- [ ] **S5 — the look.** Materials and lighting landed in S2c; what is left is
+      the DIRECTION — the parked "settlement" reading of the colours (FARM ·
+      MARKET · QUARRY · ROADS) built as an option set beside the three that
+      ship, shot, and picked on the phone. _Question: which direction, and does
+      it pass the budgets without relaxing one?_
 - [ ] **S6 — the console, Session A on v2, then the stranger.** `/playtest`
       route with COPY SHEET; Session A re-run against the deployed v2; fixes;
       Session C.

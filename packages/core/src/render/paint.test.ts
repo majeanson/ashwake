@@ -16,7 +16,7 @@ const DIRECTIONS = THEMES;
 const opts = (theme: (typeof DIRECTIONS)[number], ghostAlpha?: number) => ({
   texturePx: TEXTURE,
   depth: depthOf(theme),
-  ...(ghostAlpha === undefined ? {} : { ghostAlpha }),
+  ...(ghostAlpha === undefined ? {} : { art: { alpha: ghostAlpha, replaces: false } }),
 });
 
 const kinds = (plan: ReturnType<typeof paintPlan>): string[] => plan.map((op) => op.op);
@@ -112,13 +112,18 @@ describe('a paint plan', () => {
     for (const theme of DIRECTIONS) {
       for (const colour of COLOURS) {
         const s = theme.terrain[colour];
-        const samples = surfaceSamples(paintPlan(s, opts(theme)));
-        expect(samples).toContain(s.fill);
-        if (s.fillTo !== null) expect(samples).toContain(s.fillTo);
-        // A hex with a pattern and a wash contains more than its two ends —
-        // which is the whole reason the budget cannot grade a swatch.
-        expect(samples.length).toBeGreaterThan(s.fillTo === null ? 1 : 2);
-        for (const sample of samples) {
+        const { label, face } = surfaceSamples(paintPlan(s, opts(theme)));
+        // The ground a centred label sits on is the fill and its ends, and
+        // nothing else — the wash is transparent at the middle of the face by
+        // construction, which is where a label is anchored.
+        expect(label).toContain(s.fill);
+        if (s.fillTo !== null) expect(label).toContain(s.fillTo);
+        expect(label.length).toBe(s.fillTo === null ? 1 : 2);
+        // The face carries more: the wash at both ends and every ink a pattern
+        // lays over part of it. That is the whole reason a budget cannot grade
+        // a swatch.
+        expect(face.length).toBeGreaterThan(label.length);
+        for (const sample of face) {
           expect(luma(sample)).toBeGreaterThanOrEqual(0);
           expect(luma(sample)).toBeLessThanOrEqual(1);
         }
@@ -126,11 +131,52 @@ describe('a paint plan', () => {
     }
   });
 
+  it('counts an opaque pattern as ground and a translucent one as ink', () => {
+    // Rubble is not a tint of anything: a `bands` pattern REPLACES what it
+    // covers, so a label can sit wholly on it. A hatch or a dot inks over the
+    // ground and covers a fraction of a digit, so it is a mark.
+    const theme = resolveTheme('torchlit');
+    const opaque = surfaceSamples(
+      paintPlan({ ...surface(0x404040), pattern: theme.wall.pattern }, opts(theme)),
+    );
+    const inked = surfaceSamples(
+      paintPlan(
+        {
+          ...surface(0x404040),
+          pattern: { kind: 'dots', ink: 0xffffff, alpha: 0.4, radius: 2, pitch: 7 },
+        },
+        opts(theme),
+      ),
+    );
+    expect(theme.wall.pattern.kind).toBe('bands');
+    expect(opaque.label.length).toBeGreaterThan(1);
+    expect(inked.label).toEqual([0x404040]);
+    expect(inked.face).toContain(0x8c8c8c);
+  });
+
+  it('lets a slot own art replace the procedural layers outright', () => {
+    // Asset beats pattern beats fill. A tile PNG was baked with the
+    // direction's own depth already in it, so painting a pattern and a wash
+    // over it would say the same thing twice.
+    for (const theme of DIRECTIONS) {
+      const plan = kinds(
+        paintPlan(theme.terrain.green, {
+          texturePx: TEXTURE,
+          depth: depthOf(theme),
+          art: { alpha: 1, replaces: true },
+        }),
+      );
+      expect(plan.at(-1)).toBe('art');
+      expect(plan).not.toContain('pattern');
+      expect(plan).not.toContain('wash');
+    }
+  });
+
   it('reads a plain surface with no pattern as one colour plus its wash', () => {
     const flat = surface(0x808080);
     const plan = paintPlan(flat, opts(resolveTheme('torchlit')));
     expect(kinds(plan)).toEqual(['fill', 'wash']);
-    expect(surfaceSamples(plan)).toContain(0x808080);
+    expect(surfaceSamples(plan).label).toContain(0x808080);
   });
 });
 

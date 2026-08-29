@@ -20,6 +20,7 @@ import {
   type Lean,
 } from './camera';
 import { GL_PROPS } from './gl';
+import { useAssets } from './assets';
 import { HexField, UNIT, type Leap } from './HexField';
 import { LightRig } from './LightRig';
 import { tallestOf } from './relief';
@@ -61,6 +62,10 @@ export type BoardProps = {
   readonly relief?: number;
   /** How hard the rig lights the board, 0..1; 0 renders every face as authored. */
   readonly light?: number;
+  /** 0 paints the ground alone; above 0 paints the whole material. */
+  readonly materials?: number;
+  /** Whether to load the direction own art. */
+  readonly art?: boolean;
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
@@ -73,7 +78,8 @@ const TAP_SLOP = 8;
 const EYE_DISTANCE = 200;
 
 export function Board(props: BoardProps) {
-  const { theme, tilt = 0, yaw = 0, relief = 0, light = 0 } = props;
+  const { theme, tilt = 0, yaw = 0, relief = 0, light = 0, materials = 0, art = false } = props;
+  const assets = useAssets(theme.id, art);
   const wrapper = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -140,6 +146,8 @@ export function Board(props: BoardProps) {
             theme={theme}
             orientation={theme.orientation}
             relief={relief}
+            materials={materials}
+            assets={assets}
             yaw={yaw}
             leap={leap}
             onTap={props.onTap}

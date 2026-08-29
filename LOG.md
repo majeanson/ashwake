@@ -262,4 +262,96 @@ French; S3 — the chrome.
 be computed by a pure function in the core — and does every direction still
 pass the contrast budget and the greyscale ladder once it is?
 
-_(Answer written after the work.)_
+**Answer: yes — and the budget it made possible failed on three of four
+directions the first time it ran, which is what a real test does.**
+
+**The shape.** The rig is DATA (`theme/rig.ts`): an ambient level and a list of
+directions and intensities, **normalised so a face pointing straight up is
+exposed at exactly 1**. That one property is what makes the whole thing hold —
+a hex top at full torch renders EXACTLY the colour the direction authored, so
+every assertion already in `contrast.test.ts` and `theme.test.ts` became
+literally true of a rendered pixel rather than approximately true of theme
+data. `LightRig.tsx` builds three.js lights from the same object the test
+measures, so the board and the budget have nothing to disagree about — the
+property `fieldGround` and `depthOf` bought Ashwake 1's gallery. It also means
+the rig cannot be brightened to flatter a screenshot: more key has to come out
+of the ambient.
+
+**Three findings, all verified against the dependencies rather than assumed.**
+
+1. **The contrast budget was describing a board that did not exist.** React
+   Three Fiber sets `ACESFilmicToneMapping` unless the `<Canvas>` is given
+   `flat`, so every lit fragment went through a filmic roll-off — and drei's
+   `Text` is tone-mapped too, so **the label ink on screen was never
+   `theme.ink.ink`**. The rings already passed `toneMapped={false}`; the labels
+   never did. A palette graded to 4.5:1 with a curve between the grade and the
+   screen is a palette graded to nothing.
+2. **`cylinderGeometry` shades a prism as a blob.** Its torso normals are
+   radial and shared between segments, so six faces Gouraud-shaded into a
+   rounded lump. `flatShading` is one flag and was most of why the board read
+   flat. Its cap UVs are also transposed — `u` along +z, `v` along +x — which
+   would have landed every baked texture a quarter turn off.
+3. **The torch has to multiply in DISPLAY space.** `theme.light.floor`
+   (torchlit 0.42) and `MIN_LIT_FIELD_LIFT` were tuned against Pixi's sprite
+   tint, which was an sRGB multiply. `instanceColor` multiplies in the linear
+   working space, and a linear ×0.42 is about a display ×0.70 — invisible in a
+   screenshot, fatal to a threshold. One `onBeforeCompile` chunk decodes,
+   multiplies and re-encodes.
+
+**What the new budget found, and what moved.** `render/materials.test.ts`
+grades `surfaceSamples(paintPlan(...))` — the set of colours a finished hex
+actually contains — through `renders()`. It failed five ways on first run.
+Three were the test's own scoping and two were real distinctions:
+
+- **A label is not graded where no label is drawn.** The samples now split into
+  `label` (the fill and its ends, plus any OPAQUE pattern — rubble replaces
+  what it covers) and `face` (those, plus the depth wash at both ends and every
+  translucent ink). A centred label sits where the wash is transparent by
+  construction, and a hatch bar covers a fraction of a digit. Prose is graded at
+  4.5:1 on `label`; marks at 3:1 on `face`. Holding a digit to the contrast of a
+  speck fails hexes that read perfectly well.
+- **A shaded side is graded at the WALL floor, not the ground floor**, and the
+  numbers are worth recording. `MIN_GROUND_CLEARANCE` (0.1) is "a placed tile is
+  a visible shape" and is measured on the TOP face, which normalisation already
+  holds exactly. `MIN_WALL_CLEARANCE` (0.045) is "blocked ground must not read
+  as fog" — the same sentence as "a shaded side must not read as a gap". At the
+  full rig, **torchlit's darkest terrain side sits at 0.070 clearance and
+  torchlit-bright's at 0.072**: above the wall floor, below the ground floor.
+  Holding sides to 0.1 would need the darkest facet exposed at **0.655** — a
+  top-to-side ratio of 1.53, a board with almost no shading left. On a
+  near-black board a dark terrain's shaded side and the board are genuinely
+  close, and that is a fact about the palette rather than a threshold to argue
+  with. **Marc's, by looking**, and the honest read from the shots is that the
+  shading is real but modest on torchlit.
+
+**The materials.** `render/paint.ts` carries every layer and number of Ashwake
+1's `bake.ts` as a closed union of ops; `bakeCanvas.ts` walks them and decides
+nothing. Three corrections, all because the target is a prism: no hex clip and
+no inset (the geometry IS the hex, so the gutter goes on the prism radius); a
+square bake spanning the circumscribed square; and pattern density stated per
+hex RADIUS rather than per screen pixel, because Ashwake 1 rebaked at every
+zoom level and this bakes once. `planKey` is derived from the plan, which
+structurally retires the "a key that forgot a field" bug Ashwake 1 guarded with
+a test. Batches are now a kind AND a surface — about twenty meshes, against a
+renderer already spending a draw call per label.
+
+**A bug a human found that no test could.** Marc, on a phone: "most of the
+clicks in the upper tiles don't work." `InstancedMesh.raycast` tests a cached
+bounding sphere before any instance, and `computeBoundingSphere` only ever runs
+on the first null — so the sphere was measured the first time a finger touched
+the board and never again, and every cell grown after that silently stopped
+answering. A board growing outward from home is the whole game, so the frontier
+went deaf partway through every run, with no error anywhere.
+`commitInstances()` nulls the bounds; the fix is pinned in node (raycasting is
+pure arithmetic) and in a browser walking a board outward through eight
+placements. **Eleven green Playwright tests never caught it, because every one
+of them tapped a board that had not grown since boot.**
+
+**Verified:** 766 tests / 49 files; typecheck, lint, format, build clean;
+golden sim byte-identical; 21 Playwright tests at 390×844. Bundle 375KB gzip
+(+5KB). Art payload is ~170KB per direction, fetched only at `?art=1`.
+
+**Not played on a phone since the click fix.**
+
+**Next:** Marc picks the light, relief and materials numbers from the shots;
+S2d — movement and the landmark props.

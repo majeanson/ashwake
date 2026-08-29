@@ -1,5 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { execSync } from 'node:child_process';
+import { readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 
@@ -40,8 +42,67 @@ function versionStamp(sha: string): Plugin {
   };
 }
 
+/**
+ * Scan `public/assets/<themeId>/<slotId>.png` and write the manifest.
+ *
+ * The whole art workflow is meant to be "drop a PNG in the folder". A hand-kept
+ * list would be a second place to forget, and probing seven slots per direction
+ * from the client would mean a wall of 404s on a phone connection every load. So
+ * the build looks, once, and the client fetches one small file.
+ *
+ * `public/assets/` not existing produces an empty manifest, not a failed build
+ * — which is the state this repository shipped in until Ashwake 1's terrain
+ * landed, and the state a new direction is in before anyone paints it.
+ */
+function assetManifest(): Plugin {
+  const scan = (root: string): Record<string, string[]> => {
+    const out: Record<string, string[]> = {};
+    let themes: string[];
+    try {
+      themes = readdirSync(root);
+    } catch {
+      return out;
+    }
+    for (const themeId of themes) {
+      try {
+        if (!statSync(join(root, themeId)).isDirectory()) continue;
+        const ids = readdirSync(join(root, themeId))
+          .filter((f) => f.endsWith('.png'))
+          .map((f) => f.slice(0, -'.png'.length));
+        if (ids.length > 0) out[themeId] = ids.sort();
+      } catch {
+        // A directory that vanished between the listing and the stat. Skip it.
+      }
+    }
+    return out;
+  };
+
+  const root = (): string => fileURLToPath(new URL('./public/assets', import.meta.url));
+
+  return {
+    name: 'ashwake:asset-manifest',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'assets/manifest.json',
+        source: JSON.stringify(scan(root()), null, 2),
+      });
+    },
+    configureServer(server) {
+      server.middlewares.use('/assets/manifest.json', (_req, res) => {
+        // Rescanned every request rather than cached: the point of dev is that
+        // you drop a file in and reload, and a cached manifest would make the
+        // one workflow this exists for require a server restart.
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'no-store');
+        res.end(JSON.stringify(scan(root())));
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), versionStamp(buildSha())],
+  plugins: [react(), versionStamp(buildSha()), assetManifest()],
   resolve: {
     alias: {
       '@engine': core('engine'),

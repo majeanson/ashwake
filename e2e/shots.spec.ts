@@ -37,6 +37,12 @@ const ANGLES = [
   ['s2c-light-half-relief', 'tilt=35&light=0.5&relief=0.35'],
   ['s2c-light-full-relief', 'tilt=35&light=1&relief=0.35'],
   ['s2c-light-full-relief-high', 'tilt=45&light=1&relief=0.8'],
+  // The materials.  is the ground alone — the same board as
+  //  — so the pair is the honest before and after.
+  ['s2c-materials', 'tilt=35&light=1&materials=1'],
+  ['s2c-materials-relief', 'tilt=35&light=1&materials=1&relief=0.35'],
+  ['s2c-materials-art', 'tilt=35&light=1&materials=1&art=1'],
+  ['s2c-materials-art-relief', 'tilt=35&light=1&materials=1&art=1&relief=0.35'],
 ] as const;
 
 test.use({ viewport: { width: 390, height: 844 } });

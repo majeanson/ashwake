@@ -29,6 +29,8 @@ const TILT = 35;
 const YAW = 0;
 const RELIEF = 0;
 const LIGHT = 0;
+const MATERIALS = 0;
+const ART = 0;
 
 /** A number off the query string, where zero is a real answer and `?x=` alone
  *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
@@ -64,6 +66,8 @@ export function App() {
       yaw: dial(params, 'yaw', YAW),
       relief: dial(params, 'relief', RELIEF),
       light: dial(params, 'light', LIGHT),
+      materials: dial(params, 'materials', MATERIALS),
+      art: dial(params, 'art', ART) > 0,
     };
   }, []);
 
@@ -137,6 +141,8 @@ export function App() {
           yaw={look.yaw}
           relief={look.relief}
           light={look.light}
+          materials={look.materials}
+          art={look.art}
           onTap={onTap}
           handle={board}
         />

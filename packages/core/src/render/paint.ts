@@ -122,10 +122,17 @@ export type PaintOpts = {
   /** The direction's depth wash, already resolved by `depthOf`. */
   readonly depth: Depth;
   /**
-   * A native field's ghost: the terrain slot's own art, over the flat ground
-   * fill at a fraction of a placed tile's strength. Null everywhere else.
+   * The direction's own art for this surface, where it has loaded.
+   *
+   * Two shapes, which is Ashwake 1's precedence — **asset beats pattern beats
+   * fill** — stated as data. A placed tile's art `replaces` the procedural
+   * layers: the PNG was baked with the direction's own depth already in it
+   * (`scripts/terrain.ts`), so painting a pattern and a wash over it would be
+   * saying the same thing twice. A native field's art does not: it goes on at a
+   * fraction of a tile's strength UNDER the pattern, because the ghost is the
+   * MATERIAL layer and the equalised marks are the READABLE one.
    */
-  readonly ghostAlpha?: number | undefined;
+  readonly art?: { readonly alpha: number; readonly replaces: boolean } | undefined;
 };
 
 /**
@@ -143,8 +150,11 @@ export function paintPlan(surface: Surface, opts: PaintOpts): readonly PaintOp[]
       : { op: 'gradient', from: surface.fill, to: surface.fillTo },
   ];
 
-  if (opts.ghostAlpha !== undefined && opts.ghostAlpha > 0) {
-    ops.push({ op: 'art', alpha: opts.ghostAlpha });
+  if (opts.art !== undefined && opts.art.alpha > 0) {
+    ops.push({ op: 'art', alpha: opts.art.alpha });
+    // Art that replaces says everything the procedural layers would have, and
+    // says it better — that is the whole reason a slot is worth painting.
+    if (opts.art.replaces) return ops;
   }
 
   const scale = patternScale(opts.texturePx);
@@ -362,8 +372,33 @@ export const planKey = (plan: readonly PaintOp[]): string => JSON.stringify(plan
  * The pattern inks are composited at their own alpha over the ground they cover,
  * because an ink at 16% over ash is not the ink and is not the ash.
  */
-export function surfaceSamples(plan: readonly PaintOp[]): readonly Rgb[] {
+export type SurfaceSamples = {
+  /**
+   * **Where a centred label actually sits.** The fill or both gradient ends,
+   * plus any opaque pattern that replaces the ground rather than inking over
+   * it — and deliberately NOT the depth wash, because the wash is zero at the
+   * middle of the face by construction (its transparent stop is at 0.5) and a
+   * label is anchored there.
+   *
+   * These carry the reading bar. Grading prose against the wash's extremes
+   * would fail a hex that reads perfectly well, at the top edge of a face where
+   * no prose is ever drawn.
+   */
+  readonly label: readonly Rgb[];
+  /**
+   * **Everywhere on the face**: those grounds, the wash over them at both ends,
+   * and every ink a translucent pattern lays over part of the surface.
+   *
+   * These carry the MARK bar. An edge rides the hex's boundary, where the wash
+   * is at full strength, and a hatch bar covers a fraction of the area under a
+   * digit — both are marks, and the mark bar is what marks are graded at.
+   */
+  readonly face: readonly Rgb[];
+};
+
+export function surfaceSamples(plan: readonly PaintOp[]): SurfaceSamples {
   let grounds: Rgb[] = [0x000000];
+  let inks: Rgb[] = [];
   const wash: Stop[] = [];
 
   for (const op of plan) {
@@ -375,10 +410,14 @@ export function surfaceSamples(plan: readonly PaintOp[]): readonly Rgb[] {
         grounds = [op.from, op.to];
         break;
       case 'pattern': {
-        const inked = op.tile.marks.flatMap((mark) =>
-          grounds.map((ground) => mix(ground, mark.colour, mark.alpha)),
-        );
-        grounds = [...grounds, ...inked];
+        // An opaque mark IS the ground where it lands — rubble is not a tint of
+        // anything. A translucent one is an ink over whatever it covers.
+        const opaque = op.tile.marks.filter((m) => m.alpha >= 1).map((m) => m.colour);
+        const inked = op.tile.marks
+          .filter((m) => m.alpha < 1)
+          .flatMap((mark) => grounds.map((ground) => mix(ground, mark.colour, mark.alpha)));
+        inks = [...inks, ...inked];
+        grounds = [...grounds, ...opaque];
         break;
       }
       case 'wash':
@@ -393,9 +432,25 @@ export function surfaceSamples(plan: readonly PaintOp[]): readonly Rgb[] {
     }
   }
 
-  const out = new Set<Rgb>(grounds);
-  for (const ground of grounds) {
-    for (const stop of wash) out.add(mix(ground, stop.colour, stop.alpha));
+  const face = new Set<Rgb>([...grounds, ...inks]);
+  for (const colour of [...grounds, ...inks]) {
+    for (const stop of wash) face.add(mix(colour, stop.colour, stop.alpha));
   }
-  return [...out];
+
+  return { label: [...new Set(grounds)], face: [...face] };
 }
+
+/**
+ * The ground alone — the plan with none of its material on.
+ *
+ * This is what the `?materials=` dial's zero paints, and it is deliberately a
+ * PLAN rather than a separate code path in the renderer: the board bakes a
+ * texture and reads a tint the same way at either setting, so turning the dial
+ * changes how a hex is painted and nothing about how it is drawn. One path is
+ * one set of bugs.
+ */
+export const flatPlan = (surface: Surface): readonly PaintOp[] => [
+  surface.fillTo === null
+    ? { op: 'fill', colour: surface.fill }
+    : { op: 'gradient', from: surface.fill, to: surface.fillTo },
+];
