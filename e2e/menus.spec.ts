@@ -245,3 +245,29 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
 
   expect(errors).toEqual([]);
 });
+
+test('the worlds panel shows what this world has become', async ({ page }) => {
+  // A world outlives every run played on it, and the only thing the game said
+  // about one was a single line in the list. `knownFraction` and `unlockedBy`
+  // were both written, tested, and called by nobody.
+  const errors = watchErrors(page);
+  await page.goto('/?end=1&taught=1&seed=7');
+  await begin(page);
+  // Bank a run, so the world has a history to show.
+  await page.locator('[data-hud="end"]').waitFor({ state: 'visible' });
+
+  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-go="worlds"]').click();
+  await panel(page, 'worlds').waitFor({ state: 'visible' });
+
+  const atlas = page.locator('.atlas');
+  await atlas.waitFor({ state: 'visible' });
+  // Seven facts: runs, best, farthest, known, territories, shrines, finds.
+  expect(await atlas.locator('.fact-label').count()).toBe(7);
+  // KNOWN is a percentage — the least misleading story about an infinite
+  // plane, and the number that proves this is the world's own memory rather
+  // than the run's.
+  await expect(atlas).toContainText('%');
+
+  expect(errors).toEqual([]);
+});

@@ -93,24 +93,20 @@ deliberately absent in both.
 
 ---
 
-## What is still missing, in the order it matters
+## What is still missing
 
-Everything this file listed on 2026-08-29 is closed. What is left:
+1. **A keyboard path for placing a tile.** Ashwake 1 shipped without one and
+   said so in as many words; `.board-host` is a focus sink, not a cursor.
+   Every panel, card and control is reachable and operable by keyboard — the
+   board itself is not.
+2. **The `✕` lens-clear button.** The fog tap and a second long-press both
+   let go, so this is a convenience rather than a gap.
+3. **The History-API router** (`meta/route`), which `NEXT.md` argues may not
+   be wanted: `?seed=` links already work, every screen is a state change by
+   ruling, and a router would buy BACK-on-a-panel at the cost of the one
+   invariant that has held since Stage 2.
+4. **`meta/mark`** duplicates the icon `@meta/identity` already provides.
 
-1. **NEW GROUND / UNIQUE, once per run** — two toasts Ashwake 1 fires at their
-   first occurrence in a run.
-2. **The `✕` lens-clear button.** The fog tap and a second long-press both let
-   go, so this is a convenience rather than a gap.
-3. **The atlas**, if it earns its place — on the "review rather than port" list,
-   and no stranger has ever seen one.
-4. **A keyboard path for placing a tile.** Ashwake 1 shipped without one too and
-   said so in as many words; `#board` is a focus sink, not a cursor.
-
-Closed since this file was written: the board's tap answers (all of them), the
-fog lens, unselecting a card, `touch-action`, the iOS edge guard, claim
-receipts, pop receipts, spend receipts, TAKE and SACRIFICE, POP's camera glide,
-the first-pop card, the crossing, the world survey, sound, and the legend.
-
-The standing check that would have caught the whole of it is in `CLAUDE.md`:
-before calling a screen done, grep for a consumer of every action it can
-produce.
+Everything else this file has ever listed is built. The standing check that
+found most of it is in `CLAUDE.md`: before calling a screen done, grep for a
+consumer of every action it can produce.

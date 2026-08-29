@@ -1,5 +1,6 @@
 import type { WorldMemory } from '@meta/world';
 import type { Strings } from '@text/Strings';
+import { Atlas } from './Atlas';
 import { Confirming } from '../ui/Confirming';
 import { Panel, PanelMenu } from '../ui/Panel';
 import { SLOTS, type Slot } from '../shell/storage';
@@ -62,6 +63,14 @@ export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon }: WorldsP
           );
         })}
       </PanelMenu>
+
+      {/*
+        The ATLAS of the world you are standing in: what it has become across
+        every run played on it. Under the list rather than inside a row —
+        seven facts per slot would make the list a wall, and the only world
+        whose history you are about to act on is the one you are in.
+      */}
+      {worlds[active] !== null && <Atlas world={worlds[active]} s={s} />}
 
       {worlds[active] !== null && (
         <section>

@@ -458,6 +458,22 @@ export type Strings = {
     readonly worlds: string;
     /** One world of the three, by number. */
     readonly worldN: (n: number) => string;
+    /**
+     * The atlas: what a world has become, in the panel that holds it.
+     *
+     * Ashwake 1 kept these as a block in the manual's MENU tab, and its
+     * reason travels: a RECORD is a different kind of fact from the six
+     * numbers you are playing against right now, and a best sitting in a
+     * header slot is one wearing the other's clothes.
+     */
+    readonly atlasRuns: string;
+    readonly atlasBest: string;
+    readonly atlasFarthest: string;
+    readonly atlasKnown: string;
+    readonly atlasTerritories: string;
+    readonly atlasShrines: string;
+    readonly atlasFinds: string;
+    readonly atlasUnlocked: string;
     /** A slot nobody has played yet. */
     readonly emptyWorld: string;
     /** A perk being worn, and the button that puts one on. */
