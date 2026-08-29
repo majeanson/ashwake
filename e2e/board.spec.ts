@@ -189,3 +189,38 @@ test('forgets a finished run, so BEGIN means begin', async ({ page }) => {
   await expect(page.locator('[data-door="begin"]')).toHaveText(/BEGIN|COMMENCER/);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('stashes a card and takes it back', async ({ page }) => {
+  // The stash shipped INERT: the empty slot was a `disabled` button and the
+  // held card had no tap, so a mechanic every run has from its first hand
+  // could not be used at all. This walks the whole gesture in a browser,
+  // because that is the only place a disabled button proves anything.
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1');
+  await begin(page);
+
+  const slot = page.locator('[data-hold="0"]');
+  await expect(slot).toBeVisible();
+  await expect(slot).toBeEnabled();
+
+  const hand = page.locator('[data-hud="hand"]');
+  const dealt = await hand.locator('[data-colour]').count();
+
+  // Pick a card, then put it away. The slot stops saying HOLD and starts
+  // being a tile.
+  await hand.locator('[data-colour]').first().click();
+  await slot.click();
+  await expect(slot).toHaveAttribute('data-colour', /green|yellow|red|blue/);
+
+  // The hand is one card lighter, and its shape has not reflowed — the
+  // spacer holds the column until the next placement deals one back.
+  expect(await hand.locator('[data-colour]').count()).toBe(dealt);
+
+  // And it trades back: tapping the full slot returns that tile to the hand.
+  const stashed = await slot.getAttribute('data-colour');
+  await hand.locator('[data-colour]').first().click();
+  await slot.click();
+  await expect(slot).not.toHaveAttribute('data-colour', stashed ?? '');
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

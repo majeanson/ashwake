@@ -333,6 +333,36 @@ function Game() {
    * shared one. NEW RUN off a daily's end screen is the ordinary way to reach
    * that state, so the door out is here rather than in a guard downstream.
    */
+  /**
+   * The stash: put the selected card away, or trade with the one in that slot.
+   *
+   * The mechanic shipped inert. The rule has been in the core since it was
+   * lifted — `hold(state, slot)` stashes into a free slot and TRADES with a
+   * named one — and the shell dispatched `HOLD` from nowhere, so the empty
+   * slot was a disabled button and the held card had no tap at all. Same class
+   * as the colour lens.
+   *
+   * The index travels either way, which is Ashwake 1's shape and the reason
+   * one gesture covers both meanings: the reducer reads whether that slot
+   * holds anything and decides for itself.
+   *
+   * **The empty hand answers.** Tapping a slot with no card selected used to
+   * say nothing at all (Ashwake 1, fresh-eyes 2026-08-20), and the two cases
+   * mean different things: with nothing stashed there is nothing to put away,
+   * and with something stashed the stash still needs a card to trade FOR —
+   * it trades, it does not deal.
+   */
+  const onHold = useCallback(
+    (slot: number) => {
+      if (snap.hud.draft.length === 0) {
+        setNote(snap.hud.held[slot] === undefined ? s.ui.holdNothing : s.ui.holdTrades);
+        return;
+      }
+      session.dispatch({ type: 'HOLD', slot });
+    },
+    [session, snap.hud.draft.length, snap.hud.held, s],
+  );
+
   const newRun = useCallback(() => {
     setDaily(null);
     banked.current = null;
@@ -446,6 +476,7 @@ function Game() {
             s={s}
             onSelect={(index) => session.dispatch({ type: 'SELECT', index })}
             onLens={onLens}
+            onHold={onHold}
             onHarvest={(choice) =>
               session.dispatch({
                 type: 'HARVEST',

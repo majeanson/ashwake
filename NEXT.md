@@ -13,6 +13,23 @@ now", sorted by whether it needs Marc.
 
 ---
 
+## 0. Wired this session, and what it revealed
+
+The hold mechanism and the colour lens were both **dead code the shell never
+called**, and the audit found the draft card unreadable on its own fill. Three
+misses of one shape: a screen that renders a thing without connecting it. Worth
+a standing check — **before calling a screen done, grep for a consumer of every
+action it can produce.**
+
+Still unconsumed by the app, verified 2026-08-29: `share`, `route`, `goals`,
+`report`, `shedLadder`, `shopLevels`, `mark`. Two of those are live
+inconsistencies rather than gaps — the privacy sentence a player reads today
+promises a share sheet and a SEND REPORT that do not exist, and `storage.ts`
+drops a write on a full quota where `shedLadder` is the module written to
+decide what to drop instead. `share` and `report` were half-built when the
+hold question arrived: `shell/share.ts` and the whole catalogue for both are
+in, the buttons and the failure panel are not.
+
 ## 1. Needs Marc, and only Marc
 
 **The Cloudflare API token.** CI's deploy job runs and fails: the

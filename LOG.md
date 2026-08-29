@@ -573,4 +573,56 @@ runner while passing locally in under a second. They now carry a 60s bound
 that says what it is: a guard against a hang, not a claim about speed. Ashwake
 1's wall-clock assertion held its deploys shut for nine commits.
 
+### Session 8 — the stash was never wired, and the hand was the wrong width (2026-08-29)
+
+**Question, written before building:** does the hold mechanism work, and does
+the hand it lives in fit a thumb?
+
+**No, and no.** Marc asked about the hold mechanism, its UI/UX and hand
+ergonomics. Both answers were bugs, and both were on the first screen a
+stranger meets.
+
+**The stash was inert.** Nothing in the app ever dispatched `HOLD`. The empty
+slot rendered as a `disabled` button and the held card was given no `onPick`,
+so a player could neither put a tile away nor take one back. The rule
+underneath is complete and tested in the core — `hold(state, slot)` stashes
+into a free slot and TRADES with a named one — and it was reachable from
+nothing. The same class as the colour lens, found the same way: by reading for
+a consumer instead of trusting the screen.
+
+**And it ships from run one.** `TUNING` spreads `PLANE`, which sets
+`holdSlots: 1` — so this was not a mechanic waiting behind an unlock. A dashed
+HOLD card has been sitting in every hand since Stage 3, doing nothing. That is
+now pinned, so the width is a decision rather than a diff nobody noticed.
+
+**The hand was drawing `draft + stash` columns.** Ashwake 1 does not: it
+computes the width from the total, and the rule is Marc's own from the session
+where the stash moved INTO the hand — five or fewer is one row, **six is 2×3**
+("we can use 2x3 too"), seven or eight fall back to four across. Six across on
+a 390px phone is 56px a card, which fits a thumb but not the ground's NAME, and
+the name is one of three channels a card says its colour in. A second row costs
+about 79px of board — "we lost too much game space" — which is why the
+threshold sits as high as it does. Ported with its reasons into
+`screens/hand.ts` and pinned.
+
+**The spacers came with it.** Stashing takes a card out of the draft and
+nothing puts one back until the next placement, so without a held column the
+row reflows twice under a thumb in the two taps between — the cards move while
+you are reaching for one.
+
+**Consulting the old repo was the whole session.** Every one of these was
+already answered in `../tiles`, including the two sentences the empty hand
+needs — "Nothing in hand to stash" and "the stash trades, it does not deal" —
+which Ashwake 1 wrote in English and which live in the catalogue here (D4).
+Designing it fresh would have produced something close and wrong: I would have
+sent no slot index for an empty card, and drawn six columns.
+
+**Verified:** 842 tests / 56 files; typecheck, lint, format clean; golden sim
+byte-identical.
+
+**Deployed manually**, at Marc's ask, so the session's work could be looked at:
+`5cfee1d` is live on ashwake.marcportal.com and `verify:deploy` passes,
+including the install surface. It used the local wrangler OAuth login, not a CI
+token — **CI's deploy job is still failing** and still needs Marc.
+
 **Not played on a phone.** Again.

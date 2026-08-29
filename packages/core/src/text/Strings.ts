@@ -299,6 +299,19 @@ export type Strings = {
     readonly daily: string;
     readonly shop: string;
     readonly hold: string;
+    /**
+     * The stash, in words.
+     *
+     * `holdEmpty` and `holdSwap` are what a screen reader hears; the two
+     * notes are what a sighted player gets when they tap a slot with nothing
+     * selected. Ashwake 1 answered the empty hand here after a fresh-eyes
+     * pass found HOLD saying nothing at all — and answered it in English,
+     * on a screen a French player is holding.
+     */
+    readonly holdEmpty: string;
+    readonly holdSwap: (ground: string) => string;
+    readonly holdNothing: string;
+    readonly holdTrades: string;
     readonly pop: string;
     readonly redraw: string;
     readonly forge: string;
@@ -347,6 +360,34 @@ export type Strings = {
     readonly privacy: string;
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;
+    /** Hand this run to somebody. The game's only distribution mechanism. */
+    readonly share: string;
+    /** No share sheet here, so it went to the clipboard instead. */
+    readonly copied: string;
+    /**
+     * The failure panel and SETTINGS ▸ LAST ERROR.
+     *
+     * Ashwake 1 wrote every one of these straight into `failure.ts` in
+     * English, on the one screen a French player is most likely to be
+     * frightened by. They are sentences a player reads, so they live here
+     * (D4) — and the panel keeps a bare-English fallback of its own for the
+     * case where the catalogue itself is what failed to load.
+     */
+    readonly crash: {
+      readonly broke: string;
+      readonly noWebgl: string;
+      readonly seen: (n: number) => string;
+      readonly continue: string;
+      readonly reload: string;
+      readonly send: string;
+      readonly sending: string;
+      readonly sent: string;
+      readonly sendFailed: string;
+      readonly copy: string;
+      readonly selectAbove: string;
+      readonly lastError: string;
+      readonly noError: string;
+    };
   };
 
   /**

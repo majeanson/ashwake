@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pickLocale } from '@content/locale';
+import { TUNING } from '@content/tuning';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { createSession } from './store';
@@ -104,5 +105,77 @@ describe('the colour lens', () => {
     const before = s.get().state;
     s.spotlight('red');
     expect(s.get().state).toBe(before);
+  });
+});
+
+/**
+ * The stash — a whole mechanic that shipped inert (2026-08-29).
+ *
+ * The rule has been in the core since the rules were lifted: `hold(state, slot)`
+ * puts the selected card into a free slot, and TRADES with a named one. The
+ * shell dispatched `HOLD` from nowhere, so the empty slot was a `disabled`
+ * button and the held card had no tap at all — you could neither put a tile
+ * away nor take one back. The same class of miss as the colour lens, and these
+ * are the assertions that would have caught it.
+ */
+describe('the stash', () => {
+  const stashing = () =>
+    createSession({
+      seed: 3,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+      // Two slots rather than the shipped one, so the TRADE case has a
+      // second slot to be distinct from. The shipped width is pinned below.
+      tuning: { ...TUNING, holdSlots: 2 },
+    });
+
+  it('puts the selected card away, and takes it out of the hand', () => {
+    const s = stashing();
+    const dealt = s.get().hud.draft.length;
+    const saved = s.get().state.draft[0];
+    expect(saved).toBeDefined();
+
+    s.dispatch({ type: 'SELECT', index: 0 });
+    s.dispatch({ type: 'HOLD', slot: 0 });
+
+    expect(s.get().state.held[0]?.id).toBe(saved?.id);
+    expect(s.get().hud.draft).toHaveLength(dealt - 1);
+  });
+
+  it('trades with a full slot rather than dealing from it', () => {
+    const s = stashing();
+    s.dispatch({ type: 'SELECT', index: 0 });
+    const first = s.get().state.draft[0]?.id;
+    s.dispatch({ type: 'HOLD', slot: 0 });
+
+    const dealt = s.get().hud.draft.length;
+    const next = s.get().state.draft[0]?.id;
+    s.dispatch({ type: 'SELECT', index: 0 });
+    s.dispatch({ type: 'HOLD', slot: 0 });
+
+    // The stashed tile came back and the selected one took its place — the
+    // hand is the same size, because a trade is a trade.
+    expect(s.get().hud.draft).toHaveLength(dealt);
+    expect(s.get().state.draft.map((c) => c.id)).toContain(first);
+    expect(s.get().state.held[0]?.id).toBe(next);
+  });
+
+  it('says the stash exists, and how wide it is', () => {
+    expect(stashing().get().hud.canHold).toBe(true);
+    expect(stashing().get().hud.holdSlots).toBe(2);
+  });
+
+  /**
+   * The shipped width, pinned — because it is what makes the dead button a
+   * bug every player met rather than one behind an unlock.
+   *
+   * `TUNING` spreads `PLANE`, which sets `holdSlots: 1`. So a dashed HOLD
+   * card has been sitting in the hand of every run since Stage 3, disabled,
+   * doing nothing. If this ever goes back to 0 the change is a balance
+   * decision and belongs in `LOG.md`, not in a diff nobody noticed.
+   */
+  it('ships with a stash from run one', () => {
+    expect(session().get().hud.canHold).toBe(true);
+    expect(session().get().hud.holdSlots).toBe(1);
   });
 });

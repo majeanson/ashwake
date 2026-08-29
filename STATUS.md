@@ -4,7 +4,23 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — Stage 4 (most of it): a run counts, and
+Last checkpoint: **2026-08-29, last — the stash, wired.** Marc asked about the
+hold mechanism and its hand ergonomics; both answers were bugs on the first
+screen a stranger meets. **The stash was inert** — nothing dispatched `HOLD`,
+the empty slot was a `disabled` button and the held card had no tap, so a
+mechanic every run has from its first hand could not be used at all. **And the
+hand was drawing `draft + stash` columns**, where Ashwake 1 computes the width
+from the total: five or fewer is one row, six is 2×3, seven or eight fall back
+to four across — because six across on a 390px phone is 56px a card, wide
+enough for a thumb and too narrow for the ground's name. Ported with its
+reasons (`screens/hand.ts`), spacers included, so the row cannot reflow under a
+thumb between a stash and the next deal. Every sentence the empty hand needs is
+in the catalogue rather than in English in a component. **Verified:** 842 tests
+/ 56 files; golden sim byte-identical. **Live at ashwake.marcportal.com**
+(`5cfee1d`, deployed by hand from Marc's own wrangler login — CI's deploy job
+still fails on the empty token).
+
+Previous checkpoint: **2026-08-29 — Stage 4 (most of it): a run counts, and
 the game has rooms again.** `shell/settle.ts` is what makes a finished run
 mean something: the ground walked folds into the world, the shelf of bests
 takes it, and the diary gets a row — banked ONCE, with the state object as the

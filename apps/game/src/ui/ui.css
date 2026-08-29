@@ -506,6 +506,18 @@ button[disabled] {
   text-shadow: var(--card-text-shadow);
 }
 
+/*
+ * A slot the hand is not currently filling.
+ *
+ * Stashing a card takes it out of the draft and nothing puts one back until
+ * the next placement, so without this the row reflows twice under a thumb in
+ * the two taps between — the cards move while you are reaching for one. It
+ * occupies its column and draws nothing.
+ */
+.tile.gap {
+  visibility: hidden;
+}
+
 .tile.hold {
   border-style: dashed;
   color: var(--ink-faint);

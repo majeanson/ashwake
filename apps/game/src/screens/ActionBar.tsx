@@ -1,6 +1,7 @@
 import type { Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
+import { handColumns, handSpacers, stashSlots } from './hand';
 import { Tile } from '../ui/Tile';
 
 /**
@@ -24,6 +25,8 @@ export type ActionBarProps = {
   readonly onSelect: (index: number) => void;
   /** Long-press a card: hold that colour up against the board. */
   readonly onLens: (index: number | null) => void;
+  /** Tap a stash slot. The index travels: THIS card trades with THIS slot. */
+  readonly onHold: (slot: number) => void;
   readonly onHarvest: (choice: 'tiles' | 'points') => void;
   readonly onPurse: () => void;
   readonly purseOpen: boolean;
@@ -36,22 +39,28 @@ export function ActionBar({
   s,
   onSelect,
   onLens,
+  onHold,
   onHarvest,
   onPurse,
   purseOpen,
   onNewRun,
 }: ActionBarProps) {
+  const stash = stashSlots(hud.canHold, hud.holdSlots);
+
   return (
     <div className="controls">
       <div
         className="hand"
         data-hud="hand"
-        // The stash rides the same grid as the draft, as its last column —
+        // The stash rides the same grid as the draft, as its last columns —
         // Ashwake 1 moved held cards INTO the hand on 2026-08-27 and it is
-        // half of why the board got a fifth of the screen back.
+        // half of why the board got a fifth of the screen back. How many
+        // columns that row takes is `handColumns`, which is not the sum: six
+        // across is 56px a card on a 390px phone, too narrow for the ground's
+        // name.
         style={
           {
-            '--hand-cols': hud.draftWidth + (hud.canHold ? hud.holdSlots : 0),
+            '--hand-cols': handColumns(hud.draftWidth, stash),
           } as React.CSSProperties
         }
       >
@@ -67,24 +76,41 @@ export function ActionBar({
             onLens={() => onLens(i)}
           />
         ))}
-        {hud.canHold &&
-          Array.from({ length: hud.holdSlots }, (_, i) => {
-            const held = hud.held[i];
-            return held === undefined ? (
-              <button key={`hold-${i}`} type="button" className="tile hold" disabled>
-                {s.ui.hold}
-              </button>
-            ) : (
-              <Tile
-                key={`hold-${i}`}
-                colour={held.colour}
-                rarity={held.rarity}
-                theme={theme}
-                s={s}
-                held
-              />
-            );
-          })}
+        {/* A hand one card short keeps its slot, so the row does not reflow
+            under a thumb in the two taps between a stash and the next deal. */}
+        {Array.from({ length: handSpacers(hud.draft.length, hud.draftWidth) }, (_, i) => (
+          <div key={`gap-${i}`} className="tile gap" aria-hidden="true" />
+        ))}
+        {Array.from({ length: stash }, (_, i) => {
+          const held = hud.held[i];
+          // The index travels either way: an empty slot is "put this away"
+          // and a full one is "trade with this", and the reducer reads which
+          // from whether the slot holds anything. One gesture, and the slot
+          // you touch is the slot you mean.
+          return held === undefined ? (
+            <button
+              key={`hold-${i}`}
+              type="button"
+              className="tile hold"
+              data-hold={i}
+              aria-label={s.ui.holdEmpty}
+              onClick={() => onHold(i)}
+            >
+              {s.ui.hold}
+            </button>
+          ) : (
+            <Tile
+              key={`hold-${i}`}
+              colour={held.colour}
+              rarity={held.rarity}
+              theme={theme}
+              s={s}
+              held
+              slot={i}
+              onPick={() => onHold(i)}
+            />
+          );
+        })}
       </div>
 
       <div className="action-bar" data-hud="actions">

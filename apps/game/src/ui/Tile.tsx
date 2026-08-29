@@ -22,12 +22,25 @@ export type TileProps = {
   readonly s: Strings;
   readonly selected?: boolean;
   readonly held?: boolean;
+  /** Which stash slot this card is, when it is one. Names itself for a
+   *  screen reader, and marks itself for a test. */
+  readonly slot?: number | undefined;
   readonly onPick?: (() => void) | undefined;
   /** Long-press or right-click: the colour lens. */
   readonly onLens?: (() => void) | undefined;
 };
 
-export function Tile({ colour, rarity, theme, s, selected, held, onPick, onLens }: TileProps) {
+export function Tile({
+  colour,
+  rarity,
+  theme,
+  s,
+  selected,
+  held,
+  slot,
+  onPick,
+  onLens,
+}: TileProps) {
   const name = namesOf(theme, s.locale)[colour];
   const fill = hex(theme.terrain[colour].fill);
   const rare = rarity !== 'common';
@@ -41,6 +54,7 @@ export function Tile({ colour, rarity, theme, s, selected, held, onPick, onLens 
       // The audit cannot measure a halo, so it is told the halo is there.
       data-audit-halo=""
       aria-pressed={selected === true}
+      {...(slot === undefined ? {} : { 'data-hold': slot, 'aria-label': s.ui.holdSwap(name) })}
       onClick={onPick}
       onContextMenu={
         onLens === undefined
