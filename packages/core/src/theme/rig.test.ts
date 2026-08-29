@@ -20,7 +20,7 @@ import { cellTint, torched } from './torch';
  */
 
 const DIALS = [0, 0.25, 0.5, 0.75, 1] as const;
-const DIRECTIONS = Object.values(THEMES);
+const DIRECTIONS = THEMES;
 
 const darkest = (rig: Rig, normals: readonly Vec3[]): number =>
   Math.min(...normals.map((n) => exposure(rig, n)));
