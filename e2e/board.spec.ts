@@ -85,3 +85,23 @@ test('takes a placement with the board leaned and turned', async ({ page }) => {
   expect(await tiles(page)).toBeLessThan(before);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('keeps taking taps on the frontier as the board grows', async ({ page }) => {
+  // Marc, on a phone, 2026-08-29: "most of the clicks in the upper tiles don't
+  // work." `InstancedMesh` measures its bounding sphere on the FIRST ray it is
+  // ever given and caches it forever, and its raycast tests that sphere before
+  // any instance — so every cell the board grew after the first tap fell
+  // outside it and went quiet. A growing board is the whole game, so this walks
+  // one outward and insists every placement still lands.
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&tilt=35');
+  await expect(page.locator('canvas')).toBeVisible();
+  await page.waitForTimeout(600);
+
+  for (let i = 0; i < 8; i++) {
+    const before = await tiles(page);
+    await placeOneTile(page);
+    expect(await tiles(page), `placement ${i + 1} never landed`).toBeLessThan(before);
+  }
+  expect(errors, errors.join('\n')).toEqual([]);
+});

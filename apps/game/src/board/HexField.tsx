@@ -14,6 +14,7 @@ import {
   standOf,
   type GroundBatches,
 } from './ground';
+import { commitInstances } from './instances';
 import { Labels } from './Labels';
 import { jumpOf, type Leap } from './leap';
 import { hexPrism, thetaStartFor } from './prism';
@@ -123,9 +124,7 @@ export function HexField({ view, theme, orientation, relief, yaw, leap, onTap }:
         if (item.cell.dimmed) scratchColor.multiplyScalar(0.45);
         mesh.setColorAt(i, scratchColor);
       });
-      mesh.count = items.length;
-      mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
+      commitInstances(mesh, items.length);
     }
     const rm = ringMesh.current;
     if (rm !== null) {
@@ -139,9 +138,7 @@ export function HexField({ view, theme, orientation, relief, yaw, leap, onTap }:
         scratchColor.set(ring.colour);
         rm.setColorAt(i, scratchColor);
       });
-      rm.count = rings.length;
-      rm.instanceMatrix.needsUpdate = true;
-      if (rm.instanceColor !== null) rm.instanceColor.needsUpdate = true;
+      commitInstances(rm, rings.length);
     }
     invalidate();
   }, [groups, rings, theme, invalidate]);
@@ -163,7 +160,9 @@ export function HexField({ view, theme, orientation, relief, yaw, leap, onTap }:
       mesh.setMatrixAt(i, dummy.matrix);
     });
     if (any) {
-      mesh.instanceMatrix.needsUpdate = true;
+      // A leap moves instances, so the cached bounds go stale here too — a tap
+      // during a harvest is still a tap.
+      commitInstances(mesh, items.length);
       if (!done) invalidate();
     }
   });
