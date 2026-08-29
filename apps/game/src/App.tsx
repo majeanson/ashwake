@@ -19,7 +19,7 @@ import { Purse } from './screens/Purse';
 import { Settings } from './screens/Settings';
 import { createSession, useSession } from './shell/store';
 import { nextLesson, told } from './shell/teaching';
-import { walk } from './shell/walk';
+import { walk, walkToEnd } from './shell/walk';
 import { Confirming } from './ui/Confirming';
 import { DialogStack, useAnyDialogOpen, useDoor } from './ui/dialog';
 import { PanelMenu } from './ui/Panel';
@@ -110,7 +110,10 @@ function Game() {
       theme,
       strings: s,
     });
-    walk(made, Math.max(0, Math.trunc(dial(params, 'place', 0))));
+    // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so
+    // the end screen can be looked at without playing for ten minutes.
+    if (dial(params, 'end', 0) > 0) walkToEnd(made);
+    else walk(made, Math.max(0, Math.trunc(dial(params, 'place', 0))));
     return made;
     // One session per run: language and direction change what it SAYS and how
     // it looks, never what it IS, so neither may restart it.

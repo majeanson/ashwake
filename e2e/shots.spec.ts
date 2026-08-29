@@ -136,5 +136,13 @@ test('shoots the first minute', async ({ page }) => {
   await page.waitForTimeout(300);
   await writeFile(join(SHOTS, 's3-settings.png'), await page.screenshot());
 
+  // How a run ends, which is the screen the whole gate turns on.
+  await page.goto('/?seed=7&end=1');
+  await page.locator('[data-door="begin"]').click();
+  await clearCards(page);
+  await page.locator('[data-hud="end"]').waitFor({ state: 'visible' });
+  await page.waitForTimeout(300);
+  await writeFile(join(SHOTS, 's3-end.png'), await page.screenshot());
+
   expect(errors, errors.join('\n')).toEqual([]);
 });

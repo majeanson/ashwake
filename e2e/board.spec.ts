@@ -119,3 +119,26 @@ test('keeps taking taps on the frontier as the board grows', async ({ page }) =>
   }
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('finishes a run and starts another', async ({ page }) => {
+  // This is the shape of v2.0's gate. `DECISIONS.md` D1 turns on a stranger
+  // finishing a run and CHOOSING to start another, and a loop that cannot be
+  // completed by a script certainly cannot be completed by a person.
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&end=1');
+  await begin(page);
+  await clearCards(page);
+
+  const end = page.locator('[data-hud="end"]');
+  await expect(end).toBeVisible();
+  // The run said something about itself rather than only printing a number.
+  await expect(end).toContainText(/d/);
+
+  await page.locator('[data-action="new-run"]').click();
+  await clearCards(page);
+
+  // Back on a live board, with the run reset rather than the end screen hidden.
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+  await expect(end).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

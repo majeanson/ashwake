@@ -43,7 +43,18 @@ export function ActionBar({
 }: ActionBarProps) {
   return (
     <div className="controls">
-      <div className="hand" data-hud="hand" style={{ '--hand-cols': hud.draftWidth } as never}>
+      <div
+        className="hand"
+        data-hud="hand"
+        // The stash rides the same grid as the draft, as its last column —
+        // Ashwake 1 moved held cards INTO the hand on 2026-08-27 and it is
+        // half of why the board got a fifth of the screen back.
+        style={
+          {
+            '--hand-cols': hud.draftWidth + (hud.canHold ? hud.holdSlots : 0),
+          } as React.CSSProperties
+        }
+      >
         {hud.draft.map((card, i) => (
           <Tile
             key={card.id}

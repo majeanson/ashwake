@@ -38,7 +38,11 @@ export async function begin(page: Page): Promise<void> {
   const door = page.locator('[data-door="begin"]');
   await door.waitFor({ state: 'visible' });
   await door.click();
-  await page.locator('[data-hud="stats"]').waitFor({ state: 'visible' });
+  // Wait for the DOOR to leave rather than for a particular screen to arrive:
+  // BEGIN can land on a live board or, with `?end=1`, straight on the end
+  // screen, and a helper that insisted on the stat row would only ever be
+  // testing one of the two.
+  await door.waitFor({ state: 'detached' });
   await clearCards(page);
 }
 
