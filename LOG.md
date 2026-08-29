@@ -377,4 +377,83 @@ like — building it over a board nobody has chosen is the more expensive
 mistake. Every dial still takes a number, so `?light=0` is one keystroke away
 and `DECISIONS.md` still records the question as open.
 
-_(Answer written after the work.)_
+**Answer: yes, and the trio holds by construction rather than by discipline.**
+
+Not one sentence a player reads is written in a component. The manual's
+sections ARE lessons — `lessonLines` writes the paragraphs and `lessonDetail`
+fills the fold — a teaching card and a term card are the same component over
+the same `lessonDefine`, and `Prose` runs the core's `conceptPattern` over
+EVERY string the chrome renders, so a term is tappable in a card, on the end
+screen and in settings rather than only in the manual as in Ashwake 1. A test
+walks every lesson term in both languages and insists each one is offered,
+which is also what would catch an accent dropped from a French term. Four
+words WERE missing from the catalogue (DETAILS, HOW TO PLAY, RESUME, GOT IT);
+they are typed entries in both languages now, so a fifth omission is a type
+error rather than a hard-coded string.
+
+**The shared system came first and paid for itself immediately.** Ashwake 1's
+own duplication was the specification: Tabs implemented twice, Confirming once
+as a helper and four times by hand across seven controls, the label/value grid
+written twice, draft and held cards as two near-identical builders. Building
+screens first would have reproduced all of it. `resetShell()`'s hand-kept
+25-id list — which had already missed three — does not exist in this body; the
+dialog stack is a provider, and that was the one honest argument for React.
+
+**What the core did not have, and Stage 3 had to write: the moments.** The
+ledger and the words were there; nothing knew that a tile had just become ripe
+for the first time. `shell/teaching.ts` is Ashwake 1's shape — a priority list
+rather than a queue, so the first unmet-and-true moment fires and the rest stay
+armed; cards outrank toasts — and it is pure, so it is tested by handing it two
+snapshots.
+
+**`eslint-plugin-react-hooks` found two real bugs in the first minute it ran:**
+a prop mirrored into state through an effect in `Board`, which cost the pop a
+frame of latency on the one animation that has to feel immediate, and a stale
+`fly` closure behind `useImperativeHandle`. Its purity rules are scoped OFF
+for `board/` with an argument — `useFrame` is not render, and the whole board
+writes three.js objects in place precisely so React never re-renders for a
+gesture — and LOUD everywhere else, which is where both bugs were.
+
+**Four things a screenshot found that no test could**: the camera controls were
+dropped in the rewire (restored as Ashwake 1's FIT⇄HERE toggle rather than +/−,
+because a phone already has a pinch); the stat row rendered under the board;
+`index.html` hard-coded `#0a0806` over every direction (it stays as the PRE-JS
+paint, the one literal colour there is a reason for, with the resolved
+direction written over it inline at boot); and the manual's tabs were crammed
+beside the title and BACK, pushing the one control a player needs to leave with
+off the screen.
+
+**The loop closes.** The fixed hand only placed, so it stalled at 22
+placements with the run still open and the end screen — the screen the whole
+gate turns on — could not be reached without playing for ten minutes. It
+harvests when it cannot place now, which plays a whole deterministic run: seed
+7 ends at 57 placements and 781 points, each with its own epitaph. `?end=1`
+plays one, and `finishes a run and starts another` walks the shape of
+`DECISIONS.md` D1 in a browser, because a loop a script cannot complete
+certainly cannot be completed by a person.
+
+**S2d's remainder landed with it.** Momentum on the drag (measured over the
+last few moves, decayed exponentially and INTEGRATED over the step so a slow
+phone and a fast one land the board in the same place); the beacons breathing
+on a floored sine and asking for no frames when there are no beacons; embers
+off spent ground, deterministic per hex so a board looks the same twice; and
+the landmark PROPS — a built thing standing on each destination, catching the
+key light, with `LANDMARK_GLYPH` still the authority on what each one MEANS.
+The props spent an hour correct in memory and absent on screen: rendering is
+on demand, and writing instances is not the same as asking for a frame.
+
+**Two case collisions on one night.** `pop.ts` beside `Pop.tsx` and `props.ts`
+beside `Props.tsx` differ only in case, which Windows cannot tell apart. The
+convention that avoids it is now explicit: a pure board module is named for
+what it DESCRIBES (`ambient`, `relief`, `leap`, `landmarks`), a component for
+what it DRAWS.
+
+**Verified:** 800 tests / 51 files; 25 Playwright tests at 390×844 including a
+full run finished and restarted; typecheck, lint, format, build clean; golden
+sim byte-identical. Bundle 384KB gzip + 5KB CSS.
+
+**Not played on a phone.** Every screen in this session was seen through
+Playwright's eyes, which is exactly what `CLAUDE.md` says is not the gate.
+
+**Next:** Marc plays the first minute; S4 — the shell, persistence and the PWA;
+the screen audit harness beside it.

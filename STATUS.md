@@ -4,7 +4,35 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29 — Stage 2c: the board earns its third dimension.**
+Last checkpoint: **2026-08-29, last — Stage 3 + S2d: a first minute exists, and
+the loop closes.** Front door, stat row, hand, action bar, purse drawer, camera
+cluster (FIT⇄HERE), teaching cards, term cards, manual, settings and end
+screen — over a board that mounts once and stays mounted. **A run can be
+started, played, finished and started again**, and `e2e/board.spec.ts` walks
+that loop, which is the shape of v2.0's gate. Not one sentence is written in a
+component: the manual's sections ARE lessons, a teaching card and a term card
+are one component over `lessonDefine`, and `Prose` runs the core's
+`conceptPattern` over every string so a term is tappable everywhere rather than
+only in the manual. Four missing words were added to the catalogue in both
+languages. The shared system came first — Panel/Door, Card, Tabs, Fold,
+FactGrid, Tile, TipRows, Figure, Confirming — because Ashwake 1's own
+duplication was the spec; `resetShell()`'s 25-id list does not exist here.
+`shell/teaching.ts` is the one thing the core could not give: the MOMENTS, as a
+priority list. S2d finished alongside: drag momentum (integrated so frame rate
+cannot change where the board lands), beacons breathing on a floored sine,
+embers off spent ground, and **landmark PROPS** standing on each destination.
+**Findings:** `eslint-plugin-react-hooks` caught a prop mirrored into state
+through an effect (a frame of latency on the pop) and a stale callback behind
+`useImperativeHandle` — its purity rules are scoped off for `board/` with an
+argument and loud elsewhere; `index.html` hard-coded a colour over every
+direction; the props were correct in memory and absent on screen because
+on-demand rendering needs a frame asked for. **Verified:** 800 tests / 51
+files; 25 Playwright at 390×844; typecheck, lint, format, build clean; golden
+sim byte-identical; bundle 384KB gzip + 5KB CSS. **Look dials are ON by working
+default** (`light=1 materials=1 art=1 relief=0.35`), changeable by query
+string. **NOT played on a phone.**
+
+Previous checkpoint: **2026-08-29 — Stage 2c: the board earns its third dimension.**
 The lighting is DATA (`theme/rig.ts`), normalised so a face pointing up is
 exposed at exactly 1 — so **a hex top at full torch renders exactly the colour
 the direction authored**, and `contrast.test.ts` became literally true of a

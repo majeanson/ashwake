@@ -12,6 +12,7 @@ import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } fro
 import { commitInstances } from './instances';
 import { Labels } from './Labels';
 import { thetaStartFor } from './prism';
+import { Props } from './Props';
 import { useBatchResources } from './resources';
 import { ringsOf } from './rings';
 import { TEXTURE_PX, type SurfaceTextures } from './surfaces';
@@ -238,6 +239,7 @@ export function HexField({
         <ringGeometry args={[HEX_RADIUS - 0.16, HEX_RADIUS, 6, 1, thetaStart + Math.PI / 2]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
+      <Props cells={view.cells} theme={theme} layout={layout} relief={relief} />
       <Labels cells={view.cells} theme={theme} layout={layout} relief={relief} yaw={yaw} />
     </group>
   );

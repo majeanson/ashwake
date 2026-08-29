@@ -91,7 +91,31 @@ being liked.** That is S5, and it is a real session, not a fetch.
 
 ---
 
-## 3. Ready to build, nobody blocked — the overnight goal
+## 3. What the overnight run did, and what it left
+
+**Done 2026-08-29 (`LOG.md` Sessions 5–6):** S2c's materials and lit budget,
+S2d's motion and landmark props, and S3's whole chrome. **A run can now be
+started from a front door, played, finished, and started again** — the shape
+of v2.0's gate, walked by a Playwright test.
+
+**What is left of the original goal:**
+
+- **S4 — the shell.** Persistence, the History router and its two allowed
+  reloads, the keeper's alive/dropped guards, save/resume, three world slots,
+  the daily, `?seed=` links, PWA, backup/restore. Nothing survives a reload
+  today.
+- **The screen audit harness**, beside S4 rather than after it. `?taught=1`
+  already exists and is the first of the device histories it needs.
+- **The deferred screens**, reviewed rather than ported by reflex: shop, hall
+  of fame, atlas, diary, the daily's own surfaces.
+- **Known rough edges**, all cheap: the colour lens is wired to nothing
+  (`onLens` is a no-op), the purse's spend actions dispatch but are untested,
+  and the end screen shows four numbers where Ashwake 1 showed a payout
+  breakdown and an arc chart.
+
+The prompt below still stands for the rest.
+
+## 3b. The overnight goal, as a prompt
 
 The rest of this file is the prompt. It is deliberately one GOAL with a
 definition of done rather than a task list, because the interesting decisions

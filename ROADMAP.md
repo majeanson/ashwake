@@ -54,12 +54,19 @@ sessions; S2 and S3 are the fat ones.
       and does every direction still pass? Yes, once the samples split into
       where a label sits and where a mark can land — and the shaded-side margin
       is thin enough to be Marc's, by looking._
-- [ ] **S2d — the board moves, and things stand in the world.** Tile motion,
-      camera feel, ambient life, and landmark props: a built thing per landmark
-      kind standing on the hex, with `LANDMARK_GLYPH` still the authority on
-      what each one MEANS. _Question: does motion make the board easier to
-      read, or only busier?_
-- [ ] **S3 — the chrome, in React, bilingual from the first component.** Components
+- [x] **S2d — the board moves, and things stand in the world.** Shipped
+      2026-08-29 (`LOG.md` Sessions 5–6): the arcade pop and its cascade, drag
+      momentum, beacons breathing, embers off spent ground, and a built prop
+      standing on every destination with `LANDMARK_GLYPH` still the authority
+      on meaning. _Question: does motion make the board easier to read, or only
+      busier? Marc's, by looking — the dials are all live._
+- [x] **S3 — the chrome, in React, bilingual from the first component.**
+      Shipped 2026-08-29 (`LOG.md` Session 6): the whole first minute, over a
+      shared system built before any screen. A run can be started, played,
+      finished and started again. _Question: does the manual / card / term trio
+      still say one sentence one way? Yes, by construction — they are one
+      component over one `lessonDefine`, and `Prose` inks every string the
+      chrome renders._ Original plan, kept: Components
       over `HudView`/`SpendView`/`toBoardView`/`LESSONS`: front door, HUD, one
       hand + one action bar, teaching cards with figures, the `?` manual, shop,
       end screen, settings. The DRY pass lives here: one `Panel`, one `Card`,

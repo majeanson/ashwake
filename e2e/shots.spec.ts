@@ -43,6 +43,12 @@ const ANGLES = [
   ['s2c-materials-relief', 'tilt=35&light=1&materials=1&relief=0.35'],
   ['s2c-materials-art', 'tilt=35&light=1&materials=1&art=1'],
   ['s2c-materials-art-relief', 'tilt=35&light=1&materials=1&art=1&relief=0.35'],
+  // Deep enough for destinations to be standing on the board — the props are
+  // the point of the third dimension and cannot be seen on an opening board.
+  // Torchlit, because a headless browser reports a light preference and AUTO
+  // gives it daylight — and a lit destination on a pale board is a pale thing
+  // on a pale thing. The props are meant to glow.
+  ['s2d-props', 'theme=torchlit&tilt=35&light=1&materials=1&art=1&relief=0.35&taught=1'],
 ] as const;
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -50,7 +56,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 for (const [name, query] of ANGLES) {
   test(`draws ${name}`, async ({ page }) => {
     const errors = watchErrors(page);
-    await page.goto(`/?seed=7&place=12&${query}`);
+    await page.goto(`/?seed=7&place=${name === 's2d-props' ? 45 : 12}&${query}`);
     await expect(page.locator('canvas')).toBeVisible();
     await begin(page);
     // The board is drawn on demand, so give the first frame and the font time
