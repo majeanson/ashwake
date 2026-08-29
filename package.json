@@ -9,7 +9,7 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "deploy": "wrangler deploy",
+    "deploy:prod": "wrangler deploy",
     "verify:deploy": "tsx scripts/verify-deploy.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && pnpm -r typecheck",
     "lint": "eslint .",
