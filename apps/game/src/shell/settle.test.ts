@@ -183,3 +183,56 @@ describe('the survey', () => {
     expect(settle(settling(null)).goals).toEqual([]);
   });
 });
+
+/**
+ * THE SEED GUARD.
+ *
+ * A run may only ever be merged into the world it was PLAYED on. Ground
+ * unioned from a foreign geography is **unremovable** — the world remembers
+ * hexes its own seed never generated, and no later run can un-see them.
+ *
+ * Two things can produce a mismatch, and both are live: a `?seed=` link plays
+ * somebody else's world on this device — which is exactly what SHARE hands out
+ * — and the shed ladder can drop a world while leaving its run behind, so the
+ * next boot mints a fresh world and resumes a run that no longer matches it.
+ * That second one is the bug that put this guard in Ashwake 1.
+ */
+describe('a run played on somebody else’s seed', () => {
+  const snap = finished();
+  const mine = newWorld(snap.state.rootSeed + 1);
+
+  const settling = {
+    state: snap.state,
+    hud: snap.hud,
+    slot: 1 as const,
+    world: mine,
+    records: {},
+    timeline: [],
+    progress: EMPTY_PROGRESS,
+    at: 1,
+  };
+
+  it('leaves my world exactly as it found it', () => {
+    const after = settle(settling);
+    // The very object, so identity itself says nothing happened.
+    expect(after.world).toBe(mine);
+    expect(after.world.revealed).toHaveLength(0);
+    expect(after.world.runs).toBe(0);
+  });
+
+  it('banks nothing on the shelf of bests either', () => {
+    // A shared seed is not one of this device's own runs, and a score on a
+    // board somebody else chose does not belong beside them.
+    expect(settle(settling).records).toEqual({});
+  });
+
+  it('writes no diary row', () => {
+    expect(settle(settling).timeline).toHaveLength(0);
+  });
+
+  it('still folds a run played on its OWN world', () => {
+    const own = { ...settling, world: newWorld(snap.state.rootSeed) };
+    expect(settle(own).world.runs).toBe(1);
+    expect(settle(own).world.revealed.length).toBeGreaterThan(0);
+  });
+});

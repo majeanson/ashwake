@@ -228,11 +228,26 @@ function Game() {
     // left, not re-simulated — a replayed run is a run that can disagree with
     // the one that was played. A shot query means a fresh board every time.
     const scripted = dial(params, 'place', 0) > 0 || dial(params, 'end', 0) > 0;
+    /*
+     * A DETOUR: somebody else's world, opened from a shared link.
+     *
+     * `?seed=` is what SHARE puts in the URL, so this is the ordinary way a
+     * stranger meets the game. The run is real and it is scored; what it must
+     * not do is touch the device's OWN world — see the seed guard in
+     * `settle`, and `detour` here, which is what stops a shrine claiming an
+     * unlock for a world this run was never played on.
+     */
+    const asked = Number(params.get('seed') ?? '') || null;
+    const kept = scripted ? null : readRun(slot);
+    const mine = readWorld(slot)?.worldSeed ?? null;
+    const detour = asked !== null && mine !== null && asked !== mine;
+
     const made = createSession({
-      seed: Number(params.get('seed') ?? '1') || 1,
+      seed: asked ?? mine ?? 1,
+      detour,
       theme,
       strings: s,
-      resume: scripted ? null : readRun(slot),
+      resume: detour ? null : kept,
       /*
        * What crossing would carry, priced at the moment a fully-awake world's
        * shrine is reached — so the card's offer and the amount banked are the
@@ -530,10 +545,9 @@ ${s.view.harvest.firstPopWhen}`,
             state: now.state,
             theme,
             strings: s,
-            // No detour and no crossing in this body yet — both are S4's
-            // remainder. Stated rather than defaulted, so the day they exist
-            // the compiler asks here.
-            detour: false,
+            // The same fact the session was built with — a run on somebody
+            // else's seed has no ledger to describe.
+            detour: session.detour,
             shrinesClaimed: now.state.log.questsDone,
             ...(memory === undefined ? {} : { memory }),
           },

@@ -85,6 +85,13 @@ export type Said = {
 export type Session = {
   readonly theme: Theme;
   readonly strings: Strings;
+  /**
+   * True when this run is on a seed that is not the device world's — a
+   * `?seed=` link. Exposed rather than recomputed by every caller, so the
+   * board's tap and the session's own receipts cannot disagree about whether
+   * a player is standing in their own world.
+   */
+  readonly detour: boolean;
   readonly get: () => Snapshot;
   readonly subscribe: (listener: () => void) => () => void;
   readonly dispatch: (action: Action) => void;
@@ -127,6 +134,8 @@ export function createSession(opts: {
    *  the session only reports. */
   readonly perkAt?: (hex: HexKey) => PerkId | null;
   readonly wornPerk?: (perk: PerkId) => boolean;
+  /** True when this run is on a seed that is not the device world's. */
+  readonly detour?: boolean;
   /** What crossing would carry, priced at the moment a fully-awake world's
    *  shrine is reached. Absent means there is nowhere onward. */
   readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
@@ -193,10 +202,12 @@ export function createSession(opts: {
       claimsBetween(before, after, {
         theme: opts.theme,
         strings: opts.strings,
-        // No detour in this body yet — every run is on the device's own world.
-        // Stated rather than defaulted, so the day shared seeds arrive the
-        // compiler asks here.
-        detour: false,
+        // A DETOUR is a run on a seed that is not this world's — a `?seed=`
+        // link, which is exactly what SHARE hands out. It has no ledger to
+        // narrate, so a shrine says what shrines ARE rather than what the
+        // home world would have unlocked, and `settle` refuses to fold it in
+        // at all (the seed guard).
+        detour: opts.detour === true,
         ...(opts.perkAt === undefined ? {} : { perkAt: opts.perkAt }),
         ...(opts.wornPerk === undefined ? {} : { worn: opts.wornPerk }),
         ...(opts.crossingCarries === undefined ? {} : { crossingCarries: opts.crossingCarries }),
@@ -230,9 +241,12 @@ export function createSession(opts: {
     for (const listener of listeners) listener();
   }
 
+  const detour = opts.detour === true;
+
   return {
     theme: opts.theme,
     strings: opts.strings,
+    detour,
     get: () => snapshot,
     subscribe(listener) {
       listeners.add(listener);

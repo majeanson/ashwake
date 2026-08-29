@@ -73,6 +73,37 @@ export type Settling = {
  */
 export function settle(now: Settling): Settled {
   const before = now.world ?? newWorld(now.state.rootSeed);
+
+  /*
+   * THE SEED GUARD (Ashwake 1, 2026-08-20; missing here until 2026-08-29).
+   *
+   * A run may only ever be merged into the world it was PLAYED on. Ground
+   * unioned from a foreign geography is **unremovable** afterwards — the
+   * world remembers hexes that its own seed never generated, and no later
+   * run can un-see them.
+   *
+   * Nothing *should* be able to produce a mismatch, and two things can. A
+   * `?seed=` link plays somebody else's world on this device, which is
+   * exactly what SHARE hands out. And the quota ladder can shed a world while
+   * leaving its run, so the next boot mints a fresh world and resumes a run
+   * that no longer matches it — the precise bug that put this guard in
+   * Ashwake 1.
+   *
+   * A mismatched run is a DETOUR: it still ends, it still shows its score,
+   * and it leaves the device's own world exactly as it found it.
+   */
+  const detour = now.state.rootSeed !== before.worldSeed;
+  if (detour) {
+    return {
+      // Untouched. Not `before` rebuilt — the very object, so a caller that
+      // compares by identity can see that nothing happened.
+      world: before,
+      records: now.records,
+      timeline: now.timeline,
+      goals: [],
+    };
+  }
+
   const walked = rememberRun(before, now.state);
   const records = recordRun(now.records, now.state);
 
