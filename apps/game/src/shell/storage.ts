@@ -1,4 +1,10 @@
-import { decodeDailyBook, encodeDailyBook, type DailyBook } from '@meta/daily';
+import {
+  decodeDailyBook,
+  decodeDailyRun,
+  encodeDailyBook,
+  encodeDailyRun,
+  type DailyBook,
+} from '@meta/daily';
 import { decodeFeatures, encodeFeatures, type FeatureSet } from '@meta/features';
 import { decodeProgress, encodeProgress, EMPTY_PROGRESS, type Progress } from '@meta/progress';
 import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
@@ -39,6 +45,16 @@ const DEVICE = {
   records: `${NS}.records.v1`,
   timeline: `${NS}.timeline.v1`,
   daily: `${NS}.daily.v1`,
+  /**
+   * The daily board put down mid-run — ONE key, whichever date it belongs to.
+   *
+   * One key rather than one per date because the guard is the whole rule: a
+   * board is handed back only for the date it was played on, and yesterday's
+   * abandoned expedition opening on today's shared world is the single thing a
+   * daily may never do. `dailyRunFor` is where that guard lives; this is only
+   * where the string sits.
+   */
+  dailyRun: `${NS}.daily.run.v1`,
   slot: `${NS}.slot.v1`,
   /** The teaching ledger is a DEVICE fact: you learn what RIPE means once. */
   progress: `${NS}.progress.v1`,
@@ -133,6 +149,32 @@ export function activeSlot(): Slot {
 }
 
 export const setActiveSlot = (slot: Slot): void => write(DEVICE.slot, String(slot));
+
+/* ---- the daily ------------------------------------------------------------ */
+
+/**
+ * Today, as the LOCAL date the daily is named after.
+ *
+ * Local rather than UTC because the ritual is "a new one when I wake up"
+ * (Marc's Wordle rule) — a player in Montréal must not get tomorrow's board at
+ * 8pm. `Date` is banned in the core and belongs here for exactly this reason:
+ * the shell samples the clock, the core does the arithmetic.
+ */
+export function localToday(now: Date = new Date()): string {
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+/** The daily board kept for `date`, or null — the date guard is the core's. */
+export function readDailyRun(date: string): GameState | null {
+  const kept = decodeDailyRun(read(DEVICE.dailyRun));
+  return kept === null || kept.date !== date ? null : decodeRun(kept.run);
+}
+
+export const writeDailyRun = (date: string, state: GameState): void =>
+  write(DEVICE.dailyRun, encodeDailyRun({ date, run: encodeRun(state) }));
+
+export const clearDailyRun = (): void => drop(DEVICE.dailyRun);
 
 /* ---- one world ----------------------------------------------------------- */
 

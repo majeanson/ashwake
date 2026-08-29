@@ -1,8 +1,12 @@
+import type { Progress } from '@meta/progress';
+import type { Theme } from '@theme/tokens';
 import { arcNote, type HudView } from '@view/view';
 import type { LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Prose } from '../ui/Prose';
+import { Payout } from './Payout';
+import { Shop } from './Shop';
 import { statLabel } from './Hud';
 
 /**
@@ -26,12 +30,28 @@ import { statLabel } from './Hud';
 
 export type EndScreenProps = {
   readonly hud: HudView;
+  /** Every scoring harvest's points, in order — the run's shape. */
+  readonly harvests: readonly number[];
   readonly s: Strings;
+  readonly theme: Theme;
+  readonly progress: Progress;
   readonly onNewRun: () => void;
   readonly onTerm: (id: LessonId) => void;
+  readonly onProgress: (next: (was: Progress) => Progress) => void;
+  readonly onMore: () => void;
 };
 
-export function EndScreen({ hud, s, onNewRun, onTerm }: EndScreenProps) {
+export function EndScreen({
+  hud,
+  harvests,
+  s,
+  theme,
+  progress,
+  onNewRun,
+  onTerm,
+  onProgress,
+  onMore,
+}: EndScreenProps) {
   const summary = hud.summary;
   const arc = summary === null ? null : arcNote(summary, s);
 
@@ -69,6 +89,22 @@ export function EndScreen({ hud, s, onNewRun, onTerm }: EndScreenProps) {
           <Prose text={arc} s={s} onTerm={onTerm} />
         </p>
       )}
+
+      {/* Why the number was what it was, one tap down — see `Payout`. */}
+      {summary !== null && <Payout summary={summary} harvests={harvests} s={s} />}
+
+      {/* The relics this run earned are spent HERE, on the screen where they
+          were earned — Ashwake 1's ruling, and the whole of the roguelite
+          loop: a run that ends on a purchase is a run that ends pointing at
+          the next one. The shop is the same component the shop panel is, with
+          its own back button omitted because this is not a panel. */}
+      <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
+
+      <nav className="panel-menu">
+        <button type="button" data-door="more" onClick={onMore}>
+          {s.ui.more}
+        </button>
+      </nav>
     </div>
   );
 }

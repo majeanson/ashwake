@@ -1,0 +1,6 @@
+# Ashwake — the game is the page. There is nothing else here to index, and
+# nothing to disallow: the style gallery Ashwake 1 shipped has not been
+# rebuilt in this body. This file exists so that a crawler asking gets an
+# answer rather than a 404 in the log.
+User-agent: *
+Allow: /

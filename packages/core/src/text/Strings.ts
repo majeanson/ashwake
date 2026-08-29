@@ -1,4 +1,4 @@
-import type { Colour } from '@content/tuning';
+import type { Colour, PointSource, Rarity } from '@content/tuning';
 import type { Locale } from '@content/locale';
 
 /**
@@ -323,6 +323,50 @@ export type Strings = {
     readonly resume: string;
     /** What a card is dismissed with, once it has been read. */
     readonly gotIt: string;
+    /** The heading over everything that can destroy something. */
+    readonly thisDevice: string;
+    /** Said where nothing can be kept — a private window, storage blocked. */
+    readonly noStorage: string;
+    readonly backUp: string;
+    readonly restore: string;
+    readonly restoreArmed: string;
+    readonly resetAll: string;
+    readonly resetAllArmed: string;
+    /** The three, as a heading. Distinct from `newWorld`, which is the
+     *  destructive action inside that panel rather than the panel itself. */
+    readonly worlds: string;
+    /** One world of the three, by number. */
+    readonly worldN: (n: number) => string;
+    /** A slot nobody has played yet. */
+    readonly emptyWorld: string;
+    /** A perk being worn, and the button that puts one on. */
+    readonly worn: string;
+    readonly wear: string;
+    /** An upgrade at the top of its ladder — a rung you can see the end of. */
+    readonly maxed: string;
     readonly privacy: string;
+    /** A new build is already downloaded; the tap is the reload. */
+    readonly newVersion: string;
+  };
+
+  /**
+   * Where a run's points came from, named (D4).
+   *
+   * Ashwake 1 wrote these seven words straight into its end screen in English,
+   * which is exactly the mistake this block exists to make impossible: the
+   * engine counts, the catalogue names, and a language missing one of these is
+   * a type error rather than an English word on a French screen.
+   */
+  readonly payout: {
+    readonly heading: string;
+    readonly byColour: string;
+    readonly byRarity: string;
+    readonly bySource: string;
+    readonly rarity: Readonly<Record<Rarity, string>>;
+    readonly source: Readonly<Record<PointSource, string>>;
+    /** Points paid for claiming sites outright, which no pop split contains. */
+    readonly sites: string;
+    /** The shape of the run's harvests, over the run. */
+    readonly arc: string;
   };
 };

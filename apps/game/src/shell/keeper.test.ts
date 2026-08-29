@@ -3,7 +3,7 @@ import { newRun } from '@engine/reduce';
 import { TUNING } from '@content/tuning';
 import { newWorld } from '@meta/world';
 import { keeperFor } from './keeper';
-import { clearEverything, readRun, readWorld } from './storage';
+import { clearEverything, readDailyRun, readRun, readWorld, SLOTS } from './storage';
 
 /**
  * **The relic farm, made structurally impossible.**
@@ -105,5 +105,34 @@ describe('a keeper', () => {
     expect(readWorld(1)?.worldSeed).toBe(11);
     expect(readWorld(2)?.worldSeed).toBe(22);
     expect(readWorld(3)).toBeNull();
+  });
+});
+
+/**
+ * The daily is a place, not a fourth world (Stage 4, 2026-08-29).
+ *
+ * The rule it has to keep is small and the bug it prevents is not: a daily
+ * board is every phone's board, so there is no ground "this world" walked and
+ * nothing about it may reach a world's memory. The keeper is where that holds,
+ * because the keeper is the only thing that writes.
+ */
+describe('a daily keeper', () => {
+  it('writes the board under the date, not under a slot', () => {
+    const keeper = keeperFor({ daily: '2026-08-29' });
+    const state = newRun(1, TUNING);
+    keeper.saveRun(state);
+    keeper.flush();
+
+    expect(readDailyRun('2026-08-29')).not.toBeNull();
+    // And the same board is not offered for any other date.
+    expect(readDailyRun('2026-08-30')).toBeNull();
+    for (const slot of SLOTS) expect(readRun(slot)).toBeNull();
+  });
+
+  it('refuses to write a world at all', () => {
+    const keeper = keeperFor({ daily: '2026-08-29' });
+    keeper.saveWorld(newWorld(7));
+    keeper.flush();
+    for (const slot of SLOTS) expect(readWorld(slot)).toBeNull();
   });
 });

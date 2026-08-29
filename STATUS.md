@@ -4,7 +4,32 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — Stage 3 + S2d: a first minute exists, and
+Last checkpoint: **2026-08-29, last — Stage 4 (most of it): a run counts, and
+the game has rooms again.** `shell/settle.ts` is what makes a finished run
+mean something: the ground walked folds into the world, the shelf of bests
+takes it, and the diary gets a row — banked ONCE, with the state object as the
+identity. On top of that: the SHOP (upgrades bought, perks worn) hosted both as
+a panel and on the end screen where the relics were earned, the HALL OF FAME
+(diary · daily · totals, every row a disclosure), MORE (places to go, and THIS
+DEVICE with backup / restore / reset behind its own heading), the three WORLDS,
+and the DAILY. The end screen finally answers "why was the number what it was":
+a folded PAYOUT breakdown by colour, rarity and source — bars measured against
+the largest row, not the total — over an ARC chart of every harvest in order.
+**The daily is a place, not a fourth world:** `Place = Slot | { daily }`, and
+the rule that it never touches a world's memory or the record book lives inside
+the KEEPER, because the keeper is the only thing that writes. **Findings:**
+`backup.ts` still filtered on `tiles.` and would have written an EMPTY backup,
+then wiped a device on restore; the front door and the end screen sat ABOVE the
+panels at `z-index: 40`, so HOW TO PLAY had been opening the manual underneath
+the door since Stage 3 — scenes now sit below panels and go `inert` while one
+is open; `.end`'s flex children shrank content out of their own boxes and a
+paragraph swallowed the taps meant for a button; a crashed vitest worker
+reported GREEN with its file silently missing (runner capped at eight); and the
+colour lens was dead code the shell passed `null` to. **Verified:** 823 tests /
+54 files; typecheck, lint, format, build clean; golden sim byte-identical.
+**Still not played on a phone.**
+
+Previous checkpoint: **2026-08-29 — Stage 3 + S2d: a first minute exists, and
 the loop closes.** Front door, stat row, hand, action bar, purse drawer, camera
 cluster (FIT⇄HERE), teaching cards, term cards, manual, settings and end
 screen — over a board that mounts once and stays mounted. **A run can be
@@ -153,7 +178,18 @@ playable. Nothing has been seen on a phone.**
 
 ## Not started
 
-Stages 3–6 of `ROADMAP.md`: the React chrome, the shell and PWA, the look, the
-playtest console and the two phone sessions. `theme/apply.ts`
-(sets CSS variables on `document`) was deliberately left in Ashwake 1; the app
-will grow its own edge for it in Stage 3.
+- **S4's remainder:** the PWA and its service worker, `?seed=` share links, and
+  the History-API router. Everything else in S4 has landed — store, keeper,
+  save/resume, three world slots, the daily, backup/restore.
+- **S5 — the look.** The parked "settlement" reading of the colours (FARM ·
+  MARKET · QUARRY · ROADS), built as a fourth direction beside the three that
+  ship, shot, and picked on a phone.
+- **S6 — the console, Session A on v2, then the stranger.** `/playtest` with
+  COPY SHEET; Session A re-run against the deployed v2; fixes; Session C.
+- **The screen audit harness** (`pnpm audit:screens`), owed since S3 and
+  cheapest built beside the screens rather than after them.
+
+Marc's own list, which no amount of building here clears: set
+`CLOUDFLARE_API_TOKEN` with `--body` (the interactive prompt took an EOF and
+the secret is EMPTY, so the deploy job cannot run); pick the look numbers on a
+phone; read the French; then Session A, then the stranger.

@@ -98,20 +98,29 @@ S2d's motion and landmark props, and S3's whole chrome. **A run can now be
 started from a front door, played, finished, and started again** — the shape
 of v2.0's gate, walked by a Playwright test.
 
+**Done 2026-08-29, later (`LOG.md` Session 7):** most of S4. A finished run is
+BANKED — `shell/settle.ts` folds the ground into the world, keeps the shelf of
+bests and writes the diary row, once. The rooms are back: SHOP (also hosted on
+the end screen, where the relics were earned), HALL OF FAME, MORE, the three
+WORLDS, and the DAILY as a `Place` rather than a fourth world. The end screen
+gained its payout breakdown and arc chart. The PWA landed: manifest, icons,
+stamped service worker, and an update the player TAPS rather than one taken out
+from under them. The colour lens is wired and pinned. `verify-deploy` now
+checks the install surface instead of owing it.
+
 **What is left of the original goal:**
 
-- **S4 — the shell.** Persistence, the History router and its two allowed
-  reloads, the keeper's alive/dropped guards, save/resume, three world slots,
-  the daily, `?seed=` links, PWA, backup/restore. Nothing survives a reload
-  today.
-- **The screen audit harness**, beside S4 rather than after it. `?taught=1`
-  already exists and is the first of the device histories it needs.
-- **The deferred screens**, reviewed rather than ported by reflex: shop, hall
-  of fame, atlas, diary, the daily's own surfaces.
-- **Known rough edges**, all cheap: the colour lens is wired to nothing
-  (`onLens` is a no-op), the purse's spend actions dispatch but are untested,
-  and the end screen shows four numbers where Ashwake 1 showed a payout
-  breakdown and an arc chart.
+- **S4's remainder:** the History-API router, and whether it is wanted at all.
+  `?seed=` links already work (`App.tsx` reads the seed at session build), and
+  every screen is a state change by ruling — so a router would buy BACK on a
+  panel and a shareable deep link, and cost the one invariant that has held
+  since Stage 2. Decide by looking, not by porting.
+- **The screen audit harness**, still owed. `?taught=1` exists and is the first
+  of the device histories it needs; the others (five runs in, three hundred
+  runs in) are now buildable, because persistence exists.
+- **The purse's spend actions** dispatch but nothing tests them.
+- **The atlas**, if it earns its place: it is on the "review rather than port"
+  list and no stranger has ever seen one.
 
 The prompt below still stands for the rest.
 

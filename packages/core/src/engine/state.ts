@@ -1,4 +1,4 @@
-import type { Colour, Tuning } from '@content/tuning';
+import type { Colour, PointSource, Rarity, Tuning } from '@content/tuning';
 import type { HexKey } from './hex';
 import type { RngStreams } from './rng';
 
@@ -70,7 +70,7 @@ export type LandmarkReward = 'cache' | 'site' | 'territory' | 'shrine' | 'find';
  * every match it is part of counts double, for both sides. Words players
  * already own (Marc's direction, in the register torchlit speaks).
  */
-export type Rarity = 'common' | 'magic' | 'unique';
+export type { Rarity } from '@content/tuning';
 
 export type Tile = {
   /** Unique per instance — for renderer keys and for reading action logs. */
@@ -202,8 +202,7 @@ export type PointsSplit = {
  *   distance  what cashing it far from home multiplied it by
  *   bounty    what a collected bounty multiplied it by
  */
-export type PointSource =
-  'matches' | 'power' | 'rare' | 'native' | 'pocket' | 'distance' | 'bounty';
+export type { PointSource } from '@content/tuning';
 
 export type GameState = {
   readonly version: 1;

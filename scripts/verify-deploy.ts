@@ -134,10 +134,46 @@ async function checkAssets(base: string): Promise<void> {
   await servesAFile(base, '/fonts/cinzel.ttf');
   console.log('ok  the board font serves 200 as a file');
 
-  // OWED. The install surface (`/manifest.webmanifest`, `/sw.js`, the icons,
-  // the social preview) arrives with the PWA in Stage 4, and the art manifest
-  // with the look in Stage 5. Ashwake 1 verifies both; this body has neither
-  // to verify yet, and the day it does, they are checked here, not trusted.
+  /*
+   * The install surface (Stage 4, 2026-08-29).
+   *
+   * Checked rather than trusted, because every one of these fails SILENTLY.
+   * A missing manifest or icon just means the install prompt never appears —
+   * no error, no log line, and nobody notices until someone asks why the game
+   * cannot be added to a home screen. `/sw.js` is the worst of them: served
+   * as the SPA fallback it would be an HTML file registered as a script, and
+   * `servesAFile` is written to catch exactly that.
+   */
+  for (const path of [
+    '/manifest.webmanifest',
+    '/sw.js',
+    '/icon.svg',
+    '/icon-180.png',
+    '/icon-192.png',
+    '/icon-512.png',
+    '/icon-maskable-192.png',
+    '/icon-maskable-512.png',
+    '/og-image.png',
+  ]) {
+    await servesAFile(base, path);
+  }
+  console.log('ok  the install surface serves: manifest, worker, icons, preview');
+
+  /*
+   * And the worker is STAMPED. The build asserts both substitutions, but the
+   * build is not what a phone downloads — a stale edge copy of an older
+   * worker would still be a cache name that never changes, which is a phone
+   * that never sees another build. The one check that matters lives here,
+   * against the file that is actually being served.
+   */
+  const worker = await get(base, `/sw.js?t=${Date.now()}`);
+  if (worker.status !== 200) throw new Error(`GET /sw.js -> ${worker.status}`);
+  if (worker.body.includes('__BUILD_SHA__') || worker.body.includes('__PRECACHE_ASSETS__')) {
+    throw new Error('the live service worker is unstamped: its cache name would never change');
+  }
+  console.log('ok  the live service worker is stamped and its precache filled');
+
+  // OWED: the art manifest arrives with the look in Stage 5.
 }
 
 /**

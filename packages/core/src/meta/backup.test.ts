@@ -23,8 +23,8 @@ describe('building one', () => {
   it('takes this game’s keys and leaves everything else alone', () => {
     const backup = buildBackup(
       {
-        'tiles.world.v1': '{"worldSeed":7}',
-        'tiles.progress.v1': '{"relics":412}',
+        'ashwake.world.1.v1': '{"worldSeed":7}',
+        'ashwake.progress.v1': '{"relics":412}',
         // Somebody else's storage on the same origin. A save button that
         // quietly copied this into a file the player is about to SHARE would
         // be a surprising thing for a save button to do.
@@ -34,14 +34,14 @@ describe('building one', () => {
       META,
     );
 
-    expect(Object.keys(backup.keys).sort()).toEqual(['tiles.progress.v1', 'tiles.world.v1']);
+    expect(Object.keys(backup.keys).sort()).toEqual(['ashwake.progress.v1', 'ashwake.world.1.v1']);
     expect(backup.sha).toBe('abc1234');
     expect(backup.format).toBeGreaterThanOrEqual(1);
   });
 
   it('round-trips whole', () => {
     const backup = buildBackup(
-      { 'tiles.world.v1': '{"worldSeed":7}', 'tiles.daily.v1': '{}' },
+      { 'ashwake.world.1.v1': '{"worldSeed":7}', 'ashwake.daily.v1': '{}' },
       META,
     );
     expect(decodeBackup(encodeBackup(backup))).toEqual(backup);
@@ -55,7 +55,7 @@ describe('reading one back', () => {
     expect(decodeBackup('[]')).toBeNull();
     expect(decodeBackup('{}')).toBeNull();
     // An envelope with no version is not this format.
-    expect(decodeBackup('{"keys":{"tiles.world.v1":"{}"}}')).toBeNull();
+    expect(decodeBackup('{"keys":{"ashwake.world.1.v1":"{}"}}')).toBeNull();
     // A well-formed envelope carrying nothing of OURS is not a backup: it
     // would wipe the device and put nothing back, which is the one outcome
     // this whole module exists to make impossible.
@@ -70,11 +70,15 @@ describe('reading one back', () => {
     const kept = decodeBackup(
       JSON.stringify({
         format: 1,
-        keys: { 'tiles.world.v1': '{"worldSeed":7}', 'tiles.broken': 42, 'tiles.daily.v1': '{}' },
+        keys: {
+          'ashwake.world.1.v1': '{"worldSeed":7}',
+          'ashwake.broken': 42,
+          'ashwake.daily.v1': '{}',
+        },
       }),
     );
     expect(kept).not.toBeNull();
-    expect(Object.keys(kept!.keys).sort()).toEqual(['tiles.daily.v1', 'tiles.world.v1']);
+    expect(Object.keys(kept!.keys).sort()).toEqual(['ashwake.daily.v1', 'ashwake.world.1.v1']);
   });
 
   it('survives a backup written by a build that knew more than this one', () => {
@@ -87,11 +91,11 @@ describe('reading one back', () => {
         format: 99,
         sha: 'future',
         at: '2027-01-01T00:00:00.000Z',
-        keys: { 'tiles.world.v1': '{"worldSeed":7,"somethingNew":true}' },
+        keys: { 'ashwake.world.1.v1': '{"worldSeed":7,"somethingNew":true}' },
         extra: 'a field this build has never heard of',
       }),
     );
-    expect(future?.keys['tiles.world.v1']).toContain('somethingNew');
+    expect(future?.keys['ashwake.world.1.v1']).toContain('somethingNew');
   });
 });
 
@@ -100,17 +104,17 @@ describe('restoring one', () => {
     // Merging two devices was the other option and it is a trap: two worlds'
     // revealed ground unioned together is a map of somewhere that never
     // existed, and there is no rule for which of two purses wins.
-    const backup = buildBackup({ 'tiles.world.v1': '{"worldSeed":7}' }, META);
+    const backup = buildBackup({ 'ashwake.world.1.v1': '{"worldSeed":7}' }, META);
     const plan = restorePlan(backup);
-    expect(plan.remove).toEqual(['tiles.']);
-    expect(plan.write).toEqual({ 'tiles.world.v1': '{"worldSeed":7}' });
+    expect(plan.remove).toEqual(['ashwake.']);
+    expect(plan.write).toEqual({ 'ashwake.world.1.v1': '{"worldSeed":7}' });
   });
 
   it('knows which keys are the game’s to clear', () => {
-    expect(isOwnKey('tiles.world.v1')).toBe(true);
-    expect(isOwnKey('tiles.progress.v1')).toBe(true);
+    expect(isOwnKey('ashwake.world.1.v1')).toBe(true);
+    expect(isOwnKey('ashwake.progress.v1')).toBe(true);
     expect(isOwnKey('analytics.session')).toBe(false);
-    expect(isOwnKey('nottiles.world.v1')).toBe(false);
+    expect(isOwnKey('notashwake.world.1.v1')).toBe(false);
   });
 });
 
@@ -118,11 +122,11 @@ describe('describing one', () => {
   it('counts what a player recognises as theirs', () => {
     const backup = buildBackup(
       {
-        'tiles.world.v1': '{"worldSeed":1}',
-        'tiles.world.s2.v1': '{"worldSeed":2}',
-        'tiles.world.s3.v1': '{"worldSeed":3}',
-        'tiles.progress.v1': '{"relics":412}',
-        'tiles.daily.v1': '{}',
+        'ashwake.world.1.v1': '{"worldSeed":1}',
+        'ashwake.world.s2.v1': '{"worldSeed":2}',
+        'ashwake.world.s3.v1': '{"worldSeed":3}',
+        'ashwake.progress.v1': '{"relics":412}',
+        'ashwake.daily.v1': '{}',
       },
       META,
     );
@@ -134,7 +138,7 @@ describe('describing one', () => {
 
   it('pluralises one world honestly, and survives an unreadable purse', () => {
     const one = buildBackup(
-      { 'tiles.world.v1': '{"worldSeed":1}', 'tiles.progress.v1': 'not json' },
+      { 'ashwake.world.1.v1': '{"worldSeed":1}', 'ashwake.progress.v1': 'not json' },
       { sha: 'x', at: '' },
     );
     const line = describeBackup(one, EN);

@@ -43,6 +43,7 @@ export function Panel({ id, title, back, onBack, children, head }: PanelProps) {
     <div
       ref={sheet}
       className="panel"
+      data-panel={id}
       role="dialog"
       aria-modal="true"
       aria-labelledby={`${id}-title`}

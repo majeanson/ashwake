@@ -4,7 +4,7 @@ import type { FeatureId, FeatureSet } from '@meta/features';
 import type { Progress } from '@meta/progress';
 import { AUTO_THEME_ID } from '@theme/index';
 import type { ThemeId } from '@theme/tokens';
-import { keeperFor, type Keeper } from './keeper';
+import { isDaily, keeperFor, type Keeper, type Place } from './keeper';
 import {
   activeSlot,
   readFeatures,
@@ -45,6 +45,10 @@ export type Device = {
   readonly setProgress: (next: (was: Progress) => Progress) => void;
   readonly slot: Slot;
   readonly setSlot: (slot: Slot) => void;
+  /** The date of the daily being played, or null in a world. */
+  readonly daily: string | null;
+  /** A date steps into that daily; `null` steps back out to `slot`. */
+  readonly setDaily: (date: string | null) => void;
   /** Writes on the current session's behalf, and refuses once it is over. */
   readonly keeper: Keeper;
 };
@@ -70,21 +74,48 @@ export function useDevice(opts: {
   const [features, setFeatures] = useState<FeatureSet>(readFeatures);
   const [progress, setProgressState] = useState<Progress>(() => opts.progress ?? readProgress());
   const [slot, setSlotState] = useState<Slot>(activeSlot);
+  /**
+   * Where the player is: one of the three worlds, or a dated daily.
+   *
+   * `slot` stays the world they will come BACK to — leaving the daily must not
+   * make them pick a world again — so the two are separate facts rather than
+   * one. Only `place` decides where a run is written.
+   */
+  const [place, setPlaceState] = useState<Place>(slot);
 
-  // One keeper per slot, and the old one is dropped before the new one runs.
+  // One keeper per place, and the old one is dropped before the new one runs.
   const keeper = useRef<Keeper>(keeperFor(slot));
   useEffect(() => {
     const held = keeper.current;
     return () => held.drop();
   }, []);
 
-  const setSlot = useCallback((next: Slot) => {
+  /** Hand the keeper on. Flush, then drop, then make the new one — in that
+   *  order, because a pending write from the place being left must land in the
+   *  place it belongs to and never in the one being entered. */
+  const move = useCallback((next: Place) => {
     keeper.current.flush();
     keeper.current.drop();
     keeper.current = keeperFor(next);
-    setActiveSlot(next);
-    setSlotState(next);
+    setPlaceState(next);
   }, []);
+
+  const setSlot = useCallback(
+    (next: Slot) => {
+      move(next);
+      setActiveSlot(next);
+      setSlotState(next);
+    },
+    [move],
+  );
+
+  /** Step into today's daily, or back out to the world the player came from. */
+  const setDaily = useCallback(
+    (date: string | null) => {
+      move(date === null ? slot : { daily: date });
+    },
+    [move, slot],
+  );
 
   // A phone can be closed between two taps and never come back, so whatever is
   // pending is written the moment the page is hidden. `visibilitychange` fires
@@ -142,6 +173,8 @@ export function useDevice(opts: {
       setProgress,
       slot,
       setSlot,
+      daily: isDaily(place) ? place.daily : null,
+      setDaily,
       keeper: keeper.current,
     }),
     [
@@ -155,6 +188,8 @@ export function useDevice(opts: {
       setProgress,
       slot,
       setSlot,
+      place,
+      setDaily,
     ],
   );
 }

@@ -809,6 +809,40 @@ const PLANE: Tuning = {
 export const COLOURS = ['green', 'yellow', 'red', 'blue'] as const;
 export type Colour = (typeof COLOURS)[number];
 
+/**
+ * The three rarities, and the seven ways a point can be earned.
+ *
+ * Both lived in `engine/state.ts` until 2026-08-29 and both are content: the
+ * dials above already argue about magic and unique by name, and the seven
+ * sources are the names of the scoring rules rather than of any state. They
+ * moved so `text/` can NAME them — the catalogue may read `content/` and not
+ * the engine, and Ashwake 1's end screen wrote all seven straight into the
+ * screen in English for want of exactly this. `engine/state.ts` re-exports
+ * both, so nothing that imported them from there had to change.
+ */
+export const RARITIES = ['common', 'magic', 'unique'] as const;
+export type Rarity = (typeof RARITIES)[number];
+
+/**
+ *   matches   neighbouring tiles of the same colour
+ *   power     what the colour's own power added
+ *   rare      what magic and unique added over common
+ *   native    the tile standing on its own colour's ground
+ *   pocket    what harvesting many at once multiplied it by
+ *   distance  what cashing it far from home multiplied it by
+ *   bounty    what a collected bounty multiplied it by
+ */
+export const POINT_SOURCES = [
+  'matches',
+  'power',
+  'rare',
+  'native',
+  'pocket',
+  'distance',
+  'bounty',
+] as const;
+export type PointSource = (typeof POINT_SOURCES)[number];
+
 /** Uniform for now. A weighted table is where biome character will come from. */
 export const COLOUR_WEIGHTS: readonly (readonly [Colour, number])[] = COLOURS.map((c) => [c, 1]);
 

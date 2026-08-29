@@ -58,7 +58,18 @@ export async function clearCards(page: Page): Promise<void> {
   for (let i = 0; i < 12; i++) {
     const scrim = page.locator('.card-scrim');
     if ((await scrim.count()) === 0) return;
-    await scrim.locator('button').last().click();
+    // `force` because a card that is still animating in is "not stable", and
+    // Playwright will retry the stability check until the card has been
+    // replaced by the NEXT one and then fail on a detached element (seen
+    // 2026-08-29, on the tilt-45 shot). A player taps a moving card and it
+    // works; so does this.
+    await scrim.locator('button').last().click({ force: true });
+    // A short fixed wait, and no more than that. Waiting for the scrim to
+    // DETACH sounds better and is a trap twice over: dismissing one card can
+    // raise the next, so the locator still matches and the wait never
+    // resolves; and `placeOneTile` calls this after every one of ~96 taps, so
+    // even a bounded version turns a 30ms helper into a whole test timeout.
+    // The dismissal is synchronous React state — one frame is enough.
     await page.waitForTimeout(30);
   }
   throw new Error('the teaching never stopped: twelve cards in a row');

@@ -21,9 +21,22 @@ export type FrontDoorProps = {
   readonly onBegin: () => void;
   readonly onHowToPlay: () => void;
   readonly onSettings: () => void;
+  readonly onMore: () => void;
+  readonly onDaily: () => void;
+  /** Today's standing, already worded by the catalogue — `dailyBadge`. */
+  readonly dailyBadge: string;
 };
 
-export function FrontDoor({ s, resuming, onBegin, onHowToPlay, onSettings }: FrontDoorProps) {
+export function FrontDoor({
+  s,
+  resuming,
+  onBegin,
+  onHowToPlay,
+  onSettings,
+  onMore,
+  onDaily,
+  dailyBadge,
+}: FrontDoorProps) {
   return (
     <div className="front-door" role="dialog" aria-modal="true" aria-label={NAME} tabIndex={-1}>
       <img className="door-mark" src={ICON_DATA_URI} alt="" width={72} height={72} />
@@ -34,12 +47,26 @@ export function FrontDoor({ s, resuming, onBegin, onHowToPlay, onSettings }: Fro
         {resuming ? s.ui.resume : s.ui.begin}
       </button>
 
+      {/* Today's board, under BEGIN and above the quiet choices: it is the
+          second thing a returning player wants and never the first thing a
+          stranger should meet. The badge is the catalogue's sentence — this
+          screen counts nothing. */}
+      <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
+        {dailyBadge}
+      </button>
+
       <nav className="panel-menu door-more">
         <button type="button" data-door="how" onClick={onHowToPlay}>
           {s.ui.howToPlay}
         </button>
         <button type="button" data-door="settings" onClick={onSettings}>
           {s.ui.settings}
+        </button>
+        {/* Everything that is not the first minute lives one tap deeper. The
+            door stays three choices wide for a stranger; MORE is where a
+            returning player's worlds, shop and hall of fame are. */}
+        <button type="button" data-door="more" onClick={onMore}>
+          {s.ui.more}
         </button>
       </nav>
     </div>

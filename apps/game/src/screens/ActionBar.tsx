@@ -1,5 +1,5 @@
 import type { Theme } from '@theme/tokens';
-import type { HudView, SpendView } from '@view/view';
+import type { HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { Tile } from '../ui/Tile';
 
@@ -22,9 +22,9 @@ export type ActionBarProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly onSelect: (index: number) => void;
+  /** Long-press a card: hold that colour up against the board. */
   readonly onLens: (index: number | null) => void;
   readonly onHarvest: (choice: 'tiles' | 'points') => void;
-  readonly onSpend: (spend: SpendView) => void;
   readonly onPurse: () => void;
   readonly purseOpen: boolean;
   readonly onNewRun: () => void;

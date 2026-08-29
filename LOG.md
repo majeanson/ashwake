@@ -457,3 +457,101 @@ Playwright's eyes, which is exactly what `CLAUDE.md` says is not the gate.
 
 **Next:** Marc plays the first minute; S4 — the shell, persistence and the PWA;
 the screen audit harness beside it.
+
+### Session 7 — a run counts, and the game has rooms again (2026-08-29)
+
+**Question, written before building:** when a run ends, does the game
+_remember_ it — and can everything Ashwake 1 kept behind menus come back
+without a single screen deciding anything?
+
+**Answer: yes, and the second half is the interesting one.** Every room built
+this session — the shop, the hall of fame, MORE, the worlds panel, the payout
+breakdown — is a component over the core's arithmetic and the catalogue's
+words. `settle.ts` is the whole of "a run counts": `rememberRun` folds the
+ground into the world, `recordRun` keeps the shelf of bests, `runHighlights`
+decides what was worth saying, `arcSparkline` draws the shape. It is a pure
+function of the run and what was already there, so it is tested by handing it
+a finished run rather than by playing one.
+
+**A run counts ONCE**, and the identity is the state object: the end screen
+can re-render for any reason, and a run counted twice is a world that
+remembers ground nobody walked.
+
+**The daily is a place, not a fourth world.** It has no world memory to fold
+into and it does not touch the shelf of bests — a shared seed's score on the
+same shelf as private ones makes the record book mean nothing. Modelling it
+as a `Place` (`Slot | { daily }`) and putting the rule inside the KEEPER is
+what makes it structural: the keeper is the only thing that writes, so a
+`saveWorld` from a daily is dropped where it is issued rather than avoided by
+care at four call sites.
+
+**`backup.ts` would have written an empty file.** `PREFIX` was still `tiles.`
+— lifted verbatim with the rest of the core and wrong the moment the keys
+around it became `ashwake.`. BACK UP filters by that prefix, so it would have
+produced an empty backup and RESTORE would have wiped a device and put nothing
+back. The golden sim cannot see it: a namespace is a property of the body, not
+of the rules. Found by reading the file that was about to be wired, which is
+the cheapest place to find it.
+
+**Three bugs the browser found that no unit test could.** The front door sat
+at `z-index: 40`, above panels at 20 — so HOW TO PLAY had been opening the
+manual _underneath the door_ since Stage 3, and nothing in the suite stacks
+anything. The end screen had the same rank and the same bug. And `.end` is a
+flex column, where a child's default `flex-shrink: 1` squeezes content out of
+its own box the moment the column overflows: the shop landing on the end
+screen made its own MORE button unclickable, with a paragraph swallowing the
+taps. The fix for the first two is that a scene is a scene — the door and the
+end screen now sit BELOW the panels and go `inert` while one is open, because
+a z-index alone leaves focus reaching a screen nobody can see.
+
+**A crashed test worker reported green.** Sixteen forks, each importing jsdom
+and three's types, exhausted the heap; the dead worker's file simply vanished
+from the run and vitest printed `51 passed`. A suite that can lose a file
+silently is worse than one that fails, so the runner is capped at eight
+workers rather than given a bigger heap.
+
+**Two features were dead code that every core test still covered.** The colour
+lens — `spotlight`, and the `dimmed`/`lensed` the core computes from it,
+memory included — was passed `null` by the shell, so long-pressing a card did
+nothing. And `ActionBar` declared an `onSpend` it never used. The lens is
+wired and pinned; the phantom prop is gone.
+
+**`Rarity` and `PointSource` moved to `content/`.** The payout breakdown needs
+to NAME the seven ways a point is earned, and `text/` may read `content/` and
+not the engine (lint). They are content — the dials already argue about magic
+and unique by name — and `engine/state.ts` re-exports both, so nothing that
+imported them from there changed. Ashwake 1 wrote all seven words straight
+into its end screen in English for want of exactly this.
+
+**A test had been failing for reasons nobody had looked at.** `remembers a
+run across a reload` was the one test that taps the board without waiting
+first, and it fails at HEAD too — this session did not break it, it found it.
+The cause is real and worth knowing: **the board is not tappable for about
+350ms after it appears**, because the camera is still easing into its fit and a
+ray cast mid-flight lands where the board has not arrived yet. Measured — taps
+miss at 300ms and land at 400ms. The wait now lives in `placeOneTile`, once,
+because every caller needs it and only some of them happened to have it.
+
+**The browser suite runs on ONE worker.** Every test here boots a WebGL
+context, and the default worker count is a fraction of the CPU count — three
+headless Chromiums on one GPU produced shader programs failing
+`VALIDATE_STATUS`, "Target page, context or browser has been closed", and a
+worker exiting with a Windows crash code. None of that is a bug in the game and
+all of it looks like one.
+
+**Verified:** 828 tests / 55 files; 34 Playwright at 390×844; typecheck, lint,
+format, build clean; golden sim byte-identical.
+
+**S4's rooms came with two more things.** The PWA — manifest, icons, and a
+service worker whose cache name and precache list are STAMPED at build time,
+both asserted rather than hoped, because an unstamped cache name is a phone
+that never sees another build and an unfilled precache is offline that only
+works from the second visit. Registration waits for an idle moment: installing
+it downloads the whole precache, and doing that while the board draws its first
+frames is a first minute competing with a feature that only helps the second
+visit. And `pnpm audit:screens` — fourteen screens × three directions,
+photographed and measured (contrast, tap targets, overflow, clipped text), in
+its own config with an `*.audit.ts` suffix so `pnpm test:e2e` cannot see it. It
+is a report, not a gate.
+
+**Not played on a phone.** Again.

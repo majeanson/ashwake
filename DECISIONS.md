@@ -93,6 +93,41 @@ typography is a test (`text.test.ts`): the fine space before `:` and `%` and
 nowhere else, the typographic apostrophe, accents kept on capitals. Marc
 reviews the French on the snapshot files, then on the phone.
 
+### D5 — The daily is a PLACE, not a fourth world — RULED 2026-08-29
+
+A run is played somewhere: one of the three worlds, or the daily. Modelled as
+`Place = Slot | { daily: string }` and enforced inside the KEEPER, because the
+keeper is the only thing that writes.
+
+What the daily does NOT touch, and why:
+
+- **A world's memory.** Every phone plays the same board, so there is no ground
+  "this world" walked. Folding it in would make a world remember terrain that
+  belongs to nobody.
+- **The shelf of bests.** A shared seed's score standing beside runs on private
+  ones makes the record book mean nothing.
+
+It touches exactly two things: the ladder for its date, and the diary. The try
+count is CONFESSED rather than enforced — replaying today's board is allowed
+and the ladder simply says which attempt this was.
+
+The failure this ruling guards against is one tap away and silent: NEW RUN on a
+daily's end screen starts a random private run, and a shell that still believed
+it was in the daily would bank it as a try on the shared ladder. So NEW RUN
+leaves the daily, stated in `App.tsx` and pinned in `settle.test.ts`.
+
+### D6 — A scene sits BELOW the panels, and goes inert — RULED 2026-08-29
+
+The front door and the end screen are SCENES in the same sense the board is:
+they fill the screen, they are what the game is currently showing, and a panel
+opens over them. They sat at `z-index: 40` — above panels at 20 and cards at 30
+— which meant HOW TO PLAY had been opening the manual UNDERNEATH the front door
+since Stage 3, invisibly, because nothing in the unit suite stacks anything.
+
+Both halves are the ruling. A scene sits below the panels (15), **and** it goes
+`inert` while one is open: a z-index alone leaves focus and taps reaching a
+screen the player cannot see, which is the half a repaint would not fix.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

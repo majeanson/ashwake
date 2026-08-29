@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { TUNING, type Tuning } from '@content/tuning';
+import { TUNING, type Colour, type Tuning } from '@content/tuning';
 import { newRun, reduce } from '@engine/reduce';
 import { harvestValue } from '@engine/rules';
 import type { Action, GameState } from '@engine/state';
@@ -57,8 +57,29 @@ export type Session = {
   readonly dispatch: (action: Action) => void;
   /** Price a pocket: a tap on a ripe tile. Null clears it. */
   readonly target: (hex: HexKey | null) => void;
+  /**
+   * The colour lens: one colour held up, every other tile stepped back.
+   *
+   * The core has taken a `spotlight` since the rules were lifted — it is what
+   * `dimmed` and `lensed` are computed from, on the board AND in remembered
+   * ground — and the shell passed `null` for it, which made a whole feature
+   * dead code that every test still covered. Held here beside `harvestAt` for
+   * the same reason: it is a way of LOOKING at a run, not part of one, so it
+   * never reaches the reducer and never reaches the disk.
+   */
+  readonly spotlight: (colour: Colour | null) => void;
   /** Start again on a seed. */
-  readonly restart: (seed: number) => void;
+  /**
+   * Step into a run: a fresh one at `seed`, or `from` picked up exactly as the
+   * reducer left it.
+   *
+   * One door rather than two because the crossing is the same crossing — the
+   * pop, the priced pocket and every listener must be told once, in one order,
+   * whichever kind of run is being entered. Resuming re-uses the very object
+   * that was saved rather than replaying it: a replayed run is a run that can
+   * disagree with the one that was played.
+   */
+  readonly restart: (seed: number, from?: GameState | null) => void;
 };
 
 export function createSession(opts: {
@@ -73,6 +94,7 @@ export function createSession(opts: {
   const tuning = opts.tuning ?? TUNING;
   let state = opts.resume ?? newRun(opts.seed, tuning);
   let harvestAt: HexKey | null = null;
+  let spotlight: Colour | null = null;
   let popped: Snapshot['popped'] = null;
   let popCount = 0;
   let snapshot: Snapshot = build();
@@ -83,8 +105,8 @@ export function createSession(opts: {
     return {
       state,
       harvestAt,
-      board: toBoardView(state, harvestAt, null, [], opts.theme.light, ctx),
-      hud: toHudView(state, opts.strings, harvestAt, null, ctx),
+      board: toBoardView(state, harvestAt, spotlight, [], opts.theme.light, ctx),
+      hud: toHudView(state, opts.strings, harvestAt, spotlight, ctx),
       popped,
     };
   }
@@ -130,9 +152,15 @@ export function createSession(opts: {
       harvestAt = hex;
       commit();
     },
-    restart(seed) {
-      state = newRun(seed, tuning);
+    spotlight(colour) {
+      if (colour === spotlight) return;
+      spotlight = colour;
+      commit();
+    },
+    restart(seed, from) {
+      state = from ?? newRun(seed, tuning);
       harvestAt = null;
+      spotlight = null;
       popped = null;
       commit();
     },

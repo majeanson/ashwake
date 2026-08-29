@@ -75,12 +75,18 @@ sessions; S2 and S3 are the fat ones.
       gains LANGUE / LANGUAGE above APPEARANCE. _Question: does the manual / card /
       term trio still say one sentence one way? (`teaching.pin` snapshots are
       the pin.)_
-- [ ] **S4 — one page, many sessions, offline, shareable.** Store + session +
-      router (History API; the two allowed reloads), keeper with
-      `alive`/`dropped` guards, save/resume, three world slots, the daily
-      (epoch 2026-08-25), the crossing, `?seed=` links, PWA + service worker,
-      backup/restore as the v1 → v2 bridge. _Question: does the relic-farm
-      class stay structurally impossible?_
+- [x] **S4 — one page, many sessions, offline, shareable.** Shipped
+      2026-08-29 (`LOG.md` Session 7), except the History router — see below.
+      Store + session, keeper with `alive`/`dropped` guards, save/resume, three
+      world slots, the daily (epoch 2026-08-25) as a PLACE rather than a fourth
+      world (D5), `?seed=` links, PWA + stamped service worker, backup/restore
+      as the v1 → v2 bridge, and `settle.ts` making a finished run COUNT. The
+      rooms came back with it: shop, hall of fame, MORE, worlds, and the end
+      screen's payout breakdown and arc. _Question: does the relic-farm class
+      stay structurally impossible? Yes, and it grew a second case: a keeper
+      now knows its PLACE, so a daily cannot write a world's memory either —
+      the rule lives in the one thing that writes._ **Left:** the History-API
+      router, which `NEXT.md` argues may not be wanted at all.
 - [ ] **S5 — the look.** Materials and lighting landed in S2c; what is left is
       the DIRECTION — the parked "settlement" reading of the colours (FARM ·
       MARKET · QUARRY · ROADS) built as an option set beside the three that

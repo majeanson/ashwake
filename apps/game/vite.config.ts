@@ -1,6 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { execSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
@@ -101,8 +101,72 @@ function assetManifest(): Plugin {
   };
 }
 
+/**
+ * Stamp the build into the service worker, and fill its precache list.
+ *
+ * `public/sw.js` ships verbatim, so both substitutions have to happen on the
+ * way out. Getting either wrong fails SILENTLY and badly: an unstamped cache
+ * name never changes, which means a phone that installs the worker never sees
+ * another build; an unfilled precache list means offline only works from the
+ * SECOND visit, because the worker registers after the first playable frame
+ * and visit one's bundle was never cached. Both are asserted rather than
+ * hoped, which is why this throws.
+ *
+ * `closeBundle` rather than `generateBundle`: files in `public/` are COPIED
+ * to the output directory rather than passing through the bundle, so there is
+ * nothing to rewrite until the copy has happened.
+ */
+function serviceWorkerStamp(sha: string): Plugin {
+  const out = (name: string): string => fileURLToPath(new URL(`./dist/${name}`, import.meta.url));
+
+  return {
+    name: 'ashwake:sw-stamp',
+    apply: 'build',
+    closeBundle() {
+      const file = out('sw.js');
+      const source = readFileSync(file, 'utf8');
+
+      const stamped = source.replace('__BUILD_SHA__', sha.slice(0, 12));
+      if (stamped === source) {
+        throw new Error('sw.js has no __BUILD_SHA__ to stamp — the cache name would never change');
+      }
+
+      // Walked recursively: the theme art lives in dist/assets/<themeId>/ and
+      // a flat listing would skip it, shipping the procedural fallback to
+      // exactly the players offline support exists for.
+      const walk = (dir: string, prefix: string): string[] =>
+        readdirSync(dir).flatMap((name) => {
+          const full = join(dir, name);
+          return statSync(full).isDirectory()
+            ? walk(full, `${prefix}${name}/`)
+            : [`${prefix}${name}`];
+        });
+      const bundle = walk(out('assets'), '/assets/').filter((f) =>
+        /.(js|css|png|webp|json)$/.test(f),
+      );
+
+      const listed = stamped.replace(
+        "'__PRECACHE_ASSETS__'",
+        JSON.stringify(JSON.stringify(bundle)),
+      );
+      if (listed === stamped) {
+        throw new Error('sw.js has no __PRECACHE_ASSETS__ to fill — offline would need two visits');
+      }
+      writeFileSync(file, listed);
+    },
+  };
+}
+
+const sha = buildSha();
+
 export default defineConfig({
-  plugins: [react(), versionStamp(buildSha()), assetManifest()],
+  plugins: [react(), versionStamp(sha), assetManifest(), serviceWorkerStamp(sha)],
+  define: {
+    // Compile-time, so it costs nothing at runtime and cannot disagree with
+    // the bundle it is baked into. A backup names the build that wrote it,
+    // which is what turns a bug report into one that comes with a file.
+    __BUILD_SHA__: JSON.stringify(sha),
+  },
   resolve: {
     alias: {
       '@engine': core('engine'),

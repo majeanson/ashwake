@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Colour } from '@content/tuning';
+import { dailyBadge, dailySeed } from '@meta/daily';
+import type { GameState } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { stringsFor } from '@text/index';
@@ -11,10 +14,33 @@ import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
 import { Hud } from './screens/Hud';
 import { LessonCard } from './screens/LessonCard';
+import { Fame } from './screens/Fame';
 import { Manual } from './screens/Manual';
+import { More } from './screens/More';
 import { Purse } from './screens/Purse';
 import { Settings } from './screens/Settings';
-import { clearRun, readRun } from './shell/storage';
+import { Shop } from './screens/Shop';
+import { Worlds } from './screens/Worlds';
+import {
+  clearDailyRun,
+  clearEverything,
+  clearRun,
+  clearSlot,
+  localToday,
+  readDailyBook,
+  readDailyRun,
+  writeDailyBook,
+  readRecords,
+  readRun,
+  readTimeline,
+  readWorld,
+  writeRecords,
+  writeTimeline,
+  type Slot,
+} from './shell/storage';
+import { useLedgers } from './shell/ledgers';
+import { registerWorker } from './shell/worker';
+import { settle, settleDaily } from './shell/settle';
 import { createSession, useSession } from './shell/store';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
@@ -113,6 +139,9 @@ function Game() {
     progress,
     setProgress,
     slot,
+    setSlot,
+    daily,
+    setDaily,
     keeper,
   } = useDevice(overrides());
 
@@ -120,6 +149,18 @@ function Game() {
   const [note, setNote] = useState<string | null>(null);
   const [purseOpen, setPurseOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
+  /**
+   * A new build has taken over underneath this page.
+   *
+   * Offered, never taken: reloading under a player would lose the run they are
+   * in the middle of, which would make the update mechanism eat the thing it
+   * exists to protect. This is one of the two reloads `CLAUDE.md` allows, and
+   * it is the player's tap.
+   */
+  const [updated, setUpdated] = useState(false);
+  useEffect(() => {
+    registerWorker(() => setUpdated(true));
+  }, []);
 
   const s = useMemo(() => stringsFor(locale), [locale]);
   const theme = useMemo(() => {
@@ -164,9 +205,56 @@ function Game() {
   // when it actually reaches the disk — and refuses entirely once its session
   // is over. A finished run is CLEARED rather than kept, so BEGIN means begin.
   useEffect(() => {
-    if (snap.hud.ended) clearRun(slot);
-    else keeper.saveRun(snap.state);
+    if (!snap.hud.ended) keeper.saveRun(snap.state);
   }, [snap.state, snap.hud.ended, keeper, slot]);
+
+  /**
+   * A finished run is BANKED, once.
+   *
+   * The ground it walked folds into the world, the shelf of bests takes it,
+   * and the diary gets a row — which is what gives the shop and the hall of
+   * fame anything to show. Once, because the end screen can re-render for any
+   * reason and a run counted twice is a world that remembers ground nobody
+   * walked. The state object is the identity: the reducer produced exactly one
+   * for this ending.
+   */
+  const banked = useRef<GameState | null>(null);
+  useEffect(() => {
+    if (!snap.hud.ended || banked.current === snap.state) return;
+    banked.current = snap.state;
+
+    // A daily leaves two things behind rather than four — see `settleDaily`.
+    if (daily !== null) {
+      const after = settleDaily({
+        date: daily,
+        state: snap.state,
+        hud: snap.hud,
+        book: readDailyBook(),
+        timeline: readTimeline(),
+        at: Date.now(),
+      });
+      writeDailyBook(after.book);
+      writeTimeline(after.timeline);
+      clearDailyRun();
+      return;
+    }
+
+    const after = settle({
+      state: snap.state,
+      hud: snap.hud,
+      slot,
+      world: readWorld(slot),
+      records: readRecords(),
+      timeline: readTimeline(),
+      progress,
+      at: Date.now(),
+    });
+    keeper.saveWorld(after.world);
+    keeper.flush();
+    writeRecords(after.records);
+    writeTimeline(after.timeline);
+    clearRun(slot);
+  }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper]);
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -181,6 +269,15 @@ function Game() {
 
   const manual = useDoor('manual');
   const settings = useDoor('settings');
+  const more = useDoor('more');
+  const shop = useDoor('shop');
+  const fame = useDoor('fame');
+  const worlds = useDoor('worlds');
+
+  // A door that shows a ledger has just asked for it, and so has a run that
+  // ended. Anything else leaves the disk alone.
+  const ledgers = useLedgers(`${fame.open}${shop.open}${worlds.open}${snap.hud.ended}`);
+  const virgin = ledgers.timeline.length === 0 && progress.relics === 0;
   const anyOpen = useAnyDialogOpen();
 
   // What the game wants to say, if anything: a priority list rather than a
@@ -206,9 +303,86 @@ function Game() {
     [session],
   );
 
+  /**
+   * Hold one colour up against the board, and let go by asking twice.
+   *
+   * The lens is a way of LOOKING, so it lives in the shell rather than in the
+   * run: a long press on a card in the hand tints every tile of that colour
+   * and steps the rest back, remembered ground included. `null` puts it down,
+   * and pressing the same card again is `null` — a lens you cannot let go of
+   * is a lens nobody turns on twice.
+   */
+  const [lens, setLens] = useState<Colour | null>(null);
+  const onLens = useCallback(
+    (index: number | null) => {
+      const colour = index === null ? null : (snap.hud.draft[index]?.colour ?? null);
+      const next = colour === lens ? null : colour;
+      setLens(next);
+      session.spotlight(next);
+    },
+    [session, snap.hud.draft, lens],
+  );
+
+  /**
+   * A new run, in a world.
+   *
+   * **It leaves the daily**, and that is not a convenience. Today's board is
+   * everybody's board; a fresh random run played while the shell still thought
+   * it was in the daily would be written under today's DATE and banked as a
+   * try on a ladder it never played — a private seed's score standing on the
+   * shared one. NEW RUN off a daily's end screen is the ordinary way to reach
+   * that state, so the door out is here rather than in a guard downstream.
+   */
   const newRun = useCallback(() => {
+    setDaily(null);
+    banked.current = null;
     session.restart(Math.floor(Math.random() * 2 ** 31));
-  }, [session]);
+    setLens(null);
+  }, [session, setDaily]);
+
+  /**
+   * Step into a world — a state change, never a reload (`CLAUDE.md`).
+   *
+   * The keeper for the world being LEFT is dropped by `setSlot` before the new
+   * one runs, so a late write cannot land in the wrong world's save. Then the
+   * session picks up whatever that slot kept, or begins a fresh run if it kept
+   * nothing. The board host never unmounts through any of it, which is the
+   * whole reason this is a function and not a navigation.
+   */
+  /**
+   * Today's daily: everybody's board, and the one run that is not a world's.
+   *
+   * The seed is the DATE's, so two phones on the same day play the same
+   * ground; the board is picked up only if it was put down on that same date,
+   * which is `readDailyRun`'s guard and the one rule a daily may never break.
+   * Leaving it steps back into the world the player came from — `slot` was
+   * never given up, so there is nothing to choose on the way back.
+   */
+  const today = useMemo(() => localToday(), []);
+  const enterDaily = useCallback(() => {
+    setDaily(today);
+    session.restart(dailySeed(today), readDailyRun(today));
+    setLens(null);
+    banked.current = null;
+    worlds.hide();
+    more.hide();
+    setStarted(true);
+  }, [session, setDaily, today, worlds, more]);
+
+  const enterWorld = useCallback(
+    (next: Slot) => {
+      const kept = readRun(next);
+      setDaily(null);
+      setSlot(next);
+      session.restart(Math.floor(Math.random() * 2 ** 31), kept);
+      setLens(null);
+      banked.current = null;
+      worlds.hide();
+      more.hide();
+      setStarted(true);
+    },
+    [session, setSlot, setDaily, worlds, more],
+  );
 
   const playing = started && !snap.hud.ended;
 
@@ -271,7 +445,7 @@ function Game() {
             theme={theme}
             s={s}
             onSelect={(index) => session.dispatch({ type: 'SELECT', index })}
-            onLens={() => undefined}
+            onLens={onLens}
             onHarvest={(choice) =>
               session.dispatch({
                 type: 'HARVEST',
@@ -279,7 +453,6 @@ function Game() {
                 ...(snap.hud.harvestAt === null ? {} : { at: snap.hud.harvestAt }),
               })
             }
-            onSpend={() => undefined}
             onPurse={() => {
               setPurseOpen((was) => !was);
               // The purse teaches on the first deliberate OPEN rather than on
@@ -293,18 +466,44 @@ function Game() {
         </>
       )}
 
+      {/*
+        The door and the end screen are SCENES, in the same sense the board is:
+        they fill the screen, they are what the game is currently showing, and a
+        panel opens OVER them. So they are inert while one is — otherwise focus
+        and taps reach a screen the player cannot see, which is the half of the
+        stacking bug that a z-index alone does not fix.
+      */}
       {started && snap.hud.ended && (
-        <EndScreen hud={snap.hud} s={s} onTerm={setTerm} onNewRun={newRun} />
+        <div className="scene" {...(anyOpen ? { inert: true } : {})}>
+          <EndScreen
+            hud={snap.hud}
+            harvests={snap.state.log.harvests
+              .filter((h) => h.choice !== 'burn' && h.choice !== 'treasure')
+              .map((h) => h.points)}
+            s={s}
+            theme={theme}
+            progress={progress}
+            onTerm={setTerm}
+            onNewRun={newRun}
+            onProgress={setProgress}
+            onMore={() => more.show()}
+          />
+        </div>
       )}
 
       {!started && (
-        <FrontDoor
-          s={s}
-          resuming={snap.hud.placements > 0 && !snap.hud.ended}
-          onBegin={() => setStarted(true)}
-          onHowToPlay={() => manual.show()}
-          onSettings={() => settings.show()}
-        />
+        <div className="scene" {...(anyOpen ? { inert: true } : {})}>
+          <FrontDoor
+            s={s}
+            resuming={snap.hud.placements > 0 && !snap.hud.ended}
+            onBegin={() => setStarted(true)}
+            onHowToPlay={() => manual.show()}
+            onSettings={() => settings.show()}
+            onMore={() => more.show()}
+            onDaily={enterDaily}
+            dailyBadge={dailyBadge(readDailyBook(), today, s)}
+          />
+        </div>
       )}
 
       {manual.open && (
@@ -315,6 +514,9 @@ function Game() {
           onTerm={setTerm}
           menu={
             <PanelMenu>
+              <button type="button" onClick={() => more.show()}>
+                {s.ui.more}
+              </button>
               <button type="button" onClick={() => settings.show()}>
                 {s.ui.settings}
               </button>
@@ -343,6 +545,71 @@ function Game() {
           onFeature={setFeature}
           onResetTeaching={() => setProgress(() => EMPTY_PROGRESS)}
         />
+      )}
+
+      {more.open && (
+        <More
+          s={s}
+          virgin={virgin}
+          onBack={more.hide}
+          onHowToPlay={() => manual.show()}
+          onFame={() => fame.show()}
+          onSettings={() => settings.show()}
+          onShop={() => shop.show()}
+          onWorlds={() => worlds.show()}
+          onDaily={enterDaily}
+          onReset={() => {
+            clearEverything();
+            // The one place a reload would be honest — and it still is not one.
+            // Everything erased is everything this shell was showing, so the
+            // shell goes back to what a phone that has never played looks like.
+            setProgress(() => EMPTY_PROGRESS);
+            session.restart(Math.floor(Math.random() * 2 ** 31));
+            banked.current = null;
+            more.hide();
+            setStarted(false);
+          }}
+          onRestored={() => {
+            enterWorld(slot);
+          }}
+        />
+      )}
+
+      {worlds.open && (
+        <Worlds
+          s={s}
+          active={slot}
+          worlds={ledgers.worlds}
+          onBack={worlds.hide}
+          onOpen={enterWorld}
+          onAbandon={(which) => {
+            clearSlot(which);
+            enterWorld(which);
+          }}
+        />
+      )}
+
+      {shop.open && (
+        <Shop
+          progress={progress}
+          theme={theme}
+          s={s}
+          onProgress={setProgress}
+          onTerm={setTerm}
+          onBack={shop.hide}
+        />
+      )}
+
+      {fame.open && (
+        <Fame timeline={ledgers.timeline} records={ledgers.records} s={s} onBack={fame.hide} />
+      )}
+
+      {updated && (
+        <p className="toast update" aria-live="polite">
+          <button type="button" data-action="update" onClick={() => location.reload()}>
+            {s.ui.newVersion}
+          </button>
+        </p>
       )}
 
       {card !== null && (

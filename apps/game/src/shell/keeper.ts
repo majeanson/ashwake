@@ -1,5 +1,5 @@
 import type { GameState } from '@engine/state';
-import { writeRun, writeWorld, type Slot } from './storage';
+import { writeDailyRun, writeRun, writeWorld, type Slot } from './storage';
 import type { WorldMemory } from '@meta/world';
 
 /**
@@ -55,7 +55,21 @@ export type Keeper = {
  */
 const SETTLE_MS = 400;
 
-export function keeperFor(slot: Slot): Keeper {
+/**
+ * Where a run is being played: one of the three worlds, or a dated daily.
+ *
+ * The daily is not a fourth world and modelling it as one would be the bug:
+ * it has no world memory to fold ground into, its board is keyed by DATE
+ * rather than by slot, and it must never touch the world the player was in.
+ * A keeper is what enforces that, because a keeper is the only thing that
+ * writes.
+ */
+export type Place = Slot | { readonly daily: string };
+
+export const isDaily = (place: Place): place is { readonly daily: string } =>
+  typeof place !== 'number';
+
+export function keeperFor(place: Place): Keeper {
   let alive = true;
   let pendingRun: GameState | null = null;
   let pendingWorld: WorldMemory | null = null;
@@ -74,11 +88,16 @@ export function keeperFor(slot: Slot): Keeper {
       return;
     }
     if (pendingRun !== null) {
-      writeRun(slot, pendingRun);
+      if (isDaily(place)) writeDailyRun(place.daily, pendingRun);
+      else writeRun(place, pendingRun);
       pendingRun = null;
     }
     if (pendingWorld !== null) {
-      writeWorld(slot, pendingWorld);
+      // A daily has no world memory: every phone plays the same board and
+      // nothing about it is remembered as ground walked. Dropping the write
+      // here rather than at the call site is the point — the keeper is the
+      // only thing that writes, so it is the only place the rule can hold.
+      if (!isDaily(place)) writeWorld(place, pendingWorld);
       pendingWorld = null;
     }
   };
@@ -95,7 +114,7 @@ export function keeperFor(slot: Slot): Keeper {
       later();
     },
     saveWorld(world) {
-      if (!alive) return;
+      if (!alive || isDaily(place)) return;
       pendingWorld = world;
       later();
     },

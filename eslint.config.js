@@ -254,5 +254,28 @@ export default tseslint.config(
     ),
   },
 
+  /*
+   * The service worker, linted with a smaller net (2026-08-29).
+   *
+   * LAST in the list on purpose: flat configs merge in order, so this has to
+   * come after the type-aware block above to switch the project service back
+   * off for one file. `apps/game/public/sw.js` is hand-written browser JS
+   * outside the TypeScript project — there is nothing to type-check it
+   * against — but it is also the single file that can brick a returning
+   * player, so plain JS rules plus a service-worker environment beats no net
+   * at all. `__BUILD_SHA__` and `__PRECACHE_ASSETS__` are the two things the
+   * build stamps into it.
+   */
+  {
+    files: ['apps/game/public/sw.js'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      parserOptions: { projectService: false, project: false },
+      globals: { ...globals.serviceworker, __BUILD_SHA__: 'readonly' },
+    },
+  },
+
   prettier,
 );

@@ -20,6 +20,14 @@ const tiles = async (page: Page): Promise<number> =>
  *  opening board is one tile at the origin with six legal neighbours around
  *  it, so a ring at the hex pitch finds one. */
 async function placeOneTile(page: Page): Promise<void> {
+  // The board is not tappable the instant it appears: the camera eases into
+  // its fit, and a ray cast while it is still travelling lands somewhere the
+  // board has not arrived at yet. Measured 2026-08-29 — taps miss at 300ms and
+  // land at 400ms — after `remembers a run across a reload` failed for months
+  // as the one test that taps without waiting first. The wait belongs HERE,
+  // once, rather than in each caller, because every caller of this needs it
+  // and only some of them happened to have it.
+  await page.waitForTimeout(600);
   const box = await page.locator('canvas').boundingBox();
   if (box === null) throw new Error('no canvas');
   const cx = box.x + box.width / 2;

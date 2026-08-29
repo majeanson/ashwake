@@ -22,7 +22,17 @@ import type { Strings } from '@text/Strings';
  */
 
 /** Everything the game keeps lives under this prefix. Nothing else is ours. */
-const PREFIX = 'tiles.';
+/**
+ * The namespace every key this game owns begins with.
+ *
+ * It said `tiles.` until 2026-08-29 — lifted verbatim with the rest of the
+ * core, and wrong the moment the keys around it became `ashwake.`: a backup
+ * filters by this prefix, so it would have produced an EMPTY file and a
+ * restore would have wiped a device and put nothing back. The prefix is a
+ * property of the body rather than of the rules, which is why it moved and
+ * why the golden sim cannot see it.
+ */
+const PREFIX = 'ashwake.';
 
 /**
  * Bumped only if a future build cannot read an older backup. It never has to
@@ -112,7 +122,7 @@ export function decodeBackup(raw: string | null): Backup | null {
  * What restoring this backup would do, as a plan the shell can carry out and
  * a sentence it can show first.
  *
- * Restoring REPLACES: every `tiles.` key on the device is removed and the
+ * Restoring REPLACES: every `ashwake.` key on the device is removed and the
  * backup's are written. Merging was the other option and it is a trap —
  * two worlds' revealed ground unioned together is a map of somewhere that
  * never existed, and there is no rule for which of two purses wins. Replace
@@ -135,9 +145,17 @@ export const isOwnKey = (key: string): boolean => key.startsWith(PREFIX);
  * as theirs and "17 keys" is not.
  */
 export function describeBackup(backup: Backup, s: Strings): string {
-  const worlds = Object.keys(backup.keys).filter((k) => /^tiles\.world(\.s\d)?\.v\d+$/.test(k));
+  // Loose about the slot part, because the key shape has already changed
+  // once: Ashwake 1 wrote `world.v1` and then `world.s1.v1`, and this body
+  // writes `world.1.v1`. A pattern that knows only one of them counts zero
+  // worlds — which is exactly the number a player would not recognise as
+  // theirs, on the screen where they are deciding whether to overwrite a
+  // device.
+  const worlds = Object.keys(backup.keys).filter((k) =>
+    /^ashwake\.world\.(?:s?\d+\.)?v\d+$/.test(k),
+  );
   let relics = 0;
-  const progress = backup.keys['tiles.progress.v1'];
+  const progress = backup.keys[`${PREFIX}progress.v1`];
   if (progress !== undefined) {
     try {
       const parsed: unknown = JSON.parse(progress);

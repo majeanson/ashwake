@@ -322,7 +322,17 @@ button[disabled] {
 .front-door {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  /*
+   * Under the panels, not over them (2026-08-29).
+   *
+   * It sat at 40 — above `.panel` at 20 and `.card-scrim` at 30 — which meant
+   * HOW TO PLAY and SETTINGS opened a panel the door was painted on top of.
+   * The door is a SCENE the panels open over, the same as the board is; the
+   * layers below it are the game, and the layers above it are the ones that
+   * interrupt whatever is showing. Found by the menus e2e, which is what a
+   * browser test is for: nothing in the unit suite stacks anything.
+   */
+  z-index: 15;
   background: var(--bg);
   display: flex;
   flex-direction: column;
@@ -533,7 +543,8 @@ button[disabled] {
 .end {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  /* A scene, at the scene layer — see `.front-door`. */
+  z-index: 15;
   background: var(--bg);
   overflow-y: auto;
   display: flex;
@@ -542,6 +553,32 @@ button[disabled] {
   gap: var(--gap);
   padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
   text-align: center;
+}
+
+/*
+ * Nothing in a scrolling column may shrink (2026-08-29).
+ *
+ * `.end` and `.front-door` are flex columns, and a flex item's default
+ * `flex-shrink: 1` means an overflowing column squeezes its children until
+ * their content spills OUT of their boxes and overlaps whatever is below.
+ * It reads as a slightly cramped screen and behaves as one where a paragraph
+ * swallows the taps meant for the button under it — which is how the end
+ * screen's own MORE became unclickable the moment the shop landed on it.
+ */
+.end > *,
+.front-door > * {
+  flex-shrink: 0;
+}
+
+/* One measure for everything with rows in it, so the columns line up down the
+   screen instead of each block finding its own width. */
+.end .bars,
+.end .arc,
+.end .fold,
+.end section,
+.end .panel-menu {
+  width: min(26rem, 100%);
+  text-align: start;
 }
 
 .end-score {
@@ -562,4 +599,149 @@ button[disabled] {
 
 .flag {
   margin-bottom: var(--gap);
+}
+
+/*
+ * The breakdown: label, bar, number (Stage 4, 2026-08-29).
+ *
+ * A three-column grid rather than flex so the numbers line up down the right
+ * edge across every group — a column of right-aligned figures is comparable at
+ * a glance and a ragged one is not. The name column is sized to the longest
+ * label the catalogue can hand it in either language, and `minmax(0, 1fr)` on
+ * the track is what stops a long French label from pushing the bar off-screen.
+ */
+.bars {
+  display: grid;
+  gap: calc(var(--gap) / 3);
+  margin-block: var(--gap);
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr) 3rem;
+  align-items: center;
+  gap: calc(var(--gap) / 2);
+}
+
+.bar-name {
+  overflow-wrap: anywhere;
+}
+
+.bar-track {
+  display: block;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--panel-edge);
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ink-dim);
+  /* A row worth nothing still shows the sliver of a bar, so the eye reads it
+     as an empty measurement rather than a missing one. */
+  min-width: 2px;
+}
+
+.bar-value {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+/* The run's shape. The chart stretches; the bars do not have to be square. */
+.arc {
+  margin: var(--gap) 0;
+}
+
+.arc-chart {
+  display: block;
+  width: 100%;
+  height: 3rem;
+}
+
+.arc-bar {
+  fill: var(--ink-faint);
+}
+
+.arc-best {
+  fill: var(--accent);
+}
+
+/*
+ * A shop row: what it is on the left, what it costs on the right (Stage 4,
+ * 2026-08-29).
+ *
+ * The button is sized to the tap target rather than to its word, so a price,
+ * MAXED and PORTER are the same target and the right edge does not jump as a
+ * ladder is climbed or a language is switched.
+ */
+.shop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: calc(var(--gap) / 2) 0;
+  border-bottom: 1px solid var(--panel-edge);
+  text-align: start;
+}
+
+.shop-row > :first-child {
+  min-width: 0;
+}
+
+.shop-row button {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  min-height: 44px;
+}
+
+.shop-row .fold {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/*
+ * Today's board, on the front door.
+ *
+ * Quieter than BEGIN and louder than the menu under it, because that is its
+ * actual rank: the second thing a returning player wants and never the first
+ * thing a stranger should meet. Full width so the badge — which grows a
+ * streak rider and a best — has room to say what it says in either language
+ * without the button changing size under the player's thumb.
+ */
+.door-daily {
+  width: min(20rem, 100%);
+  min-height: 44px;
+  border: 1px solid var(--panel-edge-active);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  padding: 0.6rem 1rem;
+}
+
+/*
+ * A new build is downloaded and waiting.
+ *
+ * A toast rather than a dialog, and a button rather than an automatic reload:
+ * this is one of the two reloads the project allows, and taking it out from
+ * under a player mid-run would make the update mechanism eat the thing it
+ * exists to protect.
+ */
+.update {
+  pointer-events: auto;
+}
+
+.update button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.4rem;
+  background: var(--panel);
+  color: var(--accent);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.75rem;
 }
