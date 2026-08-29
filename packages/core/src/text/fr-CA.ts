@@ -470,6 +470,40 @@ export const STRINGS_FR: Strings = {
         ? ''
         : ` · meilleur ${nb(record.best)} · ${record.tries} essai${pl(record.tries, '', 's')}`),
   },
+  claim: {
+    cache: (tiles) => `CACHE RÉCLAMÉE
++${nb(tiles)} tuiles, sur-le-champ.`,
+    site: (pts, need, radius, bonus) =>
+      `SITE RÉCLAMÉ
++${nb(pts)} pts en banque — et cette étoile ouvre une PRIME${D}: récolte une poche de ${need}+ à moins de ${radius} hexes pour ×${bonus}.`,
+    territory: (radius, owns) =>
+      `TERRITOIRE RÉCLAMÉ
+Le sol à moins de ${radius} hexes est natif de ${owns} maintenant — et il te reste entre les parties.`,
+    shrine: (unlock) =>
+      `SANCTUAIRE ÉVEILLÉ
+${unlock}
+À toi dès ta prochaine partie, dans ce monde pour de bon.`,
+    shrineAwake: `SANCTUAIRE ÉVEILLÉ
+Ce monde est entièrement éveillé — chaque déblocage est à toi.`,
+    shrineDetour: `SANCTUAIRE ÉVEILLÉ
+Sur ton propre monde, un sanctuaire allume un système pour de bon. Une partie partagée ne garde rien — mais elle compte quand même la prise.`,
+    found: (perk, worn) =>
+      `TROUVÉ — ${perk}
+${worn ? 'Déjà porté — ça fonctionne à partir d’ici.' : 'À toi pour de bon, dans CE monde. PORTE-le dans LA BOUTIQUE, à l’écran de fin.'}`,
+    findNothing: `UNE TROUVAILLE CACHÉE
+Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déjà, et seulement sur ton propre monde.`,
+  },
+
+  spent: {
+    reroll: (paid) => `Une main neuve, pour ${nb(paid)} chance.`,
+    steer: (name, draws, paid) =>
+      `${name} chauffe${D}: une nouvelle main tirée sous cette couleur, et les ${draws} prochaines pioches penchent de son côté. ${nb(paid)} chance.`,
+    forge: (paid) =>
+      `Forgé UNIQUE — sauvage, et chaque appariement compte double, des deux côtés. ${nb(paid)} chance.`,
+    tithe: (paid, relics) =>
+      `${nb(paid)} chance sacrifiée pour ${nb(relics)} relique${pl(relics, '', 's')}.`,
+  },
+
   backup: {
     describe: (worlds, relics, date) =>
       `${worlds} monde${pl(worlds, '', 's')} · ${nb(relics)} reliques${date === null ? '' : ` · ${date}`}`,
@@ -492,6 +526,10 @@ export const STRINGS_FR: Strings = {
     holdNothing: 'Rien en main à garder — touche d’abord une carte.',
     holdTrades: 'Touche d’abord une carte — la réserve échange, elle ne distribue pas.',
     pop: 'RÉCOLTER',
+    take: 'PRENDRE',
+    sacrifice: 'SACRIFIER',
+    relicsPaid: (n) => `${nb(n)} relique${pl(n, '', 's')}`,
+    luckPaid: (n) => `+${nb(n)} chance`,
     redraw: 'REPIOCHER',
     forge: 'FORGER',
     sacrificeLuck: 'SACRIFIER LA CHANCE',

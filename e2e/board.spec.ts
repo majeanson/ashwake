@@ -306,3 +306,33 @@ test('a second tap on the selected card puts it down', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('the reward loop speaks: a pop pays out in words', async ({ page }) => {
+  /*
+   * Claims, pops and spends all ran SILENT in this body until 2026-08-29 —
+   * `harvestNote` and the whole of `view/receipts.ts` had no caller, so the
+   * tiles arrived, the ground turned native and the screen said nothing.
+   *
+   * Ashwake 1's reason for every one of these, verbatim: "a reroll that
+   * silently replaces three cards looks identical to a bug".
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=24');
+  await begin(page);
+  await page.waitForTimeout(600);
+
+  const pop = page.getByRole('button', { name: /POP/ }).first();
+  await expect(pop).toBeVisible();
+  await pop.click();
+
+  // The pop paid out into the toast, or into a card if it also reached a
+  // rare claim. Either way it SAID something.
+  const spoke = await page
+    .locator('.toast, .card')
+    .first()
+    .textContent()
+    .catch(() => '');
+  expect((spoke ?? '').trim().length, 'a pop said nothing at all').toBeGreaterThan(10);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

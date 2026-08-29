@@ -3,11 +3,11 @@ import type { Colour } from '@content/tuning';
 import { arcSparkline, dailyBadge, dailySeed } from '@meta/daily';
 import { NAME } from '@meta/identity';
 import type { ShareSubject } from '@meta/share';
-import type { GameState } from '@engine/state';
+import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { namesOf } from '@theme/tokens';
 import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
-import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
+import { EMPTY_PROGRESS, hasMet, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import type { LessonId } from '@view/lessons';
@@ -19,6 +19,7 @@ import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
 import { Hud } from './screens/Hud';
 import { LessonCard } from './screens/LessonCard';
+import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
 import { Manual } from './screens/Manual';
 import { More } from './screens/More';
@@ -39,15 +40,17 @@ import {
   readRun,
   readTimeline,
   readWorld,
+  onShed,
   writeRecords,
   writeTimeline,
   type Slot,
 } from './shell/storage';
 import { useLedgers } from './shell/ledgers';
+import { shedNote } from '@meta/shedLadder';
 import { registerWorker } from './shell/worker';
 import { settle, settleDaily } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
-import { createSession, useSession } from './shell/store';
+import { createSession, useSession, type Said } from './shell/store';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
 import { walk, walkToEnd } from './shell/walk';
@@ -162,6 +165,14 @@ function Game() {
    * than beside either one of them.
    */
   const [lens, setLens] = useState<Colour | null>(null);
+  /**
+   * A receipt that is holding the screen, waiting to be dismissed.
+   *
+   * Held rather than derived from the snapshot: a card outlives the dispatch
+   * that produced it — the player reads it, then taps GOT IT — and the session
+   * has moved on by then.
+   */
+  const [saidCard, setSaidCard] = useState<Said | null>(null);
   const [purseOpen, setPurseOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
   /**
@@ -178,6 +189,18 @@ function Game() {
   }, []);
 
   const s = useMemo(() => stringsFor(locale), [locale]);
+  /*
+   * A full disk says which rung it spent.
+   *
+   * The alternative is silence: the ladder frees room, the run is saved, and
+   * the player's diary is simply gone one day with nothing said. "Some history
+   * was cleared" is a fair description of the diary and a lie about a world,
+   * which is why each rung has its own sentence.
+   */
+  useEffect(() => {
+    onShed((rung) => setNote(shedNote(rung, s)));
+  }, [s]);
+
   const theme = useMemo(() => {
     if (storedTheme !== AUTO_THEME_ID) return resolveTheme(storedTheme);
     // AUTO is the absence of a choice — what a fresh phone is set to — so the
@@ -339,6 +362,32 @@ function Game() {
    *    A shrine, a cache, a wall, spent stone, ground not yet ripe. No mode to
    *    learn, and it costs a gesture that did nothing before.
    */
+  /**
+   * Dispatch, and say what that did.
+   *
+   * **Every action goes through here**, which is the whole point: a receipt is
+   * a property of the transition, so the one place that can reliably notice
+   * one is the one place that causes it. Ashwake 1 reached the same shape from
+   * the other direction — its `#dispatch` was where the pop receipt, the claim
+   * notes and the teaching all decided who spoke.
+   *
+   * Read straight back off the session rather than mirrored into state through
+   * an effect: mirroring a prop into state is a cascading render and a frame of
+   * latency, and `react-hooks` refuses it for good reason.
+   */
+  const act = useCallback(
+    (action: Action) => {
+      session.dispatch(action);
+      const said = session.get().said;
+      if (said === null) return;
+      // A claim rare enough to change what you carry holds the screen; the
+      // rest go where every other passing sentence goes.
+      if (said.card) setSaidCard(said);
+      else setNote(said.text);
+    },
+    [session],
+  );
+
   const onTap = useCallback(
     (key: string, cell: CellView): void => {
       const now = session.get();
@@ -356,7 +405,7 @@ function Game() {
           return;
         }
         setNote(null);
-        session.dispatch({ type: 'PLACE', hex: key });
+        act({ type: 'PLACE', hex: key });
         return;
       }
 
@@ -396,7 +445,7 @@ function Game() {
         ),
       );
     },
-    [session, s, theme, lens, ledgers, slot],
+    [act, session, s, theme, lens, ledgers, slot],
   );
 
   /**
@@ -432,6 +481,26 @@ function Game() {
       session.dispatch({ type: 'SELECT', index });
     },
     [session, snap.hud.draft, snap.state.tuning, theme, s],
+  );
+
+  /**
+   * Cash a pocket — and go and watch it happen.
+   *
+   * The camera glides to the pocket FIRST, at the zoom it is already at, so
+   * the leap and the cascade play where the player is looking. A pop is the
+   * loudest thing the board does and it was being played off-screen whenever
+   * the priced pocket was somewhere the camera was not.
+   *
+   * A pure pan rather than a zoom, so the effect rides along at whatever scale
+   * the player chose to watch the board at.
+   */
+  const onHarvest = useCallback(
+    (choice: HarvestChoice) => {
+      const at = snap.hud.harvestAt;
+      if (at !== null) board.current?.flyToHex(at, board.current.zoomLevel());
+      act({ type: 'HARVEST', choice, ...(at === null ? {} : { at }) });
+    },
+    [act, snap.hud.harvestAt],
   );
 
   const onLens = useCallback(
@@ -479,9 +548,9 @@ function Game() {
         setNote(snap.hud.held[slot] === undefined ? s.ui.holdNothing : s.ui.holdTrades);
         return;
       }
-      session.dispatch({ type: 'HOLD', slot });
+      act({ type: 'HOLD', slot });
     },
-    [session, snap.hud.draft.length, snap.hud.held, s],
+    [act, snap.hud.draft.length, snap.hud.held, s],
   );
 
   /**
@@ -616,7 +685,7 @@ function Game() {
               theme={theme}
               s={s}
               onSpend={(spend) =>
-                session.dispatch(
+                act(
                   spend.on === 'steer' && spend.colour !== null
                     ? { type: 'SPEND', on: 'steer', colour: spend.colour }
                     : { type: 'SPEND', on: spend.on },
@@ -631,13 +700,10 @@ function Game() {
             onSelect={onSelect}
             onLens={onLens}
             onHold={onHold}
-            onHarvest={(choice) =>
-              session.dispatch({
-                type: 'HARVEST',
-                choice,
-                ...(snap.hud.harvestAt === null ? {} : { at: snap.hud.harvestAt }),
-              })
-            }
+            // The burn is only offered once relics mean something — see
+            // SACRIFICE in `ActionBar`.
+            knowsRelics={hasMet(progress, 'relic')}
+            onHarvest={onHarvest}
             onPurse={() => {
               setPurseOpen((was) => !was);
               // The purse teaches on the first deliberate OPEN rather than on
@@ -796,6 +862,17 @@ function Game() {
             {s.ui.newVersion}
           </button>
         </p>
+      )}
+
+      {saidCard !== null && (
+        <SaidCard
+          text={saidCard.text}
+          rows={saidCard.rows}
+          theme={theme}
+          s={s}
+          onTerm={setTerm}
+          onDismiss={() => setSaidCard(null)}
+        />
       )}
 
       {card !== null && (

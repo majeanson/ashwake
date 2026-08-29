@@ -179,3 +179,64 @@ describe('the stash', () => {
     expect(session().get().hud.holdSlots).toBe(1);
   });
 });
+
+/**
+ * What the session SAYS about what it just did.
+ *
+ * The whole reward loop ran silent until 2026-08-29: claims landed, pockets
+ * popped and the purse spent, and the screen said nothing about any of it.
+ * These pin the shape that fixed it — a receipt is a property of the
+ * TRANSITION, computed once where it happens, and gone by the next one.
+ */
+describe('the session narrates', () => {
+  it('says nothing about an action with nothing to report', () => {
+    const s = session();
+    s.dispatch({ type: 'SELECT', index: 0 });
+    expect(s.get().said).toBeNull();
+  });
+
+  it('says something about every pop that actually lands', () => {
+    // The invariant, rather than one lucky pocket: whenever a HARVEST changes
+    // the state, it must have produced a receipt — and a receipt about a
+    // pocket that no longer exists can only have been written from what was
+    // there before the reducer spent it.
+    const s = session();
+    let pops = 0;
+
+    for (let step = 0; step < 80 && !s.get().hud.ended; step++) {
+      // `canHarvest` is the HUD's own answer, and the same gate `walk` uses —
+      // a ripe cell existing is not the same as a pocket the reducer will
+      // cash, which is what made the first version of this test never pop.
+      if (s.get().hud.canHarvest) {
+        const at = s.get().hud.harvestAt;
+        const before = s.get().state;
+        s.dispatch({ type: 'HARVEST', choice: 'tiles', ...(at === null ? {} : { at }) });
+        if (s.get().state !== before) {
+          pops++;
+          expect(s.get().said, 'a pop that landed said nothing').not.toBeNull();
+          expect(s.get().said?.text.length).toBeGreaterThan(10);
+          continue;
+        }
+      }
+      walk(s, 1);
+    }
+
+    expect(pops, 'the walk never managed a single pop').toBeGreaterThan(0);
+  });
+
+  it('gives every utterance its own identity, so "said again" is tellable', () => {
+    const s = session();
+    walk(s, 14);
+    const first = s.get().said;
+    walk(s, 4);
+    const later = s.get().said;
+    if (first !== null && later !== null) expect(later.id).toBeGreaterThan(first.id);
+  });
+
+  it('forgets what it said when a new run is entered', () => {
+    const s = session();
+    walk(s, 20);
+    s.restart(11);
+    expect(s.get().said).toBeNull();
+  });
+});

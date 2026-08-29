@@ -278,6 +278,48 @@ export type Strings = {
       record: { readonly best: number; readonly tries: number } | null,
     ) => string;
   };
+  /**
+   * What the game says when a claim LANDS — the reward loop's own voice.
+   *
+   * Distinct from `view.hex`, which is what a landmark says when you TAP it:
+   * that one describes a thing standing there, this one reports something that
+   * just happened to you. Ashwake 1 kept these in its UI as hard-coded
+   * English, which is why they did not travel with the rules.
+   *
+   * The GLYPH is not here. `receipts.ts` prefixes `LANDMARK_GLYPH`, which is
+   * the one authority on those marks — a catalogue that wrote its own would be
+   * a second place for them to drift.
+   */
+  readonly claim: {
+    readonly cache: (tiles: number) => string;
+    readonly site: (pts: number, need: number, radius: number, bonus: number) => string;
+    readonly territory: (radius: number, owns: string) => string;
+    readonly shrine: (unlock: string) => string;
+    /** Past the end of the ledger: nothing left to switch on. */
+    readonly shrineAwake: string;
+    /** A shared seed or a daily has no ledger to narrate. */
+    readonly shrineDetour: string;
+    readonly found: (perk: string, worn: boolean) => string;
+    /** A find grants only what you do not already carry. */
+    readonly findNothing: string;
+  };
+
+  /**
+   * What the purse says when it has just been spent.
+   *
+   * Distinct from `view.purse`, which labels the BUTTONS: that one is an
+   * offer, this one is a receipt. Ashwake 1's reason, verbatim: *"a reroll
+   * that silently replaces three cards looks identical to a bug, so every
+   * purchase pays out into the toast — the purse is a currency now, and a
+   * currency you cannot see leaving is a currency you stop trusting."*
+   */
+  readonly spent: {
+    readonly reroll: (paid: number) => string;
+    readonly steer: (name: string, draws: number, paid: number) => string;
+    readonly forge: (paid: number) => string;
+    readonly tithe: (paid: number, relics: number) => string;
+  };
+
   readonly backup: {
     readonly describe: (worlds: number, relics: number, date: string | null) => string;
   };
@@ -313,6 +355,20 @@ export type Strings = {
     readonly holdNothing: string;
     readonly holdTrades: string;
     readonly pop: string;
+    /**
+     * The other two ways to cash a pocket.
+     *
+     * Four harvest choices exist in the rules; this body offered two. TAKE
+     * spends a pocket for a rare tile, SACRIFICE burns it for relics or luck —
+     * both were unreachable from the screen until 2026-08-29, with
+     * `harvestTreasure` and `harvestBurn` computed in the view and read by
+     * nobody.
+     */
+    readonly take: string;
+    readonly sacrifice: string;
+    /** What a burn pays, worded for whichever currency it pays in. */
+    readonly relicsPaid: (n: number) => string;
+    readonly luckPaid: (n: number) => string;
     readonly redraw: string;
     readonly forge: string;
     readonly sacrificeLuck: string;

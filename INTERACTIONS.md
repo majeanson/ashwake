@@ -52,26 +52,26 @@ deliberately absent in both.
 
 ## 3. Action bar, purse, stats
 
-| Gesture                                          | Ashwake 1                                     | Ashwake 2                       |
-| ------------------------------------------------ | --------------------------------------------- | ------------------------------- |
-| POP (tiles)                                      | flies the camera to the pocket, then harvests | ✓ harvests; **no camera glide** |
-| POP for points                                   | harvests for points                           | ✓                               |
-| TAKE (treasure)                                  | harvests for a rare tile                      | ✗ **not offered**               |
-| SACRIFICE (burn)                                 | harvests for relics                           | ✗ **not offered**               |
-| LUCK ▸ purse drawer                              | opens; teaches on first deliberate open       | ✓                               |
-| REDRAW · steer a colour · FORGE · SACRIFICE LUCK | spend, each with its own receipt              | ✓ spends; **receipts missing**  |
-| Tap a **stat box**                               | prints that stat's `statNote`                 | ✓                               |
-| Enter/Space on a focused stat                    | same                                          | ✓                               |
+| Gesture                                          | Ashwake 1                                     | Ashwake 2                           |
+| ------------------------------------------------ | --------------------------------------------- | ----------------------------------- |
+| POP (tiles)                                      | flies the camera to the pocket, then harvests | → glides, then harvests             |
+| POP for points                                   | harvests for points                           | ✓                                   |
+| TAKE (treasure)                                  | harvests for a rare tile                      | → offered when the pocket earns one |
+| SACRIFICE (burn)                                 | harvests for relics                           | → offered once relics are known     |
+| LUCK ▸ purse drawer                              | opens; teaches on first deliberate open       | ✓                                   |
+| REDRAW · steer a colour · FORGE · SACRIFICE LUCK | spend, each with its own receipt              | → each says what it cost            |
+| Tap a **stat box**                               | prints that stat's `statNote`                 | ✓                                   |
+| Enter/Space on a focused stat                    | same                                          | ✓                                   |
 
 ## 4. What speaks after an action
 
-| Moment                                                  | Ashwake 1                                                                      | Ashwake 2              |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------- |
-| **Claiming** a cache / site / shrine / territory / find | a ranked receipt per claim, the rare ones as a card, each with its side effect | ✗ **nothing speaks**   |
-| **Popping** a pocket                                    | `harvestNote` receipt; the first pop ever is a card                            | ✗ **nothing speaks**   |
-| Goal met (world survey)                                 | `GOAL MET — {text}`                                                            | ✗ (no survey here yet) |
-| Teaching moments                                        | a priority list, first unmet-and-true fires                                    | ✓                      |
-| NEW GROUND / UNIQUE, once per run                       | toast                                                                          | ✗                      |
+| Moment                                                  | Ashwake 1                                           | Ashwake 2                          |
+| ------------------------------------------------------- | --------------------------------------------------- | ---------------------------------- |
+| **Claiming** a cache / site / shrine / territory / find | a ranked receipt per claim, the rare ones as a card | → `view/receipts.ts`, same ranking |
+| **Popping** a pocket                                    | `harvestNote` receipt; the first pop ever is a card | ✗ **nothing speaks**               |
+| Goal met (world survey)                                 | `GOAL MET — {text}`                                 | ✗ (no survey here yet)             |
+| Teaching moments                                        | a priority list, first unmet-and-true fires         | ✓                                  |
+| NEW GROUND / UNIQUE, once per run                       | toast                                               | ✗                                  |
 
 ## 5. Dialogs, chrome, keyboard
 
@@ -95,19 +95,24 @@ deliberately absent in both.
 
 ## What is still missing, in the order it matters
 
-1. **Nothing speaks when you claim something.** Reaching a shrine, a cache, a
-   territory or a find is the reward loop of the whole game, and this body
-   claims them in silence. Ashwake 1's `#claimNote` is ~200 lines of ranked
-   receipts; the ranking (find < shrine < territory < site < cache, rarest
-   leads) and the card-vs-toast split are the design, not the wrapping.
-2. **Nothing speaks when you pop.** `harvestNote` is in the core with no
-   caller, and the first pop of a device is meant to be a card.
-3. **TAKE and SACRIFICE are not offered** — two of the four harvest choices
-   the rules support cannot be reached from the screen.
-4. **Spend receipts** — the purse spends, and says nothing about what it did.
-5. **POP does not glide the camera** to the pocket it is about to burn.
+Everything above §5 is closed as of 2026-08-29. What is left:
 
-Items 1–4 are all the same shape as the three found this session: **a rule the
-core implements, with no consumer in the shell.** The standing check that would
-have caught every one of them is in `NEXT.md` — before calling a screen done,
-grep for a consumer of every action it can produce.
+1. **The first pop of a device is not a card.** Ashwake 1 upgrades the very
+   first pop receipt into a held card, because the rule it teaches — a popped
+   pocket turns to STONE, which still surrounds but never matches, so popped
+   ground grows poorer — changes how the rest of the run is played. The receipt
+   is right; only its rank is missing.
+2. **NEW GROUND / UNIQUE, once per run.** Two toasts Ashwake 1 fires at their
+   first occurrence in a run.
+3. **The world survey** (`meta/goals.ts`, no consumer) — `GOAL MET — {text}`
+   joined onto whatever else spoke.
+4. **The crossing.** A shrine past the end of the ledger offers a new world;
+   this body says the true half ("fully awake") and stops, because the crossing
+   itself is S4's remainder. `receipts.ts` says so where the branch would go.
+5. **The `✕` lens-clear button** — the fog tap and a second long-press both let
+   go, so this is a convenience rather than a gap.
+6. **Sound.** No `voice` consumer at all; every theme carries one.
+
+The standing check that would have caught the whole of §4 is in `CLAUDE.md`:
+before calling a screen done, grep for a consumer of every action it can
+produce.

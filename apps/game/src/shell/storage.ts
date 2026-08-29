@@ -10,6 +10,7 @@ import { decodeProgress, encodeProgress, EMPTY_PROGRESS, type Progress } from '@
 import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
 import { decodeTimeline, encodeTimeline, type Timeline } from '@meta/timeline';
+import { SHED_LADDER, type ShedRungId } from '@meta/shedLadder';
 import { decodeWorld, encodeWorld, type WorldMemory } from '@meta/world';
 import type { GameState } from '@engine/state';
 
@@ -80,25 +81,39 @@ const slotKeys = (slot: Slot) =>
   }) as const;
 
 /**
- * Storage, if this device has any.
+ * Whether this device has storage at all.
  *
- * Sampled once and cached: `localStorage` can throw on ACCESS, not only on
- * use, in a browser configured to block site data, and a getter that throws is
- * a getter no `??` will save you from.
+ * Sampled once, because the probe WRITES: `localStorage` can throw on ACCESS
+ * and not only on use, in a browser configured to block site data, and a
+ * getter that throws is a getter no `??` will save you from. Probing on every
+ * read would also be wrong on a FULL disk — the probe's own `setItem` would
+ * throw and the game would conclude the device is ephemeral, when in truth it
+ * is merely out of room and the shed ladder is what that calls for.
  */
-function store(): Storage | null {
+function usable(): boolean {
   try {
     const probe = `${NS}.probe`;
     localStorage.setItem(probe, '1');
     localStorage.removeItem(probe);
-    return localStorage;
+    return true;
   } catch {
-    return null;
+    return false;
   }
 }
 
-let cached: Storage | null | undefined;
-const disk = (): Storage | null => (cached === undefined ? (cached = store()) : cached);
+/**
+ * The ANSWER is cached; the handle is not.
+ *
+ * Caching the `Storage` object itself is what the probe seemed to imply and it
+ * is one step too far: what is expensive and dangerous is the probe, not the
+ * property read. Resolving the handle each call costs nothing, and it means
+ * this module has no memo for a test to have to reach past.
+ */
+let has: boolean | undefined;
+const disk = (): Storage | null => {
+  if (has === undefined) has = usable();
+  return has ? localStorage : null;
+};
 
 /** True when nothing can be kept — SETTINGS says so rather than pretending. */
 export const isEphemeral = (): boolean => disk() === null;
@@ -111,12 +126,79 @@ function read(key: string): string | null {
   }
 }
 
+/**
+ * Told when a write had to spend a rung of the shed ladder, so the shell can
+ * say which. Registered once; a device that never fills its quota never calls
+ * it.
+ */
+let reportShed: ((rung: ShedRungId) => void) | null = null;
+export const onShed = (report: (rung: ShedRungId) => void): void => {
+  reportShed = report;
+};
+
+/**
+ * Write, and if the disk is full, MAKE room rather than lose the run.
+ *
+ * The old comment here said a failed write is not a reason to lose the frame
+ * because "the next write of the same key is the retry, and there is always a
+ * next write" — which is true right up until the quota is genuinely full, and
+ * then every write fails forever and the run in progress is the thing that
+ * dies. `meta/shedLadder.ts` exists for exactly this and had no caller.
+ *
+ * The ladder's order survived a real bug (Ashwake 1, 2026-08-20): an earlier
+ * version shed a WORLD while leaving its run, so the next boot minted a fresh
+ * world and resumed a run whose seed no longer matched it, merging a foreign
+ * geography into it. Hence the rule the ladder encodes — spend the genuinely
+ * cheap things first, and **never touch the world being played**.
+ */
 function write(key: string, value: string): void {
+  const d = disk();
+  if (d === null) return;
   try {
-    disk()?.setItem(key, value);
+    d.setItem(key, value);
+    return;
   } catch {
-    // A full quota is not a reason to lose the frame. The next write of the
-    // same key is the retry, and there is always a next write.
+    // Fall through to the ladder. A quota error and a disabled-storage error
+    // look the same here, which is why the null check above is separate.
+  }
+
+  for (const rung of SHED_LADDER) {
+    shed(rung.id);
+    try {
+      d.setItem(key, value);
+      reportShed?.(rung.id);
+      return;
+    } catch {
+      // Not enough yet. Climb.
+    }
+  }
+  // Every rung spent and still no room. The run in progress is lost, and
+  // there is nothing left to give that is not the world being played.
+}
+
+/** Free one rung's worth of room. The ORDER is the ladder's; which keys each
+ *  rung owns is this file's, because only this file knows the key shapes. */
+function shed(rung: ShedRungId): void {
+  const here = activeSlot();
+  switch (rung) {
+    case 'lastError':
+      drop(DEVICE.lastError);
+      return;
+    case 'otherReceipts':
+      // No per-slot receipts in this body yet, so this rung is free and
+      // frees nothing. Kept as a rung rather than deleted: the ladder's
+      // ORDER is the part that was paid for, and a missing rung is how an
+      // order gets quietly re-argued.
+      return;
+    case 'timeline':
+      drop(DEVICE.timeline);
+      return;
+    case 'otherWorlds':
+      for (const slot of SLOTS) {
+        if (slot === here) continue;
+        clearSlot(slot);
+      }
+      return;
   }
 }
 

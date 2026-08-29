@@ -443,6 +443,39 @@ export const STRINGS_EN: Strings = {
         ? ''
         : ` · best ${record.best} · ${record.tries} ${plural(record.tries, 'try', 'tries')}`),
   },
+  claim: {
+    cache: (tiles) => `CACHE CLAIMED
++${tiles} tiles, on the spot.`,
+    site: (pts, need, radius, bonus) =>
+      `SITE CLAIMED
++${pts} pts banked — and this star has set a BOUNTY: pop a pocket of ${need}+ within ${radius} hexes of it for ×${bonus}.`,
+    territory: (radius, owns) =>
+      `TERRITORY CLAIMED
+Ground within ${radius} hexes is native to ${owns} now — and it stays yours between runs.`,
+    shrine: (unlock) => `SHRINE WOKEN
+${unlock}
+Yours from your next run on, in this world for good.`,
+    shrineAwake: `SHRINE WOKEN
+This world is fully awake — every unlock is yours.`,
+    shrineDetour: `SHRINE WOKEN
+On your own world a shrine switches a system on, for good. A shared run keeps nothing — but it still counts the claim.`,
+    found: (perk, worn) =>
+      `FOUND — ${perk}
+${worn ? 'Already worn — it works from here on.' : 'Yours for good, in THIS world. WEAR it in THE SHOP, on the end screen.'}`,
+    findNothing: `A HIDDEN FIND
+Nothing new inside — a find grants only what you do not already carry, and only on your own world.`,
+  },
+
+  spent: {
+    reroll: (paid) => `A fresh hand, for ${paid} luck.`,
+    steer: (name, draws, paid) =>
+      `${name} runs hot: a new hand drawn under it, and the next ${draws} draws lean its way. ${paid} luck.`,
+    forge: (paid) =>
+      `Forged UNIQUE — wild, and every match it makes counts double, both ways. ${paid} luck.`,
+    tithe: (paid, relics) =>
+      `Sacrificed ${paid} luck for ${relics} relic${plural(relics, '', 's')}.`,
+  },
+
   backup: {
     describe: (worlds, relics, date) =>
       `${worlds} world${plural(worlds, '', 's')} · ${relics} relics${date === null ? '' : ` · ${date}`}`,
@@ -465,6 +498,10 @@ export const STRINGS_EN: Strings = {
     holdNothing: 'Nothing in hand to stash — tap a card first.',
     holdTrades: 'Tap a card in your hand first — the stash trades, it does not deal.',
     pop: 'POP',
+    take: 'TAKE',
+    sacrifice: 'SACRIFICE',
+    relicsPaid: (n) => `${n} relic${plural(n, '', 's')}`,
+    luckPaid: (n) => `+${n} luck`,
     redraw: 'REDRAW',
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
