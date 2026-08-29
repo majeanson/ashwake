@@ -49,6 +49,20 @@ export function themeCssVars(theme: Theme): CssVars {
      * soft one for the ground under it.
      */
     '--card-text-shadow': `0 0 3px ${rgba(theme.ink.halo, 0.9)}, 0 1px 2px ${rgba(theme.ink.halo, 0.7)}`,
+    /*
+     * The halo as a COLOUR, for the one place that wants a stroke rather than
+     * a shadow (2026-08-29).
+     *
+     * The board draws its labels with a real outline — troika's
+     * `outlineColor` at `ink.haloWidth` — which is why `materials.test.ts`
+     * can grade a label on terrain at 4.5:1 while the raw ink-on-fill ratio
+     * is far below it. The DOM's two soft shadows above are the cheaper
+     * version of the same idea and they are not as strong; a card's colour
+     * MARK sits on its own terrain fill with nothing else to help it, so it
+     * takes the stroke instead. Exposed rather than composed here because a
+     * stroke is `-webkit-text-stroke`, which takes a colour and not a shadow.
+     */
+    '--halo': hex(theme.ink.halo),
   };
 
   // The draft cards are DOM but they stand for board tiles, so they take the same

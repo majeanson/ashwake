@@ -150,8 +150,8 @@ export const DAYLIGHT: Theme = {
   },
 
   /*
-   * The ladder runs the other way up: ash 0.453 / moss 0.529 / tide 0.611 /
-   * ember 0.736, all measured against a ground at 0.881. Ash is the darkest
+   * The ladder runs the other way up: ash 0.453 / moss 0.529 / tide 0.610 /
+   * ember 0.683, all measured against a ground at 0.881. Ash is the darkest
    * terrain here where it is the second-darkest in torchlit, which is what a
    * pale board does — the colour with the most pigment ends up furthest from
    * the paper.
@@ -187,10 +187,40 @@ export const DAYLIGHT: Theme = {
       overlay: { kind: 'dots', ink: 0x3f5626, alpha: 0.14, radius: 1.3, pitch: 11 },
       asset: 'terrain.green',
     }),
-    yellow: surface(0xcdbd98, {
-      fillTo: 0xbba67d,
-      pattern: { kind: 'dots', ink: 0xa8791f, alpha: 0.3, radius: 2.1, pitch: 14 },
-      overlay: { kind: 'hatch', angleDeg: 90, ink: 0x8a6d2e, alpha: 0.1, bar: 1, gap: 5 },
+    /*
+     * EMBER, deepened again on 2026-08-29 — and this time against the pale
+     * things that are not the paper (Marc, from the phone: "amber should be
+     * differentiated in daylight theme").
+     *
+     * The 2026-08-28 pass brought the whole ladder down to clear the BOARD,
+     * and it worked: ember sat 0.151 from the vellum. What nothing had asked
+     * was how far it sat from the two OTHER pale surfaces a player sees it
+     * against, and the answer was: not far.
+     *
+     *   spent STONE   0.770 — ember 0.730 was **0.040** away, over a floor of
+     *                 0.030. Legal, and a sandy tile beside spent ground on a
+     *                 sand-coloured board is three shades of the same thing.
+     *   the PANEL     0.835 — the card in the hand paints itself in this
+     *                 colour's `fill` (0.771), which left **0.064** between a
+     *                 card and the surface it sits on. The card was the paler
+     *                 problem of the two and nobody had looked, because until
+     *                 today the card only wore its colour when SELECTED.
+     *
+     * So: 0xcdbd98 → 0xccae70 and 0xbba67d → 0xb59857, a mean of 0.683.
+     * Stone clears by 0.087 and the panel by 0.111 — both roughly doubled —
+     * while TIDE below still clears by 0.073 against the 0.05 the greyscale
+     * rule wants, and the board above by 0.198.
+     *
+     * **No threshold moved to allow this**, per `CLAUDE.md`: the colour came
+     * down. And it came down toward gold rather than toward grey, which is
+     * the other half of the answer — the old value was a desaturated sand
+     * whose hue was the paper's own, so it lost on both channels at once.
+     * This one is the only amber on the board.
+     */
+    yellow: surface(0xccae70, {
+      fillTo: 0xb59857,
+      pattern: { kind: 'dots', ink: 0x8a5e13, alpha: 0.3, radius: 2.1, pitch: 14 },
+      overlay: { kind: 'hatch', angleDeg: 90, ink: 0x715623, alpha: 0.1, bar: 1, gap: 5 },
       asset: 'terrain.yellow',
     }),
     red: surface(0xc45a2c, {

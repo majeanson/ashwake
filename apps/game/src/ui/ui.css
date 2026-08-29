@@ -1120,3 +1120,34 @@ button[disabled] {
   border-radius: var(--radius);
   margin-bottom: 0.25rem;
 }
+
+/*
+ * The colour's MARK on a card — the shape channel.
+ *
+ * Bigger than the name it sits over, because at a six-card hand the name is
+ * down to 56px of width and the mark is what a thumb aims at. Haloed with the
+ * same shadow the label wears (`.tile`), so it reads on its own ground in
+ * every direction rather than needing a per-theme ink.
+ */
+.tile-mark {
+  font-size: 1.15rem;
+  line-height: 1;
+  /*
+   * A real OUTLINE, not the label's soft glow — the mark stands on its own
+   * terrain fill with nothing else carrying it, which is the same problem the
+   * board solves with troika's `outlineColor`.
+   *
+   * Four offset shadows rather than `-webkit-text-stroke`, and the reason is
+   * this project's browser floor: a stroke is CENTRED unless `paint-order`
+   * moves it outward, and `paint-order` on HTML text is Safari 17. On the
+   * iOS 16.4 this game supports (see the guard in `index.html`) the stroke
+   * would eat into the glyph and thin the very shape it is there to
+   * strengthen. Shadows only ever add.
+   */
+  text-shadow:
+    1px 1px 0 var(--halo),
+    -1px 1px 0 var(--halo),
+    1px -1px 0 var(--halo),
+    -1px -1px 0 var(--halo),
+    0 0 3px var(--halo);
+}
