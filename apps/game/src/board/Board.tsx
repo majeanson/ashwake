@@ -1,9 +1,18 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type Ref,
+} from 'react';
 import type { OrthographicCamera } from 'three';
 import { parse, type HexKey } from '@engine/hex';
 import { place } from '@render/layout';
 import type { BoardView, CellView } from '@render/Renderer';
+import type { Popped } from '../shell/store';
 import { rigFor } from '@theme/rig';
 import { hex as cssHex, type Theme } from '@theme/tokens';
 import {
@@ -21,7 +30,9 @@ import {
 } from './camera';
 import { GL_PROPS } from './gl';
 import { useAssets } from './assets';
-import { HexField, UNIT, type Leap } from './HexField';
+import { HexField, UNIT } from './HexField';
+import { Pop } from './Pop';
+import { SurfaceTextures } from './surfaces';
 import { LightRig } from './LightRig';
 import { tallestOf } from './relief';
 
@@ -53,7 +64,7 @@ export type BoardProps = {
   readonly view: BoardView;
   readonly theme: Theme;
   /** The last pop — the store's counter and keys — so the leap can play. */
-  readonly popped: { readonly keys: readonly HexKey[]; readonly id: number } | null;
+  readonly popped: Popped | null;
   /** Degrees the camera leans back from straight down. */
   readonly tilt?: number;
   /** Degrees the board is turned under it. */
@@ -80,6 +91,11 @@ const EYE_DISTANCE = 200;
 export function Board(props: BoardProps) {
   const { theme, tilt = 0, yaw = 0, relief = 0, light = 0, materials = 0, art = false } = props;
   const assets = useAssets(theme.id, art);
+  // One cache for both layers, so a leaping ASH tile is painted by the very
+  // texture that was under it a frame ago rather than by a second bake of it.
+  const textures = useMemo(() => new SurfaceTextures(), []);
+  useEffect(() => () => textures.dispose(), [textures]);
+  const layout = useMemo(() => ({ ...UNIT, orientation: theme.orientation }), [theme.orientation]);
   const wrapper = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -94,14 +110,13 @@ export function Board(props: BoardProps) {
     return () => ro.disconnect();
   }, []);
 
-  const [leap, setLeap] = useState<Leap | null>(null);
+  // The pop plays in its own layer, over a board that has already turned the
+  // popped cells to stone. It clears itself when its cascade is over.
+  const [pop, setPop] = useState<Popped | null>(null);
   useEffect(() => {
-    if (props.popped === null || props.reducedMotion === true) return;
-    setLeap({ keys: new Set(props.popped.keys), startedAt: performance.now() });
-    const ms = theme.motion.popMs + theme.motion.popStaggerMs * props.popped.keys.length + 50;
-    const id = setTimeout(() => setLeap(null), ms);
-    return () => clearTimeout(id);
-  }, [props.popped, props.reducedMotion, theme.motion.popMs, theme.motion.popStaggerMs]);
+    if (props.popped !== null) setPop(props.popped);
+  }, [props.popped]);
+  const donePopping = useCallback(() => setPop(null), []);
 
   return (
     <div
@@ -148,10 +163,25 @@ export function Board(props: BoardProps) {
             relief={relief}
             materials={materials}
             assets={assets}
+            textures={textures}
             yaw={yaw}
-            leap={leap}
             onTap={props.onTap}
           />
+          {pop !== null && (
+            <Pop
+              cells={pop.cells}
+              at={pop.at}
+              id={pop.id}
+              theme={theme}
+              layout={layout}
+              relief={relief}
+              materials={materials}
+              assets={assets}
+              textures={textures}
+              reducedMotion={props.reducedMotion === true}
+              onDone={donePopping}
+            />
+          )}
         </Canvas>
       )}
     </div>

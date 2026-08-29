@@ -65,3 +65,36 @@ for (const [name, query] of ANGLES) {
     expect(errors, errors.join('\n')).toEqual([]);
   });
 }
+
+/**
+ * The pop, caught in the air.
+ *
+ * A screenshot of an animation is a screenshot of one instant, so this one is
+ * deliberately taken 160ms in — after the leap has left the ground and before
+ * the cascade's last tile has gone. It is the only way to see, in a still,
+ * that the COLOUR is above the board while the grey is already under it.
+ */
+test('catches the harvest in the air', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&place=12&tilt=35&light=1&materials=1');
+  await expect(page.locator('canvas')).toBeVisible();
+  await page.waitForTimeout(700);
+
+  const pop = page.getByRole('button', { name: /POP/ });
+  await expect(pop).toBeVisible();
+  await pop.click();
+
+  await mkdir(SHOTS, { recursive: true });
+  // Three instants, because an animation judged from one still is an animation
+  // judged from luck: the burst, the arc, and the tail of the cascade.
+  let last = 0;
+  for (const at of [70, 160, 320]) {
+    await page.waitForTimeout(at - last);
+    last = at;
+    const shot = await page.locator('canvas').screenshot();
+    assertLooksLikeAPicture(shot, `the harvest at ${at}ms`);
+    await writeFile(join(SHOTS, `s2d-pop-${at}.png`), await page.screenshot());
+  }
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

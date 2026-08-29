@@ -1,4 +1,4 @@
-import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { Color, Object3D, type InstancedMesh } from 'three';
 import type { HexKey } from '@engine/hex';
@@ -10,11 +10,10 @@ import type { AssetBook } from './assets';
 import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
 import { commitInstances } from './instances';
 import { Labels } from './Labels';
-import { jumpOf, type Leap } from './leap';
 import { thetaStartFor } from './prism';
 import { useBatchResources } from './resources';
 import { ringsOf } from './rings';
-import { SurfaceTextures, TEXTURE_PX } from './surfaces';
+import { TEXTURE_PX, type SurfaceTextures } from './surfaces';
 
 /**
  * The board, as instances (Stage 2, 2026-08-28; split into its parts and given
@@ -41,8 +40,6 @@ import { SurfaceTextures, TEXTURE_PX } from './surfaces';
 const scratchColor = new Color();
 const dummy = new Object3D();
 
-export type { Leap } from './leap';
-
 export const UNIT: Layout = { size: 1, originX: 0, originY: 0, orientation: 'pointy' };
 
 export type HexFieldProps = {
@@ -57,8 +54,8 @@ export type HexFieldProps = {
   readonly yaw: number;
   /** The direction's own art, where any has loaded. */
   readonly assets: AssetBook;
-  /** The pop's leap in flight, if any — the cells that just left, rising. */
-  readonly leap: Leap | null;
+  /** The shared texture cache, so the pop layer bakes nothing twice. */
+  readonly textures: SurfaceTextures;
   readonly onTap: (key: HexKey, cell: CellView) => void;
 };
 
@@ -70,17 +67,15 @@ export function HexField({
   materials,
   yaw,
   assets,
-  leap,
+  textures,
   onTap,
 }: HexFieldProps) {
   const layout = useMemo<Layout>(() => ({ ...UNIT, orientation }), [orientation]);
   const invalidate = useThree((s) => s.invalidate);
   const gl = useThree((s) => s.gl);
 
-  const textures = useMemo(() => new SurfaceTextures(), []);
   useLayoutEffect(() => {
     textures.setAnisotropy(gl.capabilities.getMaxAnisotropy());
-    return () => textures.dispose();
   }, [textures, gl]);
 
   const hasArt = useCallback((asset: AssetId) => assets.has(asset), [assets]);
@@ -109,8 +104,6 @@ export function HexField({
     [view, theme, layout, relief],
   );
 
-  const leapRef = useRef<Leap | null>(null);
-  leapRef.current = leap;
   const meshes = useRef(new Map<string, InstancedMesh>());
   const ringMesh = useRef<InstancedMesh | null>(null);
 
@@ -157,33 +150,6 @@ export function HexField({
     }
     invalidate();
   }, [batches, rings, theme, invalidate]);
-
-  useFrame(() => {
-    const active = leapRef.current;
-    if (active === null) return;
-    const { lift, done } = jumpOf(theme.motion, active, performance.now());
-    let moved = false;
-    for (const batch of batches) {
-      if (batch.kind !== 'stone') continue;
-      const mesh = meshes.current.get(batch.key);
-      if (mesh === undefined) continue;
-      let any = false;
-      batch.items.forEach((item, i) => {
-        if (!active.keys.has(item.cell.key)) return;
-        any = true;
-        const stand = standOf(item, batch.kind);
-        dummy.position.set(item.x, stand.height / 2 + lift, item.z);
-        dummy.scale.set(1, stand.scaleY, 1);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-      });
-      // A leap moves instances, so the cached bounds go stale here too — a tap
-      // during a harvest is still a tap.
-      if (any) commitInstances(mesh, batch.items.length);
-      moved ||= any;
-    }
-    if (moved && !done) invalidate();
-  });
 
   const tap = (batch: GroundBatch) => (event: ThreeEvent<MouseEvent>) => {
     // A tap is a lift that never travelled: R3F reports how far the pointer

@@ -63,13 +63,17 @@ describe('relief', () => {
     expect(jitterAt(1, 0)).not.toBe(jitterAt(0, 1));
   });
 
-  it('is a ladder: water sits below moss sits below ash sits below embers', () => {
-    // Same hex, so the jitter is the same and only the colour moves.
-    const at = (colour: 'blue' | 'green' | 'yellow' | 'red'): number =>
-      liftOf(cell({ q: 2, r: 5, colour }), 0.5);
-    expect(at('blue')).toBeLessThan(at('green'));
-    expect(at('green')).toBeLessThan(at('yellow'));
-    expect(at('yellow')).toBeLessThan(at('red'));
+  it('stands a rare tile up — height is what rarity says', () => {
+    // The powerful thing is the tall thing. Rarity had one channel (a star and
+    // a ring, both small marks on a small hex); colour already had two, its hue
+    // and a greyscale ladder a test enforces. So height is spent here.
+    const at = (rarity: 'common' | 'magic' | 'unique'): number =>
+      liftOf(cell({ q: 2, r: 5, rarity }), 0.5);
+    expect(at('common')).toBeLessThan(at('magic'));
+    expect(at('magic')).toBeLessThan(at('unique'));
+    // Visible at a glance rather than on inspection: a unique stands several
+    // times a common tile's lift, not a few percent over it.
+    expect(at('unique')).toBeGreaterThan(at('common') * 3);
   });
 
   it('never digs a hole, however the jitter falls', () => {
@@ -80,12 +84,18 @@ describe('relief', () => {
     }
   });
 
-  it('reads a native field as the ground it is native to', () => {
-    const plain = cell({ kind: 'empty', colour: null, native: null, q: 3, r: 3 });
-    const tidal = cell({ kind: 'empty', colour: null, native: 'blue', q: 3, r: 3 });
-    const ember = cell({ kind: 'empty', colour: null, native: 'red', q: 3, r: 3 });
-    expect(liftOf(tidal, 0.5)).toBeLessThan(liftOf(ember, 0.5));
-    expect(liftOf(plain, 0.5)).not.toBe(liftOf(ember, 0.5));
+  it('does not let the jitter outrank what height means', () => {
+    // The jitter exists to stop a field being a plateau. If it could carry a
+    // common tile past a magic one, height would stop meaning rarity.
+    let commonHigh = 0;
+    let magicLow = Infinity;
+    for (let q = -14; q <= 14; q++) {
+      for (let r = -14; r <= 14; r++) {
+        commonHigh = Math.max(commonHigh, liftOf(cell({ q, r, rarity: 'common' }), 0.5));
+        magicLow = Math.min(magicLow, liftOf(cell({ q, r, rarity: 'magic' }), 0.5));
+      }
+    }
+    expect(commonHigh).toBeLessThan(magicLow);
   });
 
   it('tells the camera how much sky the board needs', () => {

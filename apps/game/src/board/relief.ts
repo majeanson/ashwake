@@ -1,4 +1,4 @@
-import type { Colour } from '@content/tuning';
+import type { Rarity } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 
 /**
@@ -13,18 +13,16 @@ import type { CellView } from '@render/Renderer';
  * The dial is `relief`, in hex radii, and **zero is the flat board that
  * shipped** — the tuning dial `CLAUDE.md` asks every system to ship behind.
  *
- * Two reasons the lift is mostly the COLOUR's and only a little the cell's:
+ * Two reasons the lift is what it is:
  *
- * 1. A height channel that repeats the colour channel is a second way to tell
- *    two grounds apart, which is worth having for anyone who cannot tell them
- *    apart by hue. Noise alone spends the geometry and says nothing.
- * 2. A field of one colour still needs to not be a plateau, so a small
- *    deterministic jitter per hex breaks the terrace without breaking the
- *    ladder. Deterministic, because the same world must look the same twice.
+ * 1. Height is a CHANNEL, and it is spent on the thing that has fewest — see
+ *    RARITY_LIFT below. Noise alone spends the geometry and says nothing.
+ * 2. A field still needs to not be a plateau, so a small deterministic jitter
+ *    per hex breaks the terrace without competing with what height means.
+ *    Deterministic, because the same world must look the same twice.
  *
- * The ladder itself — rivers low, embers high — is a placeholder with a shape,
- * not a decision. Stage 5 picks the numbers by looking, and they move into the
- * direction (`Theme`) when the rest of the materials do.
+ * The numbers are Marc's, by looking, and they move into the direction
+ * (`Theme`) when the rest of the materials do.
  */
 
 /** How tall each kind of ground stands, in hex radii, before any relief. */
@@ -59,29 +57,44 @@ export function kindOf(cell: CellView): Kind | null {
 }
 
 /**
- * The colour ladder, 0..1. Water sits low and what burns sits high; the two
- * grounds in the middle are a slope rather than a step, so no two colours
- * share a height.
+ * **Rarity is what height says** (Marc, 2026-08-29).
+ *
+ * The first version lifted a hex by its terrain COLOUR, on the argument that a
+ * height channel repeating the colour channel helps anyone who cannot tell two
+ * grounds apart by hue. That argument was right about height and wrong about
+ * which channel needed it: colour already has two — its hue, and a greyscale
+ * ladder `theme.test.ts` enforces at 0.05 L* between neighbouring terrains, so
+ * the four grounds are separable in black and white before height says a word.
+ *
+ * Rarity has ONE. A magic or unique tile is a star above the number and a
+ * coloured ring, and both are small marks on a small hex. Standing a rare tile
+ * up is a third channel where there was one, it is visible at any zoom, it
+ * survives a screenshot at arm's length, and it reads as what it means: the
+ * powerful thing is the tall thing.
+ *
+ * The lift is large on purpose — a unique stands about four times a common
+ * tile's height — because a difference a player has to look for is a difference
+ * that is not doing its job.
  */
-const LADDER: Readonly<Record<Colour, number>> = {
-  blue: 0,
-  green: 0.34,
-  yellow: 0.67,
-  red: 1,
+const RARITY_LIFT: Readonly<Record<Rarity, number>> = {
+  common: 0,
+  magic: 0.55,
+  unique: 1,
 };
 
-/** Walls are the high ground whatever colour is beside them; stone is spent. */
+/** Walls are the high ground whatever stands beside them; stone is spent. */
 const KIND_LADDER: Readonly<Record<Kind, number>> = {
-  tile: 0.5,
-  empty: 0.15,
-  stone: 0.3,
-  wall: 1.15,
-  remembered: 0.1,
+  tile: 0.35,
+  empty: 0.1,
+  stone: 0.2,
+  wall: 0.9,
+  remembered: 0.05,
   beacon: 0,
 };
 
-/** How much of the lift the per-hex jitter may be worth. */
-const JITTER = 0.3;
+/** How much of the lift the per-hex jitter may be worth. Small: it is there to
+ *  stop a field being a plateau, not to compete with what height MEANS. */
+const JITTER = 0.16;
 
 /**
  * A hex's own jitter, in 0..1 — a hash of its coordinates, so it is the same
@@ -102,8 +115,7 @@ export function liftOf(cell: CellView, relief: number): number {
   // A beacon is a glow through ground that does not exist yet. There is
   // nothing under it to raise, so it stays on the floor at every relief.
   if (kind === 'beacon') return 0;
-  const colour = cell.kind === 'tile' ? cell.colour : cell.native;
-  const ground = colour === null ? KIND_LADDER[kind] : LADDER[colour];
+  const ground = KIND_LADDER[kind] + (RARITY_LIFT[cell.rarity ?? 'common'] ?? 0);
   const jitter = (jitterAt(cell.q, cell.r) - 0.5) * JITTER;
   return Math.max(0, relief * (ground + jitter));
 }
