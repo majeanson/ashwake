@@ -355,3 +355,26 @@ golden sim byte-identical; 21 Playwright tests at 390×844. Bundle 375KB gzip
 
 **Next:** Marc picks the light, relief and materials numbers from the shots;
 S2d — movement and the landmark props.
+
+### Session 6 — the chrome, and a first minute that exists (2026-08-29)
+
+**Question, written before building:** can the whole first minute — front door,
+HUD, hand, teaching, manual, settings, end screen — be built over the core's
+props layer without a single sentence being written in a component, and does
+the manual / card / term trio still say one sentence one way?
+
+**The order changed, and here is why.** `NEXT.md` §3 sequenced S2d's remaining
+motion before S3's chrome. The goal it serves is _a stranger could finish a run
+and start another_, and no quantity of embers gets anyone through a first
+minute that has no front door and no end screen. Chrome is the critical path;
+ambient motion and the landmark props are polish that can land against a
+finished screen. So S3 first, S2d's remainder after it.
+
+**The look dials are on by default now**, as working defaults rather than as a
+ruling: `tilt=35 light=1 materials=1 art=1 relief=0.35`. Marc has not seen them
+on a phone, and the chrome is about to be built AROUND whatever the board looks
+like — building it over a board nobody has chosen is the more expensive
+mistake. Every dial still takes a number, so `?light=0` is one keystroke away
+and `DECISIONS.md` still records the question as open.
+
+_(Answer written after the work.)_

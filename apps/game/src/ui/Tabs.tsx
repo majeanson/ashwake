@@ -1,0 +1,39 @@
+/**
+ * One row of tabs (Stage 3, 2026-08-29).
+ *
+ * Ashwake 1 implemented this TWICE — the manual's five and the hall of fame's
+ * three — with identical logic and identical CSS, which is exactly the kind of
+ * duplication that makes two surfaces drift apart for no reason anyone chose.
+ * Its own duplication is the argument for this file.
+ */
+
+export type Tab<Id extends string> = {
+  readonly id: Id;
+  readonly label: string;
+};
+
+export type TabsProps<Id extends string> = {
+  readonly label: string;
+  readonly tabs: readonly Tab<Id>[];
+  readonly on: Id;
+  readonly onPick: (id: Id) => void;
+};
+
+export function Tabs<Id extends string>({ label, tabs, on, onPick }: TabsProps<Id>) {
+  return (
+    <div className="tabs" role="tablist" aria-label={label}>
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          className="tab"
+          aria-selected={tab.id === on}
+          onClick={() => onPick(tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}

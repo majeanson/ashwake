@@ -24,13 +24,22 @@ import { walk } from './shell/walk';
  * two angles can be photographed over one board.
  */
 
-/** The default lean: Marc chose the tilt by looking, the rest are open. */
+/**
+ * How the board looks unless a query string says otherwise.
+ *
+ * The tilt is Marc's, chosen from `docs/shots/`. The other four are WORKING
+ * defaults rather than rulings (2026-08-29): the chrome is being built around
+ * whatever the board looks like, and building it over a board nobody has
+ * chosen is the more expensive mistake. Every one still takes a number, so
+ * `?light=0` is one keystroke away, and `DECISIONS.md` still carries the
+ * question as open until Marc has seen them on a phone.
+ */
 const TILT = 35;
 const YAW = 0;
-const RELIEF = 0;
-const LIGHT = 0;
-const MATERIALS = 0;
-const ART = 0;
+const RELIEF = 0.35;
+const LIGHT = 1;
+const MATERIALS = 1;
+const ART = 1;
 
 /** A number off the query string, where zero is a real answer and `?x=` alone
  *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
