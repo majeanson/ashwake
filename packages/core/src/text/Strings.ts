@@ -368,6 +368,19 @@ export type Strings = {
 
   readonly backup: {
     readonly describe: (worlds: number, relics: number, date: string | null) => string;
+    /**
+     * Said when a pasted backup came out of Ashwake 1 (D3).
+     *
+     * Crossing bodies is a thing a player is TOLD is happening, not a thing
+     * they work out afterwards from a world that came back under a new name.
+     */
+    readonly fromV1: string;
+    /** Why a pasted thing was refused — the module's own rule is that a
+     *  backup which silently does nothing is worse than no backup at all. */
+    readonly refused: string;
+    readonly paste: string;
+    readonly saved: (how: 'shared' | 'downloaded' | 'copied') => string;
+    readonly failed: string;
   };
 
   /**

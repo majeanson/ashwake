@@ -48,6 +48,20 @@ export function Hud({ hud, s, onNote }: HudProps) {
             type="button"
             className="stat"
             data-stat={id}
+            /*
+             * The one argued exemption from the 44px floor, DECLARED.
+             *
+             * A stat is a button because every number can be asked about, but
+             * `statNote` is an explanation and never an action: a mis-tap
+             * costs a sentence, and holding the row to tap size would spend a
+             * third of the screen on six things nobody presses. The exemption
+             * itself is not new — `ui.css` has argued it since the row was
+             * built and `audit:screens` counts it. What is new is that it is
+             * written on the control rather than assumed by the reader, so
+             * `e2e/targets.spec.ts` can gate every OTHER control at 44px and
+             * the escape hatch shows up in a diff when somebody widens it.
+             */
+            data-compact="argued"
             onClick={() => {
               onNote(statNote(id, hud, TUNING, s));
               setRose(id);

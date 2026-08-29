@@ -60,6 +60,17 @@ export function useDevice(opts: {
   /** `?taught=1` and friends override what the device remembers, for shots. */
   readonly progress?: Progress | undefined;
   readonly theme?: ThemeId | undefined;
+  /**
+   * A shared `?daily=` link opens THAT date rather than the world this device
+   * last left (`meta/route.ts`).
+   *
+   * It has to arrive here rather than be stepped into afterwards, because the
+   * keeper is made from the opening place: entering the daily a moment later
+   * would mean one render during which a daily's board existed while the
+   * keeper still pointed at a world, and the keeper is the only thing that
+   * writes. The place a session opens in is the place it was always in.
+   */
+  readonly daily?: string | undefined;
 }): Device {
   const [locale, setLocaleState] = useState<Locale>(() => {
     const kept = readLocale();
@@ -97,10 +108,13 @@ export function useDevice(opts: {
    * make them pick a world again — so the two are separate facts rather than
    * one. Only `place` decides where a run is written.
    */
-  const [place, setPlaceState] = useState<Place>(slot);
+  const [place, setPlaceState] = useState<Place>(() =>
+    opts.daily === undefined ? activeSlot() : { daily: opts.daily },
+  );
 
-  // One keeper per place, and the old one is dropped before the new one runs.
-  const keeper = useRef<Keeper>(keeperFor(slot));
+  // One keeper per PLACE — not per slot, which was the same thing right up
+  // until a link could open the daily directly.
+  const keeper = useRef<Keeper>(keeperFor(place));
   useEffect(() => {
     const held = keeper.current;
     return () => held.drop();

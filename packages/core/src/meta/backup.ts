@@ -42,6 +42,80 @@ const PREFIX = 'ashwake.';
  */
 const FORMAT = 1;
 
+/**
+ * Ashwake 1's namespace, and the key names that moved when the body did.
+ *
+ * `DECISIONS.md` D3 rules that the way a v1 player's worlds reach this body is
+ * BACK UP MY WORLDS → RESTORE A BACKUP. That could not work while `decodeBackup`
+ * filtered on `ashwake.` alone: every key in a v1 backup begins `tiles.`, so the
+ * filter emptied it and the guard below refused the file. It refused SAFELY —
+ * nothing was ever wiped — but the bridge D3 promised did not exist.
+ *
+ * A table rather than a prefix swap, because three shapes moved with the name:
+ *
+ *   - **The version suffix belongs to the BODY, not to the blob.** Ashwake 1
+ *     had already moved `features` and `theme` to `v2` (a changed default it
+ *     needed every device to re-derive) and `records` to `v2`; this body
+ *     started all three at `v1`. The DECODER either side is the same file, so
+ *     the value crosses unchanged and only the name has to be rewritten.
+ *   - **Slot 1 kept the pre-slots names in Ashwake 1** (`tiles.world.v1`), so
+ *     that every device older than slots simply WAS slot 1 with nothing to
+ *     migrate. Here every slot is numbered, so slot 1 is the one that moves.
+ *   - The daily's in-progress board went `dailyrun` → `daily.run`, and the
+ *     last error `lasterror` → `error`.
+ *
+ * Three v1 keys have no home here and are dropped deliberately: the shrine
+ * RECEIPT (this body has no per-slot receipts — see the `otherReceipts` rung
+ * in `shell/storage.ts`), the board ORIENTATION (`tiles.hex.v1`), and the
+ * install nudge's once-ever marker. None of the three is a world.
+ */
+const LEGACY_PREFIX = 'tiles.';
+
+const LEGACY_KEYS: Readonly<Record<string, string>> = {
+  'tiles.features.v2': 'ashwake.features.v1',
+  'tiles.theme.v2': 'ashwake.theme.v1',
+  'tiles.progress.v1': 'ashwake.progress.v1',
+  'tiles.records.v2': 'ashwake.records.v1',
+  'tiles.timeline.v1': 'ashwake.timeline.v1',
+  'tiles.daily.v1': 'ashwake.daily.v1',
+  'tiles.dailyrun.v1': 'ashwake.daily.run.v1',
+  'tiles.slot.v1': 'ashwake.slot.v1',
+  'tiles.lasterror.v1': 'ashwake.error.v1',
+  // Slot 1 under Ashwake 1's pre-slots names, then 2 and 3 under theirs.
+  'tiles.world.v1': 'ashwake.world.1.v1',
+  'tiles.run.v1': 'ashwake.run.1.v1',
+  'tiles.shop.s1.v1': 'ashwake.shop.1.v1',
+  'tiles.world.s2.v1': 'ashwake.world.2.v1',
+  'tiles.run.s2.v1': 'ashwake.run.2.v1',
+  'tiles.shop.s2.v1': 'ashwake.shop.2.v1',
+  'tiles.world.s3.v1': 'ashwake.world.3.v1',
+  'tiles.run.s3.v1': 'ashwake.run.3.v1',
+  'tiles.shop.s3.v1': 'ashwake.shop.3.v1',
+};
+
+/**
+ * An Ashwake 1 backup, renamed into this body's keys.
+ *
+ * Total and forgiving in the same split as everything else here: a key with no
+ * entry in the table is DROPPED rather than guessed at, because a key this body
+ * does not know is a key none of its decoders was written against — writing it
+ * would leave a blob on the device that nothing ever reads and every wipe has
+ * to keep sweeping.
+ */
+export function migrateLegacy(
+  keys: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, string>> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(keys)) {
+    const now = LEGACY_KEYS[key];
+    if (now !== undefined && typeof value === 'string') out[now] = value;
+  }
+  return out;
+}
+
+/** True for a key Ashwake 1 wrote. */
+export const isLegacyKey = (key: string): boolean => key.startsWith(LEGACY_PREFIX);
+
 export type Backup = {
   readonly format: number;
   /** The build that wrote it, for a bug report that comes with a file. */
@@ -49,6 +123,14 @@ export type Backup = {
   /** ISO date. Informational only — restoring never reads it. */
   readonly at: string;
   readonly keys: Readonly<Record<string, string>>;
+  /**
+   * True when this came out of Ashwake 1 and was renamed on the way in.
+   *
+   * The screen says so before it overwrites anything: crossing bodies is a
+   * thing a player should be told is happening, not a thing they infer
+   * afterwards from a world that came back wearing a different name.
+   */
+  readonly legacy: boolean;
 };
 
 /**
@@ -68,7 +150,7 @@ export function buildBackup(
   for (const [key, value] of Object.entries(entries)) {
     if (key.startsWith(PREFIX) && typeof value === 'string') keys[key] = value;
   }
-  return { format: FORMAT, sha: meta.sha, at: meta.at, keys };
+  return { format: FORMAT, sha: meta.sha, at: meta.at, keys, legacy: false };
 }
 
 export const encodeBackup = (backup: Backup): string => JSON.stringify(backup);
@@ -106,6 +188,16 @@ export function decodeBackup(raw: string | null): Backup | null {
   for (const [key, value] of Object.entries(keys)) {
     if (key.startsWith(PREFIX) && typeof value === 'string') clean[key] = value;
   }
+  /*
+   * Nothing of ours under our own name — so try Ashwake 1's (D3).
+   *
+   * Only ever as a FALLBACK, so a backup written by this body takes exactly the
+   * path it always took and the bridge can never reinterpret a key that is
+   * already ours. A file belonging to neither body still ends at the guard.
+   */
+  const legacy = Object.keys(clean).length === 0;
+  if (legacy) Object.assign(clean, migrateLegacy(keys as Readonly<Record<string, unknown>>));
+
   // A backup carrying nothing of ours is not a backup, whatever its envelope
   // says — restoring it would wipe the device and put nothing back.
   if (Object.keys(clean).length === 0) return null;
@@ -115,6 +207,7 @@ export function decodeBackup(raw: string | null): Backup | null {
     sha: typeof sha === 'string' ? sha : 'unknown',
     at: typeof at === 'string' ? at : '',
     keys: clean,
+    legacy,
   };
 }
 

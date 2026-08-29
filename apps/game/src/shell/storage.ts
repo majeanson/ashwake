@@ -7,6 +7,7 @@ import {
 } from '@meta/daily';
 import { decodeFeatures, encodeFeatures, type FeatureSet } from '@meta/features';
 import { decodeProgress, encodeProgress, EMPTY_PROGRESS, type Progress } from '@meta/progress';
+import { isOwnKey, restorePlan, type Backup } from '@meta/backup';
 import { parseShopLevels } from '@meta/shopLevels';
 import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
@@ -128,6 +129,36 @@ const disk = (): Storage | null => {
 
 /** True when nothing can be kept — SETTINGS says so rather than pretending. */
 export const isEphemeral = (): boolean => disk() === null;
+
+let persistenceAsked = false;
+
+/**
+ * Ask the browser to keep this origin's storage. Best-effort, once a boot.
+ *
+ * Safari evicts a non-persisted origin after about seven days of not being
+ * visited, and this game has no backend to restore from — so a player who
+ * takes a fortnight off comes back to nothing. Asking is the whole defence,
+ * and it costs nothing when it is refused.
+ *
+ * Ashwake 1 learned WHERE to ask the hard way: it asked only after a home
+ * run's first successful save, so a daily-only visitor — the shape of a
+ * stranger's first week — never reached the call at all. It is asked at boot
+ * here, beside the first read, for that reason and no other.
+ */
+export function askPersistence(): void {
+  if (persistenceAsked) return;
+  persistenceAsked = true;
+  // A device that cannot keep anything has nothing to make permanent, and
+  // asking would only prompt for a promise the browser has already broken.
+  if (disk() === null) return;
+  try {
+    if (typeof navigator.storage?.persist === 'function') {
+      void navigator.storage.persist().catch(() => undefined);
+    }
+  } catch {
+    // A browser that objects to being asked. Nothing here was load-bearing.
+  }
+}
 
 function read(key: string): string | null {
   try {
@@ -376,12 +407,24 @@ export function readAll(): Readonly<Record<string, string>> {
   return out;
 }
 
-/** For RESTORE: replace, never merge. Ashwake 1's ruling — a merged backup is
- *  two histories interleaved, and nobody can say what that device now is. */
-export function writeAll(blobs: Readonly<Record<string, string>>): void {
+/**
+ * For RESTORE: replace, never merge.
+ *
+ * Ashwake 1's ruling — a merged backup is two histories interleaved, and nobody
+ * can say what that device now is. The PLAN is the core's (`restorePlan`), and
+ * carrying it out is this file's: the shell had been reimplementing "remove
+ * everything, then write" inline while the pure statement of it sat beside the
+ * codec with no caller, which is how the two quietly come to disagree.
+ *
+ * `clearEverything` is the concrete form of the plan's `remove: ['ashwake.']` —
+ * the key list rather than a prefix scan, so a stray key some other tool left
+ * on this origin is not this game's to delete.
+ */
+export function writeAll(backup: Backup): void {
+  const plan = restorePlan(backup);
   clearEverything();
-  for (const [key, value] of Object.entries(blobs)) {
-    if (key.startsWith(`${NS}.`)) write(key, value);
+  for (const [key, value] of Object.entries(plan.write)) {
+    if (isOwnKey(key)) write(key, value);
   }
 }
 

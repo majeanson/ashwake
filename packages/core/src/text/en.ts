@@ -496,6 +496,17 @@ Nothing new inside — a find grants only what you do not already carry, and onl
   backup: {
     describe: (worlds, relics, date) =>
       `${worlds} world${plural(worlds, '', 's')} · ${relics} relics${date === null ? '' : ` · ${date}`}`,
+    fromV1: 'From Ashwake 1 — these worlds will be carried across.',
+    refused:
+      'That is not an Ashwake backup. Paste the whole thing, from the first brace to the last.',
+    paste: 'Paste a backup here',
+    saved: (how) =>
+      how === 'shared'
+        ? 'Backup handed to the share sheet.'
+        : how === 'downloaded'
+          ? 'Backup saved as a file.'
+          : 'Backup copied. Paste it somewhere you will still have next month.',
+    failed: 'This device would not let the backup out. Nothing was lost. Try an ordinary tab.',
   },
 
   ui: {

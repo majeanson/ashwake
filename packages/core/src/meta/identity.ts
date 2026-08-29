@@ -31,7 +31,12 @@ export const NAME = 'Ashwake';
  * card is a PNG that gets screenshotted OUT of its chat, and a picture with
  * a score but no address is a dead end (2026-08-20, launch audit).
  */
-export const SITE = 'tiles.marcportal.com';
+// Ashwake 1's address until 2026-08-29, lifted verbatim with the rest of the
+// core and wrong from the moment this body got its own host. It has no reader
+// yet — the share CARD is the one Ashwake-1 surface not rebuilt here — which
+// is exactly why it was worth correcting rather than leaving: a constant that
+// is wrong and unused stays wrong right up until somebody trusts it.
+export const SITE = 'ashwake.marcportal.com';
 
 /**
  * The mark: a hex with an ember spark in it, drawn as an inline SVG data URI

@@ -43,3 +43,23 @@ export function useThemeVars(theme: Theme): void {
     return () => link.remove();
   }, [theme]);
 }
+
+/**
+ * `<html lang>`, following the language the game is actually speaking.
+ *
+ * `index.html` declares `fr-CA` because that is what a device with no stored
+ * choice and no matching system language opens in (D4) — but the locale is
+ * PICKED at runtime, from what the phone asks for or what SETTINGS remembers,
+ * and nothing ever told the document when the answer was English. A page whose
+ * `lang` disagrees with its text is one a screen reader pronounces in the wrong
+ * voice, a browser offers to translate into the language it is already in, and
+ * a hyphenation engine breaks by the wrong rules.
+ *
+ * New in this body rather than a regression: Ashwake 1 spoke one language, so
+ * the attribute could be a constant in its markup and stay true.
+ */
+export function useDocumentLocale(locale: string): void {
+  useLayoutEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+}

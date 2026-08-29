@@ -1,11 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { pickLocale } from '@content/locale';
-import { stringsFor } from '@text/index';
 import { App } from './App';
 import { recordFailure, showFailure } from './shell/failure';
-import { readLocale } from './shell/storage';
-import { isLocale } from '@content/locale';
+import { bootStrings } from './shell/locale';
+import { askPersistence } from './shell/storage';
 
 /**
  * Boot, and the two listeners that catch what boot cannot (Stage 4,
@@ -22,8 +20,11 @@ import { isLocale } from '@content/locale';
  * navigator, and because a panel that has to work out what language it is in
  * is a panel doing something other than its job.
  */
-const kept = readLocale();
-const s = stringsFor(kept !== null && isLocale(kept) ? kept : pickLocale(navigator.languages));
+const s = bootStrings();
+
+// Beside the first read, and before anything is written: ask the browser to
+// stop treating this origin as disposable. See `askPersistence` for why here.
+askPersistence();
 
 window.addEventListener('error', (event) => {
   showFailure(s, event.error ?? event.message);

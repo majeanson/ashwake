@@ -146,7 +146,7 @@ const BUTTON =
   'min-height:44px;padding:0 24px;font:inherit;color:inherit;' +
   'background:var(--panel, #262b36);border:1px solid var(--panel-edge, #3a4150);border-radius:6px;';
 
-export function showFailure(s: Strings, error?: unknown): void {
+export function showFailure(s: Strings, error?: unknown, onContinue?: () => void): void {
   seen++;
   const detail = error === undefined ? '' : describeError(error);
   remember(detail);
@@ -197,7 +197,14 @@ export function showFailure(s: Strings, error?: unknown): void {
     'max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;text-align:left;' +
     'user-select:text;-webkit-user-select:text;margin:0;';
 
-  const go = button(s.ui.crash.continue, () => panel.remove());
+  // CONTINUE removes the panel and, where a caller gave one, puts back what
+  // the panel was covering. A render error unmounts the whole React tree
+  // before this is ever reached, so without the second half the button would
+  // reveal a blank page while saying the run is still there — see `Boundary`.
+  const go = button(s.ui.crash.continue, () => {
+    panel.remove();
+    onContinue?.();
+  });
   go.dataset['crash'] = 'continue';
   const reload = button(s.ui.crash.reload, () => location.reload());
   reload.dataset['crash'] = 'reload';

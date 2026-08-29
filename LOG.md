@@ -858,3 +858,117 @@ format clean; golden sim byte-identical.
 
 **Not played on a phone** — except the pinch, which Marc found there, and which
 is why it was the first thing fixed.
+
+### Session 13 — what the new body lost, and the bridge that was never there (2026-08-29)
+
+**The question, written first:** _Ashwake 2 was built by lifting the rules
+verbatim and rebuilding the screen. The rules are proved identical by CI every
+push. **Nothing proves the same about everything that is not a rule** — so what
+did this body quietly fail to bring across?_
+
+Marc asked for the comparison against `../tiles`: differences, improvements,
+cut corners, overlooked things. Three sweeps read the two trees — the pure
+layers, the shell and tooling, and this body's own dead ends — and every
+load-bearing claim was then re-checked by hand, because a sweep is a ledger
+too.
+
+**The answer: the rules came across and the launch surfaces did not.**
+`engine/` and `sim/` are byte-identical, every "missing" export turned out to
+be relocated into the text catalogue, and the crossing still arms. What was
+missing was everything that is not a rule.
+
+**The bridge in `DECISIONS.md` D3 did not exist.** D3 rules that a v1 player's
+worlds reach this body through BACK UP MY WORLDS → RESTORE A BACKUP. Every key
+in an Ashwake 1 backup begins `tiles.`; `decodeBackup` dropped everything that
+was not `ashwake.` and then refused the file for being empty. It refused
+SAFELY — the empty-backup guard is exactly what stopped it wiping a device and
+writing nothing back — so this was a missing bridge rather than data loss, and
+the guard is the reason the finding is a feature request instead of an
+incident. `migrateLegacy` is a table rather than a prefix swap because three
+shapes moved with the name: the version suffix belongs to the BODY and not to
+the blob (v1 was already on `features.v2`, `theme.v2`, `records.v2`), slot 1
+kept the pre-slots key names in Ashwake 1 so that slot 1 is the one that moves,
+and the daily's board and the last error were both renamed. Three v1 keys are
+dropped on purpose — the shrine receipt, the board orientation and the install
+nudge — because none of them is a world.
+
+**`navigator.storage.persist()` was never called.** Safari evicts a
+non-persisted origin after about seven days and there is no backend to restore
+from. Ashwake 1 fixed this as `POLISH.md`'s finding F and learned WHERE to ask
+the hard way: it asked after a home run's first successful save, so a
+daily-only visitor — the shape of a stranger's first week — never reached the
+call. It is asked at boot here, beside the first read.
+
+**The backup screen was below the bar its own module sets.** `meta/backup.ts`
+opens by saying a backup that silently restores nothing is worse than none;
+BACK UP was a bare `void navigator.clipboard?.writeText(…)` with no share
+sheet, no download, and no word either way, RESTORE was a native `prompt()`
+asked to hold tens of kilobytes of JSON, a refused file said nothing at all,
+and `describeBackup` — the line naming the worlds about to be overwritten —
+had no caller. It is the run share's own ladder now, the paste is parsed as it
+is typed so the arm names what will land, and `restorePlan`/`isOwnKey` stopped
+being dead exports the shell was reimplementing inline.
+
+**A fourth inert mechanic, and it was an accessibility one.** `reducedMotion`
+is threaded through `Board`, `HexField` and `Pop`, all of which honour it, and
+**nothing ever passed it** — there was no `prefers-reduced-motion` query
+anywhere in the repo. `ui.css` honoured the preference for the DOM, which is
+what made it easy to miss: the chrome obeyed and the board did not. The fix is
+`useMediaQuery` with a live `change` listener, which the colour scheme and the
+contrast preference now share — all three were sampled once, and on a page
+whose only allowed reloads are the service-worker update and the failure panel,
+sampled once means wrong until the tab closes.
+
+**A shared daily link opened the wrong game.** `meta/share.ts` has emitted
+`?daily=` since the rules were lifted and `meta/route.ts` was written to read
+it back; `@meta/route` had zero importers, so the date was ignored and the
+recipient got their own front door. The same shape as the four inert mechanics,
+on the URL surface instead of a button. The place has to arrive in `useDevice`
+rather than be stepped into afterwards, because the keeper is made from the
+opening place and the keeper is the only thing that writes.
+
+**The launch surfaces were gone wholesale.** No `og:*`, no `twitter:*`, no
+canonical, no description, no `<noscript>`, no old-browser floor guard — while
+`og-image.png` shipped byte-identical to Ashwake 1's baked board scene with
+nothing referencing it. `shell/share.ts` calls sharing the game's entire
+distribution mechanism, and every link it produced unfurled blank.
+
+**The 44px gate came back, and found something on its first run** — the way
+Ashwake 1's did. The measurement survived here only inside `audit:screens`,
+which is deliberately non-gating, so a control under the floor could merge
+green. The first run flagged the HUD's stats at 28px. That is a real and
+argued exemption in this body — a stat explains, it never acts — so rather than
+override the ruling or weaken the test, the exemption is now DECLARED on the
+control (`data-compact`) and the test pins the hatch shut: exactly one kind of
+thing may wear it, and anything new has to make its argument in a diff.
+
+**And CONTINUE now continues into something.** There was no `ErrorBoundary`, so
+a render error unmounted the tree before `window.onerror` ever reached the
+failure panel — whose CONTINUE is `panel.remove()`, and would therefore have
+revealed the blank page underneath while promising the run was still there.
+
+**Three ledger claims were stale, all in the reassuring direction.**
+`NEXT.md` §0 lists `goals`, `shedLadder` and `shopLevels` as unconsumed and all
+three are wired; `INTERACTIONS.md`'s first open item is the NEW GROUND / UNIQUE
+toasts, which `shell/onceARun.ts` shipped. Only `route` was still dead, and it
+is not any more. That is the hazard `NEXT.md`'s own opening paragraph warns
+about, having come true of itself.
+
+**Held for Marc, deliberately, and it is the biggest one left:** there is no
+`@font-face` anywhere in this body. `ui.css` asks for Cinzel and EB Garamond
+twenty-one times, the themes name them, and the only font that ships is
+`cinzel.ttf` — loaded by troika for the 3D hex labels and by no stylesheet. So
+every DOM screen renders in fallback serif. Restoring it changes what every
+screen looks like, which puts it on the wrong side of the first-minute freeze,
+so it is Marc's to sequence along with the rest of the art pipeline
+(`scripts/{terrain,artslots,icons,social}.ts`, gone, taking with them the
+guardrail that throws when a theme edit inverts the baked greyscale ordering —
+and the only way to make S5's settlement terrain).
+
+**Verified:** 938 tests / 64 files; 51 Playwright at 390×844 including the
+restored 44px gate and the shared-link spec; typecheck, lint, format clean;
+golden sim byte-identical; `audit:screens` reports no unhandled findings (52
+argued compact targets, 3 haloed labels, 88 disabled controls, no overflow, no
+clipped text). **Not played on a phone, and the v1 → v2 restore has not been
+walked with a real backup out of tiles.marcportal.com — that is Marc's, and it
+is the one check that proves the bridge.**

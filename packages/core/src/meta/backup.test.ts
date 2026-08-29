@@ -118,6 +118,89 @@ describe('restoring one', () => {
   });
 });
 
+describe('the bridge out of Ashwake 1 (D3)', () => {
+  /**
+   * A real v1 backup, in v1's key names.
+   *
+   * `DECISIONS.md` D3 rules this is HOW a player's worlds reach this body, and
+   * it did not work: every key here begins `tiles.`, the filter took none of
+   * them, and the file was refused. Safely — nothing was ever wiped — but the
+   * promised bridge was not there.
+   */
+  const V1 = JSON.stringify({
+    format: 1,
+    sha: 'v1build',
+    at: '2026-08-27T12:00:00.000Z',
+    keys: {
+      'tiles.world.v1': '{"worldSeed":7}',
+      'tiles.run.v1': '{"phase":"play"}',
+      'tiles.shop.s1.v1': '{"reach":2}',
+      'tiles.world.s2.v1': '{"worldSeed":8}',
+      'tiles.progress.v1': '{"relics":412}',
+      'tiles.records.v2': '{"runs":9}',
+      'tiles.features.v2': '{}',
+      'tiles.theme.v2': 'torchlit',
+      'tiles.dailyrun.v1': '{"date":"2026-08-27"}',
+      'tiles.lasterror.v1': '{"text":"boom"}',
+      // Three v1 keys with no home in this body. Dropped rather than written
+      // as blobs no decoder here was ever built against.
+      'tiles.shrinereceipt.v1': '{"woke":1}',
+      'tiles.hex.v1': 'flat',
+      'tiles.installnudge.v1': '1',
+    },
+  });
+
+  it('accepts an Ashwake 1 backup and renames its keys into this body', () => {
+    const backup = decodeBackup(V1);
+    expect(backup).not.toBeNull();
+    expect(backup?.legacy).toBe(true);
+    expect(Object.keys(backup!.keys).sort()).toEqual([
+      'ashwake.daily.run.v1',
+      'ashwake.error.v1',
+      'ashwake.features.v1',
+      'ashwake.progress.v1',
+      'ashwake.records.v1',
+      'ashwake.run.1.v1',
+      'ashwake.shop.1.v1',
+      'ashwake.theme.v1',
+      'ashwake.world.1.v1',
+      'ashwake.world.2.v1',
+    ]);
+  });
+
+  it('carries the VALUES across untouched — the decoders are the same file', () => {
+    const backup = decodeBackup(V1);
+    // Slot 1 kept the pre-slots names in Ashwake 1, so it is the slot that
+    // moves; the world it names is the one a player has been walking.
+    expect(backup?.keys['ashwake.world.1.v1']).toBe('{"worldSeed":7}');
+    expect(backup?.keys['ashwake.world.2.v1']).toBe('{"worldSeed":8}');
+    // The version suffix belongs to the body, not to the blob: v1's `records.v2`
+    // holds exactly what this body reads out of `records.v1`.
+    expect(backup?.keys['ashwake.records.v1']).toBe('{"runs":9}');
+    expect(backup?.keys['ashwake.progress.v1']).toBe('{"relics":412}');
+  });
+
+  it('describes a v1 backup in the numbers a player recognises', () => {
+    const backup = decodeBackup(V1);
+    const line = describeBackup(backup!, EN);
+    expect(line).toContain('2 worlds');
+    expect(line).toContain('412 relics');
+  });
+
+  it('reads a backup from THIS body exactly as it always did', () => {
+    // The legacy path is a fallback and must never reinterpret a key that is
+    // already ours, or a v2 backup could be rewritten by the bridge.
+    const mine = buildBackup({ 'ashwake.world.1.v1': '{"worldSeed":7}' }, META);
+    const back = decodeBackup(encodeBackup(mine));
+    expect(back?.legacy).toBe(false);
+    expect(back?.keys).toEqual({ 'ashwake.world.1.v1': '{"worldSeed":7}' });
+  });
+
+  it('still refuses a file that belongs to neither body', () => {
+    expect(decodeBackup('{"format":1,"keys":{"tiles.nothingweknow":"x"}}')).toBeNull();
+  });
+});
+
 describe('describing one', () => {
   it('counts what a player recognises as theirs', () => {
     const backup = buildBackup(

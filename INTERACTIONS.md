@@ -101,12 +101,31 @@ deliberately absent in both.
    board itself is not.
 2. **The `✕` lens-clear button.** The fog tap and a second long-press both
    let go, so this is a convenience rather than a gap.
-3. **The History-API router** (`meta/route`), which `NEXT.md` argues may not
-   be wanted: `?seed=` links already work, every screen is a state change by
+3. **The History-API router**, which `NEXT.md` argues may not be wanted:
+   `?seed=` and `?daily=` links already work, every screen is a state change by
    ruling, and a router would buy BACK-on-a-panel at the cost of the one
-   invariant that has held since Stage 2.
-4. **`meta/mark`** duplicates the icon `@meta/identity` already provides.
+   invariant that has held since Stage 2. `meta/route`'s `parseRoute` is READ
+   as of 2026-08-29 — see below; `searchFor` and `HOME` are still unread.
+4. **`meta/mark`**'s maskable exports duplicate nothing the app renders, and
+   are kept on purpose: they are the source the shipped maskable icons were
+   baked from, and the baker is part of the art pipeline `NEXT.md` §5 holds.
 
 Everything else this file has ever listed is built. The standing check that
 found most of it is in `CLAUDE.md`: before calling a screen done, grep for a
 consumer of every action it can produce.
+
+## Two surfaces this matrix never covered, and both were wrong
+
+Audited 2026-08-29 against `../tiles` (`LOG.md` Session 13). A gesture matrix
+asks "what can a finger do here", and by construction it cannot see the two
+surfaces below — which is where the misses were. Worth keeping as the shape of
+what a matrix is blind to.
+
+| Surface                                  | Ashwake 1                          | Ashwake 2                                                        |
+| ---------------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| A shared **`?seed=`** link               | opens that run                     | ✓                                                                |
+| A shared **`?daily=`** link              | opens that date's board            | → **ignored the date**; `@meta/route` had no importer at all     |
+| A link **unfurled in a chat**            | title, description, board image    | → **had none of the three**, while `og-image.png` shipped unused |
+| The OS's **reduced-motion** switch       | honoured, with a `change` listener | → **threaded through the board and never passed**                |
+| The OS's **light/dark** switch, mid-page | followed                           | → was sampled once at boot, on a page that never reloads         |
+| A **render error**, then CONTINUE        | the run carries on                 | → no boundary, so CONTINUE revealed a blank page                 |

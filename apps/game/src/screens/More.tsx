@@ -1,7 +1,9 @@
+import { useMemo, useState } from 'react';
 import { buildBackup, decodeBackup, describeBackup, encodeBackup } from '@meta/backup';
 import type { Strings } from '@text/Strings';
 import { Confirming } from '../ui/Confirming';
 import { Panel, PanelMenu } from '../ui/Panel';
+import { handOff } from '../shell/share';
 import { isEphemeral, readAll, writeAll } from '../shell/storage';
 
 /**
@@ -79,41 +81,7 @@ export function More({
         {isEphemeral() ? (
           <p className="note">{s.ui.noStorage}</p>
         ) : (
-          <PanelMenu>
-            <button
-              type="button"
-              onClick={() => {
-                // The clipboard is the share sheet's simplest form and the one
-                // that works everywhere. A backup nobody can paste back is not
-                // a backup.
-                void navigator.clipboard?.writeText(
-                  encodeBackup(
-                    buildBackup(readAll(), {
-                      sha: __BUILD_SHA__,
-                      at: new Date().toISOString(),
-                    }),
-                  ),
-                );
-              }}
-            >
-              {s.ui.backUp}
-            </button>
-            <Confirming
-              label={s.ui.restore}
-              armed={s.ui.restoreArmed}
-              onConfirm={() => {
-                const raw = prompt(s.ui.restore);
-                const backup = decodeBackup(raw);
-                if (backup === null) return;
-                // Replace, never merge (Ashwake 1's ruling): a merged backup is
-                // two histories interleaved, and nobody can say what that
-                // device now is.
-                writeAll(backup.keys);
-                onRestored();
-              }}
-            />
-            <Confirming label={s.ui.resetAll} armed={s.ui.resetAllArmed} onConfirm={onReset} />
-          </PanelMenu>
+          <TheDevice s={s} onReset={onReset} onRestored={onRestored} />
         )}
         <p className="note">{s.ui.privacy}</p>
       </section>
@@ -121,5 +89,109 @@ export function More({
   );
 }
 
-/** What a pasted backup says about itself, for the arming label. */
-export const describe = describeBackup;
+/**
+ * BACK UP · RESTORE · RESET ALL — the three things that can destroy something.
+ *
+ * Its own component because it is the only part of MORE that holds state, and
+ * because the rule it enforces is worth stating once: **a device is never
+ * overwritten by a file nobody has looked at.** The paste is parsed as it is
+ * typed, so the arm can name what is about to land — "3 worlds · 412 relics" —
+ * rather than asking a question about a blob, and a file that is not a backup
+ * says so at the moment it is pasted rather than by doing nothing at the moment
+ * it is confirmed. `meta/backup.ts`'s own header calls a backup that silently
+ * restores nothing worse than no backup at all; this screen is where that is
+ * either true or a lie.
+ */
+function TheDevice({
+  s,
+  onReset,
+  onRestored,
+}: {
+  readonly s: Strings;
+  readonly onReset: () => void;
+  readonly onRestored: () => void;
+}) {
+  const [pasted, setPasted] = useState('');
+  const [note, setNote] = useState<string | null>(null);
+  const parsed = useMemo(() => decodeBackup(pasted.trim() === '' ? null : pasted), [pasted]);
+
+  /**
+   * One live region, present from the first render and filled later.
+   *
+   * A `role="status"` inserted into the tree at the moment it gains text is a
+   * region assistive tech never announces — Ashwake 1 shipped three of those
+   * before it learned. So the paragraph always exists, and this is what it says.
+   */
+  const said =
+    note ??
+    (pasted.trim() === ''
+      ? ''
+      : parsed === null
+        ? s.backup.refused
+        : parsed.legacy
+          ? `${describeBackup(parsed, s)} · ${s.backup.fromV1}`
+          : describeBackup(parsed, s));
+
+  const backUp = async (): Promise<void> => {
+    const now = new Date();
+    const text = encodeBackup(
+      buildBackup(readAll(), { sha: __BUILD_SHA__, at: now.toISOString() }),
+    );
+    const how = await handOff(`ashwake-backup-${now.toISOString().slice(0, 10)}.json`, text);
+    setNote(how === 'failed' ? s.backup.failed : s.backup.saved(how));
+  };
+
+  return (
+    <>
+      <PanelMenu>
+        <button
+          type="button"
+          data-device="backup"
+          onClick={() => {
+            void backUp();
+          }}
+        >
+          {s.ui.backUp}
+        </button>
+        <Confirming
+          label={s.ui.restore}
+          // The consequence, and what it is about to be replaced BY.
+          armed={
+            parsed === null
+              ? s.ui.restoreArmed
+              : `${s.ui.restoreArmed} — ${describeBackup(parsed, s)}`
+          }
+          onConfirm={() => {
+            // Nothing to restore is not a silent no-op: the region says why.
+            if (parsed === null) {
+              setNote(s.backup.refused);
+              return;
+            }
+            // Replace, never merge (Ashwake 1's ruling): a merged backup is
+            // two histories interleaved, and nobody can say what that device
+            // now is.
+            writeAll(parsed);
+            onRestored();
+          }}
+        />
+        <Confirming label={s.ui.resetAll} armed={s.ui.resetAllArmed} onConfirm={onReset} />
+      </PanelMenu>
+      <label className="paste">
+        <span className="fact-label">{s.ui.restore}</span>
+        <textarea
+          rows={3}
+          value={pasted}
+          placeholder={s.backup.paste}
+          spellCheck={false}
+          onChange={(event) => {
+            setPasted(event.target.value);
+            setNote(null);
+          }}
+        />
+      </label>
+      <p className="note" role="status">
+        {said}
+      </p>
+    </>
+  );
+}

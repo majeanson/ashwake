@@ -524,6 +524,18 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
   backup: {
     describe: (worlds, relics, date) =>
       `${worlds} monde${pl(worlds, '', 's')} · ${nb(relics)} reliques${date === null ? '' : ` · ${date}`}`,
+    fromV1: 'Vient d’Ashwake 1 — ces mondes seront transportés ici.',
+    refused:
+      'Ce n’est pas une sauvegarde d’Ashwake. Colle le texte au complet, de la première accolade à la dernière.',
+    paste: 'Colle une sauvegarde ici',
+    saved: (how) =>
+      how === 'shared'
+        ? 'Sauvegarde envoyée au menu de partage.'
+        : how === 'downloaded'
+          ? 'Sauvegarde enregistrée comme fichier.'
+          : 'Sauvegarde copiée. Colle-la quelque part où tu l’auras encore le mois prochain.',
+    failed:
+      'Cet appareil a refusé de laisser sortir la sauvegarde. Rien n’est perdu. Essaie dans un onglet ordinaire.',
   },
 
   ui: {

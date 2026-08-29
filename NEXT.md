@@ -13,7 +13,7 @@ now", sorted by whether it needs Marc.
 
 ---
 
-## 0. Wired this session, and what it revealed
+## 0. Wired, and what it revealed
 
 The hold mechanism and the colour lens were both **dead code the shell never
 called**, and the audit found the draft card unreadable on its own fill. Three
@@ -21,11 +21,26 @@ misses of one shape: a screen that renders a thing without connecting it. Worth
 a standing check — **before calling a screen done, grep for a consumer of every
 action it can produce.**
 
-`share` and `report` are wired as of 2026-08-29, and the privacy sentence is
-true. Still unconsumed by the app: `route`, `goals`, `shedLadder`,
-`shopLevels`, `mark`. One is still a live inconsistency rather than a gap —
-`storage.ts` drops a write on a full quota, where `shedLadder` is the module
-written to decide what to drop instead.
+**This section was itself stale, and in the reassuring direction** (corrected
+2026-08-29, `LOG.md` Session 13, by grepping rather than trusting). It listed
+`route`, `goals`, `shedLadder`, `shopLevels` and `mark` as unconsumed, and
+claimed `storage.ts` still dropped a write on a full quota. Three of those were
+already wired — `newlyMetGoals` at `shell/settle.ts:113`, `SHED_LADDER` inside
+`storage.ts`'s `write`, `inheritShopLevels` in `useDevice.ts` — and the quota
+claim was false with `shell/shed.test.ts` pinning it. **A session that trusted
+this file would have "fixed" a bug that was not there.** That is exactly the
+hazard the paragraph at the top of this file warns about, come true of itself.
+
+`route` WAS genuinely dead and is not any more: a shared `?daily=` link ignored
+its date and opened the recipient's own front door. What is left of the module
+is `searchFor` and `HOME`, still unread — the app builds its share links
+through `meta/share.ts` instead, so those two are a duplicate statement of the
+same thing rather than a gap. Decide whether they earn their place.
+
+`mark.ts`'s `MARK_SVG_MASKABLE`, `MARK_GROUP` and `markGroup` remain unread and
+are **deliberately kept**: they are the source the shipped maskable icons were
+baked from, and the script that bakes them is part of the art pipeline held in
+§5. Deleting them would delete the source of an asset that ships.
 
 ## 1. Needs Marc, and only Marc
 
@@ -68,6 +83,23 @@ darkest facet exposed at 0.655, a top-to-side ratio of 1.53, a board with
 almost no shading left. On a near-black board a dark terrain's shaded side and
 the board genuinely are close. **Does it read as a face or as a gap?** Only an
 eye can say.
+
+**Walk the v1 → v2 bridge with a real backup.** `DECISIONS.md` D3 says this is
+how your Ashwake 1 worlds reach this body, and until 2026-08-29 it could not
+work at all — every v1 key begins `tiles.` and this body refused them. It is
+built and tested now, including through the real storage edge
+(`shell/bridge.test.ts`), but **a synthetic v1 blob is not the same evidence as
+your own**: open tiles.marcportal.com, MORE ▸ THIS DEVICE ▸ BACK UP MY WORLDS,
+then paste it into Ashwake 2's RESTORE and check the worlds arrive with their
+reach, relics and diary. This is the one check code cannot do for itself, and
+it is worth doing BEFORE the v2.0 tag cuts the domain over.
+
+**The look, second call: the fonts.** There is no `@font-face` anywhere in this
+body and the two EB Garamond files were never carried over, so every DOM screen
+— door, manual, shop, settings, end screen — renders in fallback serif rather
+than in the typeface the themes name. Restoring it changes what every screen
+looks like, which is a first-minute change; it is sequenced with the art
+pipeline in §5 and it is your call when it lands.
 
 **The French.** ≈250 sentences in Québec French, recorded into the snapshot
 files as the review surface, and still unread. The chrome gets built on that
@@ -240,6 +272,36 @@ screen audit regenerated so Marc can look at what changed while he slept.
 ```
 
 ---
+
+## 5. The art pipeline, and what it is holding up — HELD for Marc
+
+Found 2026-08-29 auditing this body against Ashwake 1 (`LOG.md` Session 13).
+Everything here changes what a screen LOOKS like, which is why none of it
+landed with the rest of the audit's fixes: `CLAUDE.md` freezes the first minute
+between Session A's last clean pass and the stranger's run, and while Session A
+has never been run on this body, spending the look on a session Marc has not
+seen is not a call code should make.
+
+- **No `@font-face`, anywhere.** `ui.css` sets `font-family` twenty-one times
+  from theme variables that name `Cinzel` and `EB Garamond`; the only font that
+  ships is `cinzel.ttf`, loaded by troika for the 3D hex labels and by no
+  stylesheet at all. Ashwake 1 shipped `cinzel.woff2`, `ebgaramond.woff2` and
+  `ebgaramond-italic.woff2` with three `@font-face` rules. Carrying them over
+  is three files, three rules and three lines in the service worker's precache
+  list — small, and visible on every screen.
+- **Three declared asset slots ship with no art in any direction.**
+  `theme/assets.ts` still declares `fx.pop`, `ui.logo` and `ui.runEnd`;
+  `public/assets/*/` holds only the seven terrain PNGs. Ashwake 1 shipped all
+  ten per direction.
+- **The bakers are gone** — `scripts/{terrain,artslots,icons,social}.ts` and
+  `scripts/fonts/`. Every surviving PNG here is a frozen, unregenerable copy,
+  and one of the things that went with them is `terrain.ts`'s guardrail, which
+  **throws if a theme edit inverts the baked greyscale ordering**. That is a
+  budget this body currently cannot check.
+
+**This is also what blocks S5.** §2 above says the settlement direction has to
+be MADE and that the pipeline to make it is already here — it is not, any more.
+It is in `../tiles`, and porting it is the first move of that session.
 
 ## 4. Deferred by ruling — do not reopen
 

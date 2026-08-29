@@ -66,3 +66,56 @@ export async function share(subject: ShareSubject, s: Strings, name: string): Pr
     return 'failed';
   }
 }
+
+export type HandOffResult = 'shared' | 'downloaded' | 'copied' | 'failed';
+
+/**
+ * Get a BACKUP off the phone, by whatever door this platform has.
+ *
+ * The same ladder the run share climbs, one rung longer, and for the same
+ * reasons: on iOS the share sheet is the only route to Files or to a message
+ * to yourself, on a desktop the clipboard is what people actually use, and a
+ * download is the floor everywhere else. A file rather than a link because a
+ * backup is far past any URL length that survives a chat app.
+ *
+ * The rung ORDER is Ashwake 1's and was paid for: the download sits above the
+ * clipboard because a file is a thing a player still has next month, and below
+ * the sheet because a dismissed sheet must not fall through into downloading
+ * the file behind their back — hence the AbortError branch, which reports
+ * success and shows nothing.
+ */
+export async function handOff(name: string, text: string): Promise<HandOffResult> {
+  try {
+    const file = new File([text], name, { type: 'application/json' });
+    if (navigator.canShare?.({ files: [file] }) === true) {
+      await navigator.share({ files: [file], title: name });
+      return 'shared';
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') return 'shared';
+  }
+
+  try {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
+    // Revoked on a later turn: revoking synchronously can beat the download
+    // starting on some browsers, which loses the file silently.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    return 'downloaded';
+  } catch {
+    // Downloads blocked — an in-app WebView, most likely, which is exactly the
+    // storage that evaporates. So the clipboard below matters most precisely
+    // where the file route is least available.
+  }
+
+  try {
+    if (navigator.clipboard === undefined) return 'failed';
+    await navigator.clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
+}

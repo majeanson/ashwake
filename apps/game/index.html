@@ -2,16 +2,110 @@
 <html lang="fr-CA">
   <head>
     <meta charset="utf-8" />
+    <!--
+      Portrait phone is the design target. `viewport-fit=cover` plus the
+      env(safe-area-inset-*) padding in ui.css keeps the board clear of the
+      notch and the home indicator.
+
+      `user-scalable=no` is deliberately ABSENT (Ashwake 1, 2026-08-20): it is a
+      WCAG 1.4.4 failure and an automatic Lighthouse failure, and it takes
+      pinch-to-zoom away from anyone who needs it to read the board. What it was
+      ever for is done properly elsewhere — `touch-action: none` on `.board-host`
+      hands every board gesture to the game outright.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark light" />
     <!-- Rewritten by `ui/theme.ts` once the direction is resolved. -->
     <meta name="theme-color" content="#0a0806" />
-    <title>Ashwake</title>
+
+    <!--
+      The launch surfaces (restored 2026-08-29, auditing this body against
+      Ashwake 1, which shipped all of them).
+
+      `shell/share.ts` calls sharing "the game's entire distribution mechanism":
+      there is no backend, no account and no store listing, so the game reaches
+      a person because somebody pasted a link into a chat. This body shipped
+      `og-image.png` — byte-identical to Ashwake 1's baked board scene — and
+      nothing at all that told an unfurler it existed, so every shared link
+      arrived blank.
+
+      These sentences cannot come from `text/`, which is the one exception to
+      D4 and worth stating: this is the PRE-JS head, read by a crawler that
+      never runs the bundle. They are French because that is what `lang` above
+      declares and what a device with no stored choice opens in; the catalogue's
+      own `tagline` is the source they are copied from.
+    -->
+    <title>Ashwake — une expédition dans une plaine noire</title>
+    <meta
+      name="description"
+      content="Une expédition dans une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin."
+    />
+    <!-- Every path 200s with this page (SPA fallback, `wrangler.toml`), so
+         every shared ?seed= and ?daily= link is a crawlable duplicate. The
+         canonical keeps search engines pointed at the one front door. -->
+    <link rel="canonical" href="https://ashwake.marcportal.com/" />
+    <meta property="og:title" content="Ashwake" />
+    <meta
+      property="og:description"
+      content="Une expédition dans une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ashwake.marcportal.com/" />
+    <meta property="og:site_name" content="Ashwake" />
+    <meta
+      property="og:image:alt"
+      content="Une poche de tuiles hexagonales à la lueur d’une torche sur une plaine noire sans fin, le sol reconnu s’effaçant vers trois balises qui brillent."
+    />
+    <!-- A real baked share card (Ashwake 1's `scripts/social.ts`), not the
+         install icon stretched wide — 1200x630 is the aspect every unfurl
+         crops to, so this one does not get cropped. -->
+    <meta property="og:image" content="https://ashwake.marcportal.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://ashwake.marcportal.com/og-image.png" />
+
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <!-- PNG, not SVG: iOS ignores SVG here and falls back to a screenshot. -->
     <link rel="apple-touch-icon" href="/icon-180.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- iOS reads its own trio, not the standard above: without these an
+         added-to-home-screen Ashwake opens inside Safari chrome. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Ashwake" />
+
+    <!--
+      The browser floor guard (Ashwake 1, 2026-08-20 launch audit).
+
+      The bundle needs Safari/iOS 16.4-era syntax, and on anything older the
+      entry MODULE fails to parse — including the error listener inside it —
+      leaving a dark screen whose every control does nothing, forever, silently.
+      A CLASSIC script parses everywhere back to ES5; if the probe throws, the
+      visitor gets one honest sentence instead of a game that looks broken.
+
+      The colours are literals for the same reason the paint below is: this runs
+      before the bundle that holds the theme exists.
+    -->
+    <script>
+      try {
+        // Private class methods + static blocks: the newest syntax the shipped
+        // bundle actually uses. A parse failure lands in the catch.
+        new Function('class P { #m() { return 1 ?? 2; } static { } }');
+      } catch (e) {
+        document.addEventListener('DOMContentLoaded', function () {
+          document.body.innerHTML =
+            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;' +
+            'background:#0a0806;color:#e8d6ae;font-family:Georgia,serif;padding:24px;text-align:center;">' +
+            '<p style="max-width:26em;line-height:1.6">ASHWAKE a besoin d’un navigateur plus récent — ' +
+            'iOS 16.4 ou plus, ou un Chrome ou Firefox à jour. ' +
+            'Rien ne cloche avec ton appareil : ce jeu s’appuie sur les fonctions les plus récentes du moteur.<br><br>' +
+            'ASHWAKE needs a newer browser — iOS 16.4 or later, or an up-to-date Chrome or Firefox.</p></div>';
+        });
+      }
+    </script>
+
     <style>
       /*
        * The PRE-JS paint, and the only literal colour in the project.
@@ -38,6 +132,24 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p
+        style="
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #e8d6ae;
+          font-family: Georgia, serif;
+          padding: 24px;
+          text-align: center;
+          margin: 0;
+        "
+      >
+        Ashwake est un jeu, et il a besoin de JavaScript pour se jouer.<br />Ashwake is a game, and
+        it needs JavaScript switched on to play.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

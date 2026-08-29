@@ -4,7 +4,43 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the gaps, closed.** Everything
+Last checkpoint: **2026-08-29, last — what the new body lost.** The rules were
+proved identical by CI every push; **nothing proved the same about anything
+that is not a rule**, and that is where everything below was hiding. `engine/`
+and `sim/` are byte-identical to Ashwake 1 and every "missing" export turned
+out to be relocated into the text catalogue — so the audit's finding is narrow
+and sharp: **the launch surfaces and the hard-won fixes did not come across.**
+**`DECISIONS.md` D3's v1 → v2 bridge did not exist** — an Ashwake 1 backup is
+all `tiles.` keys and `decodeBackup` refused every one, failing SAFE (the
+empty-backup guard is what stopped it wiping a device) but leaving a ruled
+migration path with nothing behind it; `migrateLegacy` is a key TABLE, because
+the version suffix belongs to the body and slot 1 kept the pre-slots names.
+**`navigator.storage.persist()` was never called** (Safari evicts after seven
+days; Ashwake 1's `POLISH.md` finding F). **The backup screen was below the bar
+its own module sets** — a silent clipboard write, a `prompt()` asked to hold
+tens of kilobytes, a refusal that said nothing, and `describeBackup` with no
+caller; it rides the run share's ladder now and names what it is about to
+overwrite. **A fourth inert mechanic, this one an accessibility one:**
+`reducedMotion` is threaded through the whole board and **nothing ever passed
+it** — `useMediaQuery` now follows it, and the colour scheme and contrast with
+it, on a `change` listener rather than a boot sample. **A shared `?daily=` link
+opened the recipient's own front door** — `@meta/route` had zero importers.
+**The launch surfaces were gone wholesale** (no `og:*`, `twitter:*`, canonical,
+description, `<noscript>` or browser floor guard) while `og-image.png` shipped
+byte-identical and unreferenced. **The 44px CI gate came back and caught
+something on its first run**, so the HUD stats' argued exemption is now
+DECLARED on the control and the escape hatch is pinned shut. **CONTINUE now
+continues into something** — there was no `ErrorBoundary`, so a render error
+unmounted the tree before the panel that offers to carry on ever appeared.
+**Three ledger claims were stale, all reassuring:** `goals`, `shedLadder` and
+`shopLevels` are wired, and so are the NEW GROUND / UNIQUE toasts.
+**Verified:** 938 tests / 64 files; 51 Playwright at 390×844; golden sim
+byte-identical; the audit reports zero unhandled findings. **HELD for Marc:
+there is no `@font-face` in this body at all** — every DOM screen renders in
+fallback serif — and the art pipeline that would fix it is a first-minute
+change, so it is his to sequence.
+
+Previous checkpoint: **2026-08-29 — the gaps, closed.** Everything
 `INTERACTIONS.md` listed as missing is built. The **pinch bug** first, because
 Marc found it on a phone and it broke play: lifting one finger of a pinch made
 the survivor's next move measure its delta from the OTHER finger, panning the

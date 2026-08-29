@@ -11,6 +11,7 @@ import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@vi
 import { isEnabled } from '@meta/features';
 import { EMPTY_PROGRESS, hasMet, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
+import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import type { LessonId } from '@view/lessons';
@@ -58,13 +59,15 @@ import { carriedBy, cross, dowryOf } from './shell/cross';
 import { settle, settleDaily } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
 import { createSession, useSession, type Said } from './shell/store';
+import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
 import { walk, walkToEnd } from './shell/walk';
+import { Boundary } from './ui/Boundary';
 import { Confirming } from './ui/Confirming';
 import { DialogStack, useAnyDialogOpen, useDoor } from './ui/dialog';
 import { PanelMenu } from './ui/Panel';
-import { useThemeVars } from './ui/theme';
+import { useDocumentLocale, useThemeVars } from './ui/theme';
 import './ui/ui.css';
 
 /**
@@ -119,7 +122,9 @@ function dial(params: URLSearchParams, name: string, fallback: number): number {
 export function App() {
   return (
     <DialogStack>
-      <Game />
+      <Boundary>
+        <Game />
+      </Boundary>
     </DialogStack>
   );
 }
@@ -137,8 +142,12 @@ function overrides(): Parameters<typeof useDevice>[0] {
   const params = new URLSearchParams(location.search);
   const theme = parseThemeId(location.search);
   const taught = dial(params, 'taught', 0) > 0;
+  // A shared daily opens in the daily. `parseRoute` validates the date against
+  // the epoch, so a hand-typed or truncated one simply is not a daily.
+  const daily = parseRoute(location.search).daily;
   return {
     ...(theme === null ? {} : { theme }),
+    ...(daily === null ? {} : { daily }),
     ...(taught
       ? { progress: TEACH_IDS.reduce<Progress>((p, id) => meet(p, id), EMPTY_PROGRESS) }
       : {}),
@@ -220,18 +229,27 @@ function Game() {
     onShed((rung) => setNote(shedNote(rung, s)));
   }, [s]);
 
+  /*
+   * The device's own preferences, FOLLOWED rather than sampled.
+   *
+   * All three used to be read once — the scheme and the contrast inside this
+   * memo, and reduced motion nowhere at all — which on a page that never
+   * reloads means a phone crossing sunset keeps the direction it booted in.
+   * `useMediaQuery` carries the `change` listener; `pickForScheme` stays pure
+   * because the shell is what samples.
+   */
+  const wantsLight = useMediaQuery('(prefers-color-scheme: light)');
+  const wantsContrast = useMediaQuery('(prefers-contrast: more)');
+  const reducedMotion = useReducedMotion();
+
   const theme = useMemo(() => {
     if (storedTheme !== AUTO_THEME_ID) return resolveTheme(storedTheme);
     // AUTO is the absence of a choice — what a fresh phone is set to — so the
-    // device answers. `pickForScheme` is pure because the shell samples.
-    return resolveTheme(
-      pickForScheme(
-        matchMedia('(prefers-color-scheme: light)').matches,
-        matchMedia('(prefers-contrast: more)').matches,
-      ),
-    );
-  }, [storedTheme]);
+    // device answers.
+    return resolveTheme(pickForScheme(wantsLight, wantsContrast));
+  }, [storedTheme, wantsLight, wantsContrast]);
   useThemeVars(theme);
+  useDocumentLocale(locale);
 
   const session = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -248,10 +266,27 @@ function Game() {
      * `settle`, and `detour` here, which is what stops a shrine claiming an
      * unlock for a world this run was never played on.
      */
-    const asked = Number(params.get('seed') ?? '') || null;
-    const kept = scripted ? null : readRun(slot);
+    /*
+     * A shared DAILY, which is the other kind of link SHARE hands out.
+     *
+     * `meta/share.ts` has emitted `?daily=` since the rules were lifted and
+     * `meta/route.ts` was written to read it back, and nothing in this body
+     * ever did — so a player who shared their daily result handed out a link
+     * that silently ignored the date and opened the front door of the
+     * recipient's own world. Same shape as the four inert mechanics, on the
+     * URL surface instead of a button.
+     *
+     * The seed is the DATE's, so the link opens the board it is talking about;
+     * the kept run is that date's, which `readDailyRun` refuses to hand back
+     * under any other date. It is not a DETOUR — a detour is a foreign world
+     * seed that must not touch this device's world memory, and a daily is
+     * already walled off by being a `Place` the keeper knows.
+     */
+    const opening = parseRoute(location.search).daily;
+    const asked = opening !== null ? dailySeed(opening) : Number(params.get('seed') ?? '') || null;
+    const kept = scripted ? null : opening !== null ? readDailyRun(opening) : readRun(slot);
     const mine = readWorld(slot)?.worldSeed ?? null;
-    const detour = asked !== null && mine !== null && asked !== mine;
+    const detour = opening === null && asked !== null && mine !== null && asked !== mine;
 
     const made = createSession({
       seed: asked ?? mine ?? 1,
@@ -835,6 +870,7 @@ ${s.view.harvest.firstPopWhen}`,
           light={look.light}
           materials={look.materials}
           art={look.art}
+          reducedMotion={reducedMotion}
           onTap={onTap}
           handle={board}
         />
