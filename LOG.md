@@ -1076,9 +1076,16 @@ degree so a hundredth-degree frame does not buy a re-fit.
 **LEVEL is the third control, and it is not always there.** Marc asked for the
 reset and it earns the cluster's own rule — the doc comment there argues hard
 for two controls rather than four — by appearing only once the board IS off its
-angle, which is the rule HERE already follows. The angle resets on a new run
-rather than persisting, so the opening board stays one known picture for the
-shot set, the audit and Session C.
+angle, which is the rule HERE already follows.
+
+**The persistence answer, stated because the first draft of this said something
+else:** the angle lives for the SESSION and is never written to storage. A
+fresh page always opens at the direction's own angle, so the shot set, the
+screen audit and a stranger arriving all get one known first minute; within a
+session it survives a new run, because `Board` never remounts by ruling and a
+run boundary is no reason to take an angle off the hands that chose it. The
+code comment claiming it reset per run was wrong when it was written — nothing
+called the reset — and reviewing the work is what caught it.
 
 **Reviewing it found the pinch bug's shape again, before it shipped.** The two
 fingers a gesture reads are the first two still down, so a third finger landing

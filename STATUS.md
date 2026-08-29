@@ -12,8 +12,11 @@ already there, pinch to zoom, twist to turn, two-finger drag to lean, each
 latching past its own deadzone so a pinch cannot wobble the board. The angle is
 state rather than a ref, because three things read it and only one is the
 camera. **LEVEL** is the cluster's third control and appears only once the board
-is off its angle; the angle resets on a new run, so the opening board stays one
-known picture. **Reviewing it found the pinch bug's shape again before it
+is off its angle. The angle lives for the SESSION and is never stored, so a
+fresh page always opens at the direction's own — the shot set, the audit and a
+stranger arriving all get one known first minute — while within a session it
+survives a new run, because the board never remounts and a run boundary is no
+reason to take an angle off the hands that chose it. **Reviewing it found the pinch bug's shape again before it
 shipped** — a third finger landing and the first lifting left the gesture
 measuring between two different pairs of fingers — fixed by the general rule:
 when the set of pointers changes, start over from where the fingers are.

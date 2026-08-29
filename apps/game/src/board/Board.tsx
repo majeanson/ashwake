@@ -127,10 +127,13 @@ export function Board(props: BoardProps) {
    * tilt, the light rig turns with the yaw, and the labels turn BACK by it so
    * they stay readable. A ref could not tell any of them.
    *
-   * It resets to the default on a new run rather than being remembered, which
-   * keeps the opening board one known picture — the shot set, the screen audit
-   * and Session C all measure the same first minute for everybody. The reset
-   * control in the camera cluster is how you get back mid-run.
+   * **It lives for the SESSION and is never written to storage**, which is the
+   * whole of the persistence decision: a fresh page — the shot set, the screen
+   * audit, and a stranger arriving — always opens at the direction's own angle,
+   * so the first minute stays one known picture for everybody. Within a
+   * session it is the player's and survives a new run, because `Board` never
+   * remounts (the canvas must not) and there is no reason a run boundary should
+   * take an angle away from the hands that chose it. LEVEL is the way back.
    */
   const [lean, setLean] = useState({ tilt, yaw });
   const leaned = lean.tilt !== tilt || lean.yaw !== yaw;
