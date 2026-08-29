@@ -277,3 +277,68 @@ export function lerpCamera(from: CameraState, to: CameraState, t: number): Camer
     cz: from.cz + (to.cz - from.cz) * k,
   };
 }
+
+/**
+ * A flick, and where it carries to (Stage 2d, 2026-08-29).
+ *
+ * A drag that stops dead the instant a finger lifts feels like dragging a
+ * sheet of paper across a table; a drag that carries feels like moving a
+ * board. Ashwake 1 never had this because a 2D board redrew on every pan and
+ * momentum would have meant redrawing all of it for half a second; here the
+ * camera transforms and the board is untouched, so it costs a matrix a frame.
+ *
+ * Velocity is in world units per millisecond, measured over the last few
+ * pointer moves rather than the last one — a single sample is dominated by
+ * whatever jitter the last event carried, and reads as the board flying off
+ * when a finger merely lifted crookedly.
+ */
+
+/** How fast a flick decays. Per millisecond, so it is frame-rate independent. */
+export const GLIDE_DECAY = 0.0042;
+
+/** Below this the glide is over — a pixel a second is a board that looks stuck. */
+export const GLIDE_FLOOR = 0.0004;
+
+/** A flick slower than this was a tap or a stop, not a throw. */
+export const GLIDE_MIN = 0.0015;
+
+export type Glide = {
+  /** World units per millisecond. */
+  readonly vx: number;
+  readonly vz: number;
+};
+
+/** Whether a lift was a throw at all. */
+export const isFlick = (glide: Glide): boolean => Math.hypot(glide.vx, glide.vz) >= GLIDE_MIN;
+
+/**
+ * The glide after `ms` of travel, and how far it carried.
+ *
+ * Exponential decay rather than a fixed number of frames, so a slow phone and
+ * a fast one land the board in the same place.
+ */
+export function glided(
+  glide: Glide,
+  ms: number,
+): { readonly next: Glide; readonly dx: number; readonly dz: number } {
+  const keep = Math.exp(-GLIDE_DECAY * ms);
+  // The integral of v·e^(-kt) over the step: the distance actually travelled,
+  // not the velocity times the step, which would overshoot at low frame rates.
+  const travelled = (1 - keep) / GLIDE_DECAY;
+  return {
+    next: { vx: glide.vx * keep, vz: glide.vz * keep },
+    dx: glide.vx * travelled,
+    dz: glide.vz * travelled,
+  };
+}
+
+/** Has the glide come to rest? */
+export const isResting = (glide: Glide): boolean => Math.hypot(glide.vx, glide.vz) < GLIDE_FLOOR;
+
+/** The camera moved by a glide step — the world slides, so the centre goes
+ *  the other way, exactly as a drag does. */
+export const glidedBy = (cam: CameraState, dx: number, dz: number): CameraState => ({
+  ...cam,
+  cx: cam.cx - dx,
+  cz: cam.cz - dz,
+});

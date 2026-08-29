@@ -7,6 +7,7 @@ import type { HexKey } from '@engine/hex';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import { cellTint } from '@theme/torch';
 import type { AssetBook } from './assets';
+import { embersFor, emberPhase, type Ember } from './ambient';
 import { glowTexture } from './glow';
 import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
 import { commitInstances } from './instances';
@@ -66,6 +67,15 @@ const GLOW_SPREAD = 2.6;
  * white at the centre, which is what a burst looks like.
  */
 const GLOW_BURN = 2.4;
+
+/** Sparks per spent hex, and the ceiling for the whole harvest. Ashwake 1's
+ *  numbers: past the cap a huge pop throws no more, which is a quieter
+ *  failure than a dropped frame. */
+const PER_HEX = 5;
+const EMBER_CAP = 140;
+
+/** An ember is a spark, not a lamp — it is small, so it has to be bright. */
+const EMBER_BURN = 3.2;
 
 export function Pop({
   cells,
@@ -144,6 +154,37 @@ export function Pop({
 
   const glowColour = useMemo(() => new Color(theme.motion.popColour), [theme.motion.popColour]);
 
+  /**
+   * The sparks a harvest throws.
+   *
+   * Ashwake 1 spawned four to seven per hex and capped the whole board at 140
+   * sprites, because a big pocket on a phone is exactly the moment there is no
+   * budget left. The cap is here as a total rather than a per-hex number for
+   * the same reason: past it a huge pop simply throws no more, which is a
+   * quieter failure than a dropped frame.
+   */
+  const embers = useMemo<readonly Ember[]>(() => {
+    if (reducedMotion) return [];
+    const out: Ember[] = [];
+    for (const cell of cells) {
+      if (out.length >= EMBER_CAP) break;
+      const spot = spots.get(cell.key);
+      if (spot === undefined) continue;
+      const tint = cellTint(theme, cell);
+      out.push(
+        ...embersFor(
+          theme.motion,
+          { x: spot.x, z: spot.z, seed: cell.q * 73856093 + cell.r * 19349663 },
+          delays.get(cell.key) ?? 0,
+          tint,
+          PER_HEX,
+        ),
+      );
+    }
+    return out.slice(0, EMBER_CAP);
+  }, [cells, spots, delays, theme, reducedMotion]);
+  const emberMesh = useRef<InstancedMesh | null>(null);
+
   useFrame(() => {
     const elapsed = performance.now() - startedAt.current;
     let alive = false;
@@ -203,6 +244,23 @@ export function Pop({
       commitInstances(gm, cells.length);
     }
 
+    const em = emberMesh.current;
+    if (em !== null && embers.length > 0) {
+      embers.forEach((ember, i) => {
+        const phase = emberPhase(ember, elapsed);
+        if (!phase.gone) alive = true;
+        dummy.position.set(phase.x, phase.y + 0.1, phase.z);
+        dummy.rotation.set(-Math.PI / 2, 0, 0);
+        dummy.scale.set(phase.scale, phase.scale, 1);
+        dummy.updateMatrix();
+        dummy.rotation.set(0, 0, 0);
+        em.setMatrixAt(i, dummy.matrix);
+        scratch.set(ember.colour).multiplyScalar(phase.strength * EMBER_BURN);
+        em.setColorAt(i, scratch);
+      });
+      commitInstances(em, embers.length);
+    }
+
     if (alive) invalidate();
   });
 
@@ -229,6 +287,26 @@ export function Pop({
           />
         );
       })}
+      {embers.length > 0 && (
+        <instancedMesh
+          key={`pop-embers-${embers.length}`}
+          ref={(mesh) => {
+            emberMesh.current = mesh;
+          }}
+          args={[undefined, undefined, embers.length]}
+          frustumCulled={false}
+          raycast={() => null}
+        >
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial
+            {...(texture === null ? {} : { map: texture })}
+            transparent
+            depthWrite={false}
+            blending={AdditiveBlending}
+            toneMapped={false}
+          />
+        </instancedMesh>
+      )}
       <instancedMesh
         key={`pop-glow-${capacity}`}
         ref={(mesh) => {

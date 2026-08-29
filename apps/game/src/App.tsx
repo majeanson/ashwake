@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { pickLocale, type Locale } from '@content/locale';
 import type { CellView } from '@render/Renderer';
 import { defaultFeatures, type FeatureId, type FeatureSet } from '@meta/features';
-import { EMPTY_PROGRESS, type Progress } from '@meta/progress';
+import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import type { ThemeId } from '@theme/tokens';
@@ -83,7 +83,16 @@ function Game() {
     () => parseThemeId(location.search) ?? AUTO_THEME_ID,
   );
   const [features, setFeatures] = useState<FeatureSet>(defaultFeatures);
-  const [progress, setProgress] = useState<Progress>(EMPTY_PROGRESS);
+  const [progress, setProgress] = useState<Progress>(() =>
+    // `?taught=1` is a device that has already met everything — no cards, no
+    // toasts. It exists for the same reason Ashwake 1's fixtures had device
+    // HISTORIES: most screens look fine on a virgin phone and the empty
+    // version is not the one that breaks, and a screenshot of the board is a
+    // screenshot of whatever card happens to be over it otherwise.
+    dial(new URLSearchParams(location.search), 'taught', 0) > 0
+      ? TEACH_IDS.reduce<Progress>((p, id) => meet(p, id), EMPTY_PROGRESS)
+      : EMPTY_PROGRESS,
+  );
   const [started, setStarted] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [purseOpen, setPurseOpen] = useState(false);

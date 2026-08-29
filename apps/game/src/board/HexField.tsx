@@ -1,4 +1,4 @@
-import { useThree, type ThreeEvent } from '@react-three/fiber';
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { Color, Object3D, type InstancedMesh } from 'three';
 import type { HexKey } from '@engine/hex';
@@ -7,6 +7,7 @@ import type { Layout } from '@render/layout';
 import { cellTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
+import { breath, STILL_BREATH } from './ambient';
 import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
 import { commitInstances } from './instances';
 import { Labels } from './Labels';
@@ -52,6 +53,8 @@ export type HexFieldProps = {
   readonly materials: number;
   /** Degrees the board is turned under the camera. */
   readonly yaw: number;
+  /** Still light, no pulse, no drift. */
+  readonly reducedMotion: boolean;
   /** The direction's own art, where any has loaded. */
   readonly assets: AssetBook;
   /** The shared texture cache, so the pop layer bakes nothing twice. */
@@ -66,6 +69,7 @@ export function HexField({
   relief,
   materials,
   yaw,
+  reducedMotion,
   assets,
   textures,
   onTap,
@@ -124,10 +128,13 @@ export function HexField({
         // (`torchShader.ts`). `setRGB` writes into the working space unchanged,
         // which is what lets the shader read the display-space numbers.
         const tint = cellTint(theme, item.cell);
+        // A beacon sits at its still value until the breath takes over, so a
+        // reduced-motion board is lit rather than merely un-animated.
+        const lit = batch.kind === 'beacon' ? STILL_BREATH : 1;
         scratchColor.setRGB(
-          ((tint >> 16) & 0xff) / 255,
-          ((tint >> 8) & 0xff) / 255,
-          (tint & 0xff) / 255,
+          (((tint >> 16) & 0xff) / 255) * lit,
+          (((tint >> 8) & 0xff) / 255) * lit,
+          ((tint & 0xff) / 255) * lit,
         );
         mesh.setColorAt(i, scratchColor);
       });
@@ -150,6 +157,38 @@ export function HexField({
     }
     invalidate();
   }, [batches, rings, theme, invalidate]);
+
+  /**
+   * The beacons breathe.
+   *
+   * A beacon is a promise that there is somewhere to go, and the pulse is what
+   * keeps the promise visible on a board that is otherwise still. It is the
+   * only thing on the board that asks for frames when nothing has happened, so
+   * it stops asking the moment there are no beacons — an empty board should
+   * draw nothing at all.
+   */
+  useFrame(() => {
+    if (reducedMotion) return;
+    let breathing = false;
+    for (const batch of batches) {
+      if (batch.kind !== 'beacon' || batch.items.length === 0) continue;
+      const mesh = meshes.current.get(batch.key);
+      if (mesh === undefined) continue;
+      breathing = true;
+      const lit = breath(performance.now());
+      batch.items.forEach((item, i) => {
+        const tint = cellTint(theme, item.cell);
+        scratchColor.setRGB(
+          (((tint >> 16) & 0xff) / 255) * lit,
+          (((tint >> 8) & 0xff) / 255) * lit,
+          ((tint & 0xff) / 255) * lit,
+        );
+        mesh.setColorAt(i, scratchColor);
+      });
+      if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
+    }
+    if (breathing) invalidate();
+  });
 
   const tap = (batch: GroundBatch) => (event: ThreeEvent<MouseEvent>) => {
     // A tap is a lift that never travelled: R3F reports how far the pointer

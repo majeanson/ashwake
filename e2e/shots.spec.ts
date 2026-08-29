@@ -77,7 +77,9 @@ for (const [name, query] of ANGLES) {
  */
 test('catches the harvest in the air', async ({ page }) => {
   const errors = watchErrors(page);
-  await page.goto('/?seed=7&place=12&tilt=35&light=1&materials=1');
+  // `taught=1`: a device that has met every lesson, so the board is the only
+  // thing in the picture. A card over it would make this a picture of a card.
+  await page.goto('/?seed=7&place=12&taught=1&tilt=35&light=1&materials=1');
   await expect(page.locator('canvas')).toBeVisible();
   await begin(page);
   await page.waitForTimeout(700);
@@ -94,9 +96,12 @@ test('catches the harvest in the air', async ({ page }) => {
   for (const at of [70, 160, 320]) {
     await page.waitForTimeout(at - last);
     last = at;
+    // The CANVAS, not the page: a harvest can raise a teaching card, and a
+    // card over the board would make this a picture of the card. The pop is a
+    // board effect, so the board is what gets photographed.
     const shot = await page.locator('canvas').screenshot();
     assertLooksLikeAPicture(shot, `the harvest at ${at}ms`);
-    await writeFile(join(SHOTS, `s2d-pop-${at}.png`), await page.screenshot());
+    await writeFile(join(SHOTS, `s2d-pop-${at}.png`), shot);
   }
 
   expect(errors, errors.join('\n')).toEqual([]);

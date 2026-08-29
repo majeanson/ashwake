@@ -20,12 +20,17 @@ import {
   eyeOf,
   fitCamera,
   frameFor,
+  glided,
+  glidedBy,
+  isFlick,
+  isResting,
   lerpCamera,
   pannedBy,
   zoomMaxOf,
   zoomedBy,
   type CameraState,
   type Frame,
+  type Glide,
   type Lean,
 } from './camera';
 import { GL_PROPS } from './gl';
@@ -171,6 +176,7 @@ export function Board(props: BoardProps) {
             assets={assets}
             textures={textures}
             yaw={yaw}
+            reducedMotion={props.reducedMotion === true}
             onTap={props.onTap}
           />
           {pop !== null && (
@@ -247,6 +253,9 @@ function Rig({
   // React must not re-render for any of them.
   const cam = useRef<CameraState>(fitCamera(frame));
   const flight = useRef<{ from: CameraState; to: CameraState; startedAt: number } | null>(null);
+  /** A thrown board, still travelling. Cleared by any deliberate move. */
+  const glide = useRef<Glide | null>(null);
+  const glidedAt = useRef(0);
   const frameRef = useRef(frame);
   const wasFit = useRef(true);
 
@@ -279,6 +288,19 @@ function Rig({
   };
 
   useFrame(() => {
+    // A flick carries the board after the finger has gone. It is cancelled by
+    // anything the player does on purpose — a drag, a pinch, a flight — because
+    // a finger outranks a throw exactly as it outranks a journey.
+    const g = glide.current;
+    if (g !== null) {
+      const now = performance.now();
+      const step = glided(g, Math.min(64, now - glidedAt.current || 16));
+      glidedAt.current = now;
+      cam.current = glidedBy(cam.current, step.dx, step.dz);
+      glide.current = isResting(step.next) ? null : step.next;
+      if (glide.current !== null) invalidate();
+    }
+
     const fl = flight.current;
     if (fl !== null) {
       const t = (performance.now() - fl.startedAt) / FLIGHT_MS;
@@ -337,6 +359,10 @@ function Rig({
     let last: { x: number; y: number } | null = null;
     let moved = false;
     let pinch: number | null = null;
+    // The last few moves, so a flick is measured over a gesture rather than
+    // over whatever jitter the final event happened to carry — one sample
+    // reads as the board flying off when a finger merely lifted crookedly.
+    const recent: { at: number; cx: number; cz: number }[] = [];
 
     const down = (e: PointerEvent): void => {
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -357,6 +383,7 @@ function Rig({
         if (d > 0 && pinch > 0) {
           wasFit.current = false;
           flight.current = null;
+          glide.current = null;
           cam.current = zoomedBy(frameRef.current, cam.current, d / pinch);
           invalidate();
         }
@@ -370,19 +397,47 @@ function Rig({
       moved = true;
       wasFit.current = false;
       flight.current = null;
+      glide.current = null;
+      const before = cam.current;
       cam.current = pannedBy(frameRef.current, cam.current, dx, dy);
+      recent.push({
+        at: e.timeStamp,
+        cx: cam.current.cx - before.cx,
+        cz: cam.current.cz - before.cz,
+      });
+      if (recent.length > 5) recent.shift();
       last = { x: e.clientX, y: e.clientY };
       invalidate();
     };
     const up = (e: PointerEvent): void => {
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch = null;
-      if (pointers.size === 0) last = null;
+      if (pointers.size !== 0) return;
+      last = null;
+
+      // A lift is a throw if the board was still moving when the finger left.
+      // Reduced motion keeps the acknowledgement and drops the travel.
+      const first = recent[0];
+      const span = first === undefined ? 0 : e.timeStamp - first.at;
+      if (!reducedMotion && moved && first !== undefined && span > 0) {
+        const sum = recent.reduce((a, r) => ({ cx: a.cx + r.cx, cz: a.cz + r.cz }), {
+          cx: 0,
+          cz: 0,
+        });
+        // The centre moved WITH the drag, so the glide carries it the same
+        // way — `glidedBy` subtracts, which is why these are negated.
+        const flick = { vx: -sum.cx / span, vz: -sum.cz / span };
+        glide.current = isFlick(flick) ? flick : null;
+        if (glide.current !== null) invalidate();
+      }
+      recent.length = 0;
+      moved = false;
     };
     const wheel = (e: WheelEvent): void => {
       e.preventDefault();
       wasFit.current = false;
       flight.current = null;
+      glide.current = null;
       cam.current = zoomedBy(frameRef.current, cam.current, e.deltaY < 0 ? 1.15 : 1 / 1.15);
       invalidate();
     };
@@ -398,7 +453,10 @@ function Rig({
       el.removeEventListener('pointercancel', up);
       el.removeEventListener('wheel', wheel);
     };
-  }, [wrapper, invalidate]);
+    // `reducedMotion` is read by the flick, so the listeners are rebound when
+    // it changes — a phone that turns motion off mid-run should stop throwing
+    // the board on the next lift, not the next reload.
+  }, [wrapper, invalidate, reducedMotion]);
 
   return null;
 }
