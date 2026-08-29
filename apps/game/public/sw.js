@@ -45,10 +45,16 @@ const PRECACHE = [
   '/icon-maskable-192.png',
   '/icon-maskable-512.png',
   // The self-hosted faces (2026-08-20): public/fonts/ sits outside the
-  // assets walk, and offline typography was the point of self-hosting. This
-  // body ships one face rather than Ashwake 1's three — listing files that
-  // are not there would not fail the install (they are comfort, cached
-  // best-effort) but it would be a list nobody could trust.
+  // assets walk, and offline typography was the point of self-hosting.
+  //
+  // FOUR files, and the split is deliberate. The three woff2 are the DOM's,
+  // declared by `ui.css`'s @font-face rules; the TTF is the BOARD's, read by
+  // troika, which cannot parse woff2. This body shipped only the TTF until
+  // 2026-08-29 and had no @font-face at all, so every screen rendered in
+  // fallback serif — offline or on.
+  '/fonts/cinzel.woff2',
+  '/fonts/ebgaramond.woff2',
+  '/fonts/ebgaramond-italic.woff2',
   '/fonts/cinzel.ttf',
   ...JSON.parse('__PRECACHE_ASSETS__'),
 ];

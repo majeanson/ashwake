@@ -135,6 +135,20 @@ async function checkAssets(base: string): Promise<void> {
   console.log('ok  the board font serves 200 as a file');
 
   /*
+   * And the CHROME's faces, which fail more quietly than the board's.
+   *
+   * A missing board font is a board that cannot draw. A missing DOM face is a
+   * game that renders perfectly in Georgia and looks merely a bit wrong — the
+   * shape of miss that survived in this body from Stage 3 until 2026-08-29,
+   * because nothing anywhere would have told anyone. `ui.css` names all three
+   * in `@font-face`; a 404 here means every screen is in fallback serif.
+   */
+  for (const face of ['cinzel.woff2', 'ebgaramond.woff2', 'ebgaramond-italic.woff2']) {
+    await servesAFile(base, `/fonts/${face}`);
+  }
+  console.log('ok  all three chrome faces serve 200 as files');
+
+  /*
    * The install surface (Stage 4, 2026-08-29).
    *
    * Checked rather than trusted, because every one of these fails SILENTLY.

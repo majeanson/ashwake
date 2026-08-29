@@ -12,6 +12,51 @@
  * single biggest readability change it ever made.
  */
 
+/*
+ * The faces the directions ask for (restored 2026-08-29).
+ *
+ * `themeCssVars` has always handed this file `"Cinzel, 'Trajan Pro', Georgia,
+ * serif"` and `"'EB Garamond', Garamond, Georgia, serif"`, and this body
+ * declared no `@font-face` at all — so the first two names in each stack were
+ * never going to resolve on a phone and **every DOM screen fell through to
+ * Georgia.** The one font that shipped, `cinzel.ttf`, is troika's: it draws
+ * the hex labels on the board and no stylesheet has ever read it. The board
+ * was in the right typeface and the chrome around it was not.
+ *
+ * Ashwake 1's three declarations, verbatim, and its files with them. woff2 for
+ * the DOM and TTF for the board is not an oversight either way round — troika
+ * cannot parse woff2 (Stage 2 learned that), and shipping the TTF to the DOM
+ * would spend 57KB where 25KB says the same thing.
+ *
+ * `font-display: swap` on all three: the game must be readable in the first
+ * frame, and a face arriving late is a better trade than a blank one. The
+ * weight RANGES are the variable fonts' own, so a bold heading is the family's
+ * bold and never the browser's synthetic smear of the regular.
+ */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url('/fonts/cinzel.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/ebgaramond.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ebgaramond-italic.woff2') format('woff2');
+}
+
 :root {
   color-scheme: dark light;
   --gap: 0.5rem;
