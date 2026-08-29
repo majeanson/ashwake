@@ -247,7 +247,14 @@ export function arcSparkline(
  */
 export function dailyBadge(book: DailyBook, date: string, s: Strings): string {
   const record = book[date];
-  return s.daily.badge(dailyName(date), record === undefined ? null : record);
+  // The streak is computed HERE rather than asked of the caller: it is a fact
+  // about the same book the record came from, and a badge that could be
+  // handed a streak from a different device is a badge that can lie.
+  return s.daily.badge(
+    dailyName(date),
+    record === undefined ? null : record,
+    dailyStreak(book, date),
+  );
 }
 
 /**

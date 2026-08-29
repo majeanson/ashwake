@@ -426,6 +426,10 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
       note: `Les trouvailles cachées scintillent quand ton sol pousse près d’elles — +${UPGRADE_STEPS.sense} hex de plus loin par niveau.`,
     },
   },
+  onceARun: {
+    newGround: 'TERRAIN NEUF — plus loin que ce monde n’est jamais allé.',
+    unique: 'UNIQUE — chaque appariement compte double, des deux côtés.',
+  },
   goalMet: (goal) => `OBJECTIF ATTEINT — ${goal}`,
   goal: {
     reach20: 'Atteindre 20 hex du départ',
@@ -470,11 +474,12 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
       `${name} ${day} · ${nb(pts)} pts · portée ${reach}${arc === '' ? '' : ` · ${arc}`} · ${ordinal(tries, 'fr-CA')} essai · bats-la${D}:`,
   },
   daily: {
-    badge: (day, record) =>
+    badge: (day, record, streak) =>
       `QUOTIDIEN ${day}` +
       (record === null
         ? ''
-        : ` · meilleur ${nb(record.best)} · ${record.tries} essai${pl(record.tries, '', 's')}`),
+        : ` · meilleur ${nb(record.best)} · ${record.tries} essai${pl(record.tries, '', 's')}`) +
+      (streak > 1 ? ` · ${streak} jours d’affilée` : ''),
   },
   claim: {
     cache: (tiles) => `CACHE RÉCLAMÉE

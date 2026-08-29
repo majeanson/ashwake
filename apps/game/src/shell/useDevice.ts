@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isLocale, pickLocale, type Locale } from '@content/locale';
 import type { FeatureId, FeatureSet } from '@meta/features';
 import type { Progress } from '@meta/progress';
+import { inheritShopLevels } from '@meta/shopLevels';
 import { AUTO_THEME_ID } from '@theme/index';
 import type { ThemeId } from '@theme/tokens';
 import { isDaily, keeperFor, type Keeper, type Place } from './keeper';
@@ -14,7 +15,9 @@ import {
   setActiveSlot,
   writeFeatures,
   writeLocale,
+  readShopLevels,
   writeProgress,
+  writeShopLevels,
   writeTheme,
   type Slot,
 } from './storage';
@@ -72,7 +75,20 @@ export function useDevice(opts: {
     () => opts.theme ?? readTheme() ?? AUTO_THEME_ID,
   );
   const [features, setFeatures] = useState<FeatureSet>(readFeatures);
-  const [progress, setProgressState] = useState<Progress>(() => opts.progress ?? readProgress());
+  /**
+   * The device's ledger, wearing THIS world's shop levels.
+   *
+   * Relics, perks found and the teaching ledger are device facts — they follow
+   * the player. Upgrade LEVELS are a property of the world they were bought
+   * in, so a fresh world starts bare rather than inheriting a build three
+   * other worlds paid for, and the crossing can honestly say that what you
+   * bought stays behind. `inheritShopLevels` owns the one subtle case: a
+   * world that has never written a shop key predates the split and takes the
+   * device's legacy levels once, so no existing device loses its build.
+   */
+  const [progress, setProgressState] = useState<Progress>(
+    () => opts.progress ?? inheritShopLevels(readProgress(), readShopLevels(activeSlot())),
+  );
   const [slot, setSlotState] = useState<Slot>(activeSlot);
   /**
    * Where the player is: one of the three worlds, or a dated daily.
@@ -98,6 +114,12 @@ export function useDevice(opts: {
     keeper.current.drop();
     keeper.current = keeperFor(next);
     setPlaceState(next);
+    // A world's shop is the world's. Stepping into one puts on its build, and
+    // stepping into the daily — which has no shop of its own — keeps whatever
+    // the player was carrying.
+    if (!isDaily(next)) {
+      setProgressState((was) => inheritShopLevels(was, readShopLevels(next)));
+    }
   }, []);
 
   const setSlot = useCallback(
@@ -151,15 +173,28 @@ export function useDevice(opts: {
     });
   }, []);
 
-  const setProgress = useCallback((next: (was: Progress) => Progress) => {
-    setProgressState((was) => {
-      const after = next(was);
-      // Idempotent by construction in the core, so an unchanged ledger is not
-      // a write — a teaching card dismissed twice should not cost a save.
-      if (after !== was) writeProgress(after);
-      return after;
-    });
-  }, []);
+  const setProgress = useCallback(
+    (next: (was: Progress) => Progress) => {
+      setProgressState((was) => {
+        const after = next(was);
+        // Idempotent by construction in the core, so an unchanged ledger is not
+        // a write — a teaching card dismissed twice should not cost a save.
+        if (after === was) return was;
+        writeProgress(after);
+        // The BUILD is written where it belongs — beside the world it was
+        // bought in — whenever it moves. `writeProgress` still carries a copy
+        // in the device blob, which is what a world older than the split
+        // inherits from; this is the copy that outlives it.
+        //
+        // Keyed on `slot` rather than `place`: a daily has no shop of its
+        // own, and a purchase made on the way through one belongs to the
+        // world the player will come back to.
+        if (after.bought !== was.bought) writeShopLevels(slot, after.bought);
+        return after;
+      });
+    },
+    [slot],
+  );
 
   return useMemo(
     () => ({

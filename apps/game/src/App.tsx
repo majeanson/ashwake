@@ -49,6 +49,7 @@ import {
   writeTimeline,
   type Slot,
 } from './shell/storage';
+import { onceARun, type OnceId } from './shell/onceARun';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
 import * as voice from './shell/voice';
@@ -181,6 +182,16 @@ function Game() {
   const [saidCard, setSaidCard] = useState<Said | null>(null);
   /** Goals this run was the one to meet, for the end screen. */
   const [goals, setGoals] = useState<readonly GoalId[]>([]);
+  /**
+   * What this run has already said once, and the reach it started from.
+   *
+   * Refs, not state: nothing renders from them, and the reach in particular
+   * must be captured when the run BEGINS and not re-read — the world's memory
+   * is kept current by the keeper's merge, so a live read would move the
+   * boundary the moment the run crossed it and NEW GROUND would never fire.
+   */
+  const saidOnce = useRef<Set<OnceId>>(new Set());
+  const reachAtStart = useRef(0);
   const [purseOpen, setPurseOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
   /**
@@ -456,7 +467,30 @@ function Game() {
       }
 
       const said = now.said;
-      if (said === null) return;
+
+      /*
+       * The two things a run says once, at their first occurrence.
+       *
+       * After a receipt, never instead of one: a receipt is about what the
+       * player just did and these are about where they have got to. A quiet
+       * line, so it takes the toast only when nothing louder wanted it.
+       */
+      if (said === null) {
+        const mark = onceARun(
+          {
+            state: now.state,
+            hud: now.hud,
+            reachAtStart: reachAtStart.current,
+            said: saidOnce.current,
+          },
+          s,
+        );
+        if (mark !== null) {
+          saidOnce.current.add(mark.id);
+          setNote(mark.text);
+        }
+        return;
+      }
 
       /*
        * The FIRST pop a device ever makes is a card (Marc's call, 2026-08-29).
@@ -730,6 +764,9 @@ ${s.view.harvest.firstPopWhen}`,
   const newRun = useCallback(() => {
     setDaily(null);
     setGoals([]);
+    saidOnce.current = new Set();
+    reachAtStart.current = readWorld(activeSlot())?.farthestReach ?? 0;
+
     banked.current = null;
     session.restart(Math.floor(Math.random() * 2 ** 31));
     setLens(null);
@@ -769,6 +806,8 @@ ${s.view.harvest.firstPopWhen}`,
       const kept = readRun(next);
       setDaily(null);
       setSlot(next);
+      saidOnce.current = new Set();
+      reachAtStart.current = readWorld(next)?.farthestReach ?? 0;
       session.restart(Math.floor(Math.random() * 2 ** 31), kept);
       setLens(null);
       banked.current = null;

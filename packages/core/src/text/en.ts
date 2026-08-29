@@ -400,6 +400,10 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
       note: `Hidden finds shimmer when your ground grows near — +${UPGRADE_STEPS.sense} hexes farther each level.`,
     },
   },
+  onceARun: {
+    newGround: 'NEW GROUND — farther than this world has ever reached.',
+    unique: 'UNIQUE — every match counts double, both ways.',
+  },
   goalMet: (goal) => `GOAL MET — ${goal}`,
   goal: {
     reach20: 'Reach 20 hexes from home',
@@ -443,11 +447,12 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
       `${name} ${day} · ${pts} pts · reach ${reach}${arc === '' ? '' : ` · ${arc}`} · ${ordinal(tries, 'en')} try · beat it:`,
   },
   daily: {
-    badge: (day, record) =>
+    badge: (day, record, streak) =>
       `DAILY ${day}` +
       (record === null
         ? ''
-        : ` · best ${record.best} · ${record.tries} ${plural(record.tries, 'try', 'tries')}`),
+        : ` · best ${record.best} · ${record.tries} ${plural(record.tries, 'try', 'tries')}`) +
+      (streak > 1 ? ` · ${streak} days in a row` : ''),
   },
   claim: {
     cache: (tiles) => `CACHE CLAIMED

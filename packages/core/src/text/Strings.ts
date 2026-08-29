@@ -262,6 +262,18 @@ export type Strings = {
     >
   >;
   /** The survey's announcement, wrapping a goal's own words. */
+  /**
+   * The two things a run says exactly ONCE, at their first occurrence.
+   *
+   * Not teaching — the teaching ledger is a device fact and these are true
+   * again every run. NEW GROUND is the only moment the game marks a run as
+   * having gone somewhere no run on this world ever has, and it is quiet
+   * enough to miss without it.
+   */
+  readonly onceARun: {
+    readonly newGround: string;
+    readonly unique: string;
+  };
   readonly goalMet: (goal: string) => string;
   readonly goal: Readonly<
     Record<'reach20' | 'territories4' | 'known40' | 'shrinesAll' | 'perksAll', string>
@@ -290,6 +302,12 @@ export type Strings = {
     readonly badge: (
       day: string,
       record: { readonly best: number; readonly tries: number } | null,
+      /**
+       * Consecutive days played, ending today or yesterday. Zero means no
+       * streak worth naming — a rider rather than a field, because "0 days in
+       * a row" is a discouragement and an absence is not.
+       */
+      streak: number,
     ) => string;
   };
   /**

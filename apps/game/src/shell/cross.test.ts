@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CROSSING } from '@content/goals';
 import { TUNING } from '@content/tuning';
 import { newRun } from '@engine/reduce';
-import { EMPTY_PROGRESS } from '@meta/progress';
+import { EMPTY_PROGRESS, type Progress } from '@meta/progress';
 import { newWorld } from '@meta/world';
 import { worldEventsOf } from '@meta/timeline';
 import { carriedBy, cross, dowryOf } from './cross';
@@ -79,5 +79,49 @@ describe('crossing', () => {
     const [entry] = worldEventsOf(after.timeline, null).filter((e) => e.event === 'crossed');
     expect(entry?.worldSeed).toBe(held(2).worldSeed);
     expect(entry?.n).toBe(after.carried);
+  });
+});
+
+/**
+ * What the card promises, and what actually happens.
+ *
+ * The crossing's card says "the ground, the territories, the shrines you woke
+ * here and everything you have BOUGHT stay behind". Everything but the last
+ * clause was true when it was written: upgrade levels lived on the device, so
+ * crossing kept the whole build and the dowry was a bonus rather than the
+ * trade it is tuned as.
+ */
+describe('what the crossing costs', () => {
+  const built = {
+    state,
+    world: held(2),
+    progress: {
+      ...EMPTY_PROGRESS,
+      relics: 5,
+      found: ['stonewalker' as const],
+      // A real upgrade id: an invented one would make every assertion below
+      // pass without proving anything.
+      bought: { tiles: 3 } as Progress['bought'],
+    },
+    timeline: [],
+    seed: 99,
+    at: 1,
+  };
+
+  it('leaves the build behind', () => {
+    expect(cross(built).progress.bought).toEqual({});
+  });
+
+  it('still carries the relics and the perks', () => {
+    const after = cross(built);
+    expect(after.progress.relics).toBeGreaterThan(built.progress.relics);
+    expect(after.progress.found).toEqual(['stonewalker']);
+  });
+
+  it('makes the dowry a trade rather than a bonus', () => {
+    // The whole point of the number: a world held thoroughly pays more to
+    // leave, and leaving costs you the build you paid for there.
+    expect(cross(built).progress.bought).not.toEqual(built.progress.bought);
+    expect(cross(built).carried).toBeGreaterThan(0);
   });
 });

@@ -82,9 +82,18 @@ export function cross(now: Crossing): Crossed {
     // A fresh world in the same slot. Nothing of the old one comes with it —
     // that is what "leaving" means, and it is why the offer is a two-tap arm.
     world: newWorld(now.seed),
-    // `spend` with a negative amount would be a lie; relics are GAINED here,
-    // and `Progress` is a device fact so the perks found ride along untouched.
-    progress: { ...now.progress, relics: now.progress.relics + carried },
+    /*
+     * Relics and perks carry; the BUILD does not.
+     *
+     * `Progress` is mostly a device fact — the relics, the perks found, the
+     * teaching ledger — and all of that follows the player. `bought` is the
+     * exception: upgrade levels belong to the world they were bought in, which
+     * is what makes the card's "everything you have BOUGHT stays behind" true
+     * rather than a sentence. Until 2026-08-29 it was a sentence: the shop was
+     * device-wide, so crossing was pure profit and the dowry — 25 relics plus
+     * ten a territory — was a bonus rather than the trade it was tuned as.
+     */
+    progress: { ...now.progress, relics: now.progress.relics + carried, bought: {} },
     timeline: appendEntry(now.timeline, {
       at: now.at,
       kind: 'world',

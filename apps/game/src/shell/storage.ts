@@ -7,6 +7,7 @@ import {
 } from '@meta/daily';
 import { decodeFeatures, encodeFeatures, type FeatureSet } from '@meta/features';
 import { decodeProgress, encodeProgress, EMPTY_PROGRESS, type Progress } from '@meta/progress';
+import { parseShopLevels } from '@meta/shopLevels';
 import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
 import { decodeTimeline, encodeTimeline, type Timeline } from '@meta/timeline';
@@ -78,6 +79,16 @@ const slotKeys = (slot: Slot) =>
   ({
     world: `${NS}.world.${slot}.v1`,
     run: `${NS}.run.${slot}.v1`,
+    /**
+     * What this world's shop has been built to.
+     *
+     * Upgrade levels are a property of a WORLD, not of a device: a fresh
+     * world starts bare rather than inheriting a build three other worlds
+     * paid for, and the crossing's card can honestly say that everything you
+     * bought stays behind. `meta/shopLevels.ts` owns the inherit rule; this
+     * is only where the string sits.
+     */
+    shop: `${NS}.shop.${slot}.v1`,
   }) as const;
 
 /**
@@ -241,6 +252,23 @@ export function activeSlot(): Slot {
 
 export const setActiveSlot = (slot: Slot): void => write(DEVICE.slot, String(slot));
 
+/* ---- one world's shop ------------------------------------------------------ */
+
+/**
+ * The levels this world has bought, or null where it has never written any.
+ *
+ * Null is load-bearing and is NOT the same as `{}`: null means "nothing was
+ * ever written here", which is a world older than the per-world split and
+ * inherits the device's legacy levels once; `{}` means "this world has
+ * bought nothing since the split" and stays bare. `inheritShopLevels` is
+ * where that decision lives.
+ */
+export const readShopLevels = (slot: Slot): Progress['bought'] | null =>
+  parseShopLevels(read(slotKeys(slot).shop));
+
+export const writeShopLevels = (slot: Slot, bought: Progress['bought']): void =>
+  write(slotKeys(slot).shop, JSON.stringify(bought));
+
 /* ---- the last failure ----------------------------------------------------- */
 
 export type LastError = {
@@ -325,6 +353,9 @@ export function clearSlot(slot: Slot): void {
   const keys = slotKeys(slot);
   drop(keys.world);
   drop(keys.run);
+  // The build goes with the place. A world you have left is a world whose
+  // shop you no longer own — which is what the crossing's card promises.
+  drop(keys.shop);
 }
 
 /** Every key this game owns. RESET ALL, and the thing RESTORE writes over. */
