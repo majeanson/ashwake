@@ -13,6 +13,7 @@ import {
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Figure } from '../ui/Figure';
+import { Legend } from './Legend';
 import { Panel } from '../ui/Panel';
 import { ProseLines } from '../ui/Prose';
 import { Tabs } from '../ui/Tabs';
@@ -77,6 +78,14 @@ export function Manual({ theme, s, onBack, onTerm, menu }: ManualProps) {
         />
       }
     >
+      {/*
+        The legend opens the PLAY tab: every mark the board can show, before
+        any of the rules that use them. A player who has met a glyph on a hex
+        had no way to learn it but to tap that hex, which needed them to have
+        walked there first.
+      */}
+      {on === 'play' && <Legend theme={theme} s={s} onTerm={onTerm} />}
+
       {on === 'menu'
         ? menu
         : SECTIONS[on].map((id) => {

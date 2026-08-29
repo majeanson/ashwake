@@ -4,7 +4,23 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the taps that said nothing.**
+Last checkpoint: **2026-08-29, last — the gaps, closed.** Everything
+`INTERACTIONS.md` listed as missing is built. The **pinch bug** first, because
+Marc found it on a phone and it broke play: lifting one finger of a pinch made
+the survivor's next move measure its delta from the OTHER finger, panning the
+board by the gap between two fingers in one frame. Then the **reward loop's
+voice** (`view/receipts.ts` — claims, pops and spends, ranked, rarest leading),
+**TAKE and SACRIFICE**, **POP's camera glide**, the **first-pop card**, the
+**crossing** (priced in one place, so the offer and the payment are the same
+number by construction), the **world survey**, **sound** (synthesised per
+direction, builds nothing until asked, gives the context back when switched
+off), a **full-disk shed ladder**, and the manual's **legend** — every mark the
+board can show, read from the registry that owns it. Menus gained ← and a ✕
+that escapes the whole stack, one card at a time, and a head that sticks with
+its tabs as one block rather than guessing its own height. **Verified:** 914
+tests / 61 files; 46 Playwright at 390×844; golden sim byte-identical.
+
+Previous checkpoint: **2026-08-29 — the taps that said nothing.**
 `INTERACTIONS.md` is the full matrix of Ashwake 1's input against this body,
 gesture by gesture. **The board tap had three branches and needed six**: a tap
 that could not build was a silent no-op, so tapping a shrine, a cache, a wall,

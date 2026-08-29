@@ -135,16 +135,20 @@ button[disabled] {
   overscroll-behavior: contain;
 }
 
+/* The head and its tab row stick as ONE block — see `Panel`. */
+.panel-top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+}
+
 .panel-head {
   display: flex;
   align-items: center;
   gap: var(--gap);
   padding: var(--gap);
   border-bottom: 1px solid var(--panel-edge);
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 1;
 }
 
 .panel-title {
@@ -226,10 +230,6 @@ button[disabled] {
   overflow-x: auto;
   padding: var(--gap);
   border-bottom: 1px solid var(--panel-edge);
-  position: sticky;
-  top: 3.2rem;
-  background: var(--bg);
-  z-index: 1;
   /* The bar scrolls sideways on a narrow phone rather than wrapping, so the
      tab you are on never moves to a different line than the one you left. */
   scrollbar-width: none;
@@ -938,4 +938,66 @@ button[disabled] {
   font-size: 0.75rem;
   color: var(--accent);
   text-align: center;
+}
+
+/*
+ * The legend: every mark the board can show, and what it means.
+ *
+ * A grid rather than prose, because a legend is a LIST and reading one is
+ * scanning rather than reading. The mark column is fixed so the names line up
+ * down the panel whatever alphabet they are in.
+ */
+.legend ul {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.legend li {
+  display: grid;
+  grid-template-columns: 1.6rem 1.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* A row with no swatch still holds its column, so the marks stay in line. */
+.legend li > .legend-mark:first-child {
+  grid-column: 2;
+}
+
+.legend-mark {
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.legend-swatch {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.25rem;
+  display: block;
+}
+
+/* An EDGE is a border, not a fill — the board draws it that way too. */
+.legend-edge {
+  background: transparent;
+  border: 2px solid;
+}
+
+/*
+ * The name always takes the LAST column, whatever came before it.
+ *
+ * Without this a row with a swatch and no mark put its name in the mark's
+ * 1.6rem column, and a sentence set four characters wide is not a legend, it
+ * is a stack. The grid is what keeps the names in line down the panel; the
+ * placement has to be explicit because the rows genuinely differ — a ground
+ * has both a swatch and a mark, a destination has only a mark, spent ground
+ * has only a swatch.
+ */
+.legend-name {
+  grid-column: 3;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  overflow-wrap: anywhere;
 }

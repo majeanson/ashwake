@@ -54,34 +54,45 @@ export function Panel({ id, title, back, closeAll, onBack, children, head }: Pan
       // A panel under another panel is not reachable, and says so.
       {...(top ? {} : { inert: true })}
     >
-      <div className="panel-head">
-        {/*
+      {/*
+        The head and whatever rides under it are ONE sticky block.
+
+        They used to stick separately, with the tab row offset by a hand-typed
+        `top: 3.2rem` guessing the head's height — a guess that went stale the
+        moment the head grew a ✕ and 44px controls, clipping the tabs under it.
+        A number that has to agree with a layout it cannot see is a number that
+        will disagree with it.
+      */}
+      <div className="panel-top">
+        <div className="panel-head">
+          {/*
           ← goes back one, ✕ leaves entirely — two different promises, so the
           ✕ only appears when there is more than one step to undo. On a single
           panel it would be a second button making the first one's promise.
         */}
-        <button type="button" className="panel-back" onClick={onBack} aria-label={back}>
-          <span aria-hidden="true">{CHROME_MARK.back}</span>
-        </button>
-        <h1 className="panel-title" id={`${id}-title`}>
-          {title}
-        </h1>
-        {stack.depth > 1 && (
-          <button
-            type="button"
-            className="panel-close"
-            data-close-all=""
-            onClick={stack.closeAll}
-            aria-label={closeAll}
-          >
-            <span aria-hidden="true">{CHROME_MARK.closeAll}</span>
+          <button type="button" className="panel-back" onClick={onBack} aria-label={back}>
+            <span aria-hidden="true">{CHROME_MARK.back}</span>
           </button>
-        )}
-      </div>
-      {/* Tabs get their own row. Crammed in beside the title and BACK they
+          <h1 className="panel-title" id={`${id}-title`}>
+            {title}
+          </h1>
+          {stack.depth > 1 && (
+            <button
+              type="button"
+              className="panel-close"
+              data-close-all=""
+              onClick={stack.closeAll}
+              aria-label={closeAll}
+            >
+              <span aria-hidden="true">{CHROME_MARK.closeAll}</span>
+            </button>
+          )}
+        </div>
+        {/* Tabs get their own row. Crammed in beside the title and BACK they
           overflow the moment there are more than two, and the one control a
           player needs to leave with is the one that gets pushed off. */}
-      {head}
+        {head}
+      </div>
       <div className="panel-body">{children}</div>
     </div>
   );

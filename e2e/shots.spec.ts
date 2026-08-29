@@ -18,6 +18,9 @@ import { assertLooksLikeAPicture, begin, clearCards, watchErrors } from './helpe
  * Portrait phone, like everything else that matters.
  */
 
+/** One error per line, for a failure message a person can read. */
+const BREAK = String.fromCharCode(10);
+
 const SHOTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'docs', 'shots');
 
 const ANGLES = [
@@ -90,6 +93,20 @@ for (const [name, query] of ANGLES) {
  * the cascade's last tile has gone. It is the only way to see, in a still,
  * that the COLOUR is above the board while the grey is already under it.
  */
+test('shoots the manual’s legend', async ({ page }) => {
+  // Every mark the board can show, in one place — the answer to "adding
+  // visuals and assets and symbols in the how to play".
+  const errors = watchErrors(page);
+  await page.goto('/?theme=settlement&taught=1');
+  await page.locator('[data-door="how"]').click();
+  await page.locator('[data-tab="play"]').click();
+  await page.locator('.legend').waitFor({ state: 'visible' });
+  await page.waitForTimeout(300);
+  await mkdir(SHOTS, { recursive: true });
+  await writeFile(join(SHOTS, 's5-legend.png'), await page.screenshot());
+  expect(errors, errors.join(BREAK)).toEqual([]);
+});
+
 test('catches the harvest in the air', async ({ page }) => {
   const errors = watchErrors(page);
   // `taught=1`: a device that has met every lesson, so the board is the only

@@ -791,4 +791,70 @@ purse spends in silence.
 
 **Verified:** 876 tests / 57 files; golden sim byte-identical.
 
-**Not played on a phone.** Again.
+### Session 12 — the gaps, closed (2026-08-29)
+
+**Question, written before building:** can everything `INTERACTIONS.md`
+listed as missing be built without cutting a corner on any of it?
+
+**Yes, and the pinch bug came first**, because Marc found it on a phone and it
+broke play: _"when zooming in and out with pinch, the map flies away at the end
+so we can't see anything anymore."_ Two defects. `last` held where the FIRST
+finger was, so lifting one finger of a pinch made the survivor's next move
+measure its delta from the OTHER finger — the gap between two fingers, applied
+as a pan, in one frame. And a pinch never marked the gesture as moved or
+cleared the velocity samples, so the lift could throw the board using a pan
+from before the pinch began. Pinned with raw CDP touch events, because
+`page.mouse` cannot express two pointers and the bug only exists with two.
+
+**The reward loop speaks.** `view/receipts.ts` is pure — two states in,
+sentences out — and keeps Ashwake 1's two decisions: rarest leads, and the rare
+ones hold the screen. Pops and spends came with it, the spend priced by
+DIFFERENCE because a tithe takes the whole purse and a refused spend costs
+nothing. All of it on one seam: the session computes what to say on dispatch,
+the way it already computed `popped`, and the shell has one `act()` door.
+
+**TAKE and SACRIFICE** were two of four harvest choices unreachable from the
+screen, with `harvestTreasure` and `harvestBurn` computed and read by nobody.
+
+**A full disk now sheds** rather than losing the run. `write` swallowed the
+quota error under a comment saying the next write is the retry — true until the
+disk is genuinely full, and then every write fails forever and the run in
+progress is what dies. `storage.ts` caches the PROBE now and not the handle:
+probing on every read would be wrong on a full disk, because the probe's own
+`setItem` would throw and the game would conclude the device is ephemeral.
+
+**Menus got a way out.** Marc: _"add a x that escape all too, left arrow for
+back"_. Every panel head is ← title ✕, and the ✕ appears only past the first
+panel — ← undoes one step and ✕ undoes all of them, which on a single panel
+would be the same promise twice. One card at a time, too: a receipt outranks a
+lesson, because two modal cards over one board is the same problem in card
+form.
+
+**The head and its tabs stick as ONE block.** They stuck separately, with the
+tab row offset by a hand-typed `top: 3.2rem` guessing the head's height — a
+guess that went stale the moment the head grew a ✕ and 44px controls, clipping
+the tabs under it. A number that has to agree with a layout it cannot see is a
+number that will disagree with it.
+
+**The first pop holds the screen** (Marc's call), gated on the pop COUNT rather
+than the `pop` teaching id — that lesson fires the instant a pocket becomes
+poppable, so by the time anyone actually pops the ledger is already spent.
+
+**The crossing, the survey and sound**, all three core systems with no
+consumer. The crossing is priced in ONE place so the offer and the payment are
+the same number by construction. The survey reports at settle, because a goal
+is a fact about a world across every run it has held. Sound is synthesised from
+each direction's own `voice` block, builds nothing until asked, gives the
+audio context BACK when switched off, and may never throw into the game.
+
+**And the manual shows the alphabet its rules are written in.** A player who
+met `◈` on a hex could only learn it by tapping that hex, which needed them to
+have walked there first. Nothing in the legend invents a mark: every glyph is
+read from the registry that owns it and every name from the lesson that already
+defines it.
+
+**Verified:** 914 tests / 61 files; 46 Playwright at 390×844; typecheck, lint,
+format clean; golden sim byte-identical.
+
+**Not played on a phone** — except the pinch, which Marc found there, and which
+is why it was the first thing fixed.

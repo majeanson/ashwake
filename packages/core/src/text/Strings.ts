@@ -447,6 +447,23 @@ export type Strings = {
     readonly wear: string;
     /** An upgrade at the top of its ladder — a rung you can see the end of. */
     readonly maxed: string;
+    /**
+     * The legend's own headings — every mark the board can show, and what it
+     * means (Marc, 2026-08-29: "adding visuals and assets and symbols in the
+     * how to play").
+     *
+     * The manual explained the rules and never showed the alphabet they are
+     * written in: a player meets a glyph on a hex and the only way to learn it
+     * was to tap that hex, which needs them to have walked there first.
+     */
+    readonly legendGrounds: string;
+    readonly legendPlaces: string;
+    readonly legendMarks: string;
+    readonly legendRare: string;
+    readonly legendStone: string;
+    readonly legendWall: string;
+    readonly legendRipe: string;
+    readonly legendLegal: string;
     readonly privacy: string;
     /**
      * What a tap on the board says when it cannot place.

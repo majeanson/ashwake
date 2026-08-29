@@ -217,3 +217,31 @@ test('?themes=1 puts every direction one tap from the board', async ({ page }) =
 
   expect(errors).toEqual([]);
 });
+
+test('the manual shows the alphabet the rules are written in', async ({ page }) => {
+  // Marc, 2026-08-29: "adding visuals and assets and symbols in the how to
+  // play". The manual explained the rules and never showed the marks — a
+  // player who met a glyph on a hex could only learn it by tapping that hex,
+  // which needed them to have walked there first.
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+  await page.locator('[data-door="how"]').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+
+  await page.locator('[data-tab="play"]').click();
+  const legend = page.locator('.legend');
+  await legend.waitFor({ state: 'visible' });
+
+  // Four grounds, five destinations, and the other marks.
+  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(10);
+  // The swatches are the DIRECTION's own fills, so the legend repaints with
+  // the board rather than being a second copy of the palette.
+  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(4);
+
+  // And a destination opens its own definition, rather than the legend
+  // repeating a sentence this project keeps in one place.
+  await legend.locator('[data-term="shrine"]').click();
+  await expect(page.locator('.card-scrim .card')).toBeVisible();
+
+  expect(errors).toEqual([]);
+});

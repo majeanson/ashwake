@@ -28,6 +28,7 @@ export function Tabs<Id extends string>({ label, tabs, on, onPick }: TabsProps<I
           type="button"
           role="tab"
           className="tab"
+          data-tab={tab.id}
           aria-selected={tab.id === on}
           onClick={() => onPick(tab.id)}
         >

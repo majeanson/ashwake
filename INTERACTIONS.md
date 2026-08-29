@@ -95,24 +95,22 @@ deliberately absent in both.
 
 ## What is still missing, in the order it matters
 
-Everything above §5 is closed as of 2026-08-29. What is left:
+Everything this file listed on 2026-08-29 is closed. What is left:
 
-1. **The first pop of a device is not a card.** Ashwake 1 upgrades the very
-   first pop receipt into a held card, because the rule it teaches — a popped
-   pocket turns to STONE, which still surrounds but never matches, so popped
-   ground grows poorer — changes how the rest of the run is played. The receipt
-   is right; only its rank is missing.
-2. **NEW GROUND / UNIQUE, once per run.** Two toasts Ashwake 1 fires at their
+1. **NEW GROUND / UNIQUE, once per run** — two toasts Ashwake 1 fires at their
    first occurrence in a run.
-3. **The world survey** (`meta/goals.ts`, no consumer) — `GOAL MET — {text}`
-   joined onto whatever else spoke.
-4. **The crossing.** A shrine past the end of the ledger offers a new world;
-   this body says the true half ("fully awake") and stops, because the crossing
-   itself is S4's remainder. `receipts.ts` says so where the branch would go.
-5. **The `✕` lens-clear button** — the fog tap and a second long-press both let
+2. **The `✕` lens-clear button.** The fog tap and a second long-press both let
    go, so this is a convenience rather than a gap.
-6. **Sound.** No `voice` consumer at all; every theme carries one.
+3. **The atlas**, if it earns its place — on the "review rather than port" list,
+   and no stranger has ever seen one.
+4. **A keyboard path for placing a tile.** Ashwake 1 shipped without one too and
+   said so in as many words; `#board` is a focus sink, not a cursor.
 
-The standing check that would have caught the whole of §4 is in `CLAUDE.md`:
+Closed since this file was written: the board's tap answers (all of them), the
+fog lens, unselecting a card, `touch-action`, the iOS edge guard, claim
+receipts, pop receipts, spend receipts, TAKE and SACRIFICE, POP's camera glide,
+the first-pop card, the crossing, the world survey, sound, and the legend.
+
+The standing check that would have caught the whole of it is in `CLAUDE.md`:
 before calling a screen done, grep for a consumer of every action it can
 produce.
