@@ -131,8 +131,10 @@ test('finishes a run and starts another', async ({ page }) => {
 
   const end = page.locator('[data-hud="end"]');
   await expect(end).toBeVisible();
-  // The run said something about itself rather than only printing a number.
-  await expect(end).toContainText(/d/);
+  // The run said something about itself rather than only printing a number:
+  // a score, and an epitaph with words in it.
+  await expect(end).toContainText(/[0-9]/);
+  await expect(end.locator('.end-epitaph')).not.toBeEmpty();
 
   await page.locator('[data-action="new-run"]').click();
   await clearCards(page);
@@ -140,5 +142,42 @@ test('finishes a run and starts another', async ({ page }) => {
   // Back on a live board, with the run reset rather than the end screen hidden.
   await expect(page.locator('[data-hud="stats"]')).toBeVisible();
   await expect(end).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('remembers a run across a reload', async ({ page }) => {
+  // Stage 4's whole point. Nothing survived a reload before this, which meant
+  // a phone that locked mid-run lost the run — and a game that punishes you
+  // for answering the phone is a game you stop opening.
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7');
+  await begin(page);
+  await clearCards(page);
+
+  const before = await tiles(page);
+  await placeOneTile(page);
+  const after = await tiles(page);
+  expect(after).toBeLessThan(before);
+
+  // A real reload, not a re-render: the keeper has to have reached the disk.
+  await page.reload();
+  await expect(page.locator('[data-door="begin"]')).toHaveText(/RESUME|REPRENDRE/);
+  await begin(page);
+  await clearCards(page);
+
+  expect(await tiles(page)).toBe(after);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('forgets a finished run, so BEGIN means begin', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&end=1');
+  await begin(page);
+  await clearCards(page);
+  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+
+  await page.reload();
+  // A finished run is not a resumable one: the door offers a beginning.
+  await expect(page.locator('[data-door="begin"]')).toHaveText(/BEGIN|COMMENCER/);
   expect(errors, errors.join('\n')).toEqual([]);
 });

@@ -66,9 +66,12 @@ export function createSession(opts: {
   readonly theme: Theme;
   readonly strings: Strings;
   readonly tuning?: Tuning;
+  /** A run read back off the device. Resuming is the same object the reducer
+   *  left behind, so a resumed run is not a re-simulated one. */
+  readonly resume?: GameState | null;
 }): Session {
   const tuning = opts.tuning ?? TUNING;
-  let state = newRun(opts.seed, tuning);
+  let state = opts.resume ?? newRun(opts.seed, tuning);
   let harvestAt: HexKey | null = null;
   let popped: Snapshot['popped'] = null;
   let popCount = 0;

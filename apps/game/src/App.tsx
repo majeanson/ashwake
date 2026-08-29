@@ -1,11 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { pickLocale, type Locale } from '@content/locale';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CellView } from '@render/Renderer';
-import { defaultFeatures, type FeatureId, type FeatureSet } from '@meta/features';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
-import type { ThemeId } from '@theme/tokens';
 import type { LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
 import { ActionBar } from './screens/ActionBar';
@@ -17,7 +14,9 @@ import { LessonCard } from './screens/LessonCard';
 import { Manual } from './screens/Manual';
 import { Purse } from './screens/Purse';
 import { Settings } from './screens/Settings';
+import { clearRun, readRun } from './shell/storage';
 import { createSession, useSession } from './shell/store';
+import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
 import { walk, walkToEnd } from './shell/walk';
 import { Confirming } from './ui/Confirming';
@@ -39,8 +38,13 @@ import './ui/ui.css';
  *
  * The look dials are read off the query string so an angle can be argued with
  * by looking: `?tilt=`, `?yaw=`, `?relief=`, `?light=`, `?materials=`, `?art=`.
- * `?seed=` picks a world, `?theme=` a direction, and `?place=` plays a fixed
- * opening so two screenshots are two pictures of one board.
+ * `?seed=` picks a world, `?theme=` a direction, `?place=` plays a fixed
+ * opening so two screenshots are two pictures of one board, `?end=1` plays a
+ * whole run, and `?taught=1` is a device that has met every lesson.
+ *
+ * **A run is remembered.** `shell/useDevice` reads what this device kept and
+ * `shell/keeper` writes it back — through a keeper that refuses once its
+ * session is over, which is what makes the crossing safe.
  */
 
 /**
@@ -77,22 +81,41 @@ export function App() {
   );
 }
 
+/**
+ * `?theme=` and `?taught=1` override what the device remembers.
+ *
+ * `taught` is a device that has already met every lesson — no cards, no
+ * toasts. It exists for the reason Ashwake 1's fixtures had device HISTORIES:
+ * most screens look fine on a virgin phone and the empty version is not the
+ * one that breaks, and a screenshot of the board is otherwise a screenshot of
+ * whatever card happens to be over it.
+ */
+function overrides(): Parameters<typeof useDevice>[0] {
+  const params = new URLSearchParams(location.search);
+  const theme = parseThemeId(location.search);
+  const taught = dial(params, 'taught', 0) > 0;
+  return {
+    ...(theme === null ? {} : { theme }),
+    ...(taught
+      ? { progress: TEACH_IDS.reduce<Progress>((p, id) => meet(p, id), EMPTY_PROGRESS) }
+      : {}),
+  };
+}
+
 function Game() {
-  const [locale, setLocale] = useState<Locale>(() => pickLocale(navigator.languages));
-  const [storedTheme, setStoredTheme] = useState<ThemeId>(
-    () => parseThemeId(location.search) ?? AUTO_THEME_ID,
-  );
-  const [features, setFeatures] = useState<FeatureSet>(defaultFeatures);
-  const [progress, setProgress] = useState<Progress>(() =>
-    // `?taught=1` is a device that has already met everything — no cards, no
-    // toasts. It exists for the same reason Ashwake 1's fixtures had device
-    // HISTORIES: most screens look fine on a virgin phone and the empty
-    // version is not the one that breaks, and a screenshot of the board is a
-    // screenshot of whatever card happens to be over it otherwise.
-    dial(new URLSearchParams(location.search), 'taught', 0) > 0
-      ? TEACH_IDS.reduce<Progress>((p, id) => meet(p, id), EMPTY_PROGRESS)
-      : EMPTY_PROGRESS,
-  );
+  const {
+    locale,
+    setLocale,
+    theme: storedTheme,
+    setTheme: setStoredTheme,
+    features,
+    setFeature,
+    progress,
+    setProgress,
+    slot,
+    keeper,
+  } = useDevice(overrides());
+
   const [started, setStarted] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [purseOpen, setPurseOpen] = useState(false);
@@ -114,10 +137,15 @@ function Game() {
 
   const session = useMemo(() => {
     const params = new URLSearchParams(location.search);
+    // A run this device left behind is resumed as the very object the reducer
+    // left, not re-simulated — a replayed run is a run that can disagree with
+    // the one that was played. A shot query means a fresh board every time.
+    const scripted = dial(params, 'place', 0) > 0 || dial(params, 'end', 0) > 0;
     const made = createSession({
       seed: Number(params.get('seed') ?? '1') || 1,
       theme,
       strings: s,
+      resume: scripted ? null : readRun(slot),
     });
     // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so
     // the end screen can be looked at without playing for ten minutes.
@@ -131,6 +159,14 @@ function Game() {
 
   const snap = useSession(session);
   const board = useRef<BoardHandle>(null);
+
+  // Every state the reducer produces is offered to the keeper, which decides
+  // when it actually reaches the disk — and refuses entirely once its session
+  // is over. A finished run is CLEARED rather than kept, so BEGIN means begin.
+  useEffect(() => {
+    if (snap.hud.ended) clearRun(slot);
+    else keeper.saveRun(snap.state);
+  }, [snap.state, snap.hud.ended, keeper, slot]);
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -264,7 +300,7 @@ function Game() {
       {!started && (
         <FrontDoor
           s={s}
-          resuming={snap.hud.placements > 0}
+          resuming={snap.hud.placements > 0 && !snap.hud.ended}
           onBegin={() => setStarted(true)}
           onHowToPlay={() => manual.show()}
           onSettings={() => settings.show()}
@@ -304,8 +340,8 @@ function Game() {
           onBack={settings.hide}
           onTheme={setStoredTheme}
           onLocale={setLocale}
-          onFeature={(id: FeatureId, on) => setFeatures((was) => ({ ...was, [id]: on }))}
-          onResetTeaching={() => setProgress(EMPTY_PROGRESS)}
+          onFeature={setFeature}
+          onResetTeaching={() => setProgress(() => EMPTY_PROGRESS)}
         />
       )}
 
