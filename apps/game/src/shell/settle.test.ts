@@ -4,6 +4,7 @@ import { EMPTY_PROGRESS } from '@meta/progress';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { dailiesOf, runsOf } from '@meta/timeline';
+import { newWorld, type WorldMemory } from '@meta/world';
 import { settle, settleDaily } from './settle';
 import { createSession } from './store';
 import { walkToEnd } from './walk';
@@ -129,5 +130,56 @@ describe('the line between a daily and a world', () => {
     // and never in both.
     expect(runsOf(asDaily.timeline, null)).toHaveLength(0);
     expect(dailiesOf(asRun.timeline)).toHaveLength(0);
+  });
+});
+
+/**
+ * The world survey.
+ *
+ * `meta/goals.ts` has existed since the rules were lifted with no consumer:
+ * five per-world goals — reach 20, four territories, 40% known, every shrine,
+ * every perk — that give a world a spine beyond any one run. The two things
+ * worth pinning are that a goal reports on the run that MET it, and that it
+ * never reports twice, because the world is what remembers that it already
+ * did.
+ */
+describe('the survey', () => {
+  const snap = finished();
+  const settling = (world: WorldMemory | null) => ({
+    state: snap.state,
+    hud: snap.hud,
+    slot: 1 as const,
+    world,
+    records: {},
+    timeline: [],
+    progress: EMPTY_PROGRESS,
+    at: 1,
+  });
+
+  it('reports a goal the run it is met, and writes it into the world', () => {
+    // A world one territory short: this run's fold is what tips it.
+    const nearly: WorldMemory = {
+      ...newWorld(snap.state.rootSeed),
+      territories: ['2,0', '3,0', '4,0', '5,0'],
+    };
+    const after = settle(settling(nearly));
+    expect(after.goals).toContain('territories4');
+    expect(after.world.goalsMet).toContain('territories4');
+  });
+
+  it('never reports the same goal twice', () => {
+    const already: WorldMemory = {
+      ...newWorld(snap.state.rootSeed),
+      territories: ['2,0', '3,0', '4,0', '5,0'],
+      goalsMet: ['territories4'],
+    };
+    const after = settle(settling(already));
+    expect(after.goals).not.toContain('territories4');
+    // And it is not written a second time either.
+    expect(after.world.goalsMet.filter((g) => g === 'territories4')).toHaveLength(1);
+  });
+
+  it('says nothing about a world that has met nothing', () => {
+    expect(settle(settling(null)).goals).toEqual([]);
   });
 });

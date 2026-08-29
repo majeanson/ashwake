@@ -924,3 +924,18 @@ button[disabled] {
 .panel-close {
   color: var(--ink-dim);
 }
+
+/* The survey, on the end screen. A list, because a set is a LIST — the same
+   doctrine the four-grounds card and the purse follow. */
+.goals-met {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-align: center;
+}

@@ -2,6 +2,8 @@ import type { GameState } from '@engine/state';
 import { arcSparkline, recordDaily, type DailyBook } from '@meta/daily';
 import { recordRun, type RecordBook } from '@meta/records';
 import { appendEntry, capShots, runHighlights, type Timeline } from '@meta/timeline';
+import type { GoalId } from '@content/goals';
+import { newlyMetGoals } from '@meta/goals';
 import { newWorld, rememberRun, type WorldMemory } from '@meta/world';
 import type { Progress } from '@meta/progress';
 import type { HudView } from '@view/view';
@@ -35,6 +37,17 @@ export type Settled = {
   readonly world: WorldMemory;
   readonly records: RecordBook;
   readonly timeline: Timeline;
+  /**
+   * Goals this run was the one to meet — the world SURVEY, which had no
+   * consumer in this body until 2026-08-29.
+   *
+   * Reported at settle rather than mid-run because a goal is a fact about a
+   * WORLD across every run it has held, and the world only learns what a run
+   * did when the run is folded into it. Saying "GOAL MET" the moment a
+   * placement happened would mean maintaining a second, live projection of
+   * the world — a second place for it to be wrong.
+   */
+  readonly goals: readonly GoalId[];
 };
 
 export type Settling = {
@@ -60,11 +73,18 @@ export type Settling = {
  */
 export function settle(now: Settling): Settled {
   const before = now.world ?? newWorld(now.state.rootSeed);
-  const world = rememberRun(before, now.state);
+  const walked = rememberRun(before, now.state);
   const records = recordRun(now.records, now.state);
 
+  // The survey, read against the world this run just made and then WRITTEN
+  // into it — a goal reports once, and the world is what remembers that it
+  // already did.
+  const goals = newlyMetGoals(walked, now.progress);
+  const world: WorldMemory =
+    goals.length === 0 ? walked : { ...walked, goalsMet: [...walked.goalsMet, ...goals] };
+
   const summary = now.hud.summary;
-  const highlights = runHighlights(before, world, {
+  const highlights = runHighlights(before, walked, {
     points: now.hud.points,
     perksBefore: now.progress.found.length,
     perksAfter: now.progress.found.length,
@@ -102,7 +122,7 @@ export function settle(now: Settling): Settled {
     SHOTS_KEPT,
   );
 
-  return { world, records, timeline };
+  return { world, records, timeline, goals };
 }
 
 /* ---- the daily ------------------------------------------------------------ */

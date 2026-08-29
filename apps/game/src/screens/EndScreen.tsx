@@ -2,6 +2,7 @@ import type { Progress } from '@meta/progress';
 import type { Theme } from '@theme/tokens';
 import { arcNote, type HudView } from '@view/view';
 import type { LessonId } from '@view/lessons';
+import type { GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Prose } from '../ui/Prose';
@@ -46,6 +47,8 @@ export type EndScreenProps = {
    * is the whole reason this needs a return value.
    */
   readonly onShare: () => Promise<'shared' | 'copied' | 'failed'>;
+  /** Goals this run was the one to meet, for this world. */
+  readonly goals: readonly GoalId[];
 };
 
 export function EndScreen({
@@ -59,6 +62,7 @@ export function EndScreen({
   onProgress,
   onMore,
   onShare,
+  goals,
 }: EndScreenProps) {
   // What the share button says after it has been tapped. A share sheet needs
   // no word — the sheet IS the feedback — but a silent copy is a tap that
@@ -106,6 +110,19 @@ export function EndScreen({
         <p className="note">
           <Prose text={arc} s={s} onTerm={onTerm} />
         </p>
+      )}
+
+      {/*
+        The SURVEY: what this run was the one to finish, for this world.
+        Above the breakdown, because a goal met is the rarest thing an ending
+        can carry and the payout is always there.
+      */}
+      {goals.length > 0 && (
+        <ul className="goals-met">
+          {goals.map((id) => (
+            <li key={id}>{s.goalMet(s.goal[id])}</li>
+          ))}
+        </ul>
       )}
 
       {/* Why the number was what it was, one tap down — see `Payout`. */}

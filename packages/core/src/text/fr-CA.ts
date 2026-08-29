@@ -426,6 +426,7 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
       note: `Les trouvailles cachées scintillent quand ton sol pousse près d’elles — +${UPGRADE_STEPS.sense} hex de plus loin par niveau.`,
     },
   },
+  goalMet: (goal) => `OBJECTIF ATTEINT — ${goal}`,
   goal: {
     reach20: 'Atteindre 20 hex du départ',
     territories4: 'Tenir 4 territoires',

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
 import { arcSparkline, dailyBadge, dailySeed } from '@meta/daily';
 import { NAME } from '@meta/identity';
@@ -7,6 +8,7 @@ import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { namesOf } from '@theme/tokens';
 import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
+import { isEnabled } from '@meta/features';
 import { EMPTY_PROGRESS, hasMet, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
 import { stringsFor } from '@text/index';
@@ -49,6 +51,7 @@ import {
 } from './shell/storage';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
+import * as voice from './shell/voice';
 import { registerWorker } from './shell/worker';
 import { carriedBy, cross, dowryOf } from './shell/cross';
 import { settle, settleDaily } from './shell/settle';
@@ -176,6 +179,8 @@ function Game() {
    * has moved on by then.
    */
   const [saidCard, setSaidCard] = useState<Said | null>(null);
+  /** Goals this run was the one to meet, for the end screen. */
+  const [goals, setGoals] = useState<readonly GoalId[]>([]);
   const [purseOpen, setPurseOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
   /**
@@ -306,6 +311,24 @@ function Game() {
     writeRecords(after.records);
     writeTimeline(after.timeline);
     clearRun(slot);
+    /*
+     * The SURVEY: what this run was the one to finish, for the world.
+     *
+     * Said on the end screen rather than as a toast over it — the run is
+     * already over, and the end screen is where its bookkeeping belongs.
+     *
+     * This is a setState inside an effect, and `react-hooks` is right to be
+     * suspicious of those in general: mirroring a PROP into state is a
+     * cascading render and a frame of latency, and this file has fixed two of
+     * those. This is the other kind. Banking is a one-shot consequence of a
+     * run ending, guarded by `banked` so it happens exactly once, and its
+     * result is not derivable from any prop — the survey is the difference
+     * between a world before and after, and once written that difference is
+     * gone. The alternative is holding it in a ref, which cannot re-render
+     * the screen that has to show it.
+     */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGoals(after.goals);
   }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper]);
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -394,8 +417,30 @@ function Game() {
       // Counted BEFORE, because "the first" is a fact about what had not
       // happened yet.
       const poppedBefore = session.get().state.log.popped;
+      const claimedBefore = session.get().state.claimed.length;
       session.dispatch(action);
-      const said = session.get().said;
+      const now = session.get();
+
+      /*
+       * The board's voice, on the same seam the receipts use.
+       *
+       * One place knows what an action DID, so one place can sound it — the
+       * alternative is a component watching for a change it did not cause.
+       * Off unless the player asked (`ui.sound`), and the toggle's own tap is
+       * the user gesture browsers require before any audio exists at all.
+       */
+      if (isEnabled(features, 'ui.sound')) {
+        if (action.type === 'HARVEST' && now.state.log.popped > poppedBefore) {
+          voice.pop(theme.voice, now.state.log.harvests.at(-1)?.count ?? 1);
+        }
+        if (now.state.claimed.length > claimedBefore) {
+          const at = now.state.claimed.at(-1);
+          const cell = at === undefined ? undefined : now.state.cells[at];
+          if (cell?.kind === 'landmark') voice.claim(theme.voice, cell.reward);
+        }
+      }
+
+      const said = now.said;
       if (said === null) return;
 
       /*
@@ -436,7 +481,7 @@ ${s.view.harvest.firstPopWhen}`,
       if (said.card) setSaidCard(said);
       else setNote(said.text);
     },
-    [session, ledgers, s],
+    [session, ledgers, s, features, theme],
   );
 
   const onTap = useCallback(
@@ -670,6 +715,7 @@ ${s.view.harvest.firstPopWhen}`,
 
   const newRun = useCallback(() => {
     setDaily(null);
+    setGoals([]);
     banked.current = null;
     session.restart(Math.floor(Math.random() * 2 ** 31));
     setLens(null);
@@ -822,6 +868,7 @@ ${s.view.harvest.firstPopWhen}`,
             onProgress={setProgress}
             onMore={() => more.show()}
             onShare={onShare}
+            goals={goals}
           />
         </div>
       )}
@@ -877,7 +924,18 @@ ${s.view.harvest.firstPopWhen}`,
           onBack={settings.hide}
           onTheme={setStoredTheme}
           onLocale={setLocale}
-          onFeature={setFeature}
+          onFeature={(id, on) => {
+            setFeature(id, on);
+            // Enabling sound is the user gesture every browser wants before
+            // any audio may exist, so the toggle spends it on one note that
+            // confirms itself.
+            if (id !== 'ui.sound') return;
+            // On: the toggle's own tap is the user gesture browsers require
+            // before any audio may exist, spent on one note that confirms
+            // itself. Off: the context is GIVEN BACK, not merely muted.
+            if (on) voice.wake(theme.voice);
+            else voice.silence();
+          }}
           onResetTeaching={() => setProgress(() => EMPTY_PROGRESS)}
         />
       )}

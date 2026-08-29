@@ -261,6 +261,8 @@ export type Strings = {
       { readonly name: string; readonly note: string }
     >
   >;
+  /** The survey's announcement, wrapping a goal's own words. */
+  readonly goalMet: (goal: string) => string;
   readonly goal: Readonly<
     Record<'reach20' | 'territories4' | 'known40' | 'shrinesAll' | 'perksAll', string>
   >;

@@ -400,6 +400,7 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
       note: `Hidden finds shimmer when your ground grows near — +${UPGRADE_STEPS.sense} hexes farther each level.`,
     },
   },
+  goalMet: (goal) => `GOAL MET — ${goal}`,
   goal: {
     reach20: 'Reach 20 hexes from home',
     territories4: 'Hold 4 territories',
