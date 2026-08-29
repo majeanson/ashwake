@@ -116,7 +116,7 @@ checks the install surface instead of owing it.
   panel and a shareable deep link, and cost the one invariant that has held
   since Stage 2. Decide by looking, not by porting.
 - **The screen audit's third axis.** The harness exists and runs (`pnpm
-  audit:screens`, fourteen screens × three directions); what it does not have
+audit:screens`, fourteen screens × three directions); what it does not have
   is DEVICE HISTORIES beyond `?taught=1` and `?end=1`. Five runs in and three
   hundred runs in are now buildable, because persistence exists, and they are
   where the hall of fame and the shop stop looking empty.
