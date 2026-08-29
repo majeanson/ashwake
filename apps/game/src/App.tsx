@@ -972,6 +972,7 @@ ${s.view.harvest.firstPopWhen}`,
             onSettings={() => settings.show()}
             onMore={() => more.show()}
             onDaily={enterDaily}
+            themeId={theme.id}
             dailyBadge={dailyBadge(readDailyBook(), today, s)}
           />
         </div>

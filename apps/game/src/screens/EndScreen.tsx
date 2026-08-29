@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Payout } from './Payout';
 import { Shop } from './Shop';
 import { statLabel } from './Hud';
+import { useArtSlot } from '../shell/art';
 
 /**
  * How a run ended (Stage 3, 2026-08-29).
@@ -74,11 +75,17 @@ export function EndScreen({
     });
   };
 
+  // The direction's own board scene, where one is baked. `ui.runEnd` was a
+  // declared slot with no file in any direction until 2026-08-29 — the screen
+  // simply had no hero, which is a supported state and not the intended one.
+  const hero = useArtSlot(theme.id, 'ui.runEnd');
+
   const summary = hud.summary;
   const arc = summary === null ? null : arcNote(summary, s);
 
   return (
     <div className="end" data-hud="end">
+      {hero !== null && <img className="end-hero" src={hero} alt="" width={876} height={330} />}
       <p className="end-score">{hud.points}</p>
 
       {hud.epitaph !== null && (

@@ -29,6 +29,21 @@ jobs:
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from
       # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
       - run: pnpm --filter @ashwake/core --silent sim > sim.out.txt && diff -u packages/core/sim.golden.txt sim.out.txt
+      # The ART still matches the THEME it was baked from.
+      #
+      # `scripts/terrain.ts` reads colour off the theme objects rather than a
+      # copied palette, so re-baking is idempotent until a palette moves — and
+      # then the committed PNGs are stale and nothing says so. Ashwake 1 proved
+      # that is not hypothetical: it darkened daylight's terrain ladder on
+      # 2026-08-28 to fix "ember has no contrast", never re-baked, and shipped
+      # art rendering the OLD ladder. This body then inherited the stale files
+      # as frozen copies, which is how a contrast fix goes missing twice.
+      #
+      # The bake also carries its own guardrail — it throws if the baked
+      # greyscale ordering contradicts the token ordering the L* test enforces
+      # — so this one step checks both that the art is current and that it is
+      # still legible in the order the palette promises.
+      - run: pnpm bake && git diff --exit-code -- apps/game/public
 
   # No PR gate: land on main, and CI gates the prod deploy. Set the
   # DEPLOY_ENABLED repository variable to 'true' to arm this job, and the

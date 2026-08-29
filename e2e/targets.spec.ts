@@ -56,8 +56,8 @@ const SMALLEST_TARGETS = (): { where: string; w: number; h: number; argued: bool
     const classes = typeof cls === 'string' && cls !== '' ? `.${cls.trim().split(/\s+/)[0]}` : '';
     out.push({
       // An exemption has to be DECLARED on the control, not assumed by this
-      // test — see the `data-compact` note on the HUD's stat button.
-      argued: el.closest('[data-compact]') !== null,
+      // test — see the `data-audit-compact` note on the HUD row.
+      argued: el.closest('[data-audit-compact]') !== null,
       where: `${el.tagName.toLowerCase()}${classes} "${(el.textContent ?? '').trim().slice(0, 24)}"`,
       // Rounded, like the audit: 43.98px is 44px to a thumb, and an un-rounded
       // compare fails with "44 is less than 44".
@@ -78,13 +78,13 @@ async function assertAllThumbable(page: Page, screen: string): Promise<void> {
     small,
     `${screen}: controls under the 44px thumb floor — either grow the box, ` +
       `give them a pseudo-element target, or declare the exemption with ` +
-      `data-compact and say why on the control`,
+      `data-audit-compact and say why on the control`,
   ).toEqual([]);
 
   /*
    * And the escape hatch is pinned shut.
    *
-   * A `data-compact` that anybody may add is a floor that erodes one control
+   * A `data-audit-compact` that anybody may add is a floor that erodes one control
    * at a time. Exactly one thing in this game has argued its way under the
    * line — the HUD's stats, which explain rather than act — so anything else
    * wearing the marker fails here and has to make its own argument in a diff.

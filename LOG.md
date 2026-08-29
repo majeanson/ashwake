@@ -972,3 +972,67 @@ argued compact targets, 3 haloed labels, 88 disabled controls, no overflow, no
 clipped text). **Not played on a phone, and the v1 → v2 restore has not been
 walked with a real backup out of tiles.marcportal.com — that is Marc's, and it
 is the one check that proves the bridge.**
+
+### Session 14 — the bakers come home, and the art that had gone stale (2026-08-29)
+
+**The question, written first:** _Ashwake 2 carried the terrain PNGs across as
+frozen byte-copies and left the scripts that make them behind. Is a frozen copy
+actually worse than a recipe, or is that just tidiness?_
+
+**It is worse, and the proof was already sitting in the repository.** Ashwake 1
+darkened daylight's terrain ladder on 2026-08-28 — moss 0.606 → 0.529, tide
+0.726 → 0.611, the fix for "ember has no contrast" — and never re-baked. Its
+own art has rendered the OLD ladder ever since, and this body inherited the
+stale files. Re-baking here changed exactly three PNGs: green, yellow and blue.
+**Red did not move, because ash was the one colour that release left alone.**
+A contrast fix, made deliberately, gone missing in two bodies.
+
+So the pipeline is back — `scripts/{terrain,artslots,icons,social}.ts`, ported
+with their paths rewritten and nothing else touched — and CI now runs `pnpm
+bake` and diffs `apps/game/public`. That single step checks two things at once:
+that the committed art still matches the theme it was baked from, and, through
+terrain's own guardrail, that the baked greyscale ordering has not inverted the
+one the L* test protects. **Torchlit re-bakes byte-identical, which is how the
+port proved itself faithful before anything else was believed.**
+
+**SETTLEMENT has art for the first time.** The fourth direction was built on
+2026-08-29 (D7) and could never have had any, because the thing that makes it
+lived in the other repository. It is a new entry in one array — which is the
+whole argument for a script that reads colour off the theme object rather than
+a copied palette — and it passed the greyscale guardrail on the first run.
+
+**Two declared slots stopped being empty, and one is staying empty on purpose.**
+`ui.logo` and `ui.runEnd` have been declared in `theme/assets.ts` since the core
+was lifted and had no file in any direction; they are baked now AND WIRED, which
+is the half that matters — `shell/art.ts` answers "is there a file here, and
+what is its URL" for DOM screens the way `board/assets.ts` answers it in
+bitmaps for the renderer. The door shows the lockup where one exists and its
+drawn mark where it does not, and the `<h1>` stays in the document either way:
+a screen whose only title lives inside a PNG has no title.
+
+**`fx.pop` is NOT baked, and that is a decision rather than an omission.**
+Ashwake 1 shipped it and defended it — an audit there called it a redundant
+radial gradient and it was kept for the rays and speckles the fallback does not
+draw. Both true, and both about Pixi. This body's pop is one white,
+colour-neutral disc that every direction TINTS through an additive material on
+an instanced mesh, which is what lets the fade ride a per-instance colour with
+no transparency, no sorting and no shader. A per-theme, pre-coloured PNG cannot
+serve that. Baking it would have shipped four unread files — the exact shape
+this repository keeps getting caught by — so the slot stays declared, the
+reason is written where the baker skips it, and `../tiles` keeps the recipe.
+
+**Two smaller things the work turned up.** The screen audit reported 36 CLIPPED
+findings on the door's visually-hidden heading, which is text put out of sight
+on purpose — it now recognises a box collapsed to a point as the pattern it is,
+by shape rather than by marker. And the 44px gate I added in Session 13 invented
+`data-compact` when the audit already had `data-audit-compact` on the same row:
+two markers for one idea is how two checks come to disagree about which controls
+may be small. One marker now, read by both.
+
+**Verified:** 938 tests / 64 files; 53 Playwright at 390×844; typecheck, lint,
+format, build clean; golden sim byte-identical; `pnpm bake` idempotent and the
+new CI step passes; `audit:screens` back to argued classes only (52 declared
+compact targets, 3 haloed labels, 84 disabled controls — no clipped, no
+overflow). **Every direction's art has changed and NONE of it has been seen on
+a phone. The daylight correction in particular is a contrast fix nobody has
+looked at.**

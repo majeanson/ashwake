@@ -4,7 +4,30 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — what the new body lost.** The rules were
+Last checkpoint: **2026-08-29, last — the look comes back.** The chrome had no
+`@font-face` at all: `ui.css` names Cinzel and EB Garamond twenty-one times and
+the only font shipped was troika's `cinzel.ttf`, so **every DOM screen rendered
+in fallback serif** while the board was correct. Three files, three rules, four
+precached, and two guards — `e2e/type.spec.ts` and `verify:deploy` — because
+nothing would ever have reported it. Then **the bakers came home**
+(`scripts/{terrain,artslots,icons,social}.ts`), and the argument for them was
+already sitting in the repo: Ashwake 1 darkened daylight's terrain ladder on
+2026-08-28 to fix "ember has no contrast", never re-baked, and this body
+inherited PNGs rendering the OLD ladder — re-baking moved exactly green, yellow
+and blue, and left red, which is the one colour that release did not touch. CI
+now runs `pnpm bake` and diffs `apps/game/public`, which checks both that the
+art matches its theme and, via terrain's own guardrail, that the greyscale
+ordering has not inverted. **Torchlit re-bakes byte-identical**, which is how
+the port proved itself. **SETTLEMENT has art for the first time** — it could
+never have had any, because the maker lived in the other repo. `ui.logo` and
+`ui.runEnd` are baked AND WIRED through `shell/art.ts`; `fx.pop` stays
+deliberately unbaked, because this body's pop is one tinted disc and a
+pre-coloured PNG cannot serve it. **Verified:** 938 tests / 64 files; 53
+Playwright; golden sim byte-identical; `pnpm bake` idempotent; the audit back to
+argued classes only. **Every direction's art has changed and none of it has
+been seen on a phone.**
+
+Previous checkpoint: **2026-08-29 — what the new body lost.** The rules were
 proved identical by CI every push; **nothing proved the same about anything
 that is not a rule**, and that is where everything below was hiding. `engine/`
 and `sim/` are byte-identical to Ashwake 1 and every "missing" export turned
@@ -301,9 +324,9 @@ playable. Nothing has been seen on a phone.**
 - **S4's remainder:** the PWA and its service worker, `?seed=` share links, and
   the History-API router. Everything else in S4 has landed — store, keeper,
   save/resume, three world slots, the daily, backup/restore.
-- **S5 — the look.** The parked "settlement" reading of the colours (FARM ·
-  MARKET · QUARRY · ROADS), built as a fourth direction beside the three that
-  ship, shot, and picked on a phone.
+- **S5 — the look.** Built: the settlement direction, the typeface, and the art
+  pipeline that makes both (2026-08-29). What is left is the CHOOSING, on a
+  phone.
 - **S6 — the console, Session A on v2, then the stranger.** `/playtest` with
   COPY SHEET; Session A re-run against the deployed v2; fixes; Session C.
 

@@ -1,5 +1,7 @@
 import { ICON_DATA_URI, NAME } from '@meta/identity';
 import type { Strings } from '@text/Strings';
+import type { ThemeId } from '@theme/tokens';
+import { useArtSlot } from '../shell/art';
 
 /**
  * The front door (Stage 3, 2026-08-29).
@@ -25,6 +27,8 @@ export type FrontDoorProps = {
   readonly onDaily: () => void;
   /** Today's standing, already worded by the catalogue — `dailyBadge`. */
   readonly dailyBadge: string;
+  /** Which direction's lockup to look for. */
+  readonly themeId: ThemeId;
 };
 
 export function FrontDoor({
@@ -36,11 +40,28 @@ export function FrontDoor({
   onMore,
   onDaily,
   dailyBadge,
+  themeId,
 }: FrontDoorProps) {
+  const lockup = useArtSlot(themeId, 'ui.logo');
   return (
     <div className="front-door" role="dialog" aria-modal="true" aria-label={NAME} tabIndex={-1}>
-      <img className="door-mark" src={ICON_DATA_URI} alt="" width={72} height={72} />
-      <h1 className="door-name">{NAME}</h1>
+      {/*
+        The baked lockup where a direction has one, the drawn mark where it
+        does not — and the NAME stays either way.
+
+        `ui.logo` has been a declared slot since the core was lifted and was
+        empty in every direction until the bakers came back (2026-08-29). The
+        heading is not replaced by the picture: the lockup already reads
+        ASHWAKE, so the `<h1>` is hidden from sight and kept for the document
+        outline and for anyone listening rather than looking. A screen whose
+        title exists only inside a PNG has no title.
+      */}
+      {lockup === null ? (
+        <img className="door-mark" src={ICON_DATA_URI} alt="" width={72} height={72} />
+      ) : (
+        <img className="door-lockup" src={lockup} alt="" width={876} height={450} />
+      )}
+      <h1 className={lockup === null ? 'door-name' : 'door-name visually-hidden'}>{NAME}</h1>
       <p className="note door-tagline">{s.tagline}</p>
 
       <button type="button" className="door-begin" data-door="begin" onClick={onBegin}>

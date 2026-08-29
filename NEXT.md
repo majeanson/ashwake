@@ -37,10 +37,10 @@ is `searchFor` and `HOME`, still unread — the app builds its share links
 through `meta/share.ts` instead, so those two are a duplicate statement of the
 same thing rather than a gap. Decide whether they earn their place.
 
-`mark.ts`'s `MARK_SVG_MASKABLE`, `MARK_GROUP` and `markGroup` remain unread and
-are **deliberately kept**: they are the source the shipped maskable icons were
-baked from, and the script that bakes them is part of the art pipeline held in
-§5. Deleting them would delete the source of an asset that ships.
+`mark.ts`'s `MARK_SVG_MASKABLE`, `MARK_GROUP` and `markGroup` are read again as
+of 2026-08-29: `scripts/icons.ts` bakes the shipped icons
+from them and `scripts/artslots.ts` draws the lockup with `markGroup`. The
+source of an asset that ships now has the maker beside it (§5).
 
 ## 1. Needs Marc, and only Marc
 
@@ -94,12 +94,14 @@ then paste it into Ashwake 2's RESTORE and check the worlds arrive with their
 reach, relics and diary. This is the one check code cannot do for itself, and
 it is worth doing BEFORE the v2.0 tag cuts the domain over.
 
-**The look, second call: the fonts.** There is no `@font-face` anywhere in this
-body and the two EB Garamond files were never carried over, so every DOM screen
-— door, manual, shop, settings, end screen — renders in fallback serif rather
-than in the typeface the themes name. Restoring it changes what every screen
-looks like, which is a first-minute change; it is sequenced with the art
-pipeline in §5 and it is your call when it lands.
+**The look, by looking — and there is MORE of it to look at than there was.**
+The typeface and the art pipeline both landed 2026-08-29 (§5), which means the
+first minute now looks different from anything you have seen: the chrome is in
+Cinzel and EB Garamond rather than fallback serif, the door and the end screen
+have their baked art, settlement has terrain for the first time, and daylight
+carries a contrast correction that had been lost in both bodies. **None of it
+has been on a phone.** Worth doing BEFORE Session A rather than after — a
+Session A run against the old look would have to be run again.
 
 **The French.** ≈250 sentences in Québec French, recorded into the snapshot
 files as the review surface, and still unread. The chrome gets built on that
@@ -117,8 +119,9 @@ Marc asked to "check for more art like we talked about (town theme)". The
 answer, checked rather than assumed:
 
 - The only art in `../tiles` is the three shipped directions — seven terrain
-  PNGs plus `fx.pop`, `ui.logo` and `ui.runEnd` each — all now carried over to
-  Ashwake 2 (the terrain seven, at least; the other three are S3's).
+  PNGs plus `fx.pop`, `ui.logo` and `ui.runEnd` each. All of it is REMADE here
+  now rather than copied (§5), except `fx.pop`, which this body deliberately
+  does not use.
 - `../tiles/ideas/Hex Roguelite Graveyard Theme/` is a **Claude Design canvas**
   (`Art Directions.dc.html`) with one exported PNG: three side-by-side mockups
   of the directions that already ship. Not town art.
@@ -126,14 +129,13 @@ answer, checked rather than assumed:
   `DECISIONS.md` D4 §4 — Marc's own thought while naming the colours, parked as
   a candidate direction. No palette, no assets, nothing built.
 
-**So the settlement direction has to be MADE, and the pipeline to make it is
-already here.** Ashwake 1 generates every terrain PNG procedurally from theme
-tokens (`../tiles/scripts/terrain.ts`, 591 lines: seeded, offline, sharp-based,
-reading the theme objects directly rather than a copied palette, with a
-guardrail that throws if the baked greyscale ordering disagrees with the token
-ordering). A new direction is a new file in `theme/themes/` plus one line in
-`theme/index.ts` — **and it earns its place by passing the budgets, not by
-being liked.** That is S5, and it is a real session, not a fetch.
+**So the settlement direction had to be MADE — and as of 2026-08-29 it is.**
+The pipeline is in THIS repo now (`scripts/terrain.ts`, §5): seeded, offline,
+sharp-based, reading the theme objects directly rather than a copied palette,
+with a guardrail that throws if the baked greyscale ordering disagrees with the
+token ordering. Settlement was one new entry in one array and it passed that
+guardrail on the first run — **it earned its place by passing the budgets, not
+by being liked.** What is left of S5 is choosing it, on a phone.
 
 ---
 
@@ -273,35 +275,41 @@ screen audit regenerated so Marc can look at what changed while he slept.
 
 ---
 
-## 5. The art pipeline, and what it is holding up — HELD for Marc
+## 5. The art pipeline — DONE 2026-08-29, and now it needs an eye
 
-Found 2026-08-29 auditing this body against Ashwake 1 (`LOG.md` Session 13).
-Everything here changes what a screen LOOKS like, which is why none of it
-landed with the rest of the audit's fixes: `CLAUDE.md` freezes the first minute
-between Session A's last clean pass and the stranger's run, and while Session A
-has never been run on this body, spending the look on a session Marc has not
-seen is not a call code should make.
+Found auditing this body against Ashwake 1 (`LOG.md` Session 13) and built the
+same day (Session 14). Everything below is landed; what is left is the part
+code cannot do, which is Marc looking at it.
 
-- **No `@font-face`, anywhere.** `ui.css` sets `font-family` twenty-one times
-  from theme variables that name `Cinzel` and `EB Garamond`; the only font that
-  ships is `cinzel.ttf`, loaded by troika for the 3D hex labels and by no
-  stylesheet at all. Ashwake 1 shipped `cinzel.woff2`, `ebgaramond.woff2` and
-  `ebgaramond-italic.woff2` with three `@font-face` rules. Carrying them over
-  is three files, three rules and three lines in the service worker's precache
-  list — small, and visible on every screen.
-- **Three declared asset slots ship with no art in any direction.**
-  `theme/assets.ts` still declares `fx.pop`, `ui.logo` and `ui.runEnd`;
-  `public/assets/*/` holds only the seven terrain PNGs. Ashwake 1 shipped all
-  ten per direction.
-- **The bakers are gone** — `scripts/{terrain,artslots,icons,social}.ts` and
-  `scripts/fonts/`. Every surviving PNG here is a frozen, unregenerable copy,
-  and one of the things that went with them is `terrain.ts`'s guardrail, which
-  **throws if a theme edit inverts the baked greyscale ordering**. That is a
-  budget this body currently cannot check.
+**What landed:**
 
-**This is also what blocks S5.** §2 above says the settlement direction has to
-be MADE and that the pipeline to make it is already here — it is not, any more.
-It is in `../tiles`, and porting it is the first move of that session.
+- **The typeface.** There was no `@font-face` in this body at all, so the
+  twenty-one `font-family` declarations naming Cinzel and EB Garamond all fell
+  through to Georgia — the board was in the right face and the chrome was not.
+  Three files, three rules, four precached, and two guards
+  (`e2e/type.spec.ts`, `verify:deploy`) because nothing would ever have
+  reported it.
+- **The bakers** — `scripts/{terrain,artslots,icons,social}.ts` and
+  `scripts/fonts/`, ported with their paths rewritten and nothing else touched.
+  `pnpm bake` runs all four. **CI runs it and diffs `apps/game/public`**, which
+  checks that the art still matches the theme it was baked from AND, through
+  terrain's own guardrail, that the greyscale ordering has not inverted.
+- **A contrast fix that had gone missing in two bodies.** Ashwake 1 darkened
+  daylight's terrain ladder on 2026-08-28 and never re-baked; this body
+  inherited the stale PNGs. Re-baking moved green, yellow and blue and left
+  red — the one colour that release did not touch. **This is the whole case
+  for a recipe over a frozen loaf.**
+- **Settlement has terrain art**, for the first time and by passing the
+  guardrail rather than by being liked.
+- **`ui.logo` and `ui.runEnd` are baked AND WIRED** through `shell/art.ts` —
+  the door's lockup and the end screen's hero. `fx.pop` is deliberately NOT
+  baked: this body's pop is one white disc every direction tints through an
+  additive material, and a pre-coloured per-theme PNG cannot serve that. The
+  reason is written where the baker skips it.
+
+**What is left is yours, and it is one sitting:** every direction's art has
+changed and none of it has been on a phone. Look at all four, and at daylight
+in particular — that is a contrast correction nobody has ever seen applied.
 
 ## 4. Deferred by ruling — do not reopen
 

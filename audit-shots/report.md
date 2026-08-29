@@ -1,6 +1,6 @@
 # Screen audit
 
-143 findings across 14 screens × 4 directions,
+139 findings across 14 screens × 4 directions,
 at 390×844. Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,
 no horizontal page scroll, no clipped text.
 
@@ -9,7 +9,7 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 
 - **tap-target-allowed** — 52
 - **contrast-haloed** — 3
-- **contrast-disabled** — 88
+- **contrast-disabled** — 84
 
 | screen      | direction       | kind               | where                    | text                   | measured | bar | detail                                             |
 | ----------- | --------------- | ------------------ | ------------------------ | ---------------------- | -------- | --- | -------------------------------------------------- |
@@ -92,7 +92,6 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | end         | daylight        | contrast-disabled  | `button`                 | 35                     | 2.96     | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px       |
 | end         | daylight        | contrast-disabled  | `button`                 | 50                     | 2.96     | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px       |
 | end         | daylight        | contrast-disabled  | `button`                 | 30                     | 2.96     | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px       |
-| end         | daylight        | contrast-disabled  | `button`                 | 40                     | 2.96     | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px       |
 | purse       | torchlit        | contrast-disabled  | `#spends > button`       | REDRAW · 12            | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 12.8px      |
 | purse       | torchlit        | contrast-disabled  | `#spends > button`       | MOSS · 30              | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 12.8px      |
 | purse       | torchlit        | contrast-disabled  | `#spends > button`       | EMBER · 30             | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 12.8px      |
@@ -113,7 +112,6 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | end         | torchlit        | contrast-disabled  | `button`                 | 35                     | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px        |
 | end         | torchlit        | contrast-disabled  | `button`                 | 50                     | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px        |
 | end         | torchlit        | contrast-disabled  | `button`                 | 30                     | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px        |
-| end         | torchlit        | contrast-disabled  | `button`                 | 40                     | 3.79     | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px        |
 | purse       | settlement      | contrast-disabled  | `#spends > button`       | REDRAW · 12            | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 12.8px    |
 | purse       | settlement      | contrast-disabled  | `#spends > button`       | FARM · 30              | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 12.8px    |
 | purse       | settlement      | contrast-disabled  | `#spends > button`       | MARKET · 30            | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 12.8px    |
@@ -134,7 +132,6 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | end         | settlement      | contrast-disabled  | `button`                 | 35                     | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px      |
 | end         | settlement      | contrast-disabled  | `button`                 | 50                     | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px      |
 | end         | settlement      | contrast-disabled  | `button`                 | 30                     | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px      |
-| end         | settlement      | contrast-disabled  | `button`                 | 40                     | 3.89     | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px      |
 | purse       | torchlit-bright | contrast-disabled  | `#spends > button`       | REDRAW · 12            | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 12.8px       |
 | purse       | torchlit-bright | contrast-disabled  | `#spends > button`       | MOSS · 30              | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 12.8px       |
 | purse       | torchlit-bright | contrast-disabled  | `#spends > button`       | EMBER · 30             | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 12.8px       |
@@ -155,4 +152,3 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | end         | torchlit-bright | contrast-disabled  | `button`                 | 35                     | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px         |
 | end         | torchlit-bright | contrast-disabled  | `button`                 | 50                     | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px         |
 | end         | torchlit-bright | contrast-disabled  | `button`                 | 30                     | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px         |
-| end         | torchlit-bright | contrast-disabled  | `button`                 | 40                     | 4.18     | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px         |

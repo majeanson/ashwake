@@ -445,6 +445,34 @@ button[disabled] {
   height: 4.5rem;
 }
 
+/* The baked lockup: the mark over the wordmark, in the direction's own ink.
+   Capped rather than stretched — it is 876px wide and the phone is 390. */
+.door-lockup {
+  width: min(19rem, 100%);
+  height: auto;
+}
+
+/*
+ * Present to a screen reader, absent to an eye.
+ *
+ * Used for the door's `<h1>` when the lockup is showing: the picture already
+ * reads ASHWAKE, and a screen whose only title lives inside a PNG has no
+ * title at all — no document outline, nothing for anyone listening. Clipped
+ * rather than `display: none`, which would take it out of the accessibility
+ * tree along with the pixels.
+ */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .door-name {
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
@@ -1075,4 +1103,20 @@ button[disabled] {
   font-size: 0.85rem;
   color: var(--ink-dim);
   overflow-wrap: anywhere;
+}
+
+/*
+ * The end screen's hero: the direction's own board scene, baked.
+ *
+ * Full-bleed across the panel and cropped from the bottom, because the scene
+ * is a wide strip and the score has to stay the first thing read. It sits
+ * above the number rather than behind it — text over a picture is a contrast
+ * budget nobody can hold across four directions.
+ */
+.end-hero {
+  width: 100%;
+  max-width: 26rem;
+  height: auto;
+  border-radius: var(--radius);
+  margin-bottom: 0.25rem;
 }

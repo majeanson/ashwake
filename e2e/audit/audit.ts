@@ -317,6 +317,15 @@ export const AUDIT_IN_PAGE = (): Finding[] => {
     if (ownText(el) === '' || !shown(el)) continue;
     const style = getComputedStyle(el);
     if (style.overflow !== 'hidden' && style.overflowX !== 'hidden') continue;
+    /*
+     * A box collapsed to a point is not a clipped LABEL — it is text put out
+     * of sight on purpose and kept for anyone listening (`.visually-hidden`).
+     * The distinction matters because the two look identical to this check and
+     * mean opposite things: one is a sentence cut in half, the other is a
+     * sentence deliberately not drawn. Recognised by the shape rather than by
+     * a marker, because 1×1 with hidden overflow IS the pattern.
+     */
+    if (el.clientWidth <= 1 || el.clientHeight <= 1) continue;
     const cut = Math.max(el.scrollWidth - el.clientWidth, el.scrollHeight - el.clientHeight);
     if (cut > 2) {
       findings.push({
