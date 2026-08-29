@@ -520,6 +520,10 @@ export const STRINGS_FR: Strings = {
     worn: 'PORTÉ',
     wear: 'PORTER',
     maxed: 'AU MAX',
+    handEmpty: 'Ta main est vide — touche une carte en bas pour en prendre une.',
+    lensOn: (ground) =>
+      `Sol ${ground} dont on se souvient — chaque parcelle connue est éclairée. Touche encore le brouillard pour lâcher.`,
+    lensOff: 'La lentille est éteinte.',
     newVersion: 'NOUVELLE VERSION — TOUCHER POUR CHARGER',
     share: 'PARTAGER',
     copied: 'COPIÉ',

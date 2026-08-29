@@ -206,9 +206,11 @@ test('stashes a card and takes it back', async ({ page }) => {
   const hand = page.locator('[data-hud="hand"]');
   const dealt = await hand.locator('[data-colour]').count();
 
-  // Pick a card, then put it away. The slot stops saying HOLD and starts
-  // being a tile.
-  await hand.locator('[data-colour]').first().click();
+  // A hand opens with its first card already selected, so there is nothing to
+  // pick up — tapping it would PUT IT DOWN (see "a second tap on the selected
+  // card puts it down"). Straight to the slot: put the held card away, and it
+  // stops saying HOLD and starts being a tile.
+  await expect(hand.locator('[data-colour]').first()).toHaveAttribute('aria-pressed', 'true');
   await slot.click();
   await expect(slot).toHaveAttribute('data-colour', /green|yellow|red|blue/);
 
@@ -216,11 +218,91 @@ test('stashes a card and takes it back', async ({ page }) => {
   // spacer holds the column until the next placement deals one back.
   expect(await hand.locator('[data-colour]').count()).toBe(dealt);
 
-  // And it trades back: tapping the full slot returns that tile to the hand.
+  // And it trades back: with a card selected again, tapping the full slot
+  // returns that tile to the hand and puts the selected one in its place.
   const stashed = await slot.getAttribute('data-colour');
-  await hand.locator('[data-colour]').first().click();
+  const card = hand.locator('[data-colour]').first();
+  if ((await card.getAttribute('aria-pressed')) !== 'true') await card.click();
   await slot.click();
   await expect(slot).not.toHaveAttribute('data-colour', stashed ?? '');
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('every tap on the board answers, even the ones that cannot build', async ({ page }) => {
+  /*
+   * A tap that cannot build used to be a silent no-op — the engine returned
+   * the same state and the screen said nothing, which is the worst answer a
+   * game can give a deliberate action. Ashwake 1 replaced every one of those
+   * silences with a sentence and this body shipped without any of them:
+   * `pocketNote`, `describeHexOf` and `rememberedNativeAt` had no caller.
+   *
+   * This walks the three answers a browser can reach without a saved world.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=20');
+  await begin(page);
+  await page.waitForTimeout(600);
+
+  const toast = page.locator('.toast');
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+
+  // Tap around until something says something. Every hex on a grown board is
+  // one of: ripe (a pocket's worth), legal (a placement), or a thing that
+  // describes itself — and all three now speak.
+  const said = new Set<string>();
+  for (const r of [0, 30, 55, 80, 110, 140, 170]) {
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI / 4) * i;
+      await page.mouse.click(cx + r * Math.cos(a), cy + r * Math.sin(a));
+      const text = (await toast.textContent())?.trim() ?? '';
+      if (text !== '') said.add(text);
+    }
+  }
+
+  // At least two DIFFERENT sentences: a board of one answer is a board that
+  // is not actually describing anything.
+  expect(said.size, [...said].join(' | ')).toBeGreaterThanOrEqual(2);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('an empty hand says so rather than doing nothing', async ({ page }) => {
+  const errors = watchErrors(page);
+  // `?end=1` runs a whole run out; a finished run has no cards left to place,
+  // which is the state the empty-hand answer exists for.
+  await page.goto('/?seed=7&taught=1&end=1');
+  await begin(page);
+  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a second tap on the selected card puts it down', async ({ page }) => {
+  // Marc's own rule, and `selectDraft` has carried it since the rules were
+  // lifted: "we can always unselect a selected tile by tapping it again — the
+  // UI sends -1 on that second tap". The UI never sent it, so the gesture was
+  // a silent no-op and the legal hexes kept glowing with a card still held.
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=8');
+  await begin(page);
+  await page.waitForTimeout(600);
+
+  // A hand opens with its first card already in it — `state.selected` starts
+  // at 0 — so the first tap on that card is the PUT DOWN, not the pick up.
+  const first = page.locator('[data-hud="hand"] [data-colour]').first();
+  await expect(first).toHaveAttribute('aria-pressed', 'true');
+
+  // Put it down, and be told what it does on the way: this is the one moment
+  // a player is looking at the card rather than at the board.
+  await first.click();
+  await expect(first).toHaveAttribute('aria-pressed', 'false');
+  expect(((await page.locator('.toast').textContent()) ?? '').trim().length).toBeGreaterThan(0);
+
+  // And pick it back up.
+  await first.click();
+  await expect(first).toHaveAttribute('aria-pressed', 'true');
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

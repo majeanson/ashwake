@@ -5,6 +5,8 @@ import { NAME } from '@meta/identity';
 import type { ShareSubject } from '@meta/share';
 import type { GameState } from '@engine/state';
 import type { CellView } from '@render/Renderer';
+import { namesOf } from '@theme/tokens';
+import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
@@ -152,6 +154,14 @@ function Game() {
 
   const [started, setStarted] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  /**
+   * The colour lens, held up against the board.
+   *
+   * Two gestures reach it — a long press on a card in the hand, and a tap on
+   * remembered fog — so it lives with the rest of the shell's state rather
+   * than beside either one of them.
+   */
+  const [lens, setLens] = useState<Colour | null>(null);
   const [purseOpen, setPurseOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
   /**
@@ -303,13 +313,90 @@ function Game() {
   );
   const card = teach !== null && teach.as === 'card' ? teach.id : null;
 
+  /**
+   * A tap on the board, and every answer it owes.
+   *
+   * This had three branches and needed six. **A tap that cannot build used to
+   * be a silent no-op** — the engine returned the same state and the screen
+   * said nothing, which is the worst answer a game can give a deliberate
+   * action. Ashwake 1 replaced every one of those silences with a sentence,
+   * and the core has carried the sentences the whole time: `pocketNote`,
+   * `describeHexOf` and `rememberedNativeAt` had **no caller in this body**.
+   *
+   * In order, because the order is the design:
+   *
+   * 1. **A ripe tile is a QUESTION**, not a placement — "what is this pocket
+   *    worth?" The harvest buttons re-price to it and the board outlines it.
+   * 2. **A legal hex with an empty hand** says what is missing. Legality is
+   *    about the BOARD, so those hexes still glow with every card put down.
+   * 3. **A legal hex** places.
+   * 4. **Remembered fog turns the lens** (Marc, 2026-08-20: "on clicking a
+   *    tile in the fog that we know the biome it highlights the whole known
+   *    biome"). Letting go is deliberately GENEROUS (Marc, Day 2: "letting go
+   *    is unclear"): with the lens on, any fog tap that is not a switch to a
+   *    different colour releases it.
+   * 5. **Anything else describes itself** — tap a glyph, learn what it does.
+   *    A shrine, a cache, a wall, spent stone, ground not yet ripe. No mode to
+   *    learn, and it costs a gesture that did nothing before.
+   */
   const onTap = useCallback(
     (key: string, cell: CellView): void => {
-      if (cell.legal) session.dispatch({ type: 'PLACE', hex: key });
-      else if (cell.ripe) session.target(key);
-      else session.target(null);
+      const now = session.get();
+      const memory = ledgers.worlds[slot]?.revealed;
+
+      if (cell.ripe) {
+        session.target(key);
+        setNote(pocketNote(now.state, key, s));
+        return;
+      }
+
+      if (cell.legal) {
+        if (now.hud.draft.length === 0) {
+          setNote(s.ui.handEmpty);
+          return;
+        }
+        setNote(null);
+        session.dispatch({ type: 'PLACE', hex: key });
+        return;
+      }
+
+      // Nothing to build on: the target lets go, and the tap becomes help.
+      session.target(null);
+
+      if (cell.remembered) {
+        const known = rememberedNativeAt(now.state, key);
+        if (known !== null && known !== lens) {
+          setLens(known);
+          session.spotlight(known);
+          setNote(s.ui.lensOn(namesOf(theme, s.locale)[known]));
+          return;
+        }
+        if (lens !== null) {
+          setLens(null);
+          session.spotlight(null);
+          setNote(s.ui.lensOff);
+          return;
+        }
+      }
+
+      setNote(
+        describeHexOf(
+          {
+            state: now.state,
+            theme,
+            strings: s,
+            // No detour and no crossing in this body yet — both are S4's
+            // remainder. Stated rather than defaulted, so the day they exist
+            // the compiler asks here.
+            detour: false,
+            shrinesClaimed: now.state.log.questsDone,
+            ...(memory === undefined ? {} : { memory }),
+          },
+          key,
+        ),
+      );
     },
-    [session],
+    [session, s, theme, lens, ledgers, slot],
   );
 
   /**
@@ -321,7 +408,32 @@ function Game() {
    * and pressing the same card again is `null` — a lens you cannot let go of
    * is a lens nobody turns on twice.
    */
-  const [lens, setLens] = useState<Colour | null>(null);
+  /**
+   * Pick a card up — and put it down by tapping it again.
+   *
+   * Marc's own rule, and `selectDraft` has carried it since the rules were
+   * lifted: *"we can always unselect a selected tile by tapping it again — the
+   * UI sends -1 on that second tap"*. The UI did not send it. Tapping the
+   * selected card re-selected it, the reducer correctly returned the same
+   * state, and the gesture was a silent no-op.
+   *
+   * The second tap also EXPLAINS, which is where a player learns what their
+   * colours do: putting a card down is the one moment they are looking at it
+   * rather than at the board.
+   */
+  const onSelect = useCallback(
+    (index: number) => {
+      const card = snap.hud.draft[index];
+      if (card?.selected === true) {
+        session.dispatch({ type: 'SELECT', index: -1 });
+        setNote(colourLesson(card.colour, snap.state.tuning, theme, s));
+        return;
+      }
+      session.dispatch({ type: 'SELECT', index });
+    },
+    [session, snap.hud.draft, snap.state.tuning, theme, s],
+  );
+
   const onLens = useCallback(
     (index: number | null) => {
       const colour = index === null ? null : (snap.hud.draft[index]?.colour ?? null);
@@ -516,7 +628,7 @@ function Game() {
             hud={snap.hud}
             theme={theme}
             s={s}
-            onSelect={(index) => session.dispatch({ type: 'SELECT', index })}
+            onSelect={onSelect}
             onLens={onLens}
             onHold={onHold}
             onHarvest={(choice) =>

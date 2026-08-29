@@ -4,7 +4,23 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the settlement exists.** Marc's own
+Last checkpoint: **2026-08-29, last — the taps that said nothing.**
+`INTERACTIONS.md` is the full matrix of Ashwake 1's input against this body,
+gesture by gesture. **The board tap had three branches and needed six**: a tap
+that could not build was a silent no-op, so tapping a shrine, a cache, a wall,
+spent stone, an unripe tile or native ground did nothing at all —
+`describeHexOf`, `pocketNote` and `rememberedNativeAt` (Marc's fog-lens
+biome tap) had **no caller**, and eleven view-layer describers had zero
+between them. **Unselecting a card was wired to the wrong action**: the
+reducer documents Marc's own `-1` rule and the UI sent `index`, so the gesture
+did nothing. **`touch-action: none` was missing from the board**, which on a
+phone means a drag scrolls the page and a pinch zooms the document — invisible
+to Playwright, which synthesises events nothing competes for. All fixed; what
+remains is listed in `INTERACTIONS.md` and is one shape: a rule the core
+implements with no consumer in the shell. **Verified:** 876 tests / 57 files;
+golden sim byte-identical.
+
+Previous checkpoint: **2026-08-29 — the settlement exists.** Marc's own
 reading of the colours (D4.4) is a direction now: **FARM · MARKET · QUARRY ·
 ROADS**, the third thing that can happen to a place — torchlit is standing in
 the dark with a torch, daylight is the survey drawn afterwards, this is

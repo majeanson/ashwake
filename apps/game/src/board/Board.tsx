@@ -90,6 +90,10 @@ export type BoardProps = {
 
 const FLIGHT_MS = 320;
 const TAP_SLOP = 8;
+
+/** How much of each screen edge refuses a touch outright, so iOS Safari's
+ *  back/forward swipe cannot take the page mid-drag. Ashwake 1's number. */
+const EDGE_SWIPE_PX = 28;
 /** How far back the eye stands. Orthographic, so this only has to clear the
  *  near plane and stay inside the far one — it changes nothing on screen. */
 const EYE_DISTANCE = 200;
@@ -452,12 +456,28 @@ function Rig({
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
     el.addEventListener('wheel', wheel, { passive: false });
+
+    /*
+     * iOS Safari's edge swipe is a back/forward navigation, and the board's
+     * left and right edges are exactly where a thumb starts a pan. Losing the
+     * page mid-run to a gesture aimed at the board is the worst outcome a
+     * drag can have — so the first 28px of either edge refuses the touch
+     * outright. Ashwake 1's number, and non-passive because refusing is the
+     * entire point.
+     */
+    const edge = (event: TouchEvent): void => {
+      const x = event.touches[0]?.clientX;
+      if (x === undefined) return;
+      if (x < EDGE_SWIPE_PX || x > window.innerWidth - EDGE_SWIPE_PX) event.preventDefault();
+    };
+    el.addEventListener('touchstart', edge, { passive: false });
     return () => {
       el.removeEventListener('pointerdown', down);
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerup', up);
       el.removeEventListener('pointercancel', up);
       el.removeEventListener('wheel', wheel);
+      el.removeEventListener('touchstart', edge);
     };
     // `reducedMotion` is read by the flick, so the listeners are rebound when
     // it changes — a phone that turns motion off mid-run should stop throwing

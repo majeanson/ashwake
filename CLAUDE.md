@@ -16,6 +16,13 @@ carried over for the day this body is playable.
 **Check a ledger against the code before acting on it.** Ashwake 1 lost a
 session to a stale open-list once; it is cheaper to grep than to trust.
 
+**Before calling a screen done, grep for a consumer of every action it can
+produce.** Four whole mechanics shipped inert in this body — the colour lens,
+the stash, the board's tap-to-describe, and unselecting a card — each a rule
+the core implements and tested, reachable from nothing. A rendered control is
+not a wired one. `INTERACTIONS.md` is the gesture-by-gesture matrix against
+Ashwake 1, and it is the answer to "did we get back what we had".
+
 Hard rules — all inherited, all still enforced:
 
 - **The core is pure.** `packages/core` has no DOM, no `Math.random`, no

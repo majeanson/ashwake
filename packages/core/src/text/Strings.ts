@@ -362,6 +362,16 @@ export type Strings = {
     /** An upgrade at the top of its ladder — a rung you can see the end of. */
     readonly maxed: string;
     readonly privacy: string;
+    /**
+     * What a tap on the board says when it cannot place.
+     *
+     * Ashwake 1 wrote all three straight into its tap handler in English. A
+     * tap that cannot build used to be a silent no-op — "the worst answer a
+     * game can give a deliberate action" — and these are the answers.
+     */
+    readonly handEmpty: string;
+    readonly lensOn: (ground: string) => string;
+    readonly lensOff: string;
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;
     /** Hand this run to somebody. The game's only distribution mechanism. */

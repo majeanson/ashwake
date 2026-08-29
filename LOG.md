@@ -732,3 +732,63 @@ rebuilt for last session.
 directions now; golden sim byte-identical.
 
 **Not played on a phone.** Again — and this is the one that most needs to be.
+
+### Session 11 — the taps that said nothing (2026-08-29)
+
+**Question, written before building:** how much of Ashwake 1's input does this
+body actually have?
+
+**Less than anyone would have guessed, and the gap has a single shape.**
+`INTERACTIONS.md` is the whole matrix, gesture by gesture, read out of
+`../tiles` and checked against this code. What it found:
+
+**The board tap had three branches and needed six.** A tap that could not
+build was a silent no-op — the engine returned the same state and the screen
+said nothing, which Ashwake 1's own comment calls "the worst answer a game can
+give a deliberate action". So tapping a shrine, a cache, a wall, spent stone,
+an unripe tile or native ground did **nothing at all**, and `describeHexOf` —
+the function whose docblock says it "covers the things a player can tap and not
+understand" — had no caller. Neither did `pocketNote` (tapping a ripe pocket
+priced it and explained nothing) or `rememberedNativeAt` (Marc's own fog lens:
+"on clicking a tile in the fog that we know the biome it highlights the whole
+known biome").
+
+**Eleven view-layer describers had zero callers.** The three above, plus
+`harvestNote`, `rarityLine`, `colourLesson`, `powerOf`, `groundHead`,
+`purseLesson`, `whatGlows`, `runwayOf`.
+
+**Unselecting a card was wired to the wrong action.** `selectDraft` carries
+Marc's rule verbatim — _"we can always unselect a selected tile by tapping it
+again — the UI sends -1 on that second tap"_ — and the UI sent `index`
+instead. The reducer correctly returned the same state, so the gesture did
+nothing. The second tap also EXPLAINS the colour, which is where a player
+learns what their grounds do: putting a card down is the one moment they are
+looking at the card rather than at the board.
+
+**`touch-action: none` was missing from the board.** Without it the browser
+keeps one-finger pan and pinch for itself, so on a phone a drag scrolls the
+PAGE and a pinch zooms the document — the two gestures the board is built
+around are the two the phone takes first. It never showed up in Playwright,
+which synthesises pointer events that no browser gesture is competing for.
+The iOS edge-swipe guard was missing with it: the left and right 28px are
+where a thumb starts a pan, and losing the page mid-run to a back gesture is
+the worst outcome a drag can have.
+
+**Two tests were asserting the wrong opening.** A hand opens with its first
+card already selected, so both the stash and deselect tests were clicking a
+card to "pick it up" and actually putting it down. The behaviour was right and
+the tests were wrong — which is only visible once the gesture does something.
+
+**Consulting the old repo is now the method, not a courtesy.** Every fix this
+session and last came from reading `../tiles` rather than from reasoning about
+what ought to be there.
+
+**What is still missing is in `INTERACTIONS.md` §"What is still missing"**,
+and it is all one shape: **a rule the core implements with no consumer in the
+shell.** Nothing speaks when a claim lands or a pocket pops; TAKE and SACRIFICE
+are two of four harvest choices that cannot be reached from the screen; the
+purse spends in silence.
+
+**Verified:** 876 tests / 57 files; golden sim byte-identical.
+
+**Not played on a phone.** Again.

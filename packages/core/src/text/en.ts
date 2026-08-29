@@ -492,6 +492,10 @@ export const STRINGS_EN: Strings = {
     worn: 'WORN',
     wear: 'WEAR',
     maxed: 'MAXED',
+    handEmpty: 'Your hand is empty — tap a card below to pick one up.',
+    lensOn: (ground) =>
+      `Remembered ${ground} ground — every known patch of it is lit. Tap the fog again to let go.`,
+    lensOff: 'The lens is off.',
     newVersion: 'NEW VERSION — TAP TO LOAD',
     share: 'SHARE',
     copied: 'COPIED',

@@ -91,10 +91,33 @@ button[disabled] {
     env(safe-area-inset-left);
 }
 
+/*
+ * The board host, and the gestures it must take off the browser.
+ *
+ * `touch-action: none` is the load-bearing one and it was missing entirely
+ * (found 2026-08-29 auditing this body against Ashwake 1, which has carried
+ * it since Stage 2). Without it the browser keeps one-finger pan and
+ * pinch-zoom for itself: a drag scrolls the PAGE instead of the board and a
+ * pinch zooms the document, so the two gestures the board is built around
+ * are the two the phone takes first. It never showed up in Playwright, which
+ * synthesises pointer events that no browser gesture is competing for.
+ *
+ * The callout suppression is the other half: an iOS long-press on a canvas
+ * raises the selection loupe, and a long press on a CARD is how the colour
+ * lens is turned on.
+ */
 .board-host {
   position: relative;
   flex: 1;
   min-height: 0;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+/* A card's long-press is the lens, so the loupe must not have it either. */
+.tile,
+.hand {
+  -webkit-touch-callout: none;
 }
 
 /* ---- panels ------------------------------------------------------------- */
