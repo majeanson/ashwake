@@ -81,7 +81,9 @@ export function Pop({
   onDone,
 }: PopProps) {
   const invalidate = useThree((s) => s.invalidate);
-  const startedAt = useRef(performance.now());
+  // Seeded to zero and set when the pop mounts: reading a clock during render
+  // is a value that changes for no reason the component can see.
+  const startedAt = useRef(0);
   const meshes = useRef(new Map<string, InstancedMesh>());
   const glowMesh = useRef<InstancedMesh | null>(null);
 

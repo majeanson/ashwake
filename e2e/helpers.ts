@@ -25,3 +25,37 @@ export function assertLooksLikeAPicture(bytes: Buffer, label: string): void {
   if (seen.size <= 1000)
     throw new Error(`${label}: looks like a single flat colour (${seen.size})`);
 }
+
+/**
+ * Walk in through the front door.
+ *
+ * Since Stage 3 the game opens on a door rather than on the board — which is
+ * what a stranger sees, and therefore what every test has to walk through
+ * before it can claim to be testing the game. A spec that reached the board
+ * without pressing BEGIN would be testing a screen no player ever meets.
+ */
+export async function begin(page: Page): Promise<void> {
+  const door = page.locator('[data-door="begin"]');
+  await door.waitFor({ state: 'visible' });
+  await door.click();
+  await page.locator('[data-hud="stats"]').waitFor({ state: 'visible' });
+  await clearCards(page);
+}
+
+/**
+ * Read and dismiss whatever the game is teaching.
+ *
+ * The teaching cards are modal on purpose — a lesson you can tap past without
+ * seeing is a lesson nobody reads — so a test that wants to touch the board
+ * has to do what a player does. It loops because one dismissal can reveal the
+ * next moment: placing a tile makes one ripe, and ripeness has its own card.
+ */
+export async function clearCards(page: Page): Promise<void> {
+  for (let i = 0; i < 12; i++) {
+    const scrim = page.locator('.card-scrim');
+    if ((await scrim.count()) === 0) return;
+    await scrim.locator('button').last().click();
+    await page.waitForTimeout(30);
+  }
+  throw new Error('the teaching never stopped: twelve cards in a row');
+}

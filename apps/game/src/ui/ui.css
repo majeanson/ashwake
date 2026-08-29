@@ -82,6 +82,9 @@ button[disabled] {
 .shell {
   position: fixed;
   inset: 0;
+  /* The shell paints the ground. Anything transparent between the board and
+     the bar would otherwise show whatever the page happens to be. */
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
@@ -201,6 +204,17 @@ button[disabled] {
   overflow-x: auto;
   padding: var(--gap);
   border-bottom: 1px solid var(--panel-edge);
+  position: sticky;
+  top: 3.2rem;
+  background: var(--bg);
+  z-index: 1;
+  /* The bar scrolls sideways on a narrow phone rather than wrapping, so the
+     tab you are on never moves to a different line than the one you left. */
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -296,4 +310,256 @@ button[disabled] {
 
 .ink-unique {
   color: var(--unique);
+}
+
+/* ---- the front door ----------------------------------------------------- */
+
+/*
+ * A full-screen overlay rather than a scene of its own: the board is mounted
+ * behind it for the life of the app, because unmounting the canvas loses the
+ * WebGL context.
+ */
+.front-door {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.door-mark {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.door-name {
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  font-size: 2rem;
+  margin: 0.25rem 0 0;
+}
+
+.door-tagline {
+  max-width: 22rem;
+  margin: 0 0 1.5rem;
+}
+
+/* The one loud way in. Everything else on this screen is quiet. */
+.door-begin {
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  font-size: 1.15rem;
+  padding: 0.8rem 2.5rem;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.door-more {
+  margin-top: 1.5rem;
+  width: min(18rem, 100%);
+}
+
+/* ---- the stat row ------------------------------------------------------- */
+
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  padding: 0.25rem var(--gap);
+  background: var(--panel);
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+/* A stat is a button because every number can be asked about — but it should
+   not LOOK like a control, or the row reads as six things to press. */
+.stat {
+  border: 0;
+  background: none;
+  min-height: 0;
+  min-width: 0;
+  /* Below the 44px floor on purpose, and allowed: `statNote` is an
+     explanation, never an action, and the row would eat a third of the screen
+     at tap size. The controls that DO something all meet it. */
+  padding: 0.35rem 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: baseline;
+}
+
+.stat-label {
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.7rem;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rose {
+    animation: rose 400ms ease-out;
+  }
+  @keyframes rose {
+    from {
+      color: var(--accent);
+    }
+  }
+}
+
+/* ---- what the game is saying -------------------------------------------- */
+
+.toast,
+.hint {
+  margin: 0;
+  padding: 0.35rem var(--gap);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  min-height: 1.4rem;
+}
+
+.toast {
+  color: var(--ink);
+  white-space: pre-line;
+}
+
+/* ---- the camera cluster ------------------------------------------------- */
+
+.camera {
+  position: absolute;
+  right: var(--gap);
+  bottom: var(--gap);
+  z-index: 10;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.camera button {
+  background: var(--panel);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.75rem;
+}
+
+/* ---- the hand and the bar ----------------------------------------------- */
+
+/*
+ * The board gets the screen. Ashwake 1 went from ~53% to 69-73% on 2026-08-27
+ * and called it the single biggest readability change it ever made: held cards
+ * moved INTO the hand and the actions became one bar.
+ */
+.controls {
+  background: var(--panel);
+  border-top: 1px solid var(--panel-edge);
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.hand {
+  display: grid;
+  grid-template-columns: repeat(var(--hand-cols, 4), 1fr);
+  gap: 0.35rem;
+}
+
+.hand > button {
+  min-height: 3.4rem;
+  padding: 0.3rem 0.2rem;
+}
+
+.tile.hold {
+  border-style: dashed;
+  color: var(--ink-faint);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.7rem;
+}
+
+.action-bar {
+  display: flex;
+  gap: 0.35rem;
+  align-items: stretch;
+}
+
+.act {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.4rem 0.9rem;
+}
+
+.act-label {
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.95rem;
+}
+
+.act-value {
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+}
+
+.purse-toggle {
+  font-family: var(--font-display);
+}
+
+/* Opens ABOVE the bar, so the bar never moves under a reaching thumb. */
+.spends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.spends button {
+  font-size: 0.8rem;
+  padding: 0 0.6rem;
+}
+
+/* ---- the end screen ----------------------------------------------------- */
+
+.end {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--bg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
+  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.end-score {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  margin: 0;
+}
+
+.end-epitaph {
+  max-width: 24rem;
+  margin: 0;
+  color: var(--ink-dim);
+}
+
+.end .facts {
+  width: min(24rem, 100%);
+}
+
+.flag {
+  margin-bottom: var(--gap);
 }

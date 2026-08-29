@@ -21,10 +21,17 @@ export function useThemeVars(theme: Theme): void {
     const vars = themeCssVars(theme);
     for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value);
 
+    // The pre-JS paint in `index.html` is a literal, because it has to be —
+    // it shows before the bundle exists. Overwriting it inline means the
+    // resolved direction wins without a specificity argument.
+    const bg = vars['--bg'] ?? '#000000';
+    root.style.background = bg;
+    document.body.style.background = bg;
+
     // The browser chrome answers to the direction too — a pale board under a
     // black status bar is a phone that looks broken rather than themed.
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta !== null) meta.setAttribute('content', vars['--bg'] ?? '#000000');
+    if (meta !== null) meta.setAttribute('content', bg);
 
     // A direction may name a webfont; nothing else may fetch one, because
     // "nothing leaves your phone" is a sentence SETTINGS prints.

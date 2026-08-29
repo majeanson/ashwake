@@ -23,7 +23,7 @@ export type PanelProps = {
   readonly back: string;
   readonly onBack: () => void;
   readonly children: ReactNode;
-  /** Rendered between the title and BACK — the manual's tabs live here. */
+  /** A row of its own under the head — the manual's tabs live here. */
   readonly head?: ReactNode;
 };
 
@@ -54,11 +54,14 @@ export function Panel({ id, title, back, onBack, children, head }: PanelProps) {
         <h1 className="panel-title" id={`${id}-title`}>
           {title}
         </h1>
-        {head}
         <button type="button" className="panel-back" onClick={onBack}>
           {back}
         </button>
       </div>
+      {/* Tabs get their own row. Crammed in beside the title and BACK they
+          overflow the moment there are more than two, and the one control a
+          player needs to leave with is the one that gets pushed off. */}
+      {head}
       <div className="panel-body">{children}</div>
     </div>
   );

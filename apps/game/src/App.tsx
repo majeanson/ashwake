@@ -1,38 +1,57 @@
-import { useMemo, useRef, type CSSProperties } from 'react';
-import { pickLocale } from '@content/locale';
-import { NAME } from '@meta/identity';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { pickLocale, type Locale } from '@content/locale';
 import type { CellView } from '@render/Renderer';
+import { defaultFeatures, type FeatureId, type FeatureSet } from '@meta/features';
+import { EMPTY_PROGRESS, type Progress } from '@meta/progress';
 import { stringsFor } from '@text/index';
-import { parseThemeId, resolveTheme } from '@theme/index';
-import { hex as cssHex, namesOf } from '@theme/tokens';
+import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
+import type { ThemeId } from '@theme/tokens';
+import type { LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
+import { ActionBar } from './screens/ActionBar';
+import { Camera } from './screens/Camera';
+import { EndScreen } from './screens/EndScreen';
+import { FrontDoor } from './screens/FrontDoor';
+import { Hud } from './screens/Hud';
+import { LessonCard } from './screens/LessonCard';
+import { Manual } from './screens/Manual';
+import { Purse } from './screens/Purse';
+import { Settings } from './screens/Settings';
 import { createSession, useSession } from './shell/store';
+import { nextLesson, told } from './shell/teaching';
 import { walk } from './shell/walk';
+import { Confirming } from './ui/Confirming';
+import { DialogStack, useAnyDialogOpen, useDoor } from './ui/dialog';
+import { PanelMenu } from './ui/Panel';
+import { useThemeVars } from './ui/theme';
+import './ui/ui.css';
 
 /**
- * Stage 2's App: the board, playable, and the LEAST chrome that lets a run be
- * played end to end so the board can be tested — a stat row, the hand, one
- * POP button, the camera buttons. All of it is replaced by Stage 3's chrome;
- * none of it is styled beyond legibility on purpose.
+ * The whole first minute (Stage 3, 2026-08-29).
  *
- * The board's three look dials are read off the query string so an angle can
- * be argued with by looking at it: `?tilt=` leans the camera back (35 by
- * default — Marc's pick from `docs/shots/`), `?yaw=` turns the board under it,
- * `?relief=` gives the ground its height, `?light=` shades it. Each zero is the flat map
- * Stage 2 shipped, and none of them can reach a rule. `?seed=` picks a world;
- * `?theme=` a direction, as in Ashwake 1; `?place=` plays a fixed opening so
- * two angles can be photographed over one board.
+ * Front door, board, HUD, hand, action bar, purse, teaching, manual, settings,
+ * end screen. Everything a stranger touches.
+ *
+ * **The board mounts once, above every scene** (`CLAUDE.md`): it is rendered
+ * for the life of the app and the panels lie OVER it, because unmounting the
+ * canvas loses the WebGL context and iOS does not always give one back. That is
+ * why the front door is a sibling rather than a route.
+ *
+ * The look dials are read off the query string so an angle can be argued with
+ * by looking: `?tilt=`, `?yaw=`, `?relief=`, `?light=`, `?materials=`, `?art=`.
+ * `?seed=` picks a world, `?theme=` a direction, and `?place=` plays a fixed
+ * opening so two screenshots are two pictures of one board.
  */
 
 /**
  * How the board looks unless a query string says otherwise.
  *
  * The tilt is Marc's, chosen from `docs/shots/`. The other four are WORKING
- * defaults rather than rulings (2026-08-29): the chrome is being built around
+ * defaults rather than rulings (2026-08-29): the chrome is built around
  * whatever the board looks like, and building it over a board nobody has
  * chosen is the more expensive mistake. Every one still takes a number, so
- * `?light=0` is one keystroke away, and `DECISIONS.md` still carries the
- * question as open until Marc has seen them on a phone.
+ * `?light=0` is one keystroke away, and `DECISIONS.md` carries the question as
+ * open until Marc has seen them on a phone.
  */
 const TILT = 35;
 const YAW = 0;
@@ -49,25 +68,57 @@ function dial(params: URLSearchParams, name: string, fallback: number): number {
   const value = Number(raw);
   return Number.isFinite(value) ? value : fallback;
 }
+
 export function App() {
+  return (
+    <DialogStack>
+      <Game />
+    </DialogStack>
+  );
+}
+
+function Game() {
+  const [locale, setLocale] = useState<Locale>(() => pickLocale(navigator.languages));
+  const [storedTheme, setStoredTheme] = useState<ThemeId>(
+    () => parseThemeId(location.search) ?? AUTO_THEME_ID,
+  );
+  const [features, setFeatures] = useState<FeatureSet>(defaultFeatures);
+  const [progress, setProgress] = useState<Progress>(EMPTY_PROGRESS);
+  const [started, setStarted] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [purseOpen, setPurseOpen] = useState(false);
+  const [term, setTerm] = useState<LessonId | null>(null);
+
+  const s = useMemo(() => stringsFor(locale), [locale]);
+  const theme = useMemo(() => {
+    if (storedTheme !== AUTO_THEME_ID) return resolveTheme(storedTheme);
+    // AUTO is the absence of a choice — what a fresh phone is set to — so the
+    // device answers. `pickForScheme` is pure because the shell samples.
+    return resolveTheme(
+      pickForScheme(
+        matchMedia('(prefers-color-scheme: light)').matches,
+        matchMedia('(prefers-contrast: more)').matches,
+      ),
+    );
+  }, [storedTheme]);
+  useThemeVars(theme);
+
   const session = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    const seed = Number(params.get('seed') ?? '1') || 1;
     const made = createSession({
-      seed,
-      theme: resolveTheme(parseThemeId(location.search)),
-      strings: stringsFor(pickLocale(navigator.languages)),
+      seed: Number(params.get('seed') ?? '1') || 1,
+      theme,
+      strings: s,
     });
-    // `?place=n` plays a fixed opening, so two screenshots of two camera
-    // angles are two pictures of ONE board. Off unless asked for.
     walk(made, Math.max(0, Math.trunc(dial(params, 'place', 0))));
     return made;
+    // One session per run: language and direction change what it SAYS and how
+    // it looks, never what it IS, so neither may restart it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const snap = useSession(session);
   const board = useRef<BoardHandle>(null);
-  const s = session.strings;
-  const theme = session.theme;
-  const names = namesOf(theme, s.locale);
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -80,68 +131,44 @@ export function App() {
     };
   }, []);
 
-  const onTap = (key: string, cell: CellView): void => {
-    if (cell.legal) session.dispatch({ type: 'PLACE', hex: key });
-    else if (cell.ripe) session.target(key);
-    else session.target(null);
-  };
+  const manual = useDoor('manual');
+  const settings = useDoor('settings');
+  const anyOpen = useAnyDialogOpen();
 
-  const ink = cssHex(theme.ink.ink);
-  const panel = cssHex(theme.ink.panel);
-  const row: CSSProperties = {
-    display: 'flex',
-    gap: '0.4rem',
-    padding: '0.4rem',
-    background: panel,
-    color: ink,
-    fontFamily: 'system-ui',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  };
-  const button: CSSProperties = {
-    minHeight: 44,
-    minWidth: 44,
-    padding: '0 0.6rem',
-    background: 'transparent',
-    color: ink,
-    border: `1px solid ${cssHex(theme.ink.panelEdge)}`,
-    borderRadius: 6,
-    fontFamily: 'system-ui',
-    fontSize: 14,
-  };
+  // What the game wants to say, if anything: a priority list rather than a
+  // queue, so the first unmet moment fires and the rest stay armed.
+  const teach = useMemo(
+    () =>
+      started
+        ? nextLesson(
+            { board: snap.board, hud: snap.hud, placed: snap.hud.placements > 0 },
+            progress,
+          )
+        : null,
+    [started, snap.board, snap.hud, progress],
+  );
+  const card = teach !== null && teach.as === 'card' ? teach.id : null;
+
+  const onTap = useCallback(
+    (key: string, cell: CellView): void => {
+      if (cell.legal) session.dispatch({ type: 'PLACE', hex: key });
+      else if (cell.ripe) session.target(key);
+      else session.target(null);
+    },
+    [session],
+  );
+
+  const newRun = useCallback(() => {
+    session.restart(Math.floor(Math.random() * 2 ** 31));
+  }, [session]);
+
+  const playing = started && !snap.hud.ended;
 
   return (
-    <div
-      lang={s.locale}
-      style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={row} data-hud="stats">
-        <strong>{NAME} 2</strong>
-        <span data-stat="tiles">
-          {s.locale === 'fr-CA' ? 'TUILES' : 'TILES'} <b className="stat-value">{snap.hud.tiles}</b>
-        </span>
-        <span data-stat="points">
-          PTS <b className="stat-value">{snap.hud.points}</b>
-        </span>
-        <span data-stat="reach">
-          ↗ <b className="stat-value">{snap.hud.depthValue}</b>
-        </span>
-        <span data-stat="cost">
-          $ <b className="stat-value">{snap.hud.cost}</b>
-        </span>
-        <span style={{ marginLeft: 'auto' }}>
-          <button style={button} onClick={() => board.current?.zoomBy(1.4)}>
-            +
-          </button>
-          <button style={button} onClick={() => board.current?.zoomBy(1 / 1.4)}>
-            −
-          </button>
-          <button style={button} onClick={() => board.current?.flyToFit()}>
-            FIT
-          </button>
-        </span>
-      </div>
-      <div style={{ position: 'relative', flex: 1 }}>
+    <div className="shell" lang={s.locale}>
+      {playing && <Hud hud={snap.hud} s={s} onNote={setNote} />}
+
+      <div className="board-host" {...(anyOpen || !started ? { inert: true } : {})}>
         <Board
           view={snap.board}
           theme={theme}
@@ -155,53 +182,139 @@ export function App() {
           onTap={onTap}
           handle={board}
         />
+        {playing && (
+          <Camera
+            board={board}
+            s={s}
+            here={snap.state.lastPlaced ?? null}
+            onHelp={() => manual.show()}
+          />
+        )}
       </div>
-      <div style={row} data-hud="hand">
-        {snap.hud.draft.map((card, i) => (
-          <button
-            key={card.id}
-            data-card={i}
-            style={{
-              ...button,
-              borderColor: cssHex(theme.terrain[card.colour].fill),
-              borderWidth: card.selected ? 3 : 1,
-              background: card.selected ? cssHex(theme.terrain[card.colour].fill) : 'transparent',
-            }}
-            onClick={() => session.dispatch({ type: 'SELECT', index: i })}
-          >
-            {names[card.colour]}
-            {card.rarity === 'common' ? '' : ' ✦'}
-          </button>
-        ))}
-        {snap.hud.canHarvest && (
-          <button
-            data-action="pop"
-            style={{ ...button, marginLeft: 'auto', fontWeight: 700 }}
-            onClick={() => {
+
+      {playing && (
+        <>
+          {/* Two live regions: what just happened, and what to do next. The
+              stat row is deliberately neither. */}
+          <p className="toast" aria-live="polite" onClick={() => setNote(null)}>
+            {note}
+          </p>
+          {snap.hud.guide !== null && (
+            <p className="hint" aria-live="polite" data-hud="guide">
+              {snap.hud.guide}
+            </p>
+          )}
+          {purseOpen && (
+            <Purse
+              hud={snap.hud}
+              theme={theme}
+              s={s}
+              onSpend={(spend) =>
+                session.dispatch(
+                  spend.on === 'steer' && spend.colour !== null
+                    ? { type: 'SPEND', on: 'steer', colour: spend.colour }
+                    : { type: 'SPEND', on: spend.on },
+                )
+              }
+            />
+          )}
+          <ActionBar
+            hud={snap.hud}
+            theme={theme}
+            s={s}
+            onSelect={(index) => session.dispatch({ type: 'SELECT', index })}
+            onLens={() => undefined}
+            onHarvest={(choice) =>
               session.dispatch({
                 type: 'HARVEST',
-                choice: 'tiles',
+                choice,
                 ...(snap.hud.harvestAt === null ? {} : { at: snap.hud.harvestAt }),
-              });
+              })
+            }
+            onSpend={() => undefined}
+            onPurse={() => {
+              setPurseOpen((was) => !was);
+              // The purse teaches on the first deliberate OPEN rather than on
+              // having one: a lesson about spending is no use before there is
+              // anything to spend it on.
+              setProgress((p) => told(p, 'purse'));
             }}
-          >
-            {s.ui.pop} +{snap.hud.harvestTiles} · {snap.hud.harvestPoints} pts
-          </button>
-        )}
-        {snap.hud.ended && (
-          <button
-            data-action="new-run"
-            style={{ ...button, marginLeft: 'auto' }}
-            onClick={() => session.restart(Math.floor(Math.random() * 2 ** 31))}
-          >
-            {s.ui.newRun}
-          </button>
-        )}
-      </div>
-      {snap.hud.guide !== null && (
-        <div style={{ ...row, fontSize: 13 }} data-hud="guide">
-          {snap.hud.guide}
-        </div>
+            purseOpen={purseOpen}
+            onNewRun={newRun}
+          />
+        </>
+      )}
+
+      {started && snap.hud.ended && (
+        <EndScreen hud={snap.hud} s={s} onTerm={setTerm} onNewRun={newRun} />
+      )}
+
+      {!started && (
+        <FrontDoor
+          s={s}
+          resuming={snap.hud.placements > 0}
+          onBegin={() => setStarted(true)}
+          onHowToPlay={() => manual.show()}
+          onSettings={() => settings.show()}
+        />
+      )}
+
+      {manual.open && (
+        <Manual
+          theme={theme}
+          s={s}
+          onBack={manual.hide}
+          onTerm={setTerm}
+          menu={
+            <PanelMenu>
+              <button type="button" onClick={() => settings.show()}>
+                {s.ui.settings}
+              </button>
+              <Confirming
+                label={s.ui.restart}
+                armed={`${s.ui.restart}?`}
+                onConfirm={() => {
+                  newRun();
+                  manual.hide();
+                }}
+              />
+            </PanelMenu>
+          }
+        />
+      )}
+
+      {settings.open && (
+        <Settings
+          theme={theme}
+          s={s}
+          stored={storedTheme}
+          features={features}
+          onBack={settings.hide}
+          onTheme={setStoredTheme}
+          onLocale={setLocale}
+          onFeature={(id: FeatureId, on) => setFeatures((was) => ({ ...was, [id]: on }))}
+          onResetTeaching={() => setProgress(EMPTY_PROGRESS)}
+        />
+      )}
+
+      {card !== null && (
+        <LessonCard
+          id={card}
+          theme={theme}
+          s={s}
+          dismiss={s.ui.gotIt}
+          onDismiss={() => setProgress((p) => told(p, card))}
+        />
+      )}
+
+      {term !== null && (
+        <LessonCard
+          id={term}
+          theme={theme}
+          s={s}
+          dismiss={s.ui.gotIt}
+          onDismiss={() => setTerm(null)}
+        />
       )}
     </div>
   );

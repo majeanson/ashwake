@@ -111,12 +111,18 @@ export function Board(props: BoardProps) {
   }, []);
 
   // The pop plays in its own layer, over a board that has already turned the
-  // popped cells to stone. It clears itself when its cascade is over.
-  const [pop, setPop] = useState<Popped | null>(null);
-  useEffect(() => {
-    if (props.popped !== null) setPop(props.popped);
+  // popped cells to stone.
+  //
+  // DERIVED, not mirrored. Copying `props.popped` into state through an effect
+  // means every harvest renders twice and the second render is the one that
+  // shows the leap — a cascading render, and a frame of latency on the one
+  // animation that has to feel immediate. The store already stamps each pop
+  // with an id, so remembering which id has FINISHED is enough.
+  const [finished, setFinished] = useState<number | null>(null);
+  const pop = props.popped !== null && props.popped.id !== finished ? props.popped : null;
+  const donePopping = useCallback(() => {
+    if (props.popped !== null) setFinished(props.popped.id);
   }, [props.popped]);
-  const donePopping = useCallback(() => setPop(null), []);
 
   return (
     <div
@@ -252,6 +258,15 @@ function Rig({
     invalidate();
   }, [frame, invalidate]);
 
+  /**
+   * Write the camera for this frame.
+   *
+   * The camera is a three.js object owned by the renderer and this runs from
+   * `useFrame`, which is not render. Mutating it in place is the entire point
+   * of an imperative camera: gestures write it many times a second and React
+   * must never re-render for one. See `eslint.config.js` for why the purity
+   * rules are scoped off for `board/` and loud everywhere else.
+   */
   const apply = (): void => {
     const c = cam.current;
     const f = frameRef.current;
@@ -276,16 +291,19 @@ function Rig({
     apply();
   });
 
-  const fly = (to: CameraState): void => {
-    wasFit.current = to.zoom <= 1.0001;
-    if (reducedMotion) {
-      cam.current = to;
-      flight.current = null;
-    } else {
-      flight.current = { from: cam.current, to, startedAt: performance.now() };
-    }
-    invalidate();
-  };
+  const fly = useCallback(
+    (to: CameraState): void => {
+      wasFit.current = to.zoom <= 1.0001;
+      if (reducedMotion) {
+        cam.current = to;
+        flight.current = null;
+      } else {
+        flight.current = { from: cam.current, to, startedAt: performance.now() };
+      }
+      invalidate();
+    },
+    [reducedMotion, invalidate],
+  );
 
   useImperativeHandle(
     handle,
@@ -307,7 +325,7 @@ function Rig({
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),
     }),
-    [invalidate, reducedMotion, theme.orientation],
+    [invalidate, fly, theme.orientation],
   );
 
   // Gestures, on the wrapper: one finger drags past the slop, two pinch, a

@@ -4,8 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark light" />
+    <!-- Rewritten by `ui/theme.ts` once the direction is resolved. -->
+    <meta name="theme-color" content="#0a0806" />
     <title>Ashwake</title>
     <style>
+      /*
+       * The PRE-JS paint, and the only literal colour in the project.
+       *
+       * It is what a phone shows in the moment between the first byte and the
+       * first render, so it cannot come from the theme — the theme is in the
+       * bundle. It is the default direction's background, and `ui/theme.ts`
+       * writes the resolved one over it at boot.
+       */
       html,
       body,
       #root {

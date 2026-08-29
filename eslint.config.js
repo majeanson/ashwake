@@ -2,6 +2,7 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
 /**
@@ -208,6 +209,40 @@ export default tseslint.config(
   {
     files: ['packages/core/src/meta/**/*.ts', 'packages/core/src/sim/**/*.ts'],
     rules: deny([...layer('view'), ...APP], 'Nothing headless may import view/.'),
+  },
+
+  /**
+   * The rules of hooks, on the chrome.
+   *
+   * Not style: a dependency array that lies is a component that renders stale
+   * facts, and this board's whole shape is "the snapshot is built once per
+   * dispatch and handed to everyone". A missed dependency there is a HUD
+   * showing the previous turn.
+   */
+  {
+    files: ['apps/game/src/**/*.tsx'],
+    plugins: { 'react-hooks': reactHooks },
+    rules: reactHooks.configs.recommended.rules,
+  },
+
+  /**
+   * The BOARD is imperative on purpose, and the purity rules do not model it.
+   *
+   * `useFrame` is not render. Everything under `board/` writes three.js
+   * objects in place many times a second — instance matrices, instance
+   * colours, the camera — precisely so React never re-renders for a gesture or
+   * a frame, which is the entire reason the board can hold 60fps on a phone.
+   * A rule that calls that a mutation bug is right about React and wrong about
+   * a scene graph.
+   *
+   * Scoped to `board/` deliberately: the same rule is LOUD on `screens/` and
+   * `ui/`, where mutating a value after render really is a stale-render bug,
+   * and where it already caught one (a prop mirrored into state through an
+   * effect, which cost the pop a frame of latency).
+   */
+  {
+    files: ['apps/game/src/board/**/*.tsx'],
+    rules: { 'react-hooks/immutability': 'off', 'react-hooks/purity': 'off' },
   },
 
   // The app imports the core through its aliases; nothing imports the app.

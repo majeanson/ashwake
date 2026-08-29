@@ -497,6 +497,10 @@ export const STRINGS_FR: Strings = {
     appearance: 'APPARENCE',
     sound: 'SON',
     resetTeaching: 'RÉINITIALISER LES LEÇONS',
+    details: 'DÉTAILS',
+    howToPlay: 'COMMENT JOUER',
+    resume: 'REPRENDRE',
+    gotIt: 'COMPRIS',
     privacy: `Rien ne quitte ton téléphone${D}: pas de compte, pas d’analytique, pas de serveur. Partager n’envoie que ce que tu vois dans la feuille de partage, et un rapport de plantage seulement si tu touches ENVOYER LE RAPPORT.`,
   },
 };

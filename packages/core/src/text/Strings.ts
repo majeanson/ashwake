@@ -315,6 +315,14 @@ export type Strings = {
     readonly appearance: string;
     readonly sound: string;
     readonly resetTeaching: string;
+    /** The disclosure a manual section folds its finer print into. */
+    readonly details: string;
+    /** The door into the manual, from MORE and from the board's `?`. */
+    readonly howToPlay: string;
+    /** The front door when a run is already in progress. */
+    readonly resume: string;
+    /** What a card is dismissed with, once it has been read. */
+    readonly gotIt: string;
     readonly privacy: string;
   };
 };

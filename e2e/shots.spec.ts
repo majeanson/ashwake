@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
-import { assertLooksLikeAPicture, watchErrors } from './helpers';
+import { assertLooksLikeAPicture, begin, clearCards, watchErrors } from './helpers';
 
 /**
  * The shot set (Stage 2b, 2026-08-28): one picture per camera angle, over ONE
@@ -52,6 +52,7 @@ for (const [name, query] of ANGLES) {
     const errors = watchErrors(page);
     await page.goto(`/?seed=7&place=12&${query}`);
     await expect(page.locator('canvas')).toBeVisible();
+    await begin(page);
     // The board is drawn on demand, so give the first frame and the font time
     // to land — a font that has not loaded is a board that has not drawn.
     await page.waitForTimeout(800);
@@ -78,8 +79,10 @@ test('catches the harvest in the air', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?seed=7&place=12&tilt=35&light=1&materials=1');
   await expect(page.locator('canvas')).toBeVisible();
+  await begin(page);
   await page.waitForTimeout(700);
 
+  await clearCards(page);
   const pop = page.getByRole('button', { name: /POP/ });
   await expect(pop).toBeVisible();
   await pop.click();
@@ -95,6 +98,43 @@ test('catches the harvest in the air', async ({ page }) => {
     assertLooksLikeAPicture(shot, `the harvest at ${at}ms`);
     await writeFile(join(SHOTS, `s2d-pop-${at}.png`), await page.screenshot());
   }
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+/**
+ * The screens, as a stranger meets them.
+ *
+ * Not a pass/fail — a set of pictures to look at. It walks the first minute in
+ * order: the door, whatever the game teaches first, the board with its chrome,
+ * the manual and settings.
+ */
+test('shoots the first minute', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7');
+  await mkdir(SHOTS, { recursive: true });
+
+  await page.locator('[data-door="begin"]').waitFor({ state: 'visible' });
+  await page.waitForTimeout(500);
+  await writeFile(join(SHOTS, 's3-door.png'), await page.screenshot());
+
+  await page.locator('[data-door="begin"]').click();
+  await page.locator('[data-hud="stats"]').waitFor({ state: 'visible' });
+  await page.waitForTimeout(400);
+  if ((await page.locator('.card-scrim').count()) > 0) {
+    await writeFile(join(SHOTS, 's3-teaching.png'), await page.screenshot());
+  }
+  await clearCards(page);
+  await page.waitForTimeout(400);
+  await writeFile(join(SHOTS, 's3-playing.png'), await page.screenshot());
+
+  await page.locator('.help').click();
+  await page.waitForTimeout(300);
+  await writeFile(join(SHOTS, 's3-manual.png'), await page.screenshot());
+
+  await page.getByRole('button', { name: 'SETTINGS' }).first().click();
+  await page.waitForTimeout(300);
+  await writeFile(join(SHOTS, 's3-settings.png'), await page.screenshot());
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

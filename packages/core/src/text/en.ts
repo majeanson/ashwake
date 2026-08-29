@@ -470,6 +470,10 @@ export const STRINGS_EN: Strings = {
     appearance: 'APPEARANCE',
     sound: 'SOUND',
     resetTeaching: 'RESET TEACHING',
+    details: 'DETAILS',
+    howToPlay: 'HOW TO PLAY',
+    resume: 'RESUME',
+    gotIt: 'GOT IT',
     privacy:
       'Nothing leaves your phone: no account, no analytics, no server. Sharing sends only what you see in the share sheet, and a crash report only if you tap SEND REPORT.',
   },
