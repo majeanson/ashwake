@@ -6,9 +6,10 @@ verbatim into `packages/core`; the screen is rebuilt in `apps/game` on a 3D
 board (Three.js + React Three Fiber) with React chrome. The decision record for
 that is `DECISIONS.md` D1 and the plan is `ROADMAP.md`.
 
-Read `STATUS.md` first — what is done **and verified**. `ROADMAP.md` is the six
-stages and v2.0's definition of done. `LOG.md` is the per-session record, one
-written question per session. `DESIGN.md` is Ashwake 1's design record, carried
+Read `STATUS.md` first — what is done **and verified**. `NEXT.md` is the short
+answer to "what now", sorted by whether it needs Marc, and carries the standing
+goal. `ROADMAP.md` is the stages and v2.0's definition of done. `LOG.md` is the
+per-session record, one written question per session. `DESIGN.md` is Ashwake 1's design record, carried
 over whole because the rules did not move; `PLAYTEST.md` is the phone script,
 carried over for the day this body is playable.
 
