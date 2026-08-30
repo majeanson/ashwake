@@ -82,14 +82,35 @@ export function Tile({
             }
       }
       style={{
+        /*
+         * THREE things a card can say at once, on three different channels
+         * (2026-08-29, Marc: "revise the highlights of the selected tiles based
+         * on each background color and also magic = unique. they should all be
+         * easily identifiable and not confused").
+         *
+         * They were all saying it in HUE, on a card that had just started
+         * wearing its ground — so a violet border, an orange border and a gold
+         * selection ring were three colours competing on a fourth. In torchlit
+         * the selection ring (`accent`, 0xc79a4b) and UNIQUE (0xf2914a) are
+         * both warm gold-orange, which is the confusion reported.
+         *
+         *   RARITY  keeps the hue, on the BORDER — magic violet, unique
+         *           orange, and they are far apart on every direction's wheel.
+         *           Thicker, because a 2px hue on a coloured ground is a hint.
+         *   SELECTED is the label INK, not a hue at all. The ink is graded
+         *           against every terrain fill by `contrast.test.ts`, so it is
+         *           the one colour guaranteed to read on all four grounds — and
+         *           being colourless it can never be mistaken for a rarity.
+         *   GROUND   is the fill, and the mark and the name say it too.
+         */
         borderColor: rare ? hex(rarity === 'magic' ? theme.ink.magic : theme.ink.unique) : fill,
-        borderWidth: rare ? 2 : 1,
-        // Every card wears its ground, always — see the note above.
+        borderWidth: rare ? 3 : 1,
         background: fill,
-        // Selection is a ring OUTSIDE the box, so it neither moves the card
-        // (an outline takes no layout) nor argues with the rarity border.
-        outline: selected === true ? `3px solid ${hex(theme.ink.accent)}` : undefined,
-        outlineOffset: selected === true ? '-1px' : undefined,
+        // Outside the box, so it takes no layout and cannot reflow the row —
+        // and offset outward so it never sits on top of the rarity border it
+        // has to be told apart from.
+        outline: selected === true ? `3px solid ${hex(theme.ink.ink)}` : undefined,
+        outlineOffset: selected === true ? '2px' : undefined,
         display: 'flex',
         flexDirection: 'column',
         gap: '0.1rem',
@@ -106,10 +127,7 @@ export function Tile({
       </span>
       <span>{name}</span>
       {rare && (
-        <span
-          className={rarity === 'magic' ? 'ink-magic' : 'ink-unique'}
-          style={{ fontSize: '0.7rem' }}
-        >
+        <span className={`tile-rarity ${rarity === 'magic' ? 'ink-magic' : 'ink-unique'}`}>
           {rarity === 'magic' ? s.lesson.rare.name : s.lesson.rareUnique.name}
         </span>
       )}

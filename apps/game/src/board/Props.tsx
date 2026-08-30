@@ -62,7 +62,10 @@ export function Props({ cells, theme, layout, relief }: PropsProps) {
     return out;
   }, [cells, layout, relief]);
 
-  const geometries = useMemo(() => new Map(REWARDS.map((r) => [r, propGeometry(r)])), []);
+  const geometries = useMemo(
+    () => new Map(REWARDS.map((r) => [r, propGeometry(r, theme.motif)])),
+    [theme.motif],
+  );
   useLayoutEffect(() => () => geometries.forEach((g) => g.dispose()), [geometries]);
 
   const materials = useMemo(
@@ -88,15 +91,27 @@ export function Props({ cells, theme, layout, relief }: PropsProps) {
       const mesh = meshes.current.get(reward);
       const standing = groups.get(reward) ?? [];
       if (mesh === undefined) continue;
-      const rise = propRise(reward);
+      const rise = propRise(reward, theme.motif);
       standing.forEach((item, i) => {
         dummy.position.set(item.x, item.top + rise, item.z);
         dummy.scale.set(1, 1, 1);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        // Lit while unclaimed, spent once reached — the same thing the ground
-        // says, said again in the prop so a glance at the board is enough.
-        const base = item.cell.claimed ? theme.stone.fill : theme.ink.lit;
+        /*
+         * Lit while unclaimed, DIMMED once reached — not turned to stone.
+         *
+         * Marc, 2026-08-29: *"make sure when popped, caches, shrines, stars,
+         * etc. are still recognizable."* A claimed prop was painted
+         * `stone.fill`, which is the colour of spent GROUND — so on a board
+         * that fills with spent ground as a run goes on, the thing you walked
+         * all that way to reach became the same colour as everything around
+         * it. It read as gone rather than as done.
+         *
+         * `inkDim` is the palette's middle voice and what the claimed glyph
+         * above it now uses, so the prop and its mark say the same thing in
+         * the same tone: still here, still what it was, already spent.
+         */
+        const base = item.cell.claimed ? theme.ink.inkDim : theme.ink.lit;
         const shown = torched(base, cellTint(theme, item.cell));
         scratch.setRGB(
           ((shown >> 16) & 0xff) / 255,

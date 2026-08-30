@@ -546,6 +546,8 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     /** The camera cluster's third control, shown only once the board has been
      *  turned or leaned away from the angle its direction opens at. */
     perkFound: (name) => `A FIND — you carry ${name} now.`,
+    woke: (what) => `WOKE — ${what}`,
+    theMap: 'THE GROUND YOU WALKED',
     expedition: {
       title: 'THE EXPEDITION',
       lines: [

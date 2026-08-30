@@ -19,10 +19,11 @@ import {
   type Progress,
 } from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
+import { newWorld, unlockedBy, unlockLabel, type UnlockId } from '@meta/world';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
-import type { LessonId } from '@view/lessons';
+import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { ActionBar } from './screens/ActionBar';
@@ -199,6 +200,23 @@ function Game() {
    * than beside either one of them.
    */
   const [lens, setLens] = useState<Colour | null>(null);
+  /** A picture of the board as the run ended — the end screen map, and the
+   *  diary row. Held rather than re-captured: the board keeps playing. */
+  const [shot, setShot] = useState<string | null>(null);
+  /**
+   * What this run CHANGED — perks found, shrine unlocks woken.
+   *
+   * Captured at the moment a run BEGINS, because "new" is a difference and the
+   * ledgers have already moved on by the time the end screen renders. Refs
+   * rather than state: nothing renders from the starting values, only from the
+   * difference computed against them at settle.
+   */
+  const perksAtStart = useRef<readonly string[]>([]);
+  const unlocksAtStart = useRef<readonly string[]>([]);
+  const [gained, setGained] = useState<{
+    readonly perks: readonly string[];
+    readonly unlocks: readonly string[];
+  }>({ perks: [], unlocks: [] });
   /**
    * A receipt that is holding the screen, waiting to be dismissed.
    *
@@ -375,6 +393,26 @@ function Game() {
       return;
     }
 
+    const picture = board.current?.snapshot() ?? null;
+    setShot(picture);
+
+    /*
+     * What this run gained, measured against what it started with.
+     *
+     * Both are differences, and both have to be taken here: `progress.found`
+     * has already grown by the time the end screen renders, and the world's
+     * unlock ledger is about to be rewritten by `settle` below.
+     */
+    const wokeNow = unlockedBy(readWorld(slot) ?? newWorld(snap.state.rootSeed));
+    setGained({
+      perks: progress.found
+        .filter((id) => !perksAtStart.current.includes(id))
+        .map((id) => perkText(id, s).name),
+      unlocks: wokeNow
+        .filter((id) => !unlocksAtStart.current.includes(id))
+        .map((id) => unlockLabel(id as UnlockId, s)),
+    });
+
     const after = settle({
       state: snap.state,
       hud: snap.hud,
@@ -384,6 +422,7 @@ function Game() {
       timeline: readTimeline(),
       progress,
       at: Date.now(),
+      ...(picture === null ? {} : { shot: picture }),
     });
     keeper.saveWorld(after.world);
     keeper.flush();
@@ -409,9 +448,8 @@ function Game() {
      * gone. The alternative is holding it in a ref, which cannot re-render
      * the screen that has to show it.
      */
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGoals(after.goals);
-  }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper, setProgress]);
+  }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper, setProgress, s]);
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -720,6 +758,25 @@ ${s.view.harvest.firstPopWhen}`,
         }
       }
 
+      /*
+       * A destination TAPPED opens the card that explains it.
+       *
+       * Marc, 2026-08-29: *"make sure we can click on the map for caches,
+       * shrines, etc. and we get the card explaining what it is."* Tapping one
+       * printed `describeHexOf` — what it is and what claiming pays, in this
+       * run's numbers — into the toast, and that is the right sentence for
+       * somebody who already knows what a cache IS. For anybody who does not,
+       * a line of prose over the board answers a question they could not have
+       * asked, and the manual was the only place that defined the word.
+       *
+       * Both now: the card explains the KIND, the toast carries this run's
+       * numbers and is still there when the card is dismissed. The card is the
+       * same one the glossary opens everywhere else, so a cache is defined in
+       * exactly one place however you arrive at it.
+       */
+      if (cell.kind === 'landmark' && cell.landmark !== null) {
+        setTerm(LESSON_FOR_REWARD[cell.landmark]);
+      }
       setNote(describe(key));
     },
     [act, session, s, theme, lens, describe],
@@ -899,11 +956,31 @@ ${s.view.harvest.firstPopWhen}`,
     setGoals([]);
     saidOnce.current = new Set();
     reachAtStart.current = readWorld(activeSlot())?.farthestReach ?? 0;
+    perksAtStart.current = progress.found;
+    unlocksAtStart.current = unlockedBy(readWorld(activeSlot()) ?? newWorld(0));
 
     banked.current = null;
     session.restart(Math.floor(Math.random() * 2 ** 31));
     setLens(null);
-  }, [session, setDaily]);
+  }, [session, setDaily, progress.found]);
+
+  /**
+   * Out of the ending, without starting another run.
+   *
+   * Marc, 2026-08-29: *"in the end screen add a main menu."* The ending offered
+   * NEW RUN, SHARE and MORE — so the only ways off it were to play again or to
+   * open a panel over it, and a player who wanted to stop and look at their
+   * worlds or their hall of fame had to go the long way round. The front door
+   * is where every other screen leads back to.
+   *
+   * A scene change, never a reload (`CLAUDE.md`): the run is already banked, so
+   * this is nothing but putting the door back in front of the board that is
+   * still mounted underneath it.
+   */
+  const toMainMenu = useCallback(() => {
+    newRun();
+    setStarted(false);
+  }, [newRun]);
 
   /**
    * Step into a world — a state change, never a reload (`CLAUDE.md`).
@@ -941,6 +1018,8 @@ ${s.view.harvest.firstPopWhen}`,
       setSlot(next);
       saidOnce.current = new Set();
       reachAtStart.current = readWorld(next)?.farthestReach ?? 0;
+      perksAtStart.current = progress.found;
+      unlocksAtStart.current = unlockedBy(readWorld(next) ?? newWorld(0));
       session.restart(Math.floor(Math.random() * 2 ** 31), kept);
       setLens(null);
       banked.current = null;
@@ -948,7 +1027,7 @@ ${s.view.harvest.firstPopWhen}`,
       more.hide();
       setStarted(true);
     },
-    [session, setSlot, setDaily, worlds, more],
+    [session, setSlot, setDaily, worlds, more, progress.found],
   );
 
   const playing = started && !snap.hud.ended;
@@ -1202,6 +1281,10 @@ ${s.view.harvest.firstPopWhen}`,
             onMore={() => more.show()}
             onShare={onShare}
             goals={goals}
+            shot={shot}
+            newPerks={gained.perks}
+            newUnlocks={gained.unlocks}
+            onMainMenu={toMainMenu}
           />
         </div>
       )}

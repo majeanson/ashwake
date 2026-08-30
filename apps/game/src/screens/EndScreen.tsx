@@ -50,9 +50,32 @@ export type EndScreenProps = {
   readonly onShare: () => Promise<'shared' | 'copied' | 'failed'>;
   /** Goals this run was the one to meet, for this world. */
   readonly goals: readonly GoalId[];
+  /**
+   * The board as this run ended.
+   *
+   * Marc, 2026-08-29: *"in the end screen i loved having my real map to check
+   * it back again, keep it that way just like we did."* Null where the picture
+   * could not be taken — a memento is never worth a broken screen.
+   */
+  readonly shot?: string | null;
+  /**
+   * What this run CHANGED, as opposed to what it scored.
+   *
+   * Perks found and shrine unlocks woken. An ending that reports only a number
+   * cannot tell a player that the next run starts different, which is the one
+   * thing that makes them press NEW RUN.
+   */
+  readonly newPerks?: readonly string[];
+  readonly newUnlocks?: readonly string[];
+  /** Back to the front door: an ending needs a way out that is not another run. */
+  readonly onMainMenu: () => void;
 };
 
 export function EndScreen({
+  shot,
+  newPerks,
+  newUnlocks,
+  onMainMenu,
   hud,
   harvests,
   s,
@@ -120,6 +143,29 @@ export function EndScreen({
       )}
 
       {/*
+        WHAT CHANGED, as opposed to what was scored (2026-08-29).
+
+        Marc: *"make sure we identify new perks, new shrine unlocks, etc."* A
+        perk found and a shrine woken are the two things that make the NEXT run
+        different, and both were silent here — the shelf simply had one more on
+        it the next time you looked. An ending that reports only a number
+        cannot say why to press NEW RUN.
+
+        Above the payout for the same reason the survey is: rare beats routine,
+        and the breakdown is always there.
+      */}
+      {(newPerks ?? []).length + (newUnlocks ?? []).length > 0 && (
+        <ul className="goals-met" data-hud="gained">
+          {(newUnlocks ?? []).map((label) => (
+            <li key={`u-${label}`}>{s.ui.woke(label)}</li>
+          ))}
+          {(newPerks ?? []).map((label) => (
+            <li key={`p-${label}`}>{s.ui.perkFound(label)}</li>
+          ))}
+        </ul>
+      )}
+
+      {/*
         The SURVEY: what this run was the one to finish, for this world.
         Above the breakdown, because a goal met is the rarest thing an ending
         can carry and the payout is always there.
@@ -150,10 +196,30 @@ export function EndScreen({
         <button type="button" data-action="share" onClick={onShare2}>
           {said ?? s.ui.share}
         </button>
+        <button type="button" data-door="main" onClick={onMainMenu}>
+          {s.ui.mainMenu}
+        </button>
         <button type="button" data-door="more" onClick={onMore}>
           {s.ui.more}
         </button>
       </nav>
+
+      {/*
+        THE MAP, last: the run you just walked, kept.
+
+        Marc: *"in the end screen i loved having my real map to check it back
+        again."* It sits under everything because it is the thing you scroll
+        BACK to — the numbers answer "how did I do", and this answers "what did
+        it look like", which is the question you ask second and the one that
+        makes a run memorable. The same picture goes into the diary row, so the
+        hall of fame stops being frames with nothing in them.
+      */}
+      {shot != null && (
+        <figure className="end-map">
+          <img src={shot} alt="" />
+          <figcaption className="fact-label">{s.ui.theMap}</figcaption>
+        </figure>
+      )}
     </div>
   );
 }

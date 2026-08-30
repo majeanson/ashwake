@@ -459,7 +459,7 @@ function cropRows(
       for (let i = 0; i < clumps; i++) {
         parts.push(
           `<circle cx="${(cx + r.range(-5, 5)).toFixed(1)}" cy="${(cy + r.range(-3.5, 3.5)).toFixed(1)}" ` +
-            `r="${r.range(2.2, 4.4).toFixed(1)}" fill="${rgba(ink, alpha)}"/>`,
+            `r="${r.range(3, 5.6).toFixed(1)}" fill="${rgba(ink, alpha)}"/>`,
         );
       }
     }
@@ -611,23 +611,48 @@ function pitTerraces(seed: number, lit: Rgb): string {
   const cy = TH * 0.57;
   const parts: string[] = [];
   for (let ring = 0; ring < 3; ring++) {
-    const rad = 44 + ring * 38;
+    const rad = 46 + ring * 40;
+    /*
+     * Each bench gets its own centre and its own wobble, and both are the
+     * finding rather than decoration. Drawn as true arcs about one point —
+     * which is what this was, first pass — a stepped pit reads as a RIPPLE:
+     * three concentric circles is the one figure water makes, on the one
+     * board where nothing is allowed to look like water except ROADS.
+     */
+    const ox = cx + r.range(-16, 16);
+    const oy = cy + r.range(-13, 13);
     const arcs = 2 + ring;
     for (let i = 0; i < arcs; i++) {
-      const from = (Math.PI * 2 * i) / arcs + r.range(0.1, 0.5);
-      const to = from + r.range(0.9, 1.5);
-      const arc = (offset: number): string =>
-        `M ${(cx + Math.cos(from) * (rad + offset)).toFixed(1)} ${(cy + Math.sin(from) * (rad + offset)).toFixed(1)} ` +
-        `A ${(rad + offset).toFixed(1)} ${(rad + offset).toFixed(1)} 0 0 1 ` +
-        `${(cx + Math.cos(to) * (rad + offset)).toFixed(1)} ${(cy + Math.sin(to) * (rad + offset)).toFixed(1)}`;
+      const from = (Math.PI * 2 * i) / arcs + r.range(0.1, 0.6);
+      const span = r.range(0.8, 1.5);
+      const pts: string[] = [];
+      for (let k = 0; k <= 7; k++) {
+        const a = from + (span * k) / 7;
+        const rr = rad + r.range(-7, 7);
+        pts.push(`${(ox + Math.cos(a) * rr).toFixed(1)},${(oy + Math.sin(a) * rr).toFixed(1)}`);
+      }
+      const d = `M ${pts.join(' L ')}`;
       parts.push(
-        `<path d="${arc(0)}" fill="none" stroke="#100c08" stroke-opacity="0.26" ` +
+        `<path d="${d}" fill="none" stroke="#100c08" stroke-opacity="0.26" ` +
           `stroke-width="${r.range(1.6, 2.8).toFixed(1)}" stroke-linecap="round"/>`,
       );
+      // The lit lip of the bench above the cut — depth, not a second line.
       parts.push(
-        `<path d="${arc(-3)}" fill="none" stroke="${rgba(lit, 0.06)}" stroke-width="1.4" stroke-linecap="round"/>`,
+        `<path d="${d}" transform="translate(0,-3)" fill="none" stroke="${rgba(lit, 0.06)}" ` +
+          `stroke-width="1.4" stroke-linecap="round"/>`,
       );
     }
+  }
+  // Tool marks: short cuts running down the face, square to the benches.
+  for (let i = 0; i < 9; i++) {
+    const a = r.range(0, Math.PI * 2);
+    const from = r.range(40, 130);
+    const len = r.range(12, 26);
+    parts.push(
+      `<line x1="${(cx + Math.cos(a) * from).toFixed(1)}" y1="${(cy + Math.sin(a) * from).toFixed(1)}" ` +
+        `x2="${(cx + Math.cos(a) * (from + len)).toFixed(1)}" y2="${(cy + Math.sin(a) * (from + len)).toFixed(1)}" ` +
+        `stroke="#100c08" stroke-opacity="0.2" stroke-width="1.4" stroke-linecap="round"/>`,
+    );
   }
   return parts.join('');
 }
@@ -646,74 +671,140 @@ function wrap(defsAndLayers: string, clipId: string): string {
 /** File-pixel geometry from theme "texture pixel" units — one factor, named. */
 const SCALE = 6;
 
-function greenSvg(): string {
+function planeGreen(): string {
   const s = T.terrain.green;
-  const primary = s.pattern.kind === 'hatch' ? s.pattern : null;
-  const overlay = s.overlay.kind === 'dots' ? s.overlay : null;
-  const pitch = primary !== null ? (primary.bar + primary.gap) * SCALE : 36;
-  const bar = primary !== null ? primary.bar * SCALE : 12;
-  const angle = primary?.angleDeg ?? 60;
+  const primary = need('terrain.green pattern', s.pattern, 'hatch');
+  const overlay = need('terrain.green overlay', s.overlay, 'dots');
+  const pitch = (primary.bar + primary.gap) * SCALE;
+  const bar = primary.bar * SCALE;
   return wrap(
     fillRect(s) +
-      (primary !== null
-        ? `<g transform="rotate(${angle} ${TCX} ${TCY})">${rippleField(pitch, primary.ink, primary.alpha, bar)}</g>`
-        : '') +
-      (overlay !== null ? tuftField(101, overlay.pitch * SCALE, overlay.ink, overlay.alpha) : '') +
+      `<g transform="rotate(${primary.angleDeg} ${TCX} ${TCY})">${rippleField(pitch, primary.ink, primary.alpha, bar)}</g>` +
+      tuftField(101, overlay.pitch * SCALE, overlay.ink, overlay.alpha) +
       depthRect(),
     'clipGreen',
   );
 }
 
-function yellowSvg(): string {
+/**
+ * FARM — planted rows, and a crop growing in them.
+ *
+ * The theme's own words for this ground, made literal: the hatch is the
+ * furrow's axis, so it is drawn as ploughed rows with a lamplit crest, and the
+ * dot overlay is the crop, planted ALONG those rows instead of scattered over
+ * them. The plane's green is moss, which clumps wherever it likes; this one
+ * was sown by somebody walking in a straight line.
+ */
+function settlementGreen(): string {
+  const s = T.terrain.green;
+  const rows = need('terrain.green pattern', s.pattern, 'hatch');
+  const crop = need('terrain.green overlay', s.overlay, 'dots');
+  const pitch = (rows.bar + rows.gap) * SCALE;
+  return wrap(
+    fillRect(s) +
+      `<g transform="rotate(${rows.angleDeg} ${TCX} ${TCY})">` +
+      furrowField(111, pitch, rows.ink, rows.alpha, rows.bar * SCALE, T.ink.lit) +
+      cropRows(112, pitch, crop.pitch * SCALE, crop.ink, crop.alpha) +
+      `</g>` +
+      depthRect(),
+    'clipGreen',
+  );
+}
+
+function planeYellow(): string {
   // The roles swapped 2026-08-20 with the theme (Marc: "dotted for ember
   // its clearer"): dots are the pattern now — bright sparks, sized off the
   // theme's radius like ash's are — and the dry-grass blades read off the
   // hatch OVERLAY, a quiet undertone beneath them.
   const s = T.terrain.yellow;
-  const primary = s.pattern.kind === 'dots' ? s.pattern : null;
-  const overlay = s.overlay.kind === 'hatch' ? s.overlay : null;
-  const bladePitch = overlay !== null ? (overlay.bar + overlay.gap) * SCALE : 30;
+  const primary = need('terrain.yellow pattern', s.pattern, 'dots');
+  const overlay = need('terrain.yellow overlay', s.overlay, 'hatch');
+  const bladePitch = (overlay.bar + overlay.gap) * SCALE;
   return wrap(
     fillRect(s) +
-      (overlay !== null ? bladeField(202, bladePitch, overlay.ink, overlay.alpha) : '') +
-      (primary !== null
-        ? glintField(
-            203,
-            primary.pitch * SCALE,
-            primary.ink,
-            primary.alpha,
-            primary.radius * (SCALE - 1),
-          )
-        : '') +
+      bladeField(202, bladePitch, overlay.ink, overlay.alpha) +
+      glintField(
+        203,
+        primary.pitch * SCALE,
+        primary.ink,
+        primary.alpha,
+        primary.radius * (SCALE - 1),
+      ) +
       depthRect(),
     'clipYellow',
   );
 }
 
-function redSvg(): string {
-  const s = T.terrain.red;
-  const primary = s.pattern.kind === 'dots' ? s.pattern : null;
-  const overlay = s.overlay.kind === 'dots' ? s.overlay : null;
+/**
+ * MARKET — awnings over stacked goods.
+ *
+ * **This is the slot that baked EMPTY.** The plane's brightest ground is
+ * dotted and this one is striped, so both of the old kind guards missed and
+ * MARKET — the ground with the most light on it, the one a player looks at
+ * first — shipped as a bare gradient while the procedural fallback drew its
+ * stripes correctly the whole time.
+ *
+ * The stripes are cloth, so they get the fold-shadow that gives cloth a
+ * thickness, and the dark overlay is goods rather than grit: square, stacked
+ * and lit on top. Square is the point — nothing weather makes on this board is
+ * square, so a crate reads as somebody's property at any zoom.
+ */
+function settlementYellow(): string {
+  const s = T.terrain.yellow;
+  const cloth = need('terrain.yellow pattern', s.pattern, 'hatch');
+  const goods = need('terrain.yellow overlay', s.overlay, 'dots');
   return wrap(
     fillRect(s) +
-      (primary !== null
-        ? ashField(
-            303,
-            primary.pitch * SCALE,
-            primary.ink,
-            primary.alpha,
-            primary.radius * (SCALE - 1),
-          )
-        : '') +
-      (overlay !== null
-        ? ashField(
-            304,
-            overlay.pitch * SCALE,
-            overlay.ink,
-            overlay.alpha,
-            overlay.radius * (SCALE - 1),
-          )
-        : '') +
+      `<g transform="rotate(${cloth.angleDeg} ${TCX} ${TCY})">` +
+      awningStripes(
+        (cloth.bar + cloth.gap) * SCALE,
+        cloth.bar * SCALE,
+        cloth.ink,
+        cloth.alpha,
+        goods.ink,
+      ) +
+      `</g>` +
+      // The goods are NOT turned with the awning: a stall's cloth runs one way
+      // and what is piled under it does not, and two axes is what keeps this
+      // from reading as one printed pattern.
+      crateField(
+        213,
+        goods.pitch * SCALE,
+        goods.ink,
+        goods.alpha,
+        // Half again as big as the plane draws the same dot, and the reason is
+        // what the mark IS: a dot's radius describes a grain of something, and
+        // a crate is a thing a person could lift. At grain scale the goods
+        // read as dirt on the awning. The theme's PITCH still sets how much of
+        // the ground they cover, so the direction keeps the say that matters.
+        goods.radius * SCALE * 1.5,
+        T.ink.lit,
+      ) +
+      depthRect(),
+    'clipYellow',
+  );
+}
+
+function planeRed(): string {
+  const s = T.terrain.red;
+  const primary = need('terrain.red pattern', s.pattern, 'dots');
+  const overlay = need('terrain.red overlay', s.overlay, 'dots');
+  return wrap(
+    fillRect(s) +
+      ashField(
+        303,
+        primary.pitch * SCALE,
+        primary.ink,
+        primary.alpha,
+        primary.radius * (SCALE - 1),
+      ) +
+      ashField(
+        304,
+        overlay.pitch * SCALE,
+        overlay.ink,
+        overlay.alpha,
+        overlay.radius * (SCALE - 1),
+      ) +
       // Mounded rows catching the flame on the ridges — a couple of soft
       // horizontal highlight bands, the direction's own original words for
       // this colour, still true once it had a name.
@@ -724,28 +815,53 @@ function redSvg(): string {
   );
 }
 
-function blueSvg(): string {
-  const s = T.terrain.blue;
-  const primary = s.pattern.kind === 'hatch' ? s.pattern : null;
-  const overlay = s.overlay.kind === 'hatch' ? s.overlay : null;
+/**
+ * QUARRY — cut faces and rubble.
+ *
+ * The overlay is the half that went missing here (a hatch where the plane's
+ * red is dots over dots), and it is the half that carries the meaning: a cut
+ * face is a stack of benches, and benches are what say the stone was TAKEN.
+ * The dots become chips rather than pits for the same reason — ash settles
+ * round and broken rock does not.
+ *
+ * No flame bands. The plane's red gets two hard-coded highlight rows for
+ * "mounded rows catching the flame"; there is no flame in a settlement, so the
+ * light here is the lit lip on each bench, and it comes off `T.ink.lit` rather
+ * than out of a constant.
+ */
+function settlementRed(): string {
+  const s = T.terrain.red;
+  const rubble = need('terrain.red pattern', s.pattern, 'dots');
+  const cuts = need('terrain.red overlay', s.overlay, 'hatch');
   return wrap(
     fillRect(s) +
-      (primary !== null
-        ? rippleField(
-            (primary.bar + primary.gap) * SCALE,
-            primary.ink,
-            primary.alpha,
-            primary.bar * SCALE,
-          )
-        : '') +
-      (overlay !== null
-        ? rippleField(
-            (overlay.bar + overlay.gap) * SCALE,
-            overlay.ink,
-            overlay.alpha,
-            overlay.bar * SCALE,
-          )
-        : '') +
+      `<g transform="rotate(${cuts.angleDeg} ${TCX} ${TCY})">` +
+      benchLines((cuts.bar + cuts.gap) * SCALE, cuts.ink, cuts.alpha, cuts.bar * SCALE, T.ink.lit) +
+      `</g>` +
+      chipField(313, rubble.pitch * SCALE, rubble.ink, rubble.alpha, rubble.radius * (SCALE - 1)) +
+      depthRect(),
+    'clipRed',
+  );
+}
+
+function planeBlue(): string {
+  const s = T.terrain.blue;
+  const primary = need('terrain.blue pattern', s.pattern, 'hatch');
+  const overlay = need('terrain.blue overlay', s.overlay, 'hatch');
+  return wrap(
+    fillRect(s) +
+      rippleField(
+        (primary.bar + primary.gap) * SCALE,
+        primary.ink,
+        primary.alpha,
+        primary.bar * SCALE,
+      ) +
+      rippleField(
+        (overlay.bar + overlay.gap) * SCALE,
+        overlay.ink,
+        overlay.alpha,
+        overlay.bar * SCALE,
+      ) +
       // The specular note — reflected torchlight catching recessed water.
       `<rect y="150" width="${TW}" height="26" fill="${rgba(0xffecc8, 0.05)}"/>` +
       depthRect(),
@@ -753,32 +869,91 @@ function blueSvg(): string {
   );
 }
 
-function wallSvg(): string {
-  const s = T.wall;
-  const p = s.pattern.kind === 'bands' ? s.pattern : null;
+/**
+ * ROADS — paving, laid in courses, wet enough to hold the lamplight.
+ *
+ * Both of this ground's layers are hatches in both fictions, so this is the
+ * one settlement slot that lost nothing — and it is still the wrong drawing,
+ * because two ripple fields are a tide and a road is not. The dark hatch
+ * becomes the joint between courses, the light one becomes the lit leading
+ * edge of the stones below it, and the cross joints break course by course
+ * the way paving is actually laid.
+ */
+function settlementBlue(): string {
+  const s = T.terrain.blue;
+  const sheen = need('terrain.blue pattern', s.pattern, 'hatch');
+  const joints = need('terrain.blue overlay', s.overlay, 'hatch');
   return wrap(
-    (p !== null ? rubbleBands(p.angleDeg, p.a, p.b, p.width * (SCALE / 2)) : fillRect(s)) +
+    fillRect(s) +
+      `<g transform="rotate(${joints.angleDeg} ${TCX} ${TCY})">` +
+      cobbleCourses(
+        413,
+        (joints.bar + joints.gap) * SCALE,
+        joints.bar * SCALE,
+        joints.ink,
+        joints.alpha,
+        sheen.ink,
+        sheen.alpha * 0.5,
+      ) +
+      `</g>` +
+      // The wet band: one street's worth of lamplight lying on the stone,
+      // off the direction's own lit ink rather than the plane's torch.
+      `<rect y="150" width="${TW}" height="26" fill="${rgba(T.ink.lit, 0.05)}"/>` +
       depthRect(),
-    'clipWall',
+    'clipBlue',
   );
 }
 
-function stoneSvg(): string {
+/**
+ * Blocked ground, in every direction.
+ *
+ * SHARED between the motifs on purpose, and it is the one surface that can be:
+ * a settlement's blocked ground is unbuilt rock, which is the same rock the
+ * plane's is. It is the only thing on this board nobody made.
+ */
+function wallSvg(): string {
+  const p = need('wall pattern', T.wall.pattern, 'bands');
+  return wrap(rubbleBands(p.angleDeg, p.a, p.b, p.width * (SCALE / 2)) + depthRect(), 'clipWall');
+}
+
+/*
+ * Spent ground's `overlay` (a 25° hatch, declared by all five directions) is
+ * deliberately not drawn by either motif: the scorch and the marks over it are
+ * already the two loudest things on this tile, and a third layer under a
+ * centred label is what `paint.test` exists to catch. Left declared because
+ * the live painter draws it and the two are allowed to differ in RICHNESS —
+ * never in which ground this is.
+ */
+function planeStone(): string {
   const s = T.stone;
-  const primary = s.pattern.kind === 'dots' ? s.pattern : null;
+  const primary = need('stone pattern', s.pattern, 'dots');
   return wrap(
     fillRect(s) +
-      (primary !== null
-        ? ashField(
-            404,
-            primary.pitch * SCALE,
-            primary.ink,
-            primary.alpha,
-            primary.radius * (SCALE - 1),
-          )
-        : '') +
+      ashField(
+        404,
+        primary.pitch * SCALE,
+        primary.ink,
+        primary.alpha,
+        primary.radius * (SCALE - 1),
+      ) +
       scorchRect() +
       crackLines(405) +
+      depthRect(),
+    'clipStone',
+  );
+}
+
+/** Worked-out ground: the same hollow, cut in benches instead of cracked open.
+ *  See `pitTerraces` for why the scorch stays under a different fiction. */
+function settlementStone(): string {
+  const s = T.stone;
+  const dust = need('stone pattern', s.pattern, 'dots');
+  return wrap(
+    fillRect(s) +
+      // Dust is dust in both fictions — this layer is `ashField` on purpose.
+      ashField(414, dust.pitch * SCALE, dust.ink, dust.alpha, dust.radius * (SCALE - 1)) +
+      scorchRect() +
+      pitTerraces(415, T.ink.lit) +
       depthRect(),
     'clipStone',
   );
@@ -799,6 +974,54 @@ function ghostSvg(): string {
   );
 }
 
+// ------------------------------------------------------------------ motifs
+
+/**
+ * Which figures each direction's art is drawn from — the table `Motif` names.
+ *
+ * A motif is a complete set: every slot a direction has, drawn in one
+ * vocabulary, so nothing can end up half weather and half street. Where the
+ * two genuinely agree the entry is the SAME function rather than a copy —
+ * blocked ground is unbuilt rock in both fictions, and a preview is a preview.
+ *
+ * Adding a direction stays one theme file and one line in `THEMES`, as long as
+ * it picks a motif that already exists. Inventing a motif is a bigger thing on
+ * purpose: it is a new set of figures, and this table is where the cost of
+ * that shows up honestly rather than as a recoloured moss tuft.
+ */
+type Draw = () => string;
+
+/** The seven files a direction gets. `theme/assets.ts` owns the ids. */
+type SlotId =
+  | 'terrain.green'
+  | 'terrain.yellow'
+  | 'terrain.red'
+  | 'terrain.blue'
+  | 'terrain.wall'
+  | 'terrain.stone'
+  | 'terrain.ghost';
+
+const MOTIFS: Record<Motif, Record<SlotId, Draw>> = {
+  plane: {
+    'terrain.green': planeGreen,
+    'terrain.yellow': planeYellow,
+    'terrain.red': planeRed,
+    'terrain.blue': planeBlue,
+    'terrain.wall': wallSvg,
+    'terrain.stone': planeStone,
+    'terrain.ghost': ghostSvg,
+  },
+  settlement: {
+    'terrain.green': settlementGreen,
+    'terrain.yellow': settlementYellow,
+    'terrain.red': settlementRed,
+    'terrain.blue': settlementBlue,
+    'terrain.wall': wallSvg,
+    'terrain.stone': settlementStone,
+    'terrain.ghost': ghostSvg,
+  },
+};
+
 // -------------------------------------------------------------------- run
 
 type Slot = { readonly id: string; readonly svg: string; readonly terrain: boolean };
@@ -807,16 +1030,17 @@ for (const theme of THEMES_TO_BAKE) {
   T = theme;
   outDir = fileURLToPath(new URL(`../apps/game/public/assets/${theme.id}/`, import.meta.url));
   mkdirSync(outDir, { recursive: true });
-  console.log(`\n--- ${theme.id} ---`);
+  console.log(`\n--- ${theme.id} · ${theme.motif} ---`);
 
+  const draw = MOTIFS[theme.motif];
   const SLOTS: readonly Slot[] = [
-    { id: 'terrain.green', svg: greenSvg(), terrain: true },
-    { id: 'terrain.yellow', svg: yellowSvg(), terrain: true },
-    { id: 'terrain.red', svg: redSvg(), terrain: true },
-    { id: 'terrain.blue', svg: blueSvg(), terrain: true },
-    { id: 'terrain.wall', svg: wallSvg(), terrain: false },
-    { id: 'terrain.stone', svg: stoneSvg(), terrain: false },
-    { id: 'terrain.ghost', svg: ghostSvg(), terrain: false },
+    { id: 'terrain.green', svg: draw['terrain.green'](), terrain: true },
+    { id: 'terrain.yellow', svg: draw['terrain.yellow'](), terrain: true },
+    { id: 'terrain.red', svg: draw['terrain.red'](), terrain: true },
+    { id: 'terrain.blue', svg: draw['terrain.blue'](), terrain: true },
+    { id: 'terrain.wall', svg: draw['terrain.wall'](), terrain: false },
+    { id: 'terrain.stone', svg: draw['terrain.stone'](), terrain: false },
+    { id: 'terrain.ghost', svg: draw['terrain.ghost'](), terrain: false },
     /*
      * `fx.pop` is NOT baked in this body, and the reason is architectural.
      *

@@ -14,6 +14,7 @@ import { parse, type HexKey } from '@engine/hex';
 import { place } from '@render/layout';
 import type { BoardView, CellView } from '@render/Renderer';
 import type { Popped } from '../shell/store';
+import { SHOT_CHAR_MAX } from '@meta/timeline';
 import { rigFor } from '@theme/rig';
 import { hex as cssHex, type Theme } from '@theme/tokens';
 import {
@@ -84,6 +85,8 @@ type RigHandle = {
   flyToFit(): void;
   /** Look at a hex, hold, then return to where the camera was. */
   visit(hex: HexKey, holdMs: number): void;
+  /** A small picture of the board as it stands, or null. */
+  snapshot(): string | null;
   zoomLevel(): number;
   zoomMax(): number;
 };
@@ -105,6 +108,8 @@ export type BoardHandle = {
    * hexes away, and the place it happened was staying off screen.
    */
   visit(hex: HexKey, holdMs: number): void;
+  /** A small picture of the board as it stands — the end screen and the diary. */
+  snapshot(): string | null;
   /** Back to the direction's own angle — the cycle's DEFAULT. */
   resetLean(): void;
   /** Straight down at the map, however the board was leaned — the cycle's FLAT. */
@@ -327,6 +332,7 @@ export function Board(props: BoardProps) {
       flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
       flyToFit: () => rig.current?.flyToFit(),
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
+      snapshot: () => rig.current?.snapshot() ?? null,
       zoomLevel: () => rig.current?.zoomLevel() ?? 1,
       zoomMax: () => rig.current?.zoomMax() ?? 1,
       resetLean,
@@ -493,6 +499,8 @@ function Rig({
 }: RigProps) {
   const camera = useThree((s) => s.camera) as OrthographicCamera;
   const invalidate = useThree((s) => s.invalidate);
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
 
   // The fit frames the STRUCTURE, never the beacon disc (Ashwake 1's rule).
   const frame = useMemo<Frame>(() => {
@@ -684,10 +692,54 @@ function Rig({
           wasFit.current = fitBefore;
         }, FLIGHT_MS + holdMs);
       },
+      /*
+       * A small picture of the board as it stands.
+       *
+       * Marc, 2026-08-29: *"in the end screen i loved having my real map to
+       * check it back again, keep it that way just like we did."* The diary
+       * has rendered `detail.shot` as an `<img>` since Stage 4 and NOTHING has
+       * ever supplied one — so every row in the hall of fame was a picture
+       * frame with no picture, and the end screen had no map at all.
+       *
+       * Rendered and read in the same turn, because the canvas is created
+       * without `preserveDrawingBuffer`: after the browser composites, the
+       * drawing buffer is gone and `toDataURL` returns a blank. Forcing one
+       * draw here means the pixels are still there when they are read.
+       *
+       * Copied down to a thumbnail first. `SHOT_CHAR_MAX` caps a diary entry
+       * at 24k characters — a phone's storage quota is real and twenty of
+       * these are kept — and a full-resolution board does not come close to
+       * fitting. It is a memento, not a screenshot.
+       */
+      snapshot() {
+        try {
+          gl.render(scene, camera);
+          const source = gl.domElement;
+          if (source.width === 0 || source.height === 0) return null;
+          const wide = 240;
+          const tall = Math.max(1, Math.round((source.height / source.width) * wide));
+          const flat = document.createElement('canvas');
+          flat.width = wide;
+          flat.height = tall;
+          const ctx = flat.getContext('2d');
+          if (ctx === null) return null;
+          ctx.drawImage(source, 0, 0, wide, tall);
+          const shot = flat.toDataURL('image/webp', 0.6);
+          // A browser without webp answers with a PNG, which can be larger
+          // than the cap — better no picture than a diary row that refuses to
+          // save the run it belongs to.
+          return shot.length <= SHOT_CHAR_MAX ? shot : null;
+        } catch {
+          // A lost context, a tainted canvas, a browser that refuses the
+          // export. A memento is never worth an exception on the one screen
+          // that tells a player their run counted.
+          return null;
+        }
+      },
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),
     }),
-    [invalidate, fly, theme.orientation],
+    [invalidate, fly, theme.orientation, gl, scene, camera],
   );
 
   /*

@@ -573,6 +573,8 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     details: 'DÉTAILS',
     howToPlay: 'COMMENT JOUER',
     perkFound: (name) => `UNE TROUVAILLE — tu portes ${name} maintenant.`,
+    woke: (what) => `ÉVEILLÉ — ${what}`,
+    theMap: 'LE SOL QUE TU AS PARCOURU',
     expedition: {
       title: 'L’EXPÉDITION',
       lines: [

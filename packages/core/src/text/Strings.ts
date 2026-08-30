@@ -472,6 +472,10 @@ export type Strings = {
      */
     /** Said when a hidden find grants a perk — the shelf gaining one. */
     readonly perkFound: (name: string) => string;
+    /** Said when a shrine woke a system for this world. */
+    readonly woke: (what: string) => string;
+    /** The end screen's caption over the run's own board picture. */
+    readonly theMap: string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
     readonly camera: {
       readonly fit: string;

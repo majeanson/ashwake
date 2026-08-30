@@ -1325,3 +1325,46 @@ button[disabled] {
   display: block;
   font-size: 0.8rem;
 }
+
+/*
+ * MAGIC and UNIQUE, told apart at a glance.
+ *
+ * The word was 0.7rem of coloured text on a coloured ground, which is the
+ * weakest of the three channels a rare card has and was doing most of the
+ * work. It wears the same four-way outline the colour mark does, so the hue
+ * is read against the halo rather than against whatever terrain is under it —
+ * and it is the same size as the ground's own name, because "which rare is
+ * this" is exactly as important as "which colour is this".
+ */
+.tile-rarity {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-shadow:
+    1px 1px 0 var(--halo),
+    -1px 1px 0 var(--halo),
+    1px -1px 0 var(--halo),
+    -1px -1px 0 var(--halo);
+}
+
+/* The run's own board, kept at the bottom of the ending — the thing you scroll
+   back to. Bordered like a card, because it is a memento rather than chrome. */
+.end-map {
+  width: min(26rem, 100%);
+  margin: var(--gap) 0 0;
+}
+
+.end-map img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--panel-edge-active);
+  border-radius: var(--radius);
+  /* The thumbnail is 240px wide and drawn larger than that, so tell the
+     browser to keep it crisp rather than smoothing a small board into fog. */
+  image-rendering: auto;
+}
+
+.end-map figcaption {
+  margin-top: 0.25rem;
+  text-align: center;
+}

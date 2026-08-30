@@ -378,3 +378,28 @@ export const LESSONS: readonly Lesson[] = [
 export function lessonOf(id: LessonId): Lesson | undefined {
   return LESSONS.find((lesson) => lesson.id === id);
 }
+
+/**
+ * Which lesson explains which destination.
+ *
+ * One registry, because two screens ask the same question: the manual's legend
+ * lists the five places, and a tap on the board opens the card for whatever
+ * was tapped (2026-08-29, Marc: "make sure we can click on the map for caches,
+ * shrines, etc. and we get the card explaining what it is"). It lived as a
+ * private table inside `Legend.tsx` while the board had no way to ask at all —
+ * so the answer existed in one place and was needed in two, which is how the
+ * two come to disagree about what a `find` is called.
+ *
+ * A FIND maps to RELICS rather than to a lesson of its own: what a hidden find
+ * gives you is a perk, and RELICS is where this game explains the things you
+ * carry out of a run.
+ */
+export const LESSON_FOR_REWARD: Readonly<
+  Record<'cache' | 'site' | 'shrine' | 'territory' | 'find', LessonId>
+> = {
+  cache: 'cache',
+  site: 'site',
+  shrine: 'shrine',
+  territory: 'territory',
+  find: 'relic',
+};

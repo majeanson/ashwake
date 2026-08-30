@@ -8,7 +8,7 @@ import {
   TILE_GLYPH,
   type Theme,
 } from '@theme/tokens';
-import { lessonName, lessonOf, type LessonId } from '@view/lessons';
+import { LESSON_FOR_REWARD, lessonName, lessonOf } from '@view/lessons';
 import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
 
@@ -31,13 +31,9 @@ import type { Strings } from '@text/Strings';
  */
 
 /** The five destinations, and the lesson that names each. */
-const PLACES: readonly { readonly reward: keyof typeof LANDMARK_GLYPH; readonly id: LessonId }[] = [
-  { reward: 'cache', id: 'cache' },
-  { reward: 'site', id: 'site' },
-  { reward: 'shrine', id: 'shrine' },
-  { reward: 'territory', id: 'territory' },
-  { reward: 'find', id: 'relic' },
-];
+const PLACES = (Object.keys(LESSON_FOR_REWARD) as (keyof typeof LESSON_FOR_REWARD)[]).map(
+  (reward) => ({ reward, id: LESSON_FOR_REWARD[reward] }),
+);
 
 export type LegendProps = {
   readonly theme: Theme;
