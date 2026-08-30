@@ -123,14 +123,28 @@ carries a contrast correction that had been lost in both bodies. **None of it
 has been on a phone.** Worth doing BEFORE Session A rather than after — a
 Session A run against the old look would have to be run again.
 
-**The settlement, now that it is drawn in its own hand** (2026-08-29, `LOG.md`
-Session 18, `DECISIONS.md` D8). Its art was the plane's, recoloured, and two of
-its layers were nothing at all — MARKET baked with no texture and QUARRY lost
-its cut faces. That is fixed and re-baked: furrows and a crop, awnings over
-crates, quarry benches, paving courses, a pit cut in terraces, and destinations
-that are built things (a strongbox, a tower, a boundary post). `docs/shots/
-s5-settlement*.png` and `s5-directions.png` are the new pictures. **It has still
-never been on a phone**, which is the only place a direction gets chosen.
+**~~The settlement, now that it is drawn in its own hand.~~ CHOSEN — it is the
+direction** (2026-08-29, `LOG.md` Sessions 18–19, `DECISIONS.md` D7 closed, D8).
+Its art was the plane's recoloured and two of its layers were nothing at all;
+that is fixed and re-baked, and then Marc chose it: _"i want to go this way
+since its a strong theme and i feael like names of eahc color reveal what they
+do too."_ `DEFAULT_THEME_ID` is `settlement`, the tab tint, install splash and
+share card moved with it, and the game has a story on its front door.
+
+**What is still owed is the same sentence it has always been: a phone.** The
+direction is now what a phone would OPEN rather than what a phone might be
+shown, which raises the stakes on the same look questions — the four grounds at
+34px, the lamplit crest on a furrow, whether MARKET's crates read as goods or
+as dirt. `docs/shots/s5-settlement*.png`, `s5-directions.png` and
+`s3-door.png` are the pictures; the phone is the judge.
+
+**One thing the ruling did NOT carry, and it is an accessibility one.**
+`pickForScheme` still answers a stated preference with the plane —
+`torchlit-bright` for more contrast, `daylight` for light — so the player who
+needs contrast is the one player who does not get the fiction the front door
+just told them, and that is exactly the population that fork exists to serve.
+The honest fix is a bright settlement that passes the same 152 palette
+assertions, which is a palette sitting rather than a line of code.
 
 **Three concept questions the fiction cannot answer for itself.** Found
 reviewing the backstory against what a settlement player actually reads:
@@ -152,12 +166,11 @@ reviewing the backstory against what a settlement player actually reads:
    rest of the plane's vocabulary is fine — this direction is still "the plane,
    once somebody stayed", so "the plane" holds. Reword per direction, or accept
    it.
-3. **If settlement ever becomes the DEFAULT**, two launch surfaces are wired to
-   torchlit by hand and nothing would report it: `scripts/social.ts` composes
-   the share card from `TORCHLIT` only, and `index.html`'s `theme-color` plus
-   the manifest's `background_color` are torchlit's `#0a0806` rather than this
-   direction's `#14100c`. True of daylight today too. Not worth fixing before
-   the choice; worth knowing it is part of the choice.
+3. **~~If settlement ever becomes the DEFAULT~~ — DONE 2026-08-29**, because it
+   did. The share card is baked from the shipping direction rather than from
+   `TORCHLIT` by name, and the tab tint and install splash are `#14100c`. The
+   manifest's description had also drifted to a third wording of the tagline
+   and now matches the catalogue's.
 
 **The shrine, if you want it standing.** Measured this session
 (`board/landmarks.test.ts`): the shrine prop is a ring lying LEVEL, 0.88 wide

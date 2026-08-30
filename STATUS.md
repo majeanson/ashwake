@@ -4,7 +4,41 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, later — the settlement is drawn in its own
+Last checkpoint: **2026-08-29, last — the game has a story, and the settlement
+is the direction.** Marc: _"we need a little story, a small hook for this game
+towards the settlement"_, and then the ruling S5 has been waiting on since it
+was written: _"i want to go this way since its a strong theme and i feael like
+names of eahc color reveal what they do too."_ **D7 is closed: SETTLEMENT is
+the default.** The argument is mechanical rather than aesthetic — FARM · MARKET
+· QUARRY · ROADS each name what their ground DOES, where MOSS and EMBER name
+what theirs is made of and leave the rule to be taught separately. **The story
+is three sentences on the front door and it belongs to the GAME, not to a
+direction**, which is what makes the four directions one fiction instead of
+four: somebody stayed here and the plain took it back, you go out into that
+plain with a light, and the survey is what you draw when you get home. It
+promises nothing the game cannot do and introduces **no new vocabulary at all**
+— it is the one passage deliberately not run through the glossary matcher.
+Written fr-CA first (D4) and pinned in both languages. **Three surfaces name a
+direction by hand because they run before the app does** — the tab tint, the
+install splash and the share card — and all three moved with the default; the
+share card is baked from the shipping direction now rather than from `TORCHLIT`
+by name. **The story broke a screen, which is the good kind of finding:** three
+paragraphs pushed the door past a 375×844 phone, and `justify-content: center`
+on a scrolling column clips its own top with no way back — measured at −24px
+with `scrollTop` already 0. **`safe center` does not fix it** (this engine drops
+the declaration); auto margins on the ends do, and `e2e/menus.spec.ts` pins it
+at the smallest phone anybody still hands you. **Two snapshots re-recorded
+deliberately**, both the tagline, whose frame moved with the direction — the
+verbs did not. **Verified:** 998 tests / 67 files; lint and format clean; core
+typechecks; the door measured and shot at 375×667 and 390×844. **Held for
+Marc:** the rule lines still name two powers in the plane's words, so a player
+reads QUARRY on the board and "· ash:" in the tip — put as an option set rather
+than patched, because it is a ruling about whose vocabulary the rules speak in.
+**And `pickForScheme` still answers a stated contrast or light preference with
+the plane**, which is the one player who does not get the fiction the door just
+told them; the honest fix is a bright settlement that passes the same budgets.
+
+Previous checkpoint: **2026-08-29, later — the settlement is drawn in its own
 hand.** Marc: _"add assets, graphics, etc. on the Settlement concept, review
 concepts for this backstory."_ It HAD art, and the art was the plane's,
 recoloured: `scripts/terrain.ts` drew moss tufts, dry grass, ember glints, ash

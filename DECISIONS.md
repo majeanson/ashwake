@@ -140,11 +140,33 @@ The names still name their powers, which D4.2 requires. QUARRY is the one that
 says its rule BETTER than the old name did: red feeds on stone, and spent
 ground is a quarry's whole supply.
 
-**It is not the default and Gate E is not reopened.** It ships as a fifth
-entry in `THEMES` and a fifth row in SETTINGS, which is what makes it
-choosable rather than imposed. Whether it BECOMES the direction is Marc's, on
-a phone, against `docs/shots/s5-settlement*.png` — a direction earns its place
-by passing the budgets and then by being looked at, in that order.
+**~~It is not the default and Gate E is not reopened.~~ CHOSEN 2026-08-29 —
+this is the direction.** Marc, on seeing it drawn in its own figures: _"i want
+to go this way since its a strong theme and i feael like names of eahc color
+reveal what they do too."_
+
+The second clause is the argument, and it is mechanical rather than
+aesthetic. FARM · MARKET · QUARRY · ROADS each name what their ground DOES —
+fields cluster, a market pays for difference, a quarry eats stone, a road pays
+for distance — where MOSS and EMBER name what theirs is made of and leave the
+rule to be taught separately. **A direction that carries half the teaching is
+worth more than one that only sets a mood**, and the first minute is where this
+game has always spent its budget.
+
+Gate E is still not reopened: this is the same gate's answer, made later and
+with more to look at. Torchlit is not deleted, is one tap away in SETTINGS, and
+is still what the plane looks like at night — the game's own story now says so
+(`text/*.ts#story`), which is what lets four directions be one fiction.
+
+**What follows a default, and does not follow it by itself:** three surfaces
+name a direction BY HAND because they run before any of the app does — the tab
+tint (`index.html`), the install splash (the manifest) and the share card
+(`scripts/social.ts`). All three moved with it. **One did not and is written
+down instead:** `pickForScheme` still answers a stated preference with
+`torchlit-bright` or `daylight`, so the player who asks for more contrast is
+the one player who does not get the fiction the front door just told them. The
+honest fix is a bright settlement that passes the same budgets, not a line in
+that function.
 
 **How it was built is the part worth keeping.** The four L* stops
 (0.34 · 0.43 · 0.53 · 0.70) were chosen before a single hue, because

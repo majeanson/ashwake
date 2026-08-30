@@ -1336,3 +1336,74 @@ golden sim byte-identical; `pnpm bake` re-bakes the three plane directions
 byte-identical and settlement's five changed files; the shot set regenerated.
 **Nobody has seen any of it on a phone**, which is the same sentence this
 direction has carried since it was built.
+
+### Session 19 — the game gets a story, and the settlement gets the door (2026-08-29)
+
+**Question:** what is the smallest story that makes this game make sense — and
+can it be told without inventing a single word the manual would then have to
+teach?
+
+**Answer: three sentences, and yes — because the four grounds already say it.**
+
+Marc asked for _"a little story, a small hook for this game towards the
+settlement"_, and mid-session added the ruling the whole of S5 has been waiting
+on: _"i want to go this way since its a strong theme and i feael like names of
+eahc color reveal what they do too."_
+
+**The story is the GAME's, not a direction's.** That is the whole design of it.
+Written as a direction's it would have been a fifth theme note; written as the
+game's it makes the four directions one fiction rather than four — somebody
+stayed here and the plain took it back (settlement), you go out into that plain
+with a light (torchlit), the survey is what you draw when you get home
+(daylight). Nothing had to be retired to make room.
+
+> Somebody stayed here once. The plain took it back.
+> You go out at dusk with a lamp and a handful of ground — a field, a stall, a
+> cut in the rock, a road — and you lay it where it will pay.
+> What you carry home is never much. This place has more than it had yesterday.
+
+**It promises nothing the game cannot do**, which is the rule this repo keeps
+re-learning the hard way (the privacy sentence promising a share sheet that did
+not exist, 2026-08-29). A field, a stall, a cut in the rock and a road are the
+four grounds a player is about to be dealt; "more than it had yesterday" is the
+world's own memory of the ground walked, which is a mechanic that shipped in
+Stage 4. No lore about who left. **No new vocabulary at all** — which is why it
+is the one passage in the game NOT run through the glossary matcher, and the
+component says so.
+
+**The direction, chosen.** D7 is closed. The argument is mechanical: FARM ·
+MARKET · QUARRY · ROADS each name what their ground DOES, where MOSS and EMBER
+name what theirs is made of. What follows a default and does not follow by
+itself is the three surfaces that name a direction BY HAND because they run
+before the app does — tab tint, install splash, share card — and all three
+moved. The share card is baked from the shipping direction now rather than from
+`TORCHLIT` by name, with the reason written where the next person will change
+it.
+
+**A finding, and it is the good kind: the story broke a screen.** Three
+paragraphs pushed the front door past a 375×667 phone, and `justify-content:
+center` on a scrolling column clips its own top with no way back — measured at
+−24px with `scrollTop` already 0, MORE below the fold with no way down. **`safe
+center` does not fix it**: it was the first fix, and this engine drops the
+declaration and keeps plain `center` — which is why the number above is
+measured rather than reasoned. Auto margins on the ends do what `safe center`
+promises, everywhere. `e2e/menus.spec.ts` pins it at the smallest phone
+anybody still hands you, and that test would have caught the original bug.
+
+**Two snapshots were re-recorded, deliberately and with the reason in the test
+file** — the tagline in both languages, whose frame moved with the direction.
+The VERBS did not move: "Place, ripen, pop, and push on" is the glossary's
+(D4.3) and is what a player actually does; only the clause in front of it
+changed.
+
+**What this ruling makes louder rather than fixes:** the rule lines still name
+two powers in the plane's words. A player now reads QUARRY on the board and
+"· ash:" in the tip, because `colourWord` lives in the catalogue rather than in
+the direction, and two of its four entries are torchlit's ground names. It is
+put to Marc as an option set rather than patched, because the shape of the fix
+is a ruling about whose vocabulary the rules speak in.
+
+**Verified:** 998 tests / 67 files; lint and format clean; core typechecks; the
+door measured at 375×667 and 390×844 and shot in both. **The direction has
+still never been seen on a phone** — the thing that changed today is that it is
+now what a phone would open.
