@@ -81,6 +81,11 @@ describe('the key map', () => {
     expect(commandFor(press({ key: '0', code: 'Digit0' }))).toEqual({ kind: 'view' });
   });
 
+  it('gives H to the stash, in either case, because Caps Lock is not an opinion', () => {
+    expect(commandFor(press({ key: 'h', code: 'KeyH' }))).toEqual({ kind: 'hold' });
+    expect(commandFor(press({ key: 'H', code: 'KeyH' }))).toEqual({ kind: 'hold' });
+  });
+
   it('refuses every key a modifier claims, because those are not ours', () => {
     // Ctrl+W is a closed tab, and a closed tab is a lost run.
     for (const held of [{ ctrlKey: true }, { altKey: true }, { metaKey: true }]) {

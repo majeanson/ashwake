@@ -56,6 +56,8 @@ import {
   readRun,
   readTimeline,
   readWorld,
+  memoryFor,
+  worldSeedFor,
   onShed,
   writeRecords,
   writeTimeline,
@@ -321,16 +323,44 @@ function Game() {
      */
     const opening = parseRoute(location.search).daily;
     const asked = opening !== null ? dailySeed(opening) : Number(params.get('seed') ?? '') || null;
-    const kept = scripted ? null : opening !== null ? readDailyRun(opening) : readRun(slot);
-    const mine = readWorld(slot)?.worldSeed ?? null;
-    const detour = opening === null && asked !== null && mine !== null && asked !== mine;
+    const saved = scripted ? null : opening !== null ? readDailyRun(opening) : readRun(slot);
+    /*
+     * The device's own world, minted here if this slot has never had one.
+     *
+     * It used to be `readWorld(slot)?.worldSeed ?? null`, falling through to
+     * the literal `1` — so every phone that had never played opened on the
+     * same board, and the world it later settled adopted whatever seed the run
+     * happened to carry. `worldSeedFor` inverts that back to Ashwake 1's
+     * order: the world is the place, and the run is played on it.
+     */
+    const mine = opening !== null ? null : worldSeedFor(slot);
+
+    /*
+     * Which world this page is opening on, in order of who outranks whom:
+     * the URL, then the run this device left unfinished, then home.
+     *
+     * The URL first because a link is an explicit request and the only way
+     * anyone plays somebody else's board. The saved run second, and it is the
+     * reason this is a ladder rather than `asked ?? mine`: a run is saved
+     * under the seed it was PLAYED on, and reloading a shared link has to pick
+     * that same run back up rather than deal a fresh board on the same seed.
+     * A run whose seed does not match what the page is opening is not
+     * resumable here at all — that is a different world, and `kept` drops it.
+     */
+    const seed = asked ?? saved?.rootSeed ?? mine ?? 1;
+    const kept = saved !== null && saved.rootSeed === seed ? saved : null;
+    const detour = opening === null && mine !== null && seed !== mine;
 
     const made = createSession({
-      seed: asked ?? mine ?? 1,
+      seed,
       detour,
+      // A daily is walled off by construction; everything else asks the world,
+      // and `memoryFor` hands back nothing when the seed is not its own — so
+      // a shared link borrows a geography and never this device's history.
+      ...(opening !== null ? {} : { memory: memoryFor(slot, seed) }),
       theme,
       strings: s,
-      resume: detour ? null : kept,
+      resume: kept,
       /*
        * What crossing would carry, priced at the moment a fully-awake world's
        * shrine is reached — so the card's offer and the amount banked are the
@@ -1006,7 +1036,19 @@ ${s.view.harvest.firstPopWhen}`,
     unlocksAtStart.current = unlockedBy(readWorld(activeSlot()) ?? newWorld(0));
 
     banked.current = null;
-    session.restart(Math.floor(Math.random() * 2 ** 31));
+    /*
+     * The world's seed, not a fresh roll (2026-08-29).
+     *
+     * A new run is a new expedition into the SAME plane — that is what makes
+     * revealed ground, claimed territory and woken shrines mean anything, and
+     * it is the rule Ashwake 1 states outright in `keeper.ts`: "the seed
+     * re-derives from `world.worldSeed` on the session that starts next."
+     * Rolling a random one here re-generated the planet under a player who had
+     * only pressed NEW RUN, and then `settle` correctly refused to bank it.
+     */
+    const at = activeSlot();
+    const seed = worldSeedFor(at);
+    session.restart(seed, null, memoryFor(at, seed));
     setLens(null);
   }, [session, setDaily, progress.found]);
 
@@ -1066,7 +1108,12 @@ ${s.view.harvest.firstPopWhen}`,
       reachAtStart.current = readWorld(next)?.farthestReach ?? 0;
       perksAtStart.current = progress.found;
       unlocksAtStart.current = unlockedBy(readWorld(next) ?? newWorld(0));
-      session.restart(Math.floor(Math.random() * 2 ** 31), kept);
+      // The world being entered, on the world's own seed — everything else
+      // here already reads `readWorld(next)`, and the seed was the one field
+      // that did not, so stepping from world 1 to world 2 changed the name on
+      // the door and not the ground behind it.
+      const seed = worldSeedFor(next);
+      session.restart(seed, kept, memoryFor(next, seed));
       setLens(null);
       banked.current = null;
       worlds.hide();
@@ -1185,6 +1232,24 @@ ${s.view.harvest.firstPopWhen}`,
         case 'lean':
           b?.leanBy(command.by);
           return;
+        case 'hold': {
+          /*
+           * H reaches the STASH, which a keyboard could not (2026-08-29).
+           *
+           * Marc: 'add a keyboard shortcut or a way to hold tiles too'. Every
+           * other thing a thumb can do had a key — walk, act, pan, zoom, turn,
+           * lean, pick a card — and the stash had none, which is the same
+           * shape as the stash spending a whole stage unreachable by tap.
+           *
+           * The first EMPTY slot, or the first slot when both are full: a key
+           * that had to be told WHICH slot would be two keys, and the stash is
+           * two dashed cards a player thinks of as one place.
+           */
+          const free = snap.hud.held.findIndex((h) => h === undefined);
+          onHold(free === -1 ? 0 : free);
+          b?.focus();
+          return;
+        }
         case 'view':
           cycleView();
           return;
@@ -1207,7 +1272,17 @@ ${s.view.harvest.firstPopWhen}`,
     // `cycleView` rather than the cycle object: the hook hands back a
     // fresh object every render, and depending on that would rebind the listener
     // on every frame of the game.
-  }, [playing, anyOpen, onLook, onTap, onSelect, cycleView, snap.hud.draft.length]);
+  }, [
+    playing,
+    anyOpen,
+    onLook,
+    onTap,
+    onSelect,
+    onHold,
+    cycleView,
+    snap.hud.draft.length,
+    snap.hud.held,
+  ]);
 
   return (
     <div className="shell" lang={s.locale}>
@@ -1432,7 +1507,9 @@ ${s.view.harvest.firstPopWhen}`,
             // Everything erased is everything this shell was showing, so the
             // shell goes back to what a phone that has never played looks like.
             setProgress(() => EMPTY_PROGRESS);
-            session.restart(Math.floor(Math.random() * 2 ** 31));
+            // Every world is gone, so this mints one — the same door a phone
+            // that has never played comes through.
+            session.restart(worldSeedFor(activeSlot()));
             banked.current = null;
             more.hide();
             setStarted(false);

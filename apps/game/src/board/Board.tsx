@@ -596,7 +596,7 @@ function Rig({
     const g = glide.current;
     if (g !== null) {
       const now = performance.now();
-      const step = glided(g, Math.min(64, now - glidedAt.current || 16));
+      const step = glided(g, Math.min(64, Math.max(1, now - glidedAt.current)));
       glidedAt.current = now;
       cam.current = glidedBy(cam.current, step.dx, step.dz);
       glide.current = isResting(step.next) ? null : step.next;
@@ -927,8 +927,30 @@ function Rig({
       if (pointers.size !== 1 || last === null) return;
       const dx = e.clientX - last.x;
       const dy = e.clientY - last.y;
-      if (!moved && Math.hypot(dx, dy) < TAP_SLOP) return;
-      moved = true;
+      /*
+       * The slop is a THRESHOLD, not a DEBT (2026-08-29).
+       *
+       * Marc: *"when trying to drag left or right or up or down, its not
+       * smooth."* A drag is ignored until it clears `TAP_SLOP`, which is what
+       * keeps a shaky tap from sliding the board — and then the first move
+       * that cleared it panned by the WHOLE distance from where the finger
+       * landed, slop included. So every drag began with a five pixel jump
+       * before the board started following the thumb. Small, and there every
+       * single time you touch the board.
+       *
+       * Crossing the threshold now ARMS the drag and re-anchors it under the
+       * finger; the next move pans from there. It costs one pointer event —
+       * about a frame — and buys a board that never travels further than the
+       * thumb did.
+       */
+      if (!moved) {
+        if (Math.hypot(dx, dy) < TAP_SLOP) return;
+        moved = true;
+        flight.current = null;
+        glide.current = null;
+        last = { x: e.clientX, y: e.clientY };
+        return;
+      }
       flight.current = null;
       glide.current = null;
       if (orbiting) {
@@ -993,7 +1015,21 @@ function Rig({
         // way — `glidedBy` subtracts, which is why these are negated.
         const flick = { vx: -sum.cx / span, vz: -sum.cz / span };
         glide.current = isFlick(flick) ? flick : null;
-        if (glide.current !== null) invalidate();
+        if (glide.current !== null) {
+          /*
+           * Stamp the clock AT THE LAUNCH, not at the first step.
+           *
+           * `glidedAt` held whatever the last glide's final frame wrote —
+           * seconds or minutes earlier — so the opening step of every throw
+           * asked `glided` for the travel of a 64ms frame (the clamp) and
+           * applied all of it at once. The board lurched the instant the
+           * finger left and decayed smoothly from there: four frames of
+           * travel spent on one, which is exactly the part of a flick a thumb
+           * is watching.
+           */
+          glidedAt.current = performance.now();
+          invalidate();
+        }
       }
       recent.length = 0;
       moved = false;

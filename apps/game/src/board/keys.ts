@@ -62,7 +62,8 @@ export type BoardCommand =
   | { readonly kind: 'lean'; readonly by: number }
   | { readonly kind: 'act' }
   | { readonly kind: 'view' }
-  | { readonly kind: 'card'; readonly index: number };
+  | { readonly kind: 'card'; readonly index: number }
+  | { readonly kind: 'hold' };
 
 /** The part of a `KeyboardEvent` a key map reads. A real event satisfies it,
  *  and a test can write one down. */
@@ -119,6 +120,10 @@ export function commandFor(chord: Chord): BoardCommand | null {
   if (key === 'e' || chord.key === 'End') return { kind: 'turn', by: TURN_STEP };
   if (key === 'r' || chord.key === 'PageUp') return { kind: 'lean', by: LEAN_STEP };
   if (key === 'f' || chord.key === 'PageDown') return { kind: 'lean', by: -LEAN_STEP };
+
+  // H for HOLD — the stash, which a thumb reaches by tapping a dashed slot and
+  // a keyboard had no way to reach at all (2026-08-29).
+  if (key === 'h') return { kind: 'hold' };
 
   if (isViewKey(chord)) return { kind: 'view' };
 

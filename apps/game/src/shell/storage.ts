@@ -13,8 +13,9 @@ import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
 import { decodeTimeline, encodeTimeline, type Timeline } from '@meta/timeline';
 import { SHED_LADDER, type ShedRungId } from '@meta/shedLadder';
-import { decodeWorld, encodeWorld, type WorldMemory } from '@meta/world';
+import { decodeWorld, encodeWorld, newWorld, rearmedSpent, type WorldMemory } from '@meta/world';
 import type { GameState } from '@engine/state';
+import type { HexKey } from '@engine/hex';
 
 /**
  * Every key this game owns, and the only file that touches storage
@@ -367,6 +368,87 @@ export const readWorld = (slot: Slot): WorldMemory | null =>
 
 export const writeWorld = (slot: Slot, world: WorldMemory): void =>
   write(slotKeys(slot).world, encodeWorld(world));
+
+/**
+ * A seed nobody has played before.
+ *
+ * Ashwake 1 used the clock alone (`../tiles/src/shell/store.ts`:
+ * `Date.now() & 0x7fffffff`) and got away with it because a player mints one
+ * world every few days. This body mints them back to back — RESET ALL, then
+ * the boot that follows it; a slot cleared and re-entered — and two worlds
+ * born in the same millisecond would BE the same world, which
+ * `homeworld.test.ts` catches on a fast machine. So the clock is mixed with
+ * entropy: still roughly ordered, so a seed in a bug report says roughly when,
+ * and no longer collidable.
+ */
+const freshWorldSeed = (): number =>
+  (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) & 0x7fffffff;
+
+/**
+ * The seed this slot's world is built on — minting the world if it has none.
+ *
+ * **A WORLD IS A PLACE, and this is what makes it one** (Marc, 2026-08-29:
+ * *"different seeds produce different maps, review how it was before vs.
+ * now"*).
+ *
+ * In Ashwake 1 a world's seed is minted once, when the world is created, and
+ * every run in that world re-derives its geography from it — so the ground you
+ * revealed, the territories you claimed and the shrines you woke are all
+ * facts about a map you can go back to. This body minted no world seed at
+ * all: a fresh device opened on the constant `1`, and NEW RUN, the world
+ * switcher and RESET ALL each rolled `Math.random()`. Every run was a
+ * different planet wearing the same world's name.
+ *
+ * It also broke the banking, which is how it was found. `settle`'s seed
+ * guard refuses to merge a run into a world it was not played on — correctly
+ * — so once a world existed, every later run was classified a DETOUR and
+ * banked nothing: no relics, no ground, no goals, no shrine unlocks. Marc:
+ * *"i gain perks with shrines but in the end screen i still see 0/5, i never
+ * get relics as well."*
+ *
+ * Minting on read rather than at some earlier ceremony because there is no
+ * earlier ceremony: worlds in this body are created lazily by `settle`, and
+ * a slot's first run has to know its seed before any of that happens.
+ */
+export function worldSeedFor(slot: Slot): number {
+  const held = readWorld(slot);
+  if (held !== null) return held.worldSeed;
+  const minted = newWorld(freshWorldSeed());
+  writeWorld(slot, minted);
+  return minted.worldSeed;
+}
+
+/**
+ * What a world already holds, in the shapes `newRun` takes them.
+ *
+ * Plain data, exactly as Ashwake 1 passed it: the engine still knows nothing
+ * about storage, and a run stays reproducible from seed + tuning + these three.
+ */
+export type RunMemory = {
+  /** Territories claimed in earlier runs. They start this one claimed. */
+  readonly claimed: readonly HexKey[];
+  /** Finds already taken — their hexes stay spent. */
+  readonly finds: readonly HexKey[];
+  /** Spent shrines and finds reborn as this run's caches and sites. */
+  readonly rearmed: Readonly<Record<HexKey, 'cache' | 'site'>>;
+};
+
+/** A run that remembers nothing — a daily, a shared seed, a first visit. */
+export const NO_MEMORY: RunMemory = { claimed: [], finds: [], rearmed: {} };
+
+/**
+ * What the slot's world lends a run on `seed`, or nothing at all.
+ *
+ * The seed check is Ashwake 1's (`session.ts`: `seed === world.worldSeed`)
+ * and it is the same rule `settle` banks by, read from the other end: ground
+ * from a foreign geography must not enter a run any more than a foreign run's
+ * ground may enter a world.
+ */
+export function memoryFor(slot: Slot, seed: number): RunMemory {
+  const world = readWorld(slot);
+  if (world === null || world.worldSeed !== seed) return NO_MEMORY;
+  return { claimed: world.territories, finds: world.finds, rearmed: rearmedSpent(world) };
+}
 
 export const readRun = (slot: Slot): GameState | null => decodeRun(read(slotKeys(slot).run));
 

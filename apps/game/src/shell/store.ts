@@ -16,6 +16,7 @@ import {
   type TipRow,
 } from '@view/view';
 import { claimsBetween, saidOf, spendReceipt } from '@view/receipts';
+import type { RunMemory } from './storage';
 import type { PerkId } from '@meta/progress';
 
 /**
@@ -119,8 +120,25 @@ export type Session = {
    * that was saved rather than replaying it: a replayed run is a run that can
    * disagree with the one that was played.
    */
-  readonly restart: (seed: number, from?: GameState | null) => void;
+  readonly restart: (seed: number, from?: GameState | null, memory?: RunMemory) => void;
 };
+
+/**
+ * A fresh run on a seed, carrying whatever its world already holds.
+ *
+ * `newRun`'s riders have defaulted to empty since Stage 1 and nothing in this
+ * body ever filled them, so a world's territories, its spent finds and its
+ * reborn landmarks were written down every run and read back never. One
+ * funnel rather than two call sites, because the initial state and `restart`
+ * have to open a run the same way or a resumed session and a fresh one
+ * disagree about what the world remembers.
+ *
+ * `wakeAt` stays null: camps are an unlock with a front-door offer behind
+ * them (`unlockedBy(world).includes('camp')`), and that is a screen this body
+ * has not built yet — see `NEXT.md`.
+ */
+const open = (seed: number, tuning: Tuning, memory?: RunMemory): GameState =>
+  newRun(seed, tuning, memory?.claimed ?? [], memory?.finds ?? [], null, memory?.rearmed ?? {});
 
 export function createSession(opts: {
   readonly seed: number;
@@ -136,12 +154,16 @@ export function createSession(opts: {
   readonly wornPerk?: (perk: PerkId) => boolean;
   /** True when this run is on a seed that is not the device world's. */
   readonly detour?: boolean;
+  /** What the world this seed belongs to already holds — territories, spent
+   *  finds, reborn landmarks. Absent is a run that remembers nothing, which is
+   *  what a daily, a shared seed and a first visit all are. */
+  readonly memory?: RunMemory;
   /** What crossing would carry, priced at the moment a fully-awake world's
    *  shrine is reached. Absent means there is nowhere onward. */
   readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
 }): Session {
   const tuning = opts.tuning ?? TUNING;
-  let state = opts.resume ?? newRun(opts.seed, tuning);
+  let state = opts.resume ?? open(opts.seed, tuning, opts.memory);
   let harvestAt: HexKey | null = null;
   let spotlight: Colour | null = null;
   let popped: Snapshot['popped'] = null;
@@ -292,8 +314,8 @@ export function createSession(opts: {
       spotlight = colour;
       commit();
     },
-    restart(seed, from) {
-      state = from ?? newRun(seed, tuning);
+    restart(seed, from, memory) {
+      state = from ?? open(seed, tuning, memory);
       harvestAt = null;
       spotlight = null;
       popped = null;

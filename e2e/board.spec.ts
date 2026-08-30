@@ -564,3 +564,63 @@ test('two fingers lean and turn the board, and the cycle puts it back', async ({
   assertLooksLikeAPicture(await page.locator('canvas').screenshot(), 'the levelled board');
   expect(errors).toEqual([]);
 });
+
+test("a run is played on the device's own world, and NEW RUN stays in it", async ({ page }) => {
+  /*
+   * The world is a PLACE — and this body had quietly stopped believing that.
+   *
+   * Ashwake 1 mints a world's seed once and re-derives every run's geography
+   * from it. Here nothing minted one at all: a virgin device opened on the
+   * literal `1`, and NEW RUN, the world switcher and RESET ALL each rolled
+   * `Math.random()`. Every run was a different planet wearing the same
+   * world's name, and — because `settle`'s seed guard correctly refuses to
+   * merge a run into a world it was not played on — every run after the first
+   * banked nothing at all: no relics, no ground, no goals, no shrine unlocks.
+   *
+   * Read off the disk, because the screen is where it hid: two different maps
+   * look exactly like two runs of the same game.
+   */
+  const errors = watchErrors(page);
+  const worldSeed = async (): Promise<number | null> => {
+    const raw = await page.evaluate(() => localStorage.getItem('ashwake.world.1.v1'));
+    return raw === null ? null : (JSON.parse(raw) as { worldSeed: number }).worldSeed;
+  };
+
+  await page.goto('/');
+  await begin(page);
+  await clearCards(page);
+
+  const world = await worldSeed();
+  expect(world, 'a fresh device minted no world at all').not.toBeNull();
+  expect(world, 'every new player opened on the same board').not.toBe(1);
+
+  // One placement, because the keeper writes a run when the run moves.
+  await placeOneTile(page);
+  const run = await page.evaluate(() => localStorage.getItem('ashwake.run.1.v1'));
+  expect(run, 'the run was never saved').not.toBeNull();
+  const played = JSON.parse(run!) as { rootSeed: number };
+  expect(played.rootSeed, 'the run was played on some other planet').toBe(world);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('NEW RUN leaves the world it was played in exactly where it was', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?end=1');
+  await begin(page);
+  await clearCards(page);
+  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+
+  const worldSeed = async (): Promise<number | null> => {
+    const raw = await page.evaluate(() => localStorage.getItem('ashwake.world.1.v1'));
+    return raw === null ? null : (JSON.parse(raw) as { worldSeed: number }).worldSeed;
+  };
+  const before = await worldSeed();
+  expect(before, 'a settled run wrote down no world').not.toBeNull();
+
+  await page.locator('[data-action="new-run"]').click();
+  await clearCards(page);
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+  expect(await worldSeed(), 'the world moved under a player who pressed one button').toBe(before);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
