@@ -29,6 +29,22 @@ export type Route = {
 /** The front door of your own world: no seed, no daily, no camp. */
 export const HOME: Route = { seed: null, daily: null, camp: false };
 
+/*
+ * `searchFor` used to live here, and it is DELETED rather than kept
+ * (2026-08-30, `NEXT.md`: "they are a deletion, not a debt").
+ *
+ * It built the query a `Route` answers to, and nothing in this game builds a
+ * link that way: `meta/share.ts` hands back the exact params a receiver needs
+ * and the shell puts them on this ORIGIN, which is what makes it impossible
+ * for a shared link to carry the sender's own rig. So the two were one idea
+ * written twice, and the one with no caller was tested only against itself.
+ * `DECISIONS.md` D9 rules out the router, which was the only future that
+ * would have given it a reader.
+ *
+ * `HOME` stays: it is what "no query at all" IS, and the parser's tests read
+ * as intent because of it.
+ */
+
 export function parseRoute(search: string): Route {
   const params = new URLSearchParams(search);
 
@@ -40,14 +56,4 @@ export function parseRoute(search: string): Route {
   const daily = dailyAsked !== null && isPlayableDaily(dailyAsked) ? dailyAsked : null;
 
   return { seed, daily, camp: params.get('camp') === '1' };
-}
-
-/** The search string a route answers to — `''` for home, `?daily=…` else. */
-export function searchFor(route: Route): string {
-  const params = new URLSearchParams();
-  if (route.seed !== null) params.set('seed', String(route.seed));
-  if (route.daily !== null) params.set('daily', route.daily);
-  if (route.camp) params.set('camp', '1');
-  const s = params.toString();
-  return s === '' ? '' : `?${s}`;
 }

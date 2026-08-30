@@ -67,13 +67,13 @@ deliberately absent in both.
 
 ## 4. What speaks after an action
 
-| Moment                                                  | Ashwake 1                                           | Ashwake 2                          |
-| ------------------------------------------------------- | --------------------------------------------------- | ---------------------------------- |
-| **Claiming** a cache / site / shrine / territory / find | a ranked receipt per claim, the rare ones as a card | → `view/receipts.ts`, same ranking |
-| **Popping** a pocket                                    | `harvestNote` receipt; the first pop ever is a card | ✗ **nothing speaks**               |
-| Goal met (world survey)                                 | `GOAL MET — {text}`                                 | ✗ (no survey here yet)             |
-| Teaching moments                                        | a priority list, first unmet-and-true fires         | ✓                                  |
-| NEW GROUND / UNIQUE, once per run                       | toast                                               | ✗                                  |
+| Moment                                                  | Ashwake 1                                           | Ashwake 2                                                      |
+| ------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| **Claiming** a cache / site / shrine / territory / find | a ranked receipt per claim, the rare ones as a card | → `view/receipts.ts`, same ranking                             |
+| **Popping** a pocket                                    | `harvestNote` receipt; the first pop ever is a card | ✓ — and every pop after the first is a BRIEF card (2026-08-30) |
+| Goal met (world survey)                                 | `GOAL MET: {text}`                                  | ✓ since 2026-08-30 (`LOG.md` S21)                              |
+| Teaching moments                                        | a priority list, first unmet-and-true fires         | ✓                                                              |
+| NEW GROUND / UNIQUE, once per run                       | toast                                               | ✓ (`shell/onceARun.ts`)                                        |
 
 ## 5. Dialogs, chrome, keyboard
 
@@ -142,14 +142,20 @@ Four rules that are not obvious from the table, each with its own test:
 
 1. **The `✕` lens-clear button.** The fog tap and a second long-press both
    let go, so this is a convenience rather than a gap.
-2. **~~The History-API router.~~ RULED OUT 2026-08-30** (`DECISIONS.md` D9).
-   What is left of it is one real gesture: **BACK on an open panel**, which on
-   Android leaves the site from on top of the manual. That wants one history
-   entry per open dialog owned by `ui/dialog.tsx`, not a URL→scene table, and
-   it is filed in `NEXT.md` for after Session A because it is a new global
-   gesture. `meta/route`'s `parseRoute` is read at boot for all three of its
-   fields as of 2026-08-30 — `?seed=`, `?daily=` and now `?camp=`; `searchFor`
-   and `HOME` are still unread and, per D9, are a deletion rather than a debt.
+2. **~~The History-API router.~~ RULED OUT 2026-08-30** (`DECISIONS.md` D9),
+   and **~~BACK on an open panel~~ BUILT the same day**. The one real gesture
+   left inside the router's idea was Android's BACK, which left the site from
+   on top of the manual — a player reading the rules pressed the one button
+   that means "go back" and lost the game. It is one history entry per open
+   dialog, owned by `ui/dialog.tsx` and carrying **no URL change at all**, so
+   the address bar never becomes a second authority on what is on screen
+   (which is what D9 rules out) and a shared `?seed=` survives untouched. BACK
+   pops the top, exactly as Escape does; a panel closed from the UI gives its
+   entry back, so leaving the page never costs one press per panel ever
+   opened. Pinned in `e2e/menus.spec.ts`. `meta/route`'s `parseRoute` is read
+   at boot for all three of its fields — `?seed=`, `?daily=` and `?camp=`;
+   `searchFor` was the deletion D9 implied and is **gone**, while `HOME` stays
+   as what "no query at all" IS.
 3. **`meta/mark`**'s maskable exports duplicate nothing the app renders, and
    are kept on purpose: they are the source the shipped maskable icons were
    baked from, and the baker is part of the art pipeline `NEXT.md` §5 holds.

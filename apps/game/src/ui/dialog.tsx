@@ -29,6 +29,31 @@ import {
  * change, and the list had already missed three. That function does not exist
  * in this body. It was the single honest argument for React, and this is where
  * it gets collected.
+ *
+ * ## The phone's BACK button (2026-08-30)
+ *
+ * The last gesture `INTERACTIONS.md` listed as missing, and the only piece of
+ * the router `DECISIONS.md` D9 ruled out that was ever real: on Android, BACK
+ * with the manual open **left the site**. A player reading the rules pressed
+ * the one button that means "go back" and lost the game.
+ *
+ * D9 is the reason this lives here and not in a route table. A URL→scene map
+ * would make the address bar the authority on what is on screen, which is a
+ * second authority beside this stack; **the entries pushed below carry no URL
+ * change at all** (`location.href` again, so a shared `?seed=` or `?daily=`
+ * survives untouched). They are history the way a native app uses it: one
+ * entry per open panel, and BACK pops one.
+ *
+ * Three rules make it safe, and each one is a way it goes wrong without them:
+ *
+ * 1. **Every history call happens in an EVENT HANDLER, never in an effect or
+ *    a state updater.** React runs both twice under StrictMode, and a doubled
+ *    `pushState` is a back button that needs pressing twice.
+ * 2. **A panel closed from the UI consumes its own entry** (`history.back()`),
+ *    or the entries pile up and leaving the page takes one press per panel
+ *    ever opened.
+ * 3. **The stack owns nothing while nothing is open.** A `popstate` arriving
+ *    with no entry of ours is somebody leaving, and it is left alone.
  */
 
 type Stack = {
@@ -48,19 +73,87 @@ export function DialogStack({ children }: { readonly children: ReactNode }) {
   const [open, setOpen] = useState<readonly string[]>([]);
   const openers = useRef(new Map<string, HTMLElement | null>());
 
-  const push = useCallback((id: string, opener: HTMLElement | null) => {
-    openers.current.set(id, opener);
-    setOpen((was) => (was.includes(id) ? was : [...was, id]));
+  /**
+   * The same list, readable from an event handler.
+   *
+   * `push` and `pop` are `useCallback([])` so that nothing rebinds when a
+   * panel opens, which means neither can read `open`. They need to: how many
+   * history entries this stack owns depends on what is already open, and
+   * computing it inside a state updater would compute it twice under
+   * StrictMode. The ref and the state move together, always, through `setList`.
+   */
+  const list = useRef<readonly string[]>([]);
+  /** History entries this stack has pushed and not yet given back. */
+  const owned = useRef(0);
+  /** `popstate` events this stack caused itself, and must not act on. */
+  const ours = useRef(0);
+
+  const setList = useCallback((next: readonly string[]) => {
+    list.current = next;
+    setOpen(next);
   }, []);
 
-  const pop = useCallback((id: string) => {
-    setOpen((was) => was.filter((each) => each !== id));
-    // Back to whoever opened it, if it is still on the page. A control that
-    // has since been removed hands focus on rather than swallowing it.
+  /** Back to whoever opened it, if it is still on the page. A control that has
+   *  since been removed hands focus on rather than swallowing it. */
+  const focusOpener = useCallback((id: string) => {
     const opener = openers.current.get(id);
     openers.current.delete(id);
     if (opener !== null && opener !== undefined && opener.isConnected) opener.focus();
   }, []);
+
+  /** Give back `n` of our own entries. One `go` raises ONE `popstate`. */
+  const giveBack = useCallback((n: number) => {
+    if (n <= 0) return;
+    owned.current -= n;
+    ours.current += 1;
+    history.go(-n);
+  }, []);
+
+  const push = useCallback(
+    (id: string, opener: HTMLElement | null) => {
+      openers.current.set(id, opener);
+      if (list.current.includes(id)) return;
+      setList([...list.current, id]);
+      // No URL change: the entry exists to be popped, not to name a screen.
+      history.pushState({ ashwakePanels: list.current.length }, '', location.href);
+      owned.current += 1;
+    },
+    [setList],
+  );
+
+  const pop = useCallback(
+    (id: string) => {
+      if (!list.current.includes(id)) return;
+      setList(list.current.filter((each) => each !== id));
+      focusOpener(id);
+      giveBack(1);
+    },
+    [setList, focusOpener, giveBack],
+  );
+
+  /**
+   * The player pressed BACK.
+   *
+   * Only the top closes, which is the same rule Escape follows and the same
+   * one a back button means everywhere else. An event we did not cause and do
+   * not have an entry for is somebody leaving the site, and it is theirs.
+   */
+  useEffect(() => {
+    const onPop = (): void => {
+      if (ours.current > 0) {
+        ours.current -= 1;
+        return;
+      }
+      if (owned.current <= 0) return;
+      owned.current -= 1;
+      const top = list.current.at(-1);
+      if (top === undefined) return;
+      setList(list.current.slice(0, -1));
+      focusOpener(top);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [setList, focusOpener]);
 
   /**
    * Empty the stack.
@@ -73,8 +166,12 @@ export function DialogStack({ children }: { readonly children: ReactNode }) {
    */
   const closeAll = useCallback(() => {
     openers.current.clear();
-    setOpen([]);
-  }, []);
+    const spent = owned.current;
+    setList([]);
+    // Every entry at once, in one `go`: leaving three panels' worth of
+    // history behind would mean three presses of BACK to leave the page.
+    giveBack(spent);
+  }, [setList, giveBack]);
 
   const value = useMemo<Stack>(
     () => ({

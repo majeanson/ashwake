@@ -42,7 +42,17 @@ audit had eighty-odd pictures of this game and **none of the page that teaches
 it**: `manual` opens on MENU, so the legend and every rule had never been
 photographed. Three dead exports are gone rather than left to be found again.
 
-Verified: 1063 tests / 74 files, 72 Playwright, `pnpm sim` byte-identical,
+**Two ledger items taken at their word, and a fourteenth inert mechanic.**
+`purseLesson` — LUCK IS FOR SPENDING, one row per button, asked for twice in
+Ashwake 1 — had **no caller**: `onPurse` marked the lesson told without ever
+showing it, and the ledger entry is what hid it. `meta/route.ts`'s `searchFor`
+is deleted (its only tests were round-trips against itself). And **BACK on an
+open panel is built** rather than filed: one history entry per open dialog,
+carrying no URL change, so the address bar never becomes a second authority on
+what is on screen. On Android, BACK with the manual open used to leave the
+site.
+
+Verified: 1060 tests / 74 files, 75 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions. **No rule moved**, and the first minute
 is the same game told better.

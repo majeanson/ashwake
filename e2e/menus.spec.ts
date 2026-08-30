@@ -91,6 +91,92 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('the phone’s BACK button closes the top panel, one at a time', async ({ page }) => {
+  /*
+   * The last gesture `INTERACTIONS.md` listed as missing (2026-08-30). On
+   * Android, BACK with the manual open **left the site**: a player reading the
+   * rules pressed the one button that means "go back" and lost the game.
+   *
+   * `DECISIONS.md` D9 rules out a router, and this is not one — the entries
+   * carry no URL change, so a shared `?seed=` survives them. They are history
+   * the way a native app uses it: one entry per open panel, and BACK pops one.
+   *
+   * The three things worth pinning are the three ways it goes wrong: it must
+   * close ONE panel rather than all of them, it must not reload (the R3F host
+   * cannot be remounted), and a panel closed from the UI must GIVE ITS ENTRY
+   * BACK, or leaving the page takes one press per panel ever opened.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&seed=7');
+  const before = await canvasId(page);
+
+  // Two deep: MORE, then WORLDS on top of it.
+  await page.locator('[data-door="more"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await page.locator('[data-go="worlds"]').click();
+  await panel(page, 'worlds').waitFor({ state: 'visible' });
+
+  // One press, one panel: the top goes and the one under it stays.
+  await page.goBack();
+  await panel(page, 'worlds').waitFor({ state: 'detached' });
+  await expect(panel(page, 'more')).toBeVisible();
+
+  // The second press empties the stack, and the game is still the game.
+  await page.goBack();
+  await panel(page, 'more').waitFor({ state: 'detached' });
+  await expect(page.locator('[data-door="begin"]')).toBeVisible();
+  expect(await canvasId(page), 'BACK reloaded the page').toBe(before);
+  expect(
+    await page.evaluate(() => (history.state as { ashwakePanels?: number } | null)?.ashwakePanels),
+    'the stack kept an entry it no longer owns',
+  ).toBeUndefined();
+
+  /*
+   * And a panel closed from the UI gives its entry back, so BACK is not owed
+   * a press for a panel nobody has open any more. Measured through
+   * `history.state`: after opening and closing, the top of the stack must be
+   * an entry with no panel count on it.
+   */
+  await page.locator('[data-door="more"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await panel(page, 'more').locator('.panel-back').click();
+  await panel(page, 'more').waitFor({ state: 'detached' });
+  await page.waitForTimeout(200);
+  expect(
+    await page.evaluate(() => (history.state as { ashwakePanels?: number } | null)?.ashwakePanels),
+    'closing a panel from the UI left its history entry behind',
+  ).toBeUndefined();
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('MAIN MENU walks back out of a finished run, without a reload', async ({ page }) => {
+  /*
+   * The end screen's third door, and the only one that leaves the run
+   * entirely. It had no coverage: NEW RUN, SHARE and MORE were all walked and
+   * this one was not, on the screen where a player is most likely to press it.
+   *
+   * The canvas id is the witness, as it is for the world switcher: "one page,
+   * many sessions" (`CLAUDE.md`) means a scene change is a state change and
+   * the R3F host never remounts. Losing it loses the WebGL context.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&end=1&runs=1');
+  const before = await canvasId(page);
+  await begin(page);
+  await page.locator('[data-hud="end"]').waitFor({ state: 'visible' });
+
+  await page.locator('[data-door="main"]').click();
+
+  // Back at the front door, offering a beginning rather than a resume: MAIN
+  // MENU ends the run it was standing on.
+  await page.locator('[data-door="begin"]').waitFor({ state: 'visible' });
+  await expect(page.locator('[data-hud="end"]')).toHaveCount(0);
+  expect(await canvasId(page), 'MAIN MENU remounted the board host').toBe(before);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('switching worlds is a state change, never a reload', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?taught=1');

@@ -145,8 +145,17 @@ function isTrue(id: TeachId, now: Moment): boolean {
     case 'luck':
       return hud.luck > 0;
     case 'purse':
-      // Fired by the player OPENING the purse, not by having one — see
-      // `App`'s toggle. Never true on its own.
+      /*
+       * Fired by the player OPENING the purse, not by having one, so it is
+       * never true here — see `App`'s `onPurse`, which raises
+       * `purseLesson`'s card and then marks it told.
+       *
+       * That handler marked it told and showed NOTHING until 2026-08-30, so
+       * this `false` was load-bearing for a lesson that could not fire from
+       * anywhere. A moment that is always false is only honest while
+       * something else owns the moment; when nothing does, it is a lesson
+       * spending its own ledger entry to say nothing.
+       */
       return false;
     case 'relic':
       return hud.relics > 0;

@@ -591,6 +591,54 @@ test('every view button brings the board back, not just FIT', async ({ page }) =
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('the first time the purse opens, it says what luck buys', async ({ page }) => {
+  /*
+   * `purseLesson` builds the whole card from the LIVE tuning: the
+   * use-it-or-lose-it sentence, then one row per button the drawer offers, each
+   * quoting its own button face and its own price. Marc asked for it twice in
+   * Ashwake 1 — "first luck drawer expand we should explain all actions", then
+   * again because the first answer did not land.
+   *
+   * It had no caller in this body. `purse` sits in the teaching ledger and in
+   * the CARDS set, `isTrue('purse')` returns false by design because the OPEN
+   * is the moment, and the handler marked the lesson TOLD without ever showing
+   * it — so the drip's most expensive card spent its own ledger entry to say
+   * nothing. Found 2026-08-30 by grepping for a consumer.
+   *
+   * A device that has NOT been taught, so the ledger is empty and the first
+   * open is a first open.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&place=24');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  await page.locator('[data-action="purse"]').click();
+
+  const card = page.locator('.card-scrim .card');
+  await expect(card, 'opening the purse taught nothing').toBeVisible({ timeout: 4000 });
+  // The lead is the one fact a price cannot say, and it is Marc's own phrasing.
+  await expect(card).toContainText(/LUCK IS FOR SPENDING|LA CHANCE, ÇA SE DÉPENSE/);
+  // And the rows: one per button, so the card is a LIST rather than a
+  // paragraph you have to parse to use.
+  expect(
+    await card.locator('.tip-row').count(),
+    'the purse card lost its rows',
+  ).toBeGreaterThanOrEqual(3);
+  // It holds the screen: read once ever, and a list is not a glance.
+  await expect(page.locator('.card-scrim')).not.toHaveClass(/brief/);
+
+  // Dismissed, and it never comes back: one lesson, one device.
+  await card.getByRole('button').last().click();
+  await expect(page.locator('.card-scrim')).toHaveCount(0);
+  await page.locator('[data-action="purse"]').click();
+  await page.locator('[data-action="purse"]').click();
+  await expect(page.locator('.card-scrim')).toHaveCount(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('the stat row is one line on a phone, and never two', async ({ page }) => {
   /*
    * Marc, 2026-08-30: *"review header for points, tiles, etc. so it is mobile

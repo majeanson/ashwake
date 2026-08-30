@@ -8,7 +8,13 @@ import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { distance, parse, type HexKey } from '@engine/hex';
 import { namesOf } from '@theme/tokens';
-import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
+import {
+  colourLesson,
+  describeHexOf,
+  pocketNote,
+  purseLesson,
+  rememberedNativeAt,
+} from '@view/view';
 import { isEnabled } from '@meta/features';
 import { EMPTY_PROGRESS, grantFind, hasMet, perkText } from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
@@ -300,6 +306,16 @@ function Game() {
    * has moved on by then.
    */
   const [saidCard, setSaidCard] = useState<Said | null>(null);
+  /**
+   * The id for an utterance the SHELL raises rather than the session.
+   *
+   * `Said.id` is "said again" versus "still saying" — the identity a card is
+   * keyed on so a second one is a second card. The session mints them for the
+   * receipts; anything the shell raises on its own needs one from somewhere,
+   * and a counter that only goes up is the whole of it. Negative, so a shell
+   * utterance can never collide with a session's.
+   */
+  const shellSaid = useRef(0);
   /** Goals this run was the one to meet, for the end screen. */
   const [goals, setGoals] = useState<readonly GoalId[]>([]);
   /** What this run has already said once. See `startedFrom` for the reach. */
@@ -1669,10 +1685,41 @@ ${s.view.harvest.firstPopWhen}`,
             knowsRelics={hasMet(progress, 'relic')}
             onHarvest={onHarvest}
             onPurse={() => {
+              const opening = !purseOpen;
               setPurseOpen((was) => !was);
-              // The purse teaches on the first deliberate OPEN rather than on
-              // having one: a lesson about spending is no use before there is
-              // anything to spend it on.
+              /*
+               * The purse teaches on the first deliberate OPEN rather than on
+               * having one: a lesson about spending is no use before there is
+               * anything to spend it on.
+               *
+               * **And it actually teaches, since 2026-08-30.** `purseLesson`
+               * builds the whole card from the LIVE tuning — the lead sentence
+               * plus one row per button the drawer offers, each quoting its own
+               * button face and its own price — and it is what Marc asked for
+               * twice in Ashwake 1 ("first luck drawer expand we should explain
+               * all actions", then again because the first answer did not land).
+               * It had **no caller in this body**: `purse` is in the teaching
+               * ledger and in the CARDS set, `isTrue('purse')` returns false by
+               * design because the OPEN is the moment, and this handler marked
+               * the lesson TOLD without ever showing it. So the drip's most
+               * expensive card was a line that spent its own ledger entry.
+               *
+               * Through `saidCard` rather than `LessonCard`: there is no
+               * `purse` lesson in `LESSONS` and there should not be — this
+               * arrives with its sentences and its rows already written, which
+               * is exactly what `SaidCard` takes. Never brief: it is read once
+               * ever, and it is a list.
+               */
+              if (opening && !hasMet(progress, 'purse')) {
+                const lesson = purseLesson(snap.state.tuning, theme, s);
+                shellSaid.current -= 1;
+                setSaidCard({
+                  text: lesson.text,
+                  rows: lesson.rows,
+                  card: true,
+                  id: shellSaid.current,
+                });
+              }
               setProgress((p) => told(p, 'purse'));
             }}
             purseOpen={purseOpen}

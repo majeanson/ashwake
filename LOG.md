@@ -1845,10 +1845,41 @@ what `migrateLegacy` recovers, not by prefix), and `lessonCardText`. The shed
 ladder clears the last error through `clearLastError` rather than dropping the
 key a second way.
 
+**Fourteen. The purse's own card had no caller.** `purseLesson` builds LUCK IS
+FOR SPENDING from the live tuning: the use-it-or-lose-it sentence, then one row
+per button the drawer offers, each quoting its own button face and its own
+price. Marc asked for it twice in Ashwake 1 — _"first luck drawer expand we
+should explain all actions"_, then again because the first answer did not land.
+In this body `purse` sits in the teaching ledger AND in the CARDS set,
+`isTrue('purse')` returns false **by design** because the OPEN is the moment,
+and `onPurse` marked the lesson TOLD without ever showing it. So the drip's
+most expensive card spent its own ledger entry to say nothing, and the ledger
+entry is what hid it: a device that had opened the purse once looked, to every
+later check, exactly like a device that had been taught. **A moment that is
+always false is only honest while something else owns the moment.**
+
+**And then the two ledger items that were a deletion rather than a debt, taken
+at their word.** `meta/route.ts`'s `searchFor` is gone: it built the query a
+`Route` answers to, nothing in this game builds a link that way, and its only
+tests were round-trips against itself. `HOME` stays — it is what "no query at
+all" IS. And **BACK on an open panel is built** rather than filed. It was the
+one real gesture inside the router D9 ruled out, and it turned out to be one
+file: one history entry per open dialog, **carrying no URL change at all**, so
+the address bar never becomes a second authority on what is on screen and a
+shared `?seed=` survives untouched. Three rules keep it safe, and each one is a
+way it goes wrong — every history call in an event handler and never in an
+effect (StrictMode runs those twice, and a doubled `pushState` is a back button
+that needs pressing twice); a panel closed from the UI gives its entry back, or
+leaving the page costs one press per panel ever opened; and the stack owns
+nothing while nothing is open, so a `popstate` with no entry of ours is
+somebody leaving and is left alone. On Android, BACK with the manual open used
+to leave the site — the worst thing this game does to a stranger who opens the
+rules.
+
 **Nothing here changes a rule.** `pnpm sim` is byte-identical to
 `sim.golden.txt` and the freeze before Session A holds in the sense that
 matters: the first minute is the same game, told better.
 
-**Verified:** 1063 tests / 74 files, 72 Playwright, `pnpm sim` byte-identical,
+**Verified:** 1060 tests / 74 files, 75 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions.

@@ -137,12 +137,30 @@ were found by the instrument rather than by a grep — two of those in a SHOT:
 | the atlas's own fractions                   | `screens/atlas.test.tsx` — **was wrong**, see above                                                                                                                                                          |
 | the whole instrument                        | `shell/fixture.test.ts`, and `e2e/world.spec.ts` for what it renders                                                                                                                                         |
 
-**The one thing on that list with no test and no bug:** `meta/route.ts`'s
-`searchFor` and `HOME` still have no reader. `parseRoute` is read at boot for
-all three of its fields now, but those two are the pure statement of a link
-that `meta/share.ts` builds by hand — a duplicate rather than a gap, and
-`DECISIONS.md` D9 closes the only future that would have given them a caller.
-**They are a deletion, not a debt.**
+**~~The one thing on that list with no test and no bug~~ — DONE 2026-08-30.**
+`meta/route.ts`'s `searchFor` is deleted. It built the query a `Route` answers
+to, and nothing in this game builds a link that way: `meta/share.ts` hands back
+the exact params a receiver needs and the shell puts them on this ORIGIN, which
+is what makes it impossible for a shared link to carry the sender's rig. Its
+only tests were round-trips against itself. `HOME` stays and earns its place —
+it is what "no query at all" IS, and the parser's tests read as intent with it.
+
+**~~BACK on an open panel~~ — DONE 2026-08-30** (`ui/dialog.tsx`,
+`INTERACTIONS.md` §2). It was filed for after Session A as a new global
+gesture; it turned out to be one file, no URL change, and three rules that each
+name a way it goes wrong. On Android BACK used to leave the site from on top of
+the manual, which is the worst thing this game does to a stranger who opens the
+rules.
+
+**A FOURTEENTH inert mechanic, found the same day** (`LOG.md` Session 22).
+`purseLesson` builds the LUCK IS FOR SPENDING card from the live tuning, one
+row per button the drawer offers, each quoting its own face and price — Marc
+asked for it twice in Ashwake 1 — and it had **no caller in this body**.
+`purse` sits in the teaching ledger and in the CARDS set, `isTrue('purse')`
+returns false by design because the OPEN is the moment, and `onPurse` marked
+the lesson TOLD without ever showing it. The drip's most expensive card spent
+its own ledger entry to say nothing. **A moment that is always false is only
+honest while something else owns the moment.**
 
 ## 1. Needs Marc, and only Marc
 

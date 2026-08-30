@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { DAILY_FIRST } from '@meta/daily';
-import { HOME, parseRoute, searchFor, type Route } from '@meta/route';
+import { HOME, parseRoute } from '@meta/route';
 
 describe('parseRoute', () => {
   it('reads an empty search as home', () => {
@@ -55,48 +55,5 @@ describe('parseRoute', () => {
 
   it('ignores the device rig entirely', () => {
     expect(parseRoute('?ff=debug.overlay&theme=daylight&hex=flat')).toEqual(HOME);
-  });
-});
-
-describe('searchFor', () => {
-  it('says nothing for home', () => {
-    expect(searchFor(HOME)).toBe('');
-  });
-
-  it('round-trips every route through the URL and back', () => {
-    const routes: readonly Route[] = [
-      HOME,
-      { ...HOME, seed: 7 },
-      { ...HOME, seed: -12 },
-      { ...HOME, daily: DAILY_FIRST },
-      { ...HOME, camp: true },
-      { ...HOME, daily: DAILY_FIRST, camp: true },
-    ];
-    for (const route of routes) {
-      expect(parseRoute(searchFor(route))).toEqual(route);
-    }
-  });
-
-  /**
-   * The invariant both launch audits caught by hand in `share()`: a link built
-   * from `location.href` drags the sender's own test rig along, and an
-   * arriving `?ff=` is PERSISTED — so a stale override would install itself on
-   * every phone the link ever reached. A `Route` cannot express the rig, so
-   * this is now true by construction rather than by remembering.
-   */
-  it('can never carry the sender’s rig', () => {
-    const routes: readonly Route[] = [
-      HOME,
-      { ...HOME, seed: 7 },
-      { ...HOME, daily: DAILY_FIRST },
-      { ...HOME, camp: true },
-      { ...HOME, seed: 3, daily: DAILY_FIRST, camp: true },
-    ];
-    for (const route of routes) {
-      const search = searchFor(route);
-      expect(search).not.toContain('ff=');
-      expect(search).not.toContain('theme=');
-      expect(search).not.toContain('hex=');
-    }
   });
 });
