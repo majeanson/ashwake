@@ -4,7 +4,33 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the camera comes off its rail.** Marc:
+Last checkpoint: **2026-08-29, last — the board answers a keyboard.** Marc:
+_"do a pass for keyboard + desktop play (all cam movement, etc.) and easy tile
+placements. same for mobile, do a accessibility / high level moment."_ The one
+thing the board lacked was a way to SAY WHICH HEX YOU MEAN; every other key is
+a shortcut to a control that already exists. So: **a marker the arrows walk and
+Enter acts on**, plus Shift+arrows to pan, `+`/`−` to zoom, `Q`/`E` (or
+Home/End) to turn, `R`/`F` (or PageUp/PageDown) to lean, `0` for the VIEW
+button's own cycle, and `1`–`8` to pick up a card. **The step is SPATIAL, not
+axial** — the board is sparse, it can be turned, and a pointy-top hex has no
+neighbour straight up — so an arrow asks `screenOf` what the nearest cell that
+way is, and a run of presses holds its column the way a text editor does.
+**Arrows LOOK and Enter ACTS**, which is the accessibility half: walking the
+marker prints the same sentence a tap prints, into the live region the toast
+already is, so a board no screen reader could enter now reads itself out — with
+no new prose written for it. The keys come off the WINDOW with a two-line focus
+predicate (a focused control keeps Enter and Space; a text field keeps
+everything; Ctrl/Alt/Cmd are never ours), so a player whose focus is on POP can
+still walk the board. **Desktop got the two-finger gesture it never had**:
+right-drag, or Shift-drag, turns and leans. The mobile sweep found less than
+expected and that is recorded rather than padded — the two real gaps were both
+on the board, an unnamed unfocusable canvas and a toast with no keyboard
+dismissal, and both are closed. **Verified:** 974 tests / 66 files; 61
+Playwright including six keyboard tests at the suite's only desktop viewport;
+golden sim byte-identical; the screen audit unchanged at argued classes only.
+**The step sizes are arithmetic and the map has not been felt on a desktop.**
+
+Previous checkpoint: **2026-08-29 — the camera comes off its rail.** Marc:
 _"anyway we could tilt, drag cameras as we want? 3d style"_. The expensive half
 was already built — `camera.ts` has been angle-general since Stage 2b — so what
 landed is the GESTURE: the maps vocabulary on the two pointers that were

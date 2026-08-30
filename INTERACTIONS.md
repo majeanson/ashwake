@@ -16,25 +16,27 @@ deliberately absent in both.
 
 ## 1. The board
 
-| Gesture                                                                    | Ashwake 1                                                                     | Ashwake 2                           |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
-| Tap a **legal empty hex** with a card                                      | places                                                                        | ✓                                   |
-| Tap a **legal hex, hand empty**                                            | _"Your hand is empty — tap a card below to pick one up."_                     | → was a **silent no-op**            |
-| Tap a **ripe tile**                                                        | prices that pocket, outlines it, and prints the whole `pocketNote` arithmetic | → priced, but **said nothing**      |
-| Tap a **cache / site / shrine / territory / find**                         | `describeHexOf` — what it is, what claiming pays, in this run's numbers       | → was a **silent no-op**            |
-| Tap a **beacon** (a landmark glowing off-board)                            | its line + _"Build your chain out to it."_                                    | → via `describeHexOf`               |
-| Tap a **wall**                                                             | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`               |
-| Tap **spent stone**                                                        | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`               |
-| Tap a **tile not yet ripe**                                                | its worth, the ripening rule, its colour's power, its rarity line             | → via `describeHexOf`               |
-| Tap **native ground**                                                      | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`               |
-| Tap **remembered fog** (the biome lens)                                    | lights every known patch of that colour; the same tap lets go                 | → was a **silent no-op**            |
-| Tap **outside the map**                                                    | nothing at all                                                                | ✓                                   |
-| Drag                                                                       | pan, cancels a camera flight                                                  | ✓ (plus momentum, which v1 had not) |
-| Pinch                                                                      | zoom                                                                          | ✓                                   |
-| Wheel                                                                      | zoom                                                                          | ✓                                   |
-| `touch-action: none` on the board                                          | yes, since Stage 2                                                            | → **was missing entirely**          |
-| Refuse the 28px iOS edge swipe                                             | yes                                                                           | → **was missing entirely**          |
-| Double-tap to zoom · rotate · drag-and-drop a card · board keyboard cursor | —                                                                             | —                                   |
+| Gesture                                              | Ashwake 1                                                                     | Ashwake 2                           |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
+| Tap a **legal empty hex** with a card                | places                                                                        | ✓                                   |
+| Tap a **legal hex, hand empty**                      | _"Your hand is empty — tap a card below to pick one up."_                     | → was a **silent no-op**            |
+| Tap a **ripe tile**                                  | prices that pocket, outlines it, and prints the whole `pocketNote` arithmetic | → priced, but **said nothing**      |
+| Tap a **cache / site / shrine / territory / find**   | `describeHexOf` — what it is, what claiming pays, in this run's numbers       | → was a **silent no-op**            |
+| Tap a **beacon** (a landmark glowing off-board)      | its line + _"Build your chain out to it."_                                    | → via `describeHexOf`               |
+| Tap a **wall**                                       | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`               |
+| Tap **spent stone**                                  | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`               |
+| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → via `describeHexOf`               |
+| Tap **native ground**                                | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`               |
+| Tap **remembered fog** (the biome lens)              | lights every known patch of that colour; the same tap lets go                 | → was a **silent no-op**            |
+| Tap **outside the map**                              | nothing at all                                                                | ✓                                   |
+| Drag                                                 | pan, cancels a camera flight                                                  | ✓ (plus momentum, which v1 had not) |
+| Pinch                                                | zoom                                                                          | ✓                                   |
+| Wheel                                                | zoom                                                                          | ✓                                   |
+| `touch-action: none` on the board                    | yes, since Stage 2                                                            | → **was missing entirely**          |
+| Refuse the 28px iOS edge swipe                       | yes                                                                           | → **was missing entirely**          |
+| Double-tap to zoom · drag-and-drop a card            | —                                                                             | —                                   |
+| **Right-drag / Shift-drag** to turn and lean         | —                                                                             | → the desktop's two fingers         |
+| Right-click raises the browser's menu over the board | yes                                                                           | → refused, because the button turns |
 
 ## 2. The hand
 
@@ -91,22 +93,60 @@ deliberately absent in both.
 | Sound toggle over the board              | yes                 | ✗ (no sound in this body yet)                       |
 | `✕` lens-clear button                    | yes                 | ✗ — the fog tap and a second long-press both let go |
 
+## 6. The keyboard, on the board
+
+Built 2026-08-29 (`LOG.md` Session 16) on Marc's ask: _"do a pass for keyboard
+
+- desktop play (all cam movement, etc.) and easy tile placements."_ Ashwake 1
+  had none of this and said so; every row below is new to both bodies.
+
+The map is one pure table (`board/keys.ts`) and the marker's arithmetic is
+another (`board/cursor.ts`), so what a key does is a unit test rather than a
+handler somebody has to read.
+
+| Keys                            | What                                                               |
+| ------------------------------- | ------------------------------------------------------------------ |
+| Arrows                          | walk a marker to the nearest hex that way, and SAY what it is      |
+| Enter · Space                   | do exactly what a tap on that hex does — place, price, claim, lens |
+| Shift + arrows                  | slide the board                                                    |
+| `+` · `−`                       | zoom                                                               |
+| `Q` · `E`, or Home · End        | turn the board                                                     |
+| `R` · `F`, or PageUp · PageDown | lean the camera back and forward                                   |
+| `0`                             | the VIEW button's own cycle — FIT, HERE, FLAT, DEFAULT             |
+| `1`–`8`                         | pick up that card from the hand                                    |
+| Escape, with nothing open       | dismiss the toast — the tap gesture, reachable without a finger    |
+
+Four rules that are not obvious from the table, each with its own test:
+
+- **The first press only summons the marker.** Placement is the one action on
+  this board that cannot be undone, and a key whose first act was to spend a
+  tile on a hex nobody had looked at is the worst version of that.
+- **Arrows LOOK, Enter ACTS.** Walking the marker prints the same sentence a
+  tap on unbuildable ground prints, into the live region the toast already is
+  — so a board that was unreadable to a screen reader now reads itself out.
+  Looking never TARGETS a ripe tile, which a tap does: the marker must not
+  quietly re-aim what POP will spend.
+- **The keys come off the window, not off a focused element**, so a player who
+  just pressed POP does not have to click the board before an arrow works. A
+  focused control keeps Enter and Space and nothing else; a text field keeps
+  everything.
+- **A step is spatial, not axial.** The board is sparse, it can be turned, and
+  a pointy-top hex has no neighbour straight up. So an arrow asks "what is the
+  nearest cell that way ON SCREEN", and a run of them holds its column the way
+  a text editor does.
+
 ---
 
 ## What is still missing
 
-1. **A keyboard path for placing a tile.** Ashwake 1 shipped without one and
-   said so in as many words; `.board-host` is a focus sink, not a cursor.
-   Every panel, card and control is reachable and operable by keyboard — the
-   board itself is not.
-2. **The `✕` lens-clear button.** The fog tap and a second long-press both
+1. **The `✕` lens-clear button.** The fog tap and a second long-press both
    let go, so this is a convenience rather than a gap.
-3. **The History-API router**, which `NEXT.md` argues may not be wanted:
+2. **The History-API router**, which `NEXT.md` argues may not be wanted:
    `?seed=` and `?daily=` links already work, every screen is a state change by
    ruling, and a router would buy BACK-on-a-panel at the cost of the one
    invariant that has held since Stage 2. `meta/route`'s `parseRoute` is READ
    as of 2026-08-29 — see below; `searchFor` and `HOME` are still unread.
-4. **`meta/mark`**'s maskable exports duplicate nothing the app renders, and
+3. **`meta/mark`**'s maskable exports duplicate nothing the app renders, and
    are kept on purpose: they are the source the shipped maskable icons were
    baked from, and the baker is part of the art pipeline `NEXT.md` §5 holds.
 

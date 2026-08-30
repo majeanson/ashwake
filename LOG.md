@@ -1155,3 +1155,100 @@ are now the same thing.
 **Verified:** 946 tests / 64 files; 54 Playwright; typecheck, lint, format,
 build clean; golden sim byte-identical; deployed and `verify:deploy` green
 against `ashwake.marcportal.com`.
+
+### Session 16 — the board answers a keyboard (2026-08-29)
+
+Marc: _"do a pass for keyboard + desktop play (all cam movement, etc.) and easy
+tile placements. same for mobile, do a accessibility / high level moment."_
+
+**Question:** the board has been unreachable without a finger since this body
+began, and Ashwake 1 was too. Is the missing piece a set of shortcuts, or is it
+one idea?
+
+**Answer: one idea, and the shortcuts fall out of it.** The thing the board
+lacked was a way to SAY WHICH HEX YOU MEAN. Everything else a keyboard wants —
+pan, zoom, turn, lean, the view button, picking up a card — is a shortcut to a
+control that already exists, and none of it is worth anything while the board
+itself cannot be pointed at. So the session is a marker, and a key map around
+it.
+
+**The marker's step is spatial, not axial**, and that is the design decision
+worth keeping. Adding a hex direction to `{q, r}` is wrong three ways at once:
+the board is sparse, so the neighbour may be nothing at all; it can be turned,
+so "east" may point down the screen; and a pointy-top hex has no neighbour
+straight up to give the up arrow. An arrow asks a SCREEN question instead —
+_what is the nearest cell that way_ — answered through `screenOf`, the same
+mapping the fit, the drag and the raycast already agree on. A turned board
+still moves the marker the way the arrow points, and a gap in the ground is
+stepped over rather than into.
+
+That leaves the problem every hex grid has with an up arrow: there are two ways
+up, sixty degrees either side, and taking the nearest each time walks a
+diagonal — ten presses and the marker is five hexes off the column it left. The
+answer is a text editor's: the marker carries a GOAL COLUMN, holds it across a
+run of presses, and the two ways up alternate into a straight climb. The anchor
+is a screen coordinate, so it carries the angle it was measured at and is
+re-taken when that stops being true — asked where it is used rather than
+repaired by an effect, which is the cascade `Board` already refuses for the pop.
+
+**Arrows LOOK and Enter ACTS**, and that split is the accessibility half of the
+session rather than a convenience. Walking the marker prints the same sentence
+a tap on unbuildable ground prints, into the live region the toast already is —
+so a board that a screen reader could not enter now reads itself out, hex by
+hex, in the direction's own words and this run's own numbers, with no new prose
+written for it. Looking deliberately does NOT target a ripe tile the way a tap
+does: a marker crossing a pocket on its way somewhere else must not silently
+re-aim what POP will spend.
+
+**Three smaller decisions, each with a reason that outlives it.**
+
+- **The keys come off the window, not off a focused element.** A listener on
+  the board would mean clicking the board before every arrow, and a player who
+  just pressed POP has their focus on POP. The safety is a two-line predicate:
+  a focused control keeps Enter and Space and nothing else, a text field keeps
+  everything, and Ctrl/Alt/Cmd are never ours — Ctrl+W is a closed tab and a
+  closed tab is a lost run.
+- **The first press only summons the marker.** Placement is the one action on
+  this board that cannot be undone.
+- **The turn and the lean have two spellings each.** `Q`/`E`/`R`/`F` is what a
+  desktop player guesses; it is also not on every keyboard, because `Q` sits
+  where `A` does on an AZERTY board and this game ships in French. Home, End,
+  PageUp and PageDown are the same channels on every layout. The card digits
+  are read off `event.code` for the same reason — an AZERTY digit row needs a
+  Shift to print a `1`.
+
+**The desktop got the gesture it never had.** Stage 15's two-finger vocabulary
+was unreachable with a mouse — one pointer, so the board could be panned and
+zoomed and never angled at all, and the only way back from a leaned board was
+whichever view the VIEW button happened to be pointing at. A drag with the
+secondary button (or with Shift, for a trackpad) carries turn and lean
+together, exactly as two fingers do. The board eats its own context menu to
+buy that button, and `HexField`'s tap now refuses anything that is not the
+primary button — a right-click that never travelled far enough to register as
+a drag must not fall through into a placement.
+
+**The camera cycle moved up a level and stopped being duplicated.** `0` walks
+the same four views the VIEW button does, through the same hook, because two
+copies of a four-state cycle is how a key and a button come to disagree about
+which view is next.
+
+**What the pass did NOT find.** The mobile accessibility sweep turned up less
+than expected, and that is worth recording rather than padding: 44px targets,
+`aria-controls` on the purse drawer, two-line buttons with their own accessible
+names, live regions inserted empty, reduced motion and `prefers-contrast` are
+all already honoured, and the screen audit's 138 findings are the same 138
+argued ones (52 tap-target-allowed, 24 contrast-haloed, 62 contrast-disabled).
+The two real gaps were both on the board: it was an unnamed canvas nothing
+could focus, and the toast was a `<p>` with a click handler and no keyboard
+path to the same dismissal. The board is now a named, focusable
+`role="application"` carrying the catalogue's own sentence about the arrows;
+the toast keeps its `<p>` — a live region has to be on the page before its text
+changes — and answers Escape when nothing is open.
+
+**Verified:** 974 tests / 66 files; 61 Playwright including six new keyboard
+tests at 1280×800, the only desktop viewport in the suite and it says why;
+typecheck, lint, format, build clean; golden sim byte-identical; the screen
+audit unchanged at argued classes only. **The key map has not been felt on a
+real desktop, and the marker's ring has not been looked at on a phone** — the
+step sizes (15° a turn, 5° a lean, 96px a pan) are chosen by arithmetic, like
+`PX_PER_DEGREE` before them.

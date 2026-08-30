@@ -53,6 +53,15 @@ a plain pinch. **The tilt and yaw questions in the table below are half
 retired by this** — the answer can be the player's hands rather than a
 number — but the DEFAULT the board opens at is still yours, and it is still 35.
 
+**The keyboard, by using one.** The board answers keys as of 2026-08-29
+(`LOG.md` Session 16, `INTERACTIONS.md` §6) and four of its numbers are
+arithmetic waiting on a desktop: 15° a turn, 5° a lean, 96px a pan, and the
+marker's ring drawn just outside the hex in the accent. Also worth an eye:
+whether `Q`/`E`/`R`/`F` is the pair a hand reaches for, or whether the board
+should have taken the arrows for the CAMERA and given the marker the modifier
+instead. Nothing here needs code first — it needs somebody to play a run with
+their hands on a keyboard and say which half felt wrong.
+
 **~~The Cloudflare API token.~~ DONE — the deploy is automatic again.**
 Corrected 2026-08-29 by looking rather than trusting: `CLOUDFLARE_API_TOKEN`
 was re-set on 2026-08-29, `DEPLOY_ENABLED` is `true`, and CI's **deploy job ran
