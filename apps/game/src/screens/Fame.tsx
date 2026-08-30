@@ -112,7 +112,7 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
       : `${entry.score} · ${entry.arc}`;
 
   return (
-    <Fold summary={`${title} — ${when}`}>
+    <Fold summary={`${title} · ${when}`}>
       {entry.detail !== undefined && (
         <>
           {entry.detail.epitaph !== '' && <p className="note">{entry.detail.epitaph}</p>}

@@ -4,7 +4,50 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, later — the long game runs, and an instrument
+Last checkpoint: **2026-08-30, later still — the game stops interrupting
+itself, and the prose stops sounding written by a machine.** Marc named six
+things after playing it, and one fault sits under all of them: **saying a thing
+twice.** The pop card repeated the accounting at full modal weight on every
+harvest; the manual named the five destinations and then explained four of them
+one screen apart; the prose set a colon, a full stop, a comma and a separator
+with one character; the header laid six numbers out and folded them onto a
+second row when one grew a digit; FIT and FLAT each held their own idea of
+where the board was.
+
+**All six answered.** The first pop still holds the screen and every pop after
+is the same card gone BRIEF — no focus taken, any tap sends it away, and it
+leaves on its own over a scrim you can see the board through. A card in the
+hand carries the BAKED HEX again (Ashwake 1's `tile-art`, the same PNG the
+board composites), so what you hold and what it becomes are one picture. FIT
+stops shrinking at `FIT_HEX_PX_MIN` and, once it is cropping rather than
+shrinking, centres on the FRONTIER instead of on the stone in the middle; FLAT
+and DEFAULT re-frame, which they never did, while a two-finger lean still does
+not. The stat row is one grid track per stat, centred, and cannot wrap at
+320px. The manual's PLAY tab says each destination ONCE: the legend row carries
+the mark, the name and `lessonDefine` — the very function the deleted sections
+were printing — and a FIND has a lesson of its own instead of pointing at
+RELICS. **No em dash anywhere a player can read**, in either language, pinned
+by `text.test.ts`; the two prose snapshots were re-recorded deliberately and
+the facts did not move.
+
+**The sweep found four more inert or crooked things.** The `card` WEIGHT had
+no reader at all — four first-contact sentences, written, translated, weighted
+and pinned, and every door printed `lessonDefine` instead, so `lessonCardText`
+was the only function that read them and it had no caller. `SaidCard` parsed
+the first word of a pop's heading as if it were a MARK, so "POPPED" was drawn
+in the glyph face and the first pop of a device read "YOUR" over "FIRST POP".
+The purse toggle drew ♦ for luck while every other surface drew ✤ — on the very
+button the 2026-08-29 fix called "the one place that did not". And the screen
+audit had eighty-odd pictures of this game and **none of the page that teaches
+it**: `manual` opens on MENU, so the legend and every rule had never been
+photographed. Three dead exports are gone rather than left to be found again.
+
+Verified: 1063 tests / 74 files, 72 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
+twenty-five screens × four directions. **No rule moved**, and the first minute
+is the same game told better.
+
+Previous checkpoint: **2026-08-30, later — the long game runs, and an instrument
 now exists that can see it.** The screen audit has a third axis: `?runs=n`
 (`shell/fixture.ts`) seeds a DEVICE history — a world with shrines woken,
 territories held, finds taken, relics banked, a shop part-built and a diary

@@ -65,10 +65,22 @@ const KEY_LINES = [
  *   - RELICS are what LUCK and SACRIFICE turn into, so they close the hand.
  *
  * AFTER is gone with them rather than left as an empty tab.
+ *
+ * **The five destinations and STONE left the PLAY tab on 2026-08-30**, and
+ * they did not lose a word doing it. Marc: *"in how to play, we have the
+ * destinations enumerated, then later on explanations, make sure all is one."*
+ * The tab opened with the legend naming the five places, then printed a
+ * section for four of them saying what they do — the same five things, twice,
+ * in one tab, each pass carrying half the answer. `Legend` now prints the
+ * mark, the name and `lessonDefine` on one row, which is the very function
+ * these sections were calling, so there is one place and not two.
+ *
+ * BOUNTY stays a section: it is a rule a SITE opens, not a mark on the board,
+ * so it has no row in an alphabet.
  */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
   start: ['ripe', 'pop', 'sizeBonus', 'worth'],
-  play: ['pocket', 'stone', 'cache', 'site', 'shrine', 'territory', 'bounty'],
+  play: ['pocket', 'bounty'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
 
@@ -205,7 +217,18 @@ function Section({
 
   return (
     <section>
-      <h2 className="panel-title">{lessonName(lesson, s)}</h2>
+      {/* The heading wears the lesson's own mark, where it has one: a rule
+          about a thing you can SEE on the board should be findable by that
+          thing. The glyph comes from the lesson, which reads it from a
+          registry — nothing here picks a character. */}
+      <h2 className="panel-title">
+        {lesson.glyph !== undefined && (
+          <span className="card-glyph" aria-hidden="true">
+            {lesson.glyph}{' '}
+          </span>
+        )}
+        {lessonName(lesson, s)}
+      </h2>
       <ProseLines text={lines.join('\n')} s={s} />
       {lesson.figure !== undefined && <Figure id={lesson.figure} theme={theme} s={s} caption />}
       {detail.length > 0 && (

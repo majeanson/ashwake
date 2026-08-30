@@ -205,7 +205,29 @@ export function Board(props: BoardProps) {
    * carries FLAT and DEFAULT, which are the two ways back.
    */
   const [lean, setLean] = useState({ tilt, yaw, relief });
-  const resetLean = useCallback(() => setLean({ tilt, yaw, relief }), [tilt, yaw, relief]);
+
+  /**
+   * A tick the rig re-frames on (2026-08-30).
+   *
+   * Marc: *"when pressing FLAT, FIT, etc. make sure we recenter the map."*
+   * Changing the ANGLE changes where every hex lands on screen — a flattened
+   * board is a differently shaped board — so a camera left exactly where it
+   * was is looking at a place that has moved, and on a big board it was
+   * looking off the edge of it. FIT re-frames because it is a flight; FLAT and
+   * DEFAULT only set an angle, and had no way to ask for one.
+   *
+   * A counter rather than a call into the handle: the new angle is state, so
+   * the frame the rig would fit to does not exist until the render after this
+   * one. The rig watches the number and fits once the frame it needs is the
+   * current one.
+   */
+  const [refit, setRefit] = useState(0);
+  const reframe = useCallback(() => setRefit((n) => n + 1), []);
+
+  const resetLean = useCallback(() => {
+    setLean({ tilt, yaw, relief });
+    reframe();
+  }, [tilt, yaw, relief, reframe]);
   /**
    * 2D: the map the rules are written on.
    *
@@ -217,7 +239,10 @@ export function Board(props: BoardProps) {
    * None of the three has ever been a rule (they are look, and the golden sim
    * cannot see them), so this is a change of picture and never of game.
    */
-  const flatten = useCallback(() => setLean({ tilt: 0, yaw: 0, relief: 0 }), []);
+  const flatten = useCallback(() => {
+    setLean({ tilt: 0, yaw: 0, relief: 0 });
+    reframe();
+  }, [reframe]);
   const leanBy = useCallback(
     (turn: number, back: number) =>
       setLean((was) => ({
@@ -422,6 +447,7 @@ export function Board(props: BoardProps) {
             tilt={lean.tilt}
             yaw={lean.yaw}
             relief={lean.relief}
+            refit={refit}
             reducedMotion={props.reducedMotion === true}
             handle={rig}
             wrapper={wrapper}
@@ -470,6 +496,8 @@ type RigProps = {
   readonly tilt: number;
   readonly yaw: number;
   readonly relief: number;
+  /** Bumped when the board's angle was changed on purpose: re-frame. */
+  readonly refit: number;
   readonly reducedMotion: boolean;
   readonly handle: Ref<RigHandle>;
   readonly wrapper: React.RefObject<HTMLDivElement | null>;
@@ -491,6 +519,7 @@ function Rig({
   tilt,
   yaw,
   relief,
+  refit,
   reducedMotion,
   handle,
   wrapper,
@@ -519,6 +548,38 @@ function Rig({
     );
   }, [view, width, height, theme.orientation, tilt, yaw, relief]);
 
+  /**
+   * Where the game is still being played, for a FIT that has had to crop.
+   *
+   * The frame above measures every anchored cell, because that is what "show
+   * me the board" means while the board still fits. Once it does not —
+   * `fitCamera` stops shrinking at `FIT_HEX_PX_MIN` — something has to say
+   * which part to keep, and the honest answer is not the geometric middle: a
+   * grown board is mostly stone, and stone is ground already spent. Live
+   * tiles, unclaimed destinations and the legal edge are the frontier, and the
+   * frontier is where the player is.
+   *
+   * Its own `frameFor` rather than a centroid: a bounding box centre is what
+   * framing means, and averaging cell positions would pull the camera toward
+   * whichever side happens to hold more of them.
+   */
+  const focus = useMemo<{ readonly cx: number; readonly cz: number }>(() => {
+    const live = view.cells.filter(
+      (c) =>
+        !c.beacon &&
+        !c.remembered &&
+        (c.legal || c.kind === 'tile' || (c.kind === 'landmark' && !c.claimed)),
+    );
+    if (live.length === 0) return frame.centre;
+    return frameFor(
+      live.map((c) => ({ q: c.q, r: c.r })),
+      width,
+      height,
+      theme.orientation,
+      frame.lean,
+    ).centre;
+  }, [view, width, height, theme.orientation, frame]);
+
   // Camera state lives in a ref: gestures write it many times a second and
   // React must not re-render for any of them.
   const cam = useRef<CameraState>(fitCamera(frame));
@@ -530,6 +591,7 @@ function Rig({
    *  rather than racing it home. */
   const visiting = useRef<ReturnType<typeof setTimeout> | 0>(0);
   const frameRef = useRef(frame);
+  const focusRef = useRef(focus);
   const wasFit = useRef(true);
 
   /** True until the board has been framed once. The first frame must fit; no
@@ -560,6 +622,7 @@ function Rig({
    */
   useEffect(() => {
     frameRef.current = frame;
+    focusRef.current = focus;
     if (!framedOnce.current) {
       framedOnce.current = true;
       cam.current = fitCamera(frame);
@@ -567,7 +630,7 @@ function Rig({
       cam.current = { ...cam.current, zoom: Math.min(cam.current.zoom, zoomMaxOf(frame)) };
     }
     invalidate();
-  }, [frame, invalidate]);
+  }, [frame, focus, invalidate]);
 
   /**
    * Write the camera for this frame.
@@ -629,6 +692,24 @@ function Rig({
     [reducedMotion, invalidate],
   );
 
+  /*
+   * The board's angle changed on purpose, so the board is re-framed.
+   *
+   * Declared after `fly` and after the frame effect above, which is the whole
+   * of the ordering it needs: the frame for the NEW angle has already been
+   * computed by the memo and written to `frameRef` by the time this runs.
+   *
+   * A gesture that leans the board does NOT come through here — a camera that
+   * re-centred itself under a thumb mid-drag would be the board fighting the
+   * hand. Only FLAT and DEFAULT bump the tick.
+   */
+  const refitted = useRef(refit);
+  useEffect(() => {
+    if (refitted.current === refit) return;
+    refitted.current = refit;
+    fly(fitCamera(frameRef.current, focusRef.current));
+  }, [refit, fly]);
+
   useImperativeHandle(
     handle,
     () => ({
@@ -651,7 +732,7 @@ function Rig({
         fly(cameraAt(frameRef.current, zoom, p.x, p.y));
       },
       flyToFit() {
-        fly(fitCamera(frameRef.current));
+        fly(fitCamera(frameRef.current, focusRef.current));
       },
       /*
        * Go and look at a hex, then come back.

@@ -79,6 +79,13 @@ export type Said = {
   readonly rows?: readonly TipRow[] | undefined;
   /** An offer the shell must carry out. Only the crossing makes one. */
   readonly offers?: 'crossing' | undefined;
+  /**
+   * Shown as a card the player does not have to dismiss: it takes no focus,
+   * any tap sends it away, and it goes on its own. Set by the SHELL, never by
+   * the reducer — whether a thing has been seen before is a device fact, not
+   * a rule (`App`'s harvest branch, and `ui/Card.tsx`).
+   */
+  readonly brief?: boolean | undefined;
   /** Distinct per utterance, so a component can tell "said again" from "still
    *  saying" — the identity trick `popped` uses for the same reason. */
   readonly id: number;

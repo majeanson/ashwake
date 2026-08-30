@@ -10,6 +10,7 @@ import type { Strings } from '@text/Strings';
 import { FIGURES } from './figure';
 import {
   LESSONS,
+  lessonCardDefine,
   lessonCore,
   lessonDefine,
   lessonDetail,
@@ -131,6 +132,45 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the lesson registry
         `${lesson.id}'s terms are not longest-first`,
       ).toEqual(lengths);
     }
+  });
+
+  /**
+   * The `card` weight reaches a card (2026-08-30).
+   *
+   * It did not. Every door in this body printed `lessonDefine` — `core` plus
+   * `more` — so the sentences a lesson keeps for FIRST CONTACT were written in
+   * two languages, given a weight, pinned by `teaching.pin.test.ts` and shown
+   * to nobody. `lessonCardText`, the only function that read them, had no
+   * caller.
+   *
+   * This is the invariant that makes the weight mean something: a card beat
+   * must be IN the card's body and OUT of every other door's, in every
+   * language and at every dial setting that speaks it. A fourth prose field
+   * with no reader would fail it, and so would a `card` beat quietly promoted
+   * to `more`.
+   */
+  it('prints every first-contact sentence on the card, and nowhere else', () => {
+    let seen = 0;
+    for (const lesson of LESSONS) {
+      for (const [label, t, theme] of CASES) {
+        const card = lessonCardDefine(lesson, t, theme, s);
+        const plain = lessonDefine(lesson, t, theme, s);
+        // The card is the visible lesson with more on the end, never less.
+        expect(card.startsWith(plain), `${lesson.id} · ${label}: the card lost the lesson`).toBe(
+          true,
+        );
+        const extra = card.slice(plain.length).trim();
+        if (extra === '') continue;
+        seen += 1;
+        expect(
+          plain,
+          `${lesson.id} · ${label}: a card sentence leaked into every door`,
+        ).not.toContain(extra);
+      }
+    }
+    // If no lesson keeps one any more, the weight is dead and should go with
+    // its plumbing rather than sit here passing vacuously.
+    expect(seen, 'no lesson keeps a first-contact sentence').toBeGreaterThan(0);
   });
 
   /**

@@ -244,10 +244,8 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
    * The legend's destinations used to be buttons that opened the term card, on
    * the argument that the card is where the definition lives and a legend
    * repeating it would be a second copy. True of the sentence and wrong about
-   * the screen: this legend opens the PLAY tab, and every one of those five has
-   * its own section a thumb's length below — so the card was quoting the page
-   * it was opened from. Marc: "make sure cache, site, shrine, etc. are not
-   * clickable ... they should get the explanation directly readable."
+   * the screen. Marc: "make sure cache, site, shrine, etc. are not clickable
+   * ... they should get the explanation directly readable."
    */
   const shrine = legend.locator('[data-term="shrine"]');
   await expect(shrine).toBeVisible();
@@ -260,11 +258,26 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
     'the manual still linkifies its own prose',
   ).toBe(0);
 
-  // The explanation is on the page instead: SHRINE has its own section here.
-  await expect(panel(page, 'manual').locator('h2', { hasText: /SHRINE|SANCTUAIRE/ })).toBeVisible();
+  /*
+   * The row IS the explanation (2026-08-30).
+   *
+   * Marc: "in how to play, we have the destinations enumerated, then later on
+   * explanations, make sure all is one." The tab used to name the five places
+   * here and then print a section for four of them below, so the same five
+   * things were covered twice and neither pass was complete. The rule now
+   * rides the row it belongs to, and the sections are gone: this asserts BOTH
+   * halves, because either one alone is the old bug in the other direction.
+   */
+  await expect(shrine).toContainText(/permanent|pour de bon/i);
+  expect(
+    await panel(page, 'manual')
+      .locator('h2')
+      .filter({ hasText: /SHRINE|SANCTUAIRE/ })
+      .count(),
+    'a destination is explained twice on one tab again',
+  ).toBe(0);
 
-  // And a ground says what it DOES beside its name — the one row in this
-  // legend with no section under it to explain it.
+  // And a ground says what it DOES beside its name.
   expect(await legend.locator('.legend-note').count()).toBeGreaterThan(0);
 
   expect(errors).toEqual([]);

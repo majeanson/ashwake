@@ -264,9 +264,44 @@ export function nudgeInto(
   return pannedBy(frame, cam, -overX, -overY);
 }
 
-/** The camera that frames everything: zoom 1, centred on the fit. */
-export function fitCamera(frame: Frame): CameraState {
-  return { zoom: 1, ...fitCentre(frame) };
+/**
+ * The fewest pixels a hex may be drawn at when the game frames the board on
+ * the player's behalf.
+ *
+ * Marc, 2026-08-30: *"when pressing FLAT, FIT, etc. make sure we recenter the
+ * map not too zoomed out."* FIT was zoom 1 by definition, and zoom 1 is
+ * whatever it takes to get every hex on screen at once — which on a board
+ * fifteen rings across is a hex the width of a fingernail. So the button that
+ * hands the board back was the button that made it unreadable, and it got
+ * worse the longer a run ran.
+ *
+ * `HEX_PX_MIN` (6) is the floor past which a board is dots; this is the floor
+ * past which a board is not worth looking at. Between them is the range a
+ * player may pinch to on purpose, which is theirs and untouched: this number
+ * governs only the moves the game makes by itself.
+ */
+export const FIT_HEX_PX_MIN = 16;
+
+/**
+ * The camera that frames the board: as much of it as stays readable, centred.
+ *
+ * Zoom 1 is the whole structure, and it is the answer whenever the whole
+ * structure is big enough to read. Past that the fit stops shrinking and
+ * starts CROPPING, at the smallest hex worth drawing, and then the centre
+ * matters: the middle of a grown board is mostly stone already spent.
+ * `focus` is where the game is still being played. A caller that has one
+ * hands it over, and it is read only in the cropped case, so a board that
+ * fits whole is framed exactly as it always was.
+ */
+export function fitCamera(
+  frame: Frame,
+  focus?: { readonly cx: number; readonly cz: number },
+): CameraState {
+  if (frame.fit.size <= 0) return { zoom: 1, ...fitCentre(frame) };
+  const readable = FIT_HEX_PX_MIN / frame.fit.size;
+  const zoom = clamp(Math.max(1, readable), zoomMinOf(frame), zoomMaxOf(frame));
+  const cropped = zoom > 1.0001;
+  return { zoom, ...(cropped && focus !== undefined ? focus : fitCentre(frame)) };
 }
 
 /** Centred on a hex at a zoom, clamped like every other move. */

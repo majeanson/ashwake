@@ -225,7 +225,10 @@ function shed(rung: ShedRungId): void {
   const here = activeSlot();
   switch (rung) {
     case 'lastError':
-      drop(DEVICE.lastError);
+      // Through the helper rather than dropping the key here: two places
+      // saying how the last error is cleared is how they come to disagree,
+      // and this one had no caller at all until 2026-08-30.
+      clearLastError();
       return;
     case 'otherReceipts':
       // No per-slot receipts in this body yet, so this rung is free and

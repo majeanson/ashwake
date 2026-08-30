@@ -274,6 +274,20 @@ button[disabled] {
   background: color-mix(in srgb, var(--bg) 94%, transparent);
 }
 
+/*
+ * A brief card: the same card, over a board you can still see (2026-08-30).
+ *
+ * The full scrim is 94% of the ground, because a card you must dismiss should
+ * have nothing behind it competing for a tap. A brief card is the opposite
+ * case — it is ABOUT the board, it goes on its own, and the cascade it is
+ * accounting for is still finishing behind it — so the ground stays visible
+ * and the whole scrim is the dismiss target.
+ */
+.card-scrim.brief {
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  cursor: pointer;
+}
+
 .card {
   width: min(30rem, 100%);
   background: var(--panel);
@@ -667,9 +681,32 @@ button[disabled] {
  * card radius. Nothing new is invented for it — the border, the radius and the
  * ink are the ones the cards, the legend and the purse already use.
  */
+/*
+ * ONE ROW, on every screen there is (2026-08-30).
+ *
+ * Marc: *"review header for points, tiles, etc. so it is mobile and desktop
+ * friendly."* It was a wrapping flex row of content-sized cards, which fails
+ * at both ends of the range and in two opposite ways. On a narrow phone six
+ * stats do not fit across, so the row WRAPS — a second band of chrome, taken
+ * out of the board, and it appears and disappears as the numbers grow digits:
+ * the board resizes because the score went from 99 to 100. On a desktop the
+ * same six cluster in the top-left corner of a wide screen with the rest of
+ * the row empty.
+ *
+ * A single grid track per stat fixes both. `grid-auto-flow: column` puts
+ * every stat on one line and never a second; `minmax(0, 7rem)` lets a track
+ * take up to a comfortable width and shrink as far as it must, so the row fits
+ * a 320px phone by getting narrower rather than by folding; `justify-content:
+ * center` keeps the group in the middle of a wide screen instead of hugging
+ * the corner. The count of tracks follows the stats the run actually has —
+ * `Hud` drops POINTS where the economy hides score, and LEFT where there is
+ * no clock — which is why the columns are auto rather than a fixed six.
+ */
 .hud {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 7rem);
+  justify-content: center;
   gap: 0.3rem;
   padding: 0.35rem var(--gap);
   background: var(--bg);
@@ -687,24 +724,37 @@ button[disabled] {
   /* Below the 44px floor on purpose, and allowed: `statNote` is an
      explanation, never an action, and the row would eat a third of the screen
      at tap size. The controls that DO something all meet it. */
-  padding: 0.35rem 0.4rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.3rem;
   color: var(--ink-dim);
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
   gap: 0.25rem;
   align-items: baseline;
+  /* A track may be narrower than its contents on the smallest phones. The
+     number is the half that must survive, so the LABEL is what gives: it
+     shrinks to nothing rather than pushing the value out of its own card. */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .stat-label {
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.7rem;
+  /* Scaled to the screen rather than fixed, so a 320px phone shows six labels
+     and a desktop shows them at a size worth reading. The floor is set where
+     the label is still legible; below it the row would be decoration. */
+  font-size: clamp(0.6rem, 1.9vw, 0.72rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  min-width: 0;
 }
 
 .stat-value {
   font-family: var(--font-display);
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: clamp(0.82rem, 2.6vw, 1rem);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -796,6 +846,43 @@ button[disabled] {
  */
 .tile {
   text-shadow: var(--card-text-shadow);
+  /* The baked hex is laid over the whole card, so the card has to be the box
+     it is positioned against. Harmless where no art is loaded. */
+  position: relative;
+}
+
+/*
+ * The card IS the tile, where the direction has baked one (2026-08-30).
+ *
+ * The hex fills the card and the mark and the name sit ON it, exactly as they
+ * sit on the ground it becomes. `contain` rather than `cover`: the art is
+ * clipped to a hexagon with transparent surround (`scripts/terrain.ts`), and
+ * cropping it would throw away the one thing it is here to show — the shape.
+ *
+ * The outline is Ashwake 1's fix, carried over for the same measured reason:
+ * a terrain hex on the panel can run under 2:1 (torchlit MOSS at its light
+ * end, daylight's EMBER), and a card the player reads every turn cannot be a
+ * shape you have to hunt for. A `border` cannot do it — the art is a hex and
+ * a border is a rounded rectangle — so the outline traces the image's own
+ * alpha. Two passes of a 1px shadow: one reads as a blur at this size, two
+ * read as a line. `--ink-faint` is held at 4.5:1 against the panel by
+ * `contrast.test.ts`, so the line is graded rather than picked.
+ */
+.tile-art {
+  position: absolute;
+  inset: 0.1rem;
+  width: calc(100% - 0.2rem);
+  height: calc(100% - 0.2rem);
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 0 1px var(--ink-faint)) drop-shadow(0 0 1px var(--ink-faint));
+}
+
+/* The words ride over the hex. Positioned rather than given a z-index alone:
+   an absolutely positioned image paints above static content whatever its
+   level, so the labels have to be positioned too or the art buries them. */
+.tile.has-art > span {
+  position: relative;
 }
 
 /*
@@ -1298,6 +1385,31 @@ button[disabled] {
   grid-template-columns: 1.6rem 1.6rem minmax(0, 1fr);
   align-items: center;
   gap: 0.4rem;
+}
+
+/*
+ * A row that carries a whole rule (2026-08-30).
+ *
+ * The destinations and STONE print their lesson beside their mark now, so
+ * those rows are paragraphs rather than labels. Centring a 1.4rem swatch
+ * against three lines of prose floats it in the middle of the sentence; the
+ * mark belongs at the top, beside the name it marks.
+ */
+.legend li.tall {
+  align-items: start;
+}
+
+.legend li.tall > .legend-mark,
+.legend li.tall > .legend-swatch {
+  margin-top: 0.1rem;
+}
+
+/* The NAME stays the board's own vocabulary and the sentence steps back, so a
+   row can be scanned for its term without reading every rule under it. */
+.legend-term {
+  color: var(--ink);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
 }
 
 /* A row with no swatch still holds its column, so the marks stay in line. */

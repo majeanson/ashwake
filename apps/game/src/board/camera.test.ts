@@ -7,6 +7,7 @@ import {
   dragOrbit,
   eyeOf,
   fitCamera,
+  FIT_HEX_PX_MIN,
   FLAT,
   frameFor,
   HEX_PX_MAX,
@@ -47,6 +48,34 @@ describe('the camera', () => {
     expect(cam.cz).toBeCloseTo(0, 5);
   });
 
+  /**
+   * FIT stops shrinking before the board stops being readable (2026-08-30).
+   *
+   * Marc: "when pressing FLAT, FIT, etc. make sure we recenter the map not too
+   * zoomed out." Zoom 1 is by definition whatever it takes to show every hex,
+   * so on a big board FIT was the button that made the board unreadable. The
+   * floor is `FIT_HEX_PX_MIN`, and only the game's own moves are held to it: a
+   * pinch may still go anywhere down to `HEX_PX_MIN`.
+   */
+  it('never frames the board below the readable hex size, and keeps the frontier', () => {
+    const small = frameFor(disc(2), PHONE.width, PHONE.height, 'pointy');
+    // A board this size fits whole at the pixel ceiling, so FIT is unchanged.
+    expect(fitCamera(small).zoom).toBe(1);
+
+    const huge = frameFor(disc(40), PHONE.width, PHONE.height, 'pointy');
+    expect(huge.fit.size).toBeLessThan(FIT_HEX_PX_MIN);
+    const cam = fitCamera(huge);
+    expect(cam.zoom).toBeGreaterThan(1);
+    expect(pxPerUnit(huge, cam)).toBeCloseTo(FIT_HEX_PX_MIN, 6);
+
+    // Cropped, so the caller's focus is what ends up on screen: the middle of
+    // a grown board is mostly stone already spent.
+    const focused = fitCamera(huge, { cx: 12, cz: -7 });
+    expect(focused.cx).toBe(12);
+    expect(focused.cz).toBe(-7);
+    // Not cropped, so the same focus is ignored and the whole board is framed.
+    expect(fitCamera(small, { cx: 12, cz: -7 })).toEqual(fitCamera(small));
+  });
   it('clamps zoom between the floor and a ceiling that rises with the board', () => {
     const small = frameFor(disc(1), PHONE.width, PHONE.height, 'flat');
     const large = frameFor(disc(24), PHONE.width, PHONE.height, 'flat');

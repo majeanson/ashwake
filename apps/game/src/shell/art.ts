@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { Colour } from '@content/tuning';
 import {
   assetPath,
   decodeManifest,
@@ -62,4 +63,26 @@ export function useArtSlot(themeId: ThemeId, slot: AssetId): string | null {
   }, [themeId, slot]);
 
   return url;
+}
+
+/**
+ * The four grounds' baked hexes, for the chrome that draws a TILE.
+ *
+ * Marc, 2026-08-30: *"I also liked the tile card we had having the tile
+ * itself."* Ashwake 1's hand cards carried the baked hex — the very PNG the
+ * board composites into its surface — so a card in your hand and the ground it
+ * would become were the same picture. This body drew a rounded rectangle in
+ * the terrain fill instead, which says the colour and nothing about the place.
+ *
+ * Four fixed `useArtSlot` calls rather than a loop: hooks are positional, and
+ * the four grounds are a closed set the rules will not add to. Null per colour
+ * where nothing is baked, which is the ordinary state for a direction with no
+ * art — the card keeps its drawn version and simply gets better.
+ */
+export function useTerrainArt(themeId: ThemeId): Readonly<Record<Colour, string | null>> {
+  const green = useArtSlot(themeId, 'terrain.green');
+  const yellow = useArtSlot(themeId, 'terrain.yellow');
+  const red = useArtSlot(themeId, 'terrain.red');
+  const blue = useArtSlot(themeId, 'terrain.blue');
+  return useMemo(() => ({ green, yellow, red, blue }), [green, yellow, red, blue]);
 }

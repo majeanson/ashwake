@@ -69,7 +69,7 @@ export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon, camp }: W
               onClick={() => onOpen(slot)}
             >
               {s.ui.worldN(slot)}
-              {here ? ' · ' : ' — '}
+              {' · '}
               {world === null
                 ? s.ui.emptyWorld
                 : `${world.runs} · ${world.bestPoints} · ↗ ${world.farthestReach}`}
@@ -100,7 +100,7 @@ export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon, camp }: W
         <section>
           <Confirming
             label={s.ui.newWorld}
-            armed={`${s.ui.newWorld} — ${s.ui.worldN(active)}?`}
+            armed={`${s.ui.newWorld} · ${s.ui.worldN(active)}?`}
             onConfirm={() => onAbandon(active)}
           />
           <p className="note">{s.lesson.relic.core}</p>

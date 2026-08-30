@@ -159,7 +159,7 @@ function TheDevice({
           armed={
             parsed === null
               ? s.ui.restoreArmed
-              : `${s.ui.restoreArmed} — ${describeBackup(parsed, s)}`
+              : `${s.ui.restoreArmed} ${describeBackup(parsed, s)}`
           }
           onConfirm={() => {
             // Nothing to restore is not a silent no-op: the region says why.

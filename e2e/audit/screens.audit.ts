@@ -92,6 +92,12 @@ const open = (selector: string) => async (page: Page) => {
   await page.locator(selector).click();
 };
 
+/** Open the manual and land on one of its tabs. */
+const viaTab = (tab: string) => async (page: Page) => {
+  await page.locator('[data-door="how"]').click();
+  await page.locator(`[data-tab="${tab}"]`).click();
+};
+
 /** Through MORE, which is where everything that is not the run lives. */
 const viaMore = (go: string) => async (page: Page) => {
   await page.locator('[data-door="more"]').click();
@@ -112,6 +118,17 @@ const SCREENS: readonly Screen[] = [
     },
   },
   { name: 'manual', query: FRESH, reach: open('[data-door="how"]') },
+  /*
+   * The manual's CONTENT, not just its front tab (2026-08-30).
+   *
+   * `manual` opens on MENU, which is three buttons, so the audit had eighty-odd
+   * pictures of this game and not one of the page that teaches it. The two tabs
+   * below are where every rule, every figure and the whole legend live, and
+   * they are the longest prose in the build: the places a clipped line or an
+   * unreadable note would actually happen.
+   */
+  { name: 'manual-play', query: FRESH, reach: viaTab('play') },
+  { name: 'manual-expedition', query: FRESH, reach: viaTab('start') },
   { name: 'settings', query: FRESH, reach: open('[data-door="settings"]') },
   { name: 'more', query: FRESH, reach: open('[data-door="more"]') },
   { name: 'more-played', query: PLAYED, reach: viaMore('shop') },

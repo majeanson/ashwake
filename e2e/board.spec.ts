@@ -412,7 +412,11 @@ test('lifting one finger of a pinch does not throw the board away', async ({ pag
 test('the first pop of a device holds the screen', async ({ page }) => {
   // Marc's call, 2026-08-29. The first pop teaches the one rule that reshapes
   // the board — a popped pocket turns to STONE, which surrounds but never
-  // matches — and a toast is too quiet for that. Every pop after is a toast.
+  // matches — and a toast is too quiet for that.
+  //
+  // Every pop AFTER it is the same card gone brief (2026-08-30): same words,
+  // no focus taken, any tap sends it away. The test below is the other half of
+  // this one, and the pair is the whole rule.
   const errors = watchErrors(page);
   // A virgin device, and an opening the scripted walk has NOT already
   // harvested — `walk` pops when it cannot place, so a long opening spends
@@ -432,6 +436,190 @@ test('the first pop of a device holds the screen', async ({ page }) => {
   await expect(card).toHaveCount(1);
   // The stone rule, in the card that just held the screen.
   await expect(card).toContainText(/STONE|PIERRE/);
+  // And it HOLDS it: a first pop is the one card here that must be dismissed
+  // on purpose, so it is not the brief kind.
+  await expect(page.locator('.card-scrim')).not.toHaveClass(/brief/);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a pop after the first is brief, and any tap sends it away', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"after the first pop, we don't need to have the pop
+   * card appear, we can keep it briefly but easy to tap out."*
+   *
+   * A pop's accounting is worth a card the first time and worth a glance every
+   * time after, and the modal was charging the full price on both — a dialog, a
+   * focus move and a deliberate press, several times a minute. A device with a
+   * harvest already banked (`?runs=1`) is exactly the state where the first-pop
+   * card has been spent, so this is the ordinary case and not an edge one.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&runs=1&place=24');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  const pop = page.getByRole('button', { name: /POP|RÉCOLT/ }).first();
+  await expect(pop).toBeVisible();
+  await pop.click();
+
+  const scrim = page.locator('.card-scrim');
+  await expect(scrim, 'a pop said nothing').toBeVisible({ timeout: 4000 });
+  await expect(scrim, 'a routine pop still held the screen').toHaveClass(/brief/);
+  // It still SAYS the thing: brief is about the claim on the player, not about
+  // dropping the accounting a harvest owes.
+  expect(((await scrim.textContent()) ?? '').trim().length).toBeGreaterThan(10);
+
+  // A tap anywhere on the scrim, not on a button, and it is gone.
+  await scrim.click({ position: { x: 8, y: 8 } });
+  await expect(scrim).toHaveCount(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a card in the hand is the tile it will become', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"I also liked the tile card we had having the tile
+   * itself."* Ashwake 1's hand cards carried the baked hex — the very PNG the
+   * board composites into the ground it draws — so what you hold and what it
+   * becomes are one picture. This body drew a rounded rectangle in the terrain
+   * fill instead.
+   *
+   * The art is allowed not to exist (a direction with nothing baked is a
+   * supported state), so this asserts the WIRING: the manifest is asked, the
+   * slot resolves, and the card points at the same file the board would.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=12');
+  await begin(page);
+  await page.waitForTimeout(600);
+
+  const art = page.locator('.hand .tile.has-art .tile-art').first();
+  await expect(art, 'no hand card carries its baked hex').toBeVisible({ timeout: 4000 });
+  const src = await art.getAttribute('src');
+  expect(src, 'the card points at something other than a terrain slot').toMatch(
+    /\/assets\/[a-z-]+\/terrain\.(green|yellow|red|blue)\.png$/,
+  );
+  // It loaded: a broken <img> is a card that reads as empty, which is the
+  // failure Ashwake 1 caught in a screenshot rather than in a test.
+  expect(
+    await art.evaluate((el) => (el as HTMLImageElement).naturalWidth),
+    'the baked hex did not load',
+  ).toBeGreaterThan(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('every view button brings the board back, not just FIT', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"when pressing FLAT, FIT, etc. make sure we recenter the
+   * map not too zoomed out."*
+   *
+   * Two separate bugs behind one sentence. FIT flew to zoom 1, which is by
+   * definition whatever it takes to show every hex, so on a grown board the
+   * button that hands the board back was the button that made it unreadable —
+   * that half is arithmetic and `camera.test.ts` holds it. FLAT and DEFAULT
+   * only set an ANGLE, and changing the angle changes where every hex lands on
+   * screen, so a camera left exactly where it was was looking at a place that
+   * had moved. Neither had any way to ask for a re-frame.
+   *
+   * Measured by how much PICTURE there is. A board dragged off the viewport
+   * leaves the ground and almost nothing else, and an almost-flat frame
+   * compresses to a fraction of the bytes a board full of hexes does. It is a
+   * coarse witness and it is the right kind: it fails when the board is not on
+   * screen, which is the whole claim.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=40');
+  await begin(page);
+  await page.waitForTimeout(700);
+
+  const canvas = page.locator('canvas');
+  const box = await canvas.boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+
+  /** Drag the board off the screen, several viewport widths away. */
+  const panAway = async (): Promise<void> => {
+    for (let i = 0; i < 4; i++) {
+      await page.mouse.move(cx + 120, cy + 120);
+      await page.mouse.down();
+      await page.mouse.move(cx - 160, cy - 160, { steps: 8 });
+      await page.mouse.up();
+    }
+    // The flick carries after the finger lifts; let it come to rest.
+    await page.waitForTimeout(900);
+  };
+
+  const weight = async (): Promise<number> => (await canvas.screenshot()).byteLength;
+
+  const full = await weight();
+  await panAway();
+  const empty = await weight();
+  expect(empty, 'dragging the board away did not empty the frame').toBeLessThan(full / 2);
+
+  const view = page.locator('[data-action="camera"]');
+
+  // FIT, which is the first stop on the cycle.
+  while ((await view.getAttribute('data-view')) !== 'fit') await view.click();
+  await view.click();
+  await page.waitForTimeout(700);
+  expect(await weight(), 'FIT did not bring the board back').toBeGreaterThan(empty * 2);
+
+  /*
+   * And FLAT, which is the half that had no re-frame at all.
+   *
+   * The cycle is walked to FLAT first — every stop before it also re-centres,
+   * so the board is dragged away only once the NEXT press is the one under
+   * test. The button's label is its destination, which is what makes this
+   * readable at all.
+   */
+  while ((await view.getAttribute('data-view')) !== 'flat') {
+    await view.click();
+    await page.waitForTimeout(500);
+  }
+  await panAway();
+  const goneAgain = await weight();
+  await view.click();
+  await page.waitForTimeout(700);
+  expect(await weight(), 'FLAT changed the angle and left the board off screen').toBeGreaterThan(
+    goneAgain * 2,
+  );
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the stat row is one line on a phone, and never two', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"review header for points, tiles, etc. so it is mobile
+   * and desktop friendly."* It was a wrapping flex row of content-sized cards,
+   * so on a narrow phone six stats folded onto a second band — taken out of the
+   * board, and appearing and disappearing as the numbers grew digits. The board
+   * resized because the score went from 99 to 100.
+   *
+   * Measured by TOP EDGE rather than by height: a second row is the one thing a
+   * single number cannot hide, and it is exactly what the grid now forbids.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=40');
+  await begin(page);
+  await page.waitForTimeout(600);
+
+  const tops = await page
+    .locator('[data-hud="stats"] .stat')
+    .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)));
+  expect(tops.length, 'the stat row is empty').toBeGreaterThan(3);
+  expect(new Set(tops).size, `the stat row wrapped: tops ${tops.join(', ')}`).toBe(1);
+
+  // And it stays a row at the narrowest phone this game supports.
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.waitForTimeout(200);
+  const narrow = await page
+    .locator('[data-hud="stats"] .stat')
+    .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)));
+  expect(new Set(narrow).size, `the stat row wrapped at 320px: ${narrow.join(', ')}`).toBe(1);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

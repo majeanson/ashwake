@@ -81,7 +81,8 @@ import type { TipRow } from './view';
  * words the manual prints without ever firing a card for them. The extra six
  * are the ones `glossary.ts` added on 2026-08-27 for exactly that reason.
  */
-export type LessonId = TeachId | 'pocket' | 'worth' | 'bounty' | 'stash' | 'sizeBonus' | 'stone';
+export type LessonId =
+  TeachId | 'pocket' | 'worth' | 'bounty' | 'stash' | 'sizeBonus' | 'stone' | 'find';
 
 /** How heavy a sentence is. Absent means `more`. */
 export type Weight = 'core' | 'more' | 'card' | 'detail';
@@ -186,19 +187,27 @@ export function lessonDefine(lesson: Lesson, t: Tuning, theme: Theme, s: Strings
 }
 
 /**
- * The teaching card's whole text: the glyph and the name on their own line —
- * the shape `EVENT_GLYPH` parses back out — then the visible lesson plus
- * whatever this lesson keeps for the moment of first contact.
+ * The TEACHING card's body: the visible lesson, plus whatever this lesson
+ * keeps for the moment of first contact.
  *
  * The card and the manual therefore open on the same sentence, always, and
- * differ only by what the card adds. Before this they opened on two sentences
- * written six days apart.
+ * differ only by what the card adds.
+ *
+ * **The `card` weight had no reader at all until 2026-08-30.** Every door in
+ * this body printed `lessonDefine`, which is `core` + `more` — so the four
+ * sentences written for first contact, in both languages, tested by
+ * `lessons.test.ts` and pinned by `teaching.pin.test.ts`, reached nobody. That
+ * is the whole reason the weight exists: RIPE's card must say what to do next,
+ * because the player meeting it has not read POP and may never open the
+ * manual. Found by grepping for a consumer, which is the standing check in
+ * `CLAUDE.md`, and it is the fifth mechanic caught by it.
+ *
+ * It replaces `lessonCardText`, which composed a "{glyph}  {NAME}\n{body}"
+ * string for a host to take apart again. `LessonCard` has the glyph and the
+ * name already; a lead line only existed to be re-split.
  */
-export function lessonCardText(lesson: Lesson, t: Tuning, theme: Theme, s: Strings): string {
-  const name = lessonName(lesson, s);
-  const lead = lesson.glyph === undefined ? name : `${lesson.glyph}  ${name}`;
-  const body = [...lessonLines(lesson, t, theme, s), ...beatsAt(lesson, 'card', t, theme, s)];
-  return `${lead}\n${body.join(' ')}`;
+export function lessonCardDefine(lesson: Lesson, t: Tuning, theme: Theme, s: Strings): string {
+  return [...lessonLines(lesson, t, theme, s), ...beatsAt(lesson, 'card', t, theme, s)].join(' ');
 }
 
 /**
@@ -279,6 +288,21 @@ export const LESSONS: readonly Lesson[] = [
           s.lesson.territory.core(t.territoryRadius, t.territoryTiles, t.territoryTilesCap),
       },
     ],
+  },
+  /**
+   * A hidden find, which is a destination like the other four (2026-08-30).
+   *
+   * It had no lesson: `LESSON_FOR_REWARD` pointed `find` at RELICS, on the
+   * argument that what a find gives you is a perk and RELICS is where the game
+   * explains what you carry out of a run. True of the reward and wrong about
+   * the QUESTION: a player tapping a shimmer is asking what that mark is, and
+   * the answer they got was a paragraph about the end-screen shop. The legend
+   * printed the same mismatch as a row reading "◈ RELICS".
+   */
+  {
+    id: 'find',
+    glyph: LANDMARK_GLYPH.find,
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.find.core }],
   },
   {
     id: 'stone',
@@ -390,9 +414,12 @@ export function lessonOf(id: LessonId): Lesson | undefined {
  * so the answer existed in one place and was needed in two, which is how the
  * two come to disagree about what a `find` is called.
  *
- * A FIND maps to RELICS rather than to a lesson of its own: what a hidden find
- * gives you is a perk, and RELICS is where this game explains the things you
- * carry out of a run.
+ * **A FIND has its own lesson since 2026-08-30.** It used to map to RELICS, on
+ * the argument that what a find gives you is a perk and RELICS is where this
+ * game explains the things you carry out of a run. That is true of the reward
+ * and wrong about the question being asked: a legend row reading "◈ RELICS"
+ * names the mark after its consequence, and a tap on a find opened a card
+ * about the end-screen currency instead of about the thing under the thumb.
  */
 export const LESSON_FOR_REWARD: Readonly<
   Record<'cache' | 'site' | 'shrine' | 'territory' | 'find', LessonId>
@@ -401,5 +428,5 @@ export const LESSON_FOR_REWARD: Readonly<
   site: 'site',
   shrine: 'shrine',
   territory: 'territory',
-  find: 'relic',
+  find: 'find',
 };

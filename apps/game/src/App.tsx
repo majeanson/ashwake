@@ -954,7 +954,7 @@ ${s.view.harvest.firstPopWhen}`,
       }
 
       /*
-       * A POP is a card, always — never a line over the tiles.
+       * A POP is a card — and after the first one, a BRIEF card.
        *
        * Marc, 2026-08-29: *"make sure all pop as card, no text above tiles for
        * explanations"*, and then *"and points"*. A harvest is the loudest thing
@@ -962,9 +962,19 @@ ${s.view.harvest.firstPopWhen}`,
        * what the pocket was worth, what it paid in tiles, what it scored, what
        * the luck did. That was a toast — a line of prose in the strip between
        * the board and the hand, at the exact moment the eye is on the board
-       * watching the cascade, gone by the time it looks down.
+       * watching the cascade, gone by the time it looks down. That finding
+       * stands, and it is why this is still a card rather than a line.
        *
-       * Claims that already held the screen still do. Everything else — a tap
+       * What did NOT stand is the price. Marc, 2026-08-30: *"after the first
+       * pop, we don't need to have the pop card appear, we can keep it briefly
+       * but easy to tap out."* A modal several times a minute, each one asking
+       * for a deliberate press, is the game stopping to congratulate you on the
+       * thing you came to do. So every pop after the device's first is BRIEF —
+       * same words, same place, no focus taken, any tap sends it away and it
+       * leaves on its own. See `ui/Card.tsx`.
+       *
+       * Claims that already held the screen still do, at full weight: a shrine
+       * or a crossing is a thing that happened once. Everything else — a tap
        * that explains a hex, a spend's receipt — stays a toast, because those
        * are answers to a question the player just asked and a modal for each
        * would be a game that interrupts you for reading it.
@@ -979,7 +989,10 @@ ${s.view.harvest.firstPopWhen}`,
           isPop && !reducedMotion
             ? cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1)
             : 0;
-        const shown = isPop ? { ...said, card: true } : said;
+        // A pop's OWN receipt goes brief; a claim that happened to land on the
+        // same harvest (`said.card`) keeps its card, because that is the rare
+        // thing and not the routine one.
+        const shown = isPop ? { ...said, card: true, brief: !said.card } : said;
         if (wait === 0) setSaidCard(shown);
         else window.setTimeout(() => setSaidCard(shown), wait);
       } else setNote(said.text);
@@ -1865,12 +1878,17 @@ ${s.view.harvest.firstPopWhen}`,
 
       {saidCard !== null && (
         <SaidCard
+          // Keyed per utterance so a second pop is a second card: a brief one
+          // runs a clock of its own, and a reused element would inherit the
+          // remains of the previous card's.
+          key={saidCard.id}
           text={saidCard.text}
           rows={saidCard.rows}
           theme={theme}
           s={s}
           onTerm={setTerm}
           onDismiss={() => setSaidCard(null)}
+          brief={saidCard.brief === true}
           {...(saidCard.offers === 'crossing'
             ? {
                 offer: {
@@ -1897,6 +1915,10 @@ ${s.view.harvest.firstPopWhen}`,
           id={card}
           theme={theme}
           s={s}
+          // FIRED by a moment, so it carries the lesson's first-contact
+          // sentence. The term card below is OPENED by a tap on a word and
+          // does not: that reader already met the concept.
+          firstContact
           dismiss={s.ui.gotIt}
           onDismiss={() => setProgress((p) => told(p, card))}
         />

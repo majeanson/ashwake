@@ -105,8 +105,12 @@ function valueOf(id: StatId, hud: HudView): number | null {
  * because luck is one of the two currencies that follow a player between the
  * board, the shop and the end screen — and this row was drawing `♦` instead,
  * a second symbol for the thing the registry already names. The purse drawer,
- * the shop and the end screen all speak `✤`; the stat row was the one place
- * that did not.
+ * the shop and the end screen all speak `✤`.
+ *
+ * "The stat row was the one place that did not" is what this comment said,
+ * and it was wrong: the ACTION BAR's purse toggle was drawing `♦` too, and it
+ * is the more-seen of the two. Fixed 2026-08-30. A claim about being the last
+ * one is a claim worth grepping before writing down.
  *
  * `↗` for reach and `$` for cost stay as they are: `tokens.ts` rules that
  * marks are for cross-screen CONCEPTS and that stats stay words, so neither

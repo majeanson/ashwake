@@ -69,8 +69,6 @@ const FORMAT = 1;
  * in `shell/storage.ts`), the board ORIENTATION (`tiles.hex.v1`), and the
  * install nudge's once-ever marker. None of the three is a world.
  */
-const LEGACY_PREFIX = 'tiles.';
-
 const LEGACY_KEYS: Readonly<Record<string, string>> = {
   'tiles.features.v2': 'ashwake.features.v1',
   'tiles.theme.v2': 'ashwake.theme.v1',
@@ -112,9 +110,6 @@ export function migrateLegacy(
   }
   return out;
 }
-
-/** True for a key Ashwake 1 wrote. */
-export const isLegacyKey = (key: string): boolean => key.startsWith(LEGACY_PREFIX);
 
 export type Backup = {
   readonly format: number;

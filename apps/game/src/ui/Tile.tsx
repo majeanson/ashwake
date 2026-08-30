@@ -30,6 +30,14 @@ import type { Strings } from '@text/Strings';
  * now every card's; the border still belongs to rarity, so the ring is the
  * one channel left that says "this one" without taking a channel that already
  * means something else.
+ *
+ * **And where the direction has baked art, the card IS the tile** (2026-08-30,
+ * Marc: *"I also liked the tile card we had having the tile itself"*). Ashwake
+ * 1 put the baked hex on the card — the same PNG the board composites into the
+ * ground it draws — so what you are holding and what it becomes are one
+ * picture rather than two descriptions of one colour. The fill stays as the
+ * fallback, and `art` being null is the ordinary state for a direction with
+ * nothing baked: nothing here waits on a file.
  */
 
 export type TileProps = {
@@ -39,6 +47,9 @@ export type TileProps = {
   readonly s: Strings;
   readonly selected?: boolean;
   readonly held?: boolean;
+  /** The baked hex for this ground, where the direction has one. See
+   *  `shell/art.ts`; null is the ordinary state and the card draws itself. */
+  readonly art?: string | null | undefined;
   /** Which stash slot this card is, when it is one. Names itself for a
    *  screen reader, and marks itself for a test. */
   readonly slot?: number | undefined;
@@ -55,16 +66,18 @@ export function Tile({
   selected,
   held,
   slot,
+  art,
   onPick,
   onLens,
 }: TileProps) {
   const name = namesOf(theme, s.locale)[colour];
   const fill = hex(theme.terrain[colour].fill);
   const rare = rarity !== 'common';
+  const hasArt = art !== null && art !== undefined && art !== '';
   return (
     <button
       type="button"
-      className="tile"
+      className={hasArt ? 'tile has-art' : 'tile'}
       data-colour={colour}
       data-rarity={rarity}
       // The label is haloed rather than re-coloured — see `.tile` in ui.css.
@@ -105,7 +118,13 @@ export function Tile({
          */
         borderColor: rare ? hex(rarity === 'magic' ? theme.ink.magic : theme.ink.unique) : fill,
         borderWidth: rare ? 3 : 1,
-        background: fill,
+        /*
+         * The baked hex carries the ground, so the flat swatch behind it gets
+         * out of the way — Ashwake 1's `.tile.has-art` rule, and the reason is
+         * that a hex printed on its own colour has no shape. The panel is
+         * where `.tile-art`'s outline is graded against (see ui.css).
+         */
+        background: hasArt ? 'var(--panel)' : fill,
         // Outside the box, so it takes no layout and cannot reflow the row —
         // and offset outward so it never sits on top of the rarity border it
         // has to be told apart from.
@@ -122,6 +141,15 @@ export function Tile({
         flex: '1 1 0',
       }}
     >
+      {hasArt && (
+        <img
+          className="tile-art"
+          src={art ?? undefined}
+          alt=""
+          draggable={false}
+          aria-hidden="true"
+        />
+      )}
       <span className="tile-mark" aria-hidden="true">
         {COLOUR_MARK[colour]}
       </span>

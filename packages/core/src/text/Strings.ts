@@ -50,6 +50,12 @@ export type LessonStrings = {
   readonly territory: LessonHead & {
     readonly core: (radius: number, tiles: number, cap: number) => string;
   };
+  /** A hidden find, which is a DESTINATION like the four above it. It had no
+   *  lesson of its own until 2026-08-30, and `LESSON_FOR_REWARD` pointed it at
+   *  RELICS instead — so the legend printed a find's mark beside the word
+   *  RELICS, and tapping a find on the board opened the card about the
+   *  currency rather than about the thing you had just touched. */
+  readonly find: LessonHead & { readonly core: string };
   readonly stone: LessonHead & { readonly coreAsh: (red: string) => string; readonly core: string };
   readonly rare: LessonHead & { readonly core: string };
   readonly rareUnique: LessonHead & { readonly core: string };
@@ -625,7 +631,6 @@ export type Strings = {
     readonly legendPlaces: string;
     readonly legendMarks: string;
     readonly legendRare: string;
-    readonly legendStone: string;
     readonly legendWall: string;
     readonly legendRipe: string;
     readonly legendLegal: string;

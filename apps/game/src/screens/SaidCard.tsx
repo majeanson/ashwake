@@ -1,4 +1,4 @@
-import type { Theme } from '@theme/tokens';
+import { CONCEPT_MARK, LANDMARK_GLYPH, TILE_GLYPH, type Theme } from '@theme/tokens';
 import type { TipRow } from '@view/view';
 import type { LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
@@ -22,6 +22,29 @@ import { TipRows } from '../ui/TipRows';
  * for a fact.
  */
 
+/**
+ * Every mark a receipt may lead with.
+ *
+ * A CLAIM's first line is `{glyph}  {HEADING}` — `receipts.ts` prefixes the
+ * mark itself, from `LANDMARK_GLYPH`, precisely so the words and the thing
+ * that paid are one object. A POP's is not: `harvestNote` opens with
+ * "POPPED 5, total worth 12", and the first pop of a device opens with "YOUR
+ * FIRST POP".
+ *
+ * Splitting on whitespace and calling the first token a glyph therefore drew
+ * "POPPED" and "YOUR" in the 1.3em glyph face and left "5, total worth 12" as
+ * the heading — on the two cards a player sees most, and on the very first one
+ * they ever see. Found 2026-08-30 while making a pop's card brief.
+ *
+ * So the first token is a glyph only when it IS one, and the registries are
+ * the authority on that. A lead with no mark keeps its whole first line.
+ */
+const MARKS = new Set<string>([
+  ...Object.values(LANDMARK_GLYPH),
+  ...Object.values(CONCEPT_MARK),
+  TILE_GLYPH,
+]);
+
 export type SaidCardProps = {
   readonly text: string;
   readonly rows?: readonly TipRow[] | undefined;
@@ -36,23 +59,34 @@ export type SaidCardProps = {
    */
   readonly offer?:
     { readonly label: string; readonly armed: string; readonly onTake: () => void } | undefined;
+  /**
+   * A receipt for something the player has already seen the card for once —
+   * a pop after their first. Goes on its own, and any tap sends it away.
+   */
+  readonly brief?: boolean | undefined;
 };
 
-export function SaidCard({ text, rows, theme, s, onDismiss, onTerm, offer }: SaidCardProps) {
+export function SaidCard({ text, rows, theme, s, onDismiss, onTerm, offer, brief }: SaidCardProps) {
   // The glyph and the heading are the receipt's own first line — `receipts.ts`
   // writes `{glyph}  {HEADING}` and the body under it. Split rather than
   // passed separately, so there is one place the sentence is composed and one
   // place it is taken apart.
   const [lead = '', ...rest] = text.split('\n');
-  const [glyph, ...heading] = lead.trim().split(/\s+/);
+  const [first = '', ...words] = lead.trim().split(/\s+/);
+  const marked = MARKS.has(first);
+  const glyph = marked ? first : undefined;
+  const name = marked ? words.join(' ') : lead.trim();
 
   return (
     <Card
       id="said"
       glyph={glyph}
-      name={heading.join(' ')}
+      name={name}
       dismiss={offer === undefined ? s.ui.gotIt : s.claim.stay}
       onDismiss={onDismiss}
+      // An offer has to be chosen, never waited out — so a receipt that makes
+      // one is never brief, whatever the caller asked for.
+      brief={brief === true && offer === undefined}
       {...(offer === undefined
         ? {}
         : {

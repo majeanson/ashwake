@@ -179,7 +179,7 @@ export function Settings({
               >
                 {/* The label is part of the accessible name rather than a
                     sibling, so a screen reader says what is being switched. */}
-                {words.label} — {feature.wired ? (on ? 'ON' : 'OFF') : 'NOT BUILT'}
+                {words.label} · {feature.wired ? (on ? 'ON' : 'OFF') : 'NOT BUILT'}
               </button>
               <p className="note">{words.note}</p>
             </div>

@@ -60,6 +60,29 @@ describe('the catalogues', () => {
       for (const text of everyString(s)) expect(text.trim(), `${s.locale}: empty`).not.toBe('');
     }
   });
+
+  /**
+   * The house style, in the one form a test can hold (2026-08-30).
+   *
+   * Marc: *"review help and text content so it's not AI-like (no em dashes,
+   * etc.), be concise and simple in all content."* The em dash was doing the
+   * work of a colon, a full stop, a comma and a separator in 249 sentences
+   * across the two catalogues, and which one it meant was never on the page.
+   * Both languages, because the French had it in exactly the same places: it
+   * was written beside the English, sentence for sentence.
+   *
+   * The EN DASH goes with it. It is the same shape at a glance on a phone, and
+   * nothing in this game is a range. A minus sign (U+2212) is spelled out in
+   * the keyboard list and is not a dash; a hyphen inside a word is a word.
+   */
+  it('writes no em dash and no en dash, in either language', () => {
+    for (const s of CATALOGUES) {
+      for (const text of everyString(s)) {
+        expect(text, `${s.locale}: "${text}" carries an em dash`).not.toContain('—');
+        expect(text, `${s.locale}: "${text}" carries an en dash`).not.toContain('–');
+      }
+    }
+  });
 });
 
 describe('Québec French', () => {

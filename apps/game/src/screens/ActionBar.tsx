@@ -1,8 +1,9 @@
-import type { Theme } from '@theme/tokens';
+import { CONCEPT_MARK, type Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { HarvestChoice } from '@engine/state';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
+import { useTerrainArt } from '../shell/art';
 import { Tile } from '../ui/Tile';
 
 /**
@@ -49,6 +50,10 @@ export function ActionBar({
   purseOpen,
   onNewRun,
 }: ActionBarProps) {
+  // The baked hex per ground, so a card in the hand is the tile it will
+  // become. Asked for once here rather than once per card: four slots, one
+  // shared manifest, and the answer is the same for every card of a colour.
+  const art = useTerrainArt(theme.id);
   const stash = stashSlots(hud.canHold, hud.holdSlots);
   // See SACRIFICE below: a burn is only offered once relics mean something.
   const burnKnown = !hud.burnPaysRelics || knowsRelics || hud.relics > 0;
@@ -78,6 +83,7 @@ export function ActionBar({
             rarity={card.rarity}
             theme={theme}
             s={s}
+            art={art[card.colour]}
             selected={card.selected}
             onPick={() => onSelect(i)}
             onLens={() => onLens(i)}
@@ -112,6 +118,7 @@ export function ActionBar({
               rarity={held.rarity}
               theme={theme}
               s={s}
+              art={art[held.colour]}
               held
               slot={i}
               onPick={() => onHold(i)}
@@ -189,7 +196,18 @@ export function ActionBar({
             onClick={onPurse}
             style={{ marginLeft: 'auto' }}
           >
-            ♦ {hud.luck}
+            {/*
+              The REGISTRY's mark, not a lookalike (2026-08-30).
+
+              `CONCEPT_MARK.luck` is ✤ and exists because luck is one of the two
+              currencies that follow a player between the board, the purse, the
+              shop and the end screen. Every one of those speaks ✤; this button,
+              which is the door to the purse and the most-seen luck on the
+              screen, was drawing ♦. `Hud` had the identical bug and was fixed
+              on 2026-08-29 with a comment saying the stat row was "the one
+              place that did not" — it was not.
+            */}
+            {CONCEPT_MARK.luck} {hud.luck}
           </button>
         )}
       </div>
@@ -217,7 +235,7 @@ function ActButton({
       type="button"
       className="act"
       data-action={testId}
-      aria-label={value === '' ? label : `${label} — ${value}`}
+      aria-label={value === '' ? label : `${label}, ${value}`}
       onClick={onClick}
     >
       <span className="act-label">{label}</span>

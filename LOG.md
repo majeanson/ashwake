@@ -1701,3 +1701,154 @@ a player only reaches after a run.
 **Verified:** 1059 tests / 74 files, 68 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-three screens × four directions.
+
+### Session 22 — the game stops interrupting itself, and the prose stops sounding written by a machine (2026-08-30)
+
+**Question:** Marc played it and named six things at once — the pop card, the
+tile card, the view buttons, the header, the manual's double-explained
+destinations, and the writing. Is there a single fault under them, and does
+fixing it find more?
+
+**Answer: yes, and the fault is SAYING A THING TWICE.** Every one of the six is
+a place where the game states something once and then states it again in a
+second, worse way. The pop card said the accounting a second, third and
+fortieth time at full modal weight. The manual named the five destinations and
+then explained four of them, one screen apart. The prose set a colon, a full
+stop, a comma and a separator with one character. The header laid six numbers
+out and then folded them onto a second row when they grew a digit. And FIT and
+FLAT each had their own idea of where the board was.
+
+**THE POP CARD IS BRIEF AFTER THE FIRST** (`ui/Card.tsx`). Marc: _"after the
+first pop, we don't need to have the pop card appear, we can keep it briefly
+but easy to tap out."_ The first pop still holds the screen — it teaches the
+one rule that reshapes the board — and every pop after is the same card with
+every claim on the player dropped: no focus taken, no focus trapped, any tap
+anywhere sends it away, and it leaves on its own after 4.2 seconds over a scrim
+you can see the board through. It stays a CARD rather than falling back to the
+toast, because the toast is the strip the eye is not on while the cascade
+plays, which is the finding that made pops cards in the first place. Both
+halves are pinned in `board.spec.ts`, as a pair, because either one alone is
+the old bug pointing the other way.
+
+**THE CARD IN YOUR HAND IS THE TILE** (`ui/Tile.tsx`, `shell/art.ts`). Marc:
+_"I also liked the tile card we had having the tile itself."_ Ashwake 1 put the
+baked hex on the card — the very PNG the board composites into the ground it
+draws — so what you hold and what it becomes are one picture. This body drew a
+rounded rectangle in the terrain fill. The art is asked for through the
+manifest the board already fetches, the ground goes to the panel colour so the
+hex has a SHAPE, and the outline is Ashwake 1's two-pass alpha shadow in
+`--ink-faint`, carried over for the reason it was written: a terrain hex on the
+panel can run under 2:1 and a card read every turn cannot be a shape you hunt
+for. Null art stays the ordinary state and the card draws itself.
+
+**FIT STOPS SHRINKING BEFORE THE BOARD STOPS BEING READABLE, AND FLAT
+RE-FRAMES** (`board/camera.ts`, `board/Board.tsx`). Marc: _"when pressing FLAT,
+FIT, etc. make sure we recenter the map not too zoomed out."_ Two bugs under
+one sentence. FIT flew to zoom 1, and zoom 1 is by definition whatever it takes
+to get every hex on screen, so on a board fifteen rings across the button that
+hands the board back was the button that made it unreadable — and it got worse
+the longer a run ran. It stops at `FIT_HEX_PX_MIN` now, and once it is CROPPING
+rather than shrinking it centres on the frontier — live tiles, unclaimed
+destinations and the legal edge — because the middle of a grown board is mostly
+stone already spent. FLAT and DEFAULT only ever set an ANGLE, and changing the
+angle changes where every hex lands on screen, so a camera left where it was
+was looking at a place that had moved; they bump a tick the rig re-frames on. A
+gesture that leans the board deliberately does NOT, because a camera that
+re-centres under a thumb mid-drag is the board fighting the hand.
+
+**THE HEADER IS ONE ROW, ON EVERY SCREEN THERE IS** (`ui.css`). It was a
+wrapping flex row of content-sized cards, which fails at both ends of the range
+in opposite ways: six stats do not fit across a narrow phone, so the row wrapped
+— a second band of chrome taken out of the board, appearing and disappearing as
+the numbers grew digits, so the board resized because the score went from 99 to
+100 — while on a desktop the same six huddled in the top-left corner of a wide
+screen. One grid track per stat, `minmax(0, 7rem)`, centred: it fits a 320px
+phone by getting narrower rather than by folding, and it sits in the middle of a
+wide one. `board.spec.ts` measures the TOP EDGES and fails if there are two.
+
+**THE MANUAL SAYS EACH DESTINATION ONCE** (`screens/Legend.tsx`,
+`screens/Manual.tsx`). Marc: _"in how to play, we have the destinations
+enumerated, then later on explanations, make sure all is one."_ The PLAY tab
+opened with a legend naming the five places and then, a thumb's length below,
+printed a section for four of them saying what they do: the same five things
+twice, in one tab, in a different order, each pass carrying half the answer —
+the list had the marks and no rules, the sections had the rules and no marks.
+A legend row now carries the mark, the name and the lesson's own definition,
+and the sections are gone. **Nothing was rewritten to do it**: `lessonDefine`
+is the very function those sections were printing. STONE moved the same way,
+and its hand-shortened copy of the STONE lesson (`ui.legendStone`) is deleted.
+The sections that remain wear their lesson's glyph, so a rule about a thing you
+can see is findable by that thing.
+
+**A FIND IS A DESTINATION, AND NOW HAS A LESSON.** `LESSON_FOR_REWARD` pointed
+`find` at RELICS, on the argument that what a find gives you is a perk and
+RELICS is where the game explains what you carry out of a run. True of the
+reward and wrong about the question: the legend printed a row reading "◈
+RELICS", and tapping a find on the board opened a card about the end-screen
+currency rather than about the thing under the thumb.
+
+**NO EM DASH ANYWHERE A PLAYER CAN READ** (`text/en.ts`, `text/fr-CA.ts`,
+`text.test.ts`, and six components). Marc: _"review help and text content so
+it's not AI-like (no em dashes, etc.), be concise and simple in all content."_
+It was the punctuation of 249 sentences across the two catalogues, doing the
+work of four different marks at once with no way for a reader to tell which. A
+colon introduces, a full stop separates, a comma joins, `·` divides the parts
+of a label. Both languages, because the French had it in exactly the same
+places: it was written beside the English, sentence for sentence. **The facts
+did not move** — every number, name and condition is the one that was there —
+and the two pin snapshots were re-recorded deliberately in this commit, which
+is what `CLAUDE.md` asks for. The rule is a test now, so it cannot come back.
+
+**THEN THE SWEEP, and it found four more of this body's signature miss.**
+
+**Ten. The `card` weight had no reader at all.** `view/lessons.ts` models a
+lesson as sentences with WEIGHTS, and `card` exists for one stated reason: a
+teaching card fires at FIRST CONTACT, where the manual has four other sections
+to lean on, so RIPE's card must say what to do next because the player meeting
+it has not read POP and may never open the manual. Four such sentences are
+written, translated, given a weight, and pinned by `teaching.pin.test.ts` —
+and **every door in this body printed `lessonDefine`, which is `core` + `more`**.
+`lessonCardText`, the only function that read them, had no caller. So the
+sentences written for the moment a stranger meets a rule reached nobody.
+`lessonCardDefine` replaces it, `LessonCard` takes a `firstContact` flag (a
+card the game FIRES gets them; a term card a player OPENS by tapping a word
+they already know does not), and `lessons.test.ts` now asserts the sentence is
+in one and out of the other, in both languages at every dial setting.
+
+**Eleven. The pop card's heading was parsed as if its first word were a mark.**
+`SaidCard` split the lead line on whitespace and called the first token a
+glyph, which is right for a CLAIM — `receipts.ts` prefixes the mark itself, so
+the words and the thing that paid are one object — and wrong for everything
+else. A pop's lead is "POPPED 5, total worth 12", so "POPPED" was drawn in the
+1.3em glyph face and "5, total worth 12" was the heading; the first pop of a
+device read "YOUR" over "FIRST POP". On the two cards a player sees most, and
+on the very first one they ever see. The registries are the authority now: a
+first token is a glyph only when it is one.
+
+**Twelve. The purse toggle drew a second symbol for luck.** `CONCEPT_MARK.luck`
+is ✤ and exists because luck follows a player between the board, the purse, the
+shop and the end screen. The stat row was fixed on 2026-08-29 with a comment
+saying it was "the one place that did not" — and the action bar's purse button,
+which is the door to the purse and the most-seen luck on the screen, was
+drawing ♦ the whole time. A claim about being the last one is a claim worth
+grepping before writing down.
+
+**Thirteen. The audit had eighty-odd pictures of this game and none of the page
+that teaches it.** `manual` opens on the MENU tab, which is three buttons, so
+every rule, every figure and the whole legend — the longest prose in the build,
+and the place a clipped line would actually happen — had never been
+photographed. `manual-play` and `manual-expedition` are screens now.
+
+**Three dead exports removed rather than left to be found again**:
+`isLegacyKey` and its `LEGACY_PREFIX` (the backup bridge detects Ashwake 1 by
+what `migrateLegacy` recovers, not by prefix), and `lessonCardText`. The shed
+ladder clears the last error through `clearLastError` rather than dropping the
+key a second way.
+
+**Nothing here changes a rule.** `pnpm sim` is byte-identical to
+`sim.golden.txt` and the freeze before Session A holds in the sense that
+matters: the first minute is the same game, told better.
+
+**Verified:** 1063 tests / 74 files, 72 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
+twenty-five screens × four directions.
