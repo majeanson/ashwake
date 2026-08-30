@@ -123,6 +123,60 @@ carries a contrast correction that had been lost in both bodies. **None of it
 has been on a phone.** Worth doing BEFORE Session A rather than after — a
 Session A run against the old look would have to be run again.
 
+**The settlement, now that it is drawn in its own hand** (2026-08-29, `LOG.md`
+Session 18, `DECISIONS.md` D8). Its art was the plane's, recoloured, and two of
+its layers were nothing at all — MARKET baked with no texture and QUARRY lost
+its cut faces. That is fixed and re-baked: furrows and a crop, awnings over
+crates, quarry benches, paving courses, a pit cut in terraces, and destinations
+that are built things (a strongbox, a tower, a boundary post). `docs/shots/
+s5-settlement*.png` and `s5-directions.png` are the new pictures. **It has still
+never been on a phone**, which is the only place a direction gets chosen.
+
+**Three concept questions the fiction cannot answer for itself.** Found
+reviewing the backstory against what a settlement player actually reads:
+
+1. **The powers are still named in the plane's words.** `text/*.ts` hard-codes
+   `colourWord: { green: CROWDS, yellow: COMPANY, red: ASH, blue: TIDE }`, and
+   the rule lines say "· ash: stone beside red count as matches" and "· tide:
+   +1 worth per N hexes from home". **ASH and TIDE are torchlit's GROUND
+   names.** So a settlement player reads FARM · MARKET · QUARRY · ROADS on the
+   board and their cards, and then reads a rule about "ash" and "tide" — two
+   vocabularies in one sentence, and the exact thing D4.2 says a direction may
+   not do. Even in torchlit the four are inconsistent: two are named for the
+   rule and two for the ground. The fix is a ruling, not a patch — either the
+   power words move into the theme beside `terrainNames`, or the catalogue
+   takes them as arguments the way it takes the ground's name. It touches both
+   languages and re-records English snapshots, so it is yours.
+2. **One epitaph says "The torch carried N placements out."** There is no torch
+   in a settlement; there are lamps. It is one line in a random pool, and the
+   rest of the plane's vocabulary is fine — this direction is still "the plane,
+   once somebody stayed", so "the plane" holds. Reword per direction, or accept
+   it.
+3. **If settlement ever becomes the DEFAULT**, two launch surfaces are wired to
+   torchlit by hand and nothing would report it: `scripts/social.ts` composes
+   the share card from `TORCHLIT` only, and `index.html`'s `theme-color` plus
+   the manifest's `background_color` are torchlit's `#0a0806` rather than this
+   direction's `#14100c`. True of daylight today too. Not worth fixing before
+   the choice; worth knowing it is part of the choice.
+
+**The shrine, if you want it standing.** Measured this session
+(`board/landmarks.test.ts`): the shrine prop is a ring lying LEVEL, 0.88 wide
+and 0.16 tall, floating a third of a hex over its ground — its comment claimed
+it stood on edge, and three builds a torus upright, so the `rotateX` that was
+meant to stand it up laid it down. It stays level because a level ring reads
+the same from every yaw and the camera now turns through all of them. Standing
+it up needs something to turn it toward the camera per instance. **A look
+question: is a hovering ring a shrine, or a doorway you can walk through?**
+
+**Not art, and it stops a run from ending: a production build crashes the end
+screen.** With the working tree as it stood on 2026-08-29 evening,
+`pnpm build` produces a bundle where `toMainMenu` is referenced and never
+declared — the minifier drops the `const`, an unminified build keeps it, and
+the end screen falls into the failure panel with `ReferenceError`. Reproduced
+twice, and `e2e/shots.spec.ts`'s "first minute" fails on it. Whoever owns that
+change owns this; it is recorded here because a stranger cannot finish a run
+while it is true.
+
 **The French.** ≈250 sentences in Québec French, recorded into the snapshot
 files as the review surface, and still unread. The chrome gets built on that
 catalogue, so corrections are cheapest before S3.
@@ -156,6 +210,14 @@ with a guardrail that throws if the baked greyscale ordering disagrees with the
 token ordering. Settlement was one new entry in one array and it passed that
 guardrail on the first run — **it earned its place by passing the budgets, not
 by being liked.** What is left of S5 is choosing it, on a phone.
+
+**Corrected 2026-08-29 (Session 18): "one new entry in one array" was the
+problem, not the boast.** Being one entry meant it was drawn with the plane's
+figures — tide ripples, moss tufts, ember glints — in settlement colours, and
+in the two slots whose declared pattern kinds departed from the plane's it was
+drawn with nothing. It has its own hand now (`DECISIONS.md` D8), and adding a
+direction is still one file and one line as long as it borrows a motif that
+exists.
 
 ---
 

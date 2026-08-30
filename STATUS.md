@@ -4,7 +4,48 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the board answers a keyboard.** Marc:
+Last checkpoint: **2026-08-29, later — the settlement is drawn in its own
+hand.** Marc: _"add assets, graphics, etc. on the Settlement concept, review
+concepts for this backstory."_ It HAD art, and the art was the plane's,
+recoloured: `scripts/terrain.ts` drew moss tufts, dry grass, ember glints, ash
+pits and tide ripples for every direction and changed only the colours — right
+for three directions that are one place at three exposures, wrong for the one
+that claims to be a different place. **Two slots were not even that.** Each
+drawing picked its layers off the declared pattern KIND, and settlement is the
+only direction that departs from the plane's kind layout — so **MARKET baked
+with no texture at all** and **QUARRY silently lost the cut faces that carry
+its meaning**, while the live procedural painter drew both correctly the whole
+time. The art path was worse than the fallback it exists to supersede, on the
+ground a player looks at first, and **the greyscale guardrail looked at it and
+passed — correctly, because it grades value and a missing texture barely moves
+a mean.** So: **a direction now states its MOTIF** (D8), a motif is a complete
+set of figures, and **a layer a theme declares and the maker cannot draw is a
+build failure** rather than a quiet flat tile. Settlement's own figures:
+furrows with a lamplit crest and a crop planted in the rows, awning cloth with
+its fold-shadow over stacked lit crates, benched cut faces and angular chips,
+paving courses whose joints break course by course, and a pit cut in terraces
+where the plane's spent ground cracks open — every highlight off the
+direction's own `ink.lit` rather than the two hard-coded flame constants. Its
+**destinations are built things** (strongbox · tower · boundary post); the
+shrine's arch and the crystal are unchanged, which is what makes it a reading
+rather than a redecoration. **`ui.runEnd` re-baked itself into the new ground
+unasked**, because it composes from the direction's own terrain art. **Measured
+a third thing:** the shrine prop is a ring lying LEVEL and floating, under a
+comment claiming it stands on edge — three builds a torus upright, so the
+`rotateX` laid it down; it stays level (every yaw reads the same) and
+`landmarks.test.ts` now measures all ten props. **Verified:** 997 tests / 67
+files; typecheck and lint clean; golden sim byte-identical; **the three plane
+directions re-bake BYTE-IDENTICAL** — five changed files in `public/assets/`,
+all settlement's — which is what makes the refactor provable rather than
+argued. **Three concept questions are held for Marc in `NEXT.md` §1** (the
+power words are still the plane's; one epitaph mentions a torch this direction
+does not have; two launch surfaces are hard-wired to torchlit) **and one bug
+that is not this session's**: with the tree as it stood, a production build
+crashes the end screen on `ReferenceError: toMainMenu is not defined` — the
+minifier drops the declaration, an unminified build keeps it. **None of the new
+art has been on a phone.**
+
+Previous checkpoint: **2026-08-29, last — the board answers a keyboard.** Marc:
 _"do a pass for keyboard + desktop play (all cam movement, etc.) and easy tile
 placements. same for mobile, do a accessibility / high level moment."_ The one
 thing the board lacked was a way to SAY WHICH HEX YOU MEAN; every other key is

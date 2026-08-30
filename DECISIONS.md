@@ -160,6 +160,44 @@ face, so a banded terrain puts a third colour under a centred label;
 `paint.test` caught it on the first run. Every terrain in every direction uses
 a translucent ink, and now there is a written reason.
 
+### D8 — A direction states its MOTIF, and a dropped layer is a build failure — RULED 2026-08-29
+
+Settlement had art and it was the plane's art, recoloured: `scripts/terrain.ts`
+drew moss tufts, dry grass, ember glints, ash pits and tide ripples for every
+direction and changed only the colours. Correct for torchlit, torchlit-bright
+and daylight — one place at three exposures, which is exactly what a variant
+IS — and wrong for a direction whose entire claim is that it is a different
+place. FARM was tide ripples with moss on them, under a theme file that said
+"planted rows".
+
+**So a direction now says what its art is made OF** (`theme/tokens.ts#Motif`):
+`plane` or `settlement`. Not derived, unlike `isLight` — two directions can
+share a palette's polarity and mean completely different places. A motif is a
+COMPLETE set of figures, so nothing can end up half weather and half street,
+and where the two genuinely agree (blocked ground is unbuilt rock either way;
+a preview is a preview) the table holds the same function rather than a copy.
+
+**Adding a direction stays one theme file and one line in `THEMES`** as long as
+it picks a motif that exists. Inventing a motif is deliberately a bigger thing:
+it is a new set of drawings, and the table is where that cost shows up honestly
+instead of as a recoloured moss tuft.
+
+**The half of this that is a rule rather than a look:** a layer a theme
+declares and the baker cannot draw now THROWS. The old guards read as defensive
+(`pattern.kind === 'dots' ? pattern : null`) and did the opposite — settlement
+is the only direction that departs from the plane's kind layout, so MARKET
+matched neither guard and baked with **no texture at all**, and QUARRY lost the
+cut-face overlay that carries its meaning. The live painter drew both correctly
+the whole time, which means the art path was worse than the fallback it
+supersedes, on the ground a player looks at first. The greyscale guardrail
+looked straight at it and passed, correctly: it grades value, and a missing
+texture barely moves a mean.
+
+**A guard that watches one axis says nothing about the other**, and that is the
+general lesson worth keeping out of this: the fix is not a second threshold, it
+is refusing to bake something the direction asked for and the maker cannot
+make.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

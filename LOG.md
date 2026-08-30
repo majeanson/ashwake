@@ -1252,3 +1252,87 @@ audit unchanged at argued classes only. **The key map has not been felt on a
 real desktop, and the marker's ring has not been looked at on a phone** — the
 step sizes (15° a turn, 5° a lean, 96px a pan) are chosen by arithmetic, like
 `PX_PER_DEGREE` before them.
+
+### Session 18 — the settlement's art was the plane's, recoloured (2026-08-29)
+
+**Numbered 18 rather than 17 on purpose:** another session was working in this
+repo at the same time and landed `ca1f18a` mid-way through this one, which also
+swept this session's `theme/` edits into its commit. 17 is left for its own
+entry.
+
+**Question:** the settlement direction has terrain art — but is it art of its
+own, or the plane's art in settlement colours, and would anything have told us?
+
+**Answer: the plane's, recoloured — and worse than that in two slots, where it
+was nothing at all. Nothing would have told us, and one of the guards we have
+looked straight at it and passed.**
+
+`scripts/terrain.ts` drew one set of figures for every direction — moss tufts,
+dry grass blades, ember glints, ash pits, tide ripples — and changed only the
+colours. That is exactly right for torchlit, torchlit-bright and daylight,
+which are one place at three exposures, and it is the wrong answer for a
+direction whose whole claim is that it is a DIFFERENT place. FARM was drawn as
+tide ripples with moss growing on them. Its own theme file said "planted rows".
+
+**The two empty slots are the finding under the finding.** Each slot function
+picked its drawing off the layer's declared `kind` — `pattern.kind === 'dots' ?
+pattern : null` — and skipped the layer when the answer was no. Settlement is
+the only direction that departs from the plane's kind layout, because its
+brightest ground is striped where the plane's is dotted. So **MARKET matched
+neither guard and baked with no texture at all**, and **QUARRY silently lost the
+cut-face overlay that carries its whole meaning**. The live procedural painter
+(`render/paint.ts`) is kind-generic and drew both correctly the whole time,
+which means the ART path — the one that exists to supersede the fallback — was
+worse than the fallback for the ground a player looks at first.
+
+**The greyscale guardrail looked at this and passed it**, and it was right to:
+it grades VALUE, and a missing texture barely moves a mean. A guard that
+watches one axis says nothing about the other, and this is the picture of what
+that looks like.
+
+**What landed.**
+
+- **`Motif` is a claim a direction makes** (`theme/tokens.ts`): `plane` or
+  `settlement`. The three inherited directions say `plane` and their art
+  re-bakes BYTE-IDENTICAL, which is what makes the refactor provable rather
+  than argued — five files changed in `public/assets/`, all settlement's.
+- **A settlement's figures**: furrows with a lamplit crest and a crop planted
+  in the rows (FARM); awning cloth with its fold-shadow over stacked, lit
+  crates (MARKET); benched cut faces and angular chips (QUARRY); paving
+  courses whose cross joints break course by course (ROADS); a pit cut in
+  terraces where the plane's spent ground cracks open. Every highlight comes
+  off `T.ink.lit` — the direction's own lamplight — rather than the two
+  hard-coded "flame" and "torchlight" constants the plane's slots carry.
+- **A silent drop is now a loud failure.** `need()` throws with the direction,
+  the slot and both kinds. A layer a theme states and the maker cannot draw
+  goes MISSING rather than wrong, and missing is the one failure nobody sees.
+- **The destinations are built things** in this direction: a strongbox, a
+  tower, a boundary post. The shrine's arch and the crystal are unchanged, and
+  that is the argument that this is a reading and not a redecoration — a
+  threshold is a threshold in both fictions, and a find is the one thing on
+  the board nobody put where it is.
+- **`ui.runEnd` re-baked itself into the new ground** without being asked,
+  because it composes from the direction's own terrain PNGs. That is the
+  recipe-over-loaf argument paying out a second time in two days.
+
+**A third finding, measured rather than argued.** `propGeometry`'s shrine says
+"standing on edge: a torus is born lying flat" — and three builds a torus
+UPRIGHT, so that `rotateX` lays it down. The ring is 0.88 wide and 0.16 tall: a
+disc, not a doorway, hanging a third of a hex over its ground. It stays laid
+down (a level ring reads the same from every yaw, and the camera came off its
+rail on 2026-08-29 — after the prop was written), the comment now says what the
+code does, and `landmarks.test.ts` measures all ten props so the next one
+cannot spend a stage being something other than its own description.
+
+**And one that is not ours.** With the other session's uncommitted work in the
+tree, a PRODUCTION build crashes the end screen: `ReferenceError: toMainMenu is
+not defined`. The declaration is in the source and survives an unminified
+build; the minifier drops it and leaves the reference free. Not a rules
+problem, not an art problem, and not this session's to fix — but a run cannot
+end on the deployed site while it is true.
+
+**Verified:** 997 tests / 67 files (21 new, all props); typecheck, lint clean;
+golden sim byte-identical; `pnpm bake` re-bakes the three plane directions
+byte-identical and settlement's five changed files; the shot set regenerated.
+**Nobody has seen any of it on a phone**, which is the same sentence this
+direction has carried since it was built.
