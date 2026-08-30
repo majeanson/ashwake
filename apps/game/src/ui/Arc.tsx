@@ -26,7 +26,17 @@ export function Arc({
   readonly points: readonly number[];
   readonly label: string;
 }) {
-  if (points.length === 0) return null;
+  /*
+   * Fewer than two harvests is not a SHAPE (2026-08-29, Marc, with a picture:
+   * "shape of the run is not working").
+   *
+   * It drew one bar at full width and full height — every point is the biggest
+   * point when there is only one — so a run with a single scoring pop showed a
+   * solid gold rectangle captioned THE SHAPE OF THE RUN. Not a bug in the
+   * drawing: a chart of one number is a lie however it is drawn, and the honest
+   * answer is to say nothing. The numbers above it already say what happened.
+   */
+  if (points.length < 2) return null;
   const top = Math.max(...points, 1);
   const best = points.indexOf(top);
   const w = 100 / points.length;

@@ -563,7 +563,7 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     redraw: 'REPIOCHER',
     forge: 'FORGER',
     sacrificeLuck: 'SACRIFIER LA CHANCE',
-    tabs: { menu: 'MENU', start: 'DÉBUT', play: 'JOUER', hand: 'MAIN', after: 'APRÈS' },
+    tabs: { menu: 'MENU', start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN', after: 'APRÈS' },
     language: 'LANGUE',
     languages: { 'fr-CA': 'FRANÇAIS', en: 'ENGLISH' },
     appearance: 'APPARENCE',
@@ -572,6 +572,14 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     resetTeaching: 'RÉINITIALISER LES LEÇONS',
     details: 'DÉTAILS',
     howToPlay: 'COMMENT JOUER',
+    expedition: {
+      title: 'L’EXPÉDITION',
+      lines: [
+        'Tu marches vers une plaine noire. Tu poses des tuiles, elles mûrissent, tu récoltes, et tu pousses plus loin.',
+        'Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus — c’est la forme du jeu, pas une erreur de ta part.',
+        'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
+      ],
+    },
     camera: { fit: 'CADRER', here: 'ICI', flat: 'À PLAT', home: 'DÉFAUT' },
     board: {
       label: 'Le plateau',

@@ -966,6 +966,25 @@ ${s.view.harvest.firstPopWhen}`,
       const b = board.current;
       switch (command.kind) {
         case 'cursor': {
+          /*
+           * Walking the marker takes FOCUS, and that is what makes Enter work.
+           *
+           * Marc, 2026-08-29: *"for keyboard, space or enter doesnt seem to
+           * put the tile"*. It did not, and the reason was a rule that is right
+           * in general: a focused control owns Enter and Space, because that is
+           * how a button is pressed. But the ordinary way to play with a
+           * keyboard is to PICK A CARD — with a click, or with `1`–`8` after a
+           * click — and picking one leaves focus on that card's button. So the
+           * aim worked, and then Enter went to the card and re-pressed it,
+           * putting the card down instead of the tile.
+           *
+           * Moving the marker is a player saying they are working on the board,
+           * so focus follows the statement. The board is `role="application"`
+           * and not a button, which is exactly why `takesKey` then hands it
+           * Enter — and a player parked on POP who never touches an arrow still
+           * presses POP with Enter, which is the behaviour the rule was for.
+           */
+          b?.focus();
           const aim = b?.moveCursor(command.dir) ?? null;
           if (aim !== null) onLook(aim.key, aim.cell);
           return;
@@ -1012,7 +1031,13 @@ ${s.view.harvest.firstPopWhen}`,
           // A digit past the end of the hand is a press at nothing, not a
           // deselection: the hand shrinks between deals and the number keys
           // must not become destructive as it does.
-          if (command.index < snap.hud.draft.length) onSelect(command.index);
+          if (command.index < snap.hud.draft.length) {
+            onSelect(command.index);
+            // Focus goes to the board for the same reason an arrow moves it:
+            // picking a card is the first half of placing one, and Enter has
+            // to reach the board for the second.
+            b?.focus();
+          }
           return;
       }
     };
@@ -1119,9 +1144,19 @@ ${s.view.harvest.firstPopWhen}`,
         <div className="scene" {...(anyOpen ? { inert: true } : {})}>
           <EndScreen
             hud={snap.hud}
-            harvests={snap.state.log.harvests
-              .filter((h) => h.choice !== 'burn' && h.choice !== 'treasure')
-              .map((h) => h.points)}
+            /*
+             * EVERY harvest, in order — which is what the caption promises.
+             *
+             * It was filtered to the scoring ones, so a run that mostly popped
+             * for TILES charted two or three bars out of a dozen pops, and a
+             * run with one scoring pop charted a single bar (`Arc` now refuses
+             * that outright). `arcSparkline` in the core — the same shape, as
+             * a string, on the daily's share line — has always read every
+             * harvest, and a zero is not a gap: it says the player was banking
+             * tiles rather than points just then, which is most of what the
+             * shape of a run IS.
+             */
+            harvests={snap.state.log.harvests.map((h) => h.points)}
             s={s}
             theme={theme}
             progress={progress}

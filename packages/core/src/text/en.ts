@@ -534,7 +534,7 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     redraw: 'REDRAW',
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
-    tabs: { menu: 'MENU', start: 'START', play: 'PLAY', hand: 'HAND', after: 'AFTER' },
+    tabs: { menu: 'MENU', start: 'EXPEDITION', play: 'PLAY', hand: 'HAND', after: 'AFTER' },
     language: 'LANGUAGE',
     languages: { 'fr-CA': 'FRANÇAIS', en: 'ENGLISH' },
     appearance: 'APPEARANCE',
@@ -545,6 +545,14 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     howToPlay: 'HOW TO PLAY',
     /** The camera cluster's third control, shown only once the board has been
      *  turned or leaned away from the angle its direction opens at. */
+    expedition: {
+      title: 'THE EXPEDITION',
+      lines: [
+        'You are walking out into a dark plane. You place tiles, they ripen, you pop them, and you push on.',
+        'Every placement costs tiles. Popping pays them back. A run ends when you run out — that is the shape of the game, not a mistake you made.',
+        'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
+      ],
+    },
     camera: { fit: 'FIT', here: 'HERE', flat: 'FLAT', home: 'DEFAULT' },
     board: {
       label: 'The board',

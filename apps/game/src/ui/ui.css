@@ -368,15 +368,62 @@ button[disabled] {
   border-radius: 2px;
 }
 
+/*
+ * A disclosure that looks like a control (2026-08-29).
+ *
+ * Marc, with a picture of the end screen: *"detail was too subtule, make it a
+ * button that pops"*. It was label-cased dim ink with no edge and no marker,
+ * sitting between a stat grid and a chart — which made DETAILS read as another
+ * heading rather than as the one thing on that screen you are meant to press.
+ * The whole payout breakdown was behind it.
+ *
+ * So it wears the panel's own button clothes: an edge, a ground, full ink, and
+ * a caret that turns. The caret is a chrome affordance rather than game
+ * vocabulary — `tokens.ts` owns the marks that mean something on the plane, and
+ * a disclosure triangle is the same shape every operating system draws for the
+ * same idea. It is `list-style: none` because the browser's own marker sits in
+ * the wrong place and cannot be styled to the right one.
+ */
 .fold > summary {
   cursor: pointer;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
   font-size: 0.85rem;
-  color: var(--ink-dim);
+  color: var(--ink);
   min-height: var(--tap);
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.7rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge-active);
+  border-radius: var(--radius);
+  list-style: none;
+}
+
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fold > summary::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 0.9em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fold > summary::after {
+    transition: transform var(--fade) ease;
+  }
+}
+
+.fold[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+/* Open, the fold is a block of content and wants air under its own control. */
+.fold[open] > summary {
+  margin-bottom: var(--gap);
 }
 
 .facts {

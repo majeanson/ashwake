@@ -461,6 +461,16 @@ export type Strings = {
      * cycles rather than four that crowd the board, which is Ashwake 1's
      * argument for the cluster restated: a phone already has a pinch.
      */
+    /**
+     * The manual's opening — what an expedition IS, before any rule.
+     *
+     * Not a lesson, and deliberately: a lesson teaches a TERM, carries a
+     * figure and is remembered in the teaching ledger. This teaches none, and
+     * exists because the manual opened on RIPE — a mechanic — and never once
+     * said what the player was doing or that running out is how a run ends
+     * rather than a mistake they made.
+     */
+    readonly expedition: { readonly title: string; readonly lines: readonly string[] };
     readonly camera: {
       readonly fit: string;
       readonly here: string;

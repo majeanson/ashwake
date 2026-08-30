@@ -35,19 +35,30 @@ import { Tabs } from '../ui/Tabs';
  * 2026-08-27 after it kept dismissing the manual mid-sentence.
  */
 
-const TABS = ['start', 'play', 'hand', 'after'] as const;
+const TABS = ['start', 'play', 'hand'] as const;
 type TabId = (typeof TABS)[number];
 
 /** The key list, in the order somebody learns it: point at a hex, act on it,
  *  then move the camera, then the shortcuts that only save time. */
 const KEY_LINES = ['move', 'act', 'pan', 'zoom', 'turn', 'lean', 'view', 'cards', 'mouse'] as const;
 
-/** Which lessons belong under which tab, in reading order. */
+/**
+ * Which lessons belong under which tab, in reading order.
+ *
+ * **Regrouped 2026-08-29** (Marc): a lesson belongs beside the thing it is
+ * about, not on a tab named for when you happen to meet it. AFTER held the
+ * three that had nowhere else — and every one of them had somewhere else.
+ *
+ *   - SIZE BONUS is a rule about what a POP pays, so it reads right after POP.
+ *   - BOUNTY is what a SITE opens, so it belongs with the destinations.
+ *   - RELICS are what LUCK and SACRIFICE turn into, so they close the hand.
+ *
+ * AFTER is gone with them rather than left as an empty tab.
+ */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
-  start: ['ripe', 'pop', 'worth'],
-  play: ['pocket', 'stone', 'cache', 'site', 'shrine', 'territory'],
-  hand: ['rare', 'rareUnique', 'stash', 'luck'],
-  after: ['relic', 'bounty', 'sizeBonus'],
+  start: ['ripe', 'pop', 'sizeBonus', 'worth'],
+  play: ['pocket', 'stone', 'cache', 'site', 'shrine', 'territory', 'bounty'],
+  hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
 
 export type ManualProps = {
@@ -92,6 +103,27 @@ export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
         walked there first.
       */}
       {on === 'play' && <Legend theme={theme} s={s} />}
+
+      {/*
+        What an expedition IS, before any rule (2026-08-29).
+
+        Marc: *"instead of START call it EXPEDITION or similar and then explain
+        its normal to die or have some kind of backstory"*. The manual opened
+        on RIPE — a mechanic — and never said what the player was doing or that
+        running out of tiles is how a run ENDS rather than how it is failed.
+        A roguelite that does not say so reads as a game you keep losing.
+
+        Not a lesson: it teaches no term, carries no figure and is not
+        something the teaching ledger should remember having said once.
+      */}
+      {on === 'start' && (
+        <section>
+          <h2 className="panel-title">{s.ui.expedition.title}</h2>
+          {s.ui.expedition.lines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </section>
+      )}
 
       {/*
         The keys, on the tab a player opens first and only where there is a

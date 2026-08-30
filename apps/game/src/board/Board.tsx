@@ -124,6 +124,13 @@ export type BoardHandle = {
   moveCursor(dir: Direction | null): Aim | null;
   /** What the marker is on, or null while there is no marker. */
   cursorCell(): Aim | null;
+  /**
+   * Put keyboard focus on the board.
+   *
+   * Walking the marker is a player saying 'I am working on the board now',
+   * and focus has to follow the statement — see `App`'s key handler.
+   */
+  focus(): void;
 };
 
 export type BoardProps = {
@@ -328,6 +335,7 @@ export function Board(props: BoardProps) {
       leanBy: (deg) => leanBy(0, deg),
       moveCursor,
       cursorCell: () => (cursor === null ? null : aimAt(cursor.key)),
+      focus: () => wrapper.current?.focus(),
     }),
     [resetLean, flatten, leanBy, moveCursor, cursor, aimAt],
   );
@@ -516,11 +524,40 @@ function Rig({
   const frameRef = useRef(frame);
   const wasFit = useRef(true);
 
-  // A board that grew while at zoom 1 re-fits, so the frontier stays in view.
+  /** True until the board has been framed once. The first frame must fit; no
+   *  frame after it may re-fit on its own. */
+  const framedOnce = useRef(false);
+
+  /*
+   * A placement does not move the board (2026-08-29).
+   *
+   * Marc: *"when we place a tile, make sure the map doesnt move and stays
+   * stationary, it always zoom in or zoom out a bit and its annoying."*
+   *
+   * It re-fitted on every frame the board was still at zoom 1 — which is most
+   * of a run — so each placement grew the structure, recomputed the fit, and
+   * rescaled everything by a percent or two. Under a thumb that is the whole
+   * board breathing every time you put a tile down, and it is worst exactly
+   * where a player is being careful: placing several tiles in a row, watching
+   * one spot.
+   *
+   * The behaviour it was bought for — "the frontier stays in view as the board
+   * grows" — is real, and it is now a BUTTON rather than something that
+   * happens to you: FIT is the first stop on the camera cycle and one tap
+   * away. A camera that only moves when asked is the rule everywhere else on
+   * this board (a drag, a pinch, a flight), and this was the one exception.
+   *
+   * The zoom clamp stays: a board that grew past what this zoom can show is
+   * not a preference, it is arithmetic that no longer holds.
+   */
   useEffect(() => {
     frameRef.current = frame;
-    if (wasFit.current) cam.current = fitCamera(frame);
-    else cam.current = { ...cam.current, zoom: Math.min(cam.current.zoom, zoomMaxOf(frame)) };
+    if (!framedOnce.current) {
+      framedOnce.current = true;
+      cam.current = fitCamera(frame);
+    } else {
+      cam.current = { ...cam.current, zoom: Math.min(cam.current.zoom, zoomMaxOf(frame)) };
+    }
     invalidate();
   }, [frame, invalidate]);
 
