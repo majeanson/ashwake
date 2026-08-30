@@ -285,7 +285,15 @@ button[disabled] {
  */
 .card-scrim.brief {
   background: color-mix(in srgb, var(--bg) 45%, transparent);
-  cursor: pointer;
+  /* It is a picture, not a wall: the board underneath stays tappable, so the
+     press that sends this away is also the press that places a tile. The
+     dismissal listens on the document — see `ui/Card.tsx`. */
+  pointer-events: none;
+}
+
+/* The card itself still takes its own button's press. */
+.card-scrim.brief .card {
+  pointer-events: auto;
 }
 
 .card {

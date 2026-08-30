@@ -26,6 +26,15 @@ import { useEffect, useRef, type ReactNode } from 'react';
  * its own if none comes. It stays a card rather than falling back to the toast
  * because the toast is the strip the eye is not on while the cascade plays —
  * which is the finding that made pops cards in the first place.
+ *
+ * **And the tap that dismisses it still lands.** The obvious build puts the
+ * dismiss on the scrim, which means the scrim has to catch pointer events,
+ * which means the first tap after every pop is EATEN — a player popping
+ * steadily loses a placement's worth of tapping to a card they were not
+ * reading. So the scrim passes pointers through (`pointer-events: none` in
+ * `ui.css`) and the dismissal rides a document-level `pointerdown` instead:
+ * tap the board and the tile goes down AND the card goes away, which is what
+ * "easy to tap out" has to mean on a board you are still playing.
  */
 
 /**
@@ -95,17 +104,19 @@ export function Card({
   useEffect(() => {
     if (!brief) return;
     const timer = setTimeout(() => latest.current(), BRIEF_MS);
-    return () => clearTimeout(timer);
+    // ANY press, anywhere, including one that is also doing something else.
+    // On the document rather than on the scrim, because the scrim deliberately
+    // does not catch pointers — see the note at the top of this file.
+    const onDown = (): void => latest.current();
+    document.addEventListener('pointerdown', onDown);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('pointerdown', onDown);
+    };
   }, [brief]);
 
   return (
-    <div
-      className={brief ? 'card-scrim brief' : 'card-scrim'}
-      /* Any tap, anywhere, including on the card itself — the button inside
-         does the same thing, so a press that lands on it is not a different
-         outcome, only a more deliberate one. */
-      {...(brief ? { onClick: onDismiss } : {})}
-    >
+    <div className={brief ? 'card-scrim brief' : 'card-scrim'}>
       <div
         ref={panel}
         className="card"

@@ -471,8 +471,20 @@ test('a pop after the first is brief, and any tap sends it away', async ({ page 
   // dropping the accounting a harvest owes.
   expect(((await scrim.textContent()) ?? '').trim().length).toBeGreaterThan(10);
 
-  // A tap anywhere on the scrim, not on a button, and it is gone.
-  await scrim.click({ position: { x: 8, y: 8 } });
+  /*
+   * A press anywhere sends it away, and the press still LANDS.
+   *
+   * The obvious build puts the dismiss on the scrim, which means the scrim
+   * catches pointers, which means the first tap after every pop is eaten — a
+   * player popping steadily loses a placement's worth of tapping to a card
+   * they were not reading. The board is tapped here on purpose: it is under
+   * the scrim, and it has to still be reachable.
+   */
+  expect(
+    await scrim.evaluate((el) => getComputedStyle(el).pointerEvents),
+    'the brief scrim is a wall, so it eats the next tap',
+  ).toBe('none');
+  await page.mouse.click(120, 300);
   await expect(scrim).toHaveCount(0);
 
   expect(errors, errors.join('\n')).toEqual([]);

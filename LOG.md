@@ -1730,6 +1730,15 @@ plays, which is the finding that made pops cards in the first place. Both
 halves are pinned in `board.spec.ts`, as a pair, because either one alone is
 the old bug pointing the other way.
 
+**And the tap that sends it away still LANDS.** The obvious build puts the
+dismiss on the scrim, which means the scrim has to catch pointer events, which
+means the first tap after every pop is EATEN — a player popping steadily loses
+a placement's worth of tapping to a card they were not reading. The scrim
+passes pointers through and the dismissal rides a document-level
+`pointerdown`, so tapping the board puts a tile down AND clears the card in
+one press. That is what "easy to tap out" has to mean on a board you are still
+playing.
+
 **THE CARD IN YOUR HAND IS THE TILE** (`ui/Tile.tsx`, `shell/art.ts`). Marc:
 _"I also liked the tile card we had having the tile itself."_ Ashwake 1 put the
 baked hex on the card — the very PNG the board composites into the ground it
