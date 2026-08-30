@@ -34,7 +34,7 @@ import { surface, type Theme } from '../tokens';
  */
 export const TORCHLIT_BRIGHT: Theme = {
   id: 'torchlit-bright',
-  name: { en: 'Torchlit — Lamps Lit', 'fr-CA': 'Torche — lampes allumées' },
+  name: { en: 'Torchlit, Lamps Lit', 'fr-CA': 'Torche, lampes allumées' },
   note: {
     en: 'Torchlit with the lamps lit. Same grim room, same gold and blood, but the light reaches the corners: a wide value ladder, warm-white ink, and a falloff that dims the far map without swallowing it. For sunlight, for tired eyes, and for anyone whose phone asked for more contrast.',
     'fr-CA':

@@ -42,9 +42,9 @@ export const SETTLEMENT: Theme = {
   id: 'settlement',
   name: { en: 'Settlement', 'fr-CA': 'Établissement' },
   note: {
-    en: 'The plane once somebody stayed: a village at dusk, lit by its own lamps. Farm, market, quarry and roads — the same four grounds, named for what they are for. The dark is still out there past the last house.',
+    en: 'The plane once somebody stayed: a village at dusk, lit by its own lamps. Farm, market, quarry and roads: the same four grounds, named for what they are for. The dark is still out there past the last house.',
     'fr-CA':
-      'Le plan une fois que quelqu’un est resté : un village au crépuscule, éclairé par ses propres lampes. Ferme, marché, carrière et chemins — les quatre mêmes sols, nommés pour ce qu’ils servent. Le noir est encore là, passé la dernière maison.',
+      'Le plan une fois que quelqu’un est resté : un village au crépuscule, éclairé par ses propres lampes. Ferme, marché, carrière et chemins : les quatre mêmes sols, nommés pour ce qu’ils servent. Le noir est encore là, passé la dernière maison.',
   },
   source: 'Authored 2026-08-29 from Marc’s own reading of the colours (D4.4).',
 

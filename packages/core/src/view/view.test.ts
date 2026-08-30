@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { decodeRun, encodeRun } from '@meta/save';
-import { TUNING, type Tuning } from '@content/tuning';
+import { COLOURS, TUNING, type Tuning } from '@content/tuning';
 import { distance, key, neighbourKeys, parse } from '@engine/hex';
 import { newRun, reduce } from '@engine/reduce';
 import { harvestMultiplier, harvestValue, legalPlacements, ripeKeys, scoreOf } from '@engine/rules';
 import type { GameState } from '@engine/state';
 import { destinationsWithin, findAt } from '@engine/world';
-import { arcNote, toBoardView, toHudView } from './view';
-import { STRINGS_EN as EN } from '@text/en';
+import { arcNote, colourLesson, groundHead, toBoardView, toHudView } from './view';
+import { STRINGS_EN, STRINGS_EN as EN } from '@text/en';
+import { STRINGS_FR } from '@text/fr-CA';
+import { THEMES } from '@theme/index';
+import { namesOf, powersOf } from '@theme/tokens';
 
 /**
  * The selector is where the UI could start disagreeing with the engine — a
@@ -544,6 +547,51 @@ describe('beacons around a camp (waypoints, 2026-08-19)', () => {
     const beacons = view.cells.filter((c) => c.beacon);
     for (const b of beacons) {
       expect(distance({ q: b.q, r: b.r }, { q: 30, r: 0 })).toBeLessThanOrEqual(horizon);
+    }
+  });
+});
+
+/**
+ * A sentence this file ASSEMBLES is a sentence `text.test.ts` cannot see.
+ *
+ * `groundHead` hard-coded " — " between a ground's name and its power, so
+ * every colour card in the game read "MARKET — company." in both languages
+ * while both catalogues were clean and the house rule that forbids the em dash
+ * passed. Found 2026-08-30 by grepping the LIVE bundle rather than the source,
+ * which is the only reason it was found at all.
+ *
+ * The separator is the catalogue's now (D4, and the same argument `powerHead`
+ * already made about its colon). This checks the COMPOSED result, over every
+ * direction and both languages, because the parts being clean is exactly what
+ * was true while it was broken.
+ */
+describe('the sentences view/ builds itself', () => {
+  it('carries no em dash, in any direction or language', () => {
+    for (const s of [STRINGS_EN, STRINGS_FR]) {
+      for (const theme of THEMES) {
+        for (const colour of COLOURS) {
+          const head = groundHead(
+            namesOf(theme, s.locale)[colour],
+            powersOf(theme, s.locale)[colour],
+            s,
+          );
+          expect(head, `${theme.id} · ${s.locale}: "${head}"`).not.toContain('—');
+          const lesson = colourLesson(colour, TUNING, theme, s);
+          if (lesson !== null) {
+            expect(lesson, `${theme.id} · ${s.locale}: "${lesson}"`).not.toContain('—');
+          }
+        }
+      }
+    }
+  });
+
+  /** The rule the separator lives beside: a direction that names its ground
+   *  after its power says the name once, not twice. */
+  it('says a ground’s name once where the direction named it for its power', () => {
+    for (const s of [STRINGS_EN, STRINGS_FR]) {
+      expect(groundHead('ASH', 'ash', s)).toBe('ASH.');
+      expect(groundHead('MARKET', 'company', s)).toContain('MARKET');
+      expect(groundHead('MARKET', 'company', s)).toContain('company');
     }
   });
 });

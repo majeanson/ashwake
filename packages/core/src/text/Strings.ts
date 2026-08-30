@@ -92,6 +92,16 @@ export type Strings = {
   readonly lastGaspRule: string;
 
   readonly view: {
+    /**
+     * "NAME: PERSONALITY." — the head of a colour's lesson.
+     *
+     * The WORDS and their punctuation, never the rule: `view#groundHead` still
+     * decides whether a direction that named its ground after its power gets a
+     * word at all. It lives here for the same reason `powerHead`'s colon does
+     * (D4): Québec French puts a narrow no-break space before a colon and
+     * English does not, and that is a fact about a language.
+     */
+    readonly groundHead: (name: string, word: string) => string;
     readonly arc: { readonly late: string; readonly mid: string; readonly early: string };
     readonly guide: {
       readonly lowPopNow: string;

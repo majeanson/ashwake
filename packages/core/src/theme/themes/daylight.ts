@@ -34,9 +34,9 @@ export const DAYLIGHT: Theme = {
   id: 'daylight',
   name: { en: 'Daylight Survey', 'fr-CA': 'Relevé de jour' },
   note: {
-    en: 'The expedition written up afterwards: ink on vellum, ground tinted rather than lit, nothing hidden. No torch and no gloom — a map is a thing you read. For bright sun, for anyone whose phone is set to light, and for eyes that would rather not hunt for a number.',
+    en: 'The expedition written up afterwards: ink on vellum, ground tinted rather than lit, nothing hidden. No torch and no gloom: a map is a thing you read. For bright sun, for anyone whose phone is set to light, and for eyes that would rather not hunt for a number.',
     'fr-CA':
-      'L’expédition mise au propre après coup : encre sur vélin, sol teinté plutôt qu’éclairé, rien de caché. Pas de torche, pas de pénombre — une carte, ça se lit. Pour le grand soleil, pour un téléphone réglé en clair, et pour les yeux qui préfèrent ne pas chercher un chiffre.',
+      'L’expédition mise au propre après coup : encre sur vélin, sol teinté plutôt qu’éclairé, rien de caché. Pas de torche, pas de pénombre : une carte, ça se lit. Pour le grand soleil, pour un téléphone réglé en clair, et pour les yeux qui préfèrent ne pas chercher un chiffre.',
   },
   source:
     'Authored 2026-08-25 for the contrast pass; register borrowed from the retired cold-survey direction.',

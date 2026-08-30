@@ -60,7 +60,16 @@ matrix that LISTS it because the manual's MENU tab — the only way from a live
 board into SETTINGS — had the two doors in this game with no `data-go`, so
 nothing had ever walked that path.
 
-Verified: 1060 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
+**And the em-dash rule caught itself, from the deployed bundle.** Verified
+against the source, the pass still shipped five player-facing em dashes:
+`text.test.ts` walks the two catalogues, and neither a DIRECTION's own name and
+note (not in `text/` on purpose) nor a sentence ASSEMBLED in `view/`
+(`groundHead`'s hard-coded separator, so every colour card read "MARKET —
+company." while both catalogues were clean) is in them. Both fixed and both
+pinned, in the file the layering allows. **A test written against one source is
+a rule that holds in one source.**
+
+Verified: 1063 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions. **No rule moved**, and the first minute
 is the same game told better.

@@ -170,6 +170,7 @@ export const STRINGS_EN: Strings = {
   lastGaspRule: LAST_GASP_RULE,
 
   view: {
+    groundHead: (name, word) => `${name}: ${word}.`,
     arc: {
       late: 'The run built to it: your biggest pop landed in the final stretch.',
       mid: 'Your biggest pop came mid-run; the tail never topped it.',

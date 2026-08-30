@@ -1597,7 +1597,7 @@ export function statNote(id: string, hud: HudView, t: Tuning, s: Strings): strin
 }
 
 /**
- * "NAME — PERSONALITY", except where a direction has already named the ground
+ * "NAME: PERSONALITY", except where a direction has already named the ground
  * after its personality.
  *
  * Torchlit calls red ASH and blue TIDE, so a line built as name-dash-word read
@@ -1615,9 +1615,18 @@ export function statNote(id: string, hud: HudView, t: Tuning, s: Strings): strin
  * to stop — so the rule is one exported function now, and both doors call it.
  * Case-insensitive because the two tables disagreed about capitals: the card
  * passes 'ASH', the manual passes 'ash', and the ground is named 'ASH'.
+ *
+ * **The separator is the CATALOGUE's since 2026-08-30**, and it had to be. This
+ * function hard-coded ` — ` for both languages, so the em-dash pass over
+ * `text/` could not see it and `text.test.ts` — which walks the catalogues —
+ * could not catch it: every colour card in the game read "MARKET — company."
+ * in English and in French while both catalogues were clean. It is the same
+ * D4 argument `powerHead` below makes about its colon, and the same place it
+ * was already resolved. **A sentence assembled outside `text/` is a sentence
+ * no language rule is holding.**
  */
-export function groundHead(name: string, word: string): string {
-  return name.toLowerCase() === word.toLowerCase() ? `${name}.` : `${name} — ${word}.`;
+export function groundHead(name: string, word: string, s: Strings): string {
+  return name.toLowerCase() === word.toLowerCase() ? `${name}.` : s.view.groundHead(name, word);
 }
 
 /**
@@ -1650,7 +1659,7 @@ export function powerHead(name: string, word: string): string {
  */
 export function colourLesson(colour: Colour, t: Tuning, theme: Theme, s: Strings): string | null {
   const n = namesOf(theme, s.locale)[colour];
-  const head = groundHead(n, powersOf(theme, s.locale)[colour]);
+  const head = groundHead(n, powersOf(theme, s.locale)[colour], s);
   const c = s.view.colour;
   switch (colour) {
     case 'green':

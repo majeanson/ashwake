@@ -7,6 +7,7 @@ import { stringsFor } from './index';
 import type { Strings } from './Strings';
 import { SETTLEMENT } from '@theme/themes/settlement';
 import { TORCHLIT } from '@theme/themes/torchlit';
+import { THEMES } from '@theme/index';
 import { namesOf, powersOf } from '@theme/tokens';
 
 /**
@@ -80,6 +81,36 @@ describe('the catalogues', () => {
       for (const text of everyString(s)) {
         expect(text, `${s.locale}: "${text}" carries an em dash`).not.toContain('—');
         expect(text, `${s.locale}: "${text}" carries an en dash`).not.toContain('–');
+      }
+    }
+  });
+
+  /**
+   * The same rule, over a DIRECTION's own words.
+   *
+   * The first pass wrote the rule against `everyString(CATALOGUE)` and shipped
+   * it, and a direction's name and note walked straight past it (found
+   * 2026-08-30 by grepping the LIVE bundle rather than the source). They are
+   * per-language prose, the APPEARANCE picker prints them in full, and they
+   * are deliberately not in `text/` because a direction carries its own
+   * fiction. **A test written against one source is a rule that holds in one
+   * source.**
+   *
+   * The other surface that escaped — a sentence ASSEMBLED outside `text/` —
+   * is checked in `view/view.test.ts`, because the layering lint says `text/`
+   * may not look at `view/` and it is right.
+   */
+  it('writes no em dash in a direction’s own name or note', () => {
+    for (const s of CATALOGUES) {
+      for (const theme of THEMES) {
+        for (const text of [theme.name[s.locale], theme.note[s.locale]]) {
+          expect(text, `${theme.id} · ${s.locale}: "${text}" carries an em dash`).not.toContain(
+            '—',
+          );
+          expect(text, `${theme.id} · ${s.locale}: "${text}" carries an en dash`).not.toContain(
+            '–',
+          );
+        }
       }
     }
   });

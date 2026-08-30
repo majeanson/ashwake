@@ -1903,10 +1903,39 @@ doors in the game with no `data-go` — so nothing had ever walked that path, in
 any test, which is why the missing ♪ survived a matrix that lists it. **A
 control a test cannot address is a control no test addresses.**
 
+**Sixteen, and it was the em-dash rule catching itself.** The pass above was
+verified against the source and the catalogues, and then the DEPLOYED bundle
+was grepped — and it still held five player-facing em dashes the test could not
+see, because `text.test.ts` walks `STRINGS_EN` and `STRINGS_FR` and neither of
+these lives there:
+
+- **A DIRECTION's own name and note.** `Torchlit — Lamps Lit`, and two notes
+  the APPEARANCE picker prints in full, in both languages. They are deliberately
+  not in `text/` — a direction carries its own fiction — so they were outside
+  the only thing looking.
+- **A sentence ASSEMBLED outside `text/`.** `groundHead` hard-coded `—`
+  between a ground's name and its power, so every colour card in the game read
+  "MARKET — company." in both languages **while both catalogues were clean**.
+  It is the same D4 argument `powerHead` makes two functions below it about
+  its own colon, in the same file, already resolved once: the separator is a
+  fact about a LANGUAGE. The catalogue owns it now and `groundHead` keeps only
+  the rule (say the name once where a direction named its ground for its
+  power).
+
+Both are pinned, and pinned where the layering allows: the directions in
+`text.test.ts`, the composed sentence in `view/view.test.ts`, because `text/`
+may not import `view/` and that lint is right. **A test written against one
+source is a rule that holds in one source** — and the only reason this was
+found is that the live bundle was read rather than the code that made it.
+
+The five dashes left in the build are `theme/assets.ts`'s slot notes, which
+describe art slots to a baker and reach no player: `ASSET_SLOTS` has no
+consumer in the app at all.
+
 **Nothing here changes a rule.** `pnpm sim` is byte-identical to
 `sim.golden.txt` and the freeze before Session A holds in the sense that
 matters: the first minute is the same game, told better.
 
-**Verified:** 1060 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
+**Verified:** 1063 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions.

@@ -168,6 +168,7 @@ export const STRINGS_FR: Strings = {
   lastGaspRule: LAST_GASP_RULE,
 
   view: {
+    groundHead: (name, word) => `${name}${D}: ${word}.`,
     arc: {
       late: `La partie a monté jusque-là${D}: ta plus grosse récolte est tombée dans la dernière ligne droite.`,
       mid: 'Ta plus grosse récolte est venue au milieu; la fin ne l’a jamais dépassée.',
