@@ -1,4 +1,4 @@
-import { COLOURS } from '@content/tuning';
+import { COLOURS, TUNING } from '@content/tuning';
 import {
   COLOUR_MARK,
   CONCEPT_MARK,
@@ -9,6 +9,7 @@ import {
   type Theme,
 } from '@theme/tokens';
 import { lessonName, lessonOf, type LessonId } from '@view/lessons';
+import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
 
 /**
@@ -41,10 +42,9 @@ const PLACES: readonly { readonly reward: keyof typeof LANDMARK_GLYPH; readonly 
 export type LegendProps = {
   readonly theme: Theme;
   readonly s: Strings;
-  readonly onTerm: (id: LessonId) => void;
 };
 
-export function Legend({ theme, s, onTerm }: LegendProps) {
+export function Legend({ theme, s }: LegendProps) {
   const names = namesOf(theme, s.locale);
 
   return (
@@ -61,7 +61,24 @@ export function Legend({ theme, s, onTerm }: LegendProps) {
             <span className="legend-mark" aria-hidden="true">
               {COLOUR_MARK[colour]}
             </span>
-            <span className="legend-name">{names[colour]}</span>
+            {/*
+              The grounds say what they DO, right here.
+
+              They are the one thing in this legend with no section under it —
+              the manual teaches RIPE and POCKET and CACHE, and never once says
+              what MOSS is for. So a player met four names, four colours and
+              four marks, and had to find the answer by tapping a card in the
+              hand. `powerOf` is the core's one-line statement of a colour's
+              power and is already what the hand's card prints, so this is the
+              same sentence in a second place rather than a second sentence.
+              A dial at zero returns '' and the row is just a name again.
+            */}
+            <span className="legend-name">
+              {names[colour]}
+              {powerOf(colour, TUNING, s) === '' ? null : (
+                <span className="legend-note note"> — {powerOf(colour, TUNING, s)}</span>
+              )}
+            </span>
           </li>
         ))}
       </ul>
@@ -75,12 +92,20 @@ export function Legend({ theme, s, onTerm }: LegendProps) {
               <span className="legend-mark" aria-hidden="true">
                 {LANDMARK_GLYPH[reward]}
               </span>
-              {/* Tappable, because the term card is where the full definition
-                  already lives — a legend that repeated it would be a second
-                  copy of a sentence this project keeps in one place. */}
-              <button type="button" className="term" data-term={id} onClick={() => onTerm(id)}>
+              {/*
+                A NAME, not a button (2026-08-29). It was tappable, on the
+                argument that the term card is where the full definition lives
+                and a legend repeating it would be a second copy. True of the
+                sentence, wrong about the screen: this legend opens the PLAY
+                tab and every one of these five has its own section a thumb's
+                length below it, so the card it opened was quoting the page it
+                was opened from. Marc: "make sure cache, site, shrine, etc. are
+                not clickable ... they should get the explanation directly
+                readable."
+              */}
+              <span className="legend-name" data-term={id}>
                 {lesson === undefined ? id : lessonName(lesson, s)}
-              </button>
+              </span>
             </li>
           );
         })}

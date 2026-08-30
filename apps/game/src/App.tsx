@@ -16,8 +16,9 @@ import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import type { LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
+import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { ActionBar } from './screens/ActionBar';
-import { Camera } from './screens/Camera';
+import { Camera, useCameraCycle } from './screens/Camera';
 import { Directions } from './screens/Directions';
 import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
@@ -109,6 +110,15 @@ const RELIEF = 0.35;
 const LIGHT = 1;
 const MATERIALS = 1;
 const ART = 1;
+
+/**
+ * How long the camera lingers on a claimed destination before coming home.
+ *
+ * Long enough to see WHAT was claimed and where, short enough that it never
+ * feels like the game took the board away — the flight there and back is
+ * 320ms each, so this is the still part in the middle.
+ */
+const CLAIM_HOLD_MS = 900;
 
 /** A number off the query string, where zero is a real answer and `?x=` alone
  *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
@@ -501,6 +511,27 @@ function Game() {
         }
       }
 
+      /*
+       * A claim is SHOWN where it happened, then the camera comes back.
+       *
+       * Marc, 2026-08-29: *"when the card the shrine, points, cache, etc.
+       * happen, make sure we focus the camera on it, then briefly snap back to
+       * where they were before, animated."*
+       *
+       * A destination is claimed by building a tile that TOUCHES it, so the
+       * thing that just paid is a hex away from the one the finger was on —
+       * and on a zoomed board it was often off screen entirely. The sentence
+       * arrived and the place did not.
+       *
+       * Outside the sound branch on purpose: this is not a flourish that
+       * belongs to the audio toggle. It rides the same seam the receipts and
+       * the voice already use — one place knows what the action DID.
+       */
+      if (now.state.claimed.length > claimedBefore) {
+        const at = now.state.claimed.at(-1);
+        if (at !== undefined) board.current?.visit(at, CLAIM_HOLD_MS);
+      }
+
       const said = now.said;
 
       /*
@@ -568,10 +599,55 @@ ${s.view.harvest.firstPopWhen}`,
     [session, ledgers, s, features, theme],
   );
 
+  /**
+   * What that hex is, in this run's numbers — the board answering a question.
+   *
+   * Lifted out of `onTap` (2026-08-29) because the keyboard asks it too: an
+   * arrow key LOOKS and Enter ACTS, and the looking half is exactly this
+   * sentence. One copy, so the two doors into the board cannot describe it
+   * differently.
+   */
+  const describe = useCallback(
+    (key: string): string => {
+      const now = session.get();
+      const memory = ledgers.worlds[slot]?.revealed;
+      return describeHexOf(
+        {
+          state: now.state,
+          theme,
+          strings: s,
+          // The same fact the session was built with — a run on somebody
+          // else's seed has no ledger to describe.
+          detour: session.detour,
+          shrinesClaimed: now.state.log.questsDone,
+          ...(memory === undefined ? {} : { memory }),
+        },
+        key,
+      );
+    },
+    [session, s, theme, ledgers, slot],
+  );
+
+  /**
+   * The keyboard's marker moved: say what is under it, and change nothing.
+   *
+   * The whole difference between LOOKING and TAPPING, and the reason the two
+   * are separate calls. A tap on a ripe tile also TARGETS it — it decides
+   * which pocket POP will spend — and a marker walked over one on the way
+   * somewhere else must not quietly re-aim the harvest. So a ripe tile is
+   * priced with the same `pocketNote` a tap prints and the target is left
+   * exactly where the player put it.
+   */
+  const onLook = useCallback(
+    (key: string, cell: CellView): void => {
+      setNote(cell.ripe ? pocketNote(session.get().state, key, s) : describe(key));
+    },
+    [describe, session, s],
+  );
+
   const onTap = useCallback(
     (key: string, cell: CellView): void => {
       const now = session.get();
-      const memory = ledgers.worlds[slot]?.revealed;
 
       if (cell.ripe) {
         session.target(key);
@@ -608,23 +684,9 @@ ${s.view.harvest.firstPopWhen}`,
         }
       }
 
-      setNote(
-        describeHexOf(
-          {
-            state: now.state,
-            theme,
-            strings: s,
-            // The same fact the session was built with — a run on somebody
-            // else's seed has no ledger to describe.
-            detour: session.detour,
-            shrinesClaimed: now.state.log.questsDone,
-            ...(memory === undefined ? {} : { memory }),
-          },
-          key,
-        ),
-      );
+      setNote(describe(key));
     },
-    [act, session, s, theme, lens, ledgers, slot],
+    [act, session, s, theme, lens, describe],
   );
 
   /**
@@ -855,6 +917,112 @@ ${s.view.harvest.firstPopWhen}`,
 
   const playing = started && !snap.hud.ended;
 
+  /**
+   * A desktop, or anything else with a real pointer.
+   *
+   * The only thing it gates is the manual's key list: the keys themselves are
+   * always live, because a phone with a bluetooth keyboard is a phone this
+   * query calls coarse, and refusing it the arrows would be refusing it the
+   * board. What a query like this can honestly decide is whether to spend a
+   * screen of a phone's manual on keys nobody there has.
+   */
+  const keyboard = useMediaQuery('(pointer: fine)');
+
+  /** The camera cluster's cycle, held here because `0` presses it too. */
+  const { next: nextView, step: cycleView } = useCameraCycle(board, snap.state.lastPlaced ?? null);
+
+  /*
+   * The board answers a keyboard (2026-08-29).
+   *
+   * Marc: *"do a pass for keyboard + desktop play (all cam movement, etc.) and
+   * easy tile placements."* `INTERACTIONS.md` has listed the missing half of
+   * this since the file was written, inherited from Ashwake 1, which shipped
+   * without it and said so.
+   *
+   * **On the window, not on the board.** A listener on the focused element
+   * would mean clicking the board before every arrow — and a player who just
+   * pressed POP has their focus on POP. `takesKey` is what makes that safe: a
+   * focused control keeps Enter and Space, a text field keeps everything, and
+   * the board takes the rest. The board is still focusable and still says what
+   * it is, because a screen reader has to be able to arrive somewhere.
+   *
+   * The guard is `playing && !anyOpen`, which is the same condition the board
+   * host goes `inert` under — one idea, two mechanisms, and they must not
+   * disagree about whether the board is reachable.
+   */
+  useEffect(() => {
+    if (!playing || anyOpen) return;
+    const onKey = (event: KeyboardEvent): void => {
+      // Escape with nothing open is the toast's dismissal — the gesture the
+      // toast has always had for a finger, finally reachable without one.
+      if (event.key === 'Escape') {
+        setNote(null);
+        return;
+      }
+      const command = commandFor(event);
+      if (command === null) return;
+      if (!takesKey(focusKindOf(document.activeElement), command)) return;
+      event.preventDefault();
+      const b = board.current;
+      switch (command.kind) {
+        case 'cursor': {
+          const aim = b?.moveCursor(command.dir) ?? null;
+          if (aim !== null) onLook(aim.key, aim.cell);
+          return;
+        }
+        case 'act': {
+          const aim = b?.cursorCell() ?? null;
+          if (aim !== null) {
+            onTap(aim.key, aim.cell);
+            return;
+          }
+          // No marker yet, so this press is the one that summons it. It does
+          // not also act: the first thing a key does must never be to spend a
+          // tile on a hex the player has not looked at.
+          const shown = b?.moveCursor(null) ?? null;
+          if (shown !== null) onLook(shown.key, shown.cell);
+          return;
+        }
+        case 'pan': {
+          // An arrow shows what is that way, so the board slides the other
+          // way — the direction a document scrolls, not the direction a finger
+          // drags.
+          const slide = {
+            up: [0, PAN_STEP],
+            down: [0, -PAN_STEP],
+            left: [PAN_STEP, 0],
+            right: [-PAN_STEP, 0],
+          }[command.dir];
+          b?.panBy(slide[0] ?? 0, slide[1] ?? 0);
+          return;
+        }
+        case 'zoom':
+          b?.zoomBy(command.closer ? ZOOM_STEP : 1 / ZOOM_STEP);
+          return;
+        case 'turn':
+          b?.turnBy(command.by);
+          return;
+        case 'lean':
+          b?.leanBy(command.by);
+          return;
+        case 'view':
+          cycleView();
+          return;
+        case 'card':
+          // A digit past the end of the hand is a press at nothing, not a
+          // deselection: the hand shrinks between deals and the number keys
+          // must not become destructive as it does.
+          if (command.index < snap.hud.draft.length) onSelect(command.index);
+          return;
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // `cycleView` rather than the cycle object: the hook hands back a
+    // fresh object every render, and depending on that would rebind the listener
+    // on every frame of the game.
+  }, [playing, anyOpen, onLook, onTap, onSelect, cycleView, snap.hud.draft.length]);
+
   return (
     <div className="shell" lang={s.locale}>
       {playing && <Hud hud={snap.hud} s={s} onNote={setNote} />}
@@ -873,15 +1041,12 @@ ${s.view.harvest.firstPopWhen}`,
           reducedMotion={reducedMotion}
           onTap={onTap}
           handle={board}
+          label={s.ui.board.label}
+          keyHelp={s.ui.board.reach}
         />
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
         {playing && (
-          <Camera
-            board={board}
-            s={s}
-            here={snap.state.lastPlaced ?? null}
-            onHelp={() => manual.show()}
-          />
+          <Camera s={s} next={nextView} onCycle={cycleView} onHelp={() => manual.show()} />
         )}
       </div>
 
@@ -889,7 +1054,15 @@ ${s.view.harvest.firstPopWhen}`,
         <>
           {/* Two live regions: what just happened, and what to do next. The
               stat row is deliberately neither. */}
-          <p className="toast" aria-live="polite" onClick={() => setNote(null)}>
+          {/*
+            The toast stays a `<p>` and does not become a button, on purpose.
+            A live region has to be on the page BEFORE its text changes or
+            nothing announces it, and an element that appears and disappears
+            with the note is an element half of the readers here would miss.
+            Its dismissal is a tap, as it always was, and now also Escape when
+            nothing is open — which is the keyboard's way to the same gesture.
+          */}
+          <p className="toast" role="status" aria-live="polite" onClick={() => setNote(null)}>
             {note}
           </p>
           {snap.hud.guide !== null && (
@@ -982,8 +1155,8 @@ ${s.view.harvest.firstPopWhen}`,
         <Manual
           theme={theme}
           s={s}
+          keyboard={keyboard}
           onBack={manual.hide}
-          onTerm={setTerm}
           menu={
             <PanelMenu>
               <button type="button" onClick={() => more.show()}>

@@ -238,10 +238,34 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   // the board rather than being a second copy of the palette.
   expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(4);
 
-  // And a destination opens its own definition, rather than the legend
-  // repeating a sentence this project keeps in one place.
-  await legend.locator('[data-term="shrine"]').click();
-  await expect(page.locator('.card-scrim .card')).toBeVisible();
+  /*
+   * And NOTHING in the manual is tappable (2026-08-29).
+   *
+   * The legend's destinations used to be buttons that opened the term card, on
+   * the argument that the card is where the definition lives and a legend
+   * repeating it would be a second copy. True of the sentence and wrong about
+   * the screen: this legend opens the PLAY tab, and every one of those five has
+   * its own section a thumb's length below — so the card was quoting the page
+   * it was opened from. Marc: "make sure cache, site, shrine, etc. are not
+   * clickable ... they should get the explanation directly readable."
+   */
+  const shrine = legend.locator('[data-term="shrine"]');
+  await expect(shrine).toBeVisible();
+  expect(
+    await shrine.evaluate((el) => el.tagName.toLowerCase()),
+    'a legend row is still a button',
+  ).not.toBe('button');
+  expect(
+    await panel(page, 'manual').locator('button.term').count(),
+    'the manual still linkifies its own prose',
+  ).toBe(0);
+
+  // The explanation is on the page instead: SHRINE has its own section here.
+  await expect(panel(page, 'manual').locator('h2', { hasText: /SHRINE|SANCTUAIRE/ })).toBeVisible();
+
+  // And a ground says what it DOES beside its name — the one row in this
+  // legend with no section under it to explain it.
+  expect(await legend.locator('.legend-note').count()).toBeGreaterThan(0);
 
   expect(errors).toEqual([]);
 });

@@ -4,12 +4,14 @@ import { corners, place } from '@render/layout';
 import {
   cameraAt,
   clampTilt,
+  dragOrbit,
   eyeOf,
   fitCamera,
   FLAT,
   frameFor,
   HEX_PX_MAX,
   lerpCamera,
+  nudgeInto,
   pannedBy,
   pxPerUnit,
   screenOf,
@@ -275,5 +277,49 @@ describe('the lean, bounded', () => {
     expect(wrapYaw(370)).toBeCloseTo(10, 5);
     expect(wrapYaw(-10)).toBeCloseTo(350, 5);
     expect(wrapYaw(Number.NaN)).toBe(0);
+  });
+});
+
+describe('keeping something on screen', () => {
+  const frame = frameFor(disc(24), PHONE.width, PHONE.height, 'pointy');
+
+  it('does nothing at all while the point is already comfortably inside', () => {
+    const cam = fitCamera(frame);
+    // The rule the whole feel of the keyboard rests on: walking the marker
+    // around the middle of the board must move the camera by nothing, or the
+    // board swims under a player who is only looking.
+    expect(nudgeInto(frame, cam, cam.cx, cam.cz, 72)).toBe(cam);
+  });
+
+  it('brings a point that has gone off the edge just far enough in', () => {
+    const cam = { ...fitCamera(frame), zoom: zoomMaxOf(frame) };
+    // Far off to one side, at a zoom where the viewport shows a handful of
+    // hexes.
+    const away = { x: cam.cx + 40, z: cam.cz };
+    const next = nudgeInto(frame, cam, away.x, away.z, 72);
+    expect(next).not.toBe(cam);
+
+    // It arrives inside the margin — and only just, because a nudge that
+    // re-centred would be a lurch.
+    const px = pxPerUnit(frame, next);
+    const at = screenOf(away.x, away.z, 0, frame.lean);
+    const centre = screenOf(next.cx, next.cz, 0, frame.lean);
+    const offset = Math.abs(at.sx - centre.sx) * px;
+    expect(offset).toBeLessThanOrEqual(PHONE.width / 2 - 72 + 0.001);
+    expect(offset).toBeGreaterThan(PHONE.width / 2 - 72 - 1);
+  });
+});
+
+describe('the desktop s second finger', () => {
+  it('turns with a sideways drag and leans with an upward one, like two fingers', () => {
+    // A mouse has one pointer, so the whole two-finger vocabulary was
+    // unreachable on a desktop until this existed.
+    expect(dragOrbit(60, 0).lean).toBeCloseTo(0, 10);
+    expect(dragOrbit(60, 0).turn).toBeGreaterThan(0);
+    expect(dragOrbit(0, 60).turn).toBeCloseTo(0, 10);
+    // Dragging UP leans the camera back, the way a map does — the hand pushes
+    // the horizon away.
+    expect(dragOrbit(0, -60).lean).toBeGreaterThan(0);
+    expect(dragOrbit(0, 60).lean).toBeLessThan(0);
   });
 });

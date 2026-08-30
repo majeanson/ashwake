@@ -159,6 +159,28 @@ button[disabled] {
   -webkit-touch-callout: none;
 }
 
+/*
+ * The board is focusable now (2026-08-29): it carries a keyboard marker, so it
+ * is a control and has to be able to say it has the keys. The outline goes
+ * INSIDE — a positive offset on an element pinned to `inset: 0` draws its ring
+ * off the edge of the screen, where nobody would see the one thing it is for.
+ */
+.board-view:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* The manual's key list — sentences, so it wants reading measure and not a
+   table. Bulletless because each line already begins with its own key. */
+.keys {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 /* A card's long-press is the lens, so the loupe must not have it either. */
 .tile,
 .hand {
@@ -1247,4 +1269,12 @@ button[disabled] {
     1px -1px 0 var(--halo),
     -1px -1px 0 var(--halo),
     0 0 3px var(--halo);
+}
+
+/* A ground's power, said beside its name in the legend — the one row there
+   with no section under it to explain it. Wrapped rather than truncated: it
+   is a sentence, and a sentence cut off mid-word teaches nothing. */
+.legend-note {
+  display: block;
+  font-size: 0.8rem;
 }

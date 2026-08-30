@@ -573,6 +573,24 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     details: 'DÉTAILS',
     howToPlay: 'COMMENT JOUER',
     camera: { fit: 'CADRER', here: 'ICI', flat: 'À PLAT', home: 'DÉFAUT' },
+    board: {
+      label: 'Le plateau',
+      reach:
+        'Les flèches promènent un repère sur le plateau et disent ce qu’il touche. Entrée fait ce qu’un doigt ferait sur cette case.',
+      keys: {
+        title: 'CLAVIER',
+        move: 'Flèches — promène le repère, et dit ce qu’il touche.',
+        act: 'Entrée ou Espace — fait ce qu’un doigt ferait sur cette case.',
+        pan: 'Majuscule et une flèche — fait glisser le plateau.',
+        zoom: '+ et − — plus près, plus loin.',
+        turn: 'Q et E, ou Origine et Fin — fait tourner le plateau.',
+        lean: 'R et F, ou Page précédente et Page suivante — incline la caméra.',
+        view: '0 — le bouton de vue, sans aller le chercher.',
+        cards: '1 à 8 — prend cette carte dans la main.',
+        mouse:
+          'Glisse avec le bouton droit, ou en tenant Majuscule, pour tourner et incliner. La roulette zoome.',
+      },
+    },
     resume: 'REPRENDRE',
     gotIt: 'COMPRIS',
     thisDevice: 'CET APPAREIL',

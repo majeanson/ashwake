@@ -50,14 +50,25 @@ const AXIS: Readonly<Record<Direction, { readonly x: number; readonly y: number 
  * it started in. Holding the column instead makes the two alternate, and the
  * marker climbs straight up a board that has no straight-up move in it.
  *
- * The anchor is re-taken along the axis of travel, kept across it, and
- * re-derived whenever the board's angle changes — it is a screen coordinate,
- * and the lean is what screen coordinates mean.
+ * The anchor is re-taken along the axis of travel and kept across it — and it
+ * carries the ANGLE it was measured at, because a screen coordinate means
+ * something different at every lean. Carried rather than repaired by an effect
+ * on the angle: that would be state mirroring state through a render, which is
+ * the cascade `Board` already refuses for the pop, and the answer is the same
+ * one — derive it where it is used.
  */
 export type Cursor = {
   readonly key: HexKey;
   readonly ax: number;
   readonly ay: number;
+  readonly tilt: number;
+  readonly yaw: number;
+};
+
+/** The marker on a cell, anchored where that cell is right now. */
+const anchored = (cell: CellView, layout: Layout, lean: Lean): Cursor => {
+  const s = screenAt(cell, layout, lean);
+  return { key: cell.key, ax: s.sx, ay: s.sy, tilt: lean.tilt, yaw: lean.yaw };
 };
 
 /**
@@ -70,9 +81,18 @@ export type Cursor = {
  */
 const CONE = 3;
 
-/** What being off the line costs, against a unit of travel along it. Three, so
- *  the neighbour dead ahead beats a nearer one off to the side. */
-const OFF_AXIS = 3;
+/**
+ * What being off the line costs, against a unit of travel along it.
+ *
+ * The number the whole feel of the marker sits on, and it is a trade between
+ * two failures. Too low and a vertical run drifts sideways instead of holding
+ * its column; too high and a press JUMPS — on a board turned ninety degrees
+ * there is no neighbour exactly along the screen's right, and a heavy enough
+ * penalty makes a hex two steps away that happens to be dead ahead beat the
+ * neighbour thirty degrees off. One and a half holds the column and still
+ * always takes the nearer hex, on every angle the camera can reach.
+ */
+const OFF_AXIS = 1.5;
 
 /** Floating-point slack, for "the same score" and "no distance at all". */
 const EPSILON = 1e-6;
@@ -113,15 +133,20 @@ export function firstCursor(cells: readonly CellView[], layout: Layout, lean: Le
     cells.find((c) => c.legal) ??
     cells.find(reachable) ??
     null;
-  if (pick === null) return null;
-  const s = screenAt(pick, layout, lean);
-  return { key: pick.key, ax: s.sx, ay: s.sy };
+  return pick === null ? null : anchored(pick, layout, lean);
 }
 
-/** The anchor, re-derived from where the marker actually is. Called when the
- *  board's angle changes, because the anchor is a screen coordinate. Null when
- *  the marker is pointing at ground the board no longer has. */
-export function reanchor(
+/**
+ * The marker, still valid, or nothing.
+ *
+ * Asked before every step rather than kept up to date by an effect. Two things
+ * can have happened since the last press: the board turned or leaned, which
+ * makes the held anchor a measurement in units that no longer exist, and the
+ * run restarted or the board grew, which can take the ground out from under
+ * the marker entirely. The first is repaired by re-measuring, the second by
+ * saying so — and the caller then starts the marker over from home.
+ */
+export function refreshed(
   cells: readonly CellView[],
   cursor: Cursor,
   layout: Layout,
@@ -129,8 +154,8 @@ export function reanchor(
 ): Cursor | null {
   const cell = cellAt(cells, cursor.key);
   if (cell === null) return null;
-  const s = screenAt(cell, layout, lean);
-  return { key: cursor.key, ax: s.sx, ay: s.sy };
+  if (cursor.tilt === lean.tilt && cursor.yaw === lean.yaw) return cursor;
+  return anchored(cell, layout, lean);
 }
 
 /**
@@ -178,10 +203,10 @@ export function stepCursor(
   }
   if (best === null) return null;
 
-  const s = screenAt(best.cell, layout, lean);
-  return vertical
-    ? { key: best.cell.key, ax: from.ax, ay: s.sy }
-    : { key: best.cell.key, ax: s.sx, ay: from.ay };
+  const landed = anchored(best.cell, layout, lean);
+  // The anchor is re-taken along the axis of travel and HELD across it — that
+  // holding is the whole of the goal column.
+  return vertical ? { ...landed, ax: from.ax } : { ...landed, ay: from.ay };
 }
 
 /** How high above its ground the marker's ring floats. Twice a stroke ring's

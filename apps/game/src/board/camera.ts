@@ -495,7 +495,10 @@ const PX_PER_TURN_DEGREE = 6;
  * still, so there is no jitter to refuse and nothing to protect the other
  * channel from. Dragging up leans the camera back, the same way the fingers do.
  */
-export const dragOrbit = (dx: number, dy: number): { readonly turn: number; readonly lean: number } => ({
+export const dragOrbit = (
+  dx: number,
+  dy: number,
+): { readonly turn: number; readonly lean: number } => ({
   turn: dx / PX_PER_TURN_DEGREE,
   lean: -dy / PX_PER_DEGREE,
 });

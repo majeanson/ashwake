@@ -467,6 +467,37 @@ export type Strings = {
       readonly flat: string;
       readonly home: string;
     };
+    /**
+     * The board, said out loud (2026-08-29).
+     *
+     * Everything here exists because the board grew a KEYBOARD — a marker that
+     * arrows walk and Enter acts on — and a control nobody can be told about
+     * is a control nobody uses. `label` names the board for a screen reader,
+     * `reach` is the sentence it reads on arriving there, and `keys` is the
+     * same contract written out for the manual, on a desktop, where there is
+     * room for it.
+     *
+     * Sentences rather than a table of glyphs and captions, deliberately: the
+     * key names ARE words in each language (Entrée, Page précédente), and a
+     * catalogue that handed the app a caption and let the app supply the key
+     * would be the app deciding half of what a player reads.
+     */
+    readonly board: {
+      readonly label: string;
+      readonly reach: string;
+      readonly keys: {
+        readonly title: string;
+        readonly move: string;
+        readonly act: string;
+        readonly pan: string;
+        readonly zoom: string;
+        readonly turn: string;
+        readonly lean: string;
+        readonly view: string;
+        readonly cards: string;
+        readonly mouse: string;
+      };
+    };
     /** The front door when a run is already in progress. */
     readonly resume: string;
     /** What a card is dismissed with, once it has been read. */

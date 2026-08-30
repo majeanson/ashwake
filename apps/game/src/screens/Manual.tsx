@@ -38,6 +38,10 @@ import { Tabs } from '../ui/Tabs';
 const TABS = ['start', 'play', 'hand', 'after'] as const;
 type TabId = (typeof TABS)[number];
 
+/** The key list, in the order somebody learns it: point at a hex, act on it,
+ *  then move the camera, then the shortcuts that only save time. */
+const KEY_LINES = ['move', 'act', 'pan', 'zoom', 'turn', 'lean', 'view', 'cards', 'mouse'] as const;
+
 /** Which lessons belong under which tab, in reading order. */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
   start: ['ripe', 'pop', 'worth'],
@@ -49,14 +53,17 @@ const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
 export type ManualProps = {
   readonly theme: Theme;
   readonly s: Strings;
+  /** Whether this device has a real pointer, and so probably a keyboard. The
+   *  keys work everywhere; this only decides whether to spend a screen of a
+   *  phone's manual listing keys nobody there has. */
+  readonly keyboard?: boolean;
   readonly onBack: () => void;
-  readonly onTerm: (id: LessonId) => void;
   /** The MENU tab's contents — settings, restart, the door home. Host-supplied
    *  because they are the SHELL's business, not the manual's. */
   readonly menu?: React.ReactNode;
 };
 
-export function Manual({ theme, s, onBack, onTerm, menu }: ManualProps) {
+export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
   const tabs = (menu === undefined ? TABS : (['menu', ...TABS] as const)) as readonly (
     TabId | 'menu'
   )[];
@@ -84,30 +91,68 @@ export function Manual({ theme, s, onBack, onTerm, menu }: ManualProps) {
         had no way to learn it but to tap that hex, which needed them to have
         walked there first.
       */}
-      {on === 'play' && <Legend theme={theme} s={s} onTerm={onTerm} />}
+      {on === 'play' && <Legend theme={theme} s={s} />}
+
+      {/*
+        The keys, on the tab a player opens first and only where there is a
+        keyboard to press (2026-08-29). The board grew a marker that arrows
+        walk and Enter acts on, and an input nobody is told about is an input
+        nobody uses — which is how the colour lens and the stash spent a stage
+        each being unreachable.
+
+        Every line is the catalogue's whole sentence, key name included: the
+        key names ARE words per language (Entrée, Page précédente), so a
+        component that supplied the key and let the catalogue caption it would
+        be deciding half of what a player reads.
+      */}
+      {on === 'start' && keyboard === true && (
+        <section>
+          <h2 className="panel-title">{s.ui.board.keys.title}</h2>
+          <ul className="keys">
+            {KEY_LINES.map((id) => (
+              <li key={id}>{s.ui.board.keys[id]}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {on === 'menu'
         ? menu
         : SECTIONS[on].map((id) => {
             const lesson = LESSONS.find((l) => l.id === id);
             return lesson === undefined ? null : (
-              <Section key={id} lesson={lesson} theme={theme} s={s} onTerm={onTerm} />
+              <Section key={id} lesson={lesson} theme={theme} s={s} />
             );
           })}
     </Panel>
   );
 }
 
+/**
+ * One lesson, printed whole.
+ *
+ * **Nothing in the manual is tappable** (Marc, 2026-08-29: "make sure cache,
+ * site, shrine, etc. are not clickable ... they should get the explanation
+ * directly readable"). Elsewhere a term IS a button that opens a card saying
+ * what it means, and that is right where the word appears alone — in a toast,
+ * on the end screen, inside another lesson's card. Here it is not: the manual
+ * is the place those cards quote, so tapping CACHE opened a card repeating the
+ * section two inches below it, and every noun in a paragraph looked like a
+ * control.
+ *
+ * `Prose` already draws a term as plain inked text when no handler is given,
+ * so this is a prop NOT PASSED rather than a second rendering path. The words
+ * keep their colour — a term still looks like the game's own vocabulary — and
+ * simply stop pretending to be buttons.
+ */
 function Section({
   lesson,
   theme,
   s,
-  onTerm,
 }: {
   readonly lesson: Lesson;
   readonly theme: Theme;
   readonly s: Strings;
-  readonly onTerm: (id: LessonId) => void;
 }) {
   const lines = lessonLines(lesson, TUNING, theme, s);
   const detail = lessonDetail(lesson, TUNING, theme, s);
@@ -118,11 +163,11 @@ function Section({
   return (
     <section>
       <h2 className="panel-title">{lessonName(lesson, s)}</h2>
-      <ProseLines text={lines.join('\n')} s={s} onTerm={onTerm} />
+      <ProseLines text={lines.join('\n')} s={s} />
       {lesson.figure !== undefined && <Figure id={lesson.figure} theme={theme} s={s} caption />}
       {detail.length > 0 && (
         <Fold summary={s.ui.details}>
-          <ProseLines text={detail.join('\n')} s={s} onTerm={onTerm} />
+          <ProseLines text={detail.join('\n')} s={s} />
         </Fold>
       )}
     </section>

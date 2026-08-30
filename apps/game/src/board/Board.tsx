@@ -44,15 +44,7 @@ import {
   type Glide,
   type Lean,
 } from './camera';
-import {
-  cellAt,
-  firstCursor,
-  markerAt,
-  reanchor,
-  stepCursor,
-  type Cursor,
-  type Direction,
-} from './cursor';
+import { cellAt, firstCursor, refreshed, stepCursor, type Cursor, type Direction } from './cursor';
 import { GL_PROPS } from './gl';
 import { useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
@@ -90,6 +82,8 @@ type RigHandle = {
   panBy(dx: number, dy: number): void;
   flyToHex(hex: HexKey, zoom: number): void;
   flyToFit(): void;
+  /** Look at a hex, hold, then return to where the camera was. */
+  visit(hex: HexKey, holdMs: number): void;
   zoomLevel(): number;
   zoomMax(): number;
 };
@@ -104,6 +98,13 @@ export type BoardHandle = {
   flyToFit(): void;
   zoomLevel(): number;
   zoomMax(): number;
+  /**
+   * Go and look at a hex, then come back to where the camera was.
+   *
+   * Marc, 2026-08-29: a claim is the board answering something you did several
+   * hexes away, and the place it happened was staying off screen.
+   */
+  visit(hex: HexKey, holdMs: number): void;
   /** Back to the direction's own angle — the cycle's DEFAULT. */
   resetLean(): void;
   /** Straight down at the map, however the board was leaned — the cycle's FLAT. */
@@ -274,28 +275,6 @@ export function Board(props: BoardProps) {
     [lean.tilt, lean.yaw],
   );
 
-  /*
-   * Two repairs, and they are the same one.
-   *
-   * The marker's anchor is a SCREEN coordinate, so a turn or a lean changes
-   * what it means; and a board that grew — or a run that restarted — may no
-   * longer have the ground the marker was standing on. Both are answered by
-   * re-deriving the anchor from the cell, which reports `null` when the cell
-   * has gone and puts the marker away.
-   *
-   * Returns the previous cursor UNCHANGED where nothing moved, because this
-   * runs after every placement and a fresh object each time is a re-render of
-   * the whole board for a number that did not change.
-   */
-  useEffect(() => {
-    setCursor((was) => {
-      if (was === null) return null;
-      const next = reanchor(props.view.cells, was, layout, leanFor);
-      if (next === null) return null;
-      return next.ax === was.ax && next.ay === was.ay ? was : next;
-    });
-  }, [props.view, layout, leanFor]);
-
   const rig = useRef<RigHandle | null>(null);
 
   const aimAt = useCallback(
@@ -309,12 +288,17 @@ export function Board(props: BoardProps) {
   const moveCursor = useCallback(
     (dir: Direction | null): Aim | null => {
       const cells = props.view.cells;
-      const start = cursor ?? firstCursor(cells, layout, leanFor);
+      // Asked, not synchronised: the angle may have moved since the last press
+      // and the ground under the marker may be gone. Either way `refreshed`
+      // says so here, where the answer is used, rather than through an effect
+      // that would re-render the whole board to keep two states agreeing.
+      const held = cursor === null ? null : refreshed(cells, cursor, layout, leanFor);
+      const start = held ?? firstCursor(cells, layout, leanFor);
       if (start === null) return null;
       // A marker that did not exist a moment ago only APPEARS — see
       // `BoardHandle.moveCursor` for why a first press must not also move.
       const next =
-        cursor === null || dir === null ? start : stepCursor(cells, start, dir, layout, leanFor);
+        held === null || dir === null ? start : stepCursor(cells, start, dir, layout, leanFor);
       if (next === null) return null;
       setCursor(next);
       return aimAt(next.key);
@@ -335,6 +319,7 @@ export function Board(props: BoardProps) {
       panBy: (dx, dy) => rig.current?.panBy(dx, dy),
       flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
       flyToFit: () => rig.current?.flyToFit(),
+      visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
       zoomLevel: () => rig.current?.zoomLevel() ?? 1,
       zoomMax: () => rig.current?.zoomMax() ?? 1,
       resetLean,
@@ -525,6 +510,9 @@ function Rig({
   /** A thrown board, still travelling. Cleared by any deliberate move. */
   const glide = useRef<Glide | null>(null);
   const glidedAt = useRef(0);
+  /** The pending return of a , so a second claim replaces the first
+   *  rather than racing it home. */
+  const visiting = useRef<ReturnType<typeof setTimeout> | 0>(0);
   const frameRef = useRef(frame);
   const wasFit = useRef(true);
 
@@ -619,6 +607,45 @@ function Rig({
       },
       flyToFit() {
         fly(fitCamera(frameRef.current));
+      },
+      /*
+       * Go and look at a hex, then come back.
+       *
+       * Marc, 2026-08-29: *"when the card the shrine, points, cache, etc.
+       * happen, make sure we focus the camera on it, then briefly snap back to
+       * where they were before, animated."* A claim is the board answering
+       * something you did several hexes away — the sentence arrives, and until
+       * now the PLACE it happened stayed off screen.
+       *
+       * At the zoom the player is already at, like the pop's glide: a claim is
+       * worth showing where it happened, not worth changing how close they had
+       * chosen to stand.
+       *
+       * **The return is abandoned if the player took the camera back.** A
+       * journey that yanks the board out from under a finger is worse than one
+       * that never returns, so the timer checks whether the camera is still
+       * where the excursion put it — a drag, a pinch or a flick all move it,
+       * and any of them means the player would rather be here.
+       */
+      visit(hex, holdMs) {
+        const back = cam.current;
+        const fitBefore = wasFit.current;
+        const { q, r } = parse(hex);
+        const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+        const there = cameraAt(frameRef.current, cam.current.zoom, p.x, p.y);
+        fly(there);
+        if (visiting.current !== 0) clearTimeout(visiting.current);
+        visiting.current = setTimeout(() => {
+          visiting.current = 0;
+          const c = cam.current;
+          const held =
+            Math.abs(c.cx - there.cx) < 0.02 &&
+            Math.abs(c.cz - there.cz) < 0.02 &&
+            Math.abs(c.zoom - there.zoom) < 0.001;
+          if (!held) return;
+          fly(back);
+          wasFit.current = fitBefore;
+        }, FLIGHT_MS + holdMs);
       },
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),

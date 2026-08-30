@@ -29,17 +29,29 @@ import type { BoardHandle } from '../board/Board';
 export type View = 'fit' | 'here' | 'flat' | 'home';
 
 export type CameraProps = {
-  readonly board: React.RefObject<BoardHandle | null>;
   readonly s: Strings;
-  /** Where the last tile went, so HERE has somewhere to go. */
-  readonly here: string | null;
+  /** Where the button will go NEXT — its own label, and the whole rule above. */
+  readonly next: View;
+  readonly onCycle: () => void;
   readonly onHelp: () => void;
 };
 
 /** Ashwake 1's number: close enough to read a hex, far enough to see a pocket. */
 const HERE_ZOOM = 2.4;
 
-export function Camera({ board, s, here, onHelp }: CameraProps) {
+/**
+ * The cycle itself, as a hook (2026-08-29).
+ *
+ * Lifted out of the component because the button is no longer the only thing
+ * that presses it: `0` on a keyboard walks the same list, and two copies of a
+ * four-state cycle is how the key and the button come to disagree about which
+ * view is next. The hook owns the state and the doing; the component owns the
+ * label — which, since the label IS the next state, is all it needs.
+ */
+export function useCameraCycle(
+  board: React.RefObject<BoardHandle | null>,
+  here: string | null,
+): { readonly next: View; readonly step: () => void } {
   /*
    * The cycle, and what is in it.
    *
@@ -58,26 +70,27 @@ export function Camera({ board, s, here, onHelp }: CameraProps) {
   // an index left pointing past its end would blank the button's label.
   const next = views[(at + 1) % views.length] ?? 'fit';
 
+  const step = useCallback(() => {
+    const b = board.current;
+    if (b !== null) {
+      if (next === 'fit') b.flyToFit();
+      else if (next === 'here' && here !== null) b.flyToHex(here, HERE_ZOOM);
+      else if (next === 'flat') b.flatten();
+      else if (next === 'home') b.resetLean();
+    }
+    setAt((was) => (was + 1) % views.length);
+  }, [board, here, next, views.length]);
+
+  return { next, step };
+}
+
+export function Camera({ s, next, onCycle, onHelp }: CameraProps) {
   return (
     <div className="camera">
       <button type="button" className="help" aria-label={s.ui.howToPlay} onClick={onHelp}>
         ?
       </button>
-      <button
-        type="button"
-        data-action="camera"
-        data-view={next}
-        onClick={() => {
-          const b = board.current;
-          if (b !== null) {
-            if (next === 'fit') b.flyToFit();
-            else if (next === 'here' && here !== null) b.flyToHex(here, HERE_ZOOM);
-            else if (next === 'flat') b.flatten();
-            else if (next === 'home') b.resetLean();
-          }
-          setAt((was) => (was + 1) % views.length);
-        }}
-      >
+      <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
         {s.ui.camera[next]}
       </button>
     </div>

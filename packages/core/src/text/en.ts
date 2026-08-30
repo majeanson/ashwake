@@ -546,6 +546,23 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     /** The camera cluster's third control, shown only once the board has been
      *  turned or leaned away from the angle its direction opens at. */
     camera: { fit: 'FIT', here: 'HERE', flat: 'FLAT', home: 'DEFAULT' },
+    board: {
+      label: 'The board',
+      reach:
+        'Arrow keys walk a marker across the board and say what it lands on. Enter does what a tap on that hex would do.',
+      keys: {
+        title: 'KEYBOARD',
+        move: 'Arrows — walk the marker, and hear what it lands on.',
+        act: 'Enter or Space — do what a tap on that hex would do.',
+        pan: 'Shift and an arrow — slide the board.',
+        zoom: '+ and − — closer, further.',
+        turn: 'Q and E, or Home and End — turn the board.',
+        lean: 'R and F, or Page Up and Page Down — lean the camera back and forward.',
+        view: '0 — the view button, without reaching for it.',
+        cards: '1 to 8 — pick up that card from the hand.',
+        mouse: 'Drag with the right button, or with Shift held, to turn and lean. The wheel zooms.',
+      },
+    },
     resume: 'RESUME',
     gotIt: 'GOT IT',
     thisDevice: 'THIS DEVICE',
