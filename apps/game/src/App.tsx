@@ -26,6 +26,7 @@ import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
+import { cascadeMs } from './board/leap';
 import { ActionBar } from './screens/ActionBar';
 import { Camera, useCameraCycle } from './screens/Camera';
 import { Directions } from './screens/Directions';
@@ -653,7 +654,22 @@ function Game() {
           (ledgers.records[ONLY_WORLD]?.pointsHarvests ?? 0) ===
           0;
       if (first) {
-        setSaidCard({
+        /*
+         * AFTER the pop, not over it (2026-08-29).
+         *
+         * Marc: *"make sure we show the first pop tip card after the pop
+         * animation."* The card was raised on the same tick as the dispatch,
+         * so the one animation this game builds up to — the leap, the cascade,
+         * the tiles thrown off the board — played entirely behind a modal that
+         * had just covered it. A player's first pop is the moment the board is
+         * most worth watching, and it was the moment it was least visible.
+         *
+         * `cascadeMs` is the leap's own arithmetic, so the wait is exactly as
+         * long as the animation the player is watching and not a guess that
+         * drifts when the motion is retuned. Reduced motion makes it short
+         * rather than zero: the card still wants to arrive as an event.
+         */
+        const shown = {
           ...said,
           text: `${s.view.harvest.firstPop}
 
@@ -661,7 +677,11 @@ ${said.text}
 
 ${s.view.harvest.firstPopWhen}`,
           card: true,
-        });
+        };
+        const wait = reducedMotion
+          ? 0
+          : cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1);
+        window.setTimeout(() => setSaidCard(shown), wait);
         return;
       }
 
@@ -670,7 +690,7 @@ ${s.view.harvest.firstPopWhen}`,
       if (said.card) setSaidCard(said);
       else setNote(said.text);
     },
-    [session, ledgers, s, features, theme, progress, setProgress],
+    [session, ledgers, s, features, theme, progress, setProgress, reducedMotion],
   );
 
   /**
@@ -1205,11 +1225,23 @@ ${s.view.harvest.firstPopWhen}`,
           <p className="toast" role="status" aria-live="polite" onClick={() => setNote(null)}>
             {note}
           </p>
-          {snap.hud.guide !== null && (
-            <p className="hint" aria-live="polite" data-hud="guide">
-              {snap.hud.guide}
-            </p>
-          )}
+          {/*
+            The GUIDE line is gone from over the hand (2026-08-29).
+
+            Marc: *"remove tips above hand tiles ... like Peu de tuiles.."* —
+            `hud.guide` is the coaching line ("Low on tiles — POP a pocket
+            now"), and it lived in the strip between the board and the cards.
+            Two problems, and the second is the one that decided it: it was a
+            SECOND live region a hand's width from the toast, so two sentences
+            competed for the same glance; and it repeated what the board and
+            the action bar already show — the pockets are outlined, POP names
+            its own payout, and the tile count is in the stat row.
+
+            `hud.guide` stays computed and stays in `view/`: it is the same
+            sentence a screen reader gets from the toast when something
+            happens, and the day this game wants a coaching mode it is there
+            without being invented again.
+          */}
           {purseOpen && (
             <Purse
               hud={snap.hud}
