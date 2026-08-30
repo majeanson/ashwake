@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CellView } from './Renderer';
+import { CONCEPT_MARK } from '@theme/tokens';
 import { labelFor } from './labels';
 
 /**
@@ -64,5 +65,37 @@ describe('faint means spent, not remembered', () => {
 
   it('keeps a shimmer wordless — it must not say what is out there', () => {
     expect(labelFor(cell({ landmark: null, shimmer: true }))).toBeNull();
+  });
+});
+
+describe('a wall says so on its face', () => {
+  /**
+   * Walls and spent stone are neighbours on the greyscale ladder by
+   * construction — both are the unplayable end of it, and `theme.test.ts` only
+   * asks that each clears the LIVE colours, never that they clear each other.
+   * On a leaned board they were two dark shapes and only one of them could be
+   * told from the other by looking hard.
+   *
+   * So a wall prints, and stone does not: the two read apart by PRESENCE
+   * rather than by telling one small glyph from another, which is the
+   * discrimination that retired the per-colour glyphs in the first place.
+   */
+  it('prints the mark the game already owns for a wall', () => {
+    expect(labelFor(cell({ kind: 'wall' }))).toEqual({
+      text: CONCEPT_MARK.wall,
+      faint: false,
+    });
+  });
+
+  it('leaves spent stone wordless, so presence is the difference', () => {
+    expect(labelFor(cell({ kind: 'stone' }))).toBeNull();
+  });
+
+  it('is never a cross — the board and the screen do not share a symbol', () => {
+    // `theme/tokens.ts` rules that `✕` and `←` belong to the chrome, so that
+    // "leave this screen" can never be read as a thing on the plane.
+    const text = labelFor(cell({ kind: 'wall' }))?.text ?? '';
+    expect(text).not.toContain('✕');
+    expect(text).not.toContain('×');
   });
 });

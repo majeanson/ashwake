@@ -8,6 +8,8 @@ import { cellTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
 import { breath, STILL_BREATH } from './ambient';
+import { TAP_SLOP } from './camera';
+import { markerAt } from './cursor';
 import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
 import { commitInstances } from './instances';
 import { Labels } from './Labels';
@@ -60,6 +62,9 @@ export type HexFieldProps = {
   readonly assets: AssetBook;
   /** The shared texture cache, so the pop layer bakes nothing twice. */
   readonly textures: SurfaceTextures;
+  /** Where the keyboard's marker is standing, or null while nobody has
+   *  pressed a key. */
+  readonly cursor: HexKey | null;
   readonly onTap: (key: HexKey, cell: CellView) => void;
 };
 
@@ -73,6 +78,7 @@ export function HexField({
   reducedMotion,
   assets,
   textures,
+  cursor,
   onTap,
 }: HexFieldProps) {
   const layout = useMemo<Layout>(() => ({ ...UNIT, orientation }), [orientation]);
@@ -191,20 +197,69 @@ export function HexField({
     if (breathing) invalidate();
   });
 
-  const tap = (batch: GroundBatch) => (event: ThreeEvent<MouseEvent>) => {
+  /**
+   * What the finger meant, out of everything the ray went through.
+   *
+   * **A wall never wins over ground behind it** (Marc, 2026-08-29: "if we hit
+   * a wall and a tile underneath, prioritize the tile"). A wall is the tallest
+   * thing on the board, so the moment the camera leans it stands in front of
+   * the hexes beyond it and the ray reaches it first — and a wall is the one
+   * kind of ground you can never do anything with. Taking the nearest hit
+   * meant a leaned board quietly refusing placements that a flat one allowed,
+   * which reads as the game ignoring you.
+   *
+   * So the whole ray is considered, nearest first, and anything that is not a
+   * wall outranks a wall however far behind it stands. Walls stay tappable —
+   * `describeHexOf` has a sentence for them — they just go last.
+   *
+   * The handler is attached per batch but resolves GLOBALLY, so whichever mesh
+   * R3F reaches first answers for all of them and stops the rest.
+   */
+  const tap = () => (event: ThreeEvent<MouseEvent>) => {
     // A tap is a lift that never travelled: R3F reports how far the pointer
     // moved between down and up, and past the slop this was a drag.
-    if (event.delta > 8) return;
-    const id = event.instanceId;
-    if (id === undefined) return;
-    const item = batch.items[id];
-    if (item === undefined) return;
-    event.stopPropagation();
-    onTap(item.cell.key, item.cell);
+    if (event.delta > TAP_SLOP) return;
+    // The secondary button and Shift are the desktop's turn-and-lean gesture
+    // (`Board`), and a gesture that ends without travelling far enough to
+    // register must not fall through into a PLACEMENT — the one action on this
+    // board that cannot be undone.
+    if (event.button !== 0 || event.shiftKey) return;
+
+    const byMesh = new Map<InstancedMesh, GroundBatch>();
+    for (const b of batches) {
+      const mesh = meshes.current.get(b.key);
+      if (mesh !== undefined) byMesh.set(mesh, b);
+    }
+
+    let wall: CellView | null = null;
+    for (const hit of event.intersections) {
+      const batch = byMesh.get(hit.object as InstancedMesh);
+      if (batch === undefined || !isTappable(batch)) continue;
+      const item = hit.instanceId === undefined ? undefined : batch.items[hit.instanceId];
+      if (item === undefined) continue;
+      if (batch.kind === 'wall') {
+        wall ??= item.cell;
+        continue;
+      }
+      event.stopPropagation();
+      onTap(item.cell.key, item.cell);
+      return;
+    }
+
+    // Nothing but wall along the whole ray, so the wall is genuinely what was
+    // pointed at and gets to say its line.
+    if (wall !== null) {
+      event.stopPropagation();
+      onTap(wall.key, wall);
+    }
   };
 
   const capacity = capacityFor(view.cells.length);
   const thetaStart = thetaStartFor(orientation);
+  const marker = useMemo(
+    () => (cursor === null ? null : markerAt(view.cells, cursor, layout, relief)),
+    [cursor, view.cells, layout, relief],
+  );
 
   return (
     <group>
@@ -212,7 +267,7 @@ export function HexField({
         const geometry = geometryFor(batch.kind);
         const material = materialsFor(batch);
         if (geometry === undefined || material === undefined) return null;
-        const tappable = batch.kind !== 'beacon' && batch.kind !== 'remembered';
+        const tappable = isTappable(batch);
         return (
           <instancedMesh
             key={`${batch.key}-${capacity}`}
@@ -223,7 +278,7 @@ export function HexField({
             args={[geometry, undefined, capacity]}
             material={material}
             frustumCulled={false}
-            {...(tappable ? { onClick: tap(batch) } : {})}
+            {...(tappable ? { onClick: tap() } : {})}
           />
         );
       })}
@@ -239,8 +294,46 @@ export function HexField({
         <ringGeometry args={[HEX_RADIUS - 0.16, HEX_RADIUS, 6, 1, thetaStart + Math.PI / 2]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
+      {/*
+        The keyboard's marker (2026-08-29).
+
+        OUTSIDE the hex, where no other mark ever goes. Every stroke the board
+        already draws is on the hex's own edge and each one means something
+        about the ground — ripe, legal, rare, home, targeted — so a marker
+        drawn there would either be mistaken for one of them or take the edge
+        away from whichever one was there. A ring standing just clear of the
+        outline belongs to the player rather than to the ground, which is
+        exactly what it is.
+
+        One mesh, not an instanced one: there is at most a single marker, and
+        it costs a draw call only while somebody is using a keyboard.
+      */}
+      {marker !== null && (
+        <mesh
+          position={[marker.x, marker.top, marker.z]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          raycast={() => null}
+        >
+          <ringGeometry
+            args={[HEX_RADIUS + 0.06, HEX_RADIUS + 0.24, 6, 1, thetaStart + Math.PI / 2]}
+          />
+          <meshBasicMaterial color={theme.ink.accent} toneMapped={false} />
+        </mesh>
+      )}
       <Props cells={view.cells} theme={theme} layout={layout} relief={relief} />
       <Labels cells={view.cells} theme={theme} layout={layout} relief={relief} yaw={yaw} />
     </group>
   );
+}
+
+/**
+ * Which kinds of ground answer a tap.
+ *
+ * Beacons and remembered fog are drawn but not asked: a beacon is a promise
+ * about somewhere else and remembered ground is a memory, and neither is a
+ * place a tile can go. One predicate, because the raycast and the render both
+ * need the same answer and two copies of it is how they come to disagree.
+ */
+function isTappable(batch: GroundBatch): boolean {
+  return batch.kind !== 'beacon' && batch.kind !== 'remembered';
 }

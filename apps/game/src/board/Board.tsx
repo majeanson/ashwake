@@ -19,6 +19,7 @@ import { hex as cssHex, type Theme } from '@theme/tokens';
 import {
   cameraAt,
   clampTilt,
+  dragOrbit,
   eyeOf,
   fitCamera,
   frameFor,
@@ -27,7 +28,9 @@ import {
   isFlick,
   isResting,
   LEAN_DEADZONE,
+  TAP_SLOP,
   lerpCamera,
+  nudgeInto,
   pannedBy,
   TURN_DEADZONE,
   twoFinger,
@@ -41,6 +44,15 @@ import {
   type Glide,
   type Lean,
 } from './camera';
+import {
+  cellAt,
+  firstCursor,
+  markerAt,
+  reanchor,
+  stepCursor,
+  type Cursor,
+  type Direction,
+} from './cursor';
 import { GL_PROPS } from './gl';
 import { useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
@@ -65,14 +77,52 @@ import { tallestOf } from './relief';
  * watched from or how brightly it is lit.
  */
 
-export type BoardHandle = {
+/**
+ * The camera, as the rig exposes it. Internal: it is what `Board` composes its
+ * own handle out of, and the only part of the board that lives inside the
+ * Canvas. Split from `BoardHandle` because the two halves genuinely live in
+ * different places now — the angle and the marker are React state a level up,
+ * and a single `useImperativeHandle` down here could not reach them.
+ */
+type RigHandle = {
   zoomBy(factor: number): void;
+  /** Slide the board by screen pixels, exactly as a drag does. */
+  panBy(dx: number, dy: number): void;
   flyToHex(hex: HexKey, zoom: number): void;
   flyToFit(): void;
   zoomLevel(): number;
   zoomMax(): number;
-  /** Back to the direction's own angle. The cluster's third control. */
+};
+
+/** Where the keyboard is pointing, and what is there. */
+export type Aim = { readonly key: HexKey; readonly cell: CellView };
+
+export type BoardHandle = {
+  zoomBy(factor: number): void;
+  panBy(dx: number, dy: number): void;
+  flyToHex(hex: HexKey, zoom: number): void;
+  flyToFit(): void;
+  zoomLevel(): number;
+  zoomMax(): number;
+  /** Back to the direction's own angle — the cycle's DEFAULT. */
   resetLean(): void;
+  /** Straight down at the map, however the board was leaned — the cycle's FLAT. */
+  flatten(): void;
+  /** Degrees to ADD to the turn and the lean — the keyboard's half of the
+   *  two-finger gesture. */
+  turnBy(deg: number): void;
+  leanBy(deg: number): void;
+  /**
+   * Walk the keyboard's marker one hex, and say where it ended up.
+   *
+   * `null` asks only for the marker to APPEAR, which is also what the first
+   * arrow press does: a key that both revealed the marker and moved it would
+   * put it somewhere the player has not looked at yet, and the one thing on
+   * this board that cannot be undone is a tile placed on the wrong hex.
+   */
+  moveCursor(dir: Direction | null): Aim | null;
+  /** What the marker is on, or null while there is no marker. */
+  cursorCell(): Aim | null;
 };
 
 export type BoardProps = {
@@ -95,13 +145,13 @@ export type BoardProps = {
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
-  /** Told when the board is, or stops being, off its default angle — so the
-   *  camera cluster can offer a way back only when there is one. */
-  readonly onLeanChange?: ((leaned: boolean) => void) | undefined;
+  /** The board's accessible name, and the sentence that tells a screen reader
+   *  it can be walked. Both the catalogue's — see `s.ui.board`. */
+  readonly label?: string;
+  readonly keyHelp?: string;
 };
 
 const FLIGHT_MS = 320;
-const TAP_SLOP = 8;
 
 /** How much of each screen edge refuses a touch outright, so iOS Safari's
  *  back/forward swipe cannot take the page mid-drag. Ashwake 1's number. */
@@ -109,6 +159,11 @@ const EDGE_SWIPE_PX = 28;
 /** How far back the eye stands. Orthographic, so this only has to clear the
  *  near plane and stay inside the far one — it changes nothing on screen. */
 const EYE_DISTANCE = 200;
+
+/** How far inside the viewport the keyboard's marker is kept, in CSS pixels.
+ *  Wide enough that a hex arrives whole rather than sliced by the edge, and
+ *  clear of the chrome the board is drawn under. */
+const CURSOR_MARGIN = 72;
 
 /** Half a degree, which is the finest step worth re-fitting a board for. */
 const round2 = (deg: number): number => Math.round(deg * 2) / 2;
@@ -133,14 +188,27 @@ export function Board(props: BoardProps) {
    * so the first minute stays one known picture for everybody. Within a
    * session it is the player's and survives a new run, because `Board` never
    * remounts (the canvas must not) and there is no reason a run boundary should
-   * take an angle away from the hands that chose it. LEVEL is the way back.
+   * take an angle away from the hands that chose it. The camera cluster's cycle
+   * carries FLAT and DEFAULT, which are the two ways back.
    */
-  const [lean, setLean] = useState({ tilt, yaw });
-  const leaned = lean.tilt !== tilt || lean.yaw !== yaw;
-  const resetLean = useCallback(() => setLean({ tilt, yaw }), [tilt, yaw]);
+  const [lean, setLean] = useState({ tilt, yaw, relief });
+  const resetLean = useCallback(() => setLean({ tilt, yaw, relief }), [tilt, yaw, relief]);
+  /**
+   * 2D: the map the rules are written on.
+   *
+   * Marc, 2026-08-29: "add in the toggle a 2d mode too". All THREE go to zero
+   * rather than the tilt alone — a board seen from straight down with its
+   * relief still on is a board whose hexes are different heights and whose
+   * shading says so, which is a 3D board photographed from above and not a map.
+   *
+   * None of the three has ever been a rule (they are look, and the golden sim
+   * cannot see them), so this is a change of picture and never of game.
+   */
+  const flatten = useCallback(() => setLean({ tilt: 0, yaw: 0, relief: 0 }), []);
   const leanBy = useCallback(
     (turn: number, back: number) =>
       setLean((was) => ({
+        ...was,
         // Quantised to a half degree: two fingers are never still, and a frame
         // that moved the board by a hundredth of a degree is a re-render (and
         // a whole re-fit) bought for something no eye can see.
@@ -150,12 +218,21 @@ export function Board(props: BoardProps) {
     [],
   );
 
-  // Told only when the ANSWER changes, not on every degree — the cluster only
-  // needs to know whether there is anything to reset.
-  const { onLeanChange } = props;
-  useEffect(() => {
-    onLeanChange?.(leaned);
-  }, [leaned, onLeanChange]);
+  /*
+   * The keyboard's marker (2026-08-29).
+   *
+   * State rather than a ref, and up HERE rather than in the rig, for the same
+   * reason the angle is: three things read it and only one of them draws it —
+   * the field paints its ring, the rig keeps it on screen, and the handle
+   * answers the shell with what it is standing on.
+   *
+   * **Null is the ordinary state**, and it means "nobody has touched a key".
+   * A board that opens with a marker on it is a board that has told a phone
+   * player about a keyboard they do not have; the first arrow press is what
+   * brings it into existence, and it appears without moving.
+   */
+  const [cursor, setCursor] = useState<Cursor | null>(null);
+
   const assets = useAssets(theme.id, art);
   // One cache for both layers, so a leaping ASH tile is painted by the very
   // texture that was under it a frame ago rather than by a second bake of it.
@@ -190,9 +267,121 @@ export function Board(props: BoardProps) {
     if (props.popped !== null) setFinished(props.popped.id);
   }, [props.popped]);
 
+  /** The angle, as the marker's arithmetic wants it. Height is irrelevant to
+   *  where a hex lands on screen, so the tallest is not asked for. */
+  const leanFor = useMemo<Lean>(
+    () => ({ tilt: lean.tilt, yaw: lean.yaw, tallest: 0 }),
+    [lean.tilt, lean.yaw],
+  );
+
+  /*
+   * Two repairs, and they are the same one.
+   *
+   * The marker's anchor is a SCREEN coordinate, so a turn or a lean changes
+   * what it means; and a board that grew — or a run that restarted — may no
+   * longer have the ground the marker was standing on. Both are answered by
+   * re-deriving the anchor from the cell, which reports `null` when the cell
+   * has gone and puts the marker away.
+   *
+   * Returns the previous cursor UNCHANGED where nothing moved, because this
+   * runs after every placement and a fresh object each time is a re-render of
+   * the whole board for a number that did not change.
+   */
+  useEffect(() => {
+    setCursor((was) => {
+      if (was === null) return null;
+      const next = reanchor(props.view.cells, was, layout, leanFor);
+      if (next === null) return null;
+      return next.ax === was.ax && next.ay === was.ay ? was : next;
+    });
+  }, [props.view, layout, leanFor]);
+
+  const rig = useRef<RigHandle | null>(null);
+
+  const aimAt = useCallback(
+    (key: HexKey): Aim | null => {
+      const cell = cellAt(props.view.cells, key);
+      return cell === null ? null : { key, cell };
+    },
+    [props.view.cells],
+  );
+
+  const moveCursor = useCallback(
+    (dir: Direction | null): Aim | null => {
+      const cells = props.view.cells;
+      const start = cursor ?? firstCursor(cells, layout, leanFor);
+      if (start === null) return null;
+      // A marker that did not exist a moment ago only APPEARS — see
+      // `BoardHandle.moveCursor` for why a first press must not also move.
+      const next =
+        cursor === null || dir === null ? start : stepCursor(cells, start, dir, layout, leanFor);
+      if (next === null) return null;
+      setCursor(next);
+      return aimAt(next.key);
+    },
+    [cursor, props.view.cells, layout, leanFor, aimAt],
+  );
+
+  /*
+   * The public handle is assembled HERE, out of the rig's camera and the two
+   * things that are React state at this level — the angle and the marker. It
+   * used to be `useImperativeHandle` inside the rig, which stopped being
+   * possible the moment the handle had to answer "what is the marker on".
+   */
+  useImperativeHandle(
+    props.handle,
+    () => ({
+      zoomBy: (factor) => rig.current?.zoomBy(factor),
+      panBy: (dx, dy) => rig.current?.panBy(dx, dy),
+      flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
+      flyToFit: () => rig.current?.flyToFit(),
+      zoomLevel: () => rig.current?.zoomLevel() ?? 1,
+      zoomMax: () => rig.current?.zoomMax() ?? 1,
+      resetLean,
+      flatten,
+      turnBy: (deg) => leanBy(deg, 0),
+      leanBy: (deg) => leanBy(0, deg),
+      moveCursor,
+      cursorCell: () => (cursor === null ? null : aimAt(cursor.key)),
+    }),
+    [resetLean, flatten, leanBy, moveCursor, cursor, aimAt],
+  );
+
   return (
     <div
       ref={wrapper}
+      /*
+       * The board is a CONTROL, not a picture (2026-08-29).
+       *
+       * `tabIndex` puts it in the tab order — it was a canvas nothing could
+       * reach — and `role="application"` is what tells a screen reader to hand
+       * the arrow keys through instead of using them to read the page, which
+       * is the whole contract the marker rests on. The role is on this element
+       * rather than on `.board-host` on purpose: the camera cluster and the
+       * help button live in that host too, and they are ordinary buttons that
+       * must keep ordinary behaviour.
+       *
+       * `keyHelp` is the description a screen reader reads on arrival, because
+       * a marker nobody has been told about is a marker nobody presses an
+       * arrow to find.
+       */
+      className="board-view"
+      tabIndex={0}
+      role="application"
+      {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+      {...(props.keyHelp === undefined ? {} : { 'aria-describedby': 'board-keys' })}
+      /*
+       * The angle the board is actually at, on the DOM.
+       *
+       * A test-shaped affordance, and it earns its place: the camera's only
+       * other witness is the canvas, and a canvas is not a stable one — the
+       * board is never still (embers, beacons) so two screenshots of an
+       * unchanged board differ anyway. An e2e that compared pixels here passed
+       * against a gesture doing nothing at all before this existed. Three
+       * numbers, describing real state the rules cannot see, in the same
+       * `data-` idiom the stat row and the hand already use.
+       */
+      data-lean={`${lean.tilt},${lean.yaw},${lean.relief}`}
       style={{
         position: 'absolute',
         inset: 0,
@@ -200,6 +389,11 @@ export function Board(props: BoardProps) {
         touchAction: 'none',
       }}
     >
+      {props.keyHelp !== undefined && (
+        <p id="board-keys" className="visually-hidden">
+          {props.keyHelp}
+        </p>
+      )}
       {size.width > 0 && (
         <Canvas
           frameloop="demand"
@@ -228,23 +422,24 @@ export function Board(props: BoardProps) {
             height={size.height}
             tilt={lean.tilt}
             yaw={lean.yaw}
-            relief={relief}
+            relief={lean.relief}
             reducedMotion={props.reducedMotion === true}
-            handle={props.handle}
+            handle={rig}
             wrapper={wrapper}
+            cursor={cursor?.key ?? null}
             onLeanBy={leanBy}
-            onResetLean={resetLean}
           />
           <HexField
             view={props.view}
             theme={theme}
             orientation={theme.orientation}
-            relief={relief}
+            relief={lean.relief}
             materials={materials}
             assets={assets}
             textures={textures}
             yaw={lean.yaw}
             reducedMotion={props.reducedMotion === true}
+            cursor={cursor?.key ?? null}
             onTap={props.onTap}
           />
           {pop !== null && (
@@ -254,7 +449,7 @@ export function Board(props: BoardProps) {
               id={pop.id}
               theme={theme}
               layout={layout}
-              relief={relief}
+              relief={lean.relief}
               materials={materials}
               assets={assets}
               textures={textures}
@@ -277,11 +472,12 @@ type RigProps = {
   readonly yaw: number;
   readonly relief: number;
   readonly reducedMotion: boolean;
-  readonly handle: Ref<BoardHandle> | undefined;
+  readonly handle: Ref<RigHandle>;
   readonly wrapper: React.RefObject<HTMLDivElement | null>;
+  /** Where the keyboard's marker is, so the camera can keep it on screen. */
+  readonly cursor: HexKey | null;
   /** Two fingers turning and leaning: degrees to ADD, not absolutes. */
   readonly onLeanBy: (turn: number, back: number) => void;
-  readonly onResetLean: () => void;
 };
 
 /**
@@ -299,8 +495,8 @@ function Rig({
   reducedMotion,
   handle,
   wrapper,
+  cursor,
   onLeanBy,
-  onResetLean,
 }: RigProps) {
   const camera = useThree((s) => s.camera) as OrthographicCamera;
   const invalidate = useThree((s) => s.invalidate);
@@ -409,6 +605,13 @@ function Rig({
         flight.current = null;
         invalidate();
       },
+      panBy(dx, dy) {
+        wasFit.current = false;
+        flight.current = null;
+        glide.current = null;
+        cam.current = pannedBy(frameRef.current, cam.current, dx, dy);
+        invalidate();
+      },
       flyToHex(hex, zoom) {
         const { q, r } = parse(hex);
         const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
@@ -419,12 +622,32 @@ function Rig({
       },
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),
-      // The angle lives a level up, in `Board` — three things read it and only
-      // one of them is this camera — so the handle passes the ask along.
-      resetLean: onResetLean,
     }),
-    [invalidate, fly, theme.orientation, onResetLean],
+    [invalidate, fly, theme.orientation],
   );
+
+  /*
+   * The marker never walks off the screen.
+   *
+   * Only as far as it has to (`nudgeInto`), and written straight into the
+   * camera rather than flown: an arrow press is a small deliberate step and a
+   * 320ms flight behind every one of them would make a held-down arrow feel
+   * like the board was swimming. It also has to be a PAN and not a re-centre,
+   * so that walking the marker around the middle of the board moves nothing at
+   * all — which is what makes the board feel still while it is being read.
+   */
+  useEffect(() => {
+    if (cursor === null) return;
+    const { q, r } = parse(cursor);
+    const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+    const next = nudgeInto(frameRef.current, cam.current, p.x, p.y, CURSOR_MARGIN);
+    if (next === cam.current) return;
+    wasFit.current = false;
+    flight.current = null;
+    glide.current = null;
+    cam.current = next;
+    invalidate();
+  }, [cursor, theme.orientation, invalidate]);
 
   // Gestures, on the wrapper: one finger drags past the slop, two pinch, a
   // wheel zooms. Taps are the meshes' business (R3F reports the delta).
@@ -486,17 +709,84 @@ function Rig({
       pair = pointers.size === 2 ? twoDown() : null;
       since = { scale: 1, turn: 0, lean: 0 };
       on = { zoom: false, turn: false, lean: false };
+      if (queued !== 0) cancelAnimationFrame(queued);
+      queued = 0;
+    };
+
+    /*
+     * The two-finger gesture is read ONCE A FRAME, not once an event.
+     *
+     * A browser delivers one `pointermove` per pointer, so a two-finger drag
+     * arrives as "A moved" and then "B moved" — and in between, the pair is
+     * skewed: one finger has travelled and the other has not. Reading a delta
+     * off that intermediate state reports a TURN for a gesture that was purely
+     * a drag. The two halves cancel out over the pair of events, but the
+     * deadzone does not: the first half alone clears eight degrees on a normal
+     * drag, the turn channel latches, and the board wobbles for the rest of the
+     * gesture. `e2e/board.spec.ts` caught exactly this, and it is a real
+     * phone's behaviour rather than an artefact of the driver.
+     *
+     * Coalescing to an animation frame fixes it at the source — by the time
+     * this runs, both fingers are where they actually are — and it is also
+     * what keeps a gesture to one React render per frame instead of two.
+     */
+    let queued = 0;
+    const readPair = (): void => {
+      queued = 0;
+      const now = twoDown();
+      if (pair === null || now === null) return;
+      const g = twoFinger(pair, now);
+      since = {
+        scale: since.scale * g.scale,
+        turn: since.turn + g.turn,
+        lean: since.lean + g.lean,
+      };
+      if (Math.abs(since.scale - 1) > ZOOM_DEADZONE) on.zoom = true;
+      if (Math.abs(since.turn) > TURN_DEADZONE) on.turn = true;
+      if (Math.abs(since.lean) > LEAN_DEADZONE) on.lean = true;
+
+      if (on.zoom || on.turn || on.lean) {
+        flight.current = null;
+        glide.current = null;
+      }
+      if (on.zoom) {
+        wasFit.current = false;
+        cam.current = zoomedBy(frameRef.current, cam.current, g.scale);
+        invalidate();
+      }
+      // The turn and the lean go OUT to React — three things read the angle and
+      // only one of them is the camera. A board that was fitted stays fitted
+      // through it: the frame effect re-fits on every lean, which is what keeps
+      // a tilting board from walking off its own edge.
+      if (on.turn || on.lean) onLeanBy(on.turn ? g.turn : 0, on.lean ? g.lean : 0);
+      pair = now;
     };
     // The last few moves, so a flick is measured over a gesture rather than
     // over whatever jitter the final event happened to carry — one sample
     // reads as the board flying off when a finger merely lifted crookedly.
     const recent: { at: number; cx: number; cz: number }[] = [];
+    /*
+     * The desktop's second finger: a drag with the secondary button, or with
+     * Shift held, turns and leans instead of panning (2026-08-29).
+     *
+     * A mouse has one pointer, so every one of Stage 2d's two-finger channels
+     * was unreachable on a desktop — the board could be panned and zoomed and
+     * never angled at all. Shift as well as the right button because a
+     * trackpad's secondary click is a modifier chord already, and neither
+     * costs the page anything: the board eats its own context menu below.
+     *
+     * Latched at pointerdown and never re-tested, exactly as the two-finger
+     * channels are: a gesture that changed meaning halfway through because a
+     * thumb came off Shift is a board that jumps.
+     */
+    let orbiting = false;
 
     const down = (e: PointerEvent): void => {
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 1) {
         last = { x: e.clientX, y: e.clientY };
         moved = false;
+        orbiting = e.pointerType !== 'touch' && (e.button === 2 || e.shiftKey);
       } else {
         // Any second-or-later finger changes the set, so the gesture restarts.
         seedPair();
@@ -506,34 +796,9 @@ function Rig({
       if (!pointers.has(e.pointerId)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 2 && pair !== null) {
-        const now = twoDown();
-        if (now !== null) {
-          const g = twoFinger(pair, now);
-          since = {
-            scale: since.scale * g.scale,
-            turn: since.turn + g.turn,
-            lean: since.lean + g.lean,
-          };
-          if (Math.abs(since.scale - 1) > ZOOM_DEADZONE) on.zoom = true;
-          if (Math.abs(since.turn) > TURN_DEADZONE) on.turn = true;
-          if (Math.abs(since.lean) > LEAN_DEADZONE) on.lean = true;
-
-          if (on.zoom || on.turn || on.lean) {
-            flight.current = null;
-            glide.current = null;
-          }
-          if (on.zoom) {
-            wasFit.current = false;
-            cam.current = zoomedBy(frameRef.current, cam.current, g.scale);
-          }
-          // The turn and the lean go OUT to React — three things read the
-          // angle and only one of them is the camera. A board that was fitted
-          // stays fitted through it: the frame effect re-fits on every lean,
-          // which is what keeps a tilting board from walking off its own edge.
-          if (on.turn || on.lean) onLeanBy(on.turn ? g.turn : 0, on.lean ? g.lean : 0);
-          if (on.zoom) invalidate();
-          pair = now;
-        }
+        // Both fingers report separately; the gesture is read once a frame,
+        // when both of them are where they actually are. See `readPair`.
+        if (queued === 0) queued = requestAnimationFrame(readPair);
         // A pinch is not a tap, and it is not a throw either. `moved` stops
         // the lift placing a tile; clearing the samples stops the lift
         // launching a GLIDE built from whatever pan happened before the
@@ -548,9 +813,17 @@ function Rig({
       const dy = e.clientY - last.y;
       if (!moved && Math.hypot(dx, dy) < TAP_SLOP) return;
       moved = true;
-      wasFit.current = false;
       flight.current = null;
       glide.current = null;
+      if (orbiting) {
+        // Out to React, like the two fingers': the angle is read by the fit,
+        // the light rig and the labels, and only one of them is this camera.
+        const spun = dragOrbit(dx, dy);
+        onLeanBy(spun.turn, spun.lean);
+        last = { x: e.clientX, y: e.clientY };
+        return;
+      }
+      wasFit.current = false;
       const before = cam.current;
       cam.current = pannedBy(frameRef.current, cam.current, dx, dy);
       recent.push({
@@ -608,7 +881,12 @@ function Rig({
       }
       recent.length = 0;
       moved = false;
+      orbiting = false;
     };
+    /** The board eats its own context menu, because the right button is how a
+     *  desktop turns it. Cards keep theirs — that is the colour lens — and
+     *  they are not in here. */
+    const menu = (e: MouseEvent): void => e.preventDefault();
     const wheel = (e: WheelEvent): void => {
       e.preventDefault();
       wasFit.current = false;
@@ -622,6 +900,7 @@ function Rig({
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
     el.addEventListener('wheel', wheel, { passive: false });
+    el.addEventListener('contextmenu', menu);
 
     /*
      * iOS Safari's edge swipe is a back/forward navigation, and the board's
@@ -642,7 +921,9 @@ function Rig({
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerup', up);
       el.removeEventListener('pointercancel', up);
+      if (queued !== 0) cancelAnimationFrame(queued);
       el.removeEventListener('wheel', wheel);
+      el.removeEventListener('contextmenu', menu);
       el.removeEventListener('touchstart', edge);
     };
     // `reducedMotion` is read by the flick, so the listeners are rebound when

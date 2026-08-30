@@ -453,7 +453,20 @@ export type Strings = {
     readonly details: string;
     /** The door into the manual, from MORE and from the board's `?`. */
     readonly howToPlay: string;
-    readonly levelView: string;
+    /**
+     * The camera cluster's ONE view button (2026-08-29).
+     *
+     * Its label always names where it will GO, never where it is — a button
+     * that says its destination never has to be read twice. One control that
+     * cycles rather than four that crowd the board, which is Ashwake 1's
+     * argument for the cluster restated: a phone already has a pinch.
+     */
+    readonly camera: {
+      readonly fit: string;
+      readonly here: string;
+      readonly flat: string;
+      readonly home: string;
+    };
     /** The front door when a run is already in progress. */
     readonly resume: string;
     /** What a card is dismissed with, once it has been read. */

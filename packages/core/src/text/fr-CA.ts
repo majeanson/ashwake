@@ -572,7 +572,7 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     resetTeaching: 'RÉINITIALISER LES LEÇONS',
     details: 'DÉTAILS',
     howToPlay: 'COMMENT JOUER',
-    levelView: 'À PLAT',
+    camera: { fit: 'CADRER', here: 'ICI', flat: 'À PLAT', home: 'DÉFAUT' },
     resume: 'REPRENDRE',
     gotIt: 'COMPRIS',
     thisDevice: 'CET APPAREIL',

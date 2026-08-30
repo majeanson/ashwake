@@ -181,9 +181,6 @@ function Game() {
    * than beside either one of them.
    */
   const [lens, setLens] = useState<Colour | null>(null);
-  /** Whether the board is off its default angle, so the camera cluster can
-   *  offer LEVEL only when there is something to level. */
-  const [leaned, setLeaned] = useState(false);
   /**
    * A receipt that is holding the screen, waiting to be dismissed.
    *
@@ -875,7 +872,6 @@ ${s.view.harvest.firstPopWhen}`,
           art={look.art}
           reducedMotion={reducedMotion}
           onTap={onTap}
-          onLeanChange={setLeaned}
           handle={board}
         />
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
@@ -884,7 +880,6 @@ ${s.view.harvest.firstPopWhen}`,
             board={board}
             s={s}
             here={snap.state.lastPlaced ?? null}
-            leaned={leaned}
             onHelp={() => manual.show()}
           />
         )}

@@ -545,7 +545,7 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     howToPlay: 'HOW TO PLAY',
     /** The camera cluster's third control, shown only once the board has been
      *  turned or leaned away from the angle its direction opens at. */
-    levelView: 'LEVEL',
+    camera: { fit: 'FIT', here: 'HERE', flat: 'FLAT', home: 'DEFAULT' },
     resume: 'RESUME',
     gotIt: 'GOT IT',
     thisDevice: 'THIS DEVICE',

@@ -224,6 +224,46 @@ export function pannedBy(frame: Frame, cam: CameraState, dx: number, dy: number)
   return { ...cam, cx: cam.cx - moved.x, cz: cam.cz - moved.z };
 }
 
+/**
+ * The camera moved just far enough to bring a world point back on screen.
+ *
+ * What the keyboard's marker rides on (2026-08-29). An arrow that walks the
+ * marker off the edge of the viewport has moved something nobody can see, and
+ * the two obvious fixes are both wrong: re-centring on every press makes the
+ * board lurch under a player who is only looking around, and doing nothing
+ * loses them the marker entirely. So the camera moves only when it has to, and
+ * only by the amount it has to — the same rule a text editor scrolls by.
+ *
+ * `margin` is how far inside the viewport edge the point must end up, in CSS
+ * pixels, so a marker never arrives half under the action bar.
+ */
+export function nudgeInto(
+  frame: Frame,
+  cam: CameraState,
+  worldX: number,
+  worldZ: number,
+  margin: number,
+): CameraState {
+  const px = pxPerUnit(frame, cam);
+  if (px <= 0) return cam;
+  // `screenOf` is linear, so the difference of two of its answers is the
+  // offset between them — no second projection needed.
+  const at = screenOf(worldX, worldZ, 0, frame.lean);
+  const centre = screenOf(cam.cx, cam.cz, 0, frame.lean);
+  const ox = (at.sx - centre.sx) * px;
+  const oy = (at.sy - centre.sy) * px;
+  const halfW = Math.max(0, frame.width / 2 - margin);
+  const halfH = Math.max(0, frame.height / 2 - margin);
+  const over = (offset: number, half: number): number =>
+    Math.abs(offset) <= half ? 0 : (Math.abs(offset) - half) * Math.sign(offset);
+  const overX = over(ox, halfW);
+  const overY = over(oy, halfH);
+  if (overX === 0 && overY === 0) return cam;
+  // A drag of the same size in the opposite direction: the point comes in by
+  // exactly as much as it was out.
+  return pannedBy(frame, cam, -overX, -overY);
+}
+
 /** The camera that frames everything: zoom 1, centred on the fit. */
 export function fitCamera(frame: Frame): CameraState {
   return { zoom: 1, ...fitCentre(frame) };
@@ -435,6 +475,31 @@ export function twoFinger(
   return { scale, turn, lean: (midY(from) - midY(to)) / PX_PER_DEGREE };
 }
 
+/** Pixels of drag per degree of TURN, with a mouse. Looser than the lean's,
+ *  because a yaw wraps and a tilt runs out: a full turn is a screen-and-a-half
+ *  of drag, the whole lean a thumb's length. */
+const PX_PER_TURN_DEGREE = 6;
+
+/**
+ * The desktop's second finger (2026-08-29).
+ *
+ * A mouse has one pointer, so the whole two-finger vocabulary — twist to turn,
+ * drag to lean — was unreachable on a desktop: the board could be panned and
+ * zoomed and never angled, and the only way back to a leaned board was the
+ * VIEW button somebody else had left it at. The secondary button (and Shift,
+ * for a trackpad that makes right-dragging awkward) is the button no browser
+ * needs once the board eats its menu, and it carries both channels at once
+ * exactly as two fingers do.
+ *
+ * No deadzone and no latch, unlike `twoFinger`: a mouse held down is actually
+ * still, so there is no jitter to refuse and nothing to protect the other
+ * channel from. Dragging up leans the camera back, the same way the fingers do.
+ */
+export const dragOrbit = (dx: number, dy: number): { readonly turn: number; readonly lean: number } => ({
+  turn: dx / PX_PER_TURN_DEGREE,
+  lean: -dy / PX_PER_DEGREE,
+});
+
 /**
  * The deadzones, and why a gesture LATCHES.
  *
@@ -448,3 +513,21 @@ export function twoFinger(
 export const TURN_DEADZONE = 8;
 export const LEAN_DEADZONE = 3;
 export const ZOOM_DEADZONE = 0.06;
+
+/**
+ * How far a finger may travel and still have meant a TAP.
+ *
+ * One number, in one place: it was the literal `8` in `Board.tsx`'s pan slop
+ * and again in `HexField.tsx`'s click filter, which is two chances to change
+ * one idea and only remember once.
+ *
+ * **Five rather than eight since 2026-08-29** (Marc: "try to be less sensitive
+ * on tile placement vs drag & pinch"). Placement is the only gesture on this
+ * board that cannot be undone — a tile placed is a tile spent — while a pan
+ * that starts three pixels late costs nothing anybody can feel. So the tie
+ * goes to the drag, and the number is set where a deliberate thumb-press still
+ * reads as still and a thumb that has begun to travel does not.
+ *
+ * It is a FEEL number and has not been felt on a phone.
+ */
+export const TAP_SLOP = 5;

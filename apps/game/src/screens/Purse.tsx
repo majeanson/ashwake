@@ -1,9 +1,9 @@
-import { namesOf, type Theme } from '@theme/tokens';
+import { COLOUR_MARK, hex, namesOf, type Theme } from '@theme/tokens';
 import type { HudView, SpendView } from '@view/view';
 import type { Strings } from '@text/Strings';
 
 /**
- * The luck purse, as a drawer (Stage 3, 2026-08-29).
+ * The luck purse, as a drawer (Stage 3, 2026-08-29; laid out 2026-08-29).
  *
  * It opens ABOVE the action bar rather than pushing it, so the bar never moves
  * under a thumb that is already reaching for it — Ashwake 1's arrangement, and
@@ -12,6 +12,22 @@ import type { Strings } from '@text/Strings';
  * Unaffordable rows are SHOWN and disabled rather than hidden. What luck is for
  * is half the reason to collect it, and a menu that only appears once you can
  * afford it teaches nobody what they were saving toward.
+ *
+ * **The layout is 2026-08-29** (Marc: "improve ui/ux for when [luck] popup is
+ * up, its ugly"), and the ugliness was structural rather than decorative. It
+ * was a wrapped row of small buttons each reading `WORD · 5`, which asks a
+ * player to do three things at once: work out that the number is a price, hold
+ * what they can afford in their head, and tell a colour STEER from a verb when
+ * both are set in the same face at the same size. So:
+ *
+ *   - **The purse says what is in it.** A price means nothing beside a number
+ *     nobody is showing you. The head carries the luck and the odds it buys.
+ *   - **One row per spend, price on the right.** A column of prices can be
+ *     read down; prices scattered through a wrapped row cannot.
+ *   - **A steer wears its ground.** The colour rows are the only ones naming a
+ *     PLACE rather than an action, and they carry the same swatch and
+ *     `COLOUR_MARK` the hand's cards and the manual's legend use — nothing here
+ *     invents a symbol.
  */
 
 export type PurseProps = {
@@ -26,19 +42,39 @@ export function Purse({ hud, theme, s, onSpend }: PurseProps) {
 
   return (
     <div className="spends" id="spends" data-hud="purse">
-      {hud.odds !== null && <p className="note">{hud.odds}</p>}
-      {hud.spends.map((spend) => (
-        <button
-          key={`${spend.on}-${spend.colour ?? ''}`}
-          type="button"
-          data-spend={spend.on}
-          disabled={!spend.affordable}
-          className={spend.on === 'tithe' ? 'armed' : undefined}
-          onClick={() => onSpend(spend)}
-        >
-          {wordFor(spend, s, names)} · {spend.cost}
-        </button>
-      ))}
+      <div className="spends-head">
+        <span className="fact-label">{s.lesson.luck.name}</span>
+        <b className="spends-luck">{hud.luck}</b>
+        {hud.odds !== null && <span className="spends-odds note">{hud.odds}</span>}
+      </div>
+
+      {hud.spends.map((spend) => {
+        const steer = spend.on === 'steer' && spend.colour !== null ? spend.colour : null;
+        return (
+          <button
+            key={`${spend.on}-${spend.colour ?? ''}`}
+            type="button"
+            className={`spend-row${spend.on === 'tithe' ? ' armed' : ''}`}
+            data-spend={spend.on}
+            disabled={!spend.affordable}
+            onClick={() => onSpend(spend)}
+          >
+            {steer !== null && (
+              <span
+                className="spend-swatch"
+                aria-hidden="true"
+                style={{ background: hex(theme.terrain[steer].fill) }}
+              >
+                {COLOUR_MARK[steer]}
+              </span>
+            )}
+            <span className="spend-name">{wordFor(spend, s, names)}</span>
+            {/* The price, and it is a price: aligned in a column so the row a
+                player can afford is findable without reading every word. */}
+            <span className="spend-cost">{spend.cost}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

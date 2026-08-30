@@ -227,6 +227,21 @@ button[disabled] {
 
 /* ---- cards -------------------------------------------------------------- */
 
+/*
+ * A card holds the whole screen, and the screen has to look held
+ * (2026-08-29, Marc: "make sure each card pop in game has an easy to see
+ * border, can go over buttons like ?, fit").
+ *
+ * The scrim was 82% of the ground, which left every control underneath
+ * legible through it — the camera cluster and the action bar showing as ghosts
+ * around a card that is supposed to be the only thing you can act on. A card
+ * that sits over the board's own chrome and lets it show through reads as a
+ * layout accident rather than as a thing that arrived.
+ *
+ * 94% instead: still not opaque, because seeing the board dimly behind a
+ * lesson is what tells you the lesson is ABOUT the board, but far enough that
+ * nothing under it competes for a tap.
+ */
 .card-scrim {
   position: fixed;
   inset: 0;
@@ -234,14 +249,27 @@ button[disabled] {
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
 }
 
 .card {
   width: min(30rem, 100%);
   background: var(--panel);
-  border: 1px solid var(--panel-edge);
+  /*
+   * The EDGE, and why it is the active one at two pixels.
+   *
+   * A card is a panel-coloured rectangle on a ground-coloured scrim, and those
+   * two are close by construction in every direction — so a one-pixel
+   * `--panel-edge` was a border you had to look for. `--panel-edge-active` is
+   * the token this palette already spends on "this one, now", and it is graded
+   * against the panel in `theme.test.ts` rather than picked here.
+   */
+  border: 2px solid var(--panel-edge-active);
   border-radius: var(--radius);
+  /* Lifted off the scrim, so the edge is not the only thing saying the card is
+     nearer than what is behind it. Built from the ground rather than from
+     black: a light direction gets a soft shadow and not a smudge. */
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--bg) 70%, transparent);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -682,16 +710,85 @@ button[disabled] {
 }
 
 /* Opens ABOVE the bar, so the bar never moves under a reaching thumb. */
+/*
+ * The luck purse — a drawer, and it has to look like one.
+ *
+ * It was a wrapped row of small buttons reading `WORD · 5` with no ground of
+ * its own, so it read as more action bar rather than as a thing that opened
+ * over it. A column with an edge and a head: the edge says where the drawer
+ * ends, the head says what is in the purse, and the rows line their prices up
+ * so the affordable one can be found without reading every word.
+ */
 .spends {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  padding-bottom: 0.35rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+  padding: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge-active);
+  border-radius: var(--radius);
 }
 
-.spends button {
-  font-size: 0.8rem;
+.spends-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0 0.2rem 0.15rem;
+}
+
+.spends-luck {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+/* The odds sit at the end of the head rather than on their own line: they
+   describe what the number to their left is buying. */
+.spends-odds {
+  margin-left: auto;
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.spend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
   padding: 0 0.6rem;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.spend-name {
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+}
+
+/* The price column. `auto` on the left pushes it to the edge, so every row's
+   number lands on the same rule however long its word is. */
+.spend-cost {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+/* A steer names a PLACE, so it wears that place's ground and mark — the same
+   pair the hand's cards and the manual's legend show. */
+.spend-swatch {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  line-height: 1;
+  text-shadow:
+    1px 1px 0 var(--halo),
+    -1px 1px 0 var(--halo),
+    1px -1px 0 var(--halo),
+    -1px -1px 0 var(--halo);
 }
 
 /* ---- the end screen ----------------------------------------------------- */

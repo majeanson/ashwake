@@ -183,3 +183,30 @@ test('shoots the first minute', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('shoots the luck purse, open', async ({ page }) => {
+  /**
+   * The purse, as a picture (Marc, 2026-08-29: "add a screenshot and improve
+   * ui/ux for when [luck] popup is up, its ugly").
+   *
+   * Shot on a played board rather than an opening one, because an opening
+   * purse is a column of rows nobody can afford — every price greyed, no
+   * swatch lit, and none of what the drawer is FOR visible. `?place=45` walks
+   * far enough in that luck has been earned and the odds line has something to
+   * say, which is the state the layout was redrawn for.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&place=45&taught=1&tilt=35&light=1&materials=1&art=1&relief=0.35');
+  await expect(page.locator('canvas')).toBeVisible();
+  await begin(page);
+  await clearCards(page);
+  await page.waitForTimeout(600);
+
+  await page.locator('[data-action="purse"]').click();
+  await page.locator('[data-hud="purse"]').waitFor({ state: 'visible' });
+  await page.waitForTimeout(200);
+
+  await mkdir(SHOTS, { recursive: true });
+  await writeFile(join(SHOTS, 's5-purse.png'), await page.screenshot());
+  expect(errors, errors.join(BREAK)).toEqual([]);
+});

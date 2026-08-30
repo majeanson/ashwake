@@ -1,5 +1,13 @@
 import { COLOURS } from '@content/tuning';
-import { COLOUR_MARK, hex, LANDMARK_GLYPH, namesOf, TILE_GLYPH, type Theme } from '@theme/tokens';
+import {
+  COLOUR_MARK,
+  CONCEPT_MARK,
+  hex,
+  LANDMARK_GLYPH,
+  namesOf,
+  TILE_GLYPH,
+  type Theme,
+} from '@theme/tokens';
 import { lessonName, lessonOf, type LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 
@@ -100,6 +108,12 @@ export function Legend({ theme, s, onTerm }: LegendProps) {
             aria-hidden="true"
             style={{ background: hex(theme.wall.fill) }}
           />
+          {/* The mark the board prints on a wall, so the legend teaches the
+              same thing the board shows — stone beside it stays wordless,
+              which is how the two are told apart. */}
+          <span className="legend-mark" aria-hidden="true">
+            {CONCEPT_MARK.wall}
+          </span>
           <span className="legend-name">{s.ui.legendWall}</span>
         </li>
         <li>

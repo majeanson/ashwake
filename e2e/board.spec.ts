@@ -452,34 +452,51 @@ test('the first pop of a device holds the screen', async ({ page }) => {
  * writing down, because reading it the other way silently leaves fingers on
  * the glass and every gesture after it lands on a hand with four.
  */
-async function twoFingerBoard(page: Page) {
+test('two fingers lean and turn the board, and the cycle puts it back', async ({ page }) => {
+  /**
+   * The board's two-finger camera (2026-08-29, Marc: "anyway we could tilt,
+   * drag cameras as we want? 3d style").
+   *
+   * Pinch zooms, a twist turns, a two-finger drag leans — the maps vocabulary
+   * on the two pointers that were already there. The arithmetic is unit tested
+   * in `camera.test.ts`; what only a browser can say is that the gesture
+   * reaches the board and that an angle wandered into can be undone.
+   *
+   * **Measured through `data-lean`, not through pixels.** The obvious test
+   * compares screenshots and the first draft of this did — it passed while the
+   * gesture did nothing at all, because the board is never still: embers and
+   * beacons animate, so two shots of an unchanged board differ anyway. The
+   * board host carries the angle it is actually at, which is the one witness
+   * here that cannot say yes by accident.
+   *
+   * Raw CDP touch, because `page.mouse` cannot express two pointers. **The
+   * `touchEnd` list is the points that ENDED**, not the ones still down —
+   * reading it the other way silently leaves fingers on the glass and every
+   * gesture after it lands on a hand with four.
+   */
+  const errors = watchErrors(page);
   await page.goto('/?seed=7&taught=1&place=16');
   await begin(page);
   await page.waitForTimeout(600);
+
+  const host = page.locator('[data-lean]');
+  const view = page.locator('[data-action="camera"]');
+  const lean = async () => (await host.getAttribute('data-lean')) ?? '';
+  const opened = await lean();
+  expect(opened, 'the board did not open at its direction’s angle').toBe('35,0,0.35');
+
   const box = await page.locator('canvas').boundingBox();
   if (box === null) throw new Error('no canvas');
+  const cx = Math.round(box.x + box.width / 2);
+  const cy = Math.round(box.y + box.height / 2);
   const cdp = await page.context().newCDPSession(page);
-  return {
-    cx: Math.round(box.x + box.width / 2),
-    cy: Math.round(box.y + box.height / 2),
-    touch: (
-      type: 'touchStart' | 'touchMove' | 'touchEnd',
-      pts: readonly { x: number; y: number }[],
-    ) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map((p) => ({ ...p })) }),
-  };
-}
+  const touch = (
+    type: 'touchStart' | 'touchMove' | 'touchEnd',
+    pts: readonly { x: number; y: number }[],
+  ) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map((p) => ({ ...p })) });
 
-test('two fingers lean and turn the board, and LEVEL puts it back', async ({ page }) => {
-  const errors = watchErrors(page);
-  const { cx, cy, touch } = await twoFingerBoard(page);
-  const level = page.locator('[data-action="level"]');
-
-  // Nothing to level yet: the control is absent until the board is off its own
-  // angle, which keeps the cluster at two buttons for anyone who never leans it.
-  await expect(level).toHaveCount(0);
-
-  // A two-finger drag UP. The midpoint rises while the span and the angle
-  // hold, so this is a lean and neither a zoom nor a turn.
+  // A two-finger drag UP: the midpoint rises while the span and the angle hold,
+  // so this is a lean and neither a zoom nor a turn.
   let a = { x: cx - 60, y: cy + 70 };
   let b = { x: cx + 60, y: cy + 70 };
   await touch('touchStart', [a]);
@@ -490,12 +507,13 @@ test('two fingers lean and turn the board, and LEVEL puts it back', async ({ pag
     await touch('touchMove', [a, b]);
   }
   await touch('touchEnd', [a, b]);
-  await expect(level, 'the two-finger drag did not lean the board').toHaveCount(1);
-
-  // Back to the direction's own angle, so the twist below is measured from a
-  // known one rather than from wherever the drag happened to land.
-  await level.click();
-  await expect(level).toHaveCount(0);
+  await expect(host, 'the two-finger drag did not lean the board').not.toHaveAttribute(
+    'data-lean',
+    opened,
+  );
+  const [tiltNow, yawNow] = (await lean()).split(',').map(Number);
+  expect(tiltNow, 'dragging up should lean the camera BACK').toBeGreaterThan(35);
+  expect(yawNow, 'a straight drag turned the board').toBe(0);
 
   // A twist about the midpoint: both fingers rotate, the midpoint and the span
   // hold, so this is a turn and neither a lean nor a zoom.
@@ -504,18 +522,38 @@ test('two fingers lean and turn the board, and LEVEL puts it back', async ({ pag
   await touch('touchStart', [a]);
   await touch('touchStart', [a, b]);
   for (const deg of [15, 30, 45]) {
-    const rad = (deg * Math.PI) / 180;
-    const ox = Math.round(60 * Math.cos(rad));
-    const oy = Math.round(60 * Math.sin(rad));
+    const t = (deg * Math.PI) / 180;
+    const ox = Math.round(60 * Math.cos(t));
+    const oy = Math.round(60 * Math.sin(t));
     a = { x: cx - ox, y: cy - oy };
     b = { x: cx + ox, y: cy + oy };
     await touch('touchMove', [a, b]);
   }
   await touch('touchEnd', [a, b]);
-  await expect(level, 'the twist did not turn the board').toHaveCount(1);
+  expect(Number((await lean()).split(',')[1]), 'the twist did not turn the board').not.toBe(0);
 
-  await level.click();
-  await expect(level).toHaveCount(0);
+  /*
+   * And the ONE button walks its way back. FLAT is 2D — every one of the three
+   * at zero, because a board seen from above with its relief still on is a 3D
+   * board photographed from above and not a map.
+   */
+  for (let i = 0; i < 6; i++) {
+    if ((await view.textContent())?.trim() === 'FLAT') break;
+    await view.click();
+  }
+  await view.click();
+  await expect(host, 'FLAT is not 2D').toHaveAttribute('data-lean', '0,0,0');
+
+  for (let i = 0; i < 6; i++) {
+    if ((await view.textContent())?.trim() === 'DEFAULT') break;
+    await view.click();
+  }
+  await view.click();
+  await expect(host, 'DEFAULT did not restore the direction’s angle').toHaveAttribute(
+    'data-lean',
+    opened,
+  );
+
   assertLooksLikeAPicture(await page.locator('canvas').screenshot(), 'the levelled board');
   expect(errors).toEqual([]);
 });
