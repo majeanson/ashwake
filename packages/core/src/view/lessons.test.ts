@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BARE_TUNING, TUNING, type Tuning } from '@content/tuning';
-import { CONCEPT_MARK, COLOUR_MARK, LANDMARK_GLYPH, TILE_GLYPH } from '@theme/tokens';
+import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { DAYLIGHT } from '@theme/themes/daylight';
 import { TORCHLIT } from '@theme/themes/torchlit';
 import type { Theme } from '@theme/tokens';
@@ -40,14 +40,15 @@ const CASES: readonly (readonly [string, Tuning, Theme])[] = [
   ['BARE_TUNING · daylight', BARE_TUNING, DAYLIGHT],
 ];
 
-/** Every mark any lesson is allowed to wear. A glyph invented here would be a
+/** Every mark any lesson is allowed to wear. A mark invented here would be a
  *  symbol the board never draws — the thing `tips.ts` forbids for rows and the
- *  figures forbid for cells. */
-const KNOWN_GLYPHS = new Set<string>([
-  ...Object.values(LANDMARK_GLYPH),
-  ...Object.values(CONCEPT_MARK),
-  ...Object.values(COLOUR_MARK),
-  TILE_GLYPH,
+ *  figures forbid for cells. The CHROME's marks are deliberately absent: they
+ *  say something about the screen rather than about the plane. */
+const KNOWN_ICONS = new Set<IconName>([
+  ...Object.values(LANDMARK_ICON),
+  ...Object.values(CONCEPT_ICON),
+  ...Object.values(COLOUR_ICON),
+  TILE_ICON,
 ]);
 
 describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the lesson registry · %s', (_l, s) => {
@@ -262,12 +263,10 @@ describe('the lesson registry, whatever the language', () => {
     }
   });
 
-  it('borrows every glyph from a mark registry, never inventing one', () => {
+  it('borrows every mark from a registry, never inventing one', () => {
     for (const lesson of LESSONS) {
-      if (lesson.glyph === undefined) continue;
-      expect(KNOWN_GLYPHS, `${lesson.id} invented the glyph ${lesson.glyph}`).toContain(
-        lesson.glyph,
-      );
+      if (lesson.icon === undefined) continue;
+      expect(KNOWN_ICONS, `${lesson.id} invented the mark ${lesson.icon}`).toContain(lesson.icon);
     }
   });
 });

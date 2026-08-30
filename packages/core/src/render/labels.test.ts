@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CellView } from './Renderer';
-import { CONCEPT_MARK } from '@theme/tokens';
+import { CONCEPT_ICON } from '@theme/icons';
 import { labelFor } from './labels';
 
 /**
@@ -82,7 +82,7 @@ describe('a wall says so on its face', () => {
    */
   it('prints the mark the game already owns for a wall', () => {
     expect(labelFor(cell({ kind: 'wall' }))).toEqual({
-      text: CONCEPT_MARK.wall,
+      icon: CONCEPT_ICON.wall,
       faint: false,
     });
   });

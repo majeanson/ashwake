@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CHROME_MARK } from '@theme/tokens';
+import { Icon } from './Icon';
 import { useDialogStack } from './dialog';
 
 /**
@@ -71,7 +71,7 @@ export function Panel({ id, title, back, closeAll, onBack, children, head }: Pan
           panel it would be a second button making the first one's promise.
         */}
           <button type="button" className="panel-back" onClick={onBack} aria-label={back}>
-            <span aria-hidden="true">{CHROME_MARK.back}</span>
+            <Icon name="back" />
           </button>
           <h1 className="panel-title" id={`${id}-title`}>
             {title}
@@ -84,7 +84,7 @@ export function Panel({ id, title, back, closeAll, onBack, children, head }: Pan
               onClick={stack.closeAll}
               aria-label={closeAll}
             >
-              <span aria-hidden="true">{CHROME_MARK.closeAll}</span>
+              <Icon name="close" />
             </button>
           )}
         </div>

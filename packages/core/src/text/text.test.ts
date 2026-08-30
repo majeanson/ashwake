@@ -100,6 +100,34 @@ describe('the catalogues', () => {
    * is checked in `view/view.test.ts`, because the layering lint says `text/`
    * may not look at `view/` and it is right.
    */
+  /**
+   * A mark is never spelled into a sentence (2026-08-30).
+   *
+   * Marc: *"no emojis only phosphor icons or assets."* Every symbol in this
+   * game used to be a Unicode character, and eighteen of them were composed
+   * INTO catalogue strings — `${LANDMARK_GLYPH.cache} CACHE: build a tile…` —
+   * which meant a receipt had to be split back apart by whitespace to get the
+   * mark out again, and the split was wrong for every sentence that did not
+   * have one.
+   *
+   * The marks are icons now (`@theme/icons`) and ride BESIDE the words, so
+   * this is the rule that keeps them there: a catalogue holds sentences, and a
+   * sentence that carries a picture is a sentence some host will have to take
+   * apart. The block-drawing characters are exempt and named: the arc
+   * sparkline is pasted into a chat, where an icon cannot go.
+   */
+  it('never spells a mark into a sentence', () => {
+    // The whole retired vocabulary, plus the two chrome marks.
+    const RETIRED = [...'▲◆■●✚★◈❖✦⬢◉✤▦▨❋✓◇←✕▾♪♦'];
+    for (const s of CATALOGUES) {
+      for (const text of everyString(s)) {
+        for (const mark of RETIRED) {
+          expect(text, `${s.locale}: "${text}" spells the mark ${mark}`).not.toContain(mark);
+        }
+      }
+    }
+  });
+
   it('writes no em dash in a direction’s own name or note', () => {
     for (const s of CATALOGUES) {
       for (const theme of THEMES) {

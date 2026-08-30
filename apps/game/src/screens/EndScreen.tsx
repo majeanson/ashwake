@@ -179,7 +179,7 @@ export function EndScreen({
       )}
 
       {/* Why the number was what it was, one tap down — see `Payout`. */}
-      {summary !== null && <Payout summary={summary} harvests={harvests} s={s} />}
+      {summary !== null && <Payout summary={summary} harvests={harvests} theme={theme} s={s} />}
 
       {/* The relics this run earned are spent HERE, on the screen where they
           were earned — Ashwake 1's ruling, and the whole of the roguelite

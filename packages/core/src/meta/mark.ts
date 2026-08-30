@@ -5,7 +5,7 @@
  * (a hex is the game's own shape, and it already survived 16px→512px); what
  * moved is the centre. A plain filled circle said "a mark exists" and
  * nothing else — the spark is drawn as a four-point sparkle, which is the
- * EXACT glyph `LANDMARK_GLYPH.find` already draws on the board
+ * EXACT idea `LANDMARK_ICON.find` already marks on the board
  * (`theme/tokens.ts`) for "something worth finding". The mark and the game
  * now speak the same symbol for it instead of inventing a second one, and a
  * torch's own spark is precisely what that glyph already meant.
@@ -29,7 +29,7 @@ const SPARK = '#f7e6be';
 
 /**
  * A four-point sparkle centred on `(cx, cy)`, outer radius `r` — the same
- * silhouette `LANDMARK_GLYPH.find`'s `✦` reads as, drawn as a straight-edged
+ * silhouette a FIND reads as, drawn as a straight-edged
  * path instead of a character so it rasterises identically everywhere
  * rather than depending on a font having the glyph (or a renderer's curve
  * handling: an earlier version used quadratic curves pulled toward the

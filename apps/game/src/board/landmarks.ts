@@ -24,10 +24,11 @@ import type { Motif } from '@theme/tokens';
  * shadow. That reads at any zoom, survives a screenshot at arm's length, and
  * says *someone was here* in a way a printed mark cannot.
  *
- * **The glyph stays the authority on MEANING.** `LANDMARK_GLYPH` still says
+ * **The mark stays the authority on MEANING.** `LANDMARK_ICON` still says
  * what each kind IS, the manual and the figures still draw it, and a prop is
  * additive: it is how a destination looks on the board, not what it means. A
- * player who learns `◈` from a card must find `◈` in the manual, and does.
+ * player who learns a shrine's mark from a card must find the same mark in the
+ * manual, and does — the same one file draws all three since 2026-08-30.
  *
  * Primitives rather than modelled meshes, deliberately. Five landmark kinds
  * modelled properly is an art commission and a megabyte; five built out of a
@@ -138,9 +139,10 @@ export function propGeometry(reward: LandmarkReward, motif: Motif = 'plane'): Bu
  *   somebody built, and that stays true of a settlement. It is the one thing
  *   here nobody put where it is.
  *
- * `LANDMARK_GLYPH` is still the authority on MEANING in both motifs — the
- * manual, the figures and the legend do not move, and a player who learns `◈`
- * from a card finds `◈` in the manual whichever direction they are playing.
+ * `LANDMARK_ICON` is still the authority on MEANING in both motifs — the
+ * manual, the figures and the legend do not move, and a player who learns a
+ * mark from a card finds the same mark in the manual whichever direction they
+ * are playing.
  */
 function settlementGeometry(reward: LandmarkReward): BufferGeometry {
   switch (reward) {

@@ -48,7 +48,7 @@ export function LessonCard({ id, theme, s, dismiss, onDismiss, firstContact }: L
   return (
     <Card
       id={`lesson-${id}`}
-      glyph={lesson.glyph}
+      icon={lesson.icon}
       name={lessonName(lesson, s)}
       ink={lesson.ink}
       dismiss={dismiss}

@@ -1,22 +1,35 @@
 import { Text } from '@react-three/drei';
 import { useMemo } from 'react';
 import type { HexKey } from '@engine/hex';
+import type { IconName } from '@theme/icons';
 import type { CellView } from '@render/Renderer';
 import { labelFor } from '@render/labels';
 import { place, type Layout } from '@render/layout';
-import type { Theme } from '@theme/tokens';
+import { hex, type Theme } from '@theme/tokens';
+import { markTexture } from './marks';
 import { kindOf, topOf } from './relief';
 
 /**
  * What a cell prints (Stage 2c, 2026-08-29 — lifted out of `HexField`).
  *
- * `labelFor` in the core is the rule — a worth, a preview, a landmark's glyph,
- * and faint means SPENT. This file only draws it. The font is self-hosted
- * (`/fonts/cinzel.ttf`), because a default font would fetch from a CDN and make
- * "nothing leaves your phone" a lie — the trap Ashwake 1 fell into on
- * 2026-08-20 and climbed out of. **woff2 is not a format troika reads**, so it
- * ships as TTF; a font that fails to load takes the whole frame with it, which
- * is why the smoke test checks for a picture rather than for silence.
+ * `labelFor` in the core is the rule — a worth, a preview, a landmark's mark,
+ * and faint means SPENT. This file only draws it.
+ *
+ * **A number and a mark are drawn by two different things** (2026-08-30), and
+ * the split is the point. A NUMBER is text and wants a typeface: the font is
+ * self-hosted (`/fonts/cinzel.ttf`), because a default font would fetch from a
+ * CDN and make "nothing leaves your phone" a lie — the trap Ashwake 1 fell into
+ * on 2026-08-20 and climbed out of. **woff2 is not a format troika reads**, so
+ * it ships as TTF; a font that fails to load takes the whole frame with it,
+ * which is why the smoke test checks for a picture rather than for silence.
+ *
+ * A MARK is not text and never was. It used to be set in the same wordmark
+ * face as the numbers — `✚ ★ ◈ ❖ ✦ ▦` asked of Cinzel, which carries them by
+ * luck rather than by design, and which a subset or a swap would have emptied
+ * silently. Marc: *"no emojis only phosphor icons or assets."* A mark is a
+ * Phosphor path now (`@theme/icons`), drawn into a texture by `marks.ts` and
+ * laid on the hex as a plane, so what the board draws and what the manual
+ * draws are the same shape from the same file.
  */
 
 const FONT = '/fonts/cinzel.ttf';
@@ -25,7 +38,10 @@ const LABEL_LIFT = 0.02;
 
 type PlacedLabel = {
   readonly key: HexKey;
-  readonly text: string;
+  /** A number, or null on a cell whose label is a mark. */
+  readonly text: string | null;
+  /** A mark, or null on a cell whose label is a number. */
+  readonly icon: IconName | null;
   readonly faint: boolean;
   /** A destination that has been reached — see `inkFor`. */
   readonly spent: boolean;
@@ -53,7 +69,8 @@ export function Labels({ cells, theme, layout, relief, yaw }: LabelsProps) {
       const p = place({ q: cell.q, r: cell.r }, layout);
       out.push({
         key: cell.key,
-        text: label.text,
+        text: label.text ?? null,
+        icon: label.icon ?? null,
         faint: label.faint,
         spent: cell.kind === 'landmark' && cell.claimed,
         x: p.x,
@@ -66,31 +83,81 @@ export function Labels({ cells, theme, layout, relief, yaw }: LabelsProps) {
 
   return (
     <>
-      {labels.map((label) => (
-        <Text
-          key={label.key}
-          font={FONT}
-          fontSize={0.62}
-          color={inkFor(label, theme)}
-          // The palette is authored in display colours and graded to 4.5:1 by
-          // `contrast.test.ts`. Tone mapping between that grade and the screen
-          // would make the whole budget a description of a board that does not
-          // exist — the canvas turns it off, and so does every label.
-          outlineWidth={theme.ink.haloWidth * 0.4}
-          outlineColor={theme.ink.halo}
-          anchorX="center"
-          anchorY="middle"
-          position={[label.x, label.top, label.z]}
-          // Lying flat on the hex's top, and turned back by the yaw: a number
-          // printed on a board that has been turned 45 degrees is a number read
-          // at 45 degrees, and a number on a hex has to be read at a glance.
-          rotation={[-Math.PI / 2, 0, (yaw * Math.PI) / 180]}
-          raycast={() => null}
-        >
-          {label.text}
-        </Text>
-      ))}
+      {labels.map((label) =>
+        label.icon === null ? null : (
+          <Mark key={label.key} label={label} icon={label.icon} theme={theme} yaw={yaw} />
+        ),
+      )}
+      {labels.map((label) =>
+        label.text === null ? null : (
+          <Text
+            key={label.key}
+            font={FONT}
+            fontSize={0.62}
+            color={inkFor(label, theme)}
+            // The palette is authored in display colours and graded to 4.5:1 by
+            // `contrast.test.ts`. Tone mapping between that grade and the screen
+            // would make the whole budget a description of a board that does not
+            // exist — the canvas turns it off, and so does every label.
+            outlineWidth={theme.ink.haloWidth * 0.4}
+            outlineColor={theme.ink.halo}
+            anchorX="center"
+            anchorY="middle"
+            position={[label.x, label.top, label.z]}
+            // Lying flat on the hex's top, and turned back by the yaw: a number
+            // printed on a board that has been turned 45 degrees is a number read
+            // at 45 degrees, and a number on a hex has to be read at a glance.
+            rotation={[-Math.PI / 2, 0, (yaw * Math.PI) / 180]}
+            raycast={() => null}
+          >
+            {label.text}
+          </Text>
+        ),
+      )}
     </>
+  );
+}
+
+/** How much of a hex a mark covers. Sized against the numbers beside it: a
+ *  destination has to read from across the board, and a worth has to stay the
+ *  thing you look at when you are choosing where to build. */
+const MARK_SIZE = 0.78;
+
+/**
+ * One mark, lying on its hex.
+ *
+ * A plane rather than a `Text`, and the same transform the numbers get: flat
+ * on the top face, turned BACK by the yaw so a board turned 45 degrees does
+ * not hand you a mark read at 45 degrees. `toneMapped` off for the reason the
+ * canvas turns tone mapping off at all — the palette is graded to 4.5:1 in
+ * display colours, and a curve between that grade and the screen would make
+ * the whole budget a description of a board that does not exist.
+ */
+function Mark({
+  label,
+  icon,
+  theme,
+  yaw,
+}: {
+  readonly label: PlacedLabel;
+  readonly icon: IconName;
+  readonly theme: Theme;
+  readonly yaw: number;
+}) {
+  const texture = useMemo(
+    () => markTexture(icon, hex(inkFor(label, theme)), hex(theme.ink.halo)),
+    [icon, label, theme],
+  );
+  if (texture === null) return null;
+  return (
+    <mesh
+      position={[label.x, label.top, label.z]}
+      rotation={[-Math.PI / 2, 0, (yaw * Math.PI) / 180]}
+      raycast={() => null}
+    >
+      <planeGeometry args={[MARK_SIZE, MARK_SIZE]} />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} />
+    </mesh>
   );
 }
 

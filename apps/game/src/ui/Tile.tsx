@@ -1,4 +1,6 @@
-import { COLOUR_MARK, hex, namesOf, type Theme } from '@theme/tokens';
+import { COLOUR_ICON } from '@theme/icons';
+import { hex, namesOf, type Theme } from '@theme/tokens';
+import { Icon } from './Icon';
 import type { Colour } from '@content/tuning';
 import type { Rarity } from '@engine/state';
 import type { Strings } from '@text/Strings';
@@ -18,8 +20,8 @@ import type { Strings } from '@text/Strings';
  * have their symbol and their background color"). The NAME is words, the FILL
  * is hue, and the MARK is shape — and the third one is the one that survives
  * everything the other two do not: greyscale, sunlight, colour blindness, and
- * a 56px card on a six-card hand where the name has to shrink. `COLOUR_MARK`
- * is the registry and `theme/tokens.ts` says in as many words that the cards
+ * a 56px card on a six-card hand where the name has to shrink. `COLOUR_ICON`
+ * is the registry and `theme/icons.ts` says in as many words that the cards
  * keep it; this body had dropped it and painted the fill only when a card was
  * SELECTED, so an unselected hand was four words in one colour.
  *
@@ -151,7 +153,7 @@ export function Tile({
         />
       )}
       <span className="tile-mark" aria-hidden="true">
-        {COLOUR_MARK[colour]}
+        <Icon name={COLOUR_ICON[colour]} />
       </span>
       <span>{name}</span>
       {rare && (

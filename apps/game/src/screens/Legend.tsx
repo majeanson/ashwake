@@ -1,13 +1,7 @@
 import { COLOURS, TUNING } from '@content/tuning';
-import {
-  COLOUR_MARK,
-  CONCEPT_MARK,
-  hex,
-  LANDMARK_GLYPH,
-  namesOf,
-  TILE_GLYPH,
-  type Theme,
-} from '@theme/tokens';
+import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON } from '@theme/icons';
+import { hex, namesOf, type Theme } from '@theme/tokens';
+import { Icon } from '../ui/Icon';
 import { LESSON_FOR_REWARD, lessonDefine, lessonName, lessonOf } from '@view/lessons';
 import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
@@ -20,8 +14,8 @@ import type { Strings } from '@text/Strings';
  * they are written in — a player meets `◈` on a hex and the only way to learn
  * it is to tap that hex, which requires already having walked to it.
  *
- * **Nothing here invents a mark.** Every glyph is read from the registry that
- * owns it — `COLOUR_MARK`, `LANDMARK_GLYPH`, `TILE_GLYPH` — and every name and
+ * **Nothing here invents a mark.** Every icon is read from the registry that
+ * owns it — `COLOUR_ICON`, `LANDMARK_ICON`, `TILE_ICON` — and every name and
  * sentence from the lesson that already defines it, or from the direction's
  * own terrain names. That is the whole point of a legend: it must be the same
  * alphabet the board is drawing, not a second copy of it that can drift.
@@ -74,7 +68,7 @@ export function Legend({ theme, s }: LegendProps) {
               style={{ background: hex(theme.terrain[colour].fill) }}
             />
             <span className="legend-mark" aria-hidden="true">
-              {COLOUR_MARK[colour]}
+              <Icon name={COLOUR_ICON[colour]} />
             </span>
             {/*
               The grounds say what they DO, right here.
@@ -109,7 +103,7 @@ export function Legend({ theme, s }: LegendProps) {
           return (
             <li key={reward} className="tall">
               <span className="legend-mark" aria-hidden="true">
-                {LANDMARK_GLYPH[reward]}
+                <Icon name={LANDMARK_ICON[reward]} />
               </span>
               {/*
                 A NAME, not a button (2026-08-29). It was tappable, on the
@@ -134,7 +128,7 @@ export function Legend({ theme, s }: LegendProps) {
       <ul>
         <li>
           <span className="legend-mark" aria-hidden="true">
-            {TILE_GLYPH}
+            <Icon name={TILE_ICON} />
           </span>
           <span className="legend-name">{s.ui.legendRare}</span>
         </li>
@@ -145,7 +139,7 @@ export function Legend({ theme, s }: LegendProps) {
             style={{ background: hex(theme.stone.fill) }}
           />
           <span className="legend-mark" aria-hidden="true">
-            {CONCEPT_MARK.stone}
+            <Icon name={CONCEPT_ICON.stone} />
           </span>
           <span className="legend-name">
             {stone === undefined ? null : (
@@ -166,7 +160,7 @@ export function Legend({ theme, s }: LegendProps) {
               same thing the board shows. Stone beside it carries its own mark
               for the same reason. */}
           <span className="legend-mark" aria-hidden="true">
-            {CONCEPT_MARK.wall}
+            <Icon name={CONCEPT_ICON.wall} />
           </span>
           <span className="legend-name">{s.ui.legendWall}</span>
         </li>

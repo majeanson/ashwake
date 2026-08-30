@@ -97,8 +97,8 @@ export function rarityPattern(s: Strings): RegExp {
  * player is entitled to read rather than infer from a missing line, and a
  * three-row card that is sometimes two rows reads as a card with a bug.
  *
- * No row invents a symbol (`theme/tokens.ts` states the rule: `COLOUR_MARK`
- * and `LANDMARK_GLYPH` are the whole vocabulary), so all three go markless
+ * No row invents a symbol (`theme/icons.ts` states the rule: `COLOUR_ICON`
+ * and `LANDMARK_ICON` are the whole vocabulary), so all three go markless
  * and the leading words carry the structure instead.
  */
 export function perkRows(id: PerkId, s: Strings): TipRow[] {

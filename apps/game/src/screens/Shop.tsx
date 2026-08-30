@@ -11,7 +11,8 @@ import {
   UPGRADES,
   type Progress,
 } from '@meta/progress';
-import { CONCEPT_MARK, type Theme } from '@theme/tokens';
+import type { Theme } from '@theme/tokens';
+import { Icon } from '../ui/Icon';
 import type { LessonId } from '@view/lessons';
 import { perkRows } from '@view/tips';
 import type { Strings } from '@text/Strings';
@@ -50,7 +51,7 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
   const body = (
     <>
       <p className="note">
-        {CONCEPT_MARK.relic} {progress.relics}
+        <Icon name="relic" /> {progress.relics}
       </p>
 
       <section>
@@ -85,7 +86,7 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
 
       <section>
         <h2 className="fact-label">
-          {CONCEPT_MARK.fame} {progress.found.length}/{PERKS.length}
+          <Icon name="fame" /> {progress.found.length}/{PERKS.length}
         </h2>
         {progress.found.length === 0 && (
           <p className="note">

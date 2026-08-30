@@ -1,9 +1,10 @@
-import { CONCEPT_MARK, type Theme } from '@theme/tokens';
+import type { Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { HarvestChoice } from '@engine/state';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
 import { useTerrainArt } from '../shell/art';
+import { Icon } from '../ui/Icon';
 import { Tile } from '../ui/Tile';
 
 /**
@@ -199,15 +200,16 @@ export function ActionBar({
             {/*
               The REGISTRY's mark, not a lookalike (2026-08-30).
 
-              `CONCEPT_MARK.luck` is ✤ and exists because luck is one of the two
-              currencies that follow a player between the board, the purse, the
-              shop and the end screen. Every one of those speaks ✤; this button,
-              which is the door to the purse and the most-seen luck on the
-              screen, was drawing ♦. `Hud` had the identical bug and was fixed
-              on 2026-08-29 with a comment saying the stat row was "the one
-              place that did not" — it was not.
+              Luck is one of the two currencies that follow a player between the
+              board, the purse, the shop and the end screen, so the concept
+              registry names it and every one of those surfaces draws the same
+              thing. This button — the door to the purse, and the most-seen
+              luck on the screen — was drawing `♦`, a second symbol for the
+              idea the registry already had. `Hud` had the identical bug and was
+              fixed a day earlier with a comment saying the stat row was "the
+              one place that did not"; it was not.
             */}
-            {CONCEPT_MARK.luck} {hud.luck}
+            <Icon name="luck" /> {hud.luck}
           </button>
         )}
       </div>

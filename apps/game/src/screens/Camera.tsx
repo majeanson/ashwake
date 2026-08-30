@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Strings } from '@text/Strings';
 import type { BoardHandle } from '../board/Board';
+import { Icon } from '../ui/Icon';
 
 /**
  * The camera cluster (Stage 3, 2026-08-29; one button since 2026-08-29).
@@ -105,7 +106,9 @@ export function Camera({ s, next, onCycle, onHelp, sound, onSound }: CameraProps
     <div className="camera">
       {/* The label says what a TAP WOULD DO, not what the state is: a toggle
           labelled with its own state has to be read twice. `aria-pressed`
-          carries the state, which is what it is for. */}
+          carries the state, which is what it is for — and the ICON carries it
+          too, because a speaker with a slash through it is the one shape
+          everybody already reads as "muted". */}
       <button
         type="button"
         className="sound"
@@ -114,10 +117,10 @@ export function Camera({ s, next, onCycle, onHelp, sound, onSound }: CameraProps
         aria-label={sound ? s.ui.soundOn : s.ui.soundOff}
         onClick={onSound}
       >
-        ♪
+        <Icon name={sound ? 'soundOn' : 'soundOff'} />
       </button>
       <button type="button" className="help" aria-label={s.ui.howToPlay} onClick={onHelp}>
-        ?
+        <Icon name="help" />
       </button>
       <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
         {s.ui.camera[next]}

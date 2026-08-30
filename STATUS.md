@@ -4,7 +4,45 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, later still — the game stops interrupting
+Last checkpoint: **2026-08-30, last — the marks stop being a request and become
+a shape.** Marc: _"no emojis only phosphor icons or assets."_ Every mark this
+game drew was a Unicode character, and a character is a REQUEST for a shape:
+what answers it is the font stack. **The board was asking `cinzel.ttf` — a face
+self-hosted for a WORDMARK — to answer for `✚ ★ ◈ ❖ ✦ ▦`**, which it carries by
+luck; a subset or a swap would have emptied the board's alphabet with nothing
+failing. The chrome asked whatever the system serif resolved to, which is how
+`♦` stood in for `✤` on two screens and looked plausible on both.
+
+**The vocabulary did not move** (`DECISIONS.md` D10): same four registries, same
+members, same no-collision rule, and `tokens.test.ts` did not have to change to
+follow them. Only the currency did, from a codepoint to a NAME — `theme/icons.ts`
+names, `scripts/phosphor.ts` vendors twenty-three Phosphor paths (MIT) into one
+committed 8KB file, `ui/Icon.tsx` draws the chrome and `board/marks.ts` draws
+the board, so the manual and the board draw ONE shape from one file.
+
+**An icon cannot live in a string**, which forced the good change underneath:
+a mark used to be composed into catalogue sentences and split back out of a
+receipt by whitespace. It rides beside the words now, and the split is gone —
+taking the "first word drawn as a mark" bug with it.
+
+**And the swap found three more.** The manual, the figure and the legend all
+promised a placed rare "wears a star"; **this board has never drawn one** — it
+gives a ring in the rarity's colour and stands the tile taller, and the claim
+had been wrong in both languages for five stages. `↗` and `$` were the last two
+characters on the stat row, against a ruling `tokens.ts` had already written
+down; they are REACH and COST now. And a `▾` lived in a CSS `content`, where no
+test in this repository could see it.
+
+Three tests at three levels, because one of these hid at each: the registries
+(`tokens.test.ts`), the catalogues (`text.test.ts` — **no mark is ever spelled
+into a sentence**), and the rendered screens (`e2e/menus.spec.ts` reads every
+screen's text and `aria-label`s and fails on any retired character).
+
+Verified: 1066 tests / 74 files, 77 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm bake` end to end, `pnpm audit:screens`
+regenerated — 156 findings, down from 162.
+
+Previous checkpoint: **2026-08-30, later still — the game stops interrupting
 itself, and the prose stops sounding written by a machine.** Marc named six
 things after playing it, and one fault sits under all of them: **saying a thing
 twice.** The pop card repeated the accounting at full modal weight on every

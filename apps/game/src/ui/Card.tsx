@@ -1,4 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import type { IconName } from '@theme/icons';
+import { Icon } from './Icon';
 
 /**
  * A card: something the game says, dismissed on purpose (Stage 3, 2026-08-29).
@@ -48,8 +50,9 @@ const BRIEF_MS = 4200;
 
 export type CardProps = {
   readonly id: string;
-  /** The mark that says what KIND of thing this is. From the registries only. */
-  readonly glyph?: string | undefined;
+  /** The mark that says what KIND of thing this is. From the registries only
+   *  (`@theme/icons`), and an icon rather than a character since 2026-08-30. */
+  readonly icon?: IconName | undefined;
   readonly name?: string | undefined;
   readonly children: ReactNode;
   /** The dismiss button's word — GOT IT, or STAY when there is an action. */
@@ -69,7 +72,7 @@ export type CardProps = {
 
 export function Card({
   id,
-  glyph,
+  icon,
   name,
   children,
   dismiss,
@@ -125,11 +128,11 @@ export function Card({
           : { role: 'dialog', 'aria-modal': true, tabIndex: -1 })}
         aria-labelledby={name === undefined ? undefined : `${id}-name`}
       >
-        {(glyph !== undefined || name !== undefined) && (
+        {(icon !== undefined || name !== undefined) && (
           <p className="card-lead" id={`${id}-name`}>
-            {glyph !== undefined && (
+            {icon !== undefined && (
               <span className="card-glyph" aria-hidden="true">
-                {glyph}
+                <Icon name={icon} />
               </span>
             )}
             {name !== undefined && <span className={ink}>{name}</span>}

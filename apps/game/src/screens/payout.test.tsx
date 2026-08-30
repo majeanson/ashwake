@@ -6,6 +6,7 @@ import type { HudView } from '@view/view';
 import { Arc } from '../ui/Arc';
 import { Bars } from '../ui/Bars';
 import { Payout } from './Payout';
+import { SETTLEMENT } from '@theme/themes/settlement';
 
 /**
  * The breakdown, pinned where it can lie.
@@ -93,7 +94,9 @@ describe('Arc', () => {
 
 describe('Payout', () => {
   it('names every colour, rarity and source the engine can count', () => {
-    render(<Payout summary={summary()} harvests={[3, 9, 1]} s={stringsFor('en')} />);
+    render(
+      <Payout theme={SETTLEMENT} summary={summary()} harvests={[3, 9, 1]} s={stringsFor('en')} />,
+    );
     const s = stringsFor('en');
     for (const source of POINT_SOURCES)
       expect(screen.getByText(s.payout.source[source])).toBeTruthy();
@@ -102,7 +105,9 @@ describe('Payout', () => {
   });
 
   it('paints each colour bar in that colour, from the theme and not a literal', () => {
-    render(<Payout summary={summary()} harvests={[3]} s={stringsFor('fr-CA')} />);
+    render(
+      <Payout theme={SETTLEMENT} summary={summary()} harvests={[3]} s={stringsFor('fr-CA')} />,
+    );
     const painted = [...document.querySelectorAll<HTMLElement>('.bar-fill')]
       .map((el) => el.style.background)
       .filter((bg) => bg !== '');
@@ -113,15 +118,26 @@ describe('Payout', () => {
   });
 
   it('shows no split at all for a run that banked nothing from pops', () => {
-    render(<Payout summary={summary({ points: null })} harvests={[]} s={stringsFor('en')} />);
+    render(
+      <Payout
+        theme={SETTLEMENT}
+        summary={summary({ points: null })}
+        harvests={[]}
+        s={stringsFor('en')}
+      />,
+    );
     expect(document.querySelectorAll('.bars')).toHaveLength(0);
   });
 
   it('adds the sites line only when sites were claimed', () => {
     const s = stringsFor('en');
-    const { rerender } = render(<Payout summary={summary()} harvests={[1]} s={s} />);
+    const { rerender } = render(
+      <Payout theme={SETTLEMENT} summary={summary()} harvests={[1]} s={s} />,
+    );
     expect(screen.queryByText(new RegExp(s.payout.sites))).toBeNull();
-    rerender(<Payout summary={summary({ sitePoints: 12 })} harvests={[1]} s={s} />);
+    rerender(
+      <Payout theme={SETTLEMENT} summary={summary({ sitePoints: 12 })} harvests={[1]} s={s} />,
+    );
     expect(screen.getByText(new RegExp(s.payout.sites))).toBeTruthy();
   });
 });

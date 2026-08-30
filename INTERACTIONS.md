@@ -140,8 +140,15 @@ Four rules that are not obvious from the table, each with its own test:
 
 ## What is still missing
 
-1. **The `✕` lens-clear button.** The fog tap and a second long-press both
-   let go, so this is a convenience rather than a gap.
+1. **The lens-clear button.** The fog tap and a second long-press both let go,
+   so this is a convenience rather than a gap.
+
+   The name changed with the marks: there is no `✕` character anywhere in this
+   game since 2026-08-30 (`DECISIONS.md` D10). Every mark is a Phosphor icon
+   named in `theme/icons.ts`, drawn by `ui/Icon.tsx` in the chrome and by
+   `board/marks.ts` on the board — one shape from one file, rather than a
+   codepoint two fonts each answer their own way.
+
 2. **~~The History-API router.~~ RULED OUT 2026-08-30** (`DECISIONS.md` D9),
    and **~~BACK on an open panel~~ BUILT the same day**. The one real gesture
    left inside the router's idea was Android's BACK, which left the site from

@@ -1,4 +1,5 @@
 import { hex, type Theme } from '@theme/tokens';
+import { Icon } from './Icon';
 import type { TipRow } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { Prose } from './Prose';
@@ -9,7 +10,7 @@ import type { LessonId } from '@view/lessons';
  *
  * Four hosts in Ashwake 1 — manual sections, event cards, the shop's perk fold
  * and the purse lesson — and the rule that keeps it honest is the core's:
- * **a row never invents a symbol.** It carries a terrain colour or a glyph
+ * **a row never invents a symbol.** It carries a terrain colour or an icon
  * from the registries, or neither, and the mark column is reserved either way
  * so the text of a markless row still lines up with the text of a marked one.
  *
@@ -40,9 +41,9 @@ export function TipRows({
                 className="tip-swatch"
                 style={{ background: hex(theme.terrain[row.colour].fill) }}
               />
-            ) : (
-              (row.glyph ?? '')
-            )}
+            ) : row.icon !== undefined ? (
+              <Icon name={row.icon} />
+            ) : null}
           </span>
           <span>
             <Prose text={row.text} s={s} onTerm={onTerm} />

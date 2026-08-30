@@ -727,7 +727,7 @@ function Game() {
   /**
    * Sound, from either surface (2026-08-30).
    *
-   * The board's ♪ button and SETTINGS' switch are ONE wire, which is Ashwake
+   * The board's SOUND button and SETTINGS' switch are ONE wire, which is Ashwake
    * 1's rule and the reason this is a callback rather than two handlers: two
    * surfaces writing one setting is how they come to disagree about it.
    *
@@ -1744,6 +1744,7 @@ ${s.view.harvest.firstPopWhen}`,
                 setSaidCard({
                   text: lesson.text,
                   rows: lesson.rows,
+                  icon: lesson.icon,
                   card: true,
                   id: shellSaid.current,
                 });
@@ -1855,7 +1856,7 @@ ${s.view.harvest.firstPopWhen}`,
           onTheme={setStoredTheme}
           onLocale={setLocale}
           onFeature={(id, on) => {
-            // SOUND goes through the one wire the board's ♪ button uses; every
+            // SOUND goes through the one wire the board's own button uses; every
             // other flag is just a flag.
             if (id === 'ui.sound') setSound(on);
             else setFeature(id, on);
@@ -1963,6 +1964,7 @@ ${s.view.harvest.firstPopWhen}`,
           onTerm={setTerm}
           onDismiss={() => setSaidCard(null)}
           brief={saidCard.brief === true}
+          icon={saidCard.icon}
           {...(saidCard.offers === 'crossing'
             ? {
                 offer: {

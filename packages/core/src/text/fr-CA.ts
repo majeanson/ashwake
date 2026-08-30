@@ -1,5 +1,4 @@
 import { PERK_DIALS, UPGRADE_STEPS } from '@content/goals';
-import { CONCEPT_MARK, LANDMARK_GLYPH } from '@theme/tokens';
 import { fmtInt, fmtPct, NNBSP, ordinal } from './format';
 import type { Strings } from './Strings';
 
@@ -45,7 +44,7 @@ const capitalize = (s: string): string => `${s[0]!.toLocaleUpperCase('fr-CA')}${
 
 const LUCK_CORE = 'La CHANCE est une bourse, pas un score.';
 const RARE_STAR =
-  'Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.';
+  'Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.';
 const LAST_GASP_RULE = `Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas${D}: seule une récolte te ramène au-dessus de zéro.`;
 
 export const STRINGS_FR: Strings = {
@@ -60,7 +59,8 @@ export const STRINGS_FR: Strings = {
       stoneAsh: (red) =>
         `La pierre, les murs et le bord de la carte entourent aussi. Seules ${red} comptent la pierre comme une ressemblance.`,
       stone: 'La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.',
-      cardLean: `Touche-la pour évaluer sa poche, puis choisis. RÉCOLTER tout de suite paie plus tôt et fait pencher tes prochaines pioches vers la couleur récoltée. Attendre la laisse grandir, et une grosse poche paie plus que ses morceaux.`,
+      cardLean:
+        'Touche-la pour évaluer sa poche, puis choisis. RÉCOLTER tout de suite paie plus tôt et fait pencher tes prochaines pioches vers la couleur récoltée. Attendre la laisse grandir, et une grosse poche paie plus que ses morceaux.',
       cardPlain: `Touche-la pour évaluer sa poche, puis choisis${D}: RÉCOLTER tout de suite, ou la laisser grandir. Une grosse poche paie plus que ses morceaux.`,
     },
     pop: {
@@ -242,8 +242,7 @@ export const STRINGS_FR: Strings = {
       bar: (count, cap) => `POCHE ${count}/${cap}`,
       treasure: (rarity) =>
         `RÉCOLTER pour le trésor${D}: une tuile ${rarity.toLocaleUpperCase('fr-CA')}.`,
-      bounty: (bonus) =>
-        `${LANDMARK_GLYPH.site} Cette poche encaisse la prime${D}: ×${bonus} sur son score.`,
+      bounty: (bonus) => `Cette poche encaisse la prime${D}: ×${bonus} sur son score.`,
       rares: (n) =>
         `${n} tuile${pl(n, '', 's')} rare${pl(n, '', 's')} là-dedans ser${pl(n, 'a', 'ont')} dépensée${pl(n, '', 's')} par la récolte.`,
     },
@@ -254,9 +253,9 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
 
       head: (count, worth) => `RÉCOLTÉ ${count}, valeur totale ${worth}`,
-      bountyCollected: (bonus) => `${LANDMARK_GLYPH.site} Prime ×${bonus}${D}: ENCAISSÉE.`,
+      bountyCollected: (bonus) => `Prime ×${bonus}${D}: ENCAISSÉE.`,
       bountyMissed: (bonus, need, radius) =>
-        `${LANDMARK_GLYPH.site} Prime ×${bonus}${D}: manquée (+0). Récolte ${need} tuiles ou plus à ${radius} de l’étoile ${LANDMARK_GLYPH.site}.`,
+        `Prime ×${bonus}${D}: manquée (+0). Récolte ${need} tuiles ou plus à ${radius} du site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tuiles${D}: ${perTile} par tuile, +1 de plus par ${worthPerExtra} de valeur${depthRings === null ? '' : `, +${depthRings} pour la profondeur`}.`,
       scored: (pts) => `+${nb(pts)} pts.`,
@@ -270,8 +269,8 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     },
     purse: {
       redraw: (cost) => `REPIOCHER · ${cost}. Jette cette main pour une nouvelle.`,
-      steer: (mark, name, cost, draws) =>
-        `${mark} ${name} · ${cost}. Une main qui penche ${name}, et les ${draws} prochaines pioches avec.`,
+      steer: (name, cost, draws) =>
+        `${name} · ${cost}. Une main qui penche ${name}, et les ${draws} prochaines pioches avec.`,
       forge: (cost) => `FORGER · ${cost}. Rends UNIQUE la carte choisie.`,
       sacrifice: (pct) =>
         `SACRIFIER LA CHANCE${D}: TOUTE la bourse échangée contre des reliques à ${pc(pct)}. Mieux que de mourir dessus.`,
@@ -279,7 +278,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `la fin de la partie ne rend que ${pc(pct)} de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue`,
       lostAll: 'ce qui reste à la fin de la partie est perdu net',
       lead: (lost) =>
-        `${CONCEPT_MARK.luck}  LA CHANCE, ÇA SE DÉPENSE\n` +
+        `LA CHANCE, ÇA SE DÉPENSE\n` +
         `Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre${D}: ${lost}. Dépense-la.`,
     },
     stat: {
@@ -322,39 +321,38 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       blue: (head, every) => ` · ${pw(head)}+1 de valeur par ${every} hex de distance du départ`,
     },
     hex: {
-      cacheClaimed: `${LANDMARK_GLYPH.cache} CACHE${D}: déjà réclamée. Elle a donné ses tuiles.`,
+      cacheClaimed: `CACHE${D}: déjà réclamée. Elle a donné ses tuiles.`,
       cache: (tiles) =>
-        `${LANDMARK_GLYPH.cache} CACHE${D}: pose une tuile qui la touche pour réclamer ${tiles} tuiles sur-le-champ.`,
-      siteClaimed: `${LANDMARK_GLYPH.site} SITE${D}: déjà réclamé.`,
+        `CACHE${D}: pose une tuile qui la touche pour réclamer ${tiles} tuiles sur-le-champ.`,
+      siteClaimed: `SITE${D}: déjà réclamé.`,
       site: (pays, bonus) =>
-        `${LANDMARK_GLYPH.site} SITE${D}: réclame-le pour ${pays} pts × sa distance. Il ouvre une prime qui vaut ×${bonus}.`,
-      shrineDetourClaimed: `${LANDMARK_GLYPH.shrine} SANCTUAIRE${D}: éveillé. Sur ton propre monde, ça allume un système pour de bon.`,
-      shrineDetour: `${LANDMARK_GLYPH.shrine} SANCTUAIRE${D}: touche-le avec une tuile. Sur ton propre monde, en éveiller un allume un système pour de bon.`,
-      shrineClaimed: `${LANDMARK_GLYPH.shrine} SANCTUAIRE${D}: éveillé. Il a allumé un système pour ce monde.`,
+        `SITE${D}: réclame-le pour ${pays} pts × sa distance. Il ouvre une prime qui vaut ×${bonus}.`,
+      shrineDetourClaimed: `SANCTUAIRE${D}: éveillé. Sur ton propre monde, ça allume un système pour de bon.`,
+      shrineDetour: `SANCTUAIRE${D}: touche-le avec une tuile. Sur ton propre monde, en éveiller un allume un système pour de bon.`,
+      shrineClaimed: `SANCTUAIRE${D}: éveillé. Il a allumé un système pour ce monde.`,
       shrineCrossing: (dowry) =>
-        `${LANDMARK_GLYPH.shrine} SANCTUAIRE${D}: ce monde est tout éveillé, alors l’atteindre offre le passage. Un NOUVEAU MONDE, avec ${dowry} reliques emportées pour ce que tu laisses.`,
+        `SANCTUAIRE${D}: ce monde est tout éveillé, alors l’atteindre offre le passage. Un NOUVEAU MONDE, avec ${dowry} reliques emportées pour ce que tu laisses.`,
       shrine: (next) =>
-        `${LANDMARK_GLYPH.shrine} SANCTUAIRE${D}: réclame-le pour débloquer ${next ?? 'un système'} pour ce monde, pour de bon.`,
-      findClaimed: `${LANDMARK_GLYPH.find} Une trouvaille cachée, dépensée. Elle a donné ce qu’elle avait.`,
-      find: `${LANDMARK_GLYPH.find} Il y a quelque chose ici. Touche-le avec une tuile.`,
+        `SANCTUAIRE${D}: réclame-le pour débloquer ${next ?? 'un système'} pour ce monde, pour de bon.`,
+      findClaimed: 'Une trouvaille cachée, dépensée. Elle a donné ce qu’elle avait.',
+      find: 'Il y a quelque chose ici. Touche-le avec une tuile.',
       territoryClaimed: (radius, owns) =>
-        `${LANDMARK_GLYPH.territory} TERRITOIRE${D}: à toi. Le sol à ${radius} hex à la ronde est natal de ${owns}.`,
+        `TERRITOIRE${D}: à toi. Le sol à ${radius} hex à la ronde est natal de ${owns}.`,
       territory: (radius, owns) =>
-        `${LANDMARK_GLYPH.territory} TERRITOIRE${D}: réclame-le et le sol à ${radius} hex à la ronde devient natal de ${owns}, pour de bon.`,
+        `TERRITOIRE${D}: réclame-le et le sol à ${radius} hex à la ronde devient natal de ${owns}, pour de bon.`,
       someColour: 'une couleur',
       chainOut: (sentence) => `${sentence} Fais grandir ta chaîne jusque-là.`,
       shimmers: 'Quelque chose scintille ici. Fais grandir ton sol jusque-là.',
       remembered: 'Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.',
       dark: `Sol noir${D}: rien qu’aucune partie n’a encore vu. Pousse vers lui.`,
-      wallBuildable: (mult) =>
-        `${CONCEPT_MARK.wall} Mur${D}: tu peux bâtir dessus, à ${mult}× le coût de la pose.`,
-      wall: `${CONCEPT_MARK.wall} Mur${D}: on ne peut pas bâtir dessus.`,
+      wallBuildable: (mult) => `Mur${D}: tu peux bâtir dessus, à ${mult}× le coût de la pose.`,
+      wall: `Mur${D}: on ne peut pas bâtir dessus.`,
       wallAsh: (standing, red) =>
         `${standing} Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour ${red}, qui le comptent.`,
       wallPlain: (standing) =>
         `${standing} Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.`,
       stone: (red) =>
-        `${CONCEPT_MARK.stone} Sol usé, une tuile récoltée. Il entoure mais ne ressemble jamais, sauf pour ${red}, qui s’en nourrissent.`,
+        `Sol usé, une tuile récoltée. Il entoure mais ne ressemble jamais, sauf pour ${red}, qui s’en nourrissent.`,
       tile: (name, worth) =>
         `Tuile ${name}, valeur ${worth}. Elle mûrit quand ses six côtés sont couverts.`,
       open: `Sol libre${D}: tu peux bâtir ici dès que quelque chose à toi le touche.`,
@@ -373,7 +371,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     place:
       'Les bords qui luisent sont là où une tuile peut aller. Le chiffre pâle est ce qu’elle paierait.',
     pop: 'Des tuiles mûres qui se touchent font UNE poche. Elles se récoltent ensemble, et laissent de la pierre.',
-    rare: `Une rare posée porte une étoile de sa couleur${D}: magique, puis unique.`,
+    rare: `Une rare posée porte un anneau de sa couleur${D}: magique, puis unique.`,
     stash:
       'La case pointillée, c’est la réserve. Touche-la pour garder la carte choisie pour plus tard.',
     hold: 'GARDER',
@@ -475,7 +473,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     },
     'ui.sound': {
       label: 'Son',
-      note: 'Quelques notes discrètes quand tu récoltes et réclames. Le bouton ♪ sur le plateau est ce même interrupteur.',
+      note: 'Quelques notes discrètes quand tu récoltes et réclames. Le bouton haut-parleur sur le plateau est ce même interrupteur.',
     },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
@@ -676,7 +674,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     legendGrounds: 'LES SOLS',
     legendPlaces: 'LES DESTINATIONS',
     legendMarks: 'LES AUTRES MARQUES',
-    legendRare: 'Une tuile rare posée porte une étoile de sa couleur.',
+    legendRare: 'Une tuile rare posée porte un anneau de sa couleur, et se tient plus haute.',
     legendWall: `Mur${D}: impossible d’y bâtir. Il entoure quand même.`,
     legendRipe: `Bord MÛR${D}: cette tuile est prête à récolter.`,
     legendLegal: `Bord permis${D}: tu peux poser ici.`,

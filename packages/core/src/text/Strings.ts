@@ -181,7 +181,7 @@ export type Strings = {
     };
     readonly purse: {
       readonly redraw: (cost: number) => string;
-      readonly steer: (mark: string, name: string, cost: number, draws: number) => string;
+      readonly steer: (name: string, cost: number, draws: number) => string;
       readonly forge: (cost: number) => string;
       readonly sacrifice: (pct: number) => string;
       readonly lostPartly: (pct: number) => string;
@@ -379,7 +379,8 @@ export type Strings = {
    * just happened to you. Ashwake 1 kept these in its UI as hard-coded
    * English, which is why they did not travel with the rules.
    *
-   * The GLYPH is not here. `receipts.ts` prefixes `LANDMARK_GLYPH`, which is
+   * The MARK is not here. `receipts.ts` carries `LANDMARK_ICON` beside the
+   * words, which is
    * the one authority on those marks — a catalogue that wrote its own would be
    * a second place for them to drift.
    */

@@ -857,124 +857,30 @@ function deep(c: Rgb): Rgb {
  * unreferenced by any theme.
  */
 
-/** The same four as characters, for the places that draw text rather than textures. */
-export const COLOUR_MARK: Readonly<Record<Colour, string>> = {
-  green: '▲',
-  yellow: '◆',
-  red: '■',
-  blue: '●',
-};
-
-/**
- * The destination glyphs — fixed across directions for the same reason the
- * colour marks are: a symbol language that changes with the art direction is
- * a language nobody learns. `✚` pays tiles (the HEAVY cross since
- * 2026-08-26 — Marc, from the phone: "I can clearly see the stars one, the
- * + cache not so much"; a thin typographic plus was the one glyph in the
- * set with hairline strokes, so it vanished at beacon sizes where every
- * filled mark survived), `★` pays points, `◈` wakes an unlock, `❖` is
- * ground to claim (a CLUSTER of diamonds since 2026-08-26 — the solid `◆`
- * was also yellow's colour mark, so one shape meant two things; the cluster
- * keeps the diamond family the board already taught while reading as what a
- * territory is, several grounds claimed as one), `✦` is a hidden find — a
- * four-pointed spark, distinct from the star and both diamonds at the sizes
- * a phone draws them. Keyed by plain strings so the theme layer needs
- * nothing from the engine. A find only ever wears its glyph once REVEALED:
- * the shimmer draws no glyph at all, by design. No glyph may be shared with
- * `COLOUR_MARK` — pinned by test, because the collision shipped once.
+/*
+ * THE SYMBOL LANGUAGE MOVED TO `theme/icons.ts` (2026-08-30).
+ *
+ * `COLOUR_MARK`, `LANDMARK_GLYPH`, `TILE_GLYPH`, `CONCEPT_MARK` and
+ * `CHROME_MARK` lived here and held Unicode characters — `▲ ◆ ■ ● ✚ ★ ◈ ❖ ✦ ⬢
+ * ◉ ✤ ▦ ▨ ❋ ✓ ◇ ← ✕`. Marc: *"no emojis only phosphor icons or assets."*
+ *
+ * The argument is not taste. A character is a REQUEST for a shape and every
+ * font stack on every phone gets to answer it differently, or not at all —
+ * and three of those marks were being answered by `cinzel.ttf`, a face this
+ * project ships for a wordmark and which carries `✚ ★ ◈ ❖ ✦ ▦` by luck rather
+ * than by design. A subset, a swap or a fallback would have emptied the board
+ * silently. An icon is the shape itself.
+ *
+ * Everything else about the language is unchanged, which is the point: the
+ * same four registries, the same members, the same no-collision rule, the same
+ * ruling that the chrome's marks are exempt from it and that nothing on the
+ * plane may ever be one of them. Only the currency changed, from a codepoint
+ * to a name the host draws (`@theme/icons`, `apps/game/src/ui/Icon.tsx`,
+ * `apps/game/src/board/marks.ts`).
+ *
+ * `fieldPattern` below is untouched: ground says its colour with a TEXTURE,
+ * which is a different channel and was never a character.
  */
-export const LANDMARK_GLYPH: Readonly<
-  Record<'cache' | 'site' | 'shrine' | 'territory' | 'find', string>
-> = {
-  cache: '✚',
-  site: '★',
-  shrine: '◈',
-  territory: '❖',
-  find: '✦',
-};
-
-/**
- * The voice the teaching cards lead with when the lesson is about the game
- * itself rather than one landmark or colour — a hex, because the game is
- * hexes. One constant (2026-08-26) instead of the nine prose strings that
- * each hardcoded it, so the symbol language has one registry: colours in
- * `COLOUR_MARK`, landmarks in `LANDMARK_GLYPH`, and the game's own voice
- * here.
- */
-export const TILE_GLYPH = '⬢';
-
-/**
- * The fourth registry (2026-08-27, WORKPLAN's symbol & glossary pipeline,
- * Stage 1): cross-screen CONCEPTS, as distinct from the four colours
- * (`COLOUR_MARK`), the five destinations (`LANDMARK_GLYPH`) and the game's
- * own voice (`TILE_GLYPH`). Moderate vocabulary, Marc's own ruling on option
- * sets (2026-08-27) — marks only for ideas that recur across screens, stats
- * stay words:
- *
- *   - `relic` ◉ and `luck` ✤ — the two currencies that follow a player
- *     between the board, the shop and the end screen, and had no character
- *     of their own before this stage (Stage 2 puts them on screen).
- *   - `wall` ▦ and `stone` ▨ — the two grounds that are never playable,
- *     spoken today only in prose (Stage 2 gives `describeHexOf` and the
- *     manual their lead).
- *   - `fame` ❋ **retires `✦` as a highlight mark** — its sixth meaning. `✦`
- *     was already `LANDMARK_GLYPH.find` (a hidden find on the board) AND the
- *     hall of fame's own diary mark (a NEW BEST, a perk found, a shrine
- *     woken) at once, so one glyph answered two different questions
- *     depending which screen you were reading it on. `❋` is fame and only
- *     fame now: the timeline's run rows, the perk shelf, every highlight.
- *     `✦` goes back to meaning one thing — a find, on the board or in
- *     `describeHexOf`'s prose — which is what Stage 1's question is asking:
- *     can a player tell the two apart at arm's length.
- *   - `met` ✓ and `notYet` ◇ formalize a ruling already made in code
- *     (2026-08-26, see `session.ts`'s survey ledger): a goal met used to
- *     borrow the shrine's own `◈`, so one mark meant two different
- *     earned-things (a shrine woken, a goal met) depending on which ledger
- *     you were reading. `✓`/`◇` already existed as literals at that call
- *     site; this registry is that ruling, named, so every ledger — shrines,
- *     goals, whatever comes next — draws from the same two marks instead of
- *     re-deciding it.
- *
- * Fallbacks, if Marc's phone shows tofu or a lookalike for any of the new
- * five: `relic` ◉ → ▣, `luck` ✤ → ✥, `fame` ❋ → ✻, `stone` ▨ → ▤. `wall`,
- * `met` and `notYet` are already in wide use elsewhere in the registry's
- * neighbourhood and are not expected to need one.
- *
- * Same collision rule as the other three: no glyph here may repeat one
- * already spoken by `COLOUR_MARK`, `LANDMARK_GLYPH` or `TILE_GLYPH` —
- * `tokens.test.ts`'s one-symbol-language test checks all four together.
- */
-/**
- * The chrome's own two marks: go back one, and leave entirely.
- *
- * A fifth registry, and deliberately NOT part of the game's vocabulary — these
- * say something about the SCREEN rather than about the plane, which is why an
- * arrow and a cross are the right shapes and why they are exempt from the
- * no-collision rule that binds the other four. Nothing on the board may ever
- * be an arrow or a cross.
- *
- * Marc, 2026-08-29, on menus nesting three deep: *"add a x that escape all
- * too, left arrow for back"*. The two are different promises — ← undoes one
- * step, ✕ undoes all of them — so ✕ only appears when there is more than one
- * step to undo. On a single panel it would be a second button making the same
- * promise as the first.
- */
-export const CHROME_MARK = {
-  back: '←',
-  closeAll: '✕',
-} as const;
-
-export const CONCEPT_MARK: Readonly<
-  Record<'relic' | 'luck' | 'wall' | 'stone' | 'fame' | 'met' | 'notYet', string>
-> = {
-  relic: '◉',
-  luck: '✤',
-  wall: '▦',
-  stone: '▨',
-  fame: '❋',
-  met: '✓',
-  notYet: '◇',
-};
 
 /**
  * How much one elevation band lifts a hex's light, multiplicatively.

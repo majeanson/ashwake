@@ -12,6 +12,7 @@ import {
 } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
+import { Icon } from '../ui/Icon';
 import { Figure } from '../ui/Figure';
 import { Legend } from './Legend';
 import { Panel } from '../ui/Panel';
@@ -219,12 +220,12 @@ function Section({
     <section>
       {/* The heading wears the lesson's own mark, where it has one: a rule
           about a thing you can SEE on the board should be findable by that
-          thing. The glyph comes from the lesson, which reads it from a
-          registry — nothing here picks a character. */}
+          thing. The mark comes from the lesson, which reads it from a
+          registry — nothing here picks a shape. */}
       <h2 className="panel-title">
-        {lesson.glyph !== undefined && (
+        {lesson.icon !== undefined && (
           <span className="card-glyph" aria-hidden="true">
-            {lesson.glyph}{' '}
+            <Icon name={lesson.icon} />{' '}
           </span>
         )}
         {lessonName(lesson, s)}

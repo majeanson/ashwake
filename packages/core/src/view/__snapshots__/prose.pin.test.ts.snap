@@ -179,7 +179,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     "destinations": "Lit is unclaimed and still pays. Faint means you have already spent it.",
     "place": "Glowing edges are where a tile may go. The faint number is what it would pay.",
     "pop": "Ripe tiles that touch are ONE pocket. They pop together, and leave stone.",
-    "rare": "A placed rare wears a star in its own colour: magic, then unique.",
+    "rare": "A placed rare wears a ring in its own colour: magic, then unique.",
     "ripen": "Six sides covered: the middle tile is ripe, and worth what matches it.",
     "stash": "The dashed slot is the stash. Tap it to keep the selected card for later.",
   },
@@ -256,7 +256,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
   "shared": {
     "LAST_GASP_RULE": "You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
     "LUCK_CORE": "LUCK is a purse, not a score.",
-    "RARE_STAR": "A placed rare tile wears a star, so its power stays findable on a full map.",
+    "RARE_STAR": "A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
   },
 }
 `;
@@ -333,35 +333,38 @@ The score: worth 1 × pocket 1 × distance 1.",
 exports[`the prose pins — every other word, exactly as it reads today · en > pins the purse card over both tunings and both directions 1`] = `
 {
   "BARE_TUNING · daylight": {
+    "icon": "luck",
     "rows": [],
-    "text": "✤  LUCK IS FOR SPENDING
+    "text": "LUCK IS FOR SPENDING
 Every button under your hand is priced in luck, and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
   },
   "BARE_TUNING · torchlit": {
+    "icon": "luck",
     "rows": [],
-    "text": "✤  LUCK IS FOR SPENDING
+    "text": "LUCK IS FOR SPENDING
 Every button under your hand is priced in luck, and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
   },
   "TUNING · daylight": {
+    "icon": "luck",
     "rows": [
       {
         "text": "REDRAW · 12. Throw this hand away for a new one.",
       },
       {
         "colour": "green",
-        "text": "▲ MOSS · 30. A hand leaning MOSS, and the next 6 draws with it.",
+        "text": "MOSS · 30. A hand leaning MOSS, and the next 6 draws with it.",
       },
       {
         "colour": "yellow",
-        "text": "◆ EMBER · 30. A hand leaning EMBER, and the next 6 draws with it.",
+        "text": "EMBER · 30. A hand leaning EMBER, and the next 6 draws with it.",
       },
       {
         "colour": "red",
-        "text": "■ ASH · 30. A hand leaning ASH, and the next 6 draws with it.",
+        "text": "ASH · 30. A hand leaning ASH, and the next 6 draws with it.",
       },
       {
         "colour": "blue",
-        "text": "● TIDE · 30. A hand leaning TIDE, and the next 6 draws with it.",
+        "text": "TIDE · 30. A hand leaning TIDE, and the next 6 draws with it.",
       },
       {
         "text": "FORGE · 75. Turn the selected card UNIQUE.",
@@ -370,29 +373,30 @@ Every button under your hand is priced in luck, and you CAN lose it all: whateve
         "text": "SACRIFICE LUCK: the WHOLE purse traded for relics at 15%. Better than dying on it.",
       },
     ],
-    "text": "✤  LUCK IS FOR SPENDING
+    "text": "LUCK IS FOR SPENDING
 Every button under your hand is priced in luck, and you CAN lose it all: the run’s end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
   },
   "TUNING · torchlit": {
+    "icon": "luck",
     "rows": [
       {
         "text": "REDRAW · 12. Throw this hand away for a new one.",
       },
       {
         "colour": "green",
-        "text": "▲ MOSS · 30. A hand leaning MOSS, and the next 6 draws with it.",
+        "text": "MOSS · 30. A hand leaning MOSS, and the next 6 draws with it.",
       },
       {
         "colour": "yellow",
-        "text": "◆ EMBER · 30. A hand leaning EMBER, and the next 6 draws with it.",
+        "text": "EMBER · 30. A hand leaning EMBER, and the next 6 draws with it.",
       },
       {
         "colour": "red",
-        "text": "■ ASH · 30. A hand leaning ASH, and the next 6 draws with it.",
+        "text": "ASH · 30. A hand leaning ASH, and the next 6 draws with it.",
       },
       {
         "colour": "blue",
-        "text": "● TIDE · 30. A hand leaning TIDE, and the next 6 draws with it.",
+        "text": "TIDE · 30. A hand leaning TIDE, and the next 6 draws with it.",
       },
       {
         "text": "FORGE · 75. Turn the selected card UNIQUE.",
@@ -401,7 +405,7 @@ Every button under your hand is priced in luck, and you CAN lose it all: the run
         "text": "SACRIFICE LUCK: the WHOLE purse traded for relics at 15%. Better than dying on it.",
       },
     ],
-    "text": "✤  LUCK IS FOR SPENDING
+    "text": "LUCK IS FOR SPENDING
 Every button under your hand is priced in luck, and you CAN lose it all: the run’s end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
   },
 }
@@ -426,7 +430,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     [
       "ui.sound",
       "Sound",
-      "A few quiet notes as you pop and claim. The ♪ button on the board is this switch.",
+      "A few quiet notes as you pop and claim. The speaker button on the board is this switch.",
     ],
   ],
   "goals": [
@@ -503,7 +507,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 exports[`the prose pins — every other word, exactly as it reads today · en > pins what tapping a hex says, on and off the board 1`] = `
 {
   "BARE_TUNING · detour · -1,-1": "EMBER tile, worth 2. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · -1,-2": "▦ Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches.",
+  "BARE_TUNING · detour · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches.",
   "BARE_TUNING · detour · -2,1": "TIDE tile, worth 0. It ripens when all six sides are covered.",
   "BARE_TUNING · detour · -2,2": "ASH tile, worth 2. It ripens when all six sides are covered.",
   "BARE_TUNING · detour · -3,-1": "Ground native to EMBER: a EMBER tile here is worth one more.",
@@ -520,7 +524,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
   "BARE_TUNING · detour · 2,-3": "EMBER tile, worth 1. It ripens when all six sides are covered.",
   "BARE_TUNING · detour · 2,0": "TIDE tile, worth 1. It ripens when all six sides are covered.",
   "BARE_TUNING · home · -1,-1": "EMBER tile, worth 2. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · -1,-2": "▦ Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches.",
+  "BARE_TUNING · home · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches.",
   "BARE_TUNING · home · -2,1": "TIDE tile, worth 0. It ripens when all six sides are covered.",
   "BARE_TUNING · home · -2,2": "ASH tile, worth 2. It ripens when all six sides are covered.",
   "BARE_TUNING · home · -3,-1": "Ground native to EMBER: a EMBER tile here is worth one more.",
@@ -538,7 +542,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
   "BARE_TUNING · home · 2,0": "TIDE tile, worth 1. It ripens when all six sides are covered.",
   "TUNING · detour · -1,-1": "EMBER tile, worth 5. It ripens when all six sides are covered.
 EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · detour · -1,-2": "▦ Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for ASH, which counts it as one.",
+  "TUNING · detour · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for ASH, which counts it as one.",
   "TUNING · detour · -1,0": "MOSS tile, worth 0. It ripens when all six sides are covered.
 MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.",
   "TUNING · detour · -1,1": "ASH tile, worth 1. It ripens when all six sides are covered.
@@ -551,7 +555,7 @@ TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from hom
   "TUNING · detour · -2,2": "ASH tile, worth 3. It ripens when all six sides are covered.
 ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "TUNING · detour · -2,4": "✚ CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
+  "TUNING · detour · -2,4": "CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
   "TUNING · detour · -3,0": "Open ground: you can build here once something of yours touches it.",
   "TUNING · detour · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
   "TUNING · detour · -6,1": "Dark ground: nothing any run has seen yet. Grow toward it.",
@@ -582,7 +586,7 @@ MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they
 TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
   "TUNING · home · -1,-1": "EMBER tile, worth 5. It ripens when all six sides are covered.
 EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · home · -1,-2": "▦ Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for ASH, which counts it as one.",
+  "TUNING · home · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for ASH, which counts it as one.",
   "TUNING · home · -1,0": "MOSS tile, worth 0. It ripens when all six sides are covered.
 MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.",
   "TUNING · home · -1,1": "ASH tile, worth 1. It ripens when all six sides are covered.
@@ -595,7 +599,7 @@ TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from hom
   "TUNING · home · -2,2": "ASH tile, worth 3. It ripens when all six sides are covered.
 ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "TUNING · home · -2,4": "✚ CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
+  "TUNING · home · -2,4": "CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
   "TUNING · home · -3,0": "Open ground: you can build here once something of yours touches it.",
   "TUNING · home · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
   "TUNING · home · -6,1": "Dark ground: nothing any run has seen yet. Grow toward it.",
@@ -806,7 +810,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     "destinations": "Allumé, c’est non réclamé et ça paie encore. Éteint, tu l’as déjà dépensé.",
     "place": "Les bords qui luisent sont là où une tuile peut aller. Le chiffre pâle est ce qu’elle paierait.",
     "pop": "Des tuiles mûres qui se touchent font UNE poche. Elles se récoltent ensemble, et laissent de la pierre.",
-    "rare": "Une rare posée porte une étoile de sa couleur : magique, puis unique.",
+    "rare": "Une rare posée porte un anneau de sa couleur : magique, puis unique.",
     "ripen": "Six côtés couverts : la tuile du milieu est mûre, et vaut ce qui lui ressemble.",
     "stash": "La case pointillée, c’est la réserve. Touche-la pour garder la carte choisie pour plus tard.",
   },
@@ -883,7 +887,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
   "shared": {
     "LAST_GASP_RULE": "Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
     "LUCK_CORE": "La CHANCE est une bourse, pas un score.",
-    "RARE_STAR": "Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
+    "RARE_STAR": "Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
   },
 }
 `;
@@ -960,35 +964,38 @@ Le score : valeur 1 × poche 1 × distance 1.",
 exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the purse card over both tunings and both directions 1`] = `
 {
   "BARE_TUNING · daylight": {
+    "icon": "luck",
     "rows": [],
-    "text": "✤  LA CHANCE, ÇA SE DÉPENSE
+    "text": "LA CHANCE, ÇA SE DÉPENSE
 Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui reste à la fin de la partie est perdu net. Dépense-la.",
   },
   "BARE_TUNING · torchlit": {
+    "icon": "luck",
     "rows": [],
-    "text": "✤  LA CHANCE, ÇA SE DÉPENSE
+    "text": "LA CHANCE, ÇA SE DÉPENSE
 Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui reste à la fin de la partie est perdu net. Dépense-la.",
   },
   "TUNING · daylight": {
+    "icon": "luck",
     "rows": [
       {
         "text": "REPIOCHER · 12. Jette cette main pour une nouvelle.",
       },
       {
         "colour": "green",
-        "text": "▲ LICHEN · 30. Une main qui penche LICHEN, et les 6 prochaines pioches avec.",
+        "text": "LICHEN · 30. Une main qui penche LICHEN, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "yellow",
-        "text": "◆ TISONS · 30. Une main qui penche TISONS, et les 6 prochaines pioches avec.",
+        "text": "TISONS · 30. Une main qui penche TISONS, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "red",
-        "text": "■ CENDRES · 30. Une main qui penche CENDRES, et les 6 prochaines pioches avec.",
+        "text": "CENDRES · 30. Une main qui penche CENDRES, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "blue",
-        "text": "● RIVIÈRES · 30. Une main qui penche RIVIÈRES, et les 6 prochaines pioches avec.",
+        "text": "RIVIÈRES · 30. Une main qui penche RIVIÈRES, et les 6 prochaines pioches avec.",
       },
       {
         "text": "FORGER · 75. Rends UNIQUE la carte choisie.",
@@ -997,29 +1004,30 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui 
         "text": "SACRIFIER LA CHANCE : TOUTE la bourse échangée contre des reliques à 15 %. Mieux que de mourir dessus.",
       },
     ],
-    "text": "✤  LA CHANCE, ÇA SE DÉPENSE
+    "text": "LA CHANCE, ÇA SE DÉPENSE
 Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin de la partie ne rend que 5 % de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue. Dépense-la.",
   },
   "TUNING · torchlit": {
+    "icon": "luck",
     "rows": [
       {
         "text": "REPIOCHER · 12. Jette cette main pour une nouvelle.",
       },
       {
         "colour": "green",
-        "text": "▲ LICHEN · 30. Une main qui penche LICHEN, et les 6 prochaines pioches avec.",
+        "text": "LICHEN · 30. Une main qui penche LICHEN, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "yellow",
-        "text": "◆ TISONS · 30. Une main qui penche TISONS, et les 6 prochaines pioches avec.",
+        "text": "TISONS · 30. Une main qui penche TISONS, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "red",
-        "text": "■ CENDRES · 30. Une main qui penche CENDRES, et les 6 prochaines pioches avec.",
+        "text": "CENDRES · 30. Une main qui penche CENDRES, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "blue",
-        "text": "● RIVIÈRES · 30. Une main qui penche RIVIÈRES, et les 6 prochaines pioches avec.",
+        "text": "RIVIÈRES · 30. Une main qui penche RIVIÈRES, et les 6 prochaines pioches avec.",
       },
       {
         "text": "FORGER · 75. Rends UNIQUE la carte choisie.",
@@ -1028,7 +1036,7 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin 
         "text": "SACRIFIER LA CHANCE : TOUTE la bourse échangée contre des reliques à 15 %. Mieux que de mourir dessus.",
       },
     ],
-    "text": "✤  LA CHANCE, ÇA SE DÉPENSE
+    "text": "LA CHANCE, ÇA SE DÉPENSE
 Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin de la partie ne rend que 5 % de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue. Dépense-la.",
   },
 }
@@ -1053,7 +1061,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     [
       "ui.sound",
       "Son",
-      "Quelques notes discrètes quand tu récoltes et réclames. Le bouton ♪ sur le plateau est ce même interrupteur.",
+      "Quelques notes discrètes quand tu récoltes et réclames. Le bouton haut-parleur sur le plateau est ce même interrupteur.",
     ],
   ],
   "goals": [
@@ -1130,7 +1138,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins what tapping a hex says, on and off the board 1`] = `
 {
   "BARE_TUNING · detour · -1,-1": "Tuile TISONS, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · -1,-2": "▦ Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.",
+  "BARE_TUNING · detour · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.",
   "BARE_TUNING · detour · -2,1": "Tuile RIVIÈRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · detour · -2,2": "Tuile CENDRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · detour · -3,-1": "Sol natal de TISONS : une tuile TISONS ici vaut un de plus.",
@@ -1147,7 +1155,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
   "BARE_TUNING · detour · 2,-3": "Tuile TISONS, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · detour · 2,0": "Tuile RIVIÈRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · home · -1,-1": "Tuile TISONS, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · -1,-2": "▦ Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.",
+  "BARE_TUNING · home · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.",
   "BARE_TUNING · home · -2,1": "Tuile RIVIÈRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · home · -2,2": "Tuile CENDRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · home · -3,-1": "Sol natal de TISONS : une tuile TISONS ici vaut un de plus.",
@@ -1165,7 +1173,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
   "BARE_TUNING · home · 2,0": "Tuile RIVIÈRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
   "TUNING · detour · -1,-1": "Tuile TISONS, valeur 5. Elle mûrit quand ses six côtés sont couverts.
 TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · detour · -1,-2": "▦ Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CENDRES, qui le comptent.",
+  "TUNING · detour · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CENDRES, qui le comptent.",
   "TUNING · detour · -1,0": "Tuile LICHEN, valeur 0. Elle mûrit quand ses six côtés sont couverts.
 LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.",
   "TUNING · detour · -1,1": "Tuile CENDRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.
@@ -1178,7 +1186,7 @@ RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de 
   "TUNING · detour · -2,2": "Tuile CENDRES, valeur 3. Elle mûrit quand ses six côtés sont couverts.
 CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "TUNING · detour · -2,4": "✚ CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
+  "TUNING · detour · -2,4": "CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
   "TUNING · detour · -3,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
   "TUNING · detour · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
   "TUNING · detour · -6,1": "Sol noir : rien qu’aucune partie n’a encore vu. Pousse vers lui.",
@@ -1209,7 +1217,7 @@ MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu import
 RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
   "TUNING · home · -1,-1": "Tuile TISONS, valeur 5. Elle mûrit quand ses six côtés sont couverts.
 TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · home · -1,-2": "▦ Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CENDRES, qui le comptent.",
+  "TUNING · home · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CENDRES, qui le comptent.",
   "TUNING · home · -1,0": "Tuile LICHEN, valeur 0. Elle mûrit quand ses six côtés sont couverts.
 LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.",
   "TUNING · home · -1,1": "Tuile CENDRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.
@@ -1222,7 +1230,7 @@ RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de 
   "TUNING · home · -2,2": "Tuile CENDRES, valeur 3. Elle mûrit quand ses six côtés sont couverts.
 CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "TUNING · home · -2,4": "✚ CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
+  "TUNING · home · -2,4": "CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
   "TUNING · home · -3,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
   "TUNING · home · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
   "TUNING · home · -6,1": "Sol noir : rien qu’aucune partie n’a encore vu. Pousse vers lui.",

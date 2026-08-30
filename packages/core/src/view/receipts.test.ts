@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TUNING } from '@content/tuning';
 import { newRun } from '@engine/reduce';
 import type { Cell, GameState, LandmarkReward } from '@engine/state';
-import { LANDMARK_GLYPH } from '@theme/tokens';
+import { LANDMARK_ICON } from '@theme/icons';
 import { resolveTheme } from '@theme/index';
 import { stringsFor } from '@text/index';
 import { claimsBetween, saidOf } from './receipts';
@@ -56,8 +56,10 @@ describe('a claim speaks', () => {
       expect(said).toHaveLength(1);
       expect(said[0]?.reward).toBe(reward);
       // The mark it happened to leads the sentence — "a star gave me that",
-      // never "some text appeared". `LANDMARK_GLYPH` is the one authority.
-      expect(said[0]?.text.startsWith(LANDMARK_GLYPH[reward])).toBe(true);
+      // never "some text appeared". `LANDMARK_ICON` is the one authority, and
+      // the mark rides BESIDE the words since 2026-08-30 — it is an icon now,
+      // and an icon cannot be prefixed into a sentence.
+      expect(said[0]?.icon).toBe(LANDMARK_ICON[reward]);
       expect(said[0]?.text.length).toBeGreaterThan(20);
     });
   }
@@ -94,7 +96,7 @@ describe('when two land at once', () => {
     expect(shown?.text).toContain('\n\n');
     // A placement that reaches a find and a cache at once is a FIND moment:
     // one card, one subject.
-    expect(shown?.text.startsWith(LANDMARK_GLYPH.find)).toBe(true);
+    expect(shown?.icon).toBe(LANDMARK_ICON.find);
   });
 
   it('holds the screen for the rare ones and not for the common ones', () => {
@@ -141,7 +143,7 @@ describe('a find', () => {
 
   it('says so plainly when there was nothing new inside', () => {
     const said = claimsBetween(before, after, { ...ctx, perkAt: () => null });
-    expect(said[0]?.text).toContain(LANDMARK_GLYPH.find);
+    expect(said[0]?.icon).toBe(LANDMARK_ICON.find);
     expect(said[0]?.rows).toBeUndefined();
   });
 });
@@ -164,6 +166,7 @@ describe('a shrine', () => {
       { ...ctx, detour: true },
     );
     expect(said[0]?.text).not.toContain(s.unlock.draft);
-    expect(said[0]?.text).toBe(`${LANDMARK_GLYPH.shrine}  ${s.claim.shrineDetour}`);
+    expect(said[0]?.text).toBe(s.claim.shrineDetour);
+    expect(said[0]?.icon).toBe(LANDMARK_ICON.shrine);
   });
 });

@@ -1,6 +1,7 @@
 import type { Tuning } from '@content/tuning';
 import type { TeachId } from '@meta/progress';
-import { CONCEPT_MARK, LANDMARK_GLYPH, namesOf, TILE_GLYPH, type Theme } from '@theme/tokens';
+import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
+import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings, TaughtId } from '@text/Strings';
 import type { FigureId } from './figure';
 import type { TipRow } from './view';
@@ -109,8 +110,12 @@ export type Lesson = {
   /** One of the concepts the catalogue has words for — a subset of `LessonId`,
    *  because some teach ids are moments (`place`, `glow`) rather than terms. */
   readonly id: TaughtId;
-  /** From one of the four mark registries only — never a literal character. */
-  readonly glyph?: string;
+  /** From one of the four mark registries only — never a literal shape. The
+   *  registries name a Phosphor icon since 2026-08-30 (`@theme/icons`); before
+   *  that they named a Unicode character, which is a request rather than a
+   *  shape and which three of the marks were having answered by a wordmark
+   *  font. */
+  readonly icon?: IconName;
   /** MAGIC and UNIQUE keep the ink `rarityInked` already gives them. */
   readonly ink?: 'ink-magic' | 'ink-unique';
   readonly beats: readonly Beat[];
@@ -121,7 +126,7 @@ export type Lesson = {
    * teaches it draws the same one — which is the whole of Marc's ask.
    *
    * A lesson has a figure or rows, never both: a portrait teaching card
-   * already runs glyph, lead, body and button, and both together overflow it.
+   * already runs icon, lead, body and button, and both together overflow it.
    * `lessons.test.ts` asserts it.
    */
   readonly figure?: FigureId;
@@ -203,8 +208,10 @@ export function lessonDefine(lesson: Lesson, t: Tuning, theme: Theme, s: Strings
  * `CLAUDE.md`, and it is the fifth mechanic caught by it.
  *
  * It replaces `lessonCardText`, which composed a "{glyph}  {NAME}\n{body}"
- * string for a host to take apart again. `LessonCard` has the glyph and the
- * name already; a lead line only existed to be re-split.
+ * string for a host to take apart again. `LessonCard` has the icon and the
+ * name already; a lead line only existed to be re-split — and once a mark
+ * stopped being a character (2026-08-30) it could not have been composed into
+ * a string at all.
  */
 export function lessonCardDefine(lesson: Lesson, t: Tuning, theme: Theme, s: Strings): string {
   return [...lessonLines(lesson, t, theme, s), ...beatsAt(lesson, 'card', t, theme, s)].join(' ');
@@ -229,7 +236,7 @@ export const LESSONS: readonly Lesson[] = [
    */
   {
     id: 'ripe',
-    glyph: TILE_GLYPH,
+    icon: TILE_ICON,
     figure: 'ripen',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.ripe.core },
@@ -257,7 +264,7 @@ export const LESSONS: readonly Lesson[] = [
   { id: 'worth', beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.worth.core }] },
   {
     id: 'cache',
-    glyph: LANDMARK_GLYPH.cache,
+    icon: LANDMARK_ICON.cache,
     beats: [
       {
         at: 'core',
@@ -270,17 +277,17 @@ export const LESSONS: readonly Lesson[] = [
   },
   {
     id: 'site',
-    glyph: LANDMARK_GLYPH.site,
+    icon: LANDMARK_ICON.site,
     beats: [{ at: 'core', say: (t, _theme, s) => s.lesson.site.core(t.sitePays) }],
   },
   {
     id: 'shrine',
-    glyph: LANDMARK_GLYPH.shrine,
+    icon: LANDMARK_ICON.shrine,
     beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.shrine.core }],
   },
   {
     id: 'territory',
-    glyph: LANDMARK_GLYPH.territory,
+    icon: LANDMARK_ICON.territory,
     beats: [
       {
         at: 'core',
@@ -301,12 +308,12 @@ export const LESSONS: readonly Lesson[] = [
    */
   {
     id: 'find',
-    glyph: LANDMARK_GLYPH.find,
+    icon: LANDMARK_ICON.find,
     beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.find.core }],
   },
   {
     id: 'stone',
-    glyph: CONCEPT_MARK.stone,
+    icon: CONCEPT_ICON.stone,
     beats: [
       {
         at: 'core',
@@ -330,7 +337,7 @@ export const LESSONS: readonly Lesson[] = [
   {
     id: 'rare',
     ink: 'ink-magic',
-    glyph: TILE_GLYPH,
+    icon: TILE_ICON,
     figure: 'rare',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.rare.core },
@@ -341,7 +348,7 @@ export const LESSONS: readonly Lesson[] = [
   {
     id: 'rareUnique',
     ink: 'ink-unique',
-    glyph: TILE_GLYPH,
+    icon: TILE_ICON,
     figure: 'rare',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.rareUnique.core },
@@ -351,17 +358,17 @@ export const LESSONS: readonly Lesson[] = [
   },
   {
     id: 'luck',
-    glyph: CONCEPT_MARK.luck,
+    icon: CONCEPT_ICON.luck,
     beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.luck.core }],
   },
   {
     id: 'relic',
-    glyph: CONCEPT_MARK.relic,
+    icon: CONCEPT_ICON.relic,
     beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.relic.core }],
   },
   {
     id: 'bounty',
-    glyph: LANDMARK_GLYPH.site,
+    icon: LANDMARK_ICON.site,
     beats: [
       {
         at: 'core',

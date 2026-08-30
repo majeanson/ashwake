@@ -1,5 +1,6 @@
 import { COLOURS, RARITIES, POINT_SOURCES } from '@content/tuning';
-import { COLOUR_MARK } from '@theme/tokens';
+import { COLOUR_ICON } from '@theme/icons';
+import { namesOf, type Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { Arc } from '../ui/Arc';
@@ -25,13 +26,18 @@ import { Fold } from '../ui/Fold';
 
 export type PayoutProps = {
   readonly summary: NonNullable<HudView['summary']>;
+  /** The direction, for its own names for the four grounds. A bar labelled
+   *  with a SHAPE was fine while the shape was a character in the same face as
+   *  the words; an icon beside a nameless bar is a picture with no caption. */
+  readonly theme: Theme;
   /** Every scoring harvest's points, in the order they were taken. */
   readonly harvests: readonly number[];
   readonly s: Strings;
 };
 
-export function Payout({ summary, harvests, s }: PayoutProps) {
+export function Payout({ summary, harvests, theme, s }: PayoutProps) {
   const split = summary.points;
+  const names = namesOf(theme, s.locale);
 
   return (
     <Fold summary={s.ui.details}>
@@ -45,7 +51,8 @@ export function Payout({ summary, harvests, s }: PayoutProps) {
               // The mark rather than a word: it is the one the board, the
               // purse and the manual already use for that colour, and the
               // symbol vocabulary is deliberately never re-invented per screen.
-              label: COLOUR_MARK[colour],
+              label: names[colour],
+              icon: COLOUR_ICON[colour],
               value: split.byColour[colour],
               paint: `var(--tile-${colour})`,
             }))}

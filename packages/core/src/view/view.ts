@@ -34,7 +34,8 @@ import {
   findsWithin,
   terrainAt,
 } from '@engine/world';
-import { brightness, COLOUR_MARK, namesOf, powersOf, type Light, type Theme } from '@theme/tokens';
+import { brightness, namesOf, powersOf, type Light, type Theme } from '@theme/tokens';
+import type { IconName } from '@theme/icons';
 import type { BoardView, CellKind, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
 
@@ -1483,7 +1484,7 @@ export function harvestNote(
  * from the game's own registry, or neither, in which case the mark column is
  * still reserved so the sentences line up.
  *
- * No row invents a symbol. `COLOUR_MARK` and `LANDMARK_GLYPH` are the whole
+ * No row invents a symbol. `COLOUR_ICON` and `LANDMARK_ICON` are the whole
  * vocabulary (`theme/tokens.ts` states the rule), and a spend like REDRAW has
  * never had a mark in this game — so it gets none here rather than a new one.
  */
@@ -1491,8 +1492,8 @@ export type TipRow = {
   readonly text: string;
   /** A ground, drawn as its own swatch. */
   readonly colour?: Colour;
-  /** A glyph from the registry, for a row that is not a ground. */
-  readonly glyph?: string;
+  /** An icon from the registry, for a row that is not a ground. */
+  readonly icon?: IconName;
   /**
    * The ground's REAL baked tile, as a data URL (2026-08-27, Marc: "can we
    * have visuals with real tiles or examples in the how to play and hand and
@@ -1508,7 +1509,14 @@ export type TipRow = {
 };
 
 /** A card that teaches a set: the lead, and the rows under it. */
-export type SetLesson = { readonly text: string; readonly rows: readonly TipRow[] };
+export type SetLesson = {
+  readonly text: string;
+  /** The mark the card leads with. Beside the words rather than inside them:
+   *  a mark has been an icon rather than a character since 2026-08-30, and a
+   *  character was the only kind you could have prefixed into a string. */
+  readonly icon: IconName;
+  readonly rows: readonly TipRow[];
+};
 
 /**
  * The purse fold's first-contact card (Marc, 2026-08-20), built from the
@@ -1545,7 +1553,7 @@ export function purseLesson(t: Tuning, theme: Theme, s: Strings): SetLesson {
     ...(t.luckSteerCost > 0
       ? COLOURS.map((colour): TipRow => ({
           colour,
-          text: p.steer(COLOUR_MARK[colour], n[colour], t.luckSteerCost, t.colourBiasDraws),
+          text: p.steer(n[colour], t.luckSteerCost, t.colourBiasDraws),
         }))
       : []),
     ...(t.luckForgeCost > 0 ? [{ text: p.forge(t.luckForgeCost) }] : []),
@@ -1559,7 +1567,7 @@ export function purseLesson(t: Tuning, theme: Theme, s: Strings): SetLesson {
   // and that you can lose it all too") and is pinned by name — the rows
   // print their prices, and this is the one thing a price cannot say.
   const lost = t.luckToRelics > 0 ? p.lostPartly(Math.round(t.luckToRelics * 100)) : p.lostAll;
-  return { text: p.lead(lost), rows };
+  return { text: p.lead(lost), icon: 'luck', rows };
 }
 
 /**

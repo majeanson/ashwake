@@ -4,7 +4,6 @@ import type { Strings } from '@text/Strings';
 import { dailiesOf, runsOf, streamOf, type TimelineEntry } from '@meta/timeline';
 import type { RecordBook } from '@meta/records';
 import { ONLY_WORLD } from '@meta/records';
-import { CONCEPT_MARK } from '@theme/tokens';
 import { FactGrid } from '../ui/FactGrid';
 import { Fold } from '../ui/Fold';
 import { Panel } from '../ui/Panel';
@@ -49,7 +48,7 @@ export function Fame({ timeline, records, s, onBack }: FameProps) {
   return (
     <Panel
       id="fame"
-      title={`${CONCEPT_MARK.fame} ${s.ui.tabs.after}`}
+      title={s.ui.tabs.after}
       back={s.ui.back}
       closeAll={s.ui.closeAll}
       onBack={onBack}
@@ -125,9 +124,9 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
           <FactGrid
             facts={[
               { label: 'PTS', value: entry.score },
-              { label: '↗', value: entry.reach },
+              { label: s.ui.atlasFarthest, value: entry.reach },
               { label: s.ui.pop, value: entry.detail.harvests },
-              { label: CONCEPT_MARK.relic, value: entry.detail.relics },
+              { label: s.lesson.relic.name, icon: 'relic', value: entry.detail.relics },
             ]}
           />
         </>

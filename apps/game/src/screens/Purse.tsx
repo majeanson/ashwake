@@ -1,4 +1,6 @@
-import { COLOUR_MARK, hex, namesOf, type Theme } from '@theme/tokens';
+import { COLOUR_ICON } from '@theme/icons';
+import { hex, namesOf, type Theme } from '@theme/tokens';
+import { Icon } from '../ui/Icon';
 import type { HudView, SpendView } from '@view/view';
 import type { Strings } from '@text/Strings';
 
@@ -26,7 +28,7 @@ import type { Strings } from '@text/Strings';
  *     read down; prices scattered through a wrapped row cannot.
  *   - **A steer wears its ground.** The colour rows are the only ones naming a
  *     PLACE rather than an action, and they carry the same swatch and
- *     `COLOUR_MARK` the hand's cards and the manual's legend use — nothing here
+ *     `COLOUR_ICON` the hand's cards and the manual's legend use — nothing here
  *     invents a symbol.
  */
 
@@ -65,7 +67,7 @@ export function Purse({ hud, theme, s, onSpend }: PurseProps) {
                 aria-hidden="true"
                 style={{ background: hex(theme.terrain[steer].fill) }}
               >
-                {COLOUR_MARK[steer]}
+                <Icon name={COLOUR_ICON[steer]} />
               </span>
             )}
             <span className="spend-name">{wordFor(spend, s, names)}</span>

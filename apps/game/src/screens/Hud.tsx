@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TUNING } from '@content/tuning';
-import { CONCEPT_MARK } from '@theme/tokens';
+import type { IconName } from '@theme/icons';
+import { Icon } from '../ui/Icon';
 import { statNote, type HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
 
@@ -65,7 +66,9 @@ export function Hud({ hud, s, onNote }: HudProps) {
               setRose(id);
             }}
           >
-            <span className="stat-label">{statLabel(id, s)}</span>{' '}
+            <span className="stat-label">
+              {id === 'luck' ? <Icon name="luck" title={s.lesson.luck.name} /> : statLabel(id, s)}
+            </span>{' '}
             <b className={`stat-value${rose === id ? ' rose' : ''}`}>{shown}</b>
           </button>
         );
@@ -101,21 +104,19 @@ function valueOf(id: StatId, hud: HudView): number | null {
  * where it is.
  *
  * **LUCK is the registry's mark, not a lookalike** (2026-08-29, Marc: "reuse
- * symbols, cards, etc."). `CONCEPT_MARK.luck` is `✤` and exists precisely
- * because luck is one of the two currencies that follow a player between the
- * board, the shop and the end screen — and this row was drawing `♦` instead,
- * a second symbol for the thing the registry already names. The purse drawer,
- * the shop and the end screen all speak `✤`.
+ * symbols, cards, etc."). Luck is one of the two currencies that follow a
+ * player between the board, the shop and the end screen, so it is one of the
+ * seven ideas the concept registry names — and this row drew `♦` instead, a
+ * second symbol for the thing the registry already had. The ACTION BAR's purse
+ * toggle drew `♦` too, for a day longer.
  *
- * "The stat row was the one place that did not" is what this comment said,
- * and it was wrong: the ACTION BAR's purse toggle was drawing `♦` too, and it
- * is the more-seen of the two. Fixed 2026-08-30. A claim about being the last
- * one is a claim worth grepping before writing down.
- *
- * `↗` for reach and `$` for cost stay as they are: `tokens.ts` rules that
- * marks are for cross-screen CONCEPTS and that stats stay words, so neither
- * has a registry entry to reuse and neither should gain one for this row's
- * sake alone.
+ * **REACH and COST are WORDS again** (2026-08-30). They were `↗` and `$`,
+ * which `theme/tokens.ts` had already ruled against in as many words: marks
+ * are for cross-screen CONCEPTS and stats stay words. Neither has a registry
+ * entry, neither should gain one for this row's sake, and neither is an icon —
+ * so once the symbol language became Phosphor (Marc: "no emojis only phosphor
+ * icons or assets") they were the two characters left standing on the busiest
+ * row in the game. The row is a grid now and a word fits.
  */
 export function statLabel(id: StatId, s: Strings): string {
   switch (id) {
@@ -124,12 +125,17 @@ export function statLabel(id: StatId, s: Strings): string {
     case 'points':
       return 'PTS';
     case 'luck':
-      return CONCEPT_MARK.luck;
+      // The one stat that IS a concept the rest of the game already marks.
+      // Drawn as the icon; this is its accessible name and its fallback.
+      return s.lesson.luck.name;
     case 'map':
-      return '↗';
+      return s.locale === 'fr-CA' ? 'PORTÉE' : 'REACH';
     case 'cost':
-      return '$';
+      return s.locale === 'fr-CA' ? 'COÛT' : 'COST';
     case 'left':
       return s.locale === 'fr-CA' ? 'RESTE' : 'LEFT';
   }
 }
+
+/** The stat that is drawn as a mark rather than as a word. */
+export const STAT_ICON: Partial<Record<StatId, IconName>> = { luck: 'luck' };

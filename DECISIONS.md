@@ -290,10 +290,83 @@ a new global gesture is the kind of thing that wants its own session and its own
 question.
 
 **What is left of `meta/route.ts` after this ruling:** `parseRoute` is read at
-boot for all three fields. `searchFor` and `HOME` still have no reader — they
-are the pure statement of a link that `meta/share.ts` builds by hand. That is a
-duplicate rather than a gap and it is now a duplicate with no prospect of a
-caller, so it is a deletion, not a debt.
+boot for all three fields. `searchFor` was the pure statement of a link that
+`meta/share.ts` builds by hand — a duplicate with no prospect of a caller, so a
+deletion rather than a debt, and **deleted the same day**. `HOME` stays: it is
+what "no query at all" IS, and the parser's tests read as intent with it.
+
+**And the back gesture was built the same day**, in the shape this ruling
+describes: one history entry per open dialog in `ui/dialog.tsx`, carrying no
+URL change, popped by BACK one panel at a time. Filed for later and then done,
+because it turned out to be one file and three rules rather than a session's
+worth of question. `e2e/menus.spec.ts` pins it.
+
+### D10 — The symbol language is ICONS, not characters — RULED 2026-08-30
+
+Marc, after playing it: _"no emojis only phosphor icons or assets."_
+
+**What the game had.** Every mark it draws was a Unicode character, in five
+registries in `theme/tokens.ts`: the four grounds `▲ ◆ ■ ●`, the five
+destinations `✚ ★ ◈ ❖ ✦`, the game's own voice `⬢`, seven cross-screen
+concepts `◉ ✤ ▦ ▨ ❋ ✓ ◇`, and the chrome's `← ✕` — plus a `▾` in a CSS
+`content` and a `♪` typed into a button.
+
+**Why that is a defect and not a preference.** A character is a REQUEST for a
+shape. What answers it is the font stack, which differs by platform, by
+browser, by which faces a phone happens to have, and by whether the glyph
+exists at all — and this game had already staked three surfaces on that
+lottery:
+
+- **The board** drew `✚ ★ ◈ ❖ ✦ ▦` as troika text in `cinzel.ttf`, a face this
+  project self-hosts for a WORDMARK. It carries those glyphs by luck. A subset
+  pass, a swap, or any font change empties the board's alphabet silently.
+- **The manual's figures** asked the same of `--font-display`.
+- **The chrome** asked it of whatever the system serif resolved to, which is
+  why `♦` and `✤` could both be typed for "luck" and look plausible.
+
+An icon is the shape itself. Nothing decides it at runtime.
+
+**The shape of the ruling.** The vocabulary does not move — the same four
+registries, the same members, the same no-collision rule, the same exemption
+for the chrome's two marks and the same ban on the plane ever wearing one. Only
+the currency changes, from a codepoint to a NAME:
+
+- `packages/core/src/theme/icons.ts` names the icons. The core says what a
+  thing MEANS; it may not hold an SVG path, which is a fact about how a thing
+  is drawn and which the layering lint exists to keep out.
+- `scripts/phosphor.ts` vendors the twenty-three paths this game draws from
+  `@phosphor-icons/core` (MIT, a devDependency) into one generated, committed
+  file. The package is 1512 icons per weight; importing it at runtime would
+  ship all of them or lean on tree-shaking to undo a decision we can simply not
+  make. Same shape as the terrain baker: keep the recipe beside the loaf.
+- `ui/Icon.tsx` draws them in the chrome, sized in `em` and filled with
+  `currentColor` so every call site keeps the rule it already had.
+- `board/marks.ts` draws them on the BOARD, as a `Path2D` painted into a
+  texture and laid on the hex — so the board and the manual draw one shape from
+  one file.
+
+**Weight is part of the decision** (`ICON_SOURCE`): FILL for the game's own
+vocabulary, because those marks are read at 16px on a card and at hex size on a
+leaning board and a hairline survives neither — the lesson the heavy `✚` was
+picked for on 2026-08-26. BOLD for the chrome, where an outline is clearer at
+button size.
+
+**What this forced, and what it found.** A mark used to be composed INTO
+catalogue sentences (`${LANDMARK_GLYPH.cache} CACHE: build a tile…`) and split
+back out of a receipt by whitespace. An icon cannot live in a string, so the
+mark rides BESIDE the words now — which deleted the split, and with it the bug
+where a pop's heading had its first word drawn as a mark. It also exposed
+`s.rareStar`: the manual, the figure and the legend all promised that a placed
+rare "wears a star", and this board has never drawn one — `board/rings.ts`
+gives it a ring in its rarity's colour and `board/relief.ts` stands it taller.
+Five stages of a claim nobody had to look up, found because replacing a mark
+means finding out what draws it.
+
+**The two exemptions, both stated so they are not re-argued.** The arc
+sparkline stays block-drawing characters (`▁▂▃▄▅▆▇█`): it is pasted into a
+chat, where an icon cannot go. And a ground's FIELD keeps saying its colour
+with a TEXTURE rather than a mark — a different channel, retired as a shape by
+Marc on 2026-08-18 and not revisited here.
 
 ## Open
 

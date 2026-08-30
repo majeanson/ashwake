@@ -247,6 +247,22 @@ button[disabled] {
   padding: 0.7rem;
 }
 
+/*
+ * An icon is a MARK, and it sits on the line like one (2026-08-30).
+ *
+ * Every call site used to be a character in a span the CSS had already sized
+ * and inked, so the icon is sized in `em` and filled with `currentColor` and
+ * inherits both. What a character got for free and an inline `<svg>` does not
+ * is the baseline: `vertical-align` puts it back where the glyph sat, so a
+ * mark beside a word still reads as part of the line rather than as a picture
+ * dropped into it.
+ */
+.icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex: none;
+}
+
 /* ---- cards -------------------------------------------------------------- */
 
 /*
@@ -427,19 +443,19 @@ button[disabled] {
   display: none;
 }
 
-.fold > summary::after {
-  content: '▾';
+.fold-caret {
   margin-left: auto;
   font-size: 0.9em;
+  display: inline-flex;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .fold > summary::after {
+  .fold-caret {
     transition: transform var(--fade) ease;
   }
 }
 
-.fold[open] > summary::after {
+.fold[open] .fold-caret {
   transform: rotate(180deg);
 }
 
@@ -1494,24 +1510,23 @@ button[disabled] {
 .tile-mark {
   font-size: 1.15rem;
   line-height: 1;
+  display: inline-flex;
   /*
-   * A real OUTLINE, not the label's soft glow — the mark stands on its own
-   * terrain fill with nothing else carrying it, which is the same problem the
-   * board solves with troika's `outlineColor`.
+   * A real OUTLINE, and now one that follows the SHAPE.
    *
-   * Four offset shadows rather than `-webkit-text-stroke`, and the reason is
-   * this project's browser floor: a stroke is CENTRED unless `paint-order`
-   * moves it outward, and `paint-order` on HTML text is Safari 17. On the
-   * iOS 16.4 this game supports (see the guard in `index.html`) the stroke
-   * would eat into the glyph and thin the very shape it is there to
-   * strengthen. Shadows only ever add.
+   * The mark stands on its own terrain fill with nothing else carrying it,
+   * which is the same problem the board solves with troika's `outlineColor`.
+   * It used to be four offset `text-shadow`s, because a character is text and
+   * `-webkit-text-stroke` is centred unless `paint-order` moves it outward —
+   * Safari 17, above this project's iOS 16.4 floor.
+   *
+   * A mark is an SVG since 2026-08-30, so `text-shadow` no longer reaches it.
+   * `drop-shadow` does, and it is strictly the better answer: it traces the
+   * icon's own alpha rather than its glyph box, which is the same trick
+   * `.tile-art` uses to outline a hex that a border cannot follow. Two passes,
+   * because one reads as a blur at this size and two read as a line.
    */
-  text-shadow:
-    1px 1px 0 var(--halo),
-    -1px 1px 0 var(--halo),
-    1px -1px 0 var(--halo),
-    -1px -1px 0 var(--halo),
-    0 0 3px var(--halo);
+  filter: drop-shadow(0 0 1px var(--halo)) drop-shadow(0 0 1px var(--halo));
 }
 
 /* A ground's power, said beside its name in the legend — the one row there

@@ -1,4 +1,5 @@
 import { corners } from '@render/layout';
+import { ICON_PATH } from './icons.gen';
 import { figureCaption, figureLayout, FIGURES, type FigureId, type PlacedCell } from '@view/figure';
 import { hex, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
@@ -66,8 +67,23 @@ export function Figure({ id, theme, s, caption = false }: FigureProps) {
                     points={path}
                     fill="none"
                     stroke={hex(ringColour(cell.ring, theme))}
-                    strokeWidth={cell.ring === 'ripe' ? 2.5 : 1.6}
+                    strokeWidth={cell.ring === 'ripe' || rarityRing(cell.ring) ? 2.5 : 1.6}
                   />
+                )}
+                {/*
+                  A MARK is a Phosphor path, drawn into the figure's own SVG at
+                  the hex it belongs to (2026-08-30). It was a `<text>` set in
+                  the display face, which asked a wordmark font to answer for
+                  `✚ ★ ◈` — the same request the board was making of the same
+                  font, and the reason both are icons now. The number labels
+                  below stay text, because a number IS text.
+                */}
+                {cell.icon !== undefined && (
+                  <g
+                    transform={`translate(${cell.x - SIZE * 0.42} ${cell.y - SIZE * 0.42}) scale(${(SIZE * 0.84) / 256})`}
+                  >
+                    <path d={ICON_PATH[cell.icon]} fill={hex(toneColour(cell.tone, theme))} />
+                  </g>
                 )}
                 {cell.mark !== undefined && (
                   <text
@@ -139,6 +155,10 @@ function FigureCards({
 
 type Ring = NonNullable<PlacedCell['ring']>;
 
+/** A rarity ring is drawn as thick as a ripe one: on the board it is the
+ *  widest stroke a tile can wear, because it is the one that says POWER. */
+const rarityRing = (ring: Ring | undefined): boolean => ring === 'magic' || ring === 'unique';
+
 /** A figure's rings are the board's rings — spent ground wears the quiet edge
  *  every other cell wears, which is what makes SPENT read as "was, and is not". */
 const ringColour = (ring: Ring, theme: Theme) =>
@@ -148,7 +168,14 @@ const ringColour = (ring: Ring, theme: Theme) =>
       ? theme.board.legalEdge
       : ring === 'lit'
         ? theme.ink.lit
-        : theme.board.edge;
+        : // MAGIC and UNIQUE are the board's own rarity rings (`board/rings.ts`),
+          // and the figure draws them because the board does — it drew stars
+          // until 2026-08-30, which is a mark this body has never printed.
+          ring === 'magic'
+          ? theme.ink.magic
+          : ring === 'unique'
+            ? theme.ink.unique
+            : theme.board.edge;
 
 const toneColour = (tone: 'magic' | 'unique' | undefined, theme: Theme) =>
   tone === 'magic' ? theme.ink.magic : tone === 'unique' ? theme.ink.unique : theme.ink.ink;

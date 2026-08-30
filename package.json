@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "pnpm --filter @ashwake/game dev",
-    "bake": "pnpm bake:icons && pnpm bake:terrain && pnpm bake:art && pnpm bake:social",
+    "bake": "pnpm bake:phosphor && pnpm bake:icons && pnpm bake:terrain && pnpm bake:art && pnpm bake:social",
     "bake:terrain": "tsx scripts/terrain.ts",
     "bake:art": "tsx scripts/artslots.ts",
     "bake:icons": "tsx scripts/icons.ts",
@@ -22,10 +22,12 @@
     "format:check": "prettier --check .",
     "sim": "pnpm --filter @ashwake/core sim",
     "test:e2e": "pnpm build && playwright test",
-    "audit:screens": "pnpm build && playwright test --config playwright.audit.config.ts"
+    "audit:screens": "pnpm build && playwright test --config playwright.audit.config.ts",
+    "bake:phosphor": "tsx scripts/phosphor.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@phosphor-icons/core": "^2.1.1",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",

@@ -1939,3 +1939,97 @@ matters: the first minute is the same game, told better.
 **Verified:** 1063 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions.
+
+### Session 23 — the marks stop being a request and become a shape (2026-08-30)
+
+**Question:** Marc, after playing it: _"no emojis only phosphor icons or
+assets."_ Is that a coat of paint, or is a character-as-mark a defect?
+
+**Answer: a defect, and the swap found three more.** A character is a REQUEST
+for a shape. What answers it is the font stack — different by platform, by
+browser, by which faces a phone has, and by whether the glyph exists at all —
+and this game had staked three surfaces on that lottery without ever saying so.
+The board drew `✚ ★ ◈ ❖ ✦ ▦` as troika text in `cinzel.ttf`, **a face this
+project self-hosts for a wordmark**, which carries those glyphs by luck; a
+subset pass or a font swap would have emptied the board's alphabet silently and
+nothing would have failed. The manual's figures asked the same of
+`--font-display`. The chrome asked it of whatever the system serif resolved to,
+which is exactly how `♦` could stand in for `✤` on two different screens and
+look plausible on both.
+
+**THE SHAPE OF THE RULING** (`DECISIONS.md` D10). The vocabulary does not move:
+the same four registries, the same members, the same no-collision rule, the same
+exemption for the chrome and the same ban on the plane ever wearing one of its
+marks. `tokens.test.ts`'s one-symbol-language test did not have to change to
+follow them, which is the argument for this being a change of CURRENCY rather
+than of language. Only the currency moves, from a codepoint to a NAME:
+
+- `theme/icons.ts` names them. The core says what a thing MEANS; an SVG path is
+  a fact about how it is DRAWN, and the layering lint exists to keep those out.
+- `scripts/phosphor.ts` vendors the twenty-three paths this game draws from
+  `@phosphor-icons/core` (MIT, a devDependency) into one generated, committed
+  file — 8KB. The package is 1512 icons per weight, and importing it at runtime
+  would ship all of them or lean on tree-shaking to undo a decision we can
+  simply not make. Same shape as the terrain baker: the recipe beside the loaf.
+- `ui/Icon.tsx` draws them in the chrome, in `em` and `currentColor`, so every
+  call site keeps the rule its span already had.
+- `board/marks.ts` draws them on the BOARD — a `Path2D` painted into a texture
+  and laid on the hex — so the board and the manual draw one shape from one
+  file rather than two fonts' opinions of one codepoint.
+
+**WEIGHT is part of the decision** and lives beside the names (`ICON_SOURCE`):
+FILL for the game's own vocabulary, because those marks are read at 16px on a
+card and at hex size on a leaning board and a hairline survives neither — the
+lesson the heavy `✚` was picked for on 2026-08-26. BOLD for the chrome, where
+an outline is clearer at button size.
+
+**WHAT IT FORCED.** A mark used to be composed INTO catalogue sentences —
+`${LANDMARK_GLYPH.cache} CACHE: build a tile…` — and split back out of a
+receipt by whitespace. **An icon cannot live in a string**, so the mark rides
+BESIDE the words: `Receipt` and `Said` carry an icon name, `SaidCard` renders
+it, and the whole split is deleted. That took the "first word drawn as a mark"
+bug with it — the one patched a day earlier by checking the token against the
+registries — because there is no longer anything to parse. Eighteen catalogue
+strings got shorter and none of them lost a fact.
+
+**AND WHAT IT FOUND, which is the argument for doing it properly.**
+
+**Seventeen. The manual promised a star the board has never drawn.** `s.rareStar`,
+the `rare` figure and `ui.legendRare` all say a placed rare "wears a star" —
+Ashwake 1's 2D board did. **This one never has**: `board/rings.ts` gives a rare
+tile a RING in its rarity's own colour and `board/relief.ts` stands it taller.
+Five stages of a claim about something you can SEE, wrong in both languages,
+found only because replacing a mark means finding out what draws it. The figure
+draws rings now, and the sentence says ring and height.
+
+**Eighteen. `↗` and `$` were the last two characters on the busiest row in the
+game**, and `theme/tokens.ts` had already ruled against them in as many words:
+marks are for cross-screen CONCEPTS and stats stay words. They are REACH and
+COST now, which the new grid has room for; LUCK stays a mark because luck is
+one of the seven ideas the registry names.
+
+**Nineteen. A `▾` lived in a CSS `content`**, where no test in this repository
+could see it — the fold's caret. A pseudo-element cannot hold an SVG, which is
+the whole reason it was a character. It is an element now.
+
+**Two exemptions, both stated so nobody re-argues them.** The arc sparkline
+stays block-drawing characters (`▁▂▃▄▅▆▇█`): it is pasted into a chat, where an
+icon cannot go. And a ground's FIELD keeps saying its colour with a TEXTURE
+rather than a mark — a different channel, retired as a shape by Marc on
+2026-08-18.
+
+**Three tests, at three levels, because one of these hid at each.**
+`tokens.test.ts` holds the registries (no two meanings share a mark, the chrome
+and the plane never share one, every name is vendored and every vendored name is
+drawn). `text.test.ts` holds the catalogues: **no mark is ever spelled into a
+sentence**, which is the rule that keeps them beside the words. And
+`e2e/menus.spec.ts` reads the RENDERED text of every screen the game has,
+including `aria-label`s, and fails on any character from the retired
+vocabulary — because `♦` and `▾` both got in below the level the other two
+watch.
+
+**Verified:** 1066 tests / 74 files, 77 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm bake` runs end to end and
+`icons.gen.ts` is formatted by the project's own Prettier so a re-bake leaves
+the tree clean. `pnpm audit:screens` regenerated: 156 findings, down from 162,
+the six being the characters that are words now.

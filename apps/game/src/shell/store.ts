@@ -6,6 +6,7 @@ import type { Action, GameState } from '@engine/state';
 import { distance, parse, type HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
+import type { IconName } from '@theme/icons';
 import type { Theme } from '@theme/tokens';
 import {
   harvestNote,
@@ -79,6 +80,16 @@ export type Said = {
   readonly rows?: readonly TipRow[] | undefined;
   /** An offer the shell must carry out. Only the crossing makes one. */
   readonly offers?: 'crossing' | undefined;
+  /**
+   * The mark this utterance leads with, where it has one.
+   *
+   * BESIDE the words rather than inside them. A claim's mark used to be
+   * prefixed into its own first line and split back out by `SaidCard`, which
+   * worked only while a mark was a character; since 2026-08-30 it is an icon
+   * (`@theme/icons`) and a sentence cannot carry one. A POP has none: the
+   * board is the thing that popped.
+   */
+  readonly icon?: IconName | undefined;
   /**
    * Shown as a card the player does not have to dismiss: it takes no focus,
    * any tap sends it away, and it goes on its own. Set by the SHELL, never by
@@ -272,6 +283,7 @@ export function createSession(opts: {
     const lines: string[] = [];
     let card = false;
     let rows: readonly TipRow[] | undefined;
+    let icon: IconName | undefined;
 
     if (action.type === 'HARVEST' && cashed !== null && cashed.count > 0) {
       lines.push(harvestNote(before, action.choice, cashed, opts.strings));
@@ -305,6 +317,7 @@ export function createSession(opts: {
       lines.push(claims.text);
       card = claims.card;
       rows = claims.rows;
+      icon = claims.icon;
       offers = claims.offers;
       // An offer always holds the screen: it is a choice, and a choice that
       // scrolls past in a toast is a choice nobody made.
@@ -319,6 +332,7 @@ export function createSession(opts: {
       card,
       ...(rows === undefined ? {} : { rows }),
       ...(offers === undefined ? {} : { offers }),
+      ...(icon === undefined ? {} : { icon }),
       id: ++saidCount,
     };
   }

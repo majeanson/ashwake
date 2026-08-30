@@ -1,27 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '@content/tuning';
 import { THEMES } from './index';
+import { brightness, fieldDots, fieldGround, fieldOverlayPattern, fieldPattern } from './tokens';
 import {
-  brightness,
-  COLOUR_MARK,
-  CONCEPT_MARK,
-  fieldDots,
-  fieldGround,
-  fieldOverlayPattern,
-  fieldPattern,
-  LANDMARK_GLYPH,
-  TILE_GLYPH,
-} from './tokens';
+  CHROME_ICON,
+  COLOUR_ICON,
+  CONCEPT_ICON,
+  ICON_SOURCE,
+  LANDMARK_ICON,
+  TILE_ICON,
+  type IconName,
+} from './icons';
 
 /**
- * The non-hue channels: a character per colour on the cards, and a texture
- * per colour on the ground. The contrast maths for the fields themselves
- * lives in theme.test.ts, which measures every direction; this file is about
- * the second channel staying a channel.
+ * The non-hue channels: a mark per colour on the cards, and a texture per
+ * colour on the ground. The contrast maths for the fields themselves lives in
+ * theme.test.ts, which measures every direction; this file is about the second
+ * channel staying a channel.
  */
 describe('one mark per colour', () => {
-  it('gives every colour a character, and no two the same', () => {
-    const marks = COLOURS.map((c) => COLOUR_MARK[c]);
+  it('gives every colour a mark, and no two the same', () => {
+    const marks = COLOURS.map((c) => COLOUR_ICON[c]);
     expect(marks.every((m) => m.length > 0)).toBe(true);
     expect(new Set(marks).size).toBe(COLOURS.length);
   });
@@ -31,18 +30,63 @@ describe('one symbol language (2026-08-26, extended 2026-08-27)', () => {
   /**
    * The vocabulary shipped a collision once: `◆` was both yellow's colour
    * mark and the territory landmark, so one shape meant two things wherever
-   * board and cards met. Every glyph across the four registries — colours,
+   * board and cards met. Every mark across the four registries — colours,
    * landmarks, the teaching cards' own voice, and cross-screen concepts —
    * must be its own.
+   *
+   * The registries hold Phosphor icon NAMES since 2026-08-30 rather than
+   * Unicode characters, and this test did not have to change to follow them,
+   * which is the argument for the swap being a change of currency rather than
+   * of language.
    */
-  it('never gives two meanings the same glyph, across all four registries', () => {
-    const all = [
-      ...COLOURS.map((c) => COLOUR_MARK[c]),
-      ...Object.values(LANDMARK_GLYPH),
-      TILE_GLYPH,
-      ...Object.values(CONCEPT_MARK),
+  it('never gives two meanings the same mark, across all four registries', () => {
+    const all: IconName[] = [
+      ...COLOURS.map((c) => COLOUR_ICON[c]),
+      ...Object.values(LANDMARK_ICON),
+      TILE_ICON,
+      ...Object.values(CONCEPT_ICON),
     ];
     expect(new Set(all).size).toBe(all.length);
+  });
+
+  /**
+   * The chrome's marks are exempt from the rule above and bound by a stricter
+   * one: nothing on the PLANE may ever be a back arrow or a close cross, so
+   * that "leave" can never be confused with a thing you could walk to.
+   */
+  it('never lets the chrome and the plane share a mark', () => {
+    const plane = new Set<IconName>([
+      ...COLOURS.map((c) => COLOUR_ICON[c]),
+      ...Object.values(LANDMARK_ICON),
+      TILE_ICON,
+      ...Object.values(CONCEPT_ICON),
+    ]);
+    for (const mark of Object.values(CHROME_ICON)) expect(plane.has(mark)).toBe(false);
+  });
+
+  /**
+   * Every name in the union is cut from a real file, and every file the table
+   * names is used by a name. A dangling entry is an icon that renders as
+   * nothing, and `scripts/phosphor.ts` would have thrown rather than emit one
+   * — but only for the names it was asked to vendor.
+   */
+  it('draws every mark from the vendored set, and vendors no mark it does not draw', () => {
+    const named = new Set<IconName>([
+      ...COLOURS.map((c) => COLOUR_ICON[c]),
+      ...Object.values(LANDMARK_ICON),
+      TILE_ICON,
+      ...Object.values(CONCEPT_ICON),
+      ...Object.values(CHROME_ICON),
+    ]);
+    const vendored = new Set(Object.keys(ICON_SOURCE) as IconName[]);
+    expect(
+      [...named].filter((n) => !vendored.has(n)),
+      'named but not vendored',
+    ).toEqual([]);
+    expect(
+      [...vendored].filter((n) => !named.has(n)),
+      'vendored but never drawn',
+    ).toEqual([]);
   });
 });
 

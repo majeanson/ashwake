@@ -91,6 +91,79 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('every mark on every screen is drawn, not typed', async ({ page }) => {
+  /*
+   * `DECISIONS.md` D10 (2026-08-30). Marc: *"no emojis only phosphor icons or
+   * assets."*
+   *
+   * The unit tests hold the CATALOGUES and the registries. What only a browser
+   * can say is that no surface types a mark straight into its markup — which is
+   * exactly how `♦` came to stand in for luck on two different screens, and how
+   * a `▾` lived in a CSS `content` where no test could see it at all.
+   *
+   * So this reads the rendered text of every screen the game has and fails on
+   * any character from the retired vocabulary. Text rather than markup, because
+   * a character in an `aria-label` is a character a screen reader reads out.
+   */
+  const errors = watchErrors(page);
+  // The retired vocabulary, plus the two lookalikes it was drawn with.
+  const RETIRED = [...'▲◆■●✚★◈❖✦⬢◉✤▦▨❋✓◇←✕▾♪♦'];
+
+  const clean = async (where: string, drawn = true): Promise<void> => {
+    const text = await page.evaluate(() => {
+      const bits: string[] = [];
+      for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+        const label = el.getAttribute('aria-label');
+        if (label !== null) bits.push(label);
+      }
+      return `${document.body.innerText}${bits.join(' ')}`;
+    });
+    for (const mark of RETIRED) {
+      expect(text.includes(mark), `${where} types the mark ${mark}`).toBe(false);
+    }
+    // And where the screen HAS a vocabulary, it is drawing it. The front door
+    // deliberately has none — it is a lockup, a tagline and one button.
+    if (drawn) {
+      expect(await page.locator('svg.icon').count(), `${where} draws no icon`).toBeGreaterThan(0);
+    }
+  };
+
+  await page.goto('/?taught=1&runs=30&place=24');
+  await clean('the front door', false);
+  await begin(page);
+  await page.waitForTimeout(500);
+  await clean('the board');
+
+  await page.locator('[data-action="purse"]').click();
+  await clean('the purse');
+  await page.locator('[data-action="purse"]').click();
+
+  await page.locator('.camera .help').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+  for (const tab of ['start', 'play', 'hand']) {
+    await page.locator(`[data-tab="${tab}"]`).click();
+    await clean(`the manual's ${tab} tab`);
+  }
+  await panel(page, 'manual').locator('.panel-back').click();
+
+  // MORE is reached from the manual's MENU tab while a run is live: the front
+  // door's own MORE is a different screen and this one is standing on a board.
+  await page.locator('.camera .help').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+  await panel(page, 'manual').locator('[data-go="more"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  for (const room of ['worlds', 'shop', 'fame', 'settings']) {
+    // Scoped to MORE: the manual's MENU tab underneath offers SETTINGS too,
+    // which is the whole point of them being one wire and is two matches here.
+    await panel(page, 'more').locator(`[data-go="${room}"]`).click();
+    await panel(page, room).waitFor({ state: 'visible' });
+    await clean(room);
+    await panel(page, room).locator('.panel-back').click();
+  }
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('the board’s ♪ and the SETTINGS switch are one wire', async ({ page }) => {
   /*
    * `ui.sound`'s own note says, in both languages, "the ♪ button on the board

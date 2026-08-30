@@ -1,4 +1,4 @@
-import { CONCEPT_MARK, LANDMARK_GLYPH } from '@theme/tokens';
+import { CONCEPT_ICON, LANDMARK_ICON, type IconName } from '@theme/icons';
 import type { CellView } from './Renderer';
 
 /**
@@ -9,7 +9,16 @@ import type { CellView } from './Renderer';
  * story), not about Pixi, and a 3D board has to print the same glyphs for the
  * same reasons or the two bodies would disagree about what a star means.
  */
-export function labelFor(cell: CellView): { text: string; faint: boolean } | null {
+export type Label =
+  /** A number the board prints on a hex: a worth, or a preview of one. */
+  | { readonly text: string; readonly icon?: undefined; readonly faint: boolean }
+  /** A MARK the board draws on a hex, named rather than spelled — see
+   *  `@theme/icons`. It was a Unicode character until 2026-08-30, drawn by
+   *  `cinzel.ttf`, a font chosen for a wordmark and asked to answer for
+   *  `✚ ★ ◈ ❖ ✦ ▦`. */
+  | { readonly icon: IconName; readonly text?: undefined; readonly faint: boolean };
+
+export function labelFor(cell: CellView): Label | null {
   // A shimmer carries `landmark: null` and must stay wordless — printing any
   // glyph would tell the player WHAT is out there, which is exactly the thing
   // the sense upgrade does not sell. The old `?? 'territory'` fallback would
@@ -17,7 +26,7 @@ export function labelFor(cell: CellView): { text: string; faint: boolean } | nul
   if (cell.kind === 'landmark') {
     return cell.landmark === null
       ? null
-      : { text: LANDMARK_GLYPH[cell.landmark], faint: cell.claimed };
+      : { icon: LANDMARK_ICON[cell.landmark], faint: cell.claimed };
   }
   /*
    * A WALL says so on its face (2026-08-29, Marc: "make sure walls have some
@@ -32,14 +41,14 @@ export function labelFor(cell: CellView): { text: string; faint: boolean } | nul
    * **Not a cross**, though a cross is what was asked for: `theme/tokens.ts`
    * rules that `✕` and `←` belong to the SCREEN and that nothing on the plane
    * may ever be either, so that "leave" can never be confused with a thing you
-   * could walk to. `CONCEPT_MARK.wall` is the mark this game already owns for
+   * could walk to. `CONCEPT_ICON.wall` is the mark this game already owns for
    * exactly this idea — declared for it, spoken only in prose until now.
    *
    * Stone stays wordless on purpose, so the two read apart by PRESENCE rather
    * than by telling `▦` from `▨` at hex size — which is the discrimination
    * that retired the per-colour glyphs in 2026-08-18.
    */
-  if (cell.kind === 'wall') return { text: CONCEPT_MARK.wall, faint: false };
+  if (cell.kind === 'wall') return { icon: CONCEPT_ICON.wall, faint: false };
   if (cell.ripe && cell.worth > 0) return { text: String(cell.worth), faint: false };
   if (cell.legal && cell.preview !== null && cell.preview > 0) {
     return { text: String(cell.preview), faint: true };

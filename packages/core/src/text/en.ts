@@ -1,5 +1,4 @@
 import { PERK_DIALS, UPGRADE_STEPS } from '@content/goals';
-import { CONCEPT_MARK, LANDMARK_GLYPH } from '@theme/tokens';
 import { ordinal, plural } from './format';
 import type { Strings } from './Strings';
 
@@ -44,7 +43,8 @@ import type { Strings } from './Strings';
 const pw = (word: string): string => (word === '' ? '' : `${word}: `);
 
 const LUCK_CORE = 'LUCK is a purse, not a score.';
-const RARE_STAR = 'A placed rare tile wears a star, so its power stays findable on a full map.';
+const RARE_STAR =
+  'A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.';
 const LAST_GASP_RULE =
   'You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.';
 
@@ -244,8 +244,7 @@ export const STRINGS_EN: Strings = {
         `The score: worth ${worth} × pocket ${pocket} × distance ${multiplier}${bounty === null ? '' : ` × bounty ${bounty}`}.`,
       bar: (count, cap) => `POCKET ${count}/${cap}`,
       treasure: (rarity) => `POP for treasure: a ${rarity.toUpperCase()} tile.`,
-      bounty: (bonus) =>
-        `${LANDMARK_GLYPH.site} This pocket collects the bounty: ×${bonus} on its score.`,
+      bounty: (bonus) => `This pocket collects the bounty: ×${bonus} on its score.`,
       rares: (n) => `${n} rare tile${plural(n, '', 's')} in here will be spent by popping it.`,
     },
     harvest: {
@@ -255,9 +254,9 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         'Small-and-often buys LUCK and steers your draws. Big-and-late buys tiles and score.',
 
       head: (count, worth) => `POPPED ${count}, total worth ${worth}`,
-      bountyCollected: (bonus) => `${LANDMARK_GLYPH.site} Bounty ×${bonus}: COLLECTED.`,
+      bountyCollected: (bonus) => `Bounty ×${bonus}: COLLECTED.`,
       bountyMissed: (bonus, need, radius) =>
-        `${LANDMARK_GLYPH.site} Bounty ×${bonus}: missed (+0). Pop ${need}+ tiles within ${radius} of the ${LANDMARK_GLYPH.site}.`,
+        `Bounty ×${bonus}: missed (+0). Pop ${need}+ tiles within ${radius} of the site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tiles: ${perTile} per tile, +1 more per ${worthPerExtra} worth${depthRings === null ? '' : `, +${depthRings} for the depth`}.`,
       scored: (pts) => `+${pts} pts.`,
@@ -271,8 +270,8 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     },
     purse: {
       redraw: (cost) => `REDRAW · ${cost}. Throw this hand away for a new one.`,
-      steer: (mark, name, cost, draws) =>
-        `${mark} ${name} · ${cost}. A hand leaning ${name}, and the next ${draws} draws with it.`,
+      steer: (name, cost, draws) =>
+        `${name} · ${cost}. A hand leaning ${name}, and the next ${draws} draws with it.`,
       forge: (cost) => `FORGE · ${cost}. Turn the selected card UNIQUE.`,
       sacrifice: (pct) =>
         `SACRIFICE LUCK: the WHOLE purse traded for relics at ${pct}%. Better than dying on it.`,
@@ -280,7 +279,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         `the run’s end pays back only ${pct}% of whatever is left, so a full purse you die on is mostly gone`,
       lostAll: 'whatever is left when the run ends is lost outright',
       lead: (lost) =>
-        `${CONCEPT_MARK.luck}  LUCK IS FOR SPENDING\n` +
+        `LUCK IS FOR SPENDING\n` +
         `Every button under your hand is priced in luck, and you CAN lose it all: ${lost}. Spend it.`,
     },
     stat: {
@@ -322,39 +321,38 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       blue: (head, every) => ` · ${pw(head)}+1 worth per ${every} hexes from home`,
     },
     hex: {
-      cacheClaimed: `${LANDMARK_GLYPH.cache} CACHE: already claimed. It gave its tiles.`,
-      cache: (tiles) =>
-        `${LANDMARK_GLYPH.cache} CACHE: build a tile touching it to claim ${tiles} tiles on the spot.`,
-      siteClaimed: `${LANDMARK_GLYPH.site} SITE: already claimed.`,
+      cacheClaimed: 'CACHE: already claimed. It gave its tiles.',
+      cache: (tiles) => `CACHE: build a tile touching it to claim ${tiles} tiles on the spot.`,
+      siteClaimed: 'SITE: already claimed.',
       site: (pays, bonus) =>
-        `${LANDMARK_GLYPH.site} SITE: claim it for ${pays} pts × its distance. It opens a bounty worth ×${bonus}.`,
-      shrineDetourClaimed: `${LANDMARK_GLYPH.shrine} SHRINE: woken. On your own world, this switches a system on for good.`,
-      shrineDetour: `${LANDMARK_GLYPH.shrine} SHRINE: touch it with a tile. On your own world, waking one switches a system on for good.`,
-      shrineClaimed: `${LANDMARK_GLYPH.shrine} SHRINE: woken. It switched a system on for this world.`,
+        `SITE: claim it for ${pays} pts × its distance. It opens a bounty worth ×${bonus}.`,
+      shrineDetourClaimed: 'SHRINE: woken. On your own world, this switches a system on for good.',
+      shrineDetour:
+        'SHRINE: touch it with a tile. On your own world, waking one switches a system on for good.',
+      shrineClaimed: 'SHRINE: woken. It switched a system on for this world.',
       shrineCrossing: (dowry) =>
-        `${LANDMARK_GLYPH.shrine} SHRINE: this world is fully awake, so reaching it offers the crossing. A NEW WORLD, with ${dowry} relics carried for what you leave.`,
+        `SHRINE: this world is fully awake, so reaching it offers the crossing. A NEW WORLD, with ${dowry} relics carried for what you leave.`,
       shrine: (next) =>
-        `${LANDMARK_GLYPH.shrine} SHRINE: claim it to unlock ${next ?? 'a system'} for this world, permanently.`,
-      findClaimed: `${LANDMARK_GLYPH.find} A hidden find, spent. It gave what it had.`,
-      find: `${LANDMARK_GLYPH.find} Something is here. Touch it with a tile.`,
+        `SHRINE: claim it to unlock ${next ?? 'a system'} for this world, permanently.`,
+      findClaimed: 'A hidden find, spent. It gave what it had.',
+      find: 'Something is here. Touch it with a tile.',
       territoryClaimed: (radius, owns) =>
-        `${LANDMARK_GLYPH.territory} TERRITORY: yours. The ground within ${radius} hexes is native to ${owns}.`,
+        `TERRITORY: yours. The ground within ${radius} hexes is native to ${owns}.`,
       territory: (radius, owns) =>
-        `${LANDMARK_GLYPH.territory} TERRITORY: claim it and the ground within ${radius} hexes becomes native to ${owns}, for good.`,
+        `TERRITORY: claim it and the ground within ${radius} hexes becomes native to ${owns}, for good.`,
       someColour: 'a colour',
       chainOut: (sentence) => `${sentence} Build your chain out to it.`,
       shimmers: 'Something shimmers here. Grow your ground to it.',
       remembered: 'Remembered from an earlier run. This run has not grown here yet.',
       dark: 'Dark ground: nothing any run has seen yet. Grow toward it.',
-      wallBuildable: (mult) =>
-        `${CONCEPT_MARK.wall} Wall: you can build on it, at ${mult}× the placement cost.`,
-      wall: `${CONCEPT_MARK.wall} Wall: cannot be built on.`,
+      wallBuildable: (mult) => `Wall: you can build on it, at ${mult}× the placement cost.`,
+      wall: 'Wall: cannot be built on.',
       wallAsh: (standing, red) =>
         `${standing} It surrounds, so it helps things ripen, but it never matches, except for ${red}, which counts it as one.`,
       wallPlain: (standing) =>
         `${standing} It surrounds, so it helps things ripen, but it never matches.`,
       stone: (red) =>
-        `${CONCEPT_MARK.stone} Spent ground, a popped tile. It surrounds but never matches, except for ${red}, which feeds on it.`,
+        `Spent ground, a popped tile. It surrounds but never matches, except for ${red}, which feeds on it.`,
       tile: (name, worth) =>
         `${name} tile, worth ${worth}. It ripens when all six sides are covered.`,
       open: 'Open ground: you can build here once something of yours touches it.',
@@ -372,7 +370,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     destinations: 'Lit is unclaimed and still pays. Faint means you have already spent it.',
     place: 'Glowing edges are where a tile may go. The faint number is what it would pay.',
     pop: 'Ripe tiles that touch are ONE pocket. They pop together, and leave stone.',
-    rare: 'A placed rare wears a star in its own colour: magic, then unique.',
+    rare: 'A placed rare wears a ring in its own colour: magic, then unique.',
     stash: 'The dashed slot is the stash. Tap it to keep the selected card for later.',
     hold: 'HOLD',
     held: 'HELD',
@@ -469,7 +467,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     },
     'ui.sound': {
       label: 'Sound',
-      note: 'A few quiet notes as you pop and claim. The ♪ button on the board is this switch.',
+      note: 'A few quiet notes as you pop and claim. The speaker button on the board is this switch.',
     },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
@@ -668,7 +666,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     legendGrounds: 'THE GROUNDS',
     legendPlaces: 'THE DESTINATIONS',
     legendMarks: 'THE OTHER MARKS',
-    legendRare: 'A placed rare tile wears a star in its own colour.',
+    legendRare: 'A placed rare tile wears a ring in its own colour, and stands taller.',
     legendWall: 'Wall: cannot be built on. It still surrounds.',
     legendRipe: 'RIPE edge: that tile is ready to harvest.',
     legendLegal: 'Legal edge: you may place here.',

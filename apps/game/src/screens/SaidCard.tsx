@@ -1,4 +1,5 @@
-import { CONCEPT_MARK, LANDMARK_GLYPH, TILE_GLYPH, type Theme } from '@theme/tokens';
+import type { IconName } from '@theme/icons';
+import type { Theme } from '@theme/tokens';
 import type { TipRow } from '@view/view';
 import type { LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
@@ -23,27 +24,17 @@ import { TipRows } from '../ui/TipRows';
  */
 
 /**
- * Every mark a receipt may lead with.
+ * **The mark arrives BESIDE the words** (2026-08-30).
  *
- * A CLAIM's first line is `{glyph}  {HEADING}` — `receipts.ts` prefixes the
- * mark itself, from `LANDMARK_GLYPH`, precisely so the words and the thing
- * that paid are one object. A POP's is not: `harvestNote` opens with
- * "POPPED 5, total worth 12", and the first pop of a device opens with "YOUR
- * FIRST POP".
- *
- * Splitting on whitespace and calling the first token a glyph therefore drew
- * "POPPED" and "YOUR" in the 1.3em glyph face and left "5, total worth 12" as
- * the heading — on the two cards a player sees most, and on the very first one
- * they ever see. Found 2026-08-30 while making a pop's card brief.
- *
- * So the first token is a glyph only when it IS one, and the registries are
- * the authority on that. A lead with no mark keeps its whole first line.
+ * A claim's mark used to be prefixed into its own first line
+ * (`${glyph}  ${HEADING}`) and split back out here by whitespace, which is
+ * fine for a claim and wrong for everything else: a POP's lead is "POPPED 5,
+ * total worth 12" and a device's first pop is "YOUR FIRST POP", so "POPPED"
+ * and "YOUR" were drawn in the 1.3em mark face with the rest as the heading.
+ * That was patched by checking the token against the registries, and then made
+ * moot: a mark is an ICON now, which cannot live in a string at all, so it
+ * rides on `Said` and the heading is whatever the catalogue wrote, whole.
  */
-const MARKS = new Set<string>([
-  ...Object.values(LANDMARK_GLYPH),
-  ...Object.values(CONCEPT_MARK),
-  TILE_GLYPH,
-]);
 
 export type SaidCardProps = {
   readonly text: string;
@@ -64,24 +55,33 @@ export type SaidCardProps = {
    * a pop after their first. Goes on its own, and any tap sends it away.
    */
   readonly brief?: boolean | undefined;
+  /** The mark this receipt happened to, where it has one. A pop has none: the
+   *  board is the thing that popped. */
+  readonly icon?: IconName | undefined;
 };
 
-export function SaidCard({ text, rows, theme, s, onDismiss, onTerm, offer, brief }: SaidCardProps) {
+export function SaidCard({
+  text,
+  rows,
+  theme,
+  s,
+  onDismiss,
+  onTerm,
+  offer,
+  brief,
+  icon,
+}: SaidCardProps) {
   // The glyph and the heading are the receipt's own first line — `receipts.ts`
   // writes `{glyph}  {HEADING}` and the body under it. Split rather than
   // passed separately, so there is one place the sentence is composed and one
   // place it is taken apart.
   const [lead = '', ...rest] = text.split('\n');
-  const [first = '', ...words] = lead.trim().split(/\s+/);
-  const marked = MARKS.has(first);
-  const glyph = marked ? first : undefined;
-  const name = marked ? words.join(' ') : lead.trim();
 
   return (
     <Card
       id="said"
-      glyph={glyph}
-      name={name}
+      icon={icon}
+      name={lead.trim()}
       dismiss={offer === undefined ? s.ui.gotIt : s.claim.stay}
       onDismiss={onDismiss}
       // An offer has to be chosen, never waited out — so a receipt that makes

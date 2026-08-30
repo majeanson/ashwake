@@ -1,4 +1,5 @@
 import { type Colour } from '@content/tuning';
+import type { IconName } from '@theme/icons';
 import { place } from '@render/layout';
 import type { Orientation } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
@@ -22,7 +23,7 @@ import type { Strings } from '@text/Strings';
 
 /**
  * `hexes` is the whole language: a cell is a ground, optionally a ring, and
- * optionally a mark drawn on it — which between them say everything the
+ * optionally a number or an icon drawn on it — which between them say everything the
  * figures need to say. Every value maps to something the BOARD already
  * paints, so a figure cannot show a state the game does not have: the grounds
  * are the four terrains plus stone and wall, the rings are the stroke ladder's
@@ -36,14 +37,16 @@ import type { Strings } from '@text/Strings';
 export type FigureId = 'ripen' | 'destinations' | 'place' | 'pop' | 'rare' | 'stash';
 
 /** What a figure's cell is made of. `ground` is what it is; `ring` is what
- *  the stroke ladder would draw round it; `mark` is what would be printed on
- *  it. All three are the board's own vocabulary. */
+ *  the stroke ladder would draw round it; `mark` is the NUMBER printed on it
+ *  and `icon` the mark drawn on it. All four are the board's own vocabulary,
+ *  and `icon` is a registry name rather than a character since 2026-08-30. */
 export type FigCell = {
   readonly q: number;
   readonly r: number;
   readonly ground: Colour | 'stone' | 'wall';
-  readonly ring?: 'legal' | 'ripe' | 'lit' | 'spent';
+  readonly ring?: 'legal' | 'ripe' | 'lit' | 'spent' | 'magic' | 'unique';
   readonly mark?: string;
+  readonly icon?: IconName;
   /** A preview number is faint where a ripe tile's worth is not — the same
    *  distinction `labelFor` makes on the board. */
   readonly faint?: boolean;
@@ -98,9 +101,9 @@ export const FIGURES: Record<FigureId, FigureSpec> = {
   // them is the whole navigation rule (`faint means spent`, 2026-08-27).
   destinations: {
     hexes: [
-      { q: 0, r: 0, ground: 'wall', ring: 'lit', mark: '✚' },
-      { q: 2, r: -1, ground: 'wall', ring: 'lit', mark: '★' },
-      { q: 1, r: 1, ground: 'stone', mark: '◈', faint: true },
+      { q: 0, r: 0, ground: 'wall', ring: 'lit', icon: 'cache' },
+      { q: 2, r: -1, ground: 'wall', ring: 'lit', icon: 'site' },
+      { q: 1, r: 1, ground: 'stone', icon: 'shrine', faint: true },
     ],
   },
 
@@ -129,13 +132,25 @@ export const FIGURES: Record<FigureId, FigureSpec> = {
     ],
   },
 
-  // RARE: what the section's last line promises — "a placed rare tile wears a
-  // star, so its power stays findable on a full map" — which was the only
-  // claim in the manual about something you can SEE that showed nothing.
+  /*
+   * RARE: what a placed rare actually looks like ON THIS BOARD (2026-08-30).
+   *
+   * It drew two stars, because Ashwake 1's 2D board printed a star on a placed
+   * rare and the figure was carried over with the rule. **This board has never
+   * done that.** `board/rings.ts` gives a rare tile a RING in its own rarity's
+   * colour and `board/relief.ts` stands it taller than its neighbours; there is
+   * no star anywhere in the 3D body, and the manual, the figure and
+   * `s.rareStar` all promised one for five stages.
+   *
+   * Found while replacing the symbol language with icons (Marc: "no emojis
+   * only phosphor icons or assets") — a figure whose mark had to be looked up
+   * is a figure whose claim gets read. The same class as the ♪ button the
+   * catalogue promised and the board did not have.
+   */
   rare: {
     hexes: [
-      { q: 0, r: 0, ground: 'blue', mark: '✦', tone: 'magic' },
-      { q: 1, r: 0, ground: 'yellow', mark: '✦', tone: 'unique' },
+      { q: 0, r: 0, ground: 'blue', ring: 'magic' },
+      { q: 1, r: 0, ground: 'yellow', ring: 'unique' },
       { q: 0, r: 1, ground: 'green' },
     ],
   },

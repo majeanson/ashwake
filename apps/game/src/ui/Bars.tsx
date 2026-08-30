@@ -1,3 +1,5 @@
+import type { IconName } from '@theme/icons';
+import { Icon } from './Icon';
 /**
  * Label, bar, number — a breakdown you can read at a glance (Stage 4,
  * 2026-08-29).
@@ -18,6 +20,9 @@
 
 export type Bar = {
   readonly label: string;
+  /** A mark drawn INSTEAD of the label, where the row already has one in the
+   *  game's vocabulary. `label` stays as the accessible name and the key. */
+  readonly icon?: IconName | undefined;
   readonly value: number;
   /** A CSS colour, normally `var(--tile-green)` and friends. Defaults to ink. */
   readonly paint?: string | undefined;
@@ -36,7 +41,9 @@ export function Bars({
       {heading !== undefined && <h3 className="fact-label">{heading}</h3>}
       {rows.map((row) => (
         <div key={row.label} className="bar-row">
-          <span className="fact-label bar-name">{row.label}</span>
+          <span className="fact-label bar-name">
+            {row.icon === undefined ? row.label : <Icon name={row.icon} title={row.label} />}
+          </span>
           <span className="bar-track">
             {/* Presentational: the number beside it is what a screen reader
                 reads, so the bar itself is not announced twice. */}

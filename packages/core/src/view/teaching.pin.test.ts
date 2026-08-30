@@ -86,12 +86,12 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       expect(out).toMatchSnapshot();
     });
 
-    it('pins every glossary entry’s terms, glyph and ink', () => {
+    it('pins every glossary entry’s terms, mark and ink', () => {
       expect(
         termed(s).map((e) => ({
           id: e.id,
           terms: lessonTerms(e, s),
-          glyph: e.glyph ?? null,
+          icon: e.icon ?? null,
           ink: e.ink ?? null,
         })),
       ).toMatchSnapshot();

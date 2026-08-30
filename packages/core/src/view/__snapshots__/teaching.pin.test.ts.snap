@@ -38,18 +38,18 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "pop · TUNING · daylight": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.",
   "pop · TUNING · settlement": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.",
   "pop · TUNING · torchlit": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.",
-  "rare · BARE_TUNING · daylight": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rare · BARE_TUNING · settlement": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rare · BARE_TUNING · torchlit": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rare · TUNING · daylight": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rare · TUNING · settlement": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rare · TUNING · torchlit": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rareUnique · BARE_TUNING · daylight": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rareUnique · BARE_TUNING · settlement": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rareUnique · BARE_TUNING · torchlit": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rareUnique · TUNING · daylight": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rareUnique · TUNING · settlement": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a star, so its power stays findable on a full map.",
-  "rareUnique · TUNING · torchlit": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a star, so its power stays findable on a full map.",
+  "rare · BARE_TUNING · daylight": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rare · BARE_TUNING · settlement": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rare · BARE_TUNING · torchlit": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rare · TUNING · daylight": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rare · TUNING · settlement": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rare · TUNING · torchlit": "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rareUnique · BARE_TUNING · daylight": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rareUnique · BARE_TUNING · settlement": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rareUnique · BARE_TUNING · torchlit": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rareUnique · TUNING · daylight": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rareUnique · TUNING · settlement": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
+  "rareUnique · TUNING · torchlit": "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides. A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.",
   "relic · BARE_TUNING · daylight": "Relics are not points. They buy the NEXT run: they follow you out when a run ends, and THE SHOP on the end screen spends them, so every run starts stronger than the last.",
   "relic · BARE_TUNING · settlement": "Relics are not points. They buy the NEXT run: they follow you out when a run ends, and THE SHOP on the end screen spends them, so every run starts stronger than the last.",
   "relic · BARE_TUNING · torchlit": "Relics are not points. They buy the NEXT run: they follow you out when a run ends, and THE SHOP on the end screen spends them, so every run starts stronger than the last.",
@@ -107,10 +107,10 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
 }
 `;
 
-exports[`the teaching pins — every word, exactly as it reads today · en > pins every glossary entry’s terms, glyph and ink 1`] = `
+exports[`the teaching pins — every word, exactly as it reads today · en > pins every glossary entry’s terms, mark and ink 1`] = `
 [
   {
-    "glyph": "⬢",
+    "icon": "tile",
     "id": "ripe",
     "ink": null,
     "terms": [
@@ -118,7 +118,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "pop",
     "ink": null,
     "terms": [
@@ -126,7 +126,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "pocket",
     "ink": null,
     "terms": [
@@ -134,7 +134,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "worth",
     "ink": null,
     "terms": [
@@ -142,7 +142,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "✚",
+    "icon": "cache",
     "id": "cache",
     "ink": null,
     "terms": [
@@ -150,7 +150,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "★",
+    "icon": "site",
     "id": "site",
     "ink": null,
     "terms": [
@@ -158,7 +158,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "◈",
+    "icon": "shrine",
     "id": "shrine",
     "ink": null,
     "terms": [
@@ -166,7 +166,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "❖",
+    "icon": "territory",
     "id": "territory",
     "ink": null,
     "terms": [
@@ -174,7 +174,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "✦",
+    "icon": "find",
     "id": "find",
     "ink": null,
     "terms": [
@@ -183,7 +183,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "▨",
+    "icon": "stone",
     "id": "stone",
     "ink": null,
     "terms": [
@@ -191,7 +191,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "⬢",
+    "icon": "tile",
     "id": "rare",
     "ink": "ink-magic",
     "terms": [
@@ -199,7 +199,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "⬢",
+    "icon": "tile",
     "id": "rareUnique",
     "ink": "ink-unique",
     "terms": [
@@ -207,7 +207,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "✤",
+    "icon": "luck",
     "id": "luck",
     "ink": null,
     "terms": [
@@ -215,7 +215,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "◉",
+    "icon": "relic",
     "id": "relic",
     "ink": null,
     "terms": [
@@ -224,7 +224,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": "★",
+    "icon": "site",
     "id": "bounty",
     "ink": null,
     "terms": [
@@ -232,7 +232,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "stash",
     "ink": null,
     "terms": [
@@ -240,7 +240,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "sizeBonus",
     "ink": null,
     "terms": [
@@ -463,18 +463,18 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "pop · TUNING · daylight": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.",
   "pop · TUNING · settlement": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.",
   "pop · TUNING · torchlit": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.",
-  "rare · BARE_TUNING · daylight": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rare · BARE_TUNING · settlement": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rare · BARE_TUNING · torchlit": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rare · TUNING · daylight": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rare · TUNING · settlement": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rare · TUNING · torchlit": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rareUnique · BARE_TUNING · daylight": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rareUnique · BARE_TUNING · settlement": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rareUnique · BARE_TUNING · torchlit": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rareUnique · TUNING · daylight": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rareUnique · TUNING · settlement": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
-  "rareUnique · TUNING · torchlit": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte une étoile, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rare · BARE_TUNING · daylight": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rare · BARE_TUNING · settlement": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rare · BARE_TUNING · torchlit": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rare · TUNING · daylight": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rare · TUNING · settlement": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rare · TUNING · torchlit": "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rareUnique · BARE_TUNING · daylight": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rareUnique · BARE_TUNING · settlement": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rareUnique · BARE_TUNING · torchlit": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rareUnique · TUNING · daylight": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rareUnique · TUNING · settlement": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
+  "rareUnique · TUNING · torchlit": "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés. Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.",
   "relic · BARE_TUNING · daylight": "Les reliques ne sont pas des points. Elles achètent la PROCHAINE partie : elles te suivent quand une partie finit, et LA BOUTIQUE de l’écran de fin les dépense, alors chaque partie démarre plus fort que la précédente.",
   "relic · BARE_TUNING · settlement": "Les reliques ne sont pas des points. Elles achètent la PROCHAINE partie : elles te suivent quand une partie finit, et LA BOUTIQUE de l’écran de fin les dépense, alors chaque partie démarre plus fort que la précédente.",
   "relic · BARE_TUNING · torchlit": "Les reliques ne sont pas des points. Elles achètent la PROCHAINE partie : elles te suivent quand une partie finit, et LA BOUTIQUE de l’écran de fin les dépense, alors chaque partie démarre plus fort que la précédente.",
@@ -532,10 +532,10 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
 }
 `;
 
-exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins every glossary entry’s terms, glyph and ink 1`] = `
+exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins every glossary entry’s terms, mark and ink 1`] = `
 [
   {
-    "glyph": "⬢",
+    "icon": "tile",
     "id": "ripe",
     "ink": null,
     "terms": [
@@ -543,7 +543,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "pop",
     "ink": null,
     "terms": [
@@ -552,7 +552,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "pocket",
     "ink": null,
     "terms": [
@@ -560,7 +560,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "worth",
     "ink": null,
     "terms": [
@@ -568,7 +568,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "✚",
+    "icon": "cache",
     "id": "cache",
     "ink": null,
     "terms": [
@@ -576,7 +576,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "★",
+    "icon": "site",
     "id": "site",
     "ink": null,
     "terms": [
@@ -584,7 +584,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "◈",
+    "icon": "shrine",
     "id": "shrine",
     "ink": null,
     "terms": [
@@ -592,7 +592,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "❖",
+    "icon": "territory",
     "id": "territory",
     "ink": null,
     "terms": [
@@ -600,7 +600,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "✦",
+    "icon": "find",
     "id": "find",
     "ink": null,
     "terms": [
@@ -609,7 +609,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "▨",
+    "icon": "stone",
     "id": "stone",
     "ink": null,
     "terms": [
@@ -617,7 +617,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "⬢",
+    "icon": "tile",
     "id": "rare",
     "ink": "ink-magic",
     "terms": [
@@ -625,7 +625,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "⬢",
+    "icon": "tile",
     "id": "rareUnique",
     "ink": "ink-unique",
     "terms": [
@@ -633,7 +633,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "✤",
+    "icon": "luck",
     "id": "luck",
     "ink": null,
     "terms": [
@@ -641,7 +641,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "◉",
+    "icon": "relic",
     "id": "relic",
     "ink": null,
     "terms": [
@@ -650,7 +650,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": "★",
+    "icon": "site",
     "id": "bounty",
     "ink": null,
     "terms": [
@@ -658,7 +658,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "stash",
     "ink": null,
     "terms": [
@@ -666,7 +666,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "glyph": null,
+    "icon": null,
     "id": "sizeBonus",
     "ink": null,
     "terms": [
