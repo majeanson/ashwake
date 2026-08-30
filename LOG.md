@@ -2158,3 +2158,89 @@ catches two boxes mid-crossfade.
 **Verified:** 1066 tests / 74 files, 78 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-six screens × four directions.
+
+### Session 26 — the menus stop losing each other, and the board gets its height back (2026-08-30)
+
+**Question:** two asks in one session. Marc: _"make sure all menus and
+overlapped menus on top are all navigable and backable and make sense
+(especially for More)"_, and then _"make sure our new hand tiles match
+correctly on mobile and desktop, same with luck and any number of tiles in
+hands. be thorough in ui/ux so we DON'T lose any height space and have maximum
+map."_
+
+**Answer to the first: two faults, both only reachable three panels deep.**
+
+**Twenty-three. A door onto a panel already in the stack did NOTHING.**
+`push` returned early when the id was open, so the board → `?` → MENU → MORE →
+HOW TO PLAY path left MORE on top and the button the player had just pressed
+appeared dead. "Open X" means "X is on top", so it RAISES now, with no history
+entry added — the stack already owns one for that panel and BACK still pops one
+layer.
+
+**Twenty-four. A scene change closed panels BY NAME, and the list had already
+missed four.** Four call sites ran `worlds.hide(); more.hide()`, which is
+exactly Ashwake 1's `resetShell()` — the hand-maintained list `ui/dialog.tsx`'s
+own docblock holds up as the thing React made unnecessary, noting that "the
+list had already missed three". Stepping into another world from three panels
+deep left the MANUAL standing over the new world's board; RESTART from the
+manual's MENU tab left MORE standing over a run that had just been thrown away.
+Every scene change calls `closeAll` now, which also hands the whole run of
+history entries back in ONE `go(-n)` — two `hide()` calls are two
+`history.back()`s a browser is free to coalesce.
+
+**Answer to the second: 37px of board on a four-card hand, and 111px on a
+six-card one.** Measured, at three viewport sizes, before and after:
+
+|                   | before | after   |
+| ----------------- | ------ | ------- |
+| 390×844, 4 cards  | 647    | **684** |
+| 390×844, 6 cards  | 573    | **684** |
+| 320×568, 6 cards  | 297    | **406** |
+| 1280×800, 6 cards | 539    | **632** |
+
+**THE HAND IS ONE ROW, whatever the count.** It wrapped at six (`3 × 2`), and
+six is the ordinary hand of any world that has woken two shrines — so most of a
+device's life was played against a two-row hand costing 60px of board. The wrap
+was bought for one thing and it was the right worry in 2026-08-27: six across
+is 58px a card, "too narrow for the ground's NAME". Two of the three channels a
+card speaks on have changed since: it is a baked HEX now with a Phosphor icon
+on it, so the picture carries the colour at any width, and the name scales with
+its own column (`calc(100vw / var(--hand-cols) / 7)`) instead of deciding the
+layout. **Six is the real maximum** — `draftWidth` 3 +1, `holdSlots` 1 +1, and
+OPEN HAND deals 5 with no stash — which is what makes one row safe, and
+`hand.test.ts` now pins the DIALS rather than the layout: if a future unlock
+could deal a seventh card, one row stops clearing the 44px tap floor on a 320px
+phone and the test says so before a hand does.
+
+**THE CONTROLS ARE ONE CENTRED MEASURE.** Stretched across a 1280px desktop,
+four cards came out 312px wide and 54px tall — a hand of letterboxes — and the
+purse drawer spanned the whole screen while the hand it belongs to did not,
+because it opens ABOVE the bar and is a sibling of `.controls` rather than a
+child. The hand, the action bar and the drawer share one 34rem measure now, so
+they line up as a block on every screen and a phone is simply the case where
+that measure is the whole width.
+
+**THE TOAST STOPPED PAYING RENT.** It is a live region, so it has to be in the
+document before its text changes — which had been read as "in the layout", and
+cost a permanent 22px band above the hand, empty most of the time, on every
+screen. Being in the DOCUMENT and being in the LAYOUT are different things: it
+is absolutely positioned over the board's bottom edge now, still present, still
+announced, and `:empty` when it has nothing to say. It sits clear of the camera
+cluster, which the first build did not — the buttons punched holes through the
+sentence.
+
+**And the action bar stopped growing a second line.** A crowded bar — POP, POP
+for points, TAKE, SACRIFICE and the purse, an ordinary late run — squeezed its
+buttons until their VALUES wrapped: 65px measured where an uncrowded bar is 44.
+Twenty-one pixels of board spent on a line break. Both lines hold their line and
+give font size instead, which is what a reader loses least by.
+
+**Twenty-five, found on the way past.** `→` in the purse's SACRIFICE row was the
+last symbol character left in the chrome after D10 took the rest — and it was a
+sentence assembled outside `text/`, which D4 forbids for the same reason the
+em-dash pass found `groundHead`: "becomes" is a word, and which word it is
+belongs to a language.
+
+**Verified:** 1064 tests / 74 files, 79 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
+twenty-six screens × four directions.

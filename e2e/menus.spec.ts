@@ -91,6 +91,70 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('a menu three deep is navigable, and a scene change empties the stack', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"make sure all menus and overlapped menus on top are all
+   * navigable and backable and make sense (especially for More)."* Two faults,
+   * and both are only reachable three panels deep, which is why neither had
+   * been seen.
+   *
+   * **A door onto a panel already in the stack did nothing.** `push` returned
+   * early if the id was open, so the manual → MENU → MORE → HOW TO PLAY path
+   * left MORE on top and the button the player just pressed appeared dead. It
+   * RAISES now: "open X" means "X is on top".
+   *
+   * **A scene change closed panels by NAME.** Four call sites ran
+   * `worlds.hide(); more.hide()`, which is Ashwake 1's `resetShell()` — a
+   * hand-maintained list that `ui/dialog.tsx`'s docblock says "had already
+   * missed three". This one had missed four: stepping into another world from
+   * three panels deep left the MANUAL open over the new world's board.
+   */
+  const errors = watchErrors(page);
+  const openIds = (): Promise<(string | null)[]> =>
+    page
+      .locator('[data-panel]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute('data-panel')));
+
+  await page.goto('/?taught=1&runs=5&place=12');
+  await begin(page);
+  await page.waitForTimeout(500);
+
+  // Three deep: the manual, MORE on it, and the manual asked for AGAIN.
+  await page.locator('.camera .help').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+  await panel(page, 'manual').locator('[data-go="more"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await panel(page, 'more').locator('[data-go="manual"]').click();
+
+  // The manual is what a tap in the middle of the screen would land on.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const el = document.elementFromPoint(195, 420);
+          return el?.closest('[data-panel]')?.getAttribute('data-panel') ?? null;
+        }),
+      { message: 'HOW TO PLAY did not raise the manual over MORE' },
+    )
+    .toBe('manual');
+
+  // And BACK still walks out one layer at a time.
+  await panel(page, 'manual').locator('.panel-back').click();
+  expect(await openIds(), 'BACK from a raised panel did not reveal the one under it').toEqual([
+    'more',
+  ]);
+
+  // Now three deep again, and step into another WORLD from the bottom of it.
+  await panel(page, 'more').locator('[data-go="worlds"]').click();
+  await panel(page, 'worlds').waitFor({ state: 'visible' });
+  await page.locator('[data-slot="2"]').click();
+  await expect
+    .poll(openIds, { message: 'a scene change left a panel standing over the new board' })
+    .toEqual([]);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('the manual draws the game’s own pictures, and lines them all up', async ({ page }) => {
   /*
    * Marc, 2026-08-30: *"in how to play we reuse the same visuals as in game for

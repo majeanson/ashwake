@@ -101,8 +101,10 @@ function wordFor(
     case 'forge':
       return s.ui.forge;
     case 'tithe':
-      return spend.relics === undefined
-        ? s.ui.sacrificeLuck
-        : `${s.ui.sacrificeLuck} → ${spend.relics}`;
+      // The catalogue's sentence, not an arrow glued between two facts by a
+      // component: "becomes" is a word, and which word it is belongs to a
+      // language (D4) — and `→` was the last symbol character left in the
+      // chrome after D10 took the rest.
+      return spend.relics === undefined ? s.ui.sacrificeLuck : s.ui.sacrificeLuckFor(spend.relics);
   }
 }

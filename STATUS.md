@@ -4,7 +4,44 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — a card stops being a box with a tile in
+Last checkpoint: **2026-08-30, last — the menus stop losing each other, and the
+board gets its height back.** Two asks: _"make sure all menus and overlapped
+menus on top are all navigable and backable and make sense"_, and _"be thorough
+in ui/ux so we DON'T lose any height space and have maximum map."_
+
+**The menus had two faults, both only reachable three panels deep.** A door
+onto a panel already in the STACK did nothing — `push` returned early, so
+board → `?` → MENU → MORE → HOW TO PLAY left MORE on top and the button
+appeared dead; it raises now. And a scene change closed panels BY NAME, which
+is Ashwake 1's `resetShell()` — the hand-maintained list `ui/dialog.tsx` holds
+up as the thing React made unnecessary, "and the list had already missed
+three". **This one had missed four**: stepping into another world from three
+panels deep left the MANUAL over the new board. Every scene change calls
+`closeAll` now, which also returns the history entries in one `go(-n)`.
+
+**The board got 37px back on a four-card hand and 111px on a six-card one**,
+measured at three viewport sizes. The hand is ONE ROW whatever the count: it
+wrapped at six, and six is the ordinary hand of any world with two shrines
+woken, so most of a device's life was played against a two-row hand. The wrap
+was bought to protect the ground's NAME, and two of the three channels a card
+speaks on have changed since — it is a baked hex with a Phosphor icon on it, so
+the name scales with its column instead of deciding the layout. Six is the real
+maximum (`hand.test.ts` pins the DIALS, not the layout, so a seventh card fails
+before a phone shows it).
+
+**The hand, the action bar and the purse share one centred 34rem measure**, so
+a desktop stops drawing 312px letterbox cards and a full-width price column.
+**The toast stopped paying rent**: a live region must be in the DOCUMENT before
+its text changes, which had been read as "in the layout" — 22px of permanent
+empty band. It floats over the board's bottom edge now. And the action bar
+stopped growing a second line when crowded: 65px measured where an uncrowded
+bar is 44.
+
+Verified: 1064 tests / 74 files, 79 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` across twenty-six
+screens × four directions.
+
+Previous checkpoint: **2026-08-30, last — a card stops being a box with a tile in
 it.** Marc: _"make sure unselected card tiles blend in with the game, no
 border, only the selected one."_ Every card sat in a bordered, panel-coloured
 rectangle with a hex inside it, so the hand read as a row of BOXES rather than

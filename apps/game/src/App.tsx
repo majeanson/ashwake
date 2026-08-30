@@ -86,7 +86,7 @@ import { nextLesson, told } from './shell/teaching';
 import { walk, walkToEnd } from './shell/walk';
 import { Boundary } from './ui/Boundary';
 import { Confirming } from './ui/Confirming';
-import { DialogStack, useAnyDialogOpen, useDoor } from './ui/dialog';
+import { DialogStack, useAnyDialogOpen, useDialogStack, useDoor } from './ui/dialog';
 import { PanelMenu } from './ui/Panel';
 import { useDocumentLocale, useThemeVars } from './ui/theme';
 import './ui/ui.css';
@@ -769,6 +769,27 @@ function Game() {
     return at === null ? null : { at, ring: distance(parse(at), { q: 0, r: 0 }) };
   }, [ledgers.worlds, slot]);
   const anyOpen = useAnyDialogOpen();
+  /**
+   * Leaving the menus, whatever is in them (2026-08-30).
+   *
+   * Marc: *"make sure all menus and overlapped menus on top are all navigable
+   * and backable and make sense."*
+   *
+   * Four places used to close panels by NAME — `worlds.hide(); more.hide()` —
+   * and `ui/dialog.tsx`'s own docblock says why that is the wrong shape: it is
+   * Ashwake 1's `resetShell()`, a hand-maintained list of things to re-hide on
+   * every scene change, and "the list had already missed three". **This one had
+   * already missed four.** Opening the manual from the board, going to its MENU
+   * tab, opening MORE, opening WORLDS and stepping into another world left the
+   * MANUAL open over the new world's board — because the manual was under the
+   * two panels the list knew about.
+   *
+   * A scene change closes the STACK, not a list of names. `closeAll` empties
+   * it and hands the whole run of history entries back in one go, which is also
+   * the only correct thing to do with the back button: two `hide()` calls are
+   * two `history.back()`s a browser may coalesce into one.
+   */
+  const leaveMenus = useDialogStack().closeAll;
 
   // What the game wants to say, if anything: a priority list rather than a
   // queue, so the first unmet moment fires and the rest stay armed.
@@ -1373,10 +1394,9 @@ ${s.view.harvest.firstPopWhen}`,
     const where = campFor(readWorld(activeSlot()));
     if (where === null) return;
     startRun(where);
-    worlds.hide();
-    more.hide();
+    leaveMenus();
     setStarted(true);
-  }, [startRun, worlds, more]);
+  }, [startRun, leaveMenus]);
 
   /**
    * Out of the ending, without starting another run.
@@ -1431,10 +1451,9 @@ ${s.view.harvest.firstPopWhen}`,
     );
     setLens(null);
     banked.current = null;
-    worlds.hide();
-    more.hide();
+    leaveMenus();
     setStarted(true);
-  }, [session, setDaily, today, worlds, more, forgetWorld]);
+  }, [session, setDaily, today, leaveMenus, forgetWorld]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
@@ -1453,11 +1472,10 @@ ${s.view.harvest.firstPopWhen}`,
       session.restart(seed, kept, memoryFor(next, seed), economyAt(next, seed));
       setLens(null);
       banked.current = null;
-      worlds.hide();
-      more.hide();
+      leaveMenus();
       setStarted(true);
     },
-    [session, setSlot, setDaily, worlds, more, progress.found, forgetWorld, startsFrom],
+    [session, setSlot, setDaily, leaveMenus, progress.found, forgetWorld, startsFrom],
   );
 
   const playing = started && !snap.hud.ended;
@@ -1642,6 +1660,29 @@ ${s.view.harvest.firstPopWhen}`,
           label={s.ui.board.label}
           keyHelp={s.ui.board.reach}
         />
+        {/*
+          What just happened, over the board rather than beside it (2026-08-30).
+
+          It stays a `<p>` and does not become a button, on purpose: a live
+          region has to be on the page BEFORE its text changes or nothing
+          announces it, and an element that appears and disappears with the note
+          is an element half of the readers here would miss. Its dismissal is a
+          tap, as it always was, and Escape when nothing is open.
+
+          It moved INSIDE the board host so it can be laid over the board's own
+          bottom edge (Marc: *"we DON'T lose any height space and have maximum
+          map"*). It was a permanent 22px band above the hand, empty most of the
+          time. Being in the DOCUMENT and being in the LAYOUT are different
+          things, and only the first is what a live region needs.
+
+          Over the board is also where the eye already is — which was the
+          argument for making a pop a card in the first place.
+        */}
+        {playing && (
+          <p className="toast" role="status" aria-live="polite" onClick={() => setNote(null)}>
+            {note}
+          </p>
+        )}
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
         {playing && (
           <Camera
@@ -1657,19 +1698,6 @@ ${s.view.harvest.firstPopWhen}`,
 
       {playing && (
         <>
-          {/* Two live regions: what just happened, and what to do next. The
-              stat row is deliberately neither. */}
-          {/*
-            The toast stays a `<p>` and does not become a button, on purpose.
-            A live region has to be on the page BEFORE its text changes or
-            nothing announces it, and an element that appears and disappears
-            with the note is an element half of the readers here would miss.
-            Its dismissal is a tap, as it always was, and now also Escape when
-            nothing is open — which is the keyboard's way to the same gesture.
-          */}
-          <p className="toast" role="status" aria-live="polite" onClick={() => setNote(null)}>
-            {note}
-          </p>
           {/*
             The GUIDE line is gone from over the hand (2026-08-29).
 
@@ -1837,8 +1865,12 @@ ${s.view.harvest.firstPopWhen}`,
                 label={s.ui.restart}
                 armed={`${s.ui.restart}?`}
                 onConfirm={() => {
+                  // The whole stack, not this panel: RESTART is on the manual's
+                  // MENU tab, and MORE opens from that same tab and sits over
+                  // it — so hiding only the manual left MORE standing on a run
+                  // that had just been thrown away.
                   newRun();
-                  manual.hide();
+                  leaveMenus();
                 }}
               />
             </PanelMenu>
@@ -1904,7 +1936,7 @@ ${s.view.harvest.firstPopWhen}`,
               session.restart(fresh, null, undefined, economyAt(at, fresh));
             }
             banked.current = null;
-            more.hide();
+            leaveMenus();
             setStarted(false);
           }}
           onRestored={() => {

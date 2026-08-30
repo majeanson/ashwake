@@ -495,6 +495,10 @@ export type Strings = {
     readonly redraw: string;
     readonly forge: string;
     readonly sacrificeLuck: string;
+    /** The same row once the purse holds enough to name what it would buy.
+     *  A SENTENCE rather than a component gluing an arrow between two facts:
+     *  "becomes" is a word, and which word it is belongs to a language (D4). */
+    readonly sacrificeLuckFor: (relics: number) => string;
     readonly tabs: {
       readonly menu: string;
       readonly start: string;

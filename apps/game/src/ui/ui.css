@@ -849,9 +849,42 @@ button[disabled] {
   min-height: 1.4rem;
 }
 
+/*
+ * The toast floats OVER the board rather than taking a strip of the screen
+ * (2026-08-30).
+ *
+ * Marc: *"be thorough in ui/ux so we DON'T lose any height space and have
+ * maximum map."* It is a live region, so it has to be in the document before
+ * its text changes or nothing announces it — which meant a permanent 22px
+ * band above the hand, empty most of the time, on every screen size. Being in
+ * the document and being in the LAYOUT are different things: it is absolutely
+ * positioned at the bottom of the board host now, still present, still
+ * announced, and costing nothing when it has nothing to say.
+ *
+ * Over the board it is talking about, which is also where the eye already is.
+ * The ground behind it is the board's, so the text carries the panel it is
+ * graded against with it.
+ */
 .toast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Clear of the camera cluster, which is pinned `var(--gap)` from the bottom
+     and a tap target tall. They overlapped on the first build and the buttons
+     punched holes through the sentence. */
+  bottom: calc(var(--tap) + var(--gap) * 2);
+  z-index: 5;
   color: var(--ink);
   white-space: pre-line;
+  text-align: center;
+  pointer-events: auto;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+}
+
+/* Nothing to say, nothing to see: an empty live region must not paint a band
+   across the bottom of the board. */
+.toast:empty {
+  display: none;
 }
 
 /* ---- the camera cluster ------------------------------------------------- */
@@ -911,25 +944,58 @@ button[disabled] {
  * and called it the single biggest readability change it ever made: held cards
  * moved INTO the hand and the actions became one bar.
  */
+/*
+ * The board gets the screen. Ashwake 1 went from ~53% to 69-73% on 2026-08-27
+ * and called it the single biggest readability change it ever made: held cards
+ * moved INTO the hand and the actions became one bar.
+ *
+ * **And the bar is one COLUMN on a wide screen** (2026-08-30, Marc: *"make
+ * sure our new hand tiles match correctly on mobile and desktop"*). Stretched
+ * across a desktop, four cards came out 312px wide and 54px tall — a hand of
+ * letterboxes — while the action bar's buttons drifted to the far corners of a
+ * 1280px row. Everything in here shares one centred measure now, so the hand,
+ * the actions and the purse line up as one block whatever the screen is, and a
+ * phone is the case where that measure is simply the whole width.
+ */
 .controls {
   background: var(--panel);
   border-top: 1px solid var(--panel-edge);
-  padding: var(--gap);
+  padding: 0.5rem var(--gap);
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: 0.4rem;
 }
 
+.controls > * {
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+/*
+ * ONE ROW, whatever the count (2026-08-30).
+ *
+ * `minmax(0, 7rem)` rather than `1fr`: a track takes a comfortable card width
+ * where there is room and shrinks as far as it must where there is not, so six
+ * cards fit across a 320px phone without folding to a second row — which cost
+ * 60 measured pixels of board — and four cards on a desktop stay card-sized
+ * instead of stretching to 312px each. `justify-content: center` keeps the row
+ * in the middle of the measure rather than hugging its left edge.
+ */
 .hand {
   display: grid;
-  grid-template-columns: repeat(var(--hand-cols, 4), 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 7rem);
+  justify-content: center;
   gap: 0.35rem;
 }
 
 .hand > button,
 .hand > .tile {
-  min-height: 3.4rem;
-  padding: 0.3rem 0.2rem;
+  /* Above the 44px tap floor with room for the hex, and no more: every
+     millimetre here is a millimetre the board does not get. */
+  min-height: 3.1rem;
+  padding: 0.25rem 0.15rem;
 }
 
 /*
@@ -993,7 +1059,25 @@ button[disabled] {
   gap: 0.1rem;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.8rem;
+  /*
+   * Sized from the CARD, not from the screen.
+   *
+   * `--hand-cols` is the number of cards in the row, so this is roughly "how
+   * wide is one card" — which is the only thing the name's legibility actually
+   * depends on. Three cards on a phone get the full size; six get a smaller
+   * one; a desktop is clamped by the ceiling rather than by the arithmetic.
+   * It is what lets the hand stay ONE ROW at six across (`screens/hand.ts`),
+   * which is worth 60px of board.
+   */
+  font-size: clamp(0.55rem, calc(100vw / var(--hand-cols, 4) / 7), 0.8rem);
+}
+
+/* The name is the half that gives when a card is narrow: the hex and its mark
+   already say the colour, and a clipped word teaches less than a small one. */
+.tile > span {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 /*
@@ -1074,23 +1158,36 @@ button[disabled] {
   align-items: stretch;
 }
 
+/*
+ * A verb over a payment, on TWO LINES and never four (2026-08-30).
+ *
+ * The bar is a flex row that does not wrap, so a crowded one — POP, POP for
+ * points, TAKE, SACRIFICE and the purse, which is an ordinary late run —
+ * squeezed every button until its VALUE wrapped instead. Measured at 65px
+ * where an uncrowded bar is 44: twenty-one pixels of board spent on a line
+ * break. Both lines hold their line now and give font size instead, which is
+ * the thing a reader loses least by.
+ */
 .act {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.1rem;
-  padding: 0.4rem 0.9rem;
+  gap: 0.05rem;
+  padding: 0.3rem 0.6rem;
+  min-width: 0;
 }
 
 .act-label {
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
-  font-size: 0.95rem;
+  font-size: clamp(0.8rem, 2.4vw, 0.95rem);
+  white-space: nowrap;
 }
 
 .act-value {
-  font-size: 0.7rem;
+  font-size: clamp(0.58rem, 1.8vw, 0.7rem);
   color: var(--ink-dim);
+  white-space: nowrap;
 }
 
 .purse-toggle {
@@ -1111,7 +1208,19 @@ button[disabled] {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-bottom: 0.35rem;
+  /*
+   * The same measure the hand and the action bar keep (2026-08-30).
+   *
+   * The drawer opens ABOVE the bar rather than inside it, so it is a sibling of
+   * `.controls` and the `.controls > *` cap does not reach it — on a 1280px
+   * desktop it spanned the whole width while the hand it belongs to was 544px,
+   * and a price column a screen wide is a price nobody can pair with its row.
+   * Marc: *"make sure our new hand tiles match correctly on mobile and desktop,
+   * same with luck."*
+   */
+  width: calc(100% - var(--gap) * 2);
+  max-width: 34rem;
+  margin: 0 auto 0.35rem;
   padding: 0.5rem;
   background: var(--panel);
   border: 1px solid var(--panel-edge-active);

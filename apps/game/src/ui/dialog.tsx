@@ -112,7 +112,26 @@ export function DialogStack({ children }: { readonly children: ReactNode }) {
   const push = useCallback(
     (id: string, opener: HTMLElement | null) => {
       openers.current.set(id, opener);
-      if (list.current.includes(id)) return;
+      /*
+       * Already open, but UNDER something: raise it (2026-08-30).
+       *
+       * This returned early, which meant a door onto a panel that happened to
+       * be lower in the stack did NOTHING — and there is a real path to it:
+       * open the manual from the board, go to its MENU tab, open MORE, then tap
+       * HOW TO PLAY. The manual is two layers down, MORE stays on top, and the
+       * button the player just pressed appears dead. Marc: *"make sure all
+       * menus and overlapped menus on top are all navigable."*
+       *
+       * "Open X" means "X is on top", so the raise is the honest reading. No
+       * history entry is pushed with it: the stack already owns one for this
+       * panel, and BACK still pops exactly one layer.
+       */
+      if (list.current.includes(id)) {
+        if (list.current.at(-1) !== id) {
+          setList([...list.current.filter((each) => each !== id), id]);
+        }
+        return;
+      }
       setList([...list.current, id]);
       // No URL change: the entry exists to be popped, not to name a screen.
       history.pushState({ ashwakePanels: list.current.length }, '', location.href);

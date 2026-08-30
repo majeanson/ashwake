@@ -572,6 +572,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     redraw: 'REDRAW',
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
+    sacrificeLuckFor: (relics) => `SACRIFICE LUCK FOR ${relics}`,
     tabs: { menu: 'MENU', start: 'EXPEDITION', play: 'PLAY', hand: 'HAND', after: 'AFTER' },
     language: 'LANGUAGE',
     languages: { 'fr-CA': 'FRANÇAIS', en: 'ENGLISH' },

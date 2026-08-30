@@ -1,34 +1,35 @@
 /**
- * How many cards a hand row takes (ported from Ashwake 1, 2026-08-27).
+ * How many cards a hand row takes — ALL of them (2026-08-30).
  *
- * Not `draft + stash`, which is what this body was doing and is wrong the
- * moment the stash unlocks: four dealt cards beside two slots is six across,
- * and six across on a 390px phone is 56px a card — wide enough for a thumb,
- * too narrow for the ground's NAME, and the name is one of the three channels
- * a card says its colour in (the other two are the mark and the fill).
+ * **One row, whatever the count.** Marc: *"be thorough in ui/ux so we DON'T
+ * lose any height space and have maximum map."* This used to wrap at six
+ * (`3 × 2`), which cost 60 measured pixels of board on a 390px phone — and a
+ * six-card hand is the ordinary state of any world that has woken two shrines,
+ * so most of a device's life was played with a two-row hand.
  *
- * So the rule is Marc's own, from the session where the hand and the stash
- * were merged into one row:
+ * The wrap was bought for one thing, and it was the right worry at the time:
+ * six across on a 390px phone is 58px a card, "too narrow for the ground's
+ * NAME, and the name is one of the three channels a card says its colour in".
+ * Two of those three have since changed. The card is the baked HEX now, and
+ * the mark on it is a Phosphor icon rather than a character — so the picture
+ * carries the colour at any width, and the name scales with its own column
+ * (`.tile-name` in `ui.css`, sized from `--hand-cols`) instead of being the
+ * thing that decides the layout.
  *
- * - **Five or fewer** — one row of exactly that many. The cards stay
- *   comfortably thumbable and the board keeps its height.
- * - **Six** — three across, two rows. His words: *"we can use 2x3 too"*.
- * - **Seven or eight** — four across, which is the widest row that still
- *   leaves a card readable.
- *
- * A second row costs about 79px of board, which is why the threshold is as
- * high as it is: *"we lost too much game space"* (Marc, 2026-08-27). The board
- * is the game; the hand is how you reach it.
+ * **Six is the real maximum**, which is what makes one row safe: `draftWidth`
+ * is 3 and the DRAFT unlock takes it to 4; `holdSlots` is 1 and the HOLD
+ * unlock takes it to 2. OPEN HAND deals 5 and removes the stash entirely, so
+ * it is 5. At six across, a card is 58px on a 390px phone and 46px on a 320px
+ * one — both above the 44px tap floor `e2e/targets.spec.ts` holds every
+ * control to, and `hand.test.ts` pins the arithmetic so a new dial cannot
+ * quietly push a row under it.
  *
  * Counted from the cards actually DRAWN — spacers included. A hand one card
- * short still occupies its slot (see `handCards`), so the grid does not
+ * short still occupies its slot (see `handSpacers`), so the grid does not
  * reshape under a thumb between a stash and the next deal.
  */
 export function handColumns(cards: number, held: number): number {
-  const total = cards + held;
-  if (total <= 5) return Math.max(1, total);
-  if (total === 6) return 3;
-  return 4;
+  return Math.max(1, cards + held);
 }
 
 /**
