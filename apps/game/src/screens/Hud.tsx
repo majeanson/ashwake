@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TUNING } from '@content/tuning';
+import { CONCEPT_MARK } from '@theme/tokens';
 import { statNote, type HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
 
@@ -95,9 +96,22 @@ function valueOf(id: StatId, hud: HudView): number | null {
 /**
  * The marks on the row.
  *
- * Short labels rather than sentences — `♦` for the purse and `↗` for reach are
- * Ashwake 1's, and the two words that ARE words follow the locale. Anything
- * longer than this belongs in the catalogue, and `statNote` is where it is.
+ * Short labels rather than sentences, and the two words that ARE words follow
+ * the locale. Anything longer belongs in the catalogue, and `statNote` is
+ * where it is.
+ *
+ * **LUCK is the registry's mark, not a lookalike** (2026-08-29, Marc: "reuse
+ * symbols, cards, etc."). `CONCEPT_MARK.luck` is `✤` and exists precisely
+ * because luck is one of the two currencies that follow a player between the
+ * board, the shop and the end screen — and this row was drawing `♦` instead,
+ * a second symbol for the thing the registry already names. The purse drawer,
+ * the shop and the end screen all speak `✤`; the stat row was the one place
+ * that did not.
+ *
+ * `↗` for reach and `$` for cost stay as they are: `tokens.ts` rules that
+ * marks are for cross-screen CONCEPTS and that stats stay words, so neither
+ * has a registry entry to reuse and neither should gain one for this row's
+ * sake alone.
  */
 export function statLabel(id: StatId, s: Strings): string {
   switch (id) {
@@ -106,7 +120,7 @@ export function statLabel(id: StatId, s: Strings): string {
     case 'points':
       return 'PTS';
     case 'luck':
-      return '♦';
+      return CONCEPT_MARK.luck;
     case 'map':
       return '↗';
     case 'cost':

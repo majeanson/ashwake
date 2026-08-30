@@ -325,14 +325,21 @@ test('the reward loop speaks: a pop pays out in words', async ({ page }) => {
   await expect(pop).toBeVisible();
   await pop.click();
 
-  // The pop paid out into the toast, or into a card if it also reached a
-  // rare claim. Either way it SAID something.
-  const spoke = await page
-    .locator('.toast, .card')
-    .first()
-    .textContent()
-    .catch(() => '');
-  expect((spoke ?? '').trim().length, 'a pop said nothing at all').toBeGreaterThan(10);
+  /*
+   * A pop pays out into a CARD, and the card waits for the cascade
+   * (2026-08-29, Marc: "make sure all pop as card, no text above tiles for
+   * explanations ... and points").
+   *
+   * It used to be a toast — a line in the strip between the board and the
+   * hand, arriving at the exact moment the eye is on the board watching the
+   * tiles thrown off it, and gone by the time it looks down. The accounting a
+   * harvest owes is worth reading, and worth reading after the thing it
+   * accounts for, so the card is raised once the leap has finished.
+   */
+  const card = page.locator('.card-scrim .card');
+  await expect(card, 'a pop did not raise its card').toBeVisible({ timeout: 4000 });
+  const spoke = (await card.textContent()) ?? '';
+  expect(spoke.trim().length, 'a pop said nothing at all').toBeGreaterThan(10);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

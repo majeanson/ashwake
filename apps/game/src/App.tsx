@@ -685,10 +685,36 @@ ${s.view.harvest.firstPopWhen}`,
         return;
       }
 
-      // A claim rare enough to change what you carry holds the screen; the
-      // rest go where every other passing sentence goes.
-      if (said.card) setSaidCard(said);
-      else setNote(said.text);
+      /*
+       * A POP is a card, always — never a line over the tiles.
+       *
+       * Marc, 2026-08-29: *"make sure all pop as card, no text above tiles for
+       * explanations"*, and then *"and points"*. A harvest is the loudest thing
+       * the board does and the one moment a player is owed a real accounting:
+       * what the pocket was worth, what it paid in tiles, what it scored, what
+       * the luck did. That was a toast — a line of prose in the strip between
+       * the board and the hand, at the exact moment the eye is on the board
+       * watching the cascade, gone by the time it looks down.
+       *
+       * Claims that already held the screen still do. Everything else — a tap
+       * that explains a hex, a spend's receipt — stays a toast, because those
+       * are answers to a question the player just asked and a modal for each
+       * would be a game that interrupts you for reading it.
+       *
+       * The card waits for the animation the same way the first pop does: the
+       * accounting is worth reading, and it is worth reading AFTER the thing
+       * it is accounting for.
+       */
+      const isPop = action.type === 'HARVEST';
+      if (said.card || isPop) {
+        const wait =
+          isPop && !reducedMotion
+            ? cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1)
+            : 0;
+        const shown = isPop ? { ...said, card: true } : said;
+        if (wait === 0) setSaidCard(shown);
+        else window.setTimeout(() => setSaidCard(shown), wait);
+      } else setNote(said.text);
     },
     [session, ledgers, s, features, theme, progress, setProgress, reducedMotion],
   );

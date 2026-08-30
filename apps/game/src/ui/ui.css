@@ -599,20 +599,34 @@ button[disabled] {
 
 /* ---- the stat row ------------------------------------------------------- */
 
+/*
+ * The stat row, rebuilt as CHIPS (2026-08-29).
+ *
+ * Marc: "header is ugly vs what we had, reuse symbols, cards, etc." It was a
+ * wrapped run of label-and-number pairs separated by 2px of air, on a flat
+ * panel — so six facts ran together into one grey band and nothing said where
+ * one stat ended and the next began. Ashwake 1's row read as a row of THINGS.
+ *
+ * Each stat is its own small card now, in the same language every other
+ * grouped thing on this chrome speaks: the panel ground, the panel edge, the
+ * card radius. Nothing new is invented for it — the border, the radius and the
+ * ink are the ones the cards, the legend and the purse already use.
+ */
 .hud {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.15rem;
-  padding: 0.25rem var(--gap);
-  background: var(--panel);
+  gap: 0.3rem;
+  padding: 0.35rem var(--gap);
+  background: var(--bg);
   border-bottom: 1px solid var(--panel-edge);
 }
 
 /* A stat is a button because every number can be asked about — but it should
    not LOOK like a control, or the row reads as six things to press. */
 .stat {
-  border: 0;
-  background: none;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  background: var(--panel);
   min-height: 0;
   min-width: 0;
   /* Below the 44px floor on purpose, and allowed: `statNote` is an
