@@ -287,6 +287,29 @@ export type Strings = {
   >;
   readonly tagline: string;
 
+  /**
+   * The hook: what this place is, why you go out, and why you come back
+   * (Marc, 2026-08-29 — *"we need a little story, a small hook for this game
+   * towards the settlement"*, and *"i want to go this way"*).
+   *
+   * Three sentences on the front door, under the tagline, and the ONLY story
+   * the game tells. It is the game's, not a direction's, which is what lets
+   * the four directions be one fiction rather than four: somebody stayed here
+   * and the plain took it back (settlement), you go out into that plain with a
+   * light (torchlit), and the survey is what you draw when you get home
+   * (daylight).
+   *
+   * **It promises nothing the game cannot do**, which is the rule this repo
+   * keeps having to re-learn: a field, a stall, a cut in the rock and a road
+   * are the four grounds a player is about to be dealt, and "more than it had
+   * yesterday" is the world's own memory of the ground you walked. No lore
+   * about who left, no vocabulary a lesson would then have to teach.
+   *
+   * A tuple rather than a paragraph so the door can space them as three lines
+   * and a missing one is a type error.
+   */
+  readonly story: readonly [string, string, string];
+
   readonly share: {
     readonly run: (name: string, pts: number, placements: number, arc: string) => string;
     readonly daily: (
@@ -511,6 +534,7 @@ export type Strings = {
         readonly lean: string;
         readonly view: string;
         readonly cards: string;
+        readonly hold: string;
         readonly mouse: string;
       };
     };

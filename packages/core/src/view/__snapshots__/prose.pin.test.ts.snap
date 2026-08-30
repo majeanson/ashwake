@@ -465,7 +465,12 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "Storage was full — your OTHER worlds were forgotten so this run could be saved. The world you are in is untouched.",
     ],
   ],
-  "tagline": "An expedition into a dark plane. Place, ripen, pop, and push on.",
+  "story": [
+    "Somebody stayed here once. The plain took it back.",
+    "You go out at dusk with a lamp and a handful of ground — a field, a stall, a cut in the rock, a road — and you lay it where it will pay.",
+    "What you carry home is never much. This place has more than it had yesterday.",
+  ],
+  "tagline": "A settlement at the edge of a dark plain. Place, ripen, pop, and push on.",
   "unlocks": [
     [
       "draft",
@@ -1083,7 +1088,12 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "Le stockage était plein — tes AUTRES mondes ont été oubliés pour que cette partie puisse être sauvegardée. Le monde où tu es est intact.",
     ],
   ],
-  "tagline": "Une expédition dans une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.",
+  "story": [
+    "Quelqu’un est resté ici, autrefois. La plaine a tout repris.",
+    "Tu sors au crépuscule avec une lampe et un peu de terrain — un champ, un étal, une entaille dans la pierre, un chemin — et tu le poses là où il rapporte.",
+    "Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a quand même plus qu’hier.",
+  ],
+  "tagline": "Un établissement au bord d’une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.",
   "unlocks": [
     [
       "draft",

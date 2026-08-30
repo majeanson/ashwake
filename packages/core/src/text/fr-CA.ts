@@ -465,7 +465,14 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
       note: 'Quelques notes discrètes quand tu récoltes et réclames. Le bouton ♪ sur le plateau est ce même interrupteur.',
     },
   },
-  tagline: 'Une expédition dans une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.',
+  // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
+  tagline:
+    'Un établissement au bord d’une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.',
+  story: [
+    'Quelqu’un est resté ici, autrefois. La plaine a tout repris.',
+    'Tu sors au crépuscule avec une lampe et un peu de terrain — un champ, un étal, une entaille dans la pierre, un chemin — et tu le poses là où il rapporte.',
+    'Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a quand même plus qu’hier.',
+  ],
 
   share: {
     run: (name, pts, placements, arc) =>
@@ -598,6 +605,7 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
         lean: 'R et F, ou Page précédente et Page suivante — incline la caméra.',
         view: '0 — le bouton de vue, sans aller le chercher.',
         cards: '1 à 8 — prend cette carte dans la main.',
+        hold: 'H — mets la carte choisie en RÉSERVE, ou reprends celle qui y est.',
         mouse:
           'Glisse avec le bouton droit, ou en tenant Majuscule, pour tourner et incliner. La roulette zoome.',
       },

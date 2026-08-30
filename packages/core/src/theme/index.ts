@@ -61,6 +61,18 @@ export const AUTO_THEME_ID = 'auto';
  * so a "high contrast light" would have nothing left to raise. The dark side
  * needs both because torchlit's whole argument is atmosphere, and atmosphere is
  * exactly what a player asking for more contrast is asking to be spared.
+ *
+ * **A gap this opens, written down rather than papered over (2026-08-29).**
+ * The default moved to `settlement`, and the two answers this function gives
+ * for a stated PREFERENCE did not: a device asking for more contrast still
+ * gets `torchlit-bright`, and a device asking for light still gets `daylight`
+ * — both of which are the plane, with the plane's ground names. So the player
+ * who needs contrast is the one player who does not get the fiction the front
+ * door just told them, and that is exactly the population this fork exists to
+ * serve. The honest fix is a bright settlement, which is a palette that has to
+ * pass the same budgets rather than a line here; until it exists this stays,
+ * because a readable board in the wrong fiction beats an unreadable one in the
+ * right one.
  */
 export function pickForScheme(prefersLight: boolean, prefersContrast: boolean): ThemeId {
   if (prefersLight) return 'daylight';
@@ -96,8 +108,34 @@ export function pickForScheme(prefersLight: boolean, prefersContrast: boolean): 
  * now the default only for a device that has not said otherwise. `auto` is what
  * a fresh phone stores, and `pickForScheme` sends it here only when the OS is
  * asking for neither light nor more contrast.
+ *
+ * ---
+ *
+ * **SETTLEMENT is the direction, chosen 2026-08-29 (D7 closed).** Marc, on
+ * seeing it drawn in its own figures: *"i want to go this way since its a
+ * strong theme and i feael like names of eahc color reveal what they do too."*
+ *
+ * That second clause is the argument, and it is a mechanical one rather than a
+ * taste one. FARM · MARKET · QUARRY · ROADS each name what their ground DOES —
+ * fields cluster, a market pays for difference, a quarry eats stone, a road
+ * pays for distance — where MOSS and EMBER name what their ground is made of
+ * and leave the rule to be taught separately. A direction whose names carry
+ * half the teaching is worth more than a direction that only sets a mood, and
+ * the game has spent its whole life trying to teach four powers in the first
+ * minute.
+ *
+ * Torchlit is not deleted and is not demoted from anything it was good at: it
+ * is one tap away in SETTINGS, it is still what the plane looks like at night,
+ * and the game's own story now says so out loud (`text/*.ts#story`) — somebody
+ * stayed here, the plain took it back, and you go out into it with a light.
+ * The fiction did not have to choose; the DOOR did.
+ *
+ * Reversing this is this one constant and the two launch surfaces that follow
+ * it (`index.html`'s `theme-color`, the manifest's `background_color`, and
+ * `scripts/social.ts`'s share card, all of which name a direction by hand
+ * because they run before any of this does).
  */
-export const DEFAULT_THEME_ID: ThemeId = 'torchlit';
+export const DEFAULT_THEME_ID: ThemeId = 'settlement';
 
 const BY_ID = new Map(THEMES.map((t) => [t.id, t]));
 

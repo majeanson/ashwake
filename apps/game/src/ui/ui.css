@@ -531,10 +531,41 @@ button[disabled] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /*
+   * Centred while it fits, scrollable from the top when it does not
+   * (2026-08-29).
+   *
+   * `justify-content: center` on a scrolling column clips its own top and
+   * cannot be scrolled back to it — the oldest trap in flexbox — and the story
+   * is what brought the door close enough to the bottom of a small phone to
+   * hit it: at 375×667 the content is 691px and the mark sat at -24px with
+   * `scrollTop` already 0. **`safe center` does not fix it here**: it was tried
+   * first, and this engine drops the declaration and keeps plain `center`,
+   * which was measured rather than assumed.
+   *
+   * Auto margins on the ends do what `safe center` promises, everywhere: while
+   * there is spare room the two autos split it and the column is centred; once
+   * there is not they resolve to zero, the column starts at its own padding,
+   * and every pixel is reachable.
+   *
+   * The end screen has had `overflow-y: auto` since Stage 3 for the same
+   * reason. The door is the one scene that never needed it, right up until it
+   * had something to say.
+   */
+  justify-content: flex-start;
+  overflow-y: auto;
   gap: var(--gap);
   padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
   text-align: center;
+}
+
+/* The two halves of the centring above. */
+.front-door > :first-child {
+  margin-top: auto;
+}
+
+.front-door > :last-child {
+  margin-bottom: auto;
 }
 
 .door-mark {
@@ -579,7 +610,31 @@ button[disabled] {
 
 .door-tagline {
   max-width: 22rem;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
+}
+
+/*
+ * The hook (2026-08-29). Three sentences, and they are the only story the game
+ * tells — so they get the body face at reading size rather than the tagline's
+ * one-line treatment, and the faint ink, because a story a stranger is free to
+ * skip must never compete with BEGIN.
+ *
+ * The door had room for it: the shot set has always shown a wide empty band
+ * above the mark and below the menu. It is capped at 24rem so a line never
+ * runs the width of a tablet, and the last line carries the space to BEGIN.
+ */
+.door-story {
+  max-width: 24rem;
+  margin: 0 0 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+}
+
+.door-story p {
+  margin: 0;
 }
 
 /* The one loud way in. Everything else on this screen is quiet. */

@@ -216,6 +216,22 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       }).toMatchSnapshot();
     });
 
+    /*
+     * The tagline and the story were RE-RECORDED on 2026-08-29, deliberately
+     * and once — the only two entries here that have ever moved.
+     *
+     * `CLAUDE.md`: "The English snapshots are never re-recorded silently; the
+     * French ones are Marc's review surface." This is the not-silent version.
+     * Marc chose the settlement as the direction (`DECISIONS.md` D7, closed),
+     * so the game's frame moved from "an expedition into a dark plane" to a
+     * place somebody stayed in — and the tagline is the one sentence that
+     * states the frame, copied by hand into `index.html` and the manifest for
+     * the crawler that never runs the bundle.
+     *
+     * The VERBS did not move. "Place, ripen, pop, and push on" is the
+     * glossary's (D4.3) and is what the player actually does; only the clause
+     * in front of it changed. The story is new rather than moved.
+     */
     it('pins the small labels: goals, unlocks, the shed ladder, features, the tagline', () => {
       expect({
         goals: GOALS.map((g) => [g.id, s.goal[g.id]]),
@@ -227,6 +243,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
           featureText(f.id, s).note,
         ]),
         tagline: s.tagline,
+        story: s.story,
       }).toMatchSnapshot();
     });
 

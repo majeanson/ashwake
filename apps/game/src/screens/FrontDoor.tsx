@@ -64,6 +64,23 @@ export function FrontDoor({
       <h1 className={lockup === null ? 'door-name' : 'door-name visually-hidden'}>{NAME}</h1>
       <p className="note door-tagline">{s.tagline}</p>
 
+      {/*
+        The hook (Marc, 2026-08-29: "we need a little story, a small hook for
+        this game towards the settlement").
+
+        Plain paragraphs rather than `Prose`, deliberately: every other piece of
+        text in the game runs the glossary matcher so a term is tappable
+        wherever it appears, and this is the one passage written to contain no
+        terms at all. A field and a road are not vocabulary a lesson has to
+        teach — they are what the four grounds ARE — and a term card opening
+        over the front door would answer a question nobody has asked yet.
+      */}
+      <div className="door-story">
+        {s.story.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+
       <button type="button" className="door-begin" data-door="begin" onClick={onBegin}>
         {resuming ? s.ui.resume : s.ui.begin}
       </button>

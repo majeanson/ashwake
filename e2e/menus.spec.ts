@@ -295,3 +295,52 @@ test('the worlds panel shows what this world has become', async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+/**
+ * The door still opens on a small phone (2026-08-29).
+ *
+ * The front door grew a three-sentence story on the day the settlement became
+ * the direction, and on a 375×667 phone that pushed it past the viewport: a
+ * flex column centred with `justify-content: center` clips its own top and
+ * cannot be scrolled back to it, so the mark sat at -24px with `scrollTop`
+ * already at 0 and MORE hung below the fold with no way down. Auto margins on
+ * the ends centre it while it fits and let it start at its own padding when it
+ * does not.
+ *
+ * The smallest phone anybody still hands you, because that is where a screen
+ * that only just fits stops fitting. It runs at its own viewport rather than
+ * the suite's 390×844 and says why.
+ */
+test('the front door fits the smallest phone, and scrolls when it does not', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/?seed=7');
+  await page.locator('[data-door="begin"]').waitFor({ state: 'visible' });
+
+  const box = await page.evaluate(() => {
+    const door = document.querySelector('.front-door');
+    const first = door?.firstElementChild;
+    if (!(door instanceof HTMLElement) || !(first instanceof HTMLElement)) return null;
+    return {
+      scrollTop: door.scrollTop,
+      top: first.getBoundingClientRect().top,
+      overflows: door.scrollHeight > door.clientHeight,
+      scrollable: getComputedStyle(door).overflowY,
+    };
+  });
+
+  // Nothing above the top edge while the door is scrolled to the top: that is
+  // the whole failure, and it is invisible to a test that only asks whether a
+  // control exists.
+  expect(box?.scrollTop).toBe(0);
+  expect(box?.top ?? -1).toBeGreaterThanOrEqual(0);
+  // And when it does overflow, there has to be a way down.
+  if (box?.overflows === true) expect(box.scrollable).toBe('auto');
+
+  // Every way off the door is still reachable.
+  await page.locator('[data-door="how"]').scrollIntoViewIfNeeded();
+  await page.locator('[data-door="more"]').scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-door="more"]')).toBeVisible();
+
+  expect(errors).toEqual([]);
+});

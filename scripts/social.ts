@@ -1,8 +1,20 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import sharp from 'sharp';
-import { TORCHLIT } from '../packages/core/src/theme/themes/torchlit';
+import { SETTLEMENT } from '../packages/core/src/theme/themes/settlement';
 import { hex } from '../packages/core/src/theme/tokens';
+
+/**
+ * The share card wears whatever the front door wears (2026-08-29).
+ *
+ * Named `T` and bound once, rather than reading `DEFAULT_THEME_ID` through the
+ * registry: this file also reads the direction's baked terrain PNGs off disk,
+ * so the direction has to be a static import either way, and a hand-written
+ * name here that disagrees with the default is exactly the drift that left
+ * `og-image.png` shipping a board nobody plays. When the default moves, this
+ * import moves with it — `theme/index.ts#DEFAULT_THEME_ID` says so.
+ */
+const T = SETTLEMENT;
 
 /**
  * Bake the social preview: a static 1200×630 PNG (`og:image`'s own aspect
@@ -14,10 +26,10 @@ import { hex } from '../packages/core/src/theme/tokens';
  * shows no gameplay. The name still travels in `og:title` under the image,
  * so the picture spends every pixel on what playing looks like.
  *
- * Composed as one SVG string over torchlit's own tokens and the SAME baked
- * terrain art the live board serves (`public/assets/torchlit/*.png`,
+ * Composed as one SVG string over the shipping direction’s own tokens and the SAME baked
+ * terrain art the live board serves (`public/assets/settlement/*.png`,
  * embedded as data URIs), rasterised by sharp like `scripts/icons.ts`.
- * Flat-top hexes, because torchlit's `orientation` is flat — the scene has
+ * Flat-top hexes, because the direction’s `orientation` is flat — the scene has
  * to wear the board's real facing. Deterministic: fixed layout, no
  * randomness, regenerable byte-for-byte.
  *
@@ -32,16 +44,16 @@ const at = (p: string): string =>
 const W = 1200;
 const H = 630;
 
-const bg = hex(TORCHLIT.board.background);
-const vignette = hex(TORCHLIT.board.vignette?.colour ?? TORCHLIT.board.background);
-const ripe = hex(TORCHLIT.board.ripeEdge);
-const homeRing = hex(TORCHLIT.board.home?.ring ?? TORCHLIT.ink.accent);
-const accent = hex(TORCHLIT.ink.accent);
-const magic = hex(TORCHLIT.ink.magic);
-const unique = hex(TORCHLIT.ink.unique);
+const bg = hex(T.board.background);
+const vignette = hex(T.board.vignette?.colour ?? T.board.background);
+const ripe = hex(T.board.ripeEdge);
+const homeRing = hex(T.board.home?.ring ?? T.ink.accent);
+const accent = hex(T.ink.accent);
+const magic = hex(T.ink.magic);
+const unique = hex(T.ink.unique);
 
 const art = (slot: string): string =>
-  `data:image/png;base64,${readFileSync(at(`assets/torchlit/${slot}.png`)).toString('base64')}`;
+  `data:image/png;base64,${readFileSync(at(`assets/${T.id}/${slot}.png`)).toString('base64')}`;
 const TERRAIN = {
   green: art('terrain.green'),
   yellow: art('terrain.yellow'),
@@ -96,7 +108,7 @@ const FOG: ReadonlyArray<{ q: number; r: number; a: number }> = [
   { q: 5, r: 1, a: 0.22 },
   { q: 6, r: 0, a: 0.15 },
 ];
-const emptyFill = '#241e17'; // a shade over torchlit `empty`, so memory reads through the dark
+const emptyFill = '#241e17'; // a shade over the direction’s `empty`, so memory reads through the dark
 
 // Beacons past the light: small hex rings with a soft halo, one per ring
 // colour a destination actually wears — gold for a cache, violet for

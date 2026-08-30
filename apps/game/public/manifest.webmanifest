@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Ashwake",
   "short_name": "Ashwake",
-  "description": "Une expédition dans un plan obscur. Pose, mûris, récolte, et pousse plus loin.",
+  "description": "Un établissement au bord d’une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.",
   "lang": "fr-CA",
   "dir": "ltr",
   "categories": ["games"],
@@ -10,8 +10,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0806",
-  "theme_color": "#0a0806",
+  "background_color": "#14100c",
+  "theme_color": "#14100c",
   "icons": [
     {
       "src": "/icon-192.png",

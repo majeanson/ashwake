@@ -87,10 +87,15 @@ describe('the registry', () => {
     // Not a style preference, in either direction. For eleven sessions this
     // asserted `placeholder`, because Gate E is "no art direction until A–D
     // pass" and a default IS the decision. The gate opened on 2026-08-15 and
-    // the decision is torchlit (LOG.md, Session 15). If this test fails
+    // the decision was torchlit (LOG.md, Session 15). If this test fails
     // because the default moved again, the ledger should have moved first.
-    expect(DEFAULT_THEME_ID).toBe('torchlit');
-    expect(resolveTheme(null).id).toBe('torchlit');
+    //
+    // It moved on 2026-08-29 and the ledger did move first: Marc chose
+    // SETTLEMENT (`DECISIONS.md` D7, closed), for the reason its own names
+    // give — FARM · MARKET · QUARRY · ROADS each say what their ground does,
+    // where MOSS and EMBER say what theirs is made of.
+    expect(DEFAULT_THEME_ID).toBe('settlement');
+    expect(resolveTheme(null).id).toBe('settlement');
   });
 
   // Four colours a player must tell apart in half a second cannot be four

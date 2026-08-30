@@ -438,7 +438,13 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
       note: 'A few quiet notes as you pop and claim. The ♪ button on the board is this switch.',
     },
   },
-  tagline: 'An expedition into a dark plane. Place, ripen, pop, and push on.',
+  // The frame moves, the verbs do not: those are the glossary's (D4).
+  tagline: 'A settlement at the edge of a dark plain. Place, ripen, pop, and push on.',
+  story: [
+    'Somebody stayed here once. The plain took it back.',
+    'You go out at dusk with a lamp and a handful of ground — a field, a stall, a cut in the rock, a road — and you lay it where it will pay.',
+    'What you carry home is never much. This place has more than it had yesterday.',
+  ],
 
   share: {
     run: (name, pts, placements, arc) =>
@@ -543,8 +549,6 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     howToPlay: 'HOW TO PLAY',
-    /** The camera cluster's third control, shown only once the board has been
-     *  turned or leaned away from the angle its direction opens at. */
     perkFound: (name) => `A FIND — you carry ${name} now.`,
     woke: (what) => `WOKE — ${what}`,
     theMap: 'THE GROUND YOU WALKED',
@@ -556,6 +560,8 @@ Nothing new inside — a find grants only what you do not already carry, and onl
         'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
       ],
     },
+    /** The camera cluster. `home` is its third control, shown only once the
+     *  board has been turned or leaned away from the angle it opens at. */
     camera: { fit: 'FIT', here: 'HERE', flat: 'FLAT', home: 'DEFAULT' },
     board: {
       label: 'The board',
@@ -571,6 +577,7 @@ Nothing new inside — a find grants only what you do not already carry, and onl
         lean: 'R and F, or Page Up and Page Down — lean the camera back and forward.',
         view: '0 — the view button, without reaching for it.',
         cards: '1 to 8 — pick up that card from the hand.',
+        hold: 'H — stash the card you are holding, or take the stashed one back.',
         mouse: 'Drag with the right button, or with Shift held, to turn and lean. The wheel zooms.',
       },
     },
