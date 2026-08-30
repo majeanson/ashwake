@@ -4,6 +4,7 @@ import { rngNext, stream } from '@engine/rng';
 import { homeOf } from '@engine/rules';
 import type { GameState } from '@engine/state';
 import { REARM, type GoalId } from '@content/goals';
+import type { Tuning } from '@content/tuning';
 import { PERKS, type PerkId } from './progress';
 
 // (The module's own ORIGIN constant went with `mergeRun`'s origin-anchored
@@ -154,6 +155,33 @@ export const unlockLabel = (id: UnlockId, s: Strings): string => s.unlock[id];
 /** The unlocks a world has earned, in ledger order. */
 export const unlockedBy = (world: WorldMemory): readonly string[] =>
   UNLOCKS.slice(0, world.shrines.length).map((u) => u.id);
+
+/**
+ * What those unlocks DO — the four that are tuning dials.
+ *
+ * Ashwake 1's `applyUnlocks`, carried over verbatim (`session.ts`), and it
+ * had no counterpart here at all: `unlockedBy` was read three times in this
+ * body and every one of them only printed a label. A shrine announced DRAFT,
+ * the toast said so, the atlas listed it, and the hand stayed four cards wide
+ * for the rest of the world's life.
+ *
+ * CAMP is deliberately absent and always was: it gates the BEGIN AT CAMP door
+ * rather than a number, and `newRun`'s `wakeAt` does the rest.
+ *
+ * Additive and multiplicative rather than absolute, so this composes with
+ * `applyProgress` on top — a shrine and an upgrade compound instead of one
+ * overwriting the other.
+ */
+export function applyUnlocks(base: Tuning, unlocked: readonly string[]): Tuning {
+  let t = base;
+  if (unlocked.includes('draft')) t = { ...t, draftWidth: t.draftWidth + 1 };
+  if (unlocked.includes('hold')) t = { ...t, holdSlots: t.holdSlots + 1 };
+  if (unlocked.includes('luck')) {
+    t = { ...t, magicChance: t.magicChance * 2, uniqueChance: t.uniqueChance * 2 };
+  }
+  if (unlocked.includes('reach')) t = { ...t, beaconHorizon: t.beaconHorizon * 2 };
+  return t;
+}
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);

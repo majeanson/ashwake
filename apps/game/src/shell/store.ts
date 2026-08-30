@@ -120,7 +120,15 @@ export type Session = {
    * that was saved rather than replaying it: a replayed run is a run that can
    * disagree with the one that was played.
    */
-  readonly restart: (seed: number, from?: GameState | null, memory?: RunMemory) => void;
+  readonly restart: (
+    seed: number,
+    from?: GameState | null,
+    memory?: RunMemory,
+    /** The economy this run is played under — the shop, the perks and the
+     *  shrines, already folded together by `shell/economy.ts`. Absent keeps
+     *  the session's own, which is what every test wants and no screen does. */
+    tuning?: Tuning,
+  ) => void;
 };
 
 /**
@@ -139,6 +147,16 @@ export type Session = {
  */
 const open = (seed: number, tuning: Tuning, memory?: RunMemory): GameState =>
   newRun(seed, tuning, memory?.claimed ?? [], memory?.finds ?? [], null, memory?.rearmed ?? {});
+
+/*
+ * The economy is per RUN, not per session (2026-08-30).
+ *
+ * A session is built once and lives for the life of the page, so a `tuning`
+ * fixed at construction could never see a relic spent in the shop between one
+ * run and the next — which is the entire point of spending it. `restart`
+ * takes the new one, and the session remembers it so a resumed snapshot and
+ * the next `restart(seed)` agree.
+ */
 
 export function createSession(opts: {
   readonly seed: number;
@@ -162,7 +180,7 @@ export function createSession(opts: {
    *  shrine is reached. Absent means there is nowhere onward. */
   readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
 }): Session {
-  const tuning = opts.tuning ?? TUNING;
+  let tuning = opts.tuning ?? TUNING;
   let state = opts.resume ?? open(opts.seed, tuning, opts.memory);
   let harvestAt: HexKey | null = null;
   let spotlight: Colour | null = null;
@@ -314,7 +332,8 @@ export function createSession(opts: {
       spotlight = colour;
       commit();
     },
-    restart(seed, from, memory) {
+    restart(seed, from, memory, next) {
+      if (next !== undefined) tuning = next;
       state = from ?? open(seed, tuning, memory);
       harvestAt = null;
       spotlight = null;

@@ -20,6 +20,7 @@ import {
 } from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
 import { newWorld, unlockedBy, unlockLabel, type UnlockId } from '@meta/world';
+import { economyFor } from './shell/economy';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
@@ -56,6 +57,7 @@ import {
   readRun,
   readTimeline,
   readWorld,
+  readProgress,
   memoryFor,
   worldSeedFor,
   onShed,
@@ -134,6 +136,25 @@ const CLAIM_HOLD_MS = 900;
 
 /** A number off the query string, where zero is a real answer and `?x=` alone
  *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
+/**
+ * The economy a run in this slot plays under, read off the disk.
+ *
+ * Fresh on every call rather than captured, because the whole point of the
+ * shop is that the run AFTER a purchase is different from the one before it —
+ * and the session that opens it was built once, at boot, long before the
+ * relic was spent.
+ *
+ * A seed that is not the slot's world is a detour and plays the plain
+ * economy: a replay scored under this device's upgrades would not be a replay
+ * of anything, and `economyFor` is where that is decided rather than here.
+ */
+const economyAt = (at: Slot, seed: number) => {
+  const world = readWorld(at);
+  return world === null || world.worldSeed !== seed
+    ? economyFor({ kind: 'detour' })
+    : economyFor({ kind: 'home', world, progress: readProgress() });
+};
+
 function dial(params: URLSearchParams, name: string, fallback: number): number {
   const raw = params.get(name);
   if (raw === null || raw.trim() === '') return fallback;
@@ -354,6 +375,15 @@ function Game() {
     const made = createSession({
       seed,
       detour,
+      /*
+       * THE ECONOMY, which this body had never once handed over (2026-08-30).
+       *
+       * `createSession` has taken a `tuning` since Stage 1 and no caller
+       * ever passed one, so every run played the bare `TUNING`: the shop's
+       * upgrades, every perk found or worn, and all four shrine unlocks were
+       * announced and changed nothing. See `shell/economy.ts`.
+       */
+      tuning: opening !== null ? economyFor({ kind: 'daily' }) : economyAt(slot, seed),
       // A daily is walled off by construction; everything else asks the world,
       // and `memoryFor` hands back nothing when the seed is not its own — so
       // a shared link borrows a geography and never this device's history.
@@ -1022,7 +1052,9 @@ ${s.view.harvest.firstPopWhen}`,
 
     setSaidCard(null);
     banked.current = snap.state;
-    session.restart(seed);
+    // The world it crosses INTO — freshly minted, so no shrine is woken there
+    // yet, but the purse and the perks it carried come with it.
+    session.restart(seed, null, undefined, economyAt(slot, seed));
     setLens(null);
     setStarted(true);
   }, [snap.state, ledgers, slot, progress, setProgress, keeper, session]);
@@ -1048,7 +1080,7 @@ ${s.view.harvest.firstPopWhen}`,
      */
     const at = activeSlot();
     const seed = worldSeedFor(at);
-    session.restart(seed, null, memoryFor(at, seed));
+    session.restart(seed, null, memoryFor(at, seed), economyAt(at, seed));
     setLens(null);
   }, [session, setDaily, progress.found]);
 
@@ -1091,7 +1123,15 @@ ${s.view.harvest.firstPopWhen}`,
   const today = useMemo(() => localToday(), []);
   const enterDaily = useCallback(() => {
     setDaily(today);
-    session.restart(dailySeed(today), readDailyRun(today));
+    // No ledger, so no unlocks and no relics — and its shrines are rewritten
+    // into caches and sites, because a door that opens nothing is worse than
+    // no door at all.
+    session.restart(
+      dailySeed(today),
+      readDailyRun(today),
+      undefined,
+      economyFor({ kind: 'daily' }),
+    );
     setLens(null);
     banked.current = null;
     worlds.hide();
@@ -1113,7 +1153,7 @@ ${s.view.harvest.firstPopWhen}`,
       // that did not, so stepping from world 1 to world 2 changed the name on
       // the door and not the ground behind it.
       const seed = worldSeedFor(next);
-      session.restart(seed, kept, memoryFor(next, seed));
+      session.restart(seed, kept, memoryFor(next, seed), economyAt(next, seed));
       setLens(null);
       banked.current = null;
       worlds.hide();
@@ -1509,7 +1549,11 @@ ${s.view.harvest.firstPopWhen}`,
             setProgress(() => EMPTY_PROGRESS);
             // Every world is gone, so this mints one — the same door a phone
             // that has never played comes through.
-            session.restart(worldSeedFor(activeSlot()));
+            {
+              const at = activeSlot();
+              const fresh = worldSeedFor(at);
+              session.restart(fresh, null, undefined, economyAt(at, fresh));
+            }
             banked.current = null;
             more.hide();
             setStarted(false);
