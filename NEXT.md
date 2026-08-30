@@ -63,14 +63,77 @@ picture, and a shrine that unlocks nothing still lights up, still toasts, still
 lists itself on the end screen. Only the numbers disagreed and nothing read
 them. **Grepping for a consumer is not enough where the consumer is a number.**
 
-**CAMPS ARE STILL DEAD, and knowingly so.** `newRun`'s `wakeAt` — begin a
-run at the world's farthest territory — is passed `null` from the one place
-that could pass it (`shell/store.ts`'s `open`), because the unlock gates a
-BEGIN AT CAMP button in the door's WORLDS panel and that button does not exist
-in this body. The fifth shrine therefore wakes a door onto nothing. `camp` is
-deliberately absent from `applyUnlocks` for the same reason: it is not a dial.
-Ashwake 1's version is `session.ts:1244-1258` and it is small. This is the
-last piece of the world memory that has not crossed.
+**~~CAMPS ARE STILL DEAD~~ — DONE 2026-08-30** (`LOG.md` Session 21). The
+WORLDS panel has BEGIN AT CAMP, `campFor` carries Ashwake 1's conditions
+verbatim, `?camp=1` is read at boot, and `camp.test.ts` + `e2e/world.spec.ts`
+pin both halves. `camp` is still deliberately absent from `applyUnlocks`: it
+gates a door rather than a dial, and `economy.test.ts` pins that too so a later
+reading of "the fifth unlock does nothing" does not become a bug report.
+
+**SEVEN MORE INERT NUMBERS, found by building the instrument that could see
+them** (2026-08-30, `LOG.md` Session 21). All fixed; recorded here because they
+are the strongest case yet for this file's own warning, and because three of them
+were found by the instrument rather than by a grep — one of them in a SHOT:
+
+1. **The survey paid nothing.** `Goal.reward` — 25 to 40 relics a goal, five
+   goals — had no consumer anywhere. Detected, written into `goalsMet`, listed
+   on the end screen, never banked.
+2. **A found perk never reached the world.** Perks moved onto `WorldMemory` on
+   2026-08-26 and `encodeProgress` strips them from the device blob by
+   contract; nothing wrote the world's copy and nothing read it back. So a perk
+   died on the next reload and `economyFor` never saw one — the dials a worn
+   perk sets were never set.
+3. **`mergeRun` had no caller.** World memory was written only at `settle`, so
+   a shrine woken mid-run did not reach the atlas and a closed tab lost the
+   territory just claimed. Both were live bugs in Ashwake 1, both reintroduced.
+4. **`?taught=1` erased the other histories.** It handed `useDevice` a whole
+   `Progress` built on `EMPTY_PROGRESS`, so `?runs=300&taught=1` seeded a
+   purse, a build and a shelf and then threw all three away. The audit's
+   three-hundred-run shop photographed `0` relics.
+5. **The audit's own PLAYED device had stopped being played, that morning.**
+   `taught=1&end=1&seed=7` — and `?seed=` became a DETOUR when the world seed
+   was fixed, so the run banked nothing, the device stayed VIRGIN, `More` hides
+   SHOP and FAME on a virgin device, and three tests sat on a click that could
+   never land until the 180-second timeout. **They then kept their previous
+   run's screenshots**, so the report looked complete with three pictures a day
+   old. It plays on `?runs=1` now. The first of these found in the instrument
+   rather than in the game, which is the argument for the instrument having
+   tests of its own (`shell/fixture.test.ts`, `e2e/world.spec.ts`).
+6. **The atlas read `FINDS 6/5`** on a three-hundred-run world — found in a
+   SCREENSHOT rather than by a grep, which is the whole argument for the axis.
+   It counted find HEXES claimed against `PERKS.length`, the size of the perk
+   POOL: two different things wearing one slash, both expressions correct on
+   their own. Reachable in ordinary play by anyone who claims a sixth find.
+7. **The end screen's list of unlocks woken this run was always empty**, and
+   this was `mergeRun`'s missing caller wearing a different face: `wokeNow` read
+   the world off the DISK, which nothing had updated since the run began, so it
+   always equalled `unlocksAtStart`. The WOKE toast fired (it comes from the
+   receipts, which read the run's own state); the end screen's summary of what
+   the run CHANGED did not. It reads the live copy now.
+
+**THE SWEEP, item by item, so nobody has to re-derive it.** Every reward number
+`NEXT.md` listed, and where the test that watches it lives:
+
+| number                                      | proved by                                                                                                                                                                                                    |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `burnRelics`, `claimRelics`, `luckToRelics` | `engine/tilesonly.test.ts`, `finds.test.ts`; reaches the purse through `endingPayout` → `settle`, pinned in `shell/settle.test.ts`                                                                           |
+| `titheRate`                                 | `engine/tilesonly.test.ts`, and the row that spends it in `screens/purse.test.tsx`                                                                                                                           |
+| `GOALS[].reward` / `world.goalsMet`         | `shell/settle.test.ts` — **was inert**, see above                                                                                                                                                            |
+| the shed ladder                             | `shell/shed.test.ts`, called from `storage.ts`'s `write`                                                                                                                                                     |
+| `startingPerk`                              | `shell/homeworld.test.ts`                                                                                                                                                                                    |
+| `questBonus` (the bounty)                   | `engine/quest.test.ts`; reaches the player through `pointsSplit`'s `bySource.bounty` on the payout breakdown (`screens/payout.test.tsx`). Not a progression dial and never was — there is no ladder above it |
+| `rearmedSpent`                              | `meta/world.test.ts` for the roll, `shell/homeworld.test.ts` for it reaching a run's state                                                                                                                   |
+| the perk shelf                              | `shell/shelf.test.ts` — **was inert**, see above                                                                                                                                                             |
+| the world's live memory                     | `e2e/world.spec.ts` — **was inert**, see above                                                                                                                                                               |
+| the atlas's own fractions                   | `screens/atlas.test.tsx` — **was wrong**, see above                                                                                                                                                          |
+| the whole instrument                        | `shell/fixture.test.ts`, and `e2e/world.spec.ts` for what it renders                                                                                                                                         |
+
+**The one thing on that list with no test and no bug:** `meta/route.ts`'s
+`searchFor` and `HOME` still have no reader. `parseRoute` is read at boot for
+all three of its fields now, but those two are the pure statement of a link
+that `meta/share.ts` builds by hand — a duplicate rather than a gap, and
+`DECISIONS.md` D9 closes the only future that would have given them a caller.
+**They are a deletion, not a debt.**
 
 ## 1. Needs Marc, and only Marc
 
@@ -179,7 +242,11 @@ assertions, which is a palette sitting rather than a line of code.
 **Three concept questions the fiction cannot answer for itself.** Found
 reviewing the backstory against what a settlement player actually reads:
 
-1. **The powers are still named in the plane's words.** `text/*.ts` hard-codes
+1. **~~The powers are still named in the plane's words.~~ CLOSED 2026-08-29** by
+   Session 19b — the power words live in `Theme.powerNames` now, per direction
+   and per language, and `DECISIONS.md` D4.2 records the ruling. Kept struck
+   through because the ARGUMENT is the useful part and the ledger claimed
+   otherwise for a day. As it stood: `text/*.ts` hard-coded
    `colourWord: { green: CROWDS, yellow: COMPANY, red: ASH, blue: TIDE }`, and
    the rule lines say "· ash: stone beside red count as matches" and "· tide:
    +1 worth per N hexes from home". **ASH and TIDE are torchlit's GROUND
@@ -211,14 +278,14 @@ the same from every yaw and the camera now turns through all of them. Standing
 it up needs something to turn it toward the camera per instance. **A look
 question: is a hovering ring a shrine, or a doorway you can walk through?**
 
-**Not art, and it stops a run from ending: a production build crashes the end
-screen.** With the working tree as it stood on 2026-08-29 evening,
-`pnpm build` produces a bundle where `toMainMenu` is referenced and never
-declared — the minifier drops the `const`, an unminified build keeps it, and
-the end screen falls into the failure panel with `ReferenceError`. Reproduced
-twice, and `e2e/shots.spec.ts`'s "first minute" fails on it. Whoever owns that
-change owns this; it is recorded here because a stranger cannot finish a run
-while it is true.
+**~~Not art, and it stops a run from ending: a production build crashes the end
+screen.~~ NOT REPRODUCIBLE as of 2026-08-30** — checked rather than trusted,
+which is this file's own rule. `pnpm build` is clean and `e2e/shots.spec.ts`'s
+"first minute" passes against the production bundle, along with the other 68
+Playwright tests. `toMainMenu` is declared and referenced normally in
+`App.tsx`. Left in the file struck through rather than deleted because the
+symptom was reproduced twice when it was written: if it comes back, this is the
+paragraph that says what it looked like.
 
 **The French.** ≈250 sentences in Québec French, recorded into the snapshot
 files as the review surface, and still unread. The chrome gets built on that
@@ -281,21 +348,31 @@ stamped service worker, and an update the player TAPS rather than one taken out
 from under them. The colour lens is wired and pinned. `verify-deploy` now
 checks the install surface instead of owing it.
 
-**What is left of the original goal:**
+**What is left of the original goal — all but one item closed 2026-08-30:**
 
-- **S4's remainder:** the History-API router, and whether it is wanted at all.
-  `?seed=` links already work (`App.tsx` reads the seed at session build), and
-  every screen is a state change by ruling — so a router would buy BACK on a
-  panel and a shareable deep link, and cost the one invariant that has held
-  since Stage 2. Decide by looking, not by porting.
-- **The screen audit's third axis.** The harness exists and runs (`pnpm
-audit:screens`, fourteen screens × three directions); what it does not have
-  is DEVICE HISTORIES beyond `?taught=1` and `?end=1`. Five runs in and three
-  hundred runs in are now buildable, because persistence exists, and they are
-  where the hall of fame and the shop stop looking empty.
-- **The purse's spend actions** dispatch but nothing tests them.
+- **~~S4's remainder: the History-API router.~~ DECIDED, not ported**
+  (`DECISIONS.md` D9). Ashwake 1's router routes RUNS rather than panels and
+  rebuilds the session from the URL on `popstate` — right for an imperative
+  DOM shell, and a second authority on "what is on screen" here. Two of the
+  three things it buys already exist (every link opens at boot; SHARE is the
+  distribution mechanism, not the address bar). The third is real and is split
+  off below.
+- **~~The screen audit's third axis.~~ DONE** — `?runs=n` (`shell/fixture.ts`),
+  wired in at five, thirty and three hundred runs of one world seed.
+  Twenty-two screens × four directions now. It found a bug in its own first
+  run (§0, item 4).
+- **~~The purse's spend actions.~~ DONE** — `screens/purse.test.tsx`, each row
+  clicked and then its action put through `reduce` with a number checked.
+- **The BACK GESTURE on an open panel.** The one thing D9 says a router would
+  genuinely have bought, split off from it: on Android the system back gesture
+  leaves the site from on top of an open manual. It wants one history entry per
+  open dialog, owned by `ui/dialog.tsx` — the file that already knows the panel
+  stack — and no URL→scene table anywhere. Small, and worth its own question.
+  **Not before Session A:** it is a new global gesture.
 - **The atlas**, if it earns its place: it is on the "review rather than port"
-  list and no stranger has ever seen one.
+  list and no stranger has ever seen one. It is at least no longer photographed
+  empty — `worlds-thirty` and `worlds-many` in `audit-shots/` are what it looks
+  like with a world behind it.
 
 The prompt below still stands for the rest.
 

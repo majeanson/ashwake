@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { newRun } from '@engine/reduce';
+import { TUNING } from '@content/tuning';
 import { pickLocale } from '@content/locale';
 import { newWorld } from '@meta/world';
 import { stringsFor } from '@text/index';
@@ -155,5 +156,28 @@ describe('what a world lends the run it opens', () => {
     expect(returning.tiles, 'the world lent its ground and the run ignored it').toBeGreaterThan(
       fresh.tiles,
     );
+  });
+
+  /**
+   * REARMED LANDMARKS, the third rider — and the one whose absence is
+   * invisible.
+   *
+   * Marc, 2026-08-20: *"shrines and hidden finds should transform into either
+   * points or cache (randomized) per new run"*, so a veteran world's map keeps
+   * changing faces instead of filling up with spent stone. `rearmedSpent`
+   * rolls it, `memoryFor` carries it, and the reducer obeys the map — but a
+   * run that simply ignored the list would draw a board that looks completely
+   * normal. Only the numbers would differ.
+   */
+  it('rearms the landmarks this world has already spent', () => {
+    writeWorld(1, { ...newWorld(77), finds: ['6,-3', '8,1'], runs: 3 });
+    const lent = memoryFor(1, 77);
+    expect(Object.keys(lent.rearmed).length, 'nothing was reborn at all').toBeGreaterThan(0);
+    for (const kind of Object.values(lent.rearmed)) expect(['cache', 'site']).toContain(kind);
+
+    const returning = newRun(77, TUNING, lent.claimed, lent.finds, null, lent.rearmed);
+    // It reaches the run's own state, which is what makes it replay-honest:
+    // the same run resumed or re-derived agrees about what is out there.
+    expect(returning.rearmed).toEqual(lent.rearmed);
   });
 });

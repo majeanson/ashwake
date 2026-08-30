@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isLocale, pickLocale, type Locale } from '@content/locale';
 import type { FeatureId, FeatureSet } from '@meta/features';
-import type { Progress } from '@meta/progress';
+import { meet, TEACH_IDS, withWorldPerks, type Progress } from '@meta/progress';
 import { inheritShopLevels } from '@meta/shopLevels';
 import { AUTO_THEME_ID } from '@theme/index';
 import type { ThemeId } from '@theme/tokens';
@@ -16,6 +16,7 @@ import {
   writeFeatures,
   writeLocale,
   readShopLevels,
+  readWorld,
   writeProgress,
   writeShopLevels,
   writeTheme,
@@ -57,8 +58,9 @@ export type Device = {
 };
 
 export function useDevice(opts: {
-  /** `?taught=1` and friends override what the device remembers, for shots. */
-  readonly progress?: Progress | undefined;
+  /** `?taught=1`: a device that has met every lesson. It fills the teaching
+   *  ledger and touches nothing else — see the composite below. */
+  readonly taught?: boolean | undefined;
   readonly theme?: ThemeId | undefined;
   /**
    * A shared `?daily=` link opens THAT date rather than the world this device
@@ -87,19 +89,50 @@ export function useDevice(opts: {
   );
   const [features, setFeatures] = useState<FeatureSet>(readFeatures);
   /**
-   * The device's ledger, wearing THIS world's shop levels.
+   * The device's ledger, wearing THIS world's shop levels AND its perk shelf.
    *
-   * Relics, perks found and the teaching ledger are device facts — they follow
-   * the player. Upgrade LEVELS are a property of the world they were bought
-   * in, so a fresh world starts bare rather than inheriting a build three
-   * other worlds paid for, and the crossing can honestly say that what you
-   * bought stays behind. `inheritShopLevels` owns the one subtle case: a
-   * world that has never written a shop key predates the split and takes the
-   * device's legacy levels once, so no existing device loses its build.
+   * Relics and the teaching ledger are device facts — they follow the player.
+   * Upgrade LEVELS are a property of the world they were bought in, so a fresh
+   * world starts bare rather than inheriting a build three other worlds paid
+   * for, and the crossing can honestly say that what you bought stays behind.
+   * `inheritShopLevels` owns the one subtle case: a world that has never
+   * written a shop key predates the split and takes the device's legacy levels
+   * once, so no existing device loses its build.
+   *
+   * **PERKS are the same kind of fact and were not being read** (2026-08-30).
+   * They moved onto the world on 2026-08-26 and `encodeProgress` has stripped
+   * them from the device blob ever since, deliberately — so `decodeProgress`
+   * hands back an empty shelf by contract, and nothing in this body ever put
+   * the world's own back on. A perk found survived until the tab was reloaded
+   * and then was simply gone, and `economyFor` — which reads
+   * `world.perks`/`world.worn` — never saw one at all, so the dials a perk
+   * sets were never set. `withWorldPerks` is the core's own composite and is
+   * exactly this read; it had one caller, inside the economy, working from a
+   * field nothing wrote.
    */
-  const [progress, setProgressState] = useState<Progress>(
-    () => opts.progress ?? inheritShopLevels(readProgress(), readShopLevels(activeSlot())),
-  );
+  const [progress, setProgressState] = useState<Progress>(() => {
+    const base = inheritShopLevels(readProgress(), readShopLevels(activeSlot()));
+    /*
+     * `?taught=1` fills the TEACHING LEDGER, and nothing else (2026-08-30).
+     *
+     * It used to hand `useDevice` a whole replacement `Progress` built on
+     * `EMPTY_PROGRESS`, which was harmless while the only other history was
+     * `?end=1` and fatal the moment a DEVICE history existed: `?runs=300`
+     * seeds a world with a purse, a build and a shelf, and the taught
+     * override then threw all three away on the way in. The audit's
+     * three-hundred-run shop photographed `0` relics — which is precisely the
+     * picture this whole axis was built to make impossible, produced by the
+     * axis itself.
+     *
+     * A flag rather than an object, so the override can only ever say the one
+     * thing it means.
+     */
+    const met =
+      opts.taught === true ? TEACH_IDS.reduce<Progress>((p, id) => meet(p, id), base) : base;
+    const world = readWorld(activeSlot());
+    // And the world's own shelf on top, for the override paths as well.
+    return world === null ? met : withWorldPerks(met, world.perks, world.worn);
+  });
   const [slot, setSlotState] = useState<Slot>(activeSlot);
   /**
    * Where the player is: one of the three worlds, or a dated daily.
@@ -128,11 +161,17 @@ export function useDevice(opts: {
     keeper.current.drop();
     keeper.current = keeperFor(next);
     setPlaceState(next);
-    // A world's shop is the world's. Stepping into one puts on its build, and
-    // stepping into the daily — which has no shop of its own — keeps whatever
-    // the player was carrying.
+    // A world's shop is the world's, and so is its perk shelf. Stepping into
+    // one puts on its build and its perks; stepping into the daily — which has
+    // neither of its own — keeps whatever the player was carrying.
     if (!isDaily(next)) {
-      setProgressState((was) => inheritShopLevels(was, readShopLevels(next)));
+      setProgressState((was) => {
+        const build = inheritShopLevels(was, readShopLevels(next));
+        const world = readWorld(next);
+        return world === null
+          ? withWorldPerks(build, [], null)
+          : withWorldPerks(build, world.perks, world.worn);
+      });
     }
   }, []);
 

@@ -3,7 +3,7 @@ import type { GameState } from '@engine/state';
 import { arcSparkline, recordDaily, type DailyBook } from '@meta/daily';
 import { recordRun, type RecordBook } from '@meta/records';
 import { appendEntry, capShots, runHighlights, type Timeline } from '@meta/timeline';
-import type { GoalId } from '@content/goals';
+import { GOALS, type GoalId } from '@content/goals';
 import { newlyMetGoals } from '@meta/goals';
 import { newWorld, rememberRun, type WorldMemory } from '@meta/world';
 import type { Progress } from '@meta/progress';
@@ -141,10 +141,30 @@ export function settle(now: Settling): Settled {
   const world: WorldMemory =
     goals.length === 0 ? walked : { ...walked, goalsMet: [...walked.goalsMet, ...goals] };
 
+  /*
+   * THE SURVEY'S OWN PAYOUT, which nothing in this body had ever paid
+   * (2026-08-30).
+   *
+   * `content/goals.ts` opens with the sentence "five world-scale goals, each
+   * paying relics ONCE per world the moment it is first met", and `Goal.reward`
+   * — 25 to 40 relics apiece — had **no consumer anywhere in this repository**.
+   * Detection ran, the ledger was written, the end screen listed what the run
+   * had proved, and the purse did not move. Ashwake 1 pays it in
+   * `keeper.ts`'s `checkGoals`.
+   *
+   * Seventh of this body's signature miss and the third of the INVISIBLE kind,
+   * after the world seed and the economy: a milestone that pays nothing still
+   * fires, still lists itself, still reads as a milestone. Only the number
+   * disagreed. It is paid here rather than in a live checker because this is
+   * where `newlyMetGoals` already runs and where `goalsMet` is already
+   * written — a second site would be a second thing to forget.
+   */
+  const survey = goals.reduce((n, id) => n + (GOALS.find((g) => g.id === id)?.reward ?? 0), 0);
+
   // What the run pays out, banked onto the device ledger.
   const banked: Progress = {
     ...now.progress,
-    relics: now.progress.relics + endingPayout(now.state).relics,
+    relics: now.progress.relics + endingPayout(now.state).relics + survey,
   };
 
   const summary = now.hud.summary;

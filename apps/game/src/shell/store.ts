@@ -3,7 +3,7 @@ import { TUNING, type Colour, type Tuning } from '@content/tuning';
 import { newRun, reduce } from '@engine/reduce';
 import { harvestValue } from '@engine/rules';
 import type { Action, GameState } from '@engine/state';
-import type { HexKey } from '@engine/hex';
+import { distance, parse, type HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
 import type { Theme } from '@theme/tokens';
@@ -16,6 +16,7 @@ import {
   type TipRow,
 } from '@view/view';
 import { claimsBetween, saidOf, spendReceipt } from '@view/receipts';
+import { unlockedBy, type WorldMemory } from '@meta/world';
 import type { RunMemory } from './storage';
 import type { PerkId } from '@meta/progress';
 
@@ -128,6 +129,9 @@ export type Session = {
      *  shrines, already folded together by `shell/economy.ts`. Absent keeps
      *  the session's own, which is what every test wants and no screen does. */
     tuning?: Tuning,
+    /** BEGIN AT CAMP: wake at this hex instead of origin. Only a FRESH run
+     *  may camp — a resumed one carries its own wake hex in its state. */
+    wakeAt?: HexKey | null,
   ) => void;
 };
 
@@ -141,12 +145,45 @@ export type Session = {
  * have to open a run the same way or a resumed session and a fresh one
  * disagree about what the world remembers.
  *
- * `wakeAt` stays null: camps are an unlock with a front-door offer behind
- * them (`unlockedBy(world).includes('camp')`), and that is a screen this body
- * has not built yet — see `NEXT.md`.
+ * `wakeAt` — BEGIN AT CAMP, the fifth shrine's unlock — is the last of those
+ * riders to be filled (2026-08-30). It was hard-wired `null` here because the
+ * unlock gates a button the door did not have, so the last rung of the ladder
+ * woke a door onto nothing; `screens/Worlds.tsx` has that button now and
+ * `campFor` in this file decides when it may be offered. The engine has
+ * carried the rest since the rules were lifted: `homeOf` anchors every
+ * distance-based reward at the wake hex, so a camp run's reach is measured
+ * from where it woke and not from origin.
  */
-const open = (seed: number, tuning: Tuning, memory?: RunMemory): GameState =>
-  newRun(seed, tuning, memory?.claimed ?? [], memory?.finds ?? [], null, memory?.rearmed ?? {});
+const open = (
+  seed: number,
+  tuning: Tuning,
+  memory?: RunMemory,
+  wakeAt: HexKey | null = null,
+): GameState =>
+  newRun(seed, tuning, memory?.claimed ?? [], memory?.finds ?? [], wakeAt, memory?.rearmed ?? {});
+
+/**
+ * Where a camp run would wake, or null when this world may not camp.
+ *
+ * Ashwake 1's, verbatim in its conditions (`../tiles/src/shell/session.ts`):
+ * the CAMP shrine woken, at least one territory held, and the FARTHEST of
+ * those territories is the one you wake at — Marc's own anchor, *"every camp
+ * restarts the climb"*. Deep ground you HOLD becomes ground you can start
+ * from, which is the remembered world's missing verb.
+ *
+ * A detour and a daily are excluded by their callers rather than here: neither
+ * has a world, so neither has a territory to wake at, and `unlockedBy` of a
+ * world they do not have is not a question this function can be asked.
+ */
+export function campFor(world: WorldMemory | null): HexKey | null {
+  if (world === null) return null;
+  if (!unlockedBy(world).includes('camp')) return null;
+  const held = [...world.territories];
+  if (held.length === 0) return null;
+  return held.sort((a, b) => distance(parse(b), ORIGIN) - distance(parse(a), ORIGIN))[0] ?? null;
+}
+
+const ORIGIN = { q: 0, r: 0 } as const;
 
 /*
  * The economy is per RUN, not per session (2026-08-30).
@@ -179,9 +216,12 @@ export function createSession(opts: {
   /** What crossing would carry, priced at the moment a fully-awake world's
    *  shrine is reached. Absent means there is nowhere onward. */
   readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
+  /** BEGIN AT CAMP at boot — `?camp=1`. Ignored when a run is resumed, which
+   *  carries its own wake hex. */
+  readonly wakeAt?: HexKey | null;
 }): Session {
   let tuning = opts.tuning ?? TUNING;
-  let state = opts.resume ?? open(opts.seed, tuning, opts.memory);
+  let state = opts.resume ?? open(opts.seed, tuning, opts.memory, opts.wakeAt ?? null);
   let harvestAt: HexKey | null = null;
   let spotlight: Colour | null = null;
   let popped: Snapshot['popped'] = null;
@@ -332,9 +372,9 @@ export function createSession(opts: {
       spotlight = colour;
       commit();
     },
-    restart(seed, from, memory, next) {
+    restart(seed, from, memory, next, wakeAt) {
       if (next !== undefined) tuning = next;
-      state = from ?? open(seed, tuning, memory);
+      state = from ?? open(seed, tuning, memory, wakeAt ?? null);
       harvestAt = null;
       spotlight = null;
       popped = null;

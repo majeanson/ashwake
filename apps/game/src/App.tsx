@@ -6,20 +6,20 @@ import { NAME } from '@meta/identity';
 import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
+import { distance, parse, type HexKey } from '@engine/hex';
 import { namesOf } from '@theme/tokens';
 import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
 import { isEnabled } from '@meta/features';
-import {
-  EMPTY_PROGRESS,
-  grantFind,
-  hasMet,
-  meet,
-  perkText,
-  TEACH_IDS,
-  type Progress,
-} from '@meta/progress';
+import { EMPTY_PROGRESS, grantFind, hasMet, perkText } from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
-import { newWorld, unlockedBy, unlockLabel, type UnlockId } from '@meta/world';
+import {
+  mergeRun,
+  newWorld,
+  unlockedBy,
+  unlockLabel,
+  type UnlockId,
+  type WorldMemory,
+} from '@meta/world';
 import { economyFor } from './shell/economy';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
@@ -73,7 +73,7 @@ import { registerWorker } from './shell/worker';
 import { carriedBy, cross, dowryOf } from './shell/cross';
 import { settle, settleDaily } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
-import { createSession, useSession, type Said } from './shell/store';
+import { campFor, createSession, useSession, type Said } from './shell/store';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
@@ -180,6 +180,11 @@ export function App() {
  * most screens look fine on a virgin phone and the empty version is not the
  * one that breaks, and a screenshot of the board is otherwise a screenshot of
  * whatever card happens to be over it.
+ *
+ * It is a FLAG rather than a whole `Progress` since 2026-08-30, and the reason
+ * is the third history: `?runs=n` (`shell/fixture.ts`) writes a purse, a build
+ * and a perk shelf to the disk, and a `taught` override built on
+ * `EMPTY_PROGRESS` erased all three on the way back in.
  */
 function overrides(): Parameters<typeof useDevice>[0] {
   const params = new URLSearchParams(location.search);
@@ -191,9 +196,7 @@ function overrides(): Parameters<typeof useDevice>[0] {
   return {
     ...(theme === null ? {} : { theme }),
     ...(daily === null ? {} : { daily }),
-    ...(taught
-      ? { progress: TEACH_IDS.reduce<Progress>((p, id) => meet(p, id), EMPTY_PROGRESS) }
-      : {}),
+    ...(taught ? { taught } : {}),
   };
 }
 
@@ -392,6 +395,23 @@ function Game() {
       strings: s,
       resume: kept,
       /*
+       * `?camp=1` — BEGIN AT CAMP, on the URL (2026-08-30).
+       *
+       * `meta/route.ts` has parsed this field since the rules were lifted and
+       * nothing in this body read it. The ordinary way to camp is the WORLDS
+       * panel's button, which is a state change; this is the same door for a
+       * hand-typed link and for the screen audit, which is how a camp run gets
+       * photographed at all.
+       *
+       * Every guard is the same one `campFor` keeps, plus two this level
+       * knows: a RESUMED run carries its own wake hex, and a detour or daily
+       * has no world to have a farthest territory in.
+       */
+      wakeAt:
+        parseRoute(location.search).camp && kept === null && !detour && opening === null
+          ? campFor(readWorld(slot))
+          : null,
+      /*
        * What crossing would carry, priced at the moment a fully-awake world's
        * shrine is reached — so the card's offer and the amount banked are the
        * same number by construction. Read through the session's OWN state
@@ -434,6 +454,42 @@ function Game() {
    * for this ending.
    */
   const banked = useRef<GameState | null>(null);
+
+  /**
+   * This session's live copy of the world memory.
+   *
+   * A ref rather than state, and rather than a read per action: the world is
+   * written by three separate seams now — the ground a run walks, the perk
+   * shelf, and the settle that closes a run — and each of them hands the
+   * keeper a WHOLE `WorldMemory`. Re-reading the disk for each would mean
+   * decoding a blob carrying every hex the player has ever revealed, on every
+   * tap; and two seams firing in one tick would each build from a copy that
+   * predates the other, so whichever wrote second would silently undo the
+   * first. One held object, and the seam that touches it last is the one the
+   * keeper writes.
+   *
+   * Null means "not read yet, or a different world" — `worldHeld` decides by
+   * SEED, exactly the way `settle`'s guard and `memoryFor` do.
+   */
+  const worldNow = useRef<WorldMemory | null>(null);
+  const worldHeld = useCallback((seed: number): WorldMemory | null => {
+    const held = worldNow.current;
+    if (held !== null && held.worldSeed === seed) return held;
+    const disk = readWorld(activeSlot());
+    return disk !== null && disk.worldSeed === seed ? disk : null;
+  }, []);
+  const keepWorld = useCallback(
+    (next: WorldMemory) => {
+      worldNow.current = next;
+      keeper.saveWorld(next);
+    },
+    [keeper],
+  );
+  /** A run is beginning somewhere else: let go, so nothing carries over. */
+  const forgetWorld = useCallback(() => {
+    worldNow.current = null;
+  }, []);
+
   useEffect(() => {
     if (!snap.hud.ended || banked.current === snap.state) return;
     banked.current = snap.state;
@@ -464,7 +520,11 @@ function Game() {
      * has already grown by the time the end screen renders, and the world's
      * unlock ledger is about to be rewritten by `settle` below.
      */
-    const wokeNow = unlockedBy(readWorld(slot) ?? newWorld(snap.state.rootSeed));
+    // The world as this run left it — the LIVE copy, not the disk's, because
+    // the keeper's last write may still be pending and the shrines this run
+    // woke are exactly what is being reported.
+    const ending = worldHeld(snap.state.rootSeed);
+    const wokeNow = unlockedBy(ending ?? newWorld(snap.state.rootSeed));
     setGained({
       perks: progress.found
         .filter((id) => !perksAtStart.current.includes(id))
@@ -478,13 +538,14 @@ function Game() {
       state: snap.state,
       hud: snap.hud,
       slot,
-      world: readWorld(slot),
+      world: ending ?? readWorld(slot),
       records: readRecords(),
       timeline: readTimeline(),
       progress,
       at: Date.now(),
       ...(picture === null ? {} : { shot: picture }),
     });
+    worldNow.current = after.world;
     keeper.saveWorld(after.world);
     keeper.flush();
     writeRecords(after.records);
@@ -510,7 +571,86 @@ function Game() {
      * the screen that has to show it.
      */
     setGoals(after.goals);
-  }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper, setProgress, s]);
+  }, [
+    snap.hud.ended,
+    snap.state,
+    snap.hud,
+    slot,
+    daily,
+    progress,
+    keeper,
+    setProgress,
+    s,
+    worldHeld,
+  ]);
+
+  /**
+   * The world learns what this run has done WHILE it is doing it (2026-08-30).
+   *
+   * `mergeRun` exists for exactly this and had **no caller in this body**. Its
+   * own docblock says why it was split off from `rememberRun` in Ashwake 1,
+   * and both halves were live bugs there: a shrine woken at placement 40 did
+   * not reach the atlas until the expedition ended (Marc: *"it still shows 0
+   * of 5 found"*), and a player who simply closed the tab lost the territory
+   * they had just claimed. This body had reintroduced both — the only write of
+   * world memory was at `settle`, so every claim was provisional until a run
+   * was over.
+   *
+   * Ground and claims are facts the moment they happen; only the RUN COUNT
+   * waits for a run to be over, which is the one field `mergeRun` leaves alone.
+   */
+  useEffect(() => {
+    if (!started || snap.hud.ended || daily !== null || session.detour) return;
+    const base = worldHeld(snap.state.rootSeed);
+    if (base === null) return;
+    keepWorld(mergeRun(base, snap.state));
+  }, [snap.state, started, snap.hud.ended, daily, session, worldHeld, keepWorld]);
+
+  /**
+   * The perk shelf belongs to the WORLD, and this is what puts it there
+   * (2026-08-30).
+   *
+   * Perks moved onto `WorldMemory` on 2026-08-26 — Marc's ruling, after a
+   * shrine promised a fourth draft card beside an Open Hand found two worlds
+   * away — and `encodeProgress` has stripped them out of the device blob ever
+   * since. **Nothing in this body ever wrote the world's copy.** So a find
+   * granted a perk into React state, `useDevice` wrote a blob that refuses to
+   * carry it, and the next reload had no perk at all; `economyFor` reads
+   * `world.perks`, so the dials it sets were never set either, in the run it
+   * was found in or in any run after.
+   *
+   * One effect rather than a line beside each gesture, because there are three
+   * — a find grants, the shelf equips, the shelf unequips — and Ashwake 1's own
+   * lesson is that a rule spelled out at three call sites is a rule that comes
+   * to disagree with itself. Through the KEEPER, never `writeWorld`: the keeper
+   * is the only thing that writes, and that is the whole of how a crossing
+   * cannot be farmed.
+   *
+   * A DETOUR and a DAILY write nothing. Somebody else's seed must not touch
+   * this device's world, and the keeper already refuses a daily outright — the
+   * guard here is so the read below cannot mistake the world for the daily's.
+   */
+  useEffect(() => {
+    if (daily !== null || session.detour) return;
+    const world = worldHeld(snap.state.rootSeed);
+    if (world === null) return;
+    const worn = progress.equipped[0] ?? null;
+    const same =
+      world.worn === worn &&
+      world.perks.length === progress.found.length &&
+      world.perks.every((id, i) => progress.found[i] === id);
+    if (same) return;
+    keepWorld({ ...world, perks: progress.found, worn });
+  }, [
+    progress.found,
+    progress.equipped,
+    snap.state.rootSeed,
+    daily,
+    session,
+    worldHeld,
+    keepWorld,
+  ]);
+
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -538,6 +678,18 @@ function Game() {
   // ended. Anything else leaves the disk alone.
   const ledgers = useLedgers(`${fame.open}${shop.open}${worlds.open}${snap.hud.ended}`);
   const virgin = ledgers.timeline.length === 0 && progress.relics === 0;
+  /**
+   * Whether this world can be begun at its camp, and how far out that is.
+   *
+   * Read off the ledgers the WORLDS panel is already built from, so opening
+   * that panel is what refreshes it — a shrine woken this run makes the button
+   * appear the next time the panel is opened, which is also the first moment
+   * anybody could press it.
+   */
+  const campHere = useMemo(() => {
+    const at = campFor(ledgers.worlds[slot]);
+    return at === null ? null : { at, ring: distance(parse(at), { q: 0, r: 0 }) };
+  }, [ledgers.worlds, slot]);
   const anyOpen = useAnyDialogOpen();
 
   // What the game wants to say, if anything: a priority list rather than a
@@ -655,8 +807,23 @@ function Game() {
          * The fifth of this repository's signature miss: a rule the core
          * implements and tests, reachable from nothing.
          */
+        /*
+         * ...and only in a world that can keep it (2026-08-30).
+         *
+         * A perk lives on the world it was found in, so a DETOUR or a DAILY
+         * granting one would either write into somebody else's geography or
+         * hand out a perk with nowhere to be written — the same rule the seed
+         * guard, `economyFor` and the shrine's own receipt already keep, and
+         * the one place it was missing. Ashwake 1 guards it in `findLabel`.
+         */
         const cell = at === undefined ? undefined : now.state.cells[at];
-        if (at !== undefined && cell?.kind === 'landmark' && cell.reward === 'find') {
+        if (
+          at !== undefined &&
+          cell?.kind === 'landmark' &&
+          cell.reward === 'find' &&
+          !session.detour &&
+          daily === null
+        ) {
           const got = grantFind(progress, now.state.rootSeed, at);
           // Null means every perk is already owned — a find met with a full
           // shelf grants nothing, and says so rather than pretending.
@@ -776,7 +943,7 @@ ${s.view.harvest.firstPopWhen}`,
         else window.setTimeout(() => setSaidCard(shown), wait);
       } else setNote(said.text);
     },
-    [session, ledgers, s, features, theme, progress, setProgress, reducedMotion],
+    [session, ledgers, s, features, theme, progress, setProgress, reducedMotion, daily],
   );
 
   /**
@@ -1046,7 +1213,9 @@ ${s.view.harvest.firstPopWhen}`,
     });
     setProgress(() => after.progress);
     writeTimeline(after.timeline);
-    keeper.saveWorld(after.world);
+    // The world it crosses INTO becomes the held one, so the first action of
+    // the first run there merges onto it rather than onto the world just left.
+    keepWorld(after.world);
     keeper.flush();
     clearRun(slot);
 
@@ -1057,32 +1226,68 @@ ${s.view.harvest.firstPopWhen}`,
     session.restart(seed, null, undefined, economyAt(slot, seed));
     setLens(null);
     setStarted(true);
-  }, [snap.state, ledgers, slot, progress, setProgress, keeper, session]);
+  }, [snap.state, ledgers, slot, progress, setProgress, keeper, keepWorld, session]);
 
-  const newRun = useCallback(() => {
-    setDaily(null);
-    setGoals([]);
-    saidOnce.current = new Set();
-    reachAtStart.current = readWorld(activeSlot())?.farthestReach ?? 0;
-    perksAtStart.current = progress.found;
-    unlocksAtStart.current = unlockedBy(readWorld(activeSlot()) ?? newWorld(0));
+  /**
+   * A fresh expedition into the world this device is standing in.
+   *
+   * One door with a `wakeAt` rather than two functions, for the reason
+   * `Session.restart` is one door: NEW RUN and BEGIN AT CAMP differ by exactly
+   * one argument, and everything else — the ledgers a run measures its gains
+   * against, the economy it opens under, the lens it puts down — has to happen
+   * in one order or the two disagree about what a run starts from.
+   *
+   * It is deliberately NOT the callback handed to a button. `onClick` passes
+   * the mouse event as the first argument, and a `wakeAt` that is quietly a
+   * `MouseEvent` is exactly the kind of thing that reaches a phone.
+   */
+  const startRun = useCallback(
+    (wakeAt: HexKey | null) => {
+      setDaily(null);
+      setGoals([]);
+      saidOnce.current = new Set();
+      reachAtStart.current = readWorld(activeSlot())?.farthestReach ?? 0;
+      perksAtStart.current = progress.found;
+      unlocksAtStart.current = unlockedBy(readWorld(activeSlot()) ?? newWorld(0));
 
-    banked.current = null;
-    /*
-     * The world's seed, not a fresh roll (2026-08-29).
-     *
-     * A new run is a new expedition into the SAME plane — that is what makes
-     * revealed ground, claimed territory and woken shrines mean anything, and
-     * it is the rule Ashwake 1 states outright in `keeper.ts`: "the seed
-     * re-derives from `world.worldSeed` on the session that starts next."
-     * Rolling a random one here re-generated the planet under a player who had
-     * only pressed NEW RUN, and then `settle` correctly refused to bank it.
-     */
-    const at = activeSlot();
-    const seed = worldSeedFor(at);
-    session.restart(seed, null, memoryFor(at, seed), economyAt(at, seed));
-    setLens(null);
-  }, [session, setDaily, progress.found]);
+      banked.current = null;
+      /*
+       * The world's seed, not a fresh roll (2026-08-29).
+       *
+       * A new run is a new expedition into the SAME plane — that is what makes
+       * revealed ground, claimed territory and woken shrines mean anything, and
+       * it is the rule Ashwake 1 states outright in `keeper.ts`: "the seed
+       * re-derives from `world.worldSeed` on the session that starts next."
+       * Rolling a random one here re-generated the planet under a player who had
+       * only pressed NEW RUN, and then `settle` correctly refused to bank it.
+       */
+      const at = activeSlot();
+      const seed = worldSeedFor(at);
+      session.restart(seed, null, memoryFor(at, seed), economyAt(at, seed), wakeAt);
+      setLens(null);
+    },
+    [session, setDaily, progress.found],
+  );
+
+  const newRun = useCallback(() => startRun(null), [startRun]);
+
+  /**
+   * BEGIN AT CAMP — the fifth shrine's unlock, finally opening onto something.
+   *
+   * `campFor` is what decides whether there is a camp at all; a null here is
+   * not an error state to report but a button that was never offered, so the
+   * guard is a plain return. The camp is read at the moment of the tap rather
+   * than captured with the panel: a run claimed a farther territory while the
+   * panel was closed is a run that moved the camp.
+   */
+  const beginAtCamp = useCallback(() => {
+    const where = campFor(readWorld(activeSlot()));
+    if (where === null) return;
+    startRun(where);
+    worlds.hide();
+    more.hide();
+    setStarted(true);
+  }, [startRun, worlds, more]);
 
   /**
    * Out of the ending, without starting another run.
@@ -1123,6 +1328,9 @@ ${s.view.harvest.firstPopWhen}`,
   const today = useMemo(() => localToday(), []);
   const enterDaily = useCallback(() => {
     setDaily(today);
+    // A daily has no world memory at all. Letting go here means the held copy
+    // cannot be merged into by a board the world never walked.
+    forgetWorld();
     // No ledger, so no unlocks and no relics — and its shrines are rewritten
     // into caches and sites, because a door that opens nothing is worse than
     // no door at all.
@@ -1137,13 +1345,15 @@ ${s.view.harvest.firstPopWhen}`,
     worlds.hide();
     more.hide();
     setStarted(true);
-  }, [session, setDaily, today, worlds, more]);
+  }, [session, setDaily, today, worlds, more, forgetWorld]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
       const kept = readRun(next);
       setDaily(null);
       setSlot(next);
+      // Another world entirely: the held copy is the one being left.
+      forgetWorld();
       saidOnce.current = new Set();
       reachAtStart.current = readWorld(next)?.farthestReach ?? 0;
       perksAtStart.current = progress.found;
@@ -1160,7 +1370,7 @@ ${s.view.harvest.firstPopWhen}`,
       more.hide();
       setStarted(true);
     },
-    [session, setSlot, setDaily, worlds, more, progress.found],
+    [session, setSlot, setDaily, worlds, more, progress.found, forgetWorld],
   );
 
   const playing = started && !snap.hud.ended;
@@ -1526,7 +1736,18 @@ ${s.view.harvest.firstPopWhen}`,
             if (on) voice.wake(theme.voice);
             else voice.silence();
           }}
-          onResetTeaching={() => setProgress(() => EMPTY_PROGRESS)}
+          /*
+           * RESET TEACHING resets the TEACHING (2026-08-30).
+           *
+           * It handed back `EMPTY_PROGRESS`, which is the whole ledger — the
+           * relic purse and every shop level with it. A control labelled
+           * "RÉINITIALISER LES LEÇONS" that silently spends a world's savings
+           * is the worst shape a destructive action can take: it does more
+           * than it says, and the part it does not say is unrecoverable.
+           * RESET ALL is next to it and is armed, and is what a player asking
+           * for that would press.
+           */
+          onResetTeaching={() => setProgress((p) => ({ ...p, met: [] }))}
         />
       )}
 
@@ -1543,6 +1764,9 @@ ${s.view.harvest.firstPopWhen}`,
           onDaily={enterDaily}
           onReset={() => {
             clearEverything();
+            // Including the world this session was holding: an erased device
+            // that kept a merged world in a ref would write it straight back.
+            forgetWorld();
             // The one place a reload would be honest — and it still is not one.
             // Everything erased is everything this shell was showing, so the
             // shell goes back to what a phone that has never played looks like.
@@ -1575,6 +1799,7 @@ ${s.view.harvest.firstPopWhen}`,
             clearSlot(which);
             enterWorld(which);
           }}
+          camp={campHere === null ? null : { ring: campHere.ring, onBegin: beginAtCamp }}
         />
       )}
 

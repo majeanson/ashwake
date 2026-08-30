@@ -37,7 +37,24 @@ export function Atlas({ world, s }: { readonly world: WorldMemory; readonly s: S
           { label: s.ui.atlasKnown, value: `${Math.round(knownFraction(world) * 100)}%` },
           { label: s.ui.atlasTerritories, value: world.territories.length },
           { label: s.ui.atlasShrines, value: `${world.shrines.length}/${UNLOCKS.length}` },
-          { label: s.ui.atlasFinds, value: `${world.finds.length}/${PERKS.length}` },
+          /*
+           * The perk hunt, and the numerator is the SHELF (2026-08-30).
+           *
+           * It counted `world.finds.length` — find HEXES claimed — against
+           * `PERKS.length`, the size of the perk pool, which are two different
+           * things wearing one fraction. A find grants a perk only while the
+           * shelf has room, so a world with six find hexes and five perks read
+           * **`6/5`**, which is either a bug in the game or a bug in
+           * arithmetic and a player cannot tell which. Found in the
+           * three-hundred-run fixture's shot, and reachable in ordinary play by
+           * anyone who claims a sixth find.
+           *
+           * The denominator settles it: the row asks "how much of the hunt is
+           * done", so the numerator is what you HOLD. It is also the fraction
+           * Marc quoted when the finds were not paying at all — *"in the end
+           * screen I still see 0/5"*.
+           */
+          { label: s.ui.atlasFinds, value: `${world.perks.length}/${PERKS.length}` },
         ]}
       />
       {awake.length > 0 && (

@@ -242,6 +242,59 @@ general lesson worth keeping out of this: the fix is not a second threshold, it
 is refusing to bake something the direction asked for and the maker cannot
 make.
 
+### D9 — No History-API router; the BACK GESTURE is a dialog-stack job — RULED 2026-08-30
+
+The last unclosed item of Stage 4, and `NEXT.md` §3 asked for it to be decided
+by looking rather than ported. **It is not being ported.**
+
+**What Ashwake 1's router actually routes is RUNS, not panels.** `Route` is
+`{ seed, daily, camp }`; `popstate` calls `restart(parseRoute(location.search))`
+and rebuilds the session from the URL. Its own docblock says why that shape is
+right _there_: "the URL names a game, `startSession` is the one thing that opens
+one, so replaying a history entry is the same act as opening the link would be."
+That is a sound design for a shell whose screens are imperative DOM, where
+re-opening the URL is genuinely the cheapest way to get to a known state.
+
+**In this body the screens are React state, and re-opening a URL is the
+expensive way.** A ported `popstate` would rebuild a session that already
+exists, and the second authority it introduces — the URL, beside the state — is
+a second answer to "what is on screen". Seven times now this repository has been
+bitten by two places disagreeing about one fact (`LOG.md` sessions 13, 20, 21).
+Buying an eighth for a mechanism whose payload is already delivered elsewhere is
+a bad trade.
+
+**Because the payload IS delivered elsewhere.** The three things a router would
+buy, each priced against what exists:
+
+- **Deep links.** `?seed=`, `?daily=` and `?camp=` are all read at boot today —
+  the last of them as of 2026-08-30 — so every link the game hands out already
+  opens the game it names. What a router adds is that the ADDRESS BAR tracks the
+  session afterwards, and the address bar is not this game's distribution
+  mechanism: SHARE is (`meta/share.ts`), it builds the same links from the same
+  fields, and it is the only path a player has ever used.
+- **A shareable "where I am now".** Same answer, from the other side: SHARE
+  already writes it, with the score in it, which is the version somebody
+  actually posts.
+- **BACK on a panel.** This is the one thing nothing else buys, and it is worth
+  having: on Android the system back gesture currently leaves the site from on
+  top of an open manual.
+
+**So the third is split off and the other two are closed.** The back gesture
+does not need a router — it needs one history entry per OPEN DIALOG, owned by
+`ui/dialog.tsx`, which is the one file that already knows the panel stack and is
+already the single authority on it. That is an entry pushed on open and popped
+on close, with no URL→scene table anywhere, and it cannot disagree with the
+state because it is derived from it. Filed in `NEXT.md` as its own small piece
+rather than done here: the freeze before Session A is on the first minute, and
+a new global gesture is the kind of thing that wants its own session and its own
+question.
+
+**What is left of `meta/route.ts` after this ruling:** `parseRoute` is read at
+boot for all three fields. `searchFor` and `HOME` still have no reader — they
+are the pure statement of a link that `meta/share.ts` builds by hand. That is a
+duplicate rather than a gap and it is now a duplicate with no prospect of a
+caller, so it is a deletion, not a debt.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

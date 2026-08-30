@@ -4,8 +4,57 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-29, last — the game has a story, and the settlement
-is the direction.** Marc: _"we need a little story, a small hook for this game
+Last checkpoint: **2026-08-30, later — the long game runs, and an instrument
+now exists that can see it.** The screen audit has a third axis: `?runs=n`
+(`shell/fixture.ts`) seeds a DEVICE history — a world with shrines woken,
+territories held, finds taken, relics banked, a shop part-built and a diary
+with rows — wired in at three ages of one world seed, five runs in, thirty and
+three hundred. It is honest by construction: every landmark it claims is read
+off the seed with the same pure functions the reducer consults, the perks come
+from folding `grantFind` over those hexes, the goals from `metGoalIds`, and the
+purse and the shop are one arithmetic — earned per run, then spent through
+`buy`. **Twenty-three screens × four directions**, and the middle age exists
+because thirty runs is the only point at which the shop has rows on both sides
+of the affordable line.
+
+**It found seven more inert numbers, three of them by turning on itself, and
+one of those in a SCREENSHOT rather than in the code.** The
+SURVEY paid nothing — `Goal.reward`, 25 to 40 relics across five goals, had no
+consumer anywhere, so a milestone was detected, written into `goalsMet`, listed
+on the end screen and never banked. A found PERK never reached
+`WorldMemory.perks`, so it died on the next reload and `economyFor` never saw
+one, which means the dials a worn perk sets were never set. `mergeRun` had **no
+caller**, so world memory was written only at `settle`, a closed tab lost the
+territory just claimed, and the end screen's list of what a run UNLOCKED was
+always empty because it read a disk nothing had updated. `?taught=1` handed
+`useDevice` a whole `Progress` built on `EMPTY_PROGRESS`, so the
+three-hundred-run shop photographed `0` relics — the exact picture the axis was
+built to make impossible. And **the audit's own PLAYED device had stopped being
+played that morning**: `?seed=` became a detour when the world seed was fixed,
+so it banked nothing, stayed virgin, and three tests timed out and silently kept
+the previous run's screenshots. And the ATLAS read `FINDS 6/5` on the
+three-hundred-run world, counting find hexes against the size of the perk pool —
+two different things wearing one slash, both expressions correct on their own,
+and reachable in ordinary play. All seven fixed, each with a test that asks
+whether a NUMBER moves.
+
+**CAMPS crossed** — the last piece of world memory that had not. BEGIN AT CAMP
+lives in the WORLDS panel, `campFor` carries Ashwake 1's conditions verbatim,
+`?camp=1` is read at boot, and a camp run's climb is measured from where it woke
+so REACH 20 cannot be minted by waking at ring 20. **The router is DECIDED and
+not ported** (`DECISIONS.md` D9): what it would buy is already delivered by
+boot-time links and by SHARE, except BACK on an open panel, which is a
+dialog-stack job rather than a URL→scene table and is filed for after Session A.
+Two smaller findings on the way past: RESET TEACHING was resetting the whole
+ledger including the relic purse, and a detour or daily could grant a perk with
+nowhere to write it.
+
+Verified: 1059 tests / 74 files, 67 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean. **Nothing that changes the first minute
+shipped** — the freeze before Session A holds.
+
+Previous checkpoint: **2026-08-29, last — the game has a story, and the
+settlement is the direction.** Marc: _"we need a little story, a small hook for this game
 towards the settlement"_, and then the ruling S5 has been waiting on since it
 was written: _"i want to go this way since its a strong theme and i feael like
 names of eahc color reveal what they do too."_ **D7 is closed: SETTLEMENT is

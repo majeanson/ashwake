@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { recordFailure, showFailure } from './shell/failure';
+import { historyAsked, seedDevice } from './shell/fixture';
 import { bootStrings } from './shell/locale';
 import { askPersistence } from './shell/storage';
 
@@ -35,6 +36,17 @@ window.addEventListener('unhandledrejection', (event) => {
   // kept for SETTINGS without raising the alarm over a running game.
   recordFailure(event.reason);
 });
+
+/*
+ * `?runs=n` — a device that has PLAYED (2026-08-30).
+ *
+ * The screen audit's third axis, and it has to be written HERE: `useDevice`
+ * reads the disk once at boot and never re-reads, so a history seeded after
+ * the root renders is a history nothing looks at. Gated on the query, so a
+ * player's device is never touched. See `shell/fixture.ts`.
+ */
+const history = historyAsked(location.search);
+if (history !== null) seedDevice(history);
 
 const root = document.getElementById('root');
 if (root === null) throw new Error('index.html declares #root');

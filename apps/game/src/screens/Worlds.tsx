@@ -31,9 +31,23 @@ export type WorldsProps = {
   readonly onBack: () => void;
   readonly onOpen: (slot: Slot) => void;
   readonly onAbandon: (slot: Slot) => void;
+  /**
+   * BEGIN AT CAMP — the hex a camp run would wake at, or null where this
+   * world may not camp (`shell/store.ts`'s `campFor`).
+   *
+   * The fifth shrine's unlock, and the last piece of world memory to cross
+   * into this body (2026-08-30): `newRun` has taken a `wakeAt` since Stage 1
+   * and the shell passed `null`, because the unlock gated a button that did
+   * not exist — so a world that had woken every shrine had one rung of its
+   * ladder open onto nothing.
+   *
+   * It lives HERE rather than on the front door for Ashwake 1's own reason:
+   * it is a way INTO this world, and this panel is the list of those.
+   */
+  readonly camp?: { readonly ring: number; readonly onBegin: () => void } | null;
 };
 
-export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon }: WorldsProps) {
+export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon, camp }: WorldsProps) {
   return (
     <Panel
       id="worlds"
@@ -62,6 +76,16 @@ export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon }: WorldsP
             </button>
           );
         })}
+        {/*
+          Under the three, because it is a fourth way in rather than a fourth
+          world — and only where the world can actually offer it: the CAMP
+          shrine woken and at least one territory held.
+        */}
+        {camp != null && (
+          <button type="button" data-go="camp" onClick={camp.onBegin}>
+            {s.ui.camp(camp.ring)}
+          </button>
+        )}
       </PanelMenu>
 
       {/*

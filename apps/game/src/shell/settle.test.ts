@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pickLocale } from '@content/locale';
 import { EMPTY_PROGRESS } from '@meta/progress';
+import { GOALS } from '@content/goals';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { dailiesOf, runsOf } from '@meta/timeline';
@@ -182,6 +183,46 @@ describe('the survey', () => {
 
   it('says nothing about a world that has met nothing', () => {
     expect(settle(settling(null)).goals).toEqual([]);
+  });
+
+  /**
+   * THE SURVEY PAYS, which it never had (2026-08-30).
+   *
+   * `content/goals.ts` opens by calling these "five world-scale goals, each
+   * paying relics ONCE per world the moment it is first met", and
+   * `Goal.reward` — 25 to 40 relics apiece — had no consumer anywhere in this
+   * repository. The goal was detected, written into `goalsMet` and listed on
+   * the end screen, and the purse did not move. Seventh of this body's
+   * signature miss and the third of the invisible kind: nothing on screen was
+   * wrong, only the number.
+   *
+   * Asserted as an EXACT total rather than "more than before", because more
+   * than before is what a run's own payout already gives.
+   */
+  it('pays the survey its reward, on top of what the run earned', () => {
+    const nearly: WorldMemory = {
+      ...newWorld(snap.state.rootSeed),
+      territories: ['2,0', '3,0', '4,0', '5,0'],
+    };
+    const after = settle({ ...settling(nearly), progress: EMPTY_PROGRESS });
+    const reward = GOALS.find((g) => g.id === 'territories4')?.reward ?? 0;
+    expect(reward, 'the survey pays nothing at all').toBeGreaterThan(0);
+    expect(after.goals).toContain('territories4');
+    expect(after.progress.relics, 'a goal was met and the purse did not move').toBe(
+      endingPayout(snap.state).relics + reward,
+    );
+  });
+
+  it('pays it ONCE per world, however many runs meet it again', () => {
+    const already: WorldMemory = {
+      ...newWorld(snap.state.rootSeed),
+      territories: ['2,0', '3,0', '4,0', '5,0'],
+      goalsMet: ['territories4'],
+    };
+    const after = settle({ ...settling(already), progress: EMPTY_PROGRESS });
+    // The underlying fact stays true forever — four territories do not
+    // un-happen — so the ledger is the only thing that can stop it paying.
+    expect(after.progress.relics).toBe(endingPayout(snap.state).relics);
   });
 });
 

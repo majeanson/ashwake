@@ -416,7 +416,7 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
     newGround: 'NEW GROUND — farther than this world has ever reached.',
     unique: 'UNIQUE — every match counts double, both ways.',
   },
-  goalMet: (goal) => `GOAL MET — ${goal}`,
+  goalMet: (goal, relics) => `GOAL MET — ${goal} · +${relics} relics`,
   goal: {
     reach20: 'Reach 20 hexes from home',
     territories4: 'Hold 4 territories',
@@ -613,6 +613,7 @@ Nothing new inside — a find grants only what you do not already carry, and onl
     atlasFinds: 'FINDS',
     atlasUnlocked: 'UNLOCKED',
     emptyWorld: 'begin new',
+    camp: (ring) => `BEGIN AT CAMP — your farthest territory, ring ${ring}`,
     worn: 'WORN',
     wear: 'WEAR',
     maxed: 'MAXED',

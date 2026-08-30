@@ -2,7 +2,7 @@ import type { Progress } from '@meta/progress';
 import type { Theme } from '@theme/tokens';
 import { arcNote, type HudView } from '@view/view';
 import type { LessonId } from '@view/lessons';
-import type { GoalId } from '@content/goals';
+import { GOALS, type GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Prose } from '../ui/Prose';
@@ -173,7 +173,7 @@ export function EndScreen({
       {goals.length > 0 && (
         <ul className="goals-met">
           {goals.map((id) => (
-            <li key={id}>{s.goalMet(s.goal[id])}</li>
+            <li key={id}>{s.goalMet(s.goal[id], GOALS.find((g) => g.id === id)?.reward ?? 0)}</li>
           ))}
         </ul>
       )}

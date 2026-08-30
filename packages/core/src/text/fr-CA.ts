@@ -437,7 +437,7 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
     newGround: 'TERRAIN NEUF — plus loin que ce monde n’est jamais allé.',
     unique: 'UNIQUE — chaque appariement compte double, des deux côtés.',
   },
-  goalMet: (goal) => `OBJECTIF ATTEINT — ${goal}`,
+  goalMet: (goal, relics) => `OBJECTIF ATTEINT — ${goal} · +${relics} reliques`,
   goal: {
     reach20: 'Atteindre 20 hex du départ',
     territories4: 'Tenir 4 territoires',
@@ -638,6 +638,7 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     atlasFinds: 'TROUVAILLES',
     atlasUnlocked: 'DÉBLOQUÉ',
     emptyWorld: 'nouvelle partie',
+    camp: (ring) => `PARTIR DU CAMP — ton territoire le plus loin, anneau ${ring}`,
     worn: 'PORTÉ',
     wear: 'PORTER',
     maxed: 'AU MAX',

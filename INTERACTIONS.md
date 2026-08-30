@@ -90,6 +90,7 @@ deliberately absent in both.
 | FIT ⇄ HERE camera toggle                 | yes                 | ✓                                                   |
 | Diary rows unfold                        | yes                 | ✓                                                   |
 | Shop: buy, wear, unfold a perk           | yes                 | ✓                                                   |
+| WORLDS: **BEGIN AT CAMP**                | yes, in that panel  | ✓ (2026-08-30 — the fifth shrine's unlock)          |
 | Sound toggle over the board              | yes                 | ✗ (no sound in this body yet)                       |
 | `✕` lens-clear button                    | yes                 | ✗ — the fog tap and a second long-press both let go |
 
@@ -141,11 +142,14 @@ Four rules that are not obvious from the table, each with its own test:
 
 1. **The `✕` lens-clear button.** The fog tap and a second long-press both
    let go, so this is a convenience rather than a gap.
-2. **The History-API router**, which `NEXT.md` argues may not be wanted:
-   `?seed=` and `?daily=` links already work, every screen is a state change by
-   ruling, and a router would buy BACK-on-a-panel at the cost of the one
-   invariant that has held since Stage 2. `meta/route`'s `parseRoute` is READ
-   as of 2026-08-29 — see below; `searchFor` and `HOME` are still unread.
+2. **~~The History-API router.~~ RULED OUT 2026-08-30** (`DECISIONS.md` D9).
+   What is left of it is one real gesture: **BACK on an open panel**, which on
+   Android leaves the site from on top of the manual. That wants one history
+   entry per open dialog owned by `ui/dialog.tsx`, not a URL→scene table, and
+   it is filed in `NEXT.md` for after Session A because it is a new global
+   gesture. `meta/route`'s `parseRoute` is read at boot for all three of its
+   fields as of 2026-08-30 — `?seed=`, `?daily=` and now `?camp=`; `searchFor`
+   and `HOME` are still unread and, per D9, are a deletion rather than a debt.
 3. **`meta/mark`**'s maskable exports duplicate nothing the app renders, and
    are kept on purpose: they are the source the shipped maskable icons were
    baked from, and the baker is part of the art pipeline `NEXT.md` §5 holds.

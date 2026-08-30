@@ -1524,3 +1524,167 @@ about eleven times slower than this machine does. The timeout moves to both
 typecheck/lint/format/build clean. Ten of the new tests each ask whether a
 NUMBER moves, because a suite that only checked `economyFor` returned _a_
 `Tuning` would have stayed green through every bit of this.
+
+### Session 21 — a world with an age, and the reward that was never paid (2026-08-30)
+
+**Question:** the last two sessions each found a mechanic that was inert
+because nobody could SEE the number. Can that be turned into an instrument —
+a fixture of a world three hundred runs old, rendered — and does the
+instrument find a seventh?
+
+**Answer: yes, and it found seven — three of them with its own hands, and one
+of those in a SCREENSHOT rather than in the code.**
+
+**THE INSTRUMENT.** `shell/fixture.ts` and `?runs=n`: the screen audit's third
+axis, asked for in `NEXT.md` §3 since the file was written. The two histories it
+had — `?taught=1` and `?end=1` — are both facts about a SESSION; this is a fact
+about a DEVICE, so the worlds panel, the atlas, the shop, the hall of fame and
+the end screen's unlock list stop being photographed nearly empty. Wired into
+`pnpm audit:screens` at three ages of ONE world seed — five runs in, thirty,
+three hundred — so the rows are a before, a middle and an after rather than
+three unrelated places.
+
+**It is honest by construction, which is the whole design.** The territories,
+shrines and finds are REAL landmarks, read off the world seed with
+`destinationsWithin`/`findsWithin` — the same pure functions the reducer
+consults when growth reveals a hex — so pressing BEGIN in a fixture opens a
+board that agrees with its own ledger. The perks come from folding `grantFind`
+over those hexes, which is what the shell does. The goals met are `metGoalIds`
+over the world it built. The purse and the shop are one arithmetic: relics
+earned per run and by the survey, then SPENT through `buy`, so a shop level
+always has a price behind it. The SEED is chosen rather than rolled, and chosen
+against that arithmetic — a sparse plane gives a three-hundred-run world three
+woken shrines out of five, which photographs as a bug in the game rather than a
+fact about that seed.
+
+**Three ages rather than two, and the middle one is not a convenience.** Thirty
+runs is the only age at which the shop has rows on both sides of the affordable
+line. Five is a shop nobody can shop in; three hundred is a ladder already
+finished. From a distance those two pictures look like each other AND like a
+purse that never earned anything, which is the exact confusion the axis exists
+to end.
+
+**THEN THE SWEEP, and `CLAUDE.md`'s warning extended from actions to numbers.**
+Four more of this body's signature miss, all of the invisible kind:
+
+**Seven. The survey paid nothing.** `content/goals.ts` opens by calling the five
+goals "world-scale goals, each paying relics ONCE per world the moment it is
+first met", and **`Goal.reward` had no consumer anywhere in this repository** —
+25 to 40 relics apiece, detected, written into `goalsMet`, listed on the end
+screen, and never banked. Ashwake 1 pays it in `keeper.ts`'s `checkGoals`. Paid
+in `settle` now, where `newlyMetGoals` already runs and `goalsMet` is already
+written, so there is one site rather than two. The end screen's line says the
+amount as well (`s.goalMet(goal, relics)`, both languages): a line that says a
+goal was met without saying what it was worth is the version of this bug a
+player cannot tell from the real thing.
+
+**Eight. A found perk never reached the world, so it died on every reload and
+never touched a dial.** Perks moved onto `WorldMemory` on 2026-08-26 and
+`encodeProgress` has stripped them from the device blob ever since,
+deliberately — `decodeProgress` hands back an empty shelf **by contract**.
+Nothing in this body ever wrote the world's copy, and nothing ever read it
+back. So a find granted a perk into React state, the blob refused to carry it,
+the next boot had none; and `economyFor`, which reads `world.perks`/`worn`,
+never saw one, so the dials a worn perk sets were never set. **A perk was a
+name in a toast.** `useDevice` composites the world's shelf at boot and at
+every world switch now, and one effect in `App.tsx` mirrors it back through the
+KEEPER — one seam rather than three call sites, because a find grants, the shelf
+equips and the shelf unequips, and a rule written three times is a rule that
+comes to disagree with itself.
+
+**Nine. `mergeRun` had no caller at all.** Its own docblock says why it was
+split off from `rememberRun` in Ashwake 1, and both halves were live bugs
+there: a shrine woken at placement 40 did not reach the atlas until the
+expedition ended (Marc: _"it still shows 0 of 5 found"_), and a player who
+closed the tab lost the territory they had just walked to. This body had
+reintroduced both — world memory was written only at `settle`, so every claim
+was provisional until a run was over. It merges after every action now, through
+one held copy of the world rather than a decode of a several-thousand-hex blob
+per tap.
+
+**Ten, and the instrument found this one itself.** `?taught=1` handed
+`useDevice` a whole replacement `Progress` built on `EMPTY_PROGRESS`. Harmless
+while the only other history was `?end=1`; fatal the moment a DEVICE history
+existed, because `?runs=300&taught=1` seeded a purse, a build and a shelf and
+then the taught override threw all three away on the way back in. **The
+three-hundred-run shop photographed `0` relics** — precisely the picture the
+axis was built to make impossible, produced by the axis itself, and caught by
+the e2e test written for it. It is a boolean now: `?taught=1` fills the teaching
+ledger and touches nothing else.
+
+**Eleven, and the instrument caught this one too — in itself.** The audit's
+PLAYED device, `taught=1&end=1&seed=7`, **stopped being played on the morning
+of the same day**: `?seed=` became a DETOUR when the world seed was fixed, so
+the run banked nothing, the device stayed VIRGIN, `More` hides SHOP and FAME on
+a virgin device, and three tests sat on a click that could never land until the
+180-second timeout. **They then kept the previous run's screenshots**, so the
+report looked complete with three of its pictures a day old — which is the
+worst property a report can have, and the same one the `imaged` check in
+`audit.ts` was written to avoid. It plays on `?runs=1` now: one run deep, on a
+fixed world seed, so the run banks AND the picture is the same picture twice.
+
+**Twelve, and it is nine wearing a different face.** The end screen's list of
+what a run UNLOCKED was always empty. `wokeNow` read the world off the DISK,
+which nothing had updated since the run began, so it always equalled
+`unlocksAtStart`. The WOKE toast fired — that comes from the receipts, which
+read the run's own state — so the screen said a shrine had woken and then
+summarised the run as having changed nothing. It reads the live copy now.
+
+**Thirteen, and this one came out of a SCREENSHOT rather than a grep** —
+which is the whole argument for the axis. `audit-shots/*/worlds-many.png` shows
+a three-hundred-run world reading **`FINDS 6/5`**. The atlas counted find HEXES
+claimed against `PERKS.length`, the size of the perk POOL: two different things
+wearing one slash. A find grants a perk only while the shelf has room, so the
+sixth find hex a veteran claims pushes the numerator past its own denominator,
+and a player cannot tell a bug in the game from a bug in arithmetic. The
+denominator settles which number belongs on top — the row asks how much of the
+hunt is done, so it is the SHELF, which is also the fraction Marc quoted when
+finds were paying nothing at all: _"in the end screen I still see 0/5."_ It is
+reachable in ordinary play, and no grep would ever have found it: both
+expressions had consumers, and both were correct on their own.
+
+**CAMPS — the last piece of world memory to cross.** `newRun`'s `wakeAt` was
+hard-wired `null` in `store.ts`'s `open`, because the fifth shrine gates a BEGIN
+AT CAMP button this body never built, so the last rung of the ladder woke a door
+onto nothing. `campFor` carries Ashwake 1's conditions verbatim — the CAMP
+shrine woken, at least one territory held, wake at the FARTHEST of them (Marc's
+anchor, _"every camp restarts the climb"_) — the WORLDS panel has the button,
+and `?camp=1` is read at boot, which closes the last field of `parseRoute` that
+nothing looked at. The engine had carried the rest since the rules were lifted:
+`homeOf` anchors reach at the wake hex, so a camp run's climb is measured from
+where it woke and REACH 20 cannot be minted by waking at ring 20 and placing one
+tile.
+
+**Two smaller ones, both found by reading rather than by running.** RESET
+TEACHING handed back `EMPTY_PROGRESS` — the whole ledger, the relic purse and
+every shop level with it. A control labelled "RÉINITIALISER LES LEÇONS" that
+silently spends a world's savings does more than it says, and the part it does
+not say is unrecoverable. And a DETOUR or a DAILY could grant a perk, which
+Ashwake 1 guards in `findLabel`: a perk lives on the world it was found in, so a
+run with no world was handing out perks with nowhere to be written.
+
+**The purse's spend rows are tested** (`screens/purse.test.tsx`), which
+`NEXT.md` §3 has asked for since it was written — and tested in the shape that
+matters: each row actually clicked, then its action put through `reduce` and a
+NUMBER checked, because a spend that returns the same state is what the reducer
+does with an action it REFUSES and that is indistinguishable from a working
+button.
+
+**The router is DECIDED and not ported** (`DECISIONS.md` D9). Ashwake 1's
+router routes RUNS, not panels, and its `popstate` rebuilds the session from the
+URL — right for a shell whose screens are imperative DOM and wrong here, where
+it would introduce a second authority on what is on screen. Two of the three
+things it buys are already delivered: every link the game hands out opens at
+boot, and SHARE rather than the address bar is the distribution mechanism. The
+third — BACK on an open panel — is real, and needs one history entry per open
+dialog owned by `ui/dialog.tsx`, not a URL→scene table. Filed rather than built:
+the freeze before Session A is on the first minute, and a new global gesture
+wants its own question.
+
+**Nothing that changes the first minute shipped.** The fixtures are behind a
+query, camps are behind the fifth shrine, and the two paid rewards are numbers
+a player only reaches after a run.
+
+**Verified:** 1059 tests / 74 files, 67 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
+twenty-three screens × four directions.

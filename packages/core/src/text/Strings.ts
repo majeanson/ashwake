@@ -287,7 +287,16 @@ export type Strings = {
     readonly newGround: string;
     readonly unique: string;
   };
-  readonly goalMet: (goal: string) => string;
+  /**
+   * A milestone the run was the one to finish, and what it PAID.
+   *
+   * The relics moved INTO the sentence on 2026-08-30, when the survey's payout
+   * turned out to have no consumer anywhere in this body — `Goal.reward` was
+   * written into `content/goals.ts`, detected, listed on the end screen and
+   * never banked. A line saying a goal was met without saying what it was
+   * worth is the version of that bug a player cannot tell from the real thing.
+   */
+  readonly goalMet: (goal: string, relics: number) => string;
   readonly goal: Readonly<
     Record<'reach20' | 'territories4' | 'known40' | 'shrinesAll' | 'perksAll', string>
   >;
@@ -587,6 +596,17 @@ export type Strings = {
     readonly atlasUnlocked: string;
     /** A slot nobody has played yet. */
     readonly emptyWorld: string;
+    /**
+     * BEGIN AT CAMP, and where the camp is — the fifth shrine's unlock
+     * (2026-08-30).
+     *
+     * Deep ground you HOLD becomes ground you can START from, which is the
+     * remembered world's one missing verb. It names the RING because that is
+     * the whole of what a player is choosing: how far out the climb begins.
+     * In the WORLDS panel rather than on the door, because it is a way INTO
+     * this world and that panel is the list of those.
+     */
+    readonly camp: (ring: number) => string;
     /** A perk being worn, and the button that puts one on. */
     readonly worn: string;
     readonly wear: string;

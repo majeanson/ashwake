@@ -43,9 +43,39 @@ const DIRECTIONS = ['torchlit', 'daylight', 'torchlit-bright', 'settlement'] as 
  * `?end=1` plays a whole deterministic run and banks it, which is what fills
  * the shop, the hall of fame and the diary. `?taught=1` is a device that has
  * met every lesson — without it, most of these are pictures of a teaching card.
+ *
+ * **The third axis, 2026-08-30.** Both of the above are facts about a SESSION.
+ * `?runs=n` is a fact about a DEVICE — a world with shrines woken, territories
+ * held, finds taken, relics banked, a shop part-built and a diary with rows
+ * (`shell/fixture.ts`). Two ages of the SAME world seed, so the pair is a
+ * before and an after rather than two unrelated places. This is the axis
+ * `NEXT.md` §3 has asked for since it was written, and the instrument that
+ * would have caught both of 2026-08-30's bugs at a glance: a three-hundred-run
+ * world showing `0` relics is not subtle.
  */
-const PLAYED = 'taught=1&end=1&seed=7';
+/**
+ * `PLAYED` used to be `taught=1&end=1&seed=7`, and it stopped being played on
+ * 2026-08-30 without anybody noticing.
+ *
+ * `?seed=` is a DETOUR since the world seed was fixed that morning — a run on
+ * somebody else's geography, which is correct and which by design banks
+ * nothing. So this device finished a run and stayed VIRGIN, `More` hides SHOP
+ * and FAME on a virgin device, and three tests sat on a click that could never
+ * land until the 180-second timeout. They then kept their previous run's
+ * screenshots, so the report looked complete and three of its pictures were a
+ * day old.
+ *
+ * The eighth of this body's signature miss, and the first one found in the
+ * instrument rather than in the game — which is the argument for the
+ * instrument having tests of its own. The seed comes from `?runs=1` now: a
+ * device one run deep, on a FIXED world seed, so the run banks AND the picture
+ * is the same picture twice.
+ */
+const PLAYED = 'taught=1&end=1&runs=1';
 const FRESH = 'taught=1&seed=7';
+const FIVE = 'taught=1&runs=5';
+const THIRTY = 'taught=1&runs=30';
+const MANY = 'taught=1&runs=300';
 
 type Screen = {
   readonly name: string;
@@ -97,6 +127,29 @@ const SCREENS: readonly Screen[] = [
       await page.locator('[data-hud="end"] summary').first().click();
     },
   },
+
+  /*
+   * FIVE RUNS IN, THIRTY, and THREE HUNDRED — one world at three ages.
+   *
+   * These are the rows to read against each other. A screen that looks the
+   * same in all three is a screen showing nothing the player earned, which is
+   * exactly the failure mode the roguelite spent two sessions in.
+   *
+   * THIRTY is the middle on purpose and not a convenience: it is the only age
+   * at which the shop has rows on both sides of the affordable line. Five is
+   * a shop nobody can shop in, three hundred is a ladder already finished, and
+   * from a distance those two pictures look the same as each other AND the
+   * same as a purse that never earned anything.
+   */
+  { name: 'front-door-many', query: MANY, reach: alreadyThere },
+  { name: 'worlds-five', query: FIVE, reach: viaMore('worlds') },
+  { name: 'worlds-thirty', query: THIRTY, reach: viaMore('worlds') },
+  { name: 'worlds-many', query: MANY, reach: viaMore('worlds') },
+  { name: 'shop-thirty', query: THIRTY, reach: viaMore('shop') },
+  { name: 'shop-many', query: MANY, reach: viaMore('shop') },
+  { name: 'fame-thirty', query: THIRTY, reach: viaMore('fame') },
+  { name: 'board-thirty', query: THIRTY, reach: begin },
+  { name: 'end-many', query: `${MANY}&end=1`, reach: begin },
 ];
 
 /** BEGIN, and wait for the door to leave. */
