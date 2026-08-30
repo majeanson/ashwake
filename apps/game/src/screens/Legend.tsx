@@ -72,7 +72,10 @@ export function Legend({ theme, s }: LegendProps) {
             <span className="legend-name">
               {names[colour]}
               {powerOf(colour, TUNING, theme, s) === '' ? null : (
-                <span className="legend-note note"> — {powerOf(colour, TUNING, theme, s)}</span>
+                <span className="legend-note note">
+                  {' '}
+                  — {clause(powerOf(colour, TUNING, theme, s))}
+                </span>
               )}
             </span>
           </li>
@@ -157,3 +160,18 @@ export function Legend({ theme, s }: LegendProps) {
     </section>
   );
 }
+
+/**
+ * `powerOf` returns an APPENDABLE fragment — it opens with " · " because it
+ * was written to be tacked onto a line that already said something, which is
+ * how Ashwake 1's card used it. The legend is its only caller today, and it
+ * prints the clause on its own after an em dash, so that separator arrives
+ * with nothing on its left: "FARM — · +1 worth per FARM neighbour".
+ *
+ * Visible enough to fix once the power WORD started being dropped for a
+ * direction whose names already say it (2026-08-29) — before that the "·" had
+ * "crowds:" behind it and read as punctuation rather than as a leftover.
+ * Trimmed here rather than in the catalogue, because the fragment is correct
+ * for what it is; this is one host printing it standalone.
+ */
+const clause = (power: string): string => power.replace(/^ · /, '');
