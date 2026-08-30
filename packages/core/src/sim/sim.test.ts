@@ -19,17 +19,30 @@ import { summarise } from './report';
  * Seed counts are small on purpose — these guard the SHAPE of the economy,
  * and a shape that needs two hundred seeds to see is not a shape. Use
  * `pnpm sim` when you want the real numbers.
+ *
+ * **Both suites carry `SIM_TIMEOUT`**, because every test in this file plays
+ * thousands of placements and vitest's five-second default is sized for unit
+ * tests. Only the first one carried it, and on 2026-08-30 a GitHub runner ran
+ * this file about eleven times slower than a desktop does — 40s where it takes
+ * 4s here — and "ends every run by running dry" timed out at exactly the cap
+ * while every assertion in it was still true. A test that fails on the
+ * runner's mood rather than on the code is a test nobody can read, and the
+ * next person to see it red will assume the economy moved.
  */
+
+/** Long enough that only a genuine deadlock reaches it — which is the thing
+ *  the first test in this file was written to catch. */
+const SIM_TIMEOUT = { timeout: 60000 };
 
 const SEEDS = 6;
 const stats = (policy: (typeof POLICIES)[number]) =>
   summarise(policy.name, playMany(policy, SEEDS, { tuning: TUNING }));
 
-describe('gate C — the economy closes', () => {
+describe('gate C — the economy closes', SIM_TIMEOUT, () => {
   // The first clause, and the one that catches genuine deadlocks: this suite
   // found one immediately, where a policy kept choosing placements it could no
   // longer afford and the run neither ended nor advanced.
-  it('gives every policy a run that ends by itself', { timeout: 60000 }, () => {
+  it('gives every policy a run that ends by itself', () => {
     for (const policy of POLICIES) {
       const s = stats(policy);
       expect({ policy: policy.name, stalled: s.stalled, capped: s.capped }).toEqual({
@@ -72,7 +85,7 @@ describe('gate C — the economy closes', () => {
   });
 });
 
-describe('what the harness proves about the one economy', () => {
+describe('what the harness proves about the one economy', SIM_TIMEOUT, () => {
   it('pays for packing well', () => {
     // Pops per placement is the packing skill, and it is what separates the
     // lines: ~0.73 for competent play against ~0.18 for random.
