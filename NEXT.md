@@ -42,6 +42,36 @@ of 2026-08-29: `scripts/icons.ts` bakes the shipped icons
 from them and `scripts/artslots.ts` draws the lockup with `markGroup`. The
 source of an asset that ships now has the maker beside it (§5).
 
+**The roguelite was not running at all, in two places** (found and fixed
+2026-08-30, `LOG.md` Session 20). Recorded here rather than only in the log
+because it is the strongest evidence yet for this file's own warning.
+
+Nothing minted a world seed: a fresh device opened on the literal `1`, and
+NEW RUN, the world switcher and RESET ALL each rolled `Math.random()`. So
+every run after the first failed `settle`'s seed guard — which is correct, and
+was doing its job against a shell that lied to it — and banked as a detour: no
+relics, no ground, no goals, no shrine unlocks. And separately, `createSession`
+had taken a `tuning` since Stage 1 that no caller ever passed, so
+`applyProgress` and `withWorldPerks` had **zero callers** and `unlockedBy`
+had three, all printing labels. Fixing either alone would have hidden the
+other.
+
+**The new part of the lesson.** The four earlier misses were screens that
+rendered a control nothing consumed — visible, once you looked. This pair was
+invisible: two runs of the same game and two different planets are the same
+picture, and a shrine that unlocks nothing still lights up, still toasts, still
+lists itself on the end screen. Only the numbers disagreed and nothing read
+them. **Grepping for a consumer is not enough where the consumer is a number.**
+
+**CAMPS ARE STILL DEAD, and knowingly so.** `newRun`'s `wakeAt` — begin a
+run at the world's farthest territory — is passed `null` from the one place
+that could pass it (`shell/store.ts`'s `open`), because the unlock gates a
+BEGIN AT CAMP button in the door's WORLDS panel and that button does not exist
+in this body. The fifth shrine therefore wakes a door onto nothing. `camp` is
+deliberately absent from `applyUnlocks` for the same reason: it is not a dial.
+Ashwake 1's version is `session.ts:1244-1258` and it is small. This is the
+last piece of the world memory that has not crossed.
+
 ## 1. Needs Marc, and only Marc
 
 **The camera, by feel.** Two fingers now lean and turn the board as well as

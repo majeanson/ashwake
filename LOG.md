@@ -1445,3 +1445,82 @@ a power (D4). `text.test.ts` would have caught it; better that it never had to.
 **Verified:** 1006 tests / 68 files; typecheck, lint, format clean. Two pin
 files re-recorded deliberately, both listed above and both with the reason
 written into the test file rather than only into this one.
+
+### Session 20 — a world is a place, and the roguelite starts running (2026-08-30)
+
+**Question:** Marc says he gains perks from shrines and still sees 0/5, and
+that relics never arrive when Ashwake 1 paid them. Is the roguelite loop
+running at all?
+
+**Answer: no, and it never had been — in two independent places, each of which
+would have hidden the other.**
+
+**One. Nothing minted a world seed.** Ashwake 1 mints one when a world is
+created and re-derives every run's geography from it — `keeper.ts` says it
+outright, "the seed re-derives from `world.worldSeed` on the session that
+starts next." That is what makes revealed ground, claimed territory and woken
+shrines mean anything: you are going back to somewhere.
+
+This body minted none. A fresh device opened on the literal `1` — every new
+player got the same board — and NEW RUN, the world switcher and RESET ALL each
+rolled `Math.random()`. The dependency ran backwards: `settle` adopted whatever
+seed the run happened to carry as the world's.
+
+And that is what switched the loop off. The seed guard added the day before is
+correct — a run may only merge into the world it was played on, because ground
+unioned from a foreign geography is unremovable afterwards — so once a world
+existed, **every later run failed the guard and banked as a detour**: no
+relics, no ground, no goals, no shrine unlocks. A correct guard, doing its job,
+against a shell that was lying to it.
+
+`worldSeedFor(slot)` mints on first read and writes the world down, so a world
+exists before its first run. The boot's precedence is a ladder — the URL, then
+the run this device left unfinished, then home — because a run is saved under
+the seed it was PLAYED on, and reloading a shared link has to pick that same
+run back up rather than deal a fresh board on the same number.
+
+`memoryFor(slot, seed)` then hands the run what the world holds. `newRun` has
+taken `claimed`, `claimedFinds` and `rearmed` since Stage 1 and nothing ever
+filled them, so a territory was written down every run and read back never.
+
+**Two. Nothing composed the economy.** `createSession` has taken a `tuning`
+since Stage 1 and no caller ever passed one, so every run played the bare
+`TUNING`. `applyProgress` — whose own docblock calls itself "the ONLY place
+progress touches balance" — had zero callers outside its own file. So did
+`withWorldPerks`. `unlockedBy` had three, and all three printed a LABEL: the
+WOKE toast, the atlas row, the end screen's unlock list. A shrine announced
+DRAFT, three screens agreed it had, and the hand stayed four cards wide.
+`applyUnlocks` had no counterpart in this body at all.
+
+**Fixing the first alone would not have been enough.** Once relics finally
+reached the bank, they still bought nothing. `shell/economy.ts` composes the
+three layers in Ashwake 1's order — plain, then what the shrines woke, then
+what the shop bought and which perk is worn — and the economy is per RUN rather
+than per session, because a session lives for the life of the page and could
+never see a relic spent between two runs.
+
+**Fifth and sixth of this body's signature shape**, after the colour lens, the
+stash, the board's tap-to-describe and unselecting a card. `CLAUDE.md`'s
+standing warning has now been earned six times, and the new part is the lesson:
+**a screen that renders a thing without connecting it is the visible version;
+this pair was the invisible one.** Nothing looked wrong. Two runs of the same
+game and two different planets are the same picture, and a shrine that unlocks
+nothing still lights up, still toasts, still lists itself on the end screen.
+Only the numbers disagreed, and nothing was reading them.
+
+**Also this session.** The drag had two lurches, both every time: the tap slop
+was a debt rather than a threshold (every drag opened with a five pixel jump),
+and `glidedAt` held the previous glide's last frame, so every throw spent 64ms
+of travel on its first. H reaches the stash, which no key could. A pop pays out
+in a card rather than a toast, and the stat row wears the registry's `✤` for
+luck instead of a second symbol for a thing already named.
+
+**One test moved for the runner, not the code.** `sim.test.ts` timed out at
+5000ms on CI with every assertion still true — a GitHub runner played that file
+about eleven times slower than this machine does. The timeout moves to both
+`describe`s, where it describes the weight class; nothing asserted changed.
+
+**Verified:** 1016 tests / 69 files, 64 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean. Ten of the new tests each ask whether a
+NUMBER moves, because a suite that only checked `economyFor` returned _a_
+`Tuning` would have stayed green through every bit of this.
