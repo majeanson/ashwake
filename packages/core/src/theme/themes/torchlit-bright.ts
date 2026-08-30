@@ -43,6 +43,7 @@ export const TORCHLIT_BRIGHT: Theme = {
   source: 'Art Directions.dc.html §2c (torch2), widened for contrast 2026-08-25',
 
   orientation: 'flat',
+  motif: 'plane',
 
   board: {
     // True black rather than torchlit's near-black. The ladder below needs every

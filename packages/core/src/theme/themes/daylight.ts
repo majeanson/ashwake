@@ -42,6 +42,7 @@ export const DAYLIGHT: Theme = {
     'Authored 2026-08-25 for the contrast pass; register borrowed from the retired cold-survey direction.',
 
   orientation: 'flat',
+  motif: 'plane',
 
   board: {
     // Warm vellum, not white. A pure-white board is a torch of its own at night,

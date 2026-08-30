@@ -585,6 +585,35 @@ export type Voice = {
   readonly gain: number;
 };
 
+/**
+ * The FIGURES a direction's art is drawn from (2026-08-29).
+ *
+ * `Pattern` says a ground is striped at sixty degrees; it does not say whether
+ * those stripes are a tide, a furrow or an awning. On a live board that gap
+ * costs nothing — `paint.ts` draws the stripe and the colour carries the
+ * fiction — but the offline baker (`scripts/terrain.ts`) spends a whole build
+ * on ONE tile and can afford to draw the thing itself: jittered furrows with a
+ * lit crest instead of a rotated rule, angular chips instead of round dots.
+ * Which thing it draws is what this names.
+ *
+ * Two values, because there are two fictions:
+ *
+ * - `plane` — the dark plane, in every light. Moss tufts, dry grass, ember
+ *   glints, ash pits, tide ripples. Torchlit, torchlit-bright and daylight all
+ *   share it: they are the same place at three exposures, which is exactly why
+ *   they must share its figures.
+ * - `settlement` — somebody stayed. Furrows, awnings and crates, quarry
+ *   benches, paving courses. Nothing here is weather; everything here was
+ *   made by a hand.
+ *
+ * It is a claim the theme makes rather than something derived, unlike
+ * `isLight`, because two directions can share a palette's polarity and mean
+ * completely different places. The placeholder says `plane` for the reason it
+ * says everything else: it is the control, and the control does not get a
+ * fiction of its own.
+ */
+export type Motif = 'plane' | 'settlement';
+
 export type Theme = {
   readonly id: ThemeId;
   /** What the direction is called, in each language the game speaks. */
@@ -595,6 +624,8 @@ export type Theme = {
   readonly source: string;
 
   readonly orientation: Orientation;
+  /** What this direction's art is drawn OF. See `Motif`. */
+  readonly motif: Motif;
   readonly board: Board;
   readonly ink: Ink;
   readonly type: Type;

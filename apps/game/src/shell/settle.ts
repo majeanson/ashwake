@@ -1,3 +1,4 @@
+import { endingPayout } from '@engine/reduce';
 import type { GameState } from '@engine/state';
 import { arcSparkline, recordDaily, type DailyBook } from '@meta/daily';
 import { recordRun, type RecordBook } from '@meta/records';
@@ -48,6 +49,23 @@ export type Settled = {
    * the world — a second place for it to be wrong.
    */
   readonly goals: readonly GoalId[];
+  /**
+   * The device's ledger with this run's RELICS in it.
+   *
+   * Marc, 2026-08-29: *"I never get relics ... in the old game I still had
+   * some."* He was right, and the reason is that this function returned
+   * everything a run leaves behind EXCEPT the one thing the player takes with
+   * them. The world was folded, the records kept, the diary written — and
+   * `progress` was taken as an argument, read for the survey, and handed back
+   * unchanged. Every run ended with the shop as empty as it started, which is
+   * the roguelite loop not running at all.
+   *
+   * `endingPayout` is the engine's own arithmetic and already what the
+   * crossing banks: relics earned by burning, plus what unspent luck is worth
+   * on the way out. One source, so an ordinary ending and a crossing cannot
+   * disagree about what a run was worth.
+   */
+  readonly progress: Progress;
 };
 
 export type Settling = {
@@ -101,6 +119,15 @@ export function settle(now: Settling): Settled {
       records: now.records,
       timeline: now.timeline,
       goals: [],
+      /*
+       * A detour pays NO relics either.
+       *
+       * The seed guard exists because a run on somebody else's world must not
+       * touch this device's ledgers, and the purse is a ledger. A shared
+       * `?seed=` link that banked relics would be a link that pays the person
+       * who opened it — which is a thing people would post on purpose.
+       */
+      progress: now.progress,
     };
   }
 
@@ -113,6 +140,12 @@ export function settle(now: Settling): Settled {
   const goals = newlyMetGoals(walked, now.progress);
   const world: WorldMemory =
     goals.length === 0 ? walked : { ...walked, goalsMet: [...walked.goalsMet, ...goals] };
+
+  // What the run pays out, banked onto the device ledger.
+  const banked: Progress = {
+    ...now.progress,
+    relics: now.progress.relics + endingPayout(now.state).relics,
+  };
 
   const summary = now.hud.summary;
   const highlights = runHighlights(before, walked, {
@@ -153,7 +186,7 @@ export function settle(now: Settling): Settled {
     SHOTS_KEPT,
   );
 
-  return { world, records, timeline, goals };
+  return { world, records, timeline, goals, progress: banked };
 }
 
 /* ---- the daily ------------------------------------------------------------ */

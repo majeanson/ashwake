@@ -42,6 +42,7 @@ export const TORCHLIT: Theme = {
   source: 'Art Directions.dc.html §2c (torch2)',
 
   orientation: 'flat',
+  motif: 'plane',
 
   board: {
     background: 0x0a0806,

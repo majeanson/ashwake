@@ -52,6 +52,26 @@ export const SETTLEMENT: Theme = {
   // rather than grown, and a flat top is the side a wall can stand on.
   orientation: 'flat',
 
+  /*
+   * The one direction whose art is not weather.
+   *
+   * Every ground here was made by a hand, and until 2026-08-29 the baked art
+   * did not know that: `scripts/terrain.ts` drew moss tufts, dry grass, ember
+   * glints and tide ripples in settlement's colours, because it had one set of
+   * figures and recoloured them per direction. Recolouring is the right answer
+   * for three directions that are the same place at three exposures. It is the
+   * wrong answer for a place that is a different place.
+   *
+   * Worse than wrong, as it turned out: the baker chose its drawing off each
+   * slot's declared pattern KIND, and this direction is the only one that
+   * departs from the plane's kinds — so MARKET, whose stripes are a hatch
+   * where the plane's brightest ground is dots, matched nothing and baked with
+   * no texture at all, and QUARRY lost its cut-face overlay the same way. The
+   * live procedural painter drew both correctly the whole time, which means
+   * the ART path was worse than the fallback it supersedes.
+   */
+  motif: 'settlement',
+
   board: {
     // Dusk, not night. Warm because everything here is lamplight and earth,
     // and dark enough that the falloff below still has somewhere to fall to.

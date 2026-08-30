@@ -470,6 +470,8 @@ export type Strings = {
      * said what the player was doing or that running out is how a run ends
      * rather than a mistake they made.
      */
+    /** Said when a hidden find grants a perk — the shelf gaining one. */
+    readonly perkFound: (name: string) => string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
     readonly camera: {
       readonly fit: string;

@@ -5,6 +5,7 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { dailiesOf, runsOf } from '@meta/timeline';
 import { newWorld, type WorldMemory } from '@meta/world';
+import { endingPayout } from '@engine/reduce';
 import { settle, settleDaily } from './settle';
 import { createSession } from './store';
 import { walkToEnd } from './walk';
@@ -234,5 +235,62 @@ describe('a run played on somebody else’s seed', () => {
     const own = { ...settling, world: newWorld(snap.state.rootSeed) };
     expect(settle(own).world.runs).toBe(1);
     expect(settle(own).world.revealed.length).toBeGreaterThan(0);
+  });
+});
+
+describe('what the player carries out', () => {
+  /**
+   * Marc, 2026-08-29, after playing: *"I never get relics ... in the old game
+   * I still had some."*
+   *
+   * `settle` folded the world, kept the records and wrote the diary — and
+   * handed `progress` back exactly as it was given. So the shop was as empty
+   * after a run as before it, which is the roguelite loop not running: every
+   * run was the first run.
+   *
+   * The number is the ENGINE's (`endingPayout`), and the crossing already
+   * banked it that way — so this test is as much about the two endings
+   * agreeing as about the relics arriving at all.
+   */
+  it('banks the run’s relics onto the device', () => {
+    const snap = finished();
+    const before = { ...EMPTY_PROGRESS, relics: 12 };
+    const after = settle({
+      state: snap.state,
+      hud: snap.hud,
+      slot: 1,
+      world: null,
+      records: {},
+      timeline: [],
+      progress: before,
+      at: 1_756_000_000_000,
+    });
+
+    const earned = endingPayout(snap.state).relics;
+    expect(earned, 'the walked run earned nothing to bank').toBeGreaterThan(0);
+    expect(after.progress.relics).toBe(before.relics + earned);
+    // Everything else about the ledger is untouched: settling a run is not the
+    // place perks are found or upgrades are bought.
+    expect(after.progress.found).toEqual(before.found);
+    expect(after.progress.bought).toEqual(before.bought);
+  });
+
+  it('pays a DETOUR nothing, because a shared world is not this device’s', () => {
+    // The seed guard's other half. A `?seed=` link that banked relics would be
+    // a link that pays whoever opens it — a thing people would post on purpose.
+    const snap = finished();
+    const before = { ...EMPTY_PROGRESS, relics: 12 };
+    const elsewhere: WorldMemory = newWorld(snap.state.rootSeed + 1);
+    const after = settle({
+      state: snap.state,
+      hud: snap.hud,
+      slot: 1,
+      world: elsewhere,
+      records: {},
+      timeline: [],
+      progress: before,
+      at: 1_756_000_000_000,
+    });
+    expect(after.progress).toBe(before);
   });
 });

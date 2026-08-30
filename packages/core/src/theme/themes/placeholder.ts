@@ -25,6 +25,7 @@ export const PLACEHOLDER: Theme = {
   source: 'src/render/PixiRenderer.ts, sessions 0–1',
 
   orientation: 'pointy',
+  motif: 'plane',
 
   board: {
     background: 0x14161c,

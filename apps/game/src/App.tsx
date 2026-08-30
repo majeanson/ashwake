@@ -9,7 +9,15 @@ import type { CellView } from '@render/Renderer';
 import { namesOf } from '@theme/tokens';
 import { colourLesson, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
 import { isEnabled } from '@meta/features';
-import { EMPTY_PROGRESS, hasMet, meet, TEACH_IDS, type Progress } from '@meta/progress';
+import {
+  EMPTY_PROGRESS,
+  grantFind,
+  hasMet,
+  meet,
+  perkText,
+  TEACH_IDS,
+  type Progress,
+} from '@meta/progress';
 import { ONLY_WORLD } from '@meta/records';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
@@ -382,6 +390,9 @@ function Game() {
     writeRecords(after.records);
     writeTimeline(after.timeline);
     clearRun(slot);
+    // The relics this run earned, onto the device — see `Settled.progress`.
+    // Without this line every run ended with the shop as empty as it started.
+    setProgress(() => after.progress);
     /*
      * The SURVEY: what this run was the one to finish, for the world.
      *
@@ -400,7 +411,7 @@ function Game() {
      */
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setGoals(after.goals);
-  }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper]);
+  }, [snap.hud.ended, snap.state, snap.hud, slot, daily, progress, keeper, setProgress]);
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -530,6 +541,31 @@ function Game() {
       if (now.state.claimed.length > claimedBefore) {
         const at = now.state.claimed.at(-1);
         if (at !== undefined) board.current?.visit(at, CLAIM_HOLD_MS);
+
+        /*
+         * A hidden FIND grants a perk, which is what a find is FOR.
+         *
+         * Marc, 2026-08-29: *"I gain perks with shrines but in the end screen
+         * I still see 0/5."* `grantFind` has been in the core since the rules
+         * were lifted, tested, deterministic from (worldSeed, hex) so the same
+         * find on the same world always gives the same perk — and it had no
+         * caller. Finds paid nothing at all, so the shelf never filled and
+         * `0 of 5 perks found` was the truth about a mechanic that could not
+         * happen.
+         *
+         * The fifth of this repository's signature miss: a rule the core
+         * implements and tests, reachable from nothing.
+         */
+        const cell = at === undefined ? undefined : now.state.cells[at];
+        if (at !== undefined && cell?.kind === 'landmark' && cell.reward === 'find') {
+          const got = grantFind(progress, now.state.rootSeed, at);
+          // Null means every perk is already owned — a find met with a full
+          // shelf grants nothing, and says so rather than pretending.
+          if (got !== null) {
+            setProgress(() => got.progress);
+            setNote(s.ui.perkFound(perkText(got.perk.id, s).name));
+          }
+        }
       }
 
       const said = now.said;
@@ -596,7 +632,7 @@ ${s.view.harvest.firstPopWhen}`,
       if (said.card) setSaidCard(said);
       else setNote(said.text);
     },
-    [session, ledgers, s, features, theme],
+    [session, ledgers, s, features, theme, progress, setProgress],
   );
 
   /**

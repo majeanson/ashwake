@@ -572,6 +572,7 @@ Rien de neuf dedans — une trouvaille ne donne que ce que tu ne portes pas déj
     resetTeaching: 'RÉINITIALISER LES LEÇONS',
     details: 'DÉTAILS',
     howToPlay: 'COMMENT JOUER',
+    perkFound: (name) => `UNE TROUVAILLE — tu portes ${name} maintenant.`,
     expedition: {
       title: 'L’EXPÉDITION',
       lines: [

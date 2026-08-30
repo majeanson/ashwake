@@ -10,6 +10,8 @@ import {
   hex,
   isLight,
   luma,
+  type Motif,
+  type Pattern,
   type Rgb,
   type Surface,
   type Theme,
@@ -150,6 +152,44 @@ function rng(seed: number): { next(): number; range(min: number, max: number): n
 
 const rgba = (c: Rgb, a: number): string =>
   `rgba(${(c >> 16) & 0xff},${(c >> 8) & 0xff},${c & 0xff},${a})`;
+
+/**
+ * The layer a drawing needs, or a LOUD failure (2026-08-29).
+ *
+ * Every slot function below used to ask for its layer as
+ * `s.pattern.kind === 'dots' ? s.pattern : null` and skip the layer when the
+ * answer was no. That reads as defensive and is the opposite: a direction
+ * whose kinds do not match the figures its motif draws loses those layers
+ * SILENTLY and bakes a flat tile, which is a worse tile than the procedural
+ * fallback the art exists to supersede.
+ *
+ * It is not hypothetical. `settlement` is the only direction that departs from
+ * the plane's kind layout — its MARKET is striped where the plane's brightest
+ * ground is dotted — so MARKET matched neither guard and shipped with no
+ * texture at all, and QUARRY lost its cut-face overlay the same way. Nothing
+ * reported it: the greyscale guardrail at the bottom of this file grades VALUE,
+ * and a missing texture barely moves a mean.
+ *
+ * So a mismatch throws, and says which slot, which direction, and both kinds.
+ * The bake is the only place this can be caught, and a build that stops is
+ * cheaper than a tile nobody notices is empty.
+ */
+function need<K extends Pattern['kind']>(
+  where: string,
+  pattern: Pattern,
+  kind: K,
+): Extract<Pattern, { kind: K }> {
+  if (pattern.kind !== kind) {
+    throw new Error(
+      `${T.id} ${where}: the ${T.motif} motif draws a '${kind}' here and the direction ` +
+        `declares '${pattern.kind}'. A layer the theme states and the maker cannot draw goes ` +
+        `MISSING rather than wrong — settlement's MARKET baked with no texture at all for ` +
+        `exactly this reason. Either give the layer a kind this motif draws, or teach the ` +
+        `motif that kind.`,
+    );
+  }
+  return pattern as Extract<Pattern, { kind: K }>;
+}
 
 function clipDef(id: string, inset: number): string {
   const pts = hexPoints(TCX, TCY, TSIZE * (1 - inset));
@@ -333,6 +373,261 @@ function crackLines(seed: number): string {
       `<path d="M ${cx.toFixed(1)} ${cy.toFixed(1)} L ${mx.toFixed(1)} ${my.toFixed(1)} L ${ex.toFixed(1)} ${ey.toFixed(1)}" ` +
         `fill="none" stroke="#0e0b08" stroke-opacity="0.32" stroke-width="${w.toFixed(1)}" stroke-linecap="round"/>`,
     );
+  }
+  return parts.join('');
+}
+
+// ------------------------------------------------- the settlement's figures
+
+/*
+ * Everything above this line is WEATHER: moss, dry grass, embers, ash, tide.
+ * Everything below it was made by a hand, which is the whole difference
+ * between the plane and a place somebody stayed in (`theme/tokens.ts#Motif`).
+ *
+ * Three rules they all keep, learned from the fields above:
+ *
+ * 1. **The figure is the silhouette.** A hex is drawn at 34–100 px on a phone,
+ *    so a crate is a rounded square with a lit top and not a crate. Detail
+ *    below about six file-pixels is a smudge and costs a build for nothing.
+ * 2. **Light comes from the theme, never from a constant.** The plane's slots
+ *    hard-code `0xf7e6be` and `0xffecc8` for "flame" and "torchlight"; these
+ *    take `T.ink.lit`, which is the direction's own lamplight, so a palette
+ *    move carries the highlights with it.
+ * 3. **A highlight stays under the alpha the plane's do** (0.04–0.07). A
+ *    centred label sits on the middle of this tile, and `paint.test` has
+ *    already caught one direction putting a third colour under one.
+ *
+ * They cover more than the hex, unlike the plane's fields: a rotated band that
+ * stops at the file edge leaves triangular gaps in the corners once the group
+ * is turned, which is visible on a leaned board where the corners are what you
+ * see. Cheap to over-draw, and the clip pays for it.
+ */
+
+/** How far past the file a rotated field is drawn, so a turn cannot uncover a corner. */
+const OVER = Math.max(TW, TH);
+
+/**
+ * FARM. A ploughed row: the trench, and the crest beside it that the lamps
+ * catch. Jittered per row, because a field is ploughed by somebody walking and
+ * a printed rule is the one thing a furrow never looks like.
+ */
+function furrowField(
+  seed: number,
+  pitch: number,
+  ink: Rgb,
+  alpha: number,
+  bar: number,
+  lit: Rgb,
+): string {
+  const r = rng(seed);
+  const parts: string[] = [];
+  for (let y = -OVER; y < TH + OVER; y += pitch) {
+    const pts: string[] = [];
+    for (let x = -OVER; x <= TW + OVER; x += 46) {
+      pts.push(`${x},${(y + r.range(-2.4, 2.4)).toFixed(1)}`);
+    }
+    const d = `M ${pts.join(' L ')}`;
+    parts.push(
+      `<path d="${d}" fill="none" stroke="${rgba(ink, alpha)}" stroke-width="${bar.toFixed(1)}" stroke-linecap="round"/>`,
+    );
+    // The crest, half a bar above the trench it was thrown out of.
+    parts.push(
+      `<path d="${d}" transform="translate(0,${(-bar * 0.8).toFixed(1)})" fill="none" ` +
+        `stroke="${rgba(lit, 0.05)}" stroke-width="${(bar * 0.5).toFixed(1)}"/>`,
+    );
+  }
+  return parts.join('');
+}
+
+/** FARM's crop, planted IN the rows rather than scattered over them — which is
+ *  the difference between a field and a meadow, and the reason this is not
+ *  `tuftField` with a different colour. */
+function cropRows(
+  seed: number,
+  rowPitch: number,
+  alongPitch: number,
+  ink: Rgb,
+  alpha: number,
+): string {
+  const r = rng(seed);
+  const parts: string[] = [];
+  for (let y = -OVER; y < TH + OVER; y += rowPitch) {
+    for (let x = -OVER; x < TW + OVER; x += alongPitch) {
+      const cx = x + r.range(-alongPitch * 0.18, alongPitch * 0.18);
+      const cy = y + r.range(-3, 3);
+      const clumps = 2 + Math.floor(r.range(0, 2));
+      for (let i = 0; i < clumps; i++) {
+        parts.push(
+          `<circle cx="${(cx + r.range(-5, 5)).toFixed(1)}" cy="${(cy + r.range(-3.5, 3.5)).toFixed(1)}" ` +
+            `r="${r.range(2.2, 4.4).toFixed(1)}" fill="${rgba(ink, alpha)}"/>`,
+        );
+      }
+    }
+  }
+  return parts.join('');
+}
+
+/** MARKET. Awning cloth: the stripe, and the fold-shadow under it that says
+ *  the cloth has a thickness. Drawn as horizontal bars and turned by the
+ *  theme's own angle, the same convention every band in this file follows. */
+function awningStripes(pitch: number, bar: number, ink: Rgb, alpha: number, shade: Rgb): string {
+  const parts: string[] = [];
+  for (let y = -OVER; y < TH + OVER; y += pitch) {
+    parts.push(
+      `<rect x="${-OVER}" y="${y.toFixed(1)}" width="${TW + OVER * 2}" height="${bar.toFixed(1)}" fill="${rgba(ink, alpha)}"/>`,
+    );
+    parts.push(
+      `<rect x="${-OVER}" y="${(y + bar).toFixed(1)}" width="${TW + OVER * 2}" ` +
+        `height="${(bar * 0.34).toFixed(1)}" fill="${rgba(shade, alpha * 0.5)}"/>`,
+    );
+  }
+  return parts.join('');
+}
+
+/** MARKET's goods: stacked crates seen from above, each with the lit top edge
+ *  that keeps a dark square from reading as a hole in the ground. Square, and
+ *  slightly askew, because that is the one silhouette on this board that no
+ *  natural thing makes. */
+function crateField(
+  seed: number,
+  pitch: number,
+  ink: Rgb,
+  alpha: number,
+  size: number,
+  lit: Rgb,
+): string {
+  const r = rng(seed);
+  const parts: string[] = [];
+  for (let gy = pitch / 2; gy < TH + pitch; gy += pitch) {
+    for (let gx = pitch / 2; gx < TW + pitch; gx += pitch) {
+      const cx = gx + r.range(-pitch * 0.3, pitch * 0.3);
+      const cy = gy + r.range(-pitch * 0.3, pitch * 0.3);
+      const s = size * r.range(0.8, 1.35);
+      const w = (s * 2).toFixed(1);
+      const x = (cx - s).toFixed(1);
+      const y = (cy - s).toFixed(1);
+      parts.push(
+        `<g transform="rotate(${r.range(-14, 14).toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)})">` +
+          `<rect x="${x}" y="${y}" width="${w}" height="${w}" rx="${(s * 0.22).toFixed(1)}" fill="${rgba(ink, alpha)}"/>` +
+          `<rect x="${x}" y="${y}" width="${w}" height="${(s * 0.44).toFixed(1)}" rx="${(s * 0.18).toFixed(1)}" fill="${rgba(lit, 0.07)}"/>` +
+          `</g>`,
+      );
+    }
+  }
+  return parts.join('');
+}
+
+/** QUARRY. The benches: a cut face is a stack of steps, and a step is a dark
+ *  undercut with a lit lip on top of it. This is the layer that says the rock
+ *  was TAKEN rather than that it broke. */
+function benchLines(pitch: number, ink: Rgb, alpha: number, bar: number, lit: Rgb): string {
+  const parts: string[] = [];
+  for (let y = -OVER; y < TH + OVER; y += pitch) {
+    parts.push(
+      `<rect x="${-OVER}" y="${y.toFixed(1)}" width="${TW + OVER * 2}" height="${bar.toFixed(1)}" fill="${rgba(ink, alpha)}"/>`,
+    );
+    parts.push(
+      `<rect x="${-OVER}" y="${(y - bar * 0.9).toFixed(1)}" width="${TW + OVER * 2}" ` +
+        `height="${(bar * 0.7).toFixed(1)}" fill="${rgba(lit, 0.055)}"/>`,
+    );
+  }
+  return parts.join('');
+}
+
+/** QUARRY's rubble: chips, not pits. Broken stone is angular and ash is not,
+ *  which is the whole reason this is a polygon and `ashField` is a circle. */
+function chipField(seed: number, pitch: number, ink: Rgb, alpha: number, radius: number): string {
+  const r = rng(seed);
+  const parts: string[] = [];
+  for (let gy = pitch / 2; gy < TH; gy += pitch) {
+    for (let gx = pitch / 2; gx < TW; gx += pitch) {
+      const cx = gx + r.range(-pitch * 0.34, pitch * 0.34);
+      const cy = gy + r.range(-pitch * 0.34, pitch * 0.34);
+      const sides = 4 + Math.floor(r.range(0, 3));
+      const pts: string[] = [];
+      for (let i = 0; i < sides; i++) {
+        const a = (Math.PI * 2 * i) / sides + r.range(-0.22, 0.22);
+        const rad = radius * r.range(0.55, 1.25);
+        pts.push(`${(cx + Math.cos(a) * rad).toFixed(1)},${(cy + Math.sin(a) * rad).toFixed(1)}`);
+      }
+      parts.push(
+        `<polygon points="${pts.join(' ')}" fill="${rgba(ink, alpha * r.range(0.75, 1.15))}"/>`,
+      );
+    }
+  }
+  return parts.join('');
+}
+
+/** ROADS. Paving: the course joint, the lit leading edge of the stones under
+ *  it, and cross joints STAGGERED course by course — paving is laid to break
+ *  its joints, and an aligned grid reads as bathroom tile. */
+function cobbleCourses(
+  seed: number,
+  pitch: number,
+  joint: number,
+  dark: Rgb,
+  darkAlpha: number,
+  lit: Rgb,
+  litAlpha: number,
+): string {
+  const r = rng(seed);
+  const parts: string[] = [];
+  let row = 0;
+  for (let y = -OVER; y < TH + OVER; y += pitch, row++) {
+    parts.push(
+      `<rect x="${-OVER}" y="${y.toFixed(1)}" width="${TW + OVER * 2}" height="${joint.toFixed(1)}" fill="${rgba(dark, darkAlpha)}"/>`,
+    );
+    parts.push(
+      `<rect x="${-OVER}" y="${(y + joint).toFixed(1)}" width="${TW + OVER * 2}" ` +
+        `height="${(joint * 0.8).toFixed(1)}" fill="${rgba(lit, litAlpha)}"/>`,
+    );
+    const stone = pitch * 1.35;
+    for (let x = -OVER + (row % 2) * stone * 0.5; x < TW + OVER; x += stone) {
+      parts.push(
+        `<rect x="${(x + r.range(-stone * 0.16, stone * 0.16)).toFixed(1)}" y="${y.toFixed(1)}" ` +
+          `width="${joint.toFixed(1)}" height="${pitch.toFixed(1)}" fill="${rgba(dark, darkAlpha * 0.85)}"/>`,
+      );
+    }
+  }
+  return parts.join('');
+}
+
+/**
+ * Worked-out ground: a pit cut in benches, where the plane cracks open.
+ *
+ * The plane's spent tile is the aftermath of a burn — a scorch and fractures
+ * radiating out of it. A settlement's spent tile is the aftermath of WORK, and
+ * the difference is legible: the hollow is stepped down in arcs, the marks run
+ * with the benches rather than out from a centre, and the lit lip on each arc
+ * says the pit has depth rather than that the ground broke.
+ *
+ * The scorch itself stays, under its own name, because it is doing a second
+ * job: it is the dark that a centred label reads against on the palest ground
+ * this direction has.
+ */
+function pitTerraces(seed: number, lit: Rgb): string {
+  const r = rng(seed);
+  const cx = TW * 0.46;
+  const cy = TH * 0.57;
+  const parts: string[] = [];
+  for (let ring = 0; ring < 3; ring++) {
+    const rad = 44 + ring * 38;
+    const arcs = 2 + ring;
+    for (let i = 0; i < arcs; i++) {
+      const from = (Math.PI * 2 * i) / arcs + r.range(0.1, 0.5);
+      const to = from + r.range(0.9, 1.5);
+      const arc = (offset: number): string =>
+        `M ${(cx + Math.cos(from) * (rad + offset)).toFixed(1)} ${(cy + Math.sin(from) * (rad + offset)).toFixed(1)} ` +
+        `A ${(rad + offset).toFixed(1)} ${(rad + offset).toFixed(1)} 0 0 1 ` +
+        `${(cx + Math.cos(to) * (rad + offset)).toFixed(1)} ${(cy + Math.sin(to) * (rad + offset)).toFixed(1)}`;
+      parts.push(
+        `<path d="${arc(0)}" fill="none" stroke="#100c08" stroke-opacity="0.26" ` +
+          `stroke-width="${r.range(1.6, 2.8).toFixed(1)}" stroke-linecap="round"/>`,
+      );
+      parts.push(
+        `<path d="${arc(-3)}" fill="none" stroke="${rgba(lit, 0.06)}" stroke-width="1.4" stroke-linecap="round"/>`,
+      );
+    }
   }
   return parts.join('');
 }
