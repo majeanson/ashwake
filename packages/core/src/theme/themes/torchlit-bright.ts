@@ -161,6 +161,13 @@ export const TORCHLIT_BRIGHT: Theme = {
     'fr-CA': { green: 'LICHEN', yellow: 'TISONS', red: 'CENDRES', blue: 'RIVIÈRES' },
   },
 
+  // The plane's powers, unchanged: this direction names its ground for what it
+  // is MADE of, so the second word is doing real work. See `Theme.powerNames`.
+  powerNames: {
+    en: { green: 'CROWDS', yellow: 'COMPANY', red: 'ASH', blue: 'TIDE' },
+    'fr-CA': { green: 'FOULE', yellow: 'COMPAGNIE', red: 'CENDRES', blue: 'COURANT' },
+  },
+
   // Lifted with everything else, and by more than everything else: against a
   // true-black board a wall has further to climb before it stops reading as a
   // hole in the world. Bands kept close together, as torchlit's are, so it

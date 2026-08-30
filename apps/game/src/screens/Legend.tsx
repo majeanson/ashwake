@@ -71,8 +71,8 @@ export function Legend({ theme, s }: LegendProps) {
             */}
             <span className="legend-name">
               {names[colour]}
-              {powerOf(colour, TUNING, s) === '' ? null : (
-                <span className="legend-note note"> — {powerOf(colour, TUNING, s)}</span>
+              {powerOf(colour, TUNING, theme, s) === '' ? null : (
+                <span className="legend-note note"> — {powerOf(colour, TUNING, theme, s)}</span>
               )}
             </span>
           </li>

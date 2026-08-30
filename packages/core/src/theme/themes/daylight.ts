@@ -243,6 +243,13 @@ export const DAYLIGHT: Theme = {
     'fr-CA': { green: 'LICHEN', yellow: 'TISONS', red: 'CENDRES', blue: 'RIVIÈRES' },
   },
 
+  // The plane's powers, unchanged: this direction names its ground for what it
+  // is MADE of, so the second word is doing real work. See `Theme.powerNames`.
+  powerNames: {
+    en: { green: 'CROWDS', yellow: 'COMPANY', red: 'ASH', blue: 'TIDE' },
+    'fr-CA': { green: 'FOULE', yellow: 'COMPAGNIE', red: 'CENDRES', blue: 'COURANT' },
+  },
+
   // Blocked ground is the DARKEST thing on this board, which is the inversion in
   // one object: on a dark board a wall has to be lifted clear of the fog, and
   // here it has to be pushed down clear of the paper. `MIN_WALL_CLEARANCE` is

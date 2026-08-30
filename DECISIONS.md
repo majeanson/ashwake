@@ -72,6 +72,28 @@ the forks put to him:
    language (`Theme.terrainNames[locale]`), because a direction names its
    ground by its own fiction in every language rather than translating
    another direction's.
+
+   **Extended 2026-08-29 to the POWER words** (`Theme.powerNames`), on Marc's
+   pick from an option set. They were one shared table in the catalogue —
+   CROWDS · COMPANY · ASH · TIDE, FOULE · COMPAGNIE · CENDRES · COURANT — and
+   **two of the four are torchlit's own ground names**, which was invisible
+   while torchlit was the default and became nonsense the moment settlement
+   shipped: the card said QUARRY and the tip under it said `· ash:`. Two
+   clauses also named a ground as "red" and "green", words the game shows
+   nowhere.
+
+   Both halves come from the direction now, and the rule that was already
+   written for torchlit's ASH does the rest: **a name that already says its
+   power does not repeat it.** Settlement's power words ARE its ground names,
+   so its card reads `QUARRY.` and its tip ` · stone and walls beside QUARRY
+count as matches`; torchlit still says `MOSS — CROWDS.` and ` · crowds: +1
+worth per MOSS neighbour past the first`, because MOSS names what its
+   ground is made of and genuinely needs the second word.
+
+   The punctuation stayed in the catalogue and that is the D4 line itself: the
+   colon takes a narrow no-break space in Québec French and none in English,
+   which is a fact about a language rather than about a power.
+
 3. **The glossary:** RIPE→MÛR · POP→RÉCOLTER · BURN→BRÛLER · POCKET→POCHE ·
    STASH→RÉSERVE · RELICS→RELIQUES · LUCK→CHANCE · BEGIN→COMMENCER · NEW
    RUN→NOUVELLE PARTIE · WORLD→MONDE · THE DAILY→LE QUOTIDIEN ·

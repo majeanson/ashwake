@@ -132,6 +132,14 @@ export const PLACEHOLDER: Theme = {
     'fr-CA': { green: 'VERT', yellow: 'JAUNE', red: 'ROUGE', blue: 'BLEU' },
   },
 
+  // The control has no fiction to name a power in, so it borrows the plane's —
+  // and needs them badly, because GREEN and RED say nothing at all about what
+  // their ground does. See `Theme.powerNames`.
+  powerNames: {
+    en: { green: 'CROWDS', yellow: 'COMPANY', red: 'ASH', blue: 'TIDE' },
+    'fr-CA': { green: 'FOULE', yellow: 'COMPAGNIE', red: 'CENDRES', blue: 'COURANT' },
+  },
+
   wall: surface(0x2b303b),
   stone: surface(0x3c3f47),
   empty: surface(0x1e222b),

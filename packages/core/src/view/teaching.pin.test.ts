@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BARE_TUNING, COLOURS, TUNING, type Tuning } from '@content/tuning';
 import { newRun } from '@engine/reduce';
 import { PERKS, UPGRADES, upgradeText } from '@meta/progress';
+import { SETTLEMENT } from '@theme/themes/settlement';
 import { DAYLIGHT } from '@theme/themes/daylight';
 import { TORCHLIT } from '@theme/themes/torchlit';
 import type { Theme } from '@theme/tokens';
@@ -53,11 +54,16 @@ const TUNINGS: readonly (readonly [string, Tuning])[] = [
   ['BARE_TUNING', BARE_TUNING],
 ];
 
-/** Two directions, because a definition may name a terrain and the four names
+/** Three directions, because a definition may name a terrain and the four names
  *  belong to the theme, not the game. */
 const THEMES: readonly (readonly [string, Theme])[] = [
   ['torchlit', TORCHLIT],
   ['daylight', DAYLIGHT],
+  // The direction that ships (D7, 2026-08-29). It is here because it is the
+  // one whose ground names ARE its power words, so it is the only entry that
+  // shows what the dropped word looks like — a pin that only held the plane
+  // would pin the case that did not change.
+  ['settlement', SETTLEMENT],
 ];
 
 /** The ids `statNote` switches on. Built by the stat row rather than carried
@@ -110,19 +116,33 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       ).toMatchSnapshot();
     });
 
-    /**
+    /*
      * Two of the five parallel colour sources — the two that are pure and
      * therefore reachable from here. The other three (`COLOUR_HELP`,
      * `POWER_NAMES`, the manual's own detail lines) were private to Ashwake 1's
      * `game.ts` and are pinned by the manual snapshot there.
+     *
+     * RE-RECORDED 2026-08-29, deliberately, and the comment that used to sit
+     * on the line below is why it had to be.
+     *
+     * It read: *"`powerOf` takes no theme — it names a dial, not a terrain."*
+     * True of the dial and false of the sentence. Two of the four clauses
+     * named a ground in words no direction shows — "beside red", "per green
+     * neighbour" — and the word in front came from one shared set containing
+     * torchlit's own ASH and TIDE. Invisible while torchlit was the default;
+     * nonsense the moment settlement became it, because the card said QUARRY
+     * and the tip under it said "· ash: … beside red …".
+     *
+     * So the power line is per direction now and this pin loops directions for
+     * it, which is what makes the difference between two fictions VISIBLE in a
+     * file Marc reads rather than a thing you have to run the game to see.
      */
     it('pins the colour lessons and powers, over both tunings and both directions', () => {
       const out: Record<string, string | null> = {};
       for (const [tName, t] of TUNINGS) {
         for (const colour of COLOURS) {
-          // `powerOf` takes no theme — it names a dial, not a terrain.
-          out[`power · ${colour} · ${tName}`] = powerOf(colour, t, s);
           for (const [themeName, theme] of THEMES) {
+            out[`power · ${colour} · ${tName} · ${themeName}`] = powerOf(colour, t, theme, s);
             out[`lesson · ${colour} · ${tName} · ${themeName}`] = colourLesson(colour, t, theme, s);
           }
         }

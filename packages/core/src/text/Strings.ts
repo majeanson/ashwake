@@ -1,4 +1,4 @@
-import type { Colour, PointSource, Rarity } from '@content/tuning';
+import type { PointSource, Rarity } from '@content/tuning';
 import type { Locale } from '@content/locale';
 
 /**
@@ -182,19 +182,32 @@ export type Strings = {
       readonly cost: (cost: number, curve: string) => string;
       readonly left: string;
     };
-    /** The personality word `groundHead` pairs with the ground's name. */
-    readonly colourWord: Readonly<Record<Colour, string>>;
+    /*
+     * `colourWord` — the personality word `groundHead` paired with the
+     * ground's name — was here and is gone (2026-08-29). The four power words are
+     * per DIRECTION now, beside the ground names it already owned
+     * (`Theme.powerNames`): one shared set could not be right for two fictions,
+     * and two of its four entries — ASH, TIDE — were one direction's ground
+     * names being spoken in every other direction's board.
+     */
     readonly colour: {
       readonly green: (head: string, name: string, bonus: number) => string;
       readonly yellow: (head: string, bonus: number, all: boolean) => string;
       readonly red: (head: string, walls: boolean) => string;
       readonly blue: (head: string, every: number) => string;
     };
+    /**
+     * The one-clause version. `head` is the power word and its colon, or an
+     * empty string where the direction's ground name already says it
+     * (`view#powerHead`); `name` is that ground name, so a clause that points
+     * at a ground says QUARRY rather than "red" — a word the game shows
+     * nowhere else.
+     */
     readonly power: {
-      readonly green: (bonus: number) => string;
-      readonly yellow: (bonus: number, all: boolean) => string;
-      readonly red: (walls: boolean) => string;
-      readonly blue: (every: number) => string;
+      readonly green: (head: string, name: string, bonus: number) => string;
+      readonly yellow: (head: string, bonus: number, all: boolean) => string;
+      readonly red: (head: string, name: string, walls: boolean) => string;
+      readonly blue: (head: string, every: number) => string;
     };
     readonly hex: {
       readonly cacheClaimed: string;

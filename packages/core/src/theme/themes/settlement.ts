@@ -201,6 +201,23 @@ export const SETTLEMENT: Theme = {
     'fr-CA': { green: 'FERME', yellow: 'MARCHÉ', red: 'CARRIÈRE', blue: 'CHEMINS' },
   },
 
+  /*
+   * The power words ARE the ground names here, and that is the direction's
+   * whole argument (D7, Marc: "names of each color reveal what they do").
+   *
+   * A farm is a crowd, a market is where difference pays, a quarry eats stone,
+   * a road prices distance. There is no second word to add — so both places
+   * that print one drop it rather than stutter: the card says "QUARRY."
+   * instead of "QUARRY — ash." and the tip says "· stone and walls beside
+   * QUARRY count as matches" instead of leading with a word already on the
+   * card. The rule is `groundHead`'s, written for torchlit's own ASH and TIDE
+   * in 2026-08-27 and now doing the job it was shaped for.
+   */
+  powerNames: {
+    en: { green: 'FARM', yellow: 'MARKET', red: 'QUARRY', blue: 'ROADS' },
+    'fr-CA': { green: 'FERME', yellow: 'MARCHÉ', red: 'CARRIÈRE', blue: 'CHEMINS' },
+  },
+
   // Blocked ground is unbuilt rock: the darkest thing on the board, and the one
   // surface here that nobody made.
   wall: surface(0x2a2420, {

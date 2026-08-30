@@ -34,7 +34,7 @@ import {
   findsWithin,
   terrainAt,
 } from '@engine/world';
-import { brightness, COLOUR_MARK, namesOf, type Light, type Theme } from '@theme/tokens';
+import { brightness, COLOUR_MARK, namesOf, powersOf, type Light, type Theme } from '@theme/tokens';
 import type { BoardView, CellKind, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
 
@@ -1621,6 +1621,27 @@ export function groundHead(name: string, word: string): string {
 }
 
 /**
+ * The same rule, for the one-clause POWER line (2026-08-29).
+ *
+ * `powerOf` prints " · crowds: +2 worth per MOSS neighbour…" — the word, then
+ * the rule. A direction whose ground name already IS the power word has
+ * nothing to put in front, and printing it anyway gives settlement
+ * " · farm: +2 worth per FARM neighbour", which is the stutter `groundHead`
+ * was written to stop, in the other door. So this returns the prefix or
+ * nothing, and the catalogue interpolates it either way.
+ *
+ * Lowercase, because the clause is a fragment inside a sentence and the
+ * catalogue has always printed these words lowercase. **The word only** — the
+ * colon after it belongs to the catalogue, because in Québec French it is
+ * preceded by a narrow no-break space and in English it is not, and that is a
+ * fact about a language rather than about a power (D4, and `text.test.ts`
+ * would have caught it).
+ */
+export function powerHead(name: string, word: string): string {
+  return name.toLowerCase() === word.toLowerCase() ? '' : word.toLowerCase();
+}
+
+/**
  * One colour's personality as a whole sentence, in the theme's own words
  * and the live tuning's numbers — the text the colour's first-contact
  * toast, the selected card's second tap and a tapped placed tile all
@@ -1629,7 +1650,7 @@ export function groundHead(name: string, word: string): string {
  */
 export function colourLesson(colour: Colour, t: Tuning, theme: Theme, s: Strings): string | null {
   const n = namesOf(theme, s.locale)[colour];
-  const head = groundHead(n, s.view.colourWord[colour]);
+  const head = groundHead(n, powersOf(theme, s.locale)[colour]);
   const c = s.view.colour;
   switch (colour) {
     case 'green':
@@ -1649,18 +1670,34 @@ export function colourLesson(colour: Colour, t: Tuning, theme: Theme, s: Strings
  * The colour's power, in one clause, with its numbers read from the live
  * tuning — same no-staleness contract as the manual. Empty string when the
  * personalities are off (the bounded game), so the tip stays honest there.
+ *
+ * **It takes a THEME as of 2026-08-29, and the old comment beside its one pin
+ * said why it should not:** *"`powerOf` takes no theme — it names a dial, not
+ * a terrain."* True of the dial and false of the sentence. Two of the four
+ * clauses named a ground — "beside red", "per green neighbour" — in words no
+ * direction shows anywhere, and the leading word was `colourWord`, which was
+ * one shared set containing torchlit's own ASH and TIDE. So the tip under a
+ * settlement card read `· ash: … beside red …` while the card above it said
+ * QUARRY.
+ *
+ * Both halves come from the direction now: the ground's name where the clause
+ * points at a ground, and the power word where the direction has one to add.
  */
-export function powerOf(colour: Colour, t: Tuning, s: Strings): string {
+export function powerOf(colour: Colour, t: Tuning, theme: Theme, s: Strings): string {
   const p = s.view.power;
+  const n = namesOf(theme, s.locale)[colour];
+  const head = powerHead(n, powersOf(theme, s.locale)[colour]);
   switch (colour) {
     case 'green':
-      return t.greenCrowdBonus > 0 ? p.green(t.greenCrowdBonus) : '';
+      return t.greenCrowdBonus > 0 ? p.green(head, n, t.greenCrowdBonus) : '';
     case 'yellow':
-      return t.yellowCompanyBonus > 0 ? p.yellow(t.yellowCompanyBonus, t.yellowCompanyAll) : '';
+      return t.yellowCompanyBonus > 0
+        ? p.yellow(head, t.yellowCompanyBonus, t.yellowCompanyAll)
+        : '';
     case 'red':
-      return t.redAshMatches ? p.red(t.redAshWalls) : '';
+      return t.redAshMatches ? p.red(head, n, t.redAshWalls) : '';
     case 'blue':
-      return t.blueTideEvery > 0 ? p.blue(t.blueTideEvery) : '';
+      return t.blueTideEvery > 0 ? p.blue(head, t.blueTideEvery) : '';
   }
 }
 

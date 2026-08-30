@@ -1407,3 +1407,41 @@ is a ruling about whose vocabulary the rules speak in.
 door measured at 375×667 and 390×844 and shot in both. **The direction has
 still never been seen on a phone** — the thing that changed today is that it is
 now what a phone would open.
+
+### Session 19b — the rules stop speaking another direction's language (2026-08-29)
+
+**Question:** put to Marc as an option set rather than answered here — now that
+settlement ships, whose vocabulary do the RULE lines speak in? He picked the
+whole fix: the direction owns its power words, and a name that already says its
+power does not repeat it.
+
+**What was wrong.** `view.colourWord` was one shared table in the catalogue,
+and two of its four entries — ASH and TIDE, CENDRES and COURANT — are
+torchlit's own GROUND names. So a settlement player read QUARRY on the board
+and `· ash:` in the tip under it. Two clauses were worse than that: they named
+a ground as **"red"** and **"green"**, words the game shows on no screen in any
+direction. Both were invisible for as long as torchlit was the default, which
+is the whole shape of this: a shared thing that is secretly one direction's.
+
+**What it reads now.** The pins are the proof, and they now loop settlement
+because it is the only direction that exercises the dropped word:
+
+|            |                                                                             |
+| ---------- | --------------------------------------------------------------------------- |
+| torchlit   | `MOSS — CROWDS.` · `  · crowds: +1 worth per MOSS neighbour past the first` |
+| settlement | `QUARRY.` · ` · stone and walls beside QUARRY count as matches`             |
+
+**The rule doing the work was already written**, for torchlit's own "ASH — ash."
+stutter on 2026-08-27, and it only ever ran on the card. `powerHead` is the
+same rule at the second door, and the fact that settlement needed nothing new
+invented for it is the best evidence that D7 chose a direction rather than a
+mood: **its names carry the teaching, so there is no second word to print.**
+
+**One thing stayed in the catalogue on purpose.** `powerHead` returns the WORD,
+never the punctuation — Québec French puts a narrow no-break space before a
+colon and English puts none, which is a fact about a language rather than about
+a power (D4). `text.test.ts` would have caught it; better that it never had to.
+
+**Verified:** 1006 tests / 68 files; typecheck, lint, format clean. Two pin
+files re-recorded deliberately, both listed above and both with the reason
+written into the test file rather than only into this one.

@@ -643,6 +643,29 @@ export type Theme = {
    */
   readonly terrainNames: Readonly<Record<Locale, Readonly<Record<Colour, string>>>>;
 
+  /**
+   * What this direction calls each ground's POWER, per language (2026-08-29).
+   *
+   * The same ruling as `terrainNames`, one step further, and it moved here for
+   * a bug rather than for tidiness. These four words lived in the text
+   * catalogue as `view.colourWord`, which made them the same in every
+   * direction — and two of the four (`ASH`, `TIDE`) are torchlit's own GROUND
+   * names. That was invisible while torchlit was the default and became
+   * nonsense the moment settlement shipped: a player read QUARRY on the board
+   * and `· ash:` in the tip, two fictions in one sentence.
+   *
+   * A direction may say a power in its own words, or say nothing extra at all.
+   * Settlement does the second: FARM · MARKET · QUARRY · ROADS already name
+   * what their grounds DO, which is the whole reason it was chosen (D7), so
+   * its power words ARE its ground names — and both doors that print them
+   * (`groundHead`, `powerHead`) drop a word that only repeats the name. A
+   * direction that names its ground for what it is MADE of, as torchlit does,
+   * still needs the second word and still has one.
+   *
+   * Read through `powersOf`.
+   */
+  readonly powerNames: Readonly<Record<Locale, Readonly<Record<Colour, string>>>>;
+
   /** Never buildable, never matches. The design documents call it blocked ground. */
   readonly wall: Surface;
   /** A popped tile. Surrounds, never matches — the reason to move on. */
@@ -1253,3 +1276,7 @@ export function brightness(light: Light, dist: number): number {
 /** The four ground names this direction uses in one language. */
 export const namesOf = (theme: Theme, locale: Locale): Readonly<Record<Colour, string>> =>
   theme.terrainNames[locale];
+
+/** The four POWER words this direction uses in one language. See `powerNames`. */
+export const powersOf = (theme: Theme, locale: Locale): Readonly<Record<Colour, string>> =>
+  theme.powerNames[locale];

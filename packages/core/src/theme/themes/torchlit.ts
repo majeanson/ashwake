@@ -265,6 +265,13 @@ export const TORCHLIT: Theme = {
     'fr-CA': { green: 'LICHEN', yellow: 'TISONS', red: 'CENDRES', blue: 'RIVIÈRES' },
   },
 
+  // The plane's powers, unchanged: this direction names its ground for what it
+  // is MADE of, so the second word is doing real work. See `Theme.powerNames`.
+  powerNames: {
+    en: { green: 'CROWDS', yellow: 'COMPANY', red: 'ASH', blue: 'TIDE' },
+    'fr-CA': { green: 'FOULE', yellow: 'COMPAGNIE', red: 'CENDRES', blue: 'COURANT' },
+  },
+
   // Lifted 2026-08-15: the dark band was 0.007 above the background in L* —
   // under a torch, blocked ground vanished into the dark instead of blocking.
   // Up a step, band contrast kept, pinned in `theme.test.ts`.

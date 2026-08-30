@@ -32,6 +32,10 @@ const D = NNBSP;
 /** Pluriel français : 0 et 1 au singulier. */
 const pl = (n: number, one: string, many: string): string => (n > 1 ? many : one);
 const nb = (n: number): string => fmtInt(n, 'fr-CA');
+/** Le mot de pouvoir et son deux-points — avec l’espace fine, ou rien du tout.
+ *  Voir `view#powerHead` : une direction dont le nom du sol dit déjà son
+ *  pouvoir n’a rien à ajouter. */
+const pw = (word: string): string => (word === '' ? '' : `${word}${D}: `);
 const pc = (n: number): string => fmtPct(n, 'fr-CA');
 const capitalize = (s: string): string => `${s[0]!.toLocaleUpperCase('fr-CA')}${s.slice(1)}`;
 
@@ -289,7 +293,6 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
         `COÛT — le prix de la prochaine pose${D}: ${cost}. ${curve}, et il ne redescend jamais — l’horloge qui finit chaque partie. ${LAST_GASP_RULE}`,
       left: 'RESTE — les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.',
     },
-    colourWord: { green: 'FOULE', yellow: 'COMPAGNIE', red: 'CENDRES', blue: 'COURANT' },
     colour: {
       green: (head, name, bonus) =>
         `${head} Veut une seule grosse gang de sa couleur${D}: +${bonus} de valeur par voisine ${name} passé la première.`,
@@ -301,12 +304,16 @@ La poche est devenue de la PIERRE — elle entoure encore, mais elle n’apparie
         `${head} Vaut peu au départ, beaucoup à la frontière${D}: +1 de valeur par ${every} hex de distance du départ.`,
     },
     power: {
-      green: (bonus) => ` · foule${D}: +${bonus} de valeur par voisine verte passé la première`,
-      yellow: (bonus, all) =>
-        ` · compagnie${D}: +${bonus} de valeur par ${all ? 'voisine d’une autre couleur' : 'couleur différente à côté'}`,
-      red: (walls) =>
-        ` · cendres${D}: la pierre${walls ? ' et les murs' : ''} à côté du rouge compte${walls ? 'nt' : ''} comme des ressemblances`,
-      blue: (every) => ` · courant${D}: +1 de valeur par ${every} hex de distance du départ`,
+      green: (head, name, bonus) =>
+        ` · ${pw(head)}+${bonus} de valeur par voisine ${name} passé la première`,
+      yellow: (head, bonus, all) =>
+        ` · ${pw(head)}+${bonus} de valeur par ${all ? 'voisine d’une autre couleur' : 'couleur différente à côté'}`,
+      // « à côté de NOM » : les huit noms de sol des quatre directions
+      // commencent par une consonne, donc pas d’élision à faire. Une direction
+      // qui nommerait un sol ÉTABLE ou ÎLE en aurait besoin — et ce serait ici.
+      red: (head, name, walls) =>
+        ` · ${pw(head)}la pierre${walls ? ' et les murs' : ''} à côté de ${name} compte${walls ? 'nt' : ''} comme des ressemblances`,
+      blue: (head, every) => ` · ${pw(head)}+1 de valeur par ${every} hex de distance du départ`,
     },
     hex: {
       cacheClaimed: `${LANDMARK_GLYPH.cache} CACHE — déjà réclamée. Elle a donné ses tuiles.`,

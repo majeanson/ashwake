@@ -5,6 +5,9 @@ import { STRINGS_FR } from './fr-CA';
 import { fmtInt, fmtPct, NNBSP, ordinal } from './format';
 import { stringsFor } from './index';
 import type { Strings } from './Strings';
+import { SETTLEMENT } from '@theme/themes/settlement';
+import { TORCHLIT } from '@theme/themes/torchlit';
+import { namesOf, powersOf } from '@theme/tokens';
 
 /**
  * The rules of each language, held where a test can hold them (2026-08-28).
@@ -91,13 +94,24 @@ describe('Québec French', () => {
     expect(STRINGS_FR.lesson.pop.name).toBe('RÉCOLTER');
   });
 
-  it('names the four grounds by Marc’s words', () => {
-    expect(STRINGS_FR.view.colourWord).toEqual({
+  /*
+   * Moved 2026-08-29, not deleted: these four words are per DIRECTION now
+   * (`Theme.powerNames`), because one shared set could not be right for two
+   * fictions — and two of them, CENDRES and COURANT, are torchlit's own ground
+   * names in French. They are still Marc's words and still asserted, one layer
+   * down, where a direction that wants its own can have them.
+   */
+  it('names the four powers by Marc’s words, in the direction that uses them', () => {
+    expect(powersOf(TORCHLIT, 'fr-CA')).toEqual({
       green: 'FOULE',
       yellow: 'COMPAGNIE',
       red: 'CENDRES',
       blue: 'COURANT',
     });
+    // The direction that ships says its powers with its ground names, which is
+    // the whole argument for it (D7) — so the two tables are the same table.
+    expect(powersOf(SETTLEMENT, 'fr-CA')).toEqual(namesOf(SETTLEMENT, 'fr-CA'));
+    expect(powersOf(SETTLEMENT, 'en')).toEqual(namesOf(SETTLEMENT, 'en'));
   });
 });
 

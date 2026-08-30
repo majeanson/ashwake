@@ -16,6 +16,17 @@ import type { Strings } from './Strings';
  * wording and never in when it speaks.
  */
 
+/**
+ * The power word and its colon, or nothing at all.
+ *
+ * `view#powerHead` hands over the word or an empty string — a direction whose
+ * ground name already says its power has nothing to add — and the punctuation
+ * is set here rather than there because English puts no space before a colon
+ * and Québec French puts a narrow no-break one. That is a fact about a
+ * language, not about a power (D4).
+ */
+const pw = (word: string): string => (word === '' ? '' : `${word}: `);
+
 const LUCK_CORE = 'LUCK — a purse, not a score.';
 const RARE_STAR = 'A placed rare tile wears a star, so its power stays findable on a full map.';
 const LAST_GASP_RULE =
@@ -269,7 +280,6 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
         `COST — the next placement's price: ${cost}. ${curve}, and it never comes back down — the clock that ends every run. ${LAST_GASP_RULE}`,
       left: 'LEFT — placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.',
     },
-    colourWord: { green: 'CROWDS', yellow: 'COMPANY', red: 'ASH', blue: 'TIDE' },
     colour: {
       green: (head, name, bonus) =>
         `${head} Wants one big mob of its own colour: +${bonus} worth per ${name} neighbour past the first.`,
@@ -281,11 +291,13 @@ The pocket turned to STONE — it still surrounds, but never matches. Ground you
         `${head} Worth little at home, a lot on the frontier: +1 worth per ${every} hexes from home.`,
     },
     power: {
-      green: (bonus) => ` · crowds: +${bonus} worth per green neighbour past the first`,
-      yellow: (bonus, all) =>
-        ` · company: +${bonus} worth per ${all ? 'differently-coloured neighbour' : 'different colour beside it'}`,
-      red: (walls) => ` · ash: stone${walls ? ' and walls' : ''} beside red count as matches`,
-      blue: (every) => ` · tide: +1 worth per ${every} hexes from home`,
+      green: (head, name, bonus) =>
+        ` · ${pw(head)}+${bonus} worth per ${name} neighbour past the first`,
+      yellow: (head, bonus, all) =>
+        ` · ${pw(head)}+${bonus} worth per ${all ? 'differently-coloured neighbour' : 'different colour beside it'}`,
+      red: (head, name, walls) =>
+        ` · ${pw(head)}stone${walls ? ' and walls' : ''} beside ${name} count as matches`,
+      blue: (head, every) => ` · ${pw(head)}+1 worth per ${every} hexes from home`,
     },
     hex: {
       cacheClaimed: `${LANDMARK_GLYPH.cache} CACHE — already claimed. It gave its tiles.`,
