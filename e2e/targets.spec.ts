@@ -129,5 +129,26 @@ test('every control on the board is thumbable, with the purse open and shut', as
     await assertAllThumbable(page, 'the purse, open');
   }
 
+  /*
+   * And the line a pop leaves behind (2026-08-30).
+   *
+   * It is the one thing on the board a player is invited to tap that is not a
+   * card or a button in a cluster, so it is the last control that should be
+   * hard to hit — and it shipped at 31px for one build, on the reasoning that
+   * a line over the board should not be a slab across it. That is a
+   * preference; the floor is a rule, and this test exists because this exact
+   * class of miss kept recurring in Ashwake 1.
+   */
+  await page.goto('/?taught=1&runs=1&place=24&seed=7');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+  await page
+    .getByRole('button', { name: /POP|RÉCOLT/ })
+    .first()
+    .click();
+  await expect(page.locator('[data-action="pop-details"]')).toBeVisible({ timeout: 4000 });
+  await assertAllThumbable(page, 'the board, with a pop said');
+
   expect(errors).toEqual([]);
 });

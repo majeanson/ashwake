@@ -2244,3 +2244,119 @@ belongs to a language.
 **Verified:** 1064 tests / 74 files, 79 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-six screens × four directions.
+
+### Session 27 — the panels stop hiding each other, and the board takes the corner back (2026-08-30)
+
+**Question:** seven asks in one session, and the first one is the shape of the
+rest. Marc: _"right now the more panel doesnt appear or is bugged when we
+navigate further, check that again."_ Session 26 had answered _"make sure all
+menus and overlapped menus on top are all navigable"_ and shipped a test that
+walked the exact path and passed. **So the question is: why did the test agree
+with a bug the player could see?**
+
+**Answer: the test was measuring the STACK, and the bug was in the PAINT.**
+
+**Twenty-six. Every panel had the same `z-index`, so the painter's order was
+`App`'s source order.** Session 26 fixed which panel is on TOP OF THE STACK,
+and nothing ever made the stack decide which panel is on top of the SCREEN. The
+six panels are rendered from one fixed list — manual, settings, more, worlds,
+shop, fame — so MORE, which sits late in it, painted over the manual and
+SETTINGS: the two rooms MORE's own menu opens. Tap HOW TO PLAY inside MORE and
+the manual opened, took focus, went top of the stack and took every subsequent
+tap, **behind a MORE that was inert and fully opaque**. The screen did not
+change. That is the whole of what Marc saw.
+
+**And the test could not see it, for two reasons that both look like features.**
+`waitFor({ state: 'visible' })` passes on a buried panel — every panel is
+opaque and `position: fixed`, so a second one over it changes nothing
+Playwright's visibility check looks at. And `elementFromPoint`, which the
+three-deep test used and which reported `'manual'` throughout, **skips
+`inert` subtrees when hit-testing** — so the one attribute that made the bug
+invisible to a player made it invisible to the test. Both specs now read the
+stacking rule itself: higher z-index wins, ties go to the later sibling.
+`Panel` sets `--layer` from `stack.layerOf(id)` and `.panel` is
+`calc(20 + var(--layer))`; six doors is the ceiling, so nothing reaches
+`.card-scrim` at 30.
+
+**The board's corner is MENU · LUCK · VIEW.** Marc: _"make sure sound on or off
+and how to play stays in the menu, add a menu button instead"_, and _"put the
+luck button next to the FIT button, as a new button ... luck button is another
+colour more like an action one, but not in hand."_ The ♪ and the `?` were two
+buttons for two rooms MORE already lists, floating over the thing this whole
+layout spends its comments defending; they are one door now. LUCK came UP out
+of the action bar — it was the only control in that row that did not spend the
+current pocket, in a row that gets crowded — and it wears `--accent`, the one
+signature colour, which is the ration `theme/tokens.ts` asks for.
+`feature['ui.sound']`'s note said "the speaker button on the board is this
+switch" in both languages and now does not, because a sentence that names a
+control has to be re-read when the control moves.
+
+**Twenty-seven. A rare card was TALLER than a common one, so the board resized
+mid-run.** Marc: _"the height changes when we get magic tiles vs normal or
+uniques, check why and make sure it stays the same."_ The rarity word and the
+HELD label were ordinary flex children of a card with a `min-height`, and the
+hand is a GRID — so one magic card in a four-card draft grew the whole row and
+took that many pixels off the board Session 26 had just spent a session buying
+back. Worse than the cost: it moved every time a rare was dealt, stashed or
+spent, which is the board breathing under a reaching thumb, and is the same
+class of fault as the placement re-fit Marc reported on 2026-08-29. Both labels
+are badges now, out of flow, and the card's height is fixed.
+
+**A POP stopped being a card at all.** Marc: _"i asked previously to not pop as
+a card everytime, just show points in the bottom and we can tap for details or
+tap out."_ Session 22 had answered the same ask with a BRIEF card — no focus,
+any tap dismisses, leaves on its own — and a brief card is still a card: it
+darkens the board, lands in the middle of the screen, and has to be waited out,
+several times a minute. A routine pop is the receipt's own lead line in the
+strip over the board's bottom edge, and the rest is one tap behind it. The lead
+is `view/receipts.ts`'s first sentence, not a shorter one written in the
+shell, so there is still exactly one place a pop is worded.
+
+**THE GROUND YOU WALKED is a door, not a picture.** Marc: _"the ground you
+walked 'picture' is ugly, i dont want a picture i want to actual screengame
+where we can move around."_ He is right, and the picture was never what he
+asked for in the first place — _"check it back again"_ is a verb, and it had
+been answered with a 240px PNG blown up to 26rem. **The board never went
+anywhere.** The R3F host lives once above every scene and never remounts, so at
+the moment a run ends the real board is still mounted, still holding the cells
+it ended on, still able to pan and pinch; it was covered by an opaque page. The
+ending steps aside to a bar and hands the screen back. The snapshot is still
+taken, for the hall of fame's diary rows, which is the one place a picture is
+the right answer. Found on the way: the board was **not** `inert` under the
+end screen, so a Tab reached a board nobody could see.
+
+**Twenty-eight. A new world opened wherever the last one was left.** Marc:
+_"make sure when we start a new world or daily its centered on the starting
+tile."_ The rig fits the board ONCE EVER — `framedOnce` is a ref, and the rig
+is inside the host that by rule never remounts, so the one thing guaranteeing a
+first fit is the one thing a new world does not get. Step into world 2 from a
+board dragged two screens east and world 2 opens two screens east of its
+settlement, on an empty plane, with nothing on screen to say which way to walk.
+That ref is right about what it was written for — a placement must not move the
+board — and starting a run is an asking, not a happening. It flies to the wake
+hex rather than to the FIT frame, because `fitCamera` frames the glowing
+landmarks too and slid the settlement to the bottom of the screen: Marc asked
+for a TILE in the middle, which is a hex and not a bounding box.
+
+**Twenty-nine. The sticky panel head had no bottom edge.** Marc: _"top header
+of menu is glitching when scrolling down a how to play section, its sticky but
+content goes behind and we see it."_ It was doing exactly what a sticky header
+does and looked broken: the manual's tab row is the last thing in the block and
+carried no border, so a line of prose sliding under it was guillotined against
+nothing — half a row of glyphs hanging in the air under PLAY. A border says
+where the block ends and a short fade below it says what is happening at that
+line; prose dissolving into a header reads as "there is more above", prose
+sliced in half reads as a bug.
+
+**One contrast finding, caught by the audit and fixed rather than waived.** The
+LUCK button's open state filled with `--panel-edge`, which dropped daylight's
+accent from 6.16:1 to **3.1:1** — under the 4.5 bar. Darken something, never
+the threshold, and here the thing to change was the idea: an open drawer is
+said with an OUTLINE, which is a mark at the 3:1 bar and changes nothing about
+what the number is standing on. Back to 156 findings, the same as before.
+
+**Verified:** 1064 tests / 74 files, 82 Playwright, `pnpm sim` byte-identical
+to the golden, typecheck/lint/format/build clean, `pnpm audit:screens` at 156
+findings across twenty-six screens × four directions. The two new e2e tests were
+each run against the unfixed code first and each failed for its own reason.
+**Still not seen on a phone.**

@@ -164,6 +164,34 @@ honest while something else owns the moment.**
 
 ## 1. Needs Marc, and only Marc
 
+**The board's corner, by reaching for it (2026-08-30).** It is MENU · LUCK ·
+VIEW now, on your call: _"make sure sound on or off and how to play stays in
+the menu, add a menu button instead"_, and _"put the luck button next to the
+FIT button."_ Three things about it are guesses waiting on a thumb. Whether
+MUTE being three taps away (MENU → SETTINGS → SOUND) is far enough to matter in
+a quiet room — Ashwake 1 carried the ♪ on the board since 2026-08-20 for
+exactly that reason, and this is the first time it has not. Whether LUCK reads
+as an ACTION beside two pieces of chrome or merely as a third button. And
+whether the ORDER is right: the door is on the left, farthest from a right
+thumb, on the reasoning that leaving is the thing you do least.
+
+**The pop line, by popping fifty times (2026-08-30).** A routine pop is the
+receipt's lead sentence over the board's bottom edge, with the rest behind a
+tap — your ask, twice: _"just show points in the bottom and we can tap for
+details or tap out."_ What is unmeasurable from here is whether the line is
+where the eye already is after a cascade, or whether the accounting is now so
+cheap to ignore that nobody ever taps DETAILS and the receipts might as well
+not be written. The first pop of a device still holds the screen; that is the
+only card left in the loop.
+
+**Walking the ending, by wanting to (2026-08-30).** THE GROUND YOU WALKED is a
+door onto the live board rather than a picture — _"i dont want a picture i want
+to actual screengame where we can move around."_ The question a phone answers:
+whether the run's own board is worth going back into for its own sake, or
+whether the ending's numbers are what you actually came for and the map should
+be one tap further away. The snapshot is still taken either way; the hall of
+fame's diary rows use it.
+
 **The camera, by feel.** Two fingers now lean and turn the board as well as
 pinch it (`LOG.md` Session 15), and three things about it are arithmetic
 waiting on a hand: whether `PX_PER_DEGREE = 4` makes the lean feel like

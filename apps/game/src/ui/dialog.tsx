@@ -63,6 +63,18 @@ type Stack = {
   readonly isTop: (id: string) => boolean;
   /** How many panels are open. A panel shows its ✕ only past the first. */
   readonly depth: number;
+  /**
+   * How far up the stack a panel sits, or -1 while it is closed.
+   *
+   * Every panel is `position: fixed` and opaque, and they are all rendered from
+   * one fixed list in `App` — so at a shared `z-index` the one that PAINTS on
+   * top is whichever happens to come later in that list, not the one the player
+   * just opened. That is how MORE → HOW TO PLAY looked dead: the manual was
+   * open, focused and taking every tap, behind a MORE that was inert and fully
+   * visible. The stack is the authority on what is on top; it therefore has to
+   * be the authority on the layer.
+   */
+  readonly layerOf: (id: string) => number;
   /** Leave every open panel at once. */
   readonly closeAll: () => void;
 };
@@ -199,6 +211,7 @@ export function DialogStack({ children }: { readonly children: ReactNode }) {
       pop,
       isTop: (id) => open.at(-1) === id,
       depth: open.length,
+      layerOf: (id) => open.indexOf(id),
       closeAll,
     }),
     [open, push, pop, closeAll],

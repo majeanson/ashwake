@@ -43,6 +43,17 @@ import type { Strings } from '@text/Strings';
  * selection uses and from each other on every direction's wheel. A rounded
  * rectangle around a hexagon was never the right shape for it.
  *
+ * **And the card is ONE HEIGHT, whatever is written on it** (2026-08-30, Marc:
+ * *"the height changes when we get magic tiles vs normal or uniques, check why
+ * and make sure it stays the same"*). The rarity word and the HELD label were
+ * ordinary flex children, so a card carrying either was taller than a common
+ * one — and the hand is a grid, so ONE magic card in a draft grew the whole
+ * row and took that many pixels off the board. Worse than the cost: the board
+ * resized under the player mid-run, every time a rare was dealt or stashed and
+ * every time it left. Both are badges now, out of flow (`.tile-rarity` and
+ * `.tile-held` in `ui.css`), pinned to the card's top and bottom edges over the
+ * hex they describe; the card's height is fixed and the row never moves.
+ *
  * **A card with nothing to do is not a button** (2026-08-30). The manual draws
  * real cards in its STASH figure — Marc: *"in how to play we reuse the same
  * visuals as in game for all"* — and a `<button>` there would be a tab stop
@@ -162,11 +173,7 @@ export function Tile({
           {rarity === 'magic' ? s.lesson.rare.name : s.lesson.rareUnique.name}
         </span>
       )}
-      {held === true && (
-        <span className="fact-label" style={{ fontSize: '0.6rem' }}>
-          {s.figure.held}
-        </span>
-      )}
+      {held === true && <span className="tile-held fact-label">{s.figure.held}</span>}
     </Box>
   );
 }

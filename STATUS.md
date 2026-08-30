@@ -4,7 +4,59 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — the menus stop losing each other, and the
+Last checkpoint: **2026-08-30, last — the panels stop hiding each other, and
+the board takes the corner back.** Seven asks, and the first one is the shape of
+the rest: _"right now the more panel doesnt appear or is bugged when we navigate
+further."_ The previous checkpoint had answered that and shipped a test that
+walked the exact path and passed.
+
+**The test was measuring the STACK; the bug was in the PAINT.** Every panel had
+the same `z-index`, so the painter's order was `App`'s source order — and
+MORE sits late in that list, so the manual and SETTINGS, the two rooms MORE's
+own menu opens, arrived UNDER it. The room was open, focused and taking every
+tap behind an opaque, inert MORE. Two things hid it from the suite, and both
+look like features: `waitFor('visible')` passes on a buried panel, and
+`elementFromPoint` **skips `inert` subtrees**, so the attribute that made the
+bug invisible to a player made it invisible to the test. `.panel` is
+`calc(20 + var(--layer))` now, with `--layer` from the stack, and both specs
+read the stacking rule directly.
+
+**The board's corner is MENU · LUCK · VIEW.** The ♪ and the `?` were two
+buttons for two rooms MORE already lists; they are one door. LUCK came up out
+of the action bar — the only control in that row that did not spend the current
+pocket — and wears `--accent`, the rationed signature colour.
+
+**A rare card was taller than a common one**, so the hand grew and the board
+shrank every time a magic tile was dealt, stashed or spent. The rarity word and
+HELD are badges out of flow now, and the card's height is fixed.
+
+**A routine POP is a line, not a card.** A brief card is still a card — it
+darkens the board, lands in the middle, and has to be waited out, several times
+a minute. It is the receipt's own lead sentence over the board's bottom edge,
+with the rest one tap behind it.
+
+**THE GROUND YOU WALKED is a door onto the live board**, not a PNG of it. The
+R3F host never remounts, so the real board is still mounted behind the ending
+holding the cells the run ended on; the ending steps aside to a bar and hands
+the screen back. (The board was also **not** `inert` under the end screen.)
+
+**A new world opened wherever the last one was left**: the rig fits ONCE EVER,
+and it is inside the host that never remounts. Every way into a run now flies
+to its wake hex — the tile, not the frame, because `fitCamera` frames the
+glowing landmarks too.
+
+**The sticky panel head had no bottom edge**, so prose sliding under the
+manual's tab row was guillotined against nothing. A border and a short fade.
+
+One contrast finding, fixed rather than waived: the LUCK button's open state
+filled with `--panel-edge` and dropped daylight's accent to 3.1:1. It is an
+outline now — a mark, at the 3:1 bar.
+
+Verified: 1064 tests / 74 files, 82 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` back at 156 findings.
+Both new e2e tests were run against the unfixed code first and each failed.
+
+Previous checkpoint: **2026-08-30, last — the menus stop losing each other, and the
 board gets its height back.** Two asks: _"make sure all menus and overlapped
 menus on top are all navigable and backable and make sense"_, and _"be thorough
 in ui/ux so we DON'T lose any height space and have maximum map."_
@@ -41,8 +93,7 @@ Verified: 1064 tests / 74 files, 79 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` across twenty-six
 screens × four directions.
 
-Previous checkpoint: **2026-08-30, last — a card stops being a box with a tile in
-it.** Marc: _"make sure unselected card tiles blend in with the game, no
+Before that: **2026-08-30 — a card stops being a box with a tile in it.** Marc: _"make sure unselected card tiles blend in with the game, no
 border, only the selected one."_ Every card sat in a bordered, panel-coloured
 rectangle with a hex inside it, so the hand read as a row of BOXES rather than
 of tiles — three frames competing with the three pictures they held, on the

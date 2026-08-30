@@ -514,12 +514,32 @@ export type Strings = {
      *  the language row directly above it. */
     readonly auto: string;
     readonly sound: string;
-    /** The board's ♪ button, which says what a tap on it would DO. Two
+    /** The SETTINGS switch, which says what a tap on it would DO. Two
      *  sentences rather than one and an "on/off": a toggle whose label is its
      *  STATE has to be read twice, once to learn the state and once to work
-     *  out what pressing it does. */
+     *  out what pressing it does. It stood on the board until 2026-08-30 and
+     *  is one control in one room now — see `Camera`. */
     readonly soundOn: string;
     readonly soundOff: string;
+    /**
+     * The board's one door out (2026-08-30).
+     *
+     * It replaced a ♪ and a `?` in the camera cluster, which were two buttons
+     * for two rooms MORE already lists. The board is the thing this game is
+     * trying to give the screen to; every control floating over it has to earn
+     * the pixels, and one door that reaches everything beats two that reach a
+     * room each.
+     */
+    readonly menu: string;
+    /**
+     * The board's LUCK button, said out loud.
+     *
+     * The button is a mark and a number, which reads as "12" to a screen
+     * reader and says nothing about what it opens. It moved out of the action
+     * bar and up beside the view button on 2026-08-30, so it is also no longer
+     * next to anything that explains it.
+     */
+    readonly luckPurse: (luck: number) => string;
     readonly resetTeaching: string;
     /** The disclosure a manual section folds its finer print into. */
     readonly details: string;
@@ -546,8 +566,19 @@ export type Strings = {
     readonly perkFound: (name: string) => string;
     /** Said when a shrine woke a system for this world. */
     readonly woke: (what: string) => string;
-    /** The end screen's caption over the run's own board picture. */
+    /**
+     * The end screen's way back onto the board it just ended (2026-08-30).
+     *
+     * It captioned a PNG until then — a snapshot taken at the last dispatch and
+     * shown as a picture. Marc: *"the ground you walked 'picture' is ugly, i
+     * dont want a picture i want to actual screengame where we can move
+     * around."* So it is a door now, and the same words open it.
+     */
     readonly theMap: string;
+    /** What is behind that door, said once under it. */
+    readonly walkTheMap: string;
+    /** And the way back out of it, to the numbers. */
+    readonly backToEnding: string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
     readonly camera: {
       readonly fit: string;

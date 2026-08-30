@@ -4,7 +4,7 @@ import type { BoardHandle } from '../board/Board';
 import { Icon } from '../ui/Icon';
 
 /**
- * The camera cluster (Stage 3, 2026-08-29; one button since 2026-08-29).
+ * The board's own corner (Stage 3, 2026-08-29).
  *
  * Bottom-right, floating over the board, and deliberately **as few controls as
  * the board can be steered with**. Ashwake 1 shipped `+` and `−` and then took
@@ -26,18 +26,34 @@ import { Icon } from '../ui/Icon';
  * this file in English, which D4 does not allow and which a French phone read
  * in English for two stages.
  *
- * **The ♪ button is back** (2026-08-30). Ashwake 1 carried it here from
- * 2026-08-20 — Marc's launch call, *"a way to toggle on/off easily"* — and this
- * body dropped it while keeping the sentence that promises it: `ui.sound`'s own
- * note, in both languages, reads "the ♪ button on the board is this switch",
- * and there was no such button. Sound lived only in SETTINGS, three taps and a
- * panel away, which is not where anybody mutes a game.
+ * ## What the corner holds, and why (2026-08-30)
  *
- * It is the SAME WIRE as the settings switch — one flag, written once, read by
- * both — because two surfaces for one setting is how they come to disagree
- * about it. The third button in a cluster that argues for as few as possible
- * earns its place the way `?` does: it is not a camera control, it is the one
- * thing a player in a quiet room needs within reach.
+ * Marc: *"make sure sound on or off and how to play stays in the menu, add a
+ * menu button instead"*, and *"put the luck button next to the FIT button, as a
+ * new button ... luck button is another colour more like an action one, but not
+ * in hand."* So the cluster is **MENU · LUCK · VIEW**, and each of the three is
+ * a different kind of thing:
+ *
+ * - **MENU** is the one door out. It replaces the ♪ and ? that stood here — two
+ *   buttons for two rooms that MORE already lists, in the corner of a board
+ *   that wants the screen. Sound lives in SETTINGS and HOW TO PLAY is MORE's
+ *   first line, so neither was lost; they went back to being one tap further
+ *   away and stopped costing board. `feature['ui.sound']`'s own note said "the
+ *   speaker button on the board is this switch" and now says where the switch
+ *   actually is — a sentence that names a control has to be re-read when the
+ *   control moves.
+ * - **LUCK** is an ACTION, and it is the only one here: it opens the purse,
+ *   which spends. It came out of the action bar, where it sat beside POP and
+ *   SACRIFICE competing with them for a hand's width, and it wears `--accent`
+ *   — the direction's one signature colour, the same one `.door-begin` uses for
+ *   the loud way in — so it reads as a thing that does something rather than as
+ *   another camera control. Rationed, per `theme/tokens.ts`: it is the single
+ *   accent on the board.
+ * - **VIEW** steers the camera, and that is all it has ever done.
+ *
+ * The purse is only offered where there is something to spend it on, which is
+ * what `spends` answers: a LUCK button that opens an empty drawer is a promise
+ * that breaks on the tap.
  */
 
 export type View = 'fit' | 'here' | 'flat' | 'home';
@@ -47,10 +63,13 @@ export type CameraProps = {
   /** Where the button will go NEXT — its own label, and the whole rule above. */
   readonly next: View;
   readonly onCycle: () => void;
-  readonly onHelp: () => void;
-  /** Whether the board is currently voiced. The same flag SETTINGS writes. */
-  readonly sound: boolean;
-  readonly onSound: () => void;
+  /** The one door out of the board: MORE, which lists every other room. */
+  readonly onMenu: () => void;
+  /** Luck in hand, and the drawer it opens. Absent where nothing spends it. */
+  readonly luck: number;
+  readonly canSpend: boolean;
+  readonly onPurse: () => void;
+  readonly purseOpen: boolean;
 };
 
 /** Ashwake 1's number: close enough to read a hex, far enough to see a pocket. */
@@ -101,27 +120,47 @@ export function useCameraCycle(
   return { next, step };
 }
 
-export function Camera({ s, next, onCycle, onHelp, sound, onSound }: CameraProps) {
+export function Camera({
+  s,
+  next,
+  onCycle,
+  onMenu,
+  luck,
+  canSpend,
+  onPurse,
+  purseOpen,
+}: CameraProps) {
   return (
     <div className="camera">
-      {/* The label says what a TAP WOULD DO, not what the state is: a toggle
-          labelled with its own state has to be read twice. `aria-pressed`
-          carries the state, which is what it is for — and the ICON carries it
-          too, because a speaker with a slash through it is the one shape
-          everybody already reads as "muted". */}
-      <button
-        type="button"
-        className="sound"
-        data-action="sound"
-        aria-pressed={sound}
-        aria-label={sound ? s.ui.soundOn : s.ui.soundOff}
-        onClick={onSound}
-      >
-        <Icon name={sound ? 'soundOn' : 'soundOff'} />
+      <button type="button" className="menu" data-go="more" aria-label={s.ui.menu} onClick={onMenu}>
+        <Icon name="menu" />
       </button>
-      <button type="button" className="help" aria-label={s.ui.howToPlay} onClick={onHelp}>
-        <Icon name="help" />
-      </button>
+      {canSpend && (
+        <button
+          type="button"
+          className="purse-toggle"
+          data-action="purse"
+          // The drawer opens above the hand, at the other end of the screen
+          // from this button, so it is nowhere near it in the document —
+          // which is exactly the case `aria-controls` exists for.
+          aria-expanded={purseOpen}
+          aria-controls="spends"
+          aria-label={s.ui.luckPurse(luck)}
+          onClick={onPurse}
+        >
+          {/*
+            The REGISTRY's mark, not a lookalike (2026-08-30).
+
+            Luck is one of the two currencies that follow a player between the
+            board, the purse, the shop and the end screen, so the concept
+            registry names it and every one of those surfaces draws the same
+            thing. This button — the door to the purse, and the most-seen luck
+            on the screen — was drawing `♦`, a second symbol for the idea the
+            registry already had.
+          */}
+          <Icon name="luck" /> {luck}
+        </button>
+      )}
       <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
         {s.ui.camera[next]}
       </button>

@@ -51,13 +51,24 @@ export type EndScreenProps = {
   /** Goals this run was the one to meet, for this world. */
   readonly goals: readonly GoalId[];
   /**
-   * The board as this run ended.
+   * Back onto the board this run just ended on.
    *
    * Marc, 2026-08-29: *"in the end screen i loved having my real map to check
-   * it back again, keep it that way just like we did."* Null where the picture
-   * could not be taken — a memento is never worth a broken screen.
+   * it back again, keep it that way just like we did."* That was answered with
+   * a PNG snapshot, and on 2026-08-30 he looked at it: *"the ground you walked
+   * 'picture' is ugly, i dont want a picture i want to actual screengame where
+   * we can move around."*
+   *
+   * He is right, and the picture was never the thing he asked for — "check it
+   * back again" is a verb. The board is still MOUNTED behind this screen (the
+   * R3F canvas lives once, above every scene, and never remounts), still
+   * holding the exact cells the run ended on, still able to pan, pinch and
+   * FIT. It was simply covered by an opaque page. So this hands the screen
+   * back to it and `App` puts a way out at the bottom; the snapshot is still
+   * taken, because the hall of fame's diary rows are the one place a picture
+   * IS the right answer.
    */
-  readonly shot?: string | null;
+  readonly onWalk: () => void;
   /**
    * What this run CHANGED, as opposed to what it scored.
    *
@@ -72,7 +83,7 @@ export type EndScreenProps = {
 };
 
 export function EndScreen({
-  shot,
+  onWalk,
   newPerks,
   newUnlocks,
   onMainMenu,
@@ -205,21 +216,23 @@ export function EndScreen({
       </nav>
 
       {/*
-        THE MAP, last: the run you just walked, kept.
+        THE MAP, last: the run you just walked, and you can walk it again.
 
         Marc: *"in the end screen i loved having my real map to check it back
         again."* It sits under everything because it is the thing you scroll
         BACK to — the numbers answer "how did I do", and this answers "what did
         it look like", which is the question you ask second and the one that
-        makes a run memorable. The same picture goes into the diary row, so the
-        hall of fame stops being frames with nothing in them.
+        makes a run memorable.
+
+        It was a PNG of the board and is a DOOR onto the board (2026-08-30) —
+        see `onWalk`. Nothing is drawn in the slot, deliberately: a thumbnail
+        beside a button that opens the real thing is the ugly picture again, at
+        a smaller size.
       */}
-      {shot != null && (
-        <figure className="end-map">
-          <img src={shot} alt="" />
-          <figcaption className="fact-label">{s.ui.theMap}</figcaption>
-        </figure>
-      )}
+      <button type="button" className="end-map" data-action="walk-map" onClick={onWalk}>
+        <span className="end-map-name">{s.ui.theMap}</span>
+        <span className="end-map-note">{s.ui.walkTheMap}</span>
+      </button>
     </div>
   );
 }

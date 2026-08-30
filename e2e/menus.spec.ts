@@ -35,6 +35,30 @@ async function canvasId(page: Page): Promise<string> {
   });
 }
 
+/**
+ * Which panel is actually PAINTED on top — which is not always the one the
+ * stack says is on top, and that gap is the bug this catches (2026-08-30).
+ *
+ * `waitFor({ state: 'visible' })` passes on a panel that is buried: every panel
+ * is opaque and `position: fixed`, so a second one over it changes nothing that
+ * Playwright's visibility check looks at. And `elementFromPoint` cannot see it
+ * either — Chromium skips `inert` subtrees when hit-testing, so it cheerfully
+ * reported the buried panel's neighbour. So this reads the stacking rule
+ * itself: higher z-index wins, and a tie goes to whichever comes later in the
+ * DOM.
+ */
+async function paintedOnTop(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    let best: { id: string | null; z: number } | null = null;
+    document.querySelectorAll('[data-panel]').forEach((el) => {
+      const z = Number(getComputedStyle(el).zIndex) || 0;
+      // >= so that a later sibling wins the tie, which is what the painter does.
+      if (best === null || z >= best.z) best = { id: el.getAttribute('data-panel'), z };
+    });
+    return best === null ? null : (best as { id: string | null }).id;
+  });
+}
+
 test('every room off MORE opens and comes back', async ({ page }) => {
   const errors = watchErrors(page);
   // A device that has met every lesson: this is about the menus, not about
@@ -51,6 +75,18 @@ test('every room off MORE opens and comes back', async ({ page }) => {
   for (const room of ['manual', 'worlds', 'settings']) {
     await page.locator(`[data-go="${room}"]`).click();
     await panel(page, room).waitFor({ state: 'visible' });
+    /*
+     * And it is the room the player can SEE.
+     *
+     * Panels are rendered from one fixed list in `App` and all shared a
+     * z-index, so the painter's order was that list's order: MORE sits late in
+     * it, and the manual and SETTINGS — the two rooms MORE's own menu opens —
+     * arrived underneath it. The room was open, focused and taking every tap,
+     * behind a MORE that was inert and fully opaque. Marc, 2026-08-30: *"the
+     * more panel doesnt appear or is bugged when we navigate further"*. This
+     * loop already walked all three and passed through the whole thing.
+     */
+    expect(await paintedOnTop(page), `${room} opened UNDER the panel that opened it`).toBe(room);
     await panel(page, room).locator('.panel-back').click();
     await panel(page, room).waitFor({ state: 'detached' });
     await panel(page, 'more').waitFor({ state: 'visible' });
@@ -119,23 +155,35 @@ test('a menu three deep is navigable, and a scene change empties the stack', asy
   await begin(page);
   await page.waitForTimeout(500);
 
-  // Three deep: the manual, MORE on it, and the manual asked for AGAIN.
-  await page.locator('.camera .help').click();
+  /*
+   * Three deep: MORE, the manual on it, and MORE asked for AGAIN.
+   *
+   * The board's one door is MENU since 2026-08-30 — it replaced a `?` that
+   * opened the manual and a music note that muted, both of which MORE already
+   * reaches. So the walk in is one step longer and the corner is two buttons
+   * lighter, and the shape being tested is the same: a door onto a panel
+   * already in the stack has to RAISE it, and BACK still leaves one at a time.
+   */
+  await page.locator('.camera .menu').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
   await panel(page, 'manual').locator('[data-go="more"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
   await panel(page, 'more').locator('[data-go="manual"]').click();
 
-  // The manual is what a tap in the middle of the screen would land on.
+  /*
+   * The manual is what the player SEES.
+   *
+   * This asked `elementFromPoint` and was answered 'manual' while the manual
+   * was buried under MORE — Chromium skips `inert` subtrees when hit-testing,
+   * so the one thing that made the bug invisible to a player was also the thing
+   * that made it invisible to this test. It reads the stacking order now.
+   */
   await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const el = document.elementFromPoint(195, 420);
-          return el?.closest('[data-panel]')?.getAttribute('data-panel') ?? null;
-        }),
-      { message: 'HOW TO PLAY did not raise the manual over MORE' },
-    )
+    .poll(() => paintedOnTop(page), {
+      message: 'HOW TO PLAY did not raise the manual over MORE',
+    })
     .toBe('manual');
 
   // And BACK still walks out one layer at a time.
@@ -181,7 +229,8 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
     .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
   expect(inHand.length, 'the hand draws no baked tile').toBeGreaterThan(0);
 
-  await page.locator('.camera .help').click();
+  await page.locator('.camera .menu').click();
+  await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
   await page.locator('[data-tab="play"]').click();
   await page.waitForTimeout(800);
@@ -283,19 +332,18 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await clean('the purse');
   await page.locator('[data-action="purse"]').click();
 
-  await page.locator('.camera .help').click();
+  await page.locator('.camera .menu').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await clean('MORE, off the board');
+  await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
   for (const tab of ['start', 'play', 'hand']) {
     await page.locator(`[data-tab="${tab}"]`).click();
     await clean(`the manual's ${tab} tab`);
   }
-  await panel(page, 'manual').locator('.panel-back').click();
-
-  // MORE is reached from the manual's MENU tab while a run is live: the front
+  // Back down to MORE, which is what the board's MENU opened onto: the front
   // door's own MORE is a different screen and this one is standing on a board.
-  await page.locator('.camera .help').click();
-  await panel(page, 'manual').waitFor({ state: 'visible' });
-  await panel(page, 'manual').locator('[data-go="more"]').click();
+  await panel(page, 'manual').locator('.panel-back').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
   for (const room of ['worlds', 'shop', 'fame', 'settings']) {
     // Scoped to MORE: the manual's MENU tab underneath offers SETTINGS too,
@@ -309,47 +357,60 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the board’s ♪ and the SETTINGS switch are one wire', async ({ page }) => {
+test('the board’s MENU reaches SOUND and HOW TO PLAY, and sound is one wire', async ({ page }) => {
   /*
-   * `ui.sound`'s own note says, in both languages, "the ♪ button on the board
-   * is this switch" — and there was no such button (found 2026-08-30). Sound
-   * lived only in SETTINGS, three taps and a panel away, which is not where
-   * anybody mutes a game in a quiet room. Ashwake 1 has carried the button
-   * since 2026-08-20, on Marc's launch call: "a way to toggle on/off easily".
+   * Marc, 2026-08-30: *"make sure sound on or off and how to play stays in the
+   * menu, add a menu button instead."*
    *
-   * The thing worth pinning is not that a button exists, it is that the two
-   * surfaces are ONE FLAG. Two surfaces for one setting is how they come to
-   * disagree about it, and a muted game that says it is unmuted is worse than
-   * either state.
+   * The board’s corner used to carry a music note and a `?` beside the view
+   * button — three controls floating over the thing this whole layout is
+   * trying to give the screen to. They are ONE door now, and the two rooms
+   * they opened are where MORE already listed them. So what has to be proved
+   * is not that a button exists but that **nothing became unreachable**: from
+   * a live board, MENU gets to the manual and to the sound switch.
+   *
+   * And the switch is still ONE FLAG. A muted game that says it is unmuted is
+   * worse than either state — the finding this test was originally written
+   * for, and the half of it that survives the button moving.
    */
   const errors = watchErrors(page);
   await page.goto('/?taught=1&seed=7&place=12');
   await begin(page);
 
-  const note = page.locator('[data-action="sound"]');
-  await expect(note, 'the board has no ♪ button').toBeVisible();
-  // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
-  // quiet room is uninstalled.
-  await expect(note).toHaveAttribute('aria-pressed', 'false');
+  // ONE door, and the two it replaced are gone from over the board.
+  await expect(page.locator('.camera .menu'), 'the board has no MENU button').toBeVisible();
+  expect(
+    await page.locator('[data-action="sound"]').count(),
+    'the sound button is still on the board',
+  ).toBe(0);
+  expect(await page.locator('.camera .help').count(), '? is still on the board').toBe(0);
 
-  await note.click();
-  await expect(note).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('.camera .menu').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
 
-  // SETTINGS agrees, because it is reading the same flag. From the BOARD,
-  // which is the manual's MENU tab and the only way in while a run is live.
-  await page.locator('.camera .help').click();
+  // HOW TO PLAY is one tap further in, and it is the panel the player SEES.
+  await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  await panel(page, 'manual').locator('[data-go="settings"]').click();
+  expect(await paintedOnTop(page)).toBe('manual');
+  await panel(page, 'manual').locator('.panel-back').click();
+
+  // And so is SOUND, which is SETTINGS' own row.
+  await panel(page, 'more').locator('[data-go="settings"]').click();
   await panel(page, 'settings').waitFor({ state: 'visible' });
   const row = panel(page, 'settings').locator('[data-feature="ui.sound"]');
+  // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
+  // quiet room is uninstalled.
+  await expect(row).toHaveAttribute('aria-pressed', 'false');
+  await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
 
-  // And flipping it there flips the board's button, on the way back out.
-  await row.click();
-  await expect(row).toHaveAttribute('aria-pressed', 'false');
+  // Out and back in: the flag is the device's, not the panel's.
   await panel(page, 'settings').locator('.panel-back').click();
-  await panel(page, 'manual').locator('.panel-back').click();
-  await expect(note).toHaveAttribute('aria-pressed', 'false');
+  await panel(page, 'more').locator('[data-go="settings"]').click();
+  await expect(
+    panel(page, 'settings').locator('[data-feature="ui.sound"]'),
+    'the sound switch forgot itself between openings',
+  ).toHaveAttribute('aria-pressed', 'true');
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -705,4 +766,61 @@ test('the front door fits the smallest phone, and scrolls when it does not', asy
   await expect(page.locator('[data-door="more"]')).toBeVisible();
 
   expect(errors).toEqual([]);
+});
+
+test('the ending hands the screen back to the board it ended on', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"the ground you walked ‘picture’ is ugly, i dont want a
+   * picture i want to actual screengame where we can move around."*
+   *
+   * It was a 240px PNG snapshot blown up to 26rem. The board it pictures never
+   * went anywhere: the R3F canvas lives once above every scene and never
+   * remounts, so at the moment a run ends the real board is still mounted,
+   * still holding the cells it ended on, and still able to pan, pinch and FIT.
+   * It was simply covered by an opaque page.
+   *
+   * Three things have to be true, and the third is the one a screenshot would
+   * not catch: the ending steps aside, the board becomes REACHABLE again
+   * (`inert` off, which is the same condition the keyboard reads), and the
+   * canvas is the same element throughout — because a scene change that
+   * remounts the host loses the WebGL context, which is the rule that outranks
+   * everything else on this screen.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?end=1&taught=1');
+  await begin(page);
+  const before = await canvasId(page);
+
+  const end = page.locator('[data-hud="end"]');
+  await end.waitFor({ state: 'visible' });
+  // Covered means unreachable: a finished run left the board non-inert under
+  // an opaque page, so a Tab walked the keyboard onto a board nobody could see.
+  await expect(
+    page.locator('.board-host'),
+    'the board was reachable under the end screen',
+  ).toHaveAttribute('inert', '');
+
+  // No picture of the board on the ending — a door onto it.
+  expect(await page.locator('.end-map img').count(), 'the ending still draws a snapshot').toBe(0);
+  await page.locator('[data-action="walk-map"]').click();
+
+  await expect(end, 'the ending did not step aside').toHaveCount(0);
+  await expect(
+    page.locator('.board-host'),
+    'the board is still inert with the ending stood aside',
+  ).not.toHaveAttribute('inert', '');
+  // And the view button came with it: FIT is most of the reason to be here,
+  // and the bar at the bottom sits exactly where the cluster is pinned.
+  const view = page.locator('[data-action="camera"]');
+  await expect(view, 'no view button while walking the ending').toBeVisible();
+  await view.click();
+
+  // Back to the numbers, and the score is still the score.
+  await page.locator('[data-action="end-back"]').click();
+  await end.waitFor({ state: 'visible' });
+  await expect(page.locator('[data-action="end-back"]')).toHaveCount(0);
+
+  // The whole of it was a state change: same canvas, start to finish.
+  expect(await canvasId(page), 'walking the ending remounted the board').toBe(before);
+  expect(errors, errors.join('\n')).toEqual([]);
 });

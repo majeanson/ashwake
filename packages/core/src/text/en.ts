@@ -467,7 +467,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     },
     'ui.sound': {
       label: 'Sound',
-      note: 'A few quiet notes as you pop and claim. The speaker button on the board is this switch.',
+      note: 'A few quiet notes as you pop and claim.',
     },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
@@ -581,12 +581,16 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     sound: 'SOUND',
     soundOn: 'Sound is on. Tap to mute.',
     soundOff: 'Sound is off. Tap for sound.',
+    menu: 'MENU',
+    luckPurse: (luck) => `LUCK: ${luck}. Open the purse.`,
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     howToPlay: 'HOW TO PLAY',
     perkFound: (name) => `A FIND: you carry ${name} now.`,
     woke: (what) => `WOKE: ${what}`,
     theMap: 'THE GROUND YOU WALKED',
+    walkTheMap: 'Move around the board you left.',
+    backToEnding: 'BACK TO THE ENDING',
     expedition: {
       title: 'THE EXPEDITION',
       lines: [

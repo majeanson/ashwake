@@ -194,7 +194,19 @@ button[disabled] {
 .panel {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  /*
+   * 20 is the panel layer; `--layer` is where in the STACK this one sits
+   * (2026-08-30).
+   *
+   * Panels all paint opaque over the whole screen and are all rendered from one
+   * fixed list in `App`, so a shared z-index made the painter's order that
+   * list's order. MORE sits late in it, so the manual and SETTINGS — the two
+   * rooms MORE's own menu opens — arrived UNDER the panel that opened them: the
+   * player tapped HOW TO PLAY, still saw MORE, and every tap after that landed
+   * on a manual they could not see. `Panel` sets `--layer` from the stack, and
+   * six doors is the ceiling, so nothing here reaches `.card-scrim` at 30.
+   */
+  z-index: calc(20 + var(--layer, 0));
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -205,11 +217,47 @@ button[disabled] {
 }
 
 /* The head and its tab row stick as ONE block — see `Panel`. */
+/*
+ * The sticky block, and the EDGE it has to have (2026-08-30).
+ *
+ * Marc: *"top header of menu is glitching when scrolling down a how to play
+ * section, its sticky but content goes behind and we see it."*
+ *
+ * It was doing exactly what a sticky header does — the body scrolls under it
+ * and is clipped at its bottom edge — and it looked broken, because that edge
+ * was never drawn. The manual's tab row is the last thing in this block and
+ * carried no border of its own, so a line of prose sliding under it was
+ * guillotined against nothing: half a row of glyphs, tops or descenders,
+ * hanging in the air under PLAY. On a screen of body text that reads as the
+ * header failing to cover, rather than as content passing beneath it.
+ *
+ * Two things, and both are needed. The BORDER says where the block ends. The
+ * FADE says what is happening at that line — prose dissolving into a header is
+ * read as "there is more above", prose sliced in half is read as a bug. The
+ * fade is drawn BELOW the block rather than inside it, so it costs no height,
+ * takes no taps, and cannot push the tabs around.
+ *
+ * `.panel-head` keeps a border only when something follows it, which is the
+ * head/tabs divider. On a panel with no tabs the head IS the block, and the
+ * block's own border is the only line there should be.
+ */
 .panel-top {
   position: sticky;
   top: 0;
   z-index: 1;
   background: var(--bg);
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.panel-top::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 0.9rem;
+  pointer-events: none;
+  background: linear-gradient(var(--bg), transparent);
 }
 
 .panel-head {
@@ -217,6 +265,9 @@ button[disabled] {
   align-items: center;
   gap: var(--gap);
   padding: var(--gap);
+}
+
+.panel-head:not(:last-child) {
   border-bottom: 1px solid var(--panel-edge);
 }
 
@@ -887,6 +938,51 @@ button[disabled] {
   display: none;
 }
 
+/* And a note that is a BUTTON carries its own ground: the band behind it is
+   for a bare sentence, and drawn under a bordered control it reads as a second
+   frame round the first. */
+.toast:has(.toast-open) {
+  background: transparent;
+}
+
+/*
+ * A note you can OPEN — the pop's lead line (2026-08-30).
+ *
+ * Marc: *"just show points in the bottom and we can tap for details or tap
+ * out."* So the toast's own tap still dismisses and this one opens the full
+ * receipt, and the two have to look like two things. It is a button and reads
+ * as one — the panel's edge under it, the display face on the number — while
+ * still being a line of text in a strip rather than a control in the way.
+ *
+ * It keeps the 44px floor rather than arguing for an exemption. It was 31px
+ * for one build, on the reasoning that a line over the board should not be a
+ * slab across it — and that is a preference, where the floor is a rule
+ * `e2e/targets.spec.ts` gates on and Ashwake 1 grew that test because this
+ * exact class of miss kept recurring. It is the one thing on the board a
+ * player is invited to tap that is not a card or a button in a cluster, so it
+ * is the last control that should be hard to hit. It only exists between a pop
+ * and the next tap, and it is as wide as its sentence, not as wide as the
+ * screen.
+ */
+.toast-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  background: var(--panel);
+  border-color: var(--panel-edge-active);
+}
+
+/* What the second half of the tap is for. Faint on purpose: the points are
+   the message and this is the footnote saying there is more of it. */
+.toast-more {
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+}
+
 /* ---- the camera cluster ------------------------------------------------- */
 
 .camera {
@@ -905,11 +1001,52 @@ button[disabled] {
   font-size: 0.75rem;
 }
 
-/* A muted board says so by going quiet itself. `--ink-faint` is held at 4.5:1
-   against the panel by `contrast.test.ts`, so "off" is still legible rather
-   than merely dimmer. */
-.camera .sound[aria-pressed='false'] {
-  color: var(--ink-faint);
+/*
+ * LUCK is the one ACTION in the corner, and it says so (2026-08-30).
+ *
+ * Marc: *"luck button is another colour more like an action one, but not in
+ * hand."* MENU and VIEW are chrome — a door and a camera — and this one spends
+ * a currency, so it wears `--accent`: the direction's own signature colour,
+ * graded as text on `--panel` by `contrast.test.ts`, and the same pairing
+ * `.door-begin` uses for the loud way in. That is the whole of the ration
+ * `theme/tokens.ts` asks for — one accent on the board, on the one control
+ * here that does something to the run.
+ *
+ * The mark and the number are one line, which is why the icon is sized down to
+ * sit on the number's baseline rather than above it.
+ */
+.camera .purse-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.camera .purse-toggle svg {
+  width: 1em;
+  height: 1em;
+}
+
+/*
+ * An open drawer is a pressed button — said with a MARK, not a ground.
+ *
+ * It filled with `--panel-edge` for one build, and `pnpm audit:screens` found
+ * it in daylight: the accent is graded at 6.16:1 as text on the panel and lands
+ * at **3.1:1** on the panel's edge, under the 4.5 bar. Darken something, never
+ * the threshold — but the thing to change here was the idea. A ground is what
+ * the label is read against; an outline is a mark, answers to the 3:1 bar, and
+ * changes nothing about what the number is standing on.
+ *
+ * Inside the border rather than outside it: this button is pinned in a cluster
+ * `var(--gap)` from the edge of the screen, and a positive offset would draw
+ * the ring off it.
+ */
+.camera .purse-toggle[aria-expanded='true'] {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
 }
 
 /*
@@ -990,11 +1127,24 @@ button[disabled] {
   gap: 0.35rem;
 }
 
+/*
+ * ONE HEIGHT, whatever is written on the card (2026-08-30).
+ *
+ * `height`, not `min-height`. Marc: *"the height changes when we get magic
+ * tiles vs normal or uniques, check why and make sure it stays the same."* A
+ * rare card carries a rarity word and a stashed one carries HELD, and both
+ * were ordinary flex children — so a card with either was taller than a common
+ * one, and the hand being a grid, ONE magic card in the draft grew the whole
+ * row. That is board height, which is the thing this file spends every other
+ * comment defending; and it moved DURING a run, every time a rare was dealt,
+ * stashed or spent, so the board resized under a reaching thumb.
+ *
+ * The two labels are badges now (`.tile-rarity`, `.tile-held`) rather than
+ * rows. 3.1rem is above the 44px tap floor with room for the hex, and no more.
+ */
 .hand > button,
 .hand > .tile {
-  /* Above the 44px tap floor with room for the hex, and no more: every
-     millimetre here is a millimetre the board does not get. */
-  min-height: 3.1rem;
+  height: 3.1rem;
   padding: 0.25rem 0.15rem;
 }
 
@@ -1794,9 +1944,23 @@ button[disabled] {
  * and it is the same size as the ground's own name, because "which rare is
  * this" is exactly as important as "which colour is this".
  */
-.tile-rarity {
-  font-size: 0.72rem;
+/*
+ * And it is a BADGE, not a row (2026-08-30).
+ *
+ * In flow it made a rare card taller than a common one — see `.hand > .tile`
+ * for what that cost. Pinned to the card's top edge it says the same word in
+ * the same ink over the hex it is about, and the card is one height whatever
+ * it is holding. The halo is what lets it sit on the art rather than beside it,
+ * and it was already there for exactly that reason.
+ */
+.tile > .tile-rarity {
+  position: absolute;
+  top: 0.05rem;
+  left: 0;
+  right: 0;
+  font-size: 0.62rem;
   font-weight: 700;
+  line-height: 1;
   text-shadow:
     1px 1px 0 var(--halo),
     -1px 1px 0 var(--halo),
@@ -1804,25 +1968,101 @@ button[disabled] {
     -1px -1px 0 var(--halo);
 }
 
+/* The stash's own word, pinned to the bottom edge for the same reason: a
+   stashed card and a drafted one are the same size, so trading one for the
+   other does not move the row they share. */
+.tile > .tile-held {
+  position: absolute;
+  bottom: 0.05rem;
+  left: 0;
+  right: 0;
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
 /* The run's own board, kept at the bottom of the ending — the thing you scroll
    back to. Bordered like a card, because it is a memento rather than chrome. */
+/*
+ * THE GROUND YOU WALKED — a door onto the board, not a picture of it
+ * (2026-08-30).
+ *
+ * It was a 240px PNG snapshot blown up to 26rem, which is what Marc looked at:
+ * *"the ground you walked 'picture' is ugly, i dont want a picture i want to
+ * actual screengame where we can move around."* The board is still mounted
+ * behind this screen and still holds the cells the run ended on, so the honest
+ * answer is to hand the screen back to it — see `walking` in `App`.
+ *
+ * It reads as a place rather than as a button: full measure, two lines, the
+ * name over the invitation, and the panel's own edge round it. Everything else
+ * in this screen's menu is a single word in a row; this is the one thing on it
+ * that goes somewhere you can move around.
+ */
 .end-map {
   width: min(26rem, 100%);
   margin: var(--gap) 0 0;
-}
-
-.end-map img {
-  width: 100%;
-  height: auto;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.9rem;
   border: 1px solid var(--panel-edge-active);
-  border-radius: var(--radius);
-  /* The thumbnail is 240px wide and drawn larger than that, so tell the
-     browser to keep it crisp rather than smoothing a small board into fog. */
-  image-rendering: auto;
+  background: var(--panel);
 }
 
-.end-map figcaption {
-  margin-top: 0.25rem;
-  text-align: center;
+.end-map-name {
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  color: var(--accent);
+}
+
+.end-map-note {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+/*
+ * The ending, stood aside.
+ *
+ * All that is left of the end screen while its board is being walked: one way
+ * back, at the bottom, out of the way of the map. It is NOT `.end` with a
+ * class on it — `.end` is a scrolling column pinned to `inset: 0`, and
+ * collapsing that into a bar is an argument with a layout.
+ *
+ * It sits at the scene layer so the panels still open over it, and clear of
+ * `.camera`, which is pinned to the same corner a tap target up: the FIT
+ * button is most of the reason to be in here.
+ */
+.end-walk {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  padding: var(--gap) var(--gap) calc(var(--gap) + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border-top: 1px solid var(--panel-edge);
+}
+
+.end-walk button {
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/*
+ * And the corner steps up over the bar.
+ *
+ * `.camera` is pinned `var(--gap)` from the bottom of the board host, which
+ * during a run is the top edge of the hand and here is the bottom of the
+ * screen — so the bar landed straight on top of it and the FIT button, which
+ * is most of the reason to be in this view at all, was under it. Measured off
+ * the bar rather than guessed: one tap target plus its two paddings is exactly
+ * what `.end-walk` is tall.
+ */
+.shell:has(.end-walk) .camera {
+  bottom: calc(var(--tap) + var(--gap) * 3 + env(safe-area-inset-bottom));
 }

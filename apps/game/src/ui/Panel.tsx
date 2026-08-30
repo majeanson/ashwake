@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from './Icon';
 import { useDialogStack } from './dialog';
 
@@ -47,6 +47,14 @@ export function Panel({ id, title, back, closeAll, onBack, children, head }: Pan
       ref={sheet}
       className="panel"
       data-panel={id}
+      /*
+        The stack says which panel is on top; this is where it gets to say it in
+        pixels. Panels are rendered from a fixed list in `App`, so without this
+        the painter's order is that list's order — and MORE, which sits late in
+        it, covered the manual and SETTINGS that opened FROM it. Inert, opaque,
+        and on top of the panel taking the taps: the whole screen read as dead.
+      */
+      style={{ '--layer': Math.max(0, stack.layerOf(id)) } as CSSProperties}
       role="dialog"
       aria-modal="true"
       aria-labelledby={`${id}-title`}

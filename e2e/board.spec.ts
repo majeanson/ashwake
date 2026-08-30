@@ -326,20 +326,42 @@ test('the reward loop speaks: a pop pays out in words', async ({ page }) => {
   await pop.click();
 
   /*
-   * A pop pays out into a CARD, and the card waits for the cascade
-   * (2026-08-29, Marc: "make sure all pop as card, no text above tiles for
-   * explanations ... and points").
+   * A pop pays out into a LINE, and the line opens (2026-08-30).
    *
-   * It used to be a toast — a line in the strip between the board and the
-   * hand, arriving at the exact moment the eye is on the board watching the
-   * tiles thrown off it, and gone by the time it looks down. The accounting a
-   * harvest owes is worth reading, and worth reading after the thing it
-   * accounts for, so the card is raised once the leap has finished.
+   * The history of this one sentence is the whole argument. It was a toast in
+   * the strip between the board and the hand — arriving while the eye is on
+   * the board watching the tiles thrown off it, gone by the time it looks
+   * down. So it became a card (Marc, 2026-08-29: "make sure all pop as card,
+   * no text above tiles for explanations ... and points"), then a BRIEF card,
+   * and then Marc looked at a run of them: *"i asked previously to not pop as
+   * a card everytime, just show points in the bottom and we can tap for
+   * details or tap out."*
+   *
+   * The finding that survives all three is that the accounting is owed and is
+   * worth reading AFTER the cascade. What changed is the price: the lead line
+   * over the board's own bottom edge, and the rest one tap away for whoever
+   * wants it. So both halves are pinned here — the line says something, and
+   * the tap gets the accounting.
    */
+  const line = page.locator('[data-action="pop-details"]');
+  await expect(line, 'a pop did not say anything at the bottom').toBeVisible({ timeout: 4000 });
+  expect(
+    ((await line.textContent()) ?? '').trim().length,
+    'a pop said nothing at all',
+  ).toBeGreaterThan(3);
+  expect(
+    await page.locator('.card-scrim').count(),
+    'a routine pop still held the whole screen',
+  ).toBe(0);
+
+  await line.click();
   const card = page.locator('.card-scrim .card');
-  await expect(card, 'a pop did not raise its card').toBeVisible({ timeout: 4000 });
+  await expect(card, 'tapping the pop line did not open its receipt').toBeVisible();
   const spoke = (await card.textContent()) ?? '';
-  expect(spoke.trim().length, 'a pop said nothing at all').toBeGreaterThan(10);
+  expect(spoke.trim().length, 'the receipt behind the line was empty').toBeGreaterThan(10);
+  // Asked for on purpose, so it is not the brief kind: a player who tapped for
+  // details gets to read them.
+  await expect(page.locator('.card-scrim')).not.toHaveClass(/brief/);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -443,16 +465,29 @@ test('the first pop of a device holds the screen', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('a pop after the first is brief, and any tap sends it away', async ({ page }) => {
+test('a pop after the first is a line at the bottom, and it taps out', async ({ page }) => {
   /*
-   * Marc, 2026-08-30: *"after the first pop, we don't need to have the pop
-   * card appear, we can keep it briefly but easy to tap out."*
+   * Marc, 2026-08-30, twice. First: *"after the first pop, we don’t need to
+   * have the pop card appear, we can keep it briefly but easy to tap out."*
+   * That was answered with a BRIEF card — no focus taken, any tap dismisses,
+   * leaves on its own — and he looked at a run of those and said it again,
+   * harder: *"i asked previously to not pop as a card everytime, just show
+   * points in the bottom and we can tap for details or tap out."*
    *
-   * A pop's accounting is worth a card the first time and worth a glance every
-   * time after, and the modal was charging the full price on both — a dialog, a
-   * focus move and a deliberate press, several times a minute. A device with a
-   * harvest already banked (`?runs=1`) is exactly the state where the first-pop
-   * card has been spent, so this is the ordinary case and not an edge one.
+   * A brief card is still a card. It still darkens the board behind it, still
+   * lands in the middle of the screen, and still has to be waited out. Several
+   * times a minute that is the game stopping to congratulate you on the thing
+   * you came to do.
+   *
+   * So a routine pop holds NOTHING. It is the receipt’s own lead line in the
+   * strip over the board’s bottom edge, where the toast has always lived, and
+   * the three things worth pinning are the three ways it goes wrong: it must
+   * not raise a scrim, it must not eat the next tap on the board, and the
+   * accounting must still be one tap away rather than gone.
+   *
+   * A device with a harvest already banked (`?runs=1`) is exactly the state
+   * where the first-pop card has been spent, so this is the ordinary case and
+   * not an edge one.
    */
   const errors = watchErrors(page);
   await page.goto('/?taught=1&runs=1&place=24');
@@ -464,28 +499,24 @@ test('a pop after the first is brief, and any tap sends it away', async ({ page 
   await expect(pop).toBeVisible();
   await pop.click();
 
-  const scrim = page.locator('.card-scrim');
-  await expect(scrim, 'a pop said nothing').toBeVisible({ timeout: 4000 });
-  await expect(scrim, 'a routine pop still held the screen').toHaveClass(/brief/);
-  // It still SAYS the thing: brief is about the claim on the player, not about
-  // dropping the accounting a harvest owes.
-  expect(((await scrim.textContent()) ?? '').trim().length).toBeGreaterThan(10);
+  const line = page.locator('[data-action="pop-details"]');
+  await expect(line, 'a pop said nothing').toBeVisible({ timeout: 4000 });
+  expect(await page.locator('.card-scrim').count(), 'a routine pop still held the screen').toBe(0);
+  // It still SAYS the thing: the line is the accounting’s own first sentence,
+  // not a shorter one written here.
+  expect(((await line.textContent()) ?? '').trim().length).toBeGreaterThan(3);
 
   /*
-   * A press anywhere sends it away, and the press still LANDS.
+   * And the board underneath is still the board.
    *
-   * The obvious build puts the dismiss on the scrim, which means the scrim
-   * catches pointers, which means the first tap after every pop is eaten — a
-   * player popping steadily loses a placement's worth of tapping to a card
-   * they were not reading. The board is tapped here on purpose: it is under
-   * the scrim, and it has to still be reachable.
+   * The card this replaced had to be proved not to be a wall — a scrim that
+   * catches pointers eats the first tap after every pop, so a player popping
+   * steadily loses a placement’s worth of tapping to a receipt they were not
+   * reading. A line in the strip has the same duty and a smaller footprint,
+   * and the tap is aimed away from it on purpose.
    */
-  expect(
-    await scrim.evaluate((el) => getComputedStyle(el).pointerEvents),
-    'the brief scrim is a wall, so it eats the next tap',
-  ).toBe('none');
   await page.mouse.click(120, 300);
-  await expect(scrim).toHaveCount(0);
+  await expect(line, 'the pop line outlived the tap that should have replaced it').toHaveCount(0);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -913,5 +944,157 @@ test('NEW RUN leaves the world it was played in exactly where it was', async ({ 
   await clearCards(page);
   await expect(page.locator('[data-hud="stats"]')).toBeVisible();
   expect(await worldSeed(), 'the world moved under a player who pressed one button').toBe(before);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the hand is one height, whatever is written on its cards', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"the height changes when we get magic tiles vs normal
+   * or uniques, check why and make sure it stays the same."*
+   *
+   * A rare card carries its rarity word and a stashed one carries HELD, and
+   * both were ordinary flex children of a card with a `min-height`. So a card
+   * with either was taller than a common one — and the hand is a GRID, so one
+   * magic card in a four-card draft grew the whole row and took that many
+   * pixels off the board. Worse than the cost: it moved DURING a run, every
+   * time a rare was dealt, stashed or spent, so the board resized under a
+   * reaching thumb. This file spends most of its other comments defending
+   * board height; that is what was leaking.
+   *
+   * The labels are BADGES now, out of flow and pinned to the card’s edges.
+   * The two are added here rather than waited for because a rare in the hand
+   * is a roll of the dice and FORGE costs 75 luck — and what actually broke
+   * was the rule, not the dealing. So the rule is what is measured: put both
+   * labels on a card and the row must not move a pixel.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&runs=1&place=24');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  const measure = () =>
+    page.evaluate(() => {
+      const hand = document.querySelector('[data-hud="hand"]');
+      const host = document.querySelector('.board-host');
+      return {
+        hand: hand?.getBoundingClientRect().height ?? 0,
+        board: host?.getBoundingClientRect().height ?? 0,
+      };
+    });
+
+  const before = await measure();
+  expect(before.hand, 'no hand to measure').toBeGreaterThan(0);
+
+  // Every card in the row is already the same height as every other.
+  const heights = await page
+    .locator('.hand .tile')
+    .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
+  expect(new Set(heights).size, `the hand's cards are ${heights.join('/')} tall`).toBe(1);
+
+  // Now write the two things a card can carry onto one of them.
+  await page
+    .locator('.hand .tile')
+    .first()
+    .evaluate((el) => {
+      const rare = document.createElement('span');
+      rare.className = 'tile-rarity ink-unique';
+      rare.textContent = 'UNIQUE';
+      const held = document.createElement('span');
+      held.className = 'tile-held fact-label';
+      held.textContent = 'HELD';
+      el.append(rare, held);
+    });
+
+  const after = await measure();
+  expect(after.hand, 'a card with a rarity and a HELD label made the hand taller').toBeCloseTo(
+    before.hand,
+    1,
+  );
+  expect(after.board, 'and the board paid for it').toBeCloseTo(before.board, 1);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a run opens centred on the tile it starts from', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"make sure when we start a new world or daily its
+   * centered on the starting tile."*
+   *
+   * The rig fits the board ONCE EVER. `framedOnce` is a ref, and the rig lives
+   * inside the R3F host, which by rule never remounts — so the one thing that
+   * guarantees a first fit is the one thing a new world does not get. Stepping
+   * into world 2 from a board you had dragged two screens away opened world 2
+   * two screens away from its settlement, on an empty plane, with nothing on
+   * screen to say which way to walk.
+   *
+   * That ref is right about what it was written for — a PLACEMENT must not
+   * move the board — and this is not that: the camera still only moves when it
+   * is asked, and starting a run is an asking.
+   *
+   * Measured as INK IN THE MIDDLE. There is no camera to read from out here,
+   * and a centroid over the whole board would be dragged around by whichever
+   * landmarks happen to glow at the edges — which is the exact failure this
+   * fixes, since `flyToFit` frames those too and slid the settlement to the
+   * bottom of the screen. A small square at the dead centre of the board host
+   * either has the tile in it or is flat ground.
+   */
+  const errors = watchErrors(page);
+
+  const middleIsFlat = async (): Promise<boolean> => {
+    const host = page.locator('.board-host');
+    const box = await host.boundingBox();
+    if (box === null) throw new Error('no board host');
+    const shot = await page.screenshot({
+      clip: {
+        x: box.x + box.width / 2 - 34,
+        y: box.y + box.height / 2 - 34,
+        width: 68,
+        height: 68,
+      },
+    });
+    const seen = new Set<string>();
+    for (let i = 0; i + 4 <= shot.byteLength; i += 4)
+      seen.add(shot.subarray(i, i + 4).toString('hex'));
+    // A flat patch of empty plane is a handful of byte-quads; a hex with its
+    // fill, its edge and its texture is hundreds.
+    return seen.size < 60;
+  };
+
+  await page.goto('/?taught=1&runs=5&place=30&seed=7');
+  await begin(page);
+  await page.waitForTimeout(700);
+  await clearCards(page);
+
+  // Drag the board a long way off, the way a player reading the far edge does.
+  await page.mouse.move(320, 200);
+  await page.mouse.down();
+  await page.mouse.move(60, 640, { steps: 12 });
+  await page.mouse.up();
+  await page.waitForTimeout(600);
+
+  // ANOTHER WORLD.
+  await page.locator('.camera .menu').click();
+  await page.locator('[data-panel="more"] [data-go="worlds"]').click();
+  await page.locator('[data-slot="2"]').click();
+  await page.waitForTimeout(1400);
+  expect(await middleIsFlat(), 'a new world opened on empty ground, not on its starting tile').toBe(
+    false,
+  );
+
+  // TODAY’S DAILY, which is a different plane again.
+  await page.mouse.move(320, 200);
+  await page.mouse.down();
+  await page.mouse.move(60, 640, { steps: 12 });
+  await page.mouse.up();
+  await page.waitForTimeout(400);
+  await page.locator('.camera .menu').click();
+  await page.locator('[data-panel="more"] [data-go="daily"]').click();
+  await page.waitForTimeout(1400);
+  await clearCards(page);
+  expect(await middleIsFlat(), 'the daily opened on empty ground, not on its starting tile').toBe(
+    false,
+  );
+
   expect(errors, errors.join('\n')).toEqual([]);
 });

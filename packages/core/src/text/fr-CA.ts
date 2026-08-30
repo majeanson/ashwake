@@ -473,7 +473,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     },
     'ui.sound': {
       label: 'Son',
-      note: 'Quelques notes discrètes quand tu récoltes et réclames. Le bouton haut-parleur sur le plateau est ce même interrupteur.',
+      note: 'Quelques notes discrètes quand tu récoltes et réclames.',
     },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
@@ -590,12 +590,16 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     sound: 'SON',
     soundOn: 'Le son est allumé. Touche pour couper.',
     soundOff: 'Le son est coupé. Touche pour l’allumer.',
+    menu: 'MENU',
+    luckPurse: (luck) => `CHANCE${D}: ${luck}. Ouvre la bourse.`,
     resetTeaching: 'RÉINITIALISER LES LEÇONS',
     details: 'DÉTAILS',
     howToPlay: 'COMMENT JOUER',
     perkFound: (name) => `UNE TROUVAILLE${D}: tu portes ${name} maintenant.`,
     woke: (what) => `ÉVEILLÉ${D}: ${what}`,
     theMap: 'LE SOL QUE TU AS PARCOURU',
+    walkTheMap: 'Déplace-toi sur le plateau que tu as laissé.',
+    backToEnding: 'RETOUR À LA FIN',
     expedition: {
       title: 'L’EXPÉDITION',
       lines: [

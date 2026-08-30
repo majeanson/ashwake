@@ -4,7 +4,6 @@ import type { HarvestChoice } from '@engine/state';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
 import { useTerrainArt } from '../shell/art';
-import { Icon } from '../ui/Icon';
 import { Tile } from '../ui/Tile';
 
 /**
@@ -19,6 +18,17 @@ import { Tile } from '../ui/Tile';
  * at a glance, and WebKit read the two lines as one word — "POP5 tiles · 6 pts"
  * — until each button was given a deterministic accessible name of its own.
  * That is what `aria-label` is doing here, and it is not decoration.
+ *
+ * **And the bar is HARVESTS only** (2026-08-30). The LUCK button — the door to
+ * the purse — stood at the right end of it, and Marc moved it up to the board's
+ * own corner beside the view button: *"put the luck button next to the FIT
+ * button, as a new button ... luck button is another colour more like an action
+ * one, but not in hand."* It was the one control here that was not a way to
+ * spend THIS pocket, and it was taking a share of a row that gets crowded — POP,
+ * POP for points, TAKE and SACRIFICE is an ordinary late run, and this file's
+ * own `.act` comment measures what happens when that row runs out of width.
+ * It is `Camera` now; the drawer it opens is still `Purse`, still above the
+ * hand, and still `id="spends"`.
  */
 
 export type ActionBarProps = {
@@ -33,8 +43,6 @@ export type ActionBarProps = {
   readonly onHarvest: (choice: HarvestChoice) => void;
   /** Whether the device has met relics — the gate on offering a burn. */
   readonly knowsRelics: boolean;
-  readonly onPurse: () => void;
-  readonly purseOpen: boolean;
   readonly onNewRun: () => void;
 };
 
@@ -47,8 +55,6 @@ export function ActionBar({
   onHold,
   onHarvest,
   knowsRelics,
-  onPurse,
-  purseOpen,
   onNewRun,
 }: ActionBarProps) {
   // The baked hex per ground, so a card in the hand is the tile it will
@@ -183,34 +189,6 @@ export function ActionBar({
         )}
         {hud.ended && (
           <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
-        )}
-        {hud.spends.length > 0 && (
-          <button
-            type="button"
-            className="purse-toggle"
-            data-action="purse"
-            // The drawer opens ABOVE this button, so it is earlier in the
-            // document than its own control — which is exactly the case
-            // `aria-controls` exists for.
-            aria-expanded={purseOpen}
-            aria-controls="spends"
-            onClick={onPurse}
-            style={{ marginLeft: 'auto' }}
-          >
-            {/*
-              The REGISTRY's mark, not a lookalike (2026-08-30).
-
-              Luck is one of the two currencies that follow a player between the
-              board, the purse, the shop and the end screen, so the concept
-              registry names it and every one of those surfaces draws the same
-              thing. This button — the door to the purse, and the most-seen
-              luck on the screen — was drawing `♦`, a second symbol for the
-              idea the registry already had. `Hud` had the identical bug and was
-              fixed a day earlier with a comment saying the stat row was "the
-              one place that did not"; it was not.
-            */}
-            <Icon name="luck" /> {hud.luck}
-          </button>
         )}
       </div>
     </div>

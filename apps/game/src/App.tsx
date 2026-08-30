@@ -6,7 +6,7 @@ import { NAME } from '@meta/identity';
 import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
-import { distance, parse, type HexKey } from '@engine/hex';
+import { distance, key, parse, type HexKey } from '@engine/hex';
 import { namesOf } from '@theme/tokens';
 import {
   colourLesson,
@@ -224,7 +224,35 @@ function Game() {
   } = useDevice(overrides());
 
   const [started, setStarted] = useState(false);
-  const [note, setNote] = useState<string | null>(null);
+  /**
+   * What the board just said, and — since 2026-08-30 — what it can be OPENED
+   * into.
+   *
+   * Marc: *"i asked previously to not pop as a card everytime, just show points
+   * in the bottom and we can tap for details or tap out."* A pop's accounting
+   * is worth reading and is not worth a card several times a minute, even a
+   * brief one: a brief card still darkens the board, still lands in the middle
+   * of the screen, and still has to be waited out or tapped away. So a routine
+   * pop is its LEAD LINE — "POPPED 5, total worth 12", the receipt's own first
+   * sentence, from `view/receipts.ts` and not composed here — in the strip over
+   * the board's bottom edge, where the toast has always lived. Tapping it opens
+   * the full receipt as the card it used to be; tapping the board, placing, or
+   * anything else that speaks replaces it.
+   *
+   * `more` is the whole difference between a note and a note you can open, and
+   * it travels WITH the text rather than beside it in a second piece of state:
+   * two states that must be set and cleared together are two states that come
+   * apart. Every plain sentence goes through `say`, which is the same call
+   * `setNote` was.
+   */
+  const [note, setNote] = useState<{ readonly text: string; readonly more: Said | null } | null>(
+    null,
+  );
+  /** Something said, with nothing behind it. The ordinary case, and every
+   *  caller that used to hand `setNote` a string. */
+  const say = useCallback((text: string | null): void => {
+    setNote(text === null ? null : { text, more: null });
+  }, []);
   /**
    * The colour lens, held up against the board.
    *
@@ -233,9 +261,52 @@ function Game() {
    * than beside either one of them.
    */
   const [lens, setLens] = useState<Colour | null>(null);
-  /** A picture of the board as the run ended — the end screen map, and the
-   *  diary row. Held rather than re-captured: the board keeps playing. */
-  const [shot, setShot] = useState<string | null>(null);
+  /**
+   * WALKING THE ENDING'S OWN BOARD (2026-08-30).
+   *
+   * Marc: *"the ground you walked 'picture' is ugly, i dont want a picture i
+   * want to actual screengame where we can move around."*
+   *
+   * The board never went anywhere. The R3F canvas lives once above every scene
+   * and never remounts (`CLAUDE.md`), so at the moment a run ends the real
+   * board is still mounted, still holding the exact cells it ended on, and
+   * still able to pan, pinch and FIT — it is simply COVERED by an opaque end
+   * screen. This flag uncovers it: the ending steps aside to a bar at the
+   * bottom, the board takes the keys and the taps back, and the bar puts it
+   * back. A scene change, in the sense D1 means, and not a route.
+   *
+   * The snapshot is still taken. A picture is the right answer in exactly one
+   * place — the hall of fame's diary rows, which cannot show a live board per
+   * row — and `settle` is where it goes.
+   */
+  const [walking, setWalking] = useState(false);
+  /**
+   * FRAME THE BOARD A RUN OPENS ON (2026-08-30).
+   *
+   * Marc: *"make sure when we start a new world or daily its centered on the
+   * starting tile."*
+   *
+   * The rig fits the board **once ever**. `framedOnce` is a ref, and the rig is
+   * inside the R3F host, which by rule never remounts (`CLAUDE.md`) — so the
+   * one thing that guarantees a first fit is the one thing a new world does not
+   * get. Stepping into world 3 from a board you had panned two screens east
+   * opened world 3 two screens east of its settlement, on an empty plane, with
+   * nothing on screen to say which way to walk.
+   *
+   * That ref is right about what it was written for: a PLACEMENT must not move
+   * the board (Marc, 2026-08-29, and the comment in `Board` is the whole
+   * argument). The camera moves when it is asked to and never on its own. This
+   * is an asking. Every way into a run — NEW RUN, a world, today's daily —
+   * bumps it, and the effect below is the only caller.
+   *
+   * A counter rather than a boolean, so two runs in a row are two frames; and
+   * state rather than a direct `flyToFit()` at each call site, because at the
+   * moment `session.restart` is dispatched the board has not yet been told
+   * what it is showing. The effect runs after that render, and the rig's own
+   * frame effect — a child's, so it runs first — has already landed.
+   */
+  const [framing, setFraming] = useState(0);
+  const frameTheRun = useCallback(() => setFraming((n) => n + 1), []);
   /**
    * WHAT THIS RUN STARTED FROM — the three ledgers its gains are measured
    * against.
@@ -346,8 +417,8 @@ function Game() {
    * which is why each rung has its own sentence.
    */
   useEffect(() => {
-    onShed((rung) => setNote(shedNote(rung, s)));
-  }, [s]);
+    onShed((rung) => say(shedNote(rung, s)));
+  }, [s, say]);
 
   /*
    * The device's own preferences, FOLLOWED rather than sampled.
@@ -567,8 +638,8 @@ function Game() {
       return;
     }
 
+    // For the diary row only — the ending walks the live board (see `walking`).
     const picture = board.current?.snapshot() ?? null;
-    setShot(picture);
 
     /*
      * What this run gained, measured against what it started with.
@@ -928,7 +999,7 @@ function Game() {
           // shelf grants nothing, and says so rather than pretending.
           if (got !== null) {
             setProgress(() => got.progress);
-            setNote(s.ui.perkFound(perkText(got.perk.id, s).name));
+            say(s.ui.perkFound(perkText(got.perk.id, s).name));
           }
         }
       }
@@ -954,7 +1025,7 @@ function Game() {
         );
         if (mark !== null) {
           saidOnce.current.add(mark.id);
-          setNote(mark.text);
+          say(mark.text);
         }
         return;
       }
@@ -1042,20 +1113,33 @@ ${s.view.harvest.firstPopWhen}`,
        * it is accounting for.
        */
       const isPop = action.type === 'HARVEST';
+      const wait =
+        isPop && !reducedMotion
+          ? cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1)
+          : 0;
+
+      /*
+       * A routine POP is a LINE, and the line opens.
+       *
+       * A claim that happened to land on the same harvest (`said.card`) still
+       * holds the screen, because that is the rare thing and not the routine
+       * one. The pop's own receipt is the lead sentence in the toast, and
+       * `more` carries the rest — see the `note` state for why this stopped
+       * being a card at all.
+       */
+      const show = (): void => {
+        if (isPop && !said.card) {
+          const [lead = said.text] = said.text.split('\n');
+          setNote({ text: lead.trim(), more: { ...said, card: true } });
+        } else setSaidCard(said);
+      };
+
       if (said.card || isPop) {
-        const wait =
-          isPop && !reducedMotion
-            ? cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1)
-            : 0;
-        // A pop's OWN receipt goes brief; a claim that happened to land on the
-        // same harvest (`said.card`) keeps its card, because that is the rare
-        // thing and not the routine one.
-        const shown = isPop ? { ...said, card: true, brief: !said.card } : said;
-        if (wait === 0) setSaidCard(shown);
-        else window.setTimeout(() => setSaidCard(shown), wait);
-      } else setNote(said.text);
+        if (wait === 0) show();
+        else window.setTimeout(show, wait);
+      } else say(said.text);
     },
-    [session, ledgers, s, features, theme, progress, setProgress, reducedMotion, daily],
+    [session, ledgers, s, features, theme, progress, setProgress, reducedMotion, daily, say],
   );
 
   /**
@@ -1099,9 +1183,9 @@ ${s.view.harvest.firstPopWhen}`,
    */
   const onLook = useCallback(
     (key: string, cell: CellView): void => {
-      setNote(cell.ripe ? pocketNote(session.get().state, key, s) : describe(key));
+      say(cell.ripe ? pocketNote(session.get().state, key, s) : describe(key));
     },
-    [describe, session, s],
+    [describe, session, s, say],
   );
 
   const onTap = useCallback(
@@ -1110,16 +1194,16 @@ ${s.view.harvest.firstPopWhen}`,
 
       if (cell.ripe) {
         session.target(key);
-        setNote(pocketNote(now.state, key, s));
+        say(pocketNote(now.state, key, s));
         return;
       }
 
       if (cell.legal) {
         if (now.hud.draft.length === 0) {
-          setNote(s.ui.handEmpty);
+          say(s.ui.handEmpty);
           return;
         }
-        setNote(null);
+        say(null);
         act({ type: 'PLACE', hex: key });
         return;
       }
@@ -1132,13 +1216,13 @@ ${s.view.harvest.firstPopWhen}`,
         if (known !== null && known !== lens) {
           setLens(known);
           session.spotlight(known);
-          setNote(s.ui.lensOn(namesOf(theme, s.locale)[known]));
+          say(s.ui.lensOn(namesOf(theme, s.locale)[known]));
           return;
         }
         if (lens !== null) {
           setLens(null);
           session.spotlight(null);
-          setNote(s.ui.lensOff);
+          say(s.ui.lensOff);
           return;
         }
       }
@@ -1162,9 +1246,9 @@ ${s.view.harvest.firstPopWhen}`,
       if (cell.kind === 'landmark' && cell.landmark !== null) {
         setTerm(LESSON_FOR_REWARD[cell.landmark]);
       }
-      setNote(describe(key));
+      say(describe(key));
     },
-    [act, session, s, theme, lens, describe],
+    [act, session, s, theme, lens, describe, say],
   );
 
   /**
@@ -1194,12 +1278,12 @@ ${s.view.harvest.firstPopWhen}`,
       const card = snap.hud.draft[index];
       if (card?.selected === true) {
         session.dispatch({ type: 'SELECT', index: -1 });
-        setNote(colourLesson(card.colour, snap.state.tuning, theme, s));
+        say(colourLesson(card.colour, snap.state.tuning, theme, s));
         return;
       }
       session.dispatch({ type: 'SELECT', index });
     },
-    [session, snap.hud.draft, snap.state.tuning, theme, s],
+    [session, snap.hud.draft, snap.state.tuning, theme, s, say],
   );
 
   /**
@@ -1264,12 +1348,12 @@ ${s.view.harvest.firstPopWhen}`,
   const onHold = useCallback(
     (slot: number) => {
       if (snap.hud.draft.length === 0) {
-        setNote(snap.hud.held[slot] === undefined ? s.ui.holdNothing : s.ui.holdTrades);
+        say(snap.hud.held[slot] === undefined ? s.ui.holdNothing : s.ui.holdTrades);
         return;
       }
       act({ type: 'HOLD', slot });
     },
-    [act, snap.hud.draft.length, snap.hud.held, s],
+    [act, snap.hud.draft.length, snap.hud.held, s, say],
   );
 
   /**
@@ -1375,8 +1459,11 @@ ${s.view.harvest.firstPopWhen}`,
       const seed = worldSeedFor(at);
       session.restart(seed, null, memoryFor(at, seed), economyAt(at, seed), wakeAt);
       setLens(null);
+      // The ending is gone, so the way back to it is too.
+      setWalking(false);
+      frameTheRun();
     },
-    [session, setDaily, progress.found, startsFrom],
+    [session, setDaily, progress.found, startsFrom, frameTheRun],
   );
 
   const newRun = useCallback(() => startRun(null), [startRun]);
@@ -1453,7 +1540,8 @@ ${s.view.harvest.firstPopWhen}`,
     banked.current = null;
     leaveMenus();
     setStarted(true);
-  }, [session, setDaily, today, leaveMenus, forgetWorld]);
+    frameTheRun();
+  }, [session, setDaily, today, leaveMenus, forgetWorld, frameTheRun]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
@@ -1474,9 +1562,90 @@ ${s.view.harvest.firstPopWhen}`,
       banked.current = null;
       leaveMenus();
       setStarted(true);
+      frameTheRun();
     },
-    [session, setSlot, setDaily, leaveMenus, progress.found, forgetWorld, startsFrom],
+    [session, setSlot, setDaily, leaveMenus, progress.found, forgetWorld, startsFrom, frameTheRun],
   );
+
+  /**
+   * The LUCK button, which is on the BOARD now (2026-08-30).
+   *
+   * Lifted out of `ActionBar`'s call because the button moved to `Camera` and
+   * this is the half that has nothing to do with either — it is the drip's most
+   * expensive card, and it belongs with the other things a board tap can set
+   * off rather than inlined into whichever component happens to own the button
+   * this week.
+   */
+  const onPurse = useCallback(() => {
+    const opening = !purseOpen;
+    setPurseOpen((was) => !was);
+    /*
+     * The purse teaches on the first deliberate OPEN rather than on
+     * having one: a lesson about spending is no use before there is
+     * anything to spend it on.
+     *
+     * **And it actually teaches, since 2026-08-30.** `purseLesson`
+     * builds the whole card from the LIVE tuning — the lead sentence
+     * plus one row per button the drawer offers, each quoting its own
+     * button face and its own price — and it is what Marc asked for
+     * twice in Ashwake 1 ("first luck drawer expand we should explain
+     * all actions", then again because the first answer did not land).
+     * It had **no caller in this body**: `purse` is in the teaching
+     * ledger and in the CARDS set, `isTrue('purse')` returns false by
+     * design because the OPEN is the moment, and this handler marked
+     * the lesson TOLD without ever showing it. So the drip's most
+     * expensive card was a line that spent its own ledger entry.
+     *
+     * Through `saidCard` rather than `LessonCard`: there is no
+     * `purse` lesson in `LESSONS` and there should not be — this
+     * arrives with its sentences and its rows already written, which
+     * is exactly what `SaidCard` takes. Never brief: it is read once
+     * ever, and it is a list.
+     */
+    if (opening && !hasMet(progress, 'purse')) {
+      const lesson = purseLesson(snap.state.tuning, theme, s);
+      shellSaid.current -= 1;
+      setSaidCard({
+        text: lesson.text,
+        rows: lesson.rows,
+        icon: lesson.icon,
+        card: true,
+        id: shellSaid.current,
+      });
+    }
+    setProgress((p) => told(p, 'purse'));
+  }, [purseOpen, progress, snap.state.tuning, theme, s, setProgress]);
+
+  /*
+   * And the asking is spent here — on the STARTING TILE, not on the frame.
+   *
+   * `flyToFit` was the obvious call and it is the wrong one: it frames
+   * everything the board is drawing, and on a fresh world that includes the
+   * landmarks glowing out in the dark. The settlement came out low on the
+   * screen with an empty half above it, framed dead centre between where you
+   * are and a cache you have not walked to — which is a picture of the plane
+   * rather than of where you are standing. Marc asked for *"centered on the
+   * starting tile"*, and that is a hex, not a bounding box.
+   *
+   * `homeOf`'s rule, read here rather than imported, because the engine's
+   * helper answers in axial coordinates and the board's handle takes a key:
+   * the wake point if this run has one, and true origin otherwise, which is
+   * every save that exists today.
+   *
+   * Zoom 1 is the scale at which the whole frame fits — so this is that same
+   * opening view, slid over until the tile you are about to build from is in
+   * the middle of it. Clamped like every other move (`cameraAt`).
+   *
+   * Zero is the mount, and the rig has already fitted for itself by then —
+   * flying again would be the board moving on its own before the first tap.
+   */
+  useEffect(() => {
+    if (framing === 0) return;
+    board.current?.flyToHex(snap.state.wakeAt ?? key(0, 0), 1);
+    // The run this frames is the one that has just started; a later placement
+    // must not re-run it, which is why the counter is the only dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [framing]);
 
   const playing = started && !snap.hud.ended;
 
@@ -1519,7 +1688,7 @@ ${s.view.harvest.firstPopWhen}`,
       // Escape with nothing open is the toast's dismissal — the gesture the
       // toast has always had for a finger, finally reachable without one.
       if (event.key === 'Escape') {
-        setNote(null);
+        say(null);
         return;
       }
       const command = commandFor(event);
@@ -1637,13 +1806,27 @@ ${s.view.harvest.firstPopWhen}`,
     cycleView,
     snap.hud.draft.length,
     snap.hud.held,
+    say,
   ]);
 
   return (
     <div className="shell" lang={s.locale}>
-      {playing && <Hud hud={snap.hud} s={s} onNote={setNote} />}
+      {playing && <Hud hud={snap.hud} s={s} onNote={say} />}
 
-      <div className="board-host" {...(anyOpen || !started ? { inert: true } : {})}>
+      {/*
+        Reachable only while it is the thing on screen.
+
+        A panel covers it, the front door covers it, and — since 2026-08-30 —
+        the END SCREEN covers it, which this had never said. A finished run left
+        the board non-inert under an opaque page, so a Tab walked the keyboard
+        onto a board nobody could see. `walking` is the one case where the
+        ending is up and the board is still the thing being used, which is what
+        it is for.
+      */}
+      <div
+        className="board-host"
+        {...(anyOpen || !started || (snap.hud.ended && !walking) ? { inert: true } : {})}
+      >
         <Board
           view={snap.board}
           theme={theme}
@@ -1679,19 +1862,68 @@ ${s.view.harvest.firstPopWhen}`,
           argument for making a pop a card in the first place.
         */}
         {playing && (
-          <p className="toast" role="status" aria-live="polite" onClick={() => setNote(null)}>
-            {note}
+          <p className="toast" role="status" aria-live="polite" onClick={() => say(null)}>
+            {/*
+              A note you can OPEN (2026-08-30).
+
+              A pop arrives here as its lead line with the rest of the receipt
+              behind it, so the button is the "tap for details" half and the
+              paragraph around it is the "tap out" half — the same tap that has
+              always dismissed a note. A plain sentence has nothing behind it
+              and stays plain text, because a button that does what tapping
+              anywhere already does is a control that teaches nothing.
+
+              The paragraph, not the button, is the live region: it has to be on
+              the page before its text changes or a screen reader announces
+              none of this, and it has been for exactly that reason since the
+              toast moved over the board.
+            */}
+            {note === null ? (
+              ''
+            ) : note.more === null ? (
+              note.text
+            ) : (
+              <button
+                type="button"
+                className="toast-open"
+                data-action="pop-details"
+                onClick={(event) => {
+                  // The paragraph's own handler dismisses; this one opens. One
+                  // tap must not do both.
+                  event.stopPropagation();
+                  const shown = note.more;
+                  say(null);
+                  if (shown !== null) setSaidCard(shown);
+                }}
+              >
+                {note.text}
+                <span className="toast-more">{s.ui.details}</span>
+              </button>
+            )}
           </p>
         )}
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
-        {playing && (
+        {(playing || walking) && (
           <Camera
             s={s}
             next={nextView}
             onCycle={cycleView}
-            onHelp={() => manual.show()}
-            sound={isEnabled(features, 'ui.sound')}
-            onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
+            /*
+             * ONE door out, where a ♪ and a `?` used to stand (2026-08-30).
+             *
+             * Marc: *"make sure sound on or off and how to play stays in the
+             * menu, add a menu button instead."* Both are in MORE — HOW TO PLAY
+             * is its first line and SETTINGS, which holds the sound switch, is
+             * its last — so nothing was lost except two buttons floating over
+             * the board this file spends its whole layout defending.
+             */
+            onMenu={() => more.show()}
+            luck={snap.hud.luck}
+            // Nothing left to spend on a run that is over: the purse is a
+            // control for a board still being played.
+            canSpend={playing && snap.hud.spends.length > 0}
+            onPurse={onPurse}
+            purseOpen={purseOpen}
           />
         )}
       </div>
@@ -1740,46 +1972,6 @@ ${s.view.harvest.firstPopWhen}`,
             // SACRIFICE in `ActionBar`.
             knowsRelics={hasMet(progress, 'relic')}
             onHarvest={onHarvest}
-            onPurse={() => {
-              const opening = !purseOpen;
-              setPurseOpen((was) => !was);
-              /*
-               * The purse teaches on the first deliberate OPEN rather than on
-               * having one: a lesson about spending is no use before there is
-               * anything to spend it on.
-               *
-               * **And it actually teaches, since 2026-08-30.** `purseLesson`
-               * builds the whole card from the LIVE tuning — the lead sentence
-               * plus one row per button the drawer offers, each quoting its own
-               * button face and its own price — and it is what Marc asked for
-               * twice in Ashwake 1 ("first luck drawer expand we should explain
-               * all actions", then again because the first answer did not land).
-               * It had **no caller in this body**: `purse` is in the teaching
-               * ledger and in the CARDS set, `isTrue('purse')` returns false by
-               * design because the OPEN is the moment, and this handler marked
-               * the lesson TOLD without ever showing it. So the drip's most
-               * expensive card was a line that spent its own ledger entry.
-               *
-               * Through `saidCard` rather than `LessonCard`: there is no
-               * `purse` lesson in `LESSONS` and there should not be — this
-               * arrives with its sentences and its rows already written, which
-               * is exactly what `SaidCard` takes. Never brief: it is read once
-               * ever, and it is a list.
-               */
-              if (opening && !hasMet(progress, 'purse')) {
-                const lesson = purseLesson(snap.state.tuning, theme, s);
-                shellSaid.current -= 1;
-                setSaidCard({
-                  text: lesson.text,
-                  rows: lesson.rows,
-                  icon: lesson.icon,
-                  card: true,
-                  id: shellSaid.current,
-                });
-              }
-              setProgress((p) => told(p, 'purse'));
-            }}
-            purseOpen={purseOpen}
             onNewRun={newRun}
           />
         </>
@@ -1792,7 +1984,24 @@ ${s.view.harvest.firstPopWhen}`,
         and taps reach a screen the player cannot see, which is the half of the
         stacking bug that a z-index alone does not fix.
       */}
-      {started && snap.hud.ended && (
+      {started && snap.hud.ended && walking && (
+        /*
+         * The ending, out of the way (2026-08-30).
+         *
+         * Not the end screen with a class on it: `.end` is a scrolling column
+         * pinned to `inset: 0`, and collapsing that into a bar is a CSS
+         * argument with a layout, where this is one line of markup. The
+         * numbers are not lost — nothing about the run has changed, and the
+         * bar puts them straight back.
+         */
+        <div className="end-walk" data-hud="end-walk" {...(anyOpen ? { inert: true } : {})}>
+          <button type="button" data-action="end-back" onClick={() => setWalking(false)}>
+            {s.ui.backToEnding}
+          </button>
+        </div>
+      )}
+
+      {started && snap.hud.ended && !walking && (
         <div className="scene" {...(anyOpen ? { inert: true } : {})}>
           <EndScreen
             hud={snap.hud}
@@ -1818,7 +2027,7 @@ ${s.view.harvest.firstPopWhen}`,
             onMore={() => more.show()}
             onShare={onShare}
             goals={goals}
-            shot={shot}
+            onWalk={() => setWalking(true)}
             newPerks={gained.perks}
             newUnlocks={gained.unlocks}
             onMainMenu={toMainMenu}

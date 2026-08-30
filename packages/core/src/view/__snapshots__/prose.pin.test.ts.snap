@@ -430,7 +430,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     [
       "ui.sound",
       "Sound",
-      "A few quiet notes as you pop and claim. The speaker button on the board is this switch.",
+      "A few quiet notes as you pop and claim.",
     ],
   ],
   "goals": [
@@ -1061,7 +1061,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     [
       "ui.sound",
       "Son",
-      "Quelques notes discrètes quand tu récoltes et réclames. Le bouton haut-parleur sur le plateau est ce même interrupteur.",
+      "Quelques notes discrètes quand tu récoltes et réclames.",
     ],
   ],
   "goals": [

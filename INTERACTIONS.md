@@ -54,45 +54,48 @@ deliberately absent in both.
 
 ## 3. Action bar, purse, stats
 
-| Gesture                                          | Ashwake 1                                     | Ashwake 2                           |
-| ------------------------------------------------ | --------------------------------------------- | ----------------------------------- |
-| POP (tiles)                                      | flies the camera to the pocket, then harvests | → glides, then harvests             |
-| POP for points                                   | harvests for points                           | ✓                                   |
-| TAKE (treasure)                                  | harvests for a rare tile                      | → offered when the pocket earns one |
-| SACRIFICE (burn)                                 | harvests for relics                           | → offered once relics are known     |
-| LUCK ▸ purse drawer                              | opens; teaches on first deliberate open       | ✓                                   |
-| REDRAW · steer a colour · FORGE · SACRIFICE LUCK | spend, each with its own receipt              | → each says what it cost            |
-| Tap a **stat box**                               | prints that stat's `statNote`                 | ✓                                   |
-| Enter/Space on a focused stat                    | same                                          | ✓                                   |
+| Gesture                                          | Ashwake 1                                     | Ashwake 2                                                                                                                                                       |
+| ------------------------------------------------ | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POP (tiles)                                      | flies the camera to the pocket, then harvests | → glides, then harvests                                                                                                                                         |
+| POP for points                                   | harvests for points                           | ✓                                                                                                                                                               |
+| TAKE (treasure)                                  | harvests for a rare tile                      | → offered when the pocket earns one                                                                                                                             |
+| SACRIFICE (burn)                                 | harvests for relics                           | → offered once relics are known                                                                                                                                 |
+| LUCK ▸ purse drawer                              | opens; teaches on first deliberate open       | ✓ — the button moved OUT of this bar and up beside VIEW on 2026-08-30, in the accent, because it is the one control here that does not spend the current pocket |
+| REDRAW · steer a colour · FORGE · SACRIFICE LUCK | spend, each with its own receipt              | → each says what it cost                                                                                                                                        |
+| Tap a **stat box**                               | prints that stat's `statNote`                 | ✓                                                                                                                                                               |
+| Enter/Space on a focused stat                    | same                                          | ✓                                                                                                                                                               |
 
 ## 4. What speaks after an action
 
-| Moment                                                  | Ashwake 1                                           | Ashwake 2                                                      |
-| ------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
-| **Claiming** a cache / site / shrine / territory / find | a ranked receipt per claim, the rare ones as a card | → `view/receipts.ts`, same ranking                             |
-| **Popping** a pocket                                    | `harvestNote` receipt; the first pop ever is a card | ✓ — and every pop after the first is a BRIEF card (2026-08-30) |
-| Goal met (world survey)                                 | `GOAL MET: {text}`                                  | ✓ since 2026-08-30 (`LOG.md` S21)                              |
-| Teaching moments                                        | a priority list, first unmet-and-true fires         | ✓                                                              |
-| NEW GROUND / UNIQUE, once per run                       | toast                                               | ✓ (`shell/onceARun.ts`)                                        |
+| Moment                                                  | Ashwake 1                                           | Ashwake 2                                                                                                                                                                                              |
+| ------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Claiming** a cache / site / shrine / territory / find | a ranked receipt per claim, the rare ones as a card | → `view/receipts.ts`, same ranking                                                                                                                                                                     |
+| **Popping** a pocket                                    | `harvestNote` receipt; the first pop ever is a card | ✓ — and every pop after the first is a LINE over the board (2026-08-30): the receipt's own lead sentence, with the rest one tap behind it. It was a brief card for a day; a brief card is still a card |
+| Goal met (world survey)                                 | `GOAL MET: {text}`                                  | ✓ since 2026-08-30 (`LOG.md` S21)                                                                                                                                                                      |
+| Teaching moments                                        | a priority list, first unmet-and-true fires         | ✓                                                                                                                                                                                                      |
+| NEW GROUND / UNIQUE, once per run                       | toast                                               | ✓ (`shell/onceARun.ts`)                                                                                                                                                                                |
 
 ## 5. Dialogs, chrome, keyboard
 
-| Gesture                                  | Ashwake 1           | Ashwake 2                                                        |
-| ---------------------------------------- | ------------------- | ---------------------------------------------------------------- |
-| Tap the toast                            | dismisses it        | ✓                                                                |
-| Toast never auto-expires                 | yes                 | ✓                                                                |
-| Tap anywhere on an event card            | closes it           | ✓                                                                |
-| **Escape** closes the top dialog only    | yes                 | ✓                                                                |
-| Tap a glossary term in prose             | opens the term card | ✓                                                                |
-| Term card closes on GOT IT / Escape only | yes                 | ✓                                                                |
-| Manual tabs, `<details>` folds           | yes                 | ✓                                                                |
-| Two-tap confirm on anything destructive  | yes                 | ✓                                                                |
-| FIT ⇄ HERE camera toggle                 | yes                 | ✓                                                                |
-| Diary rows unfold                        | yes                 | ✓                                                                |
-| Shop: buy, wear, unfold a perk           | yes                 | ✓                                                                |
-| WORLDS: **BEGIN AT CAMP**                | yes, in that panel  | ✓ (2026-08-30 — the fifth shrine's unlock)                       |
-| Sound toggle over the board              | yes                 | ✓ since 2026-08-30 — the ♪ by the camera, one wire with SETTINGS |
-| `✕` lens-clear button                    | yes                 | ✗ — the fog tap and a second long-press both let go              |
+| Gesture                                  | Ashwake 1                  | Ashwake 2                                                                                                                                                                                                                                                   |
+| ---------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tap the toast                            | dismisses it               | ✓ — unless it is a pop's line, where the tap OPENS the full receipt (2026-08-30)                                                                                                                                                                            |
+| Toast never auto-expires                 | yes                        | ✓                                                                                                                                                                                                                                                           |
+| Tap anywhere on an event card            | closes it                  | ✓                                                                                                                                                                                                                                                           |
+| **Escape** closes the top dialog only    | yes                        | ✓                                                                                                                                                                                                                                                           |
+| Tap a glossary term in prose             | opens the term card        | ✓                                                                                                                                                                                                                                                           |
+| Term card closes on GOT IT / Escape only | yes                        | ✓                                                                                                                                                                                                                                                           |
+| Manual tabs, `<details>` folds           | yes                        | ✓                                                                                                                                                                                                                                                           |
+| Two-tap confirm on anything destructive  | yes                        | ✓                                                                                                                                                                                                                                                           |
+| FIT ⇄ HERE camera toggle                 | yes                        | ✓                                                                                                                                                                                                                                                           |
+| Diary rows unfold                        | yes                        | ✓                                                                                                                                                                                                                                                           |
+| Shop: buy, wear, unfold a perk           | yes                        | ✓                                                                                                                                                                                                                                                           |
+| WORLDS: **BEGIN AT CAMP**                | yes, in that panel         | ✓ (2026-08-30 — the fifth shrine's unlock)                                                                                                                                                                                                                  |
+| Sound toggle over the board              | yes                        | ✗ since 2026-08-30, on Marc's call: _"make sure sound on or off and how to play stays in the menu, add a menu button instead."_ The corner is MENU · LUCK · VIEW, and MENU opens MORE, which lists HOW TO PLAY and SETTINGS. Still one wire, still one flag |
+| `✕` lens-clear button                    | yes                        | ✗ — the fog tap and a second long-press both let go                                                                                                                                                                                                         |
+| MENU over the board                      | ✗ (it had ♪ and ?)         | ✓ 2026-08-30 — one door onto MORE, which reaches every other room                                                                                                                                                                                           |
+| THE GROUND YOU WALKED, on the ending     | a picture of the board     | ✓ 2026-08-30 — a DOOR onto the live board: the ending steps aside to a bar and the real board takes the screen back, pan and pinch and FIT. Marc: _"i dont want a picture i want to actual screengame where we can move around"_                            |
+| Starting a world or a daily              | opened framed on the start | ✓ 2026-08-30 — the rig fits ONCE EVER, so a new world used to open wherever the last one was left. Every way into a run now flies to its wake hex                                                                                                           |
 
 ## 6. The keyboard, on the board
 

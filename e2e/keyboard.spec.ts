@@ -133,7 +133,9 @@ test('goes quiet while a panel is open, exactly as the board does', async ({ pag
   await openBoard(page);
 
   const before = await lean(page);
-  await page.locator('.camera .help').click();
+  // The board's one door is MENU, and the manual is MORE's first line.
+  await page.locator('.camera .menu').click();
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
   await page.locator('[data-panel="manual"]').waitFor({ state: 'visible' });
   await page.keyboard.press('r');
   await page.keyboard.press('ArrowDown');
@@ -142,8 +144,12 @@ test('goes quiet while a panel is open, exactly as the board does', async ({ pag
   // is reachable.
   expect(await lean(page), 'the board took keys through an open panel').toBe(before);
 
+  // Escape closes the TOP of the stack, one at a time — the manual, then the
+  // MORE it opened from. The board only takes keys back once nothing is over it.
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-panel="manual"]')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-panel]')).toHaveCount(0);
   await page.keyboard.press('r');
   expect(await lean(page), 'the keys never came back').not.toBe(before);
 

@@ -63,6 +63,7 @@ export type IconName =
   | 'back'
   | 'close'
   | 'more'
+  | 'menu'
   | 'help'
   | 'soundOn'
   | 'soundOff';
@@ -109,6 +110,7 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
   back: 'bold/arrow-left-bold.svg',
   close: 'bold/x-bold.svg',
   more: 'bold/caret-down-bold.svg',
+  menu: 'bold/list-bold.svg',
   help: 'bold/question-bold.svg',
   soundOn: 'bold/speaker-high-bold.svg',
   soundOff: 'bold/speaker-slash-bold.svg',
@@ -161,9 +163,10 @@ export const CHROME_ICON = {
   back: 'back',
   close: 'close',
   more: 'more',
+  menu: 'menu',
   help: 'help',
   soundOn: 'soundOn',
   soundOff: 'soundOff',
 } as const satisfies Readonly<
-  Record<'back' | 'close' | 'more' | 'help' | 'soundOn' | 'soundOff', IconName>
+  Record<'back' | 'close' | 'more' | 'menu' | 'help' | 'soundOn' | 'soundOff', IconName>
 >;
