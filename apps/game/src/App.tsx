@@ -35,7 +35,7 @@ import { Board, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { ActionBar } from './screens/ActionBar';
-import { Camera, useCameraCycle } from './screens/Camera';
+import { Camera, QuickMenu, useCameraCycle } from './screens/Camera';
 import { Directions } from './screens/Directions';
 import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
@@ -822,6 +822,19 @@ function Game() {
   const shop = useDoor('shop');
   const fame = useDoor('fame');
   const worlds = useDoor('worlds');
+  /**
+   * The short list behind the board's MENU (2026-08-30).
+   *
+   * A door rather than a `useState`, and the reason is Android. Marc:
+   * *"menu could add a submenu for quick actions like sound in off etc."* A
+   * floating box held in local state is one the phone's BACK button walks
+   * straight past — out of the game, off the site — and it is the exact fault
+   * `ui/dialog.tsx` was extended to fix on 2026-08-30 for the manual. Anything
+   * that covers the board and has to be dismissed belongs on the stack: it
+   * gets Escape, it gets BACK, it gets `✕` when the stack is deep, and it goes
+   * `inert` under a panel opened from it, all for the one line.
+   */
+  const quick = useDoor('quick');
 
   // A door that shows a ledger has just asked for it, and so has a run that
   // ended. Anything else leaves the disk alone.
@@ -1908,16 +1921,21 @@ ${s.view.harvest.firstPopWhen}`,
             s={s}
             next={nextView}
             onCycle={cycleView}
+            quickOpen={quick.open}
             /*
              * ONE door out, where a ♪ and a `?` used to stand (2026-08-30).
              *
              * Marc: *"make sure sound on or off and how to play stays in the
-             * menu, add a menu button instead."* Both are in MORE — HOW TO PLAY
-             * is its first line and SETTINGS, which holds the sound switch, is
-             * its last — so nothing was lost except two buttons floating over
-             * the board this file spends its whole layout defending.
+             * menu, add a menu button instead"*, and then, on the cost of that:
+             * *"menu could add a submenu for quick actions like sound in off
+             * etc and then an option that goes to menu."* So it opens a list of
+             * three before it opens a room, and SOUND is one tap from the board
+             * again without being a button on it.
              */
-            onMenu={() => more.show()}
+            // A toggle, for the keyboard. A finger never reaches this while the
+            // list is open — the scrim is over it — but Enter on a focused
+            // button does, and a door that only opens is a door.
+            onMenu={() => (quick.open ? quick.hide() : quick.show())}
             luck={snap.hud.luck}
             // Nothing left to spend on a run that is over: the purse is a
             // control for a board still being played.
@@ -1927,6 +1945,41 @@ ${s.view.harvest.firstPopWhen}`,
           />
         )}
       </div>
+
+      {/*
+        The board's MENU list — a drawer, in the same slot the purse uses.
+
+        Two things decide where this is rendered, and they pull the same way.
+        It may not be inside the board host: the host goes `inert` the moment
+        anything is on the stack, and this is on the stack, so every row would
+        draw and none of them could be tapped — the same shape as the MORE bug
+        this session opened with. And it wants to sit exactly where the cluster
+        it belongs to sits, which is the line between the board and the
+        controls; a `position: fixed` box cannot find that line, because the
+        controls' height is the hand's and the hand's height is a run's.
+
+        A flex child of the shell IS that line, and the purse drawer has been
+        one since it was built. So this is a drawer too, at the same measure,
+        and it is up here rather than inside the `playing` block because the
+        cluster outlives a run — the ending's board is walked with the same
+        MENU button.
+
+        Its two journeys RAISE a panel over the list rather than closing it
+        first, which is deliberate — see `QuickMenu`. Two history calls in one
+        handler is a `go(-1)` racing a `pushState`, and the panel's own entry
+        is what loses. BACK from the manual landing back on the list it was
+        opened from is also simply correct.
+      */}
+      {quick.open && (
+        <QuickMenu
+          s={s}
+          sound={isEnabled(features, 'ui.sound')}
+          onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
+          onHowToPlay={() => manual.show()}
+          onFullMenu={() => more.show()}
+          onDismiss={quick.hide}
+        />
+      )}
 
       {playing && (
         <>

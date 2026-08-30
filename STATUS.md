@@ -4,7 +4,37 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — the panels stop hiding each other, and
+Last checkpoint: **2026-08-30, last — the bottom of the screen gets sorted
+out.** Marc: _"add pop and sacrifice as action buttons, tiles hand always footer
+but in finger zone, accessible. menu could add a submenu for quick actions like
+sound in off etc and then an option that goes to menu."_
+
+**The hand is the footer.** It sat above the action bar, so the row touched most
+— every placement starts with picking a card up — was furthest from the thumb.
+Swapped in source order, not with `order`, so Tab walks the screen an eye does.
+
+**POP, TAKE and SACRIFICE wear the accent.** They were the ink of the HOLD slot
+beside them, which does nothing until a card is picked up. The board carries
+three accented things now and they are the same kind: the harvest bar, LUCK, and
+NEW RUN. The verb takes the colour; the payment stays `--ink-dim`.
+
+**MENU opens a short list first**: SOUND, HOW TO PLAY, MORE. That is the
+`NEXT.md` §1 note from the previous checkpoint answered — mute had gone three
+taps deep, which Ashwake 1 never allowed. Sound switches in place and the list
+stays open. It is a door on the dialog stack, so Escape and Android's BACK
+close it.
+
+**It shipped inside the board host for one build and was untappable** — the
+host goes `inert` the moment anything is on the stack, which now includes the
+list. Same shape as the bug the previous checkpoint opened with. And it is a
+DRAWER rather than a popover: the cluster's height off the bottom is the hand's
+height, which a fixed box cannot know, and the purse drawer had already solved
+this by being a flex child of the shell.
+
+Verified: 1064 tests / 74 files, 82 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 156 findings with **no new rows**.
+
+Previous checkpoint: **2026-08-30 — the panels stop hiding each other, and
 the board takes the corner back.** Seven asks, and the first one is the shape of
 the rest: _"right now the more panel doesnt appear or is bugged when we navigate
 further."_ The previous checkpoint had answered that and shipped a test that

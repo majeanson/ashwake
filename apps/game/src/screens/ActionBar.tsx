@@ -68,6 +68,77 @@ export function ActionBar({
 
   return (
     <div className="controls">
+      {/*
+        THE ACTIONS FIRST, THE HAND LAST (2026-08-30).
+
+        Marc: *"tiles hand always footer but in finger zone, accessible."* The
+        hand was above the bar, so the row a player touches most — every
+        placement starts with picking a card up, and a run is fifty of them —
+        sat furthest from the thumb, with four buttons pressed once a pocket
+        between it and the bottom of the phone. The hand is the footer now.
+
+        Source order, not `order: -1`. Tab has to walk the screen the way an
+        eye does, and a CSS-only swap leaves a keyboard reaching the bar first
+        while a finger reaches the hand first — one screen with two orders.
+      */}
+      <div className="action-bar" data-hud="actions">
+        {hud.canHarvest && (
+          <ActButton
+            testId="pop"
+            label={s.ui.pop}
+            value={
+              hud.showPoints
+                ? `+${hud.harvestTiles} · ${hud.harvestPoints} pts`
+                : `+${hud.harvestTiles} · ×${hud.harvestDepth}`
+            }
+            onClick={() => onHarvest('tiles')}
+          />
+        )}
+        {hud.canHarvest && !hud.singlePayout && hud.showPoints && (
+          <ActButton
+            testId="pop-points"
+            label={s.ui.pop}
+            value={`${hud.harvestPoints} pts`}
+            onClick={() => onHarvest('points')}
+          />
+        )}
+        {/*
+          TAKE — spend the pocket for a rare tile instead of for its payout.
+          Offered only when the pocket actually earns one, which is what
+          `harvestTreasure` answers.
+        */}
+        {hud.canHarvest && hud.harvestTreasure !== null && (
+          <ActButton
+            testId="pop-treasure"
+            label={s.ui.take}
+            // `s.payout.rarity` already names all three, for the end
+            // screen's breakdown. One word per rarity, in one place.
+            value={`1 ${s.payout.rarity[hud.harvestTreasure]}`}
+            onClick={() => onHarvest('treasure')}
+          />
+        )}
+        {/*
+          SACRIFICE — burn the pocket for relics, or for luck where relics are
+          not the currency yet.
+
+          Gated on the player having MET relics or holding some (Ashwake 1's
+          `burnKnown`): offering to trade a pocket for a thing the game has not
+          introduced is a button whose value is a mystery, and a mystery on the
+          one action that destroys a pocket is the wrong place for one.
+        */}
+        {burn > 0 && (
+          <ActButton
+            testId="pop-burn"
+            label={s.ui.sacrifice}
+            value={hud.burnPaysRelics ? s.ui.relicsPaid(burn) : s.ui.luckPaid(burn)}
+            onClick={() => onHarvest('burn')}
+          />
+        )}
+        {hud.ended && (
+          <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
+        )}
+      </div>
+
       <div
         className="hand"
         data-hud="hand"
@@ -132,64 +203,6 @@ export function ActionBar({
             />
           );
         })}
-      </div>
-
-      <div className="action-bar" data-hud="actions">
-        {hud.canHarvest && (
-          <ActButton
-            testId="pop"
-            label={s.ui.pop}
-            value={
-              hud.showPoints
-                ? `+${hud.harvestTiles} · ${hud.harvestPoints} pts`
-                : `+${hud.harvestTiles} · ×${hud.harvestDepth}`
-            }
-            onClick={() => onHarvest('tiles')}
-          />
-        )}
-        {hud.canHarvest && !hud.singlePayout && hud.showPoints && (
-          <ActButton
-            testId="pop-points"
-            label={s.ui.pop}
-            value={`${hud.harvestPoints} pts`}
-            onClick={() => onHarvest('points')}
-          />
-        )}
-        {/*
-          TAKE — spend the pocket for a rare tile instead of for its payout.
-          Offered only when the pocket actually earns one, which is what
-          `harvestTreasure` answers.
-        */}
-        {hud.canHarvest && hud.harvestTreasure !== null && (
-          <ActButton
-            testId="pop-treasure"
-            label={s.ui.take}
-            // `s.payout.rarity` already names all three, for the end
-            // screen's breakdown. One word per rarity, in one place.
-            value={`1 ${s.payout.rarity[hud.harvestTreasure]}`}
-            onClick={() => onHarvest('treasure')}
-          />
-        )}
-        {/*
-          SACRIFICE — burn the pocket for relics, or for luck where relics are
-          not the currency yet.
-
-          Gated on the player having MET relics or holding some (Ashwake 1's
-          `burnKnown`): offering to trade a pocket for a thing the game has not
-          introduced is a button whose value is a mystery, and a mystery on the
-          one action that destroys a pocket is the wrong place for one.
-        */}
-        {burn > 0 && (
-          <ActButton
-            testId="pop-burn"
-            label={s.ui.sacrifice}
-            value={hud.burnPaysRelics ? s.ui.relicsPaid(burn) : s.ui.luckPaid(burn)}
-            onClick={() => onHarvest('burn')}
-          />
-        )}
-        {hud.ended && (
-          <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
-        )}
       </div>
     </div>
   );

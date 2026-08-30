@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { begin, watchErrors } from './helpers';
+import { begin, openMore, watchErrors } from './helpers';
 
 /**
  * Everything that is not the run (Stage 4, 2026-08-29).
@@ -164,8 +164,7 @@ test('a menu three deep is navigable, and a scene change empties the stack', asy
    * lighter, and the shape being tested is the same: a door onto a panel
    * already in the stack has to RAISE it, and BACK still leaves one at a time.
    */
-  await page.locator('.camera .menu').click();
-  await panel(page, 'more').waitFor({ state: 'visible' });
+  await openMore(page);
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
   await panel(page, 'manual').locator('[data-go="more"]').click();
@@ -229,7 +228,7 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
     .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
   expect(inHand.length, 'the hand draws no baked tile').toBeGreaterThan(0);
 
-  await page.locator('.camera .menu').click();
+  await openMore(page);
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
   await page.locator('[data-tab="play"]').click();
@@ -333,6 +332,8 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await page.locator('[data-action="purse"]').click();
 
   await page.locator('.camera .menu').click();
+  await clean("the board's own MENU list");
+  await page.locator('[data-quick="more"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
   await clean('MORE, off the board');
   await panel(page, 'more').locator('[data-go="manual"]').click();
@@ -357,60 +358,82 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the board’s MENU reaches SOUND and HOW TO PLAY, and sound is one wire', async ({ page }) => {
+test('the board’s MENU is a short list, and SOUND on it is one wire', async ({ page }) => {
   /*
-   * Marc, 2026-08-30: *"make sure sound on or off and how to play stays in the
-   * menu, add a menu button instead."*
+   * Marc, 2026-08-30, twice in one session. First: *"make sure sound on or off
+   * and how to play stays in the menu, add a menu button instead."* The corner
+   * lost its music note and its `?` and gained one door — and the honest cost
+   * was mute going three taps deep, which Ashwake 1 never allowed: it has
+   * carried a board-level toggle since 2026-08-20, on his own launch call, *"a
+   * way to toggle on/off easily"*. Then, on that cost: *"menu could add a
+   * submenu for quick actions like sound in off etc and then an option that
+   * goes to menu."*
    *
-   * The board’s corner used to carry a music note and a `?` beside the view
-   * button — three controls floating over the thing this whole layout is
-   * trying to give the screen to. They are ONE door now, and the two rooms
-   * they opened are where MORE already listed them. So what has to be proved
-   * is not that a button exists but that **nothing became unreachable**: from
-   * a live board, MENU gets to the manual and to the sound switch.
+   * So the corner is one button, and behind it a list of three. Four things
+   * have to be true and each is a way it goes wrong:
    *
-   * And the switch is still ONE FLAG. A muted game that says it is unmuted is
-   * worse than either state — the finding this test was originally written
-   * for, and the half of it that survives the button moving.
+   *   - the list is REACHABLE, which the version of this that shipped inside
+   *     the board host was not — the host goes `inert` the moment anything is
+   *     on the stack, so every row drew and none of them could be tapped;
+   *   - SOUND switches IN PLACE and the list stays open, because a menu that
+   *     closes on a toggle is a menu you have to reopen to see whether the
+   *     toggle took;
+   *   - it is the SAME FLAG as the SETTINGS switch, because a muted game that
+   *     says it is unmuted is worse than either state — the finding this test
+   *     was originally written for;
+   *   - and Escape closes it, because it is a door and the phone’s BACK button
+   *     is the same gesture. A floating box in local state would walk BACK
+   *     straight off the site.
    */
   const errors = watchErrors(page);
   await page.goto('/?taught=1&seed=7&place=12');
   await begin(page);
 
-  // ONE door, and the two it replaced are gone from over the board.
+  // ONE button, and the two it replaced are gone from over the board.
   await expect(page.locator('.camera .menu'), 'the board has no MENU button').toBeVisible();
+  expect(await page.locator('.camera .help').count(), '? is still on the board').toBe(0);
   expect(
-    await page.locator('[data-action="sound"]').count(),
+    await page.locator('.camera [data-action="sound"]').count(),
     'the sound button is still on the board',
   ).toBe(0);
-  expect(await page.locator('.camera .help').count(), '? is still on the board').toBe(0);
 
   await page.locator('.camera .menu').click();
-  await panel(page, 'more').waitFor({ state: 'visible' });
+  const sound = page.locator('[data-quick="sound"]');
+  await expect(sound, 'MENU opened no list').toBeVisible();
 
-  // HOW TO PLAY is one tap further in, and it is the panel the player SEES.
-  await panel(page, 'more').locator('[data-go="manual"]').click();
-  await panel(page, 'manual').waitFor({ state: 'visible' });
-  expect(await paintedOnTop(page)).toBe('manual');
-  await panel(page, 'manual').locator('.panel-back').click();
-
-  // And so is SOUND, which is SETTINGS' own row.
-  await panel(page, 'more').locator('[data-go="settings"]').click();
-  await panel(page, 'settings').waitFor({ state: 'visible' });
-  const row = panel(page, 'settings').locator('[data-feature="ui.sound"]');
   // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
   // quiet room is uninstalled.
-  await expect(row).toHaveAttribute('aria-pressed', 'false');
-  await row.click();
-  await expect(row).toHaveAttribute('aria-pressed', 'true');
+  await expect(sound).toHaveAttribute('aria-pressed', 'false');
+  await sound.click();
+  await expect(sound, 'the sound row did not switch').toHaveAttribute('aria-pressed', 'true');
+  await expect(
+    sound,
+    'the list closed on a toggle, so nothing showed whether it took',
+  ).toBeVisible();
 
-  // Out and back in: the flag is the device's, not the panel's.
-  await panel(page, 'settings').locator('.panel-back').click();
+  // SETTINGS agrees, because it is reading the same flag. Through the list’s
+  // last row, which is the whole of "an option that goes to menu".
+  await page.locator('[data-quick="more"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  expect(await paintedOnTop(page)).toBe('more');
   await panel(page, 'more').locator('[data-go="settings"]').click();
+  await panel(page, 'settings').waitFor({ state: 'visible' });
   await expect(
     panel(page, 'settings').locator('[data-feature="ui.sound"]'),
-    'the sound switch forgot itself between openings',
+    'the board and SETTINGS disagree about the sound',
   ).toHaveAttribute('aria-pressed', 'true');
+
+  // And flipping it there flips the row, on the way back out. Three Escapes:
+  // SETTINGS, MORE, and the list they were opened from.
+  await panel(page, 'settings').locator('[data-feature="ui.sound"]').click();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await expect(sound, 'the list did not survive the rooms it opened').toBeVisible();
+  await expect(sound).toHaveAttribute('aria-pressed', 'false');
+
+  // Escape closes the list itself, like any other door.
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.quick')).toHaveCount(0);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

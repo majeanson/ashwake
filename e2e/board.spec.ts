@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { assertLooksLikeAPicture, begin, clearCards, watchErrors } from './helpers';
+import { assertLooksLikeAPicture, begin, clearCards, openMore, watchErrors } from './helpers';
 
 /**
  * The real-browser smoke (Stage 2, 2026-08-28): nothing in the unit suite
@@ -1074,7 +1074,7 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
   await page.waitForTimeout(600);
 
   // ANOTHER WORLD.
-  await page.locator('.camera .menu').click();
+  await openMore(page);
   await page.locator('[data-panel="more"] [data-go="worlds"]').click();
   await page.locator('[data-slot="2"]').click();
   await page.waitForTimeout(1400);
@@ -1088,7 +1088,7 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
   await page.mouse.move(60, 640, { steps: 12 });
   await page.mouse.up();
   await page.waitForTimeout(400);
-  await page.locator('.camera .menu').click();
+  await openMore(page);
   await page.locator('[data-panel="more"] [data-go="daily"]').click();
   await page.waitForTimeout(1400);
   await clearCards(page);

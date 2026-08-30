@@ -1002,6 +1002,73 @@ button[disabled] {
 }
 
 /*
+ * The short list behind MENU — a drawer, not a popover (2026-08-30).
+ *
+ * It opens where the purse opens: a flex child of the shell, in normal flow
+ * between the board and the controls, at the same centred measure everything
+ * down here shares. That is not a stylistic echo, it is the only place the
+ * line it wants to hang off actually exists — the cluster sits at the bottom
+ * of the board host, and how far up the screen that is depends on how tall the
+ * hand is, which a `position: fixed` box cannot know. Being in the flow, this
+ * IS that line.
+ *
+ * `z-index` over its own scrim, and `position: relative` so the layer takes.
+ *
+ * The scrim is transparent, and that is not laziness. This list hides nothing
+ * worth dimming, and a darkened board would read as a modal for a thing that
+ * is one tap of nothing. Its whole job is to be what a dismissing tap lands
+ * on: the board behind it is `inert` and would eat the tap silently, and the
+ * hand is a footer that would take it and place a tile.
+ */
+.quick-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+}
+
+.quick {
+  position: relative;
+  z-index: 19;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: calc(100% - var(--gap) * 2);
+  max-width: 34rem;
+  margin: 0 auto 0.35rem;
+  padding: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge-active);
+  border-radius: var(--radius);
+}
+
+/* A row, not a button in a row: the mark hangs in the same column down the
+   list, which is what lets it be read as a list at all. */
+.quick-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  text-align: left;
+  border-color: transparent;
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.8rem;
+}
+
+.quick-row svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+}
+
+/* A muted board says so by going quiet itself — the ♪ button's own rule, kept
+   whole when it became a row. `--ink-faint` is held at 4.5:1 against the panel
+   by `contrast.test.ts`, so "off" is legible rather than merely dimmer. */
+.quick-row[aria-pressed='false'] {
+  color: var(--ink-faint);
+}
+
+/*
  * LUCK is the one ACTION in the corner, and it says so (2026-08-30).
  *
  * Marc: *"luck button is another colour more like an action one, but not in
@@ -1318,6 +1385,26 @@ button[disabled] {
  * break. Both lines hold their line now and give font size instead, which is
  * the thing a reader loses least by.
  */
+/*
+ * And it is an ACTION, and says so (2026-08-30).
+ *
+ * Marc: *"add pop and sacrifice as action buttons"*, the day after LUCK became
+ * one: *"luck button is another colour more like an action one."* These four —
+ * POP, POP for points, TAKE, SACRIFICE — are the only controls in the game
+ * that SPEND the pocket you are looking at, and they were drawn in exactly the
+ * ink of the HOLD slot beside them, which does nothing at all until a card is
+ * picked up.
+ *
+ * `theme/tokens.ts` rations the accent — "if everything is accent, nothing is"
+ * — and this is the ration being spent rather than broken. The board carries
+ * three accented things now and they are the same KIND of thing: this bar, the
+ * LUCK button that opens the purse, and NEW RUN when a run has ended. Nothing
+ * in the hand, nothing in the stat row, nothing in the corner's chrome.
+ *
+ * The VERB takes the colour and the payment does not. `.act-value` stays
+ * `--ink-dim`, which is the whole point of the two lines: what it costs is
+ * read second, and reading it second is easier when it is quieter.
+ */
 .act {
   display: flex;
   flex-direction: column;
@@ -1325,6 +1412,7 @@ button[disabled] {
   gap: 0.05rem;
   padding: 0.3rem 0.6rem;
   min-width: 0;
+  border-color: var(--accent);
 }
 
 .act-label {
@@ -1332,6 +1420,7 @@ button[disabled] {
   letter-spacing: var(--label-tracking);
   font-size: clamp(0.8rem, 2.4vw, 0.95rem);
   white-space: nowrap;
+  color: var(--accent);
 }
 
 .act-value {

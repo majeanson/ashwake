@@ -34,14 +34,19 @@ import { Icon } from '../ui/Icon';
  * in hand."* So the cluster is **MENU · LUCK · VIEW**, and each of the three is
  * a different kind of thing:
  *
- * - **MENU** is the one door out. It replaces the ♪ and ? that stood here — two
- *   buttons for two rooms that MORE already lists, in the corner of a board
- *   that wants the screen. Sound lives in SETTINGS and HOW TO PLAY is MORE's
- *   first line, so neither was lost; they went back to being one tap further
- *   away and stopped costing board. `feature['ui.sound']`'s own note said "the
- *   speaker button on the board is this switch" and now says where the switch
- *   actually is — a sentence that names a control has to be re-read when the
- *   control moves.
+ * - **MENU** is the one door out, and it opens a SHORT LIST before it opens a
+ *   room. It replaced a ♪ and a `?` standing here — two buttons for two rooms
+ *   MORE already lists, in the corner of a board that wants the screen — and
+ *   the honest cost of that was mute going three taps deep, which Ashwake 1
+ *   never allowed: it has carried a board-level ♪ since 2026-08-20, on Marc's
+ *   own launch call, *"a way to toggle on/off easily"*. Marc, 2026-08-30:
+ *   *"menu could add a submenu for quick actions like sound in off etc and then
+ *   an option that goes to menu."* So SOUND is one tap again and costs no
+ *   button — it is a row in a list that is not there until you ask for it,
+ *   which is the difference between a control and a control in the way.
+ *   `feature['ui.sound']`'s own note said "the speaker button on the board is
+ *   this switch": a sentence that names a control has to be re-read when the
+ *   control moves, and it no longer names one.
  * - **LUCK** is an ACTION, and it is the only one here: it opens the purse,
  *   which spends. It came out of the action bar, where it sat beside POP and
  *   SACRIFICE competing with them for a hand's width, and it wears `--accent`
@@ -63,8 +68,10 @@ export type CameraProps = {
   /** Where the button will go NEXT — its own label, and the whole rule above. */
   readonly next: View;
   readonly onCycle: () => void;
-  /** The one door out of the board: MORE, which lists every other room. */
+  /** Open or close the quick list — see `QuickMenu`, which `App` renders
+   *  OUTSIDE the board host for the reason given there. */
   readonly onMenu: () => void;
+  readonly quickOpen: boolean;
   /** Luck in hand, and the drawer it opens. Absent where nothing spends it. */
   readonly luck: number;
   readonly canSpend: boolean;
@@ -125,6 +132,7 @@ export function Camera({
   next,
   onCycle,
   onMenu,
+  quickOpen,
   luck,
   canSpend,
   onPurse,
@@ -132,7 +140,15 @@ export function Camera({
 }: CameraProps) {
   return (
     <div className="camera">
-      <button type="button" className="menu" data-go="more" aria-label={s.ui.menu} onClick={onMenu}>
+      <button
+        type="button"
+        className="menu"
+        data-go="quick"
+        aria-label={s.ui.menu}
+        aria-haspopup="menu"
+        aria-expanded={quickOpen}
+        onClick={onMenu}
+      >
         <Icon name="menu" />
       </button>
       {canSpend && (
@@ -165,5 +181,106 @@ export function Camera({
         {s.ui.camera[next]}
       </button>
     </div>
+  );
+}
+
+/**
+ * The short list behind MENU (2026-08-30).
+ *
+ * Marc: *"menu could add a submenu for quick actions like sound in off etc and
+ * then an option that goes to menu."* Three rows, and the third is the door —
+ * the first two are the two things that used to be their own buttons over the
+ * board, back within one tap of a thumb but costing nothing while nobody is
+ * asking for them.
+ *
+ * **SOUND switches in place and the list stays open.** It is the one row here
+ * that is a setting rather than a journey, and a menu that closes on a toggle
+ * is a menu you have to reopen to see whether the toggle took. The same wire
+ * SETTINGS writes — one flag, read by both — because two surfaces for one
+ * setting is how they come to disagree, and a muted game that says it is
+ * unmuted is worse than either state.
+ *
+ * **The other two go somewhere and do not close this.** `App` pushes the panel
+ * onto the dialog stack and the stack raises it over this list; BACK from the
+ * manual lands back here, which is where the player was. Closing this first
+ * would mean a `history.back()` and a `pushState` in one handler — the
+ * traversal is asynchronous and the push is not, so the panel's own entry gets
+ * consumed by the pending `go(-1)` and BACK leaves the site. `ui/dialog.tsx`'s
+ * three rules say every history call happens in an event handler; they do not
+ * say two of them may happen in the SAME one.
+ *
+ * **The scrim is why this is not just a floating box.** The board goes `inert`
+ * while anything is on the stack, but `.controls` does not — the hand is a
+ * footer and a full-screen panel simply covers it. This is not full-screen, so
+ * without a scrim the tap that dismisses the list would place a tile on the way
+ * past. It is transparent on purpose: this hides nothing worth dimming, and a
+ * darkened board would read as a modal for a thing that is one tap of nothing.
+ *
+ * **And `App` renders it, not `Camera`, even though it belongs to `Camera`'s
+ * button.** It was a sibling of the cluster for one build, which put it inside
+ * the board host — and the board host goes `inert` the moment anything is on
+ * the stack, which now includes this. Every row was drawn, visible, and
+ * untappable: a menu that opens and does nothing, which is the same shape as
+ * the MORE bug this session opened with. Anything that survives its own opening
+ * has to be outside the thing that opening makes inert.
+ */
+export function QuickMenu({
+  s,
+  sound,
+  onSound,
+  onHowToPlay,
+  onFullMenu,
+  onDismiss,
+}: {
+  readonly s: Strings;
+  readonly sound: boolean;
+  readonly onSound: () => void;
+  readonly onHowToPlay: () => void;
+  readonly onFullMenu: () => void;
+  readonly onDismiss: () => void;
+}) {
+  return (
+    <>
+      <div className="quick-scrim" onClick={onDismiss} />
+      <div className="quick" data-hud="quick" role="menu" aria-label={s.ui.menu}>
+        {/* The label is what a tap would DO, not what the state is — the rule
+            the board's own ♪ followed, kept whole. `aria-pressed` carries the
+            state, the icon carries it too, and the row goes quiet when the
+            board does. */}
+        <button
+          type="button"
+          role="menuitem"
+          className="quick-row"
+          data-quick="sound"
+          aria-pressed={sound}
+          aria-label={sound ? s.ui.soundOn : s.ui.soundOff}
+          onClick={onSound}
+        >
+          <Icon name={sound ? 'soundOn' : 'soundOff'} />
+          <span>{s.ui.sound}</span>
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          className="quick-row"
+          data-quick="manual"
+          onClick={onHowToPlay}
+        >
+          <Icon name="help" />
+          <span>{s.ui.howToPlay}</span>
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          className="quick-row"
+          data-quick="more"
+          data-go="more"
+          onClick={onFullMenu}
+        >
+          <Icon name="more" />
+          <span>{s.ui.more}</span>
+        </button>
+      </div>
+    </>
   );
 }

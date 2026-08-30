@@ -2360,3 +2360,71 @@ to the golden, typecheck/lint/format/build clean, `pnpm audit:screens` at 156
 findings across twenty-six screens × four directions. The two new e2e tests were
 each run against the unfixed code first and each failed for its own reason.
 **Still not seen on a phone.**
+
+### Session 28 — the bottom of the screen gets sorted out (2026-08-30)
+
+**Question:** three asks about the same strip of phone. Marc: _"add pop and
+sacrifice as action buttons, tiles hand always footer but in finger zone,
+accessible. menu could add a submenu for quick actions like sound in off etc
+and then an option that goes to menu."_ Session 27 had just taken the ♪ and
+the `?` off the board and noted the cost in `NEXT.md` §1 — mute went three
+taps deep, which Ashwake 1 never allowed. **This is that note being answered
+before it had been felt on a phone.**
+
+**THE HAND IS THE FOOTER.** It sat above the action bar, so the row a player
+touches most — every placement begins with picking a card up, and a run is
+fifty of them — was furthest from the thumb, with four buttons pressed once a
+pocket between it and the bottom of the phone. Swapped in SOURCE order rather
+than with `order: -1`: Tab has to walk the screen the way an eye does, and a
+CSS-only swap leaves a keyboard reaching the bar first while a finger reaches
+the hand first, which is one screen with two orders.
+
+**POP, TAKE and SACRIFICE ARE ACTIONS AND SAY SO.** They were drawn in exactly
+the ink of the HOLD slot beside them, which does nothing at all until a card is
+picked up. `theme/tokens.ts` rations the accent — "if everything is accent,
+nothing is" — and this is that ration spent rather than broken: the board
+carries three accented things and they are the same KIND of thing, the harvest
+bar, the LUCK button that opens the purse, and NEW RUN. The VERB takes the
+colour and the payment stays `--ink-dim`, which is the point of the two lines.
+
+**MENU OPENS A SHORT LIST BEFORE IT OPENS A ROOM.** SOUND, HOW TO PLAY, MORE.
+Sound is one tap from the board again and costs no button — it is a row in a
+list that is not there until you ask for it, which is the difference between a
+control and a control in the way. It switches IN PLACE and the list stays open,
+because a menu that closes on a toggle is a menu you have to reopen to see
+whether the toggle took.
+
+**Thirty. The list shipped inside the board host for one build, and was
+untappable.** Every row drew, and `.board-host` goes `inert` the moment
+anything is on the stack — which now includes this. **That is the same shape as
+the bug the previous session opened with**: a control that renders and cannot
+be reached. Caught by a probe screenshot whose click timed out, not by
+reasoning. Anything that survives its own opening has to be outside the thing
+that opening makes inert.
+
+**And it is a DRAWER, not a popover.** The obvious build hangs a menu off its
+button; this one cannot, because the cluster sits at the bottom of the board
+host and how far up the screen that is depends on how tall the hand is — which
+a `position: fixed` box cannot know, and which a `fixed` box guessing at it
+half-covered the cluster that opened it. A flex child of the shell IS that
+line, and the purse drawer has been one since it was built. So the list opens
+where the purse opens, at the same measure, and the cluster stays whole above
+it. **The pattern was already in the file; the popover was inventing a second
+one.**
+
+It is a door on the dialog stack rather than a `useState`, and the reason is
+Android: a floating box in local state is one BACK walks straight past, off the
+site — the exact fault `ui/dialog.tsx` was extended to fix a day earlier. Its
+two journeys RAISE a panel over the list rather than closing it first, because
+two history calls in one handler is a `go(-1)` racing a `pushState` and the
+panel's own entry is what loses; BACK from the manual landing back on the list
+it was opened from is also simply correct. The scrim is transparent and its
+only job is to be what a dismissing tap lands on — the board behind is
+`inert` and would eat the tap silently, and the hand is a footer that would
+take it and place a tile.
+
+**Verified:** 1064 tests / 74 files, 82 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` at 156 findings with
+**no new rows** — the accent on the harvest bar is graded against the panel it
+stands on. **Still not seen on a phone**, and the whole of this session is a
+guess about a thumb.

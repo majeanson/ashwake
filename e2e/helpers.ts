@@ -74,3 +74,19 @@ export async function clearCards(page: Page): Promise<void> {
   }
   throw new Error('the teaching never stopped: twelve cards in a row');
 }
+
+/**
+ * The board's own way into MORE: MENU, then the list's last row.
+ *
+ * One helper rather than two lines in six specs, because the walk changed
+ * twice in one day — the board's corner went from a `?` straight into the
+ * manual, to a MENU straight into MORE, to a MENU that opens a short list with
+ * MORE on it (Marc, 2026-08-30: *"menu could add a submenu for quick actions
+ * like sound in off etc and then an option that goes to menu"*). A route this
+ * many specs walk should be written down once.
+ */
+export async function openMore(page: Page): Promise<void> {
+  await page.locator('.camera .menu').click();
+  await page.locator('[data-quick="more"]').click();
+  await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
+}
