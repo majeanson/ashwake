@@ -1,5 +1,6 @@
 import { COLOUR_ICON } from '@theme/icons';
-import { hex, namesOf, type Theme } from '@theme/tokens';
+import { namesOf, type Theme } from '@theme/tokens';
+import { Hex, HEX_R } from './Hex';
 import { Icon } from './Icon';
 import type { Colour } from '@content/tuning';
 import type { Rarity } from '@engine/state';
@@ -28,10 +29,19 @@ import type { Strings } from '@text/Strings';
  * The mark is `aria-hidden`: it is the same fact the name already states, and
  * a screen reader that reads "▲ MOSS" is reading a decoration aloud.
  *
- * Selection moved to an OUTLINE for this. It used to be the fill, which is
- * now every card's; the border still belongs to rarity, so the ring is the
- * one channel left that says "this one" without taking a channel that already
- * means something else.
+ * **Only the chosen card wears a box** (2026-08-30, Marc: *"make sure
+ * unselected card tiles blend in with the game, no border, only the selected
+ * one"*). Every card used to sit in a bordered, panel-coloured rectangle, so
+ * the hand read as a row of boxes with hexes inside them rather than as a row
+ * of tiles. A card is its hex now: no border, no ground of its own, sitting on
+ * the controls panel — and the one you have picked up is the one with an
+ * outline round it.
+ *
+ * That freed the border, which had been carrying RARITY. It is a ring around
+ * the HEX now, which is where the board has always drawn it
+ * (`board/rings.ts`): magic violet, unique orange, both far from the ink the
+ * selection uses and from each other on every direction's wheel. A rounded
+ * rectangle around a hexagon was never the right shape for it.
  *
  * **A card with nothing to do is not a button** (2026-08-30). The manual draws
  * real cards in its STASH figure — Marc: *"in how to play we reuse the same
@@ -40,13 +50,14 @@ import type { Strings } from '@text/Strings';
  * it is tappable. No `onPick` means no button: same markup, same CSS, drawn as
  * a picture with a name.
  *
- * **And where the direction has baked art, the card IS the tile** (2026-08-30,
- * Marc: *"I also liked the tile card we had having the tile itself"*). Ashwake
- * 1 put the baked hex on the card — the same PNG the board composites into the
- * ground it draws — so what you are holding and what it becomes are one
- * picture rather than two descriptions of one colour. The fill stays as the
- * fallback, and `art` being null is the ordinary state for a direction with
- * nothing baked: nothing here waits on a file.
+ * **And the card IS the tile** (2026-08-30, Marc: *"I also liked the tile card
+ * we had having the tile itself"*). Ashwake 1 put the baked hex on the card —
+ * the same PNG the board composites into the ground it draws — so what you are
+ * holding and what it becomes are one picture rather than two descriptions of
+ * one colour. It is `ui/Hex`, the same drawing the manual's legend and figures
+ * ask for, and `art` being null is the ordinary state for a direction with
+ * nothing baked: the hex is still drawn, in the flat fill, and nothing here
+ * waits on a file.
  */
 
 export type TileProps = {
@@ -80,9 +91,7 @@ export function Tile({
   onLens,
 }: TileProps) {
   const name = namesOf(theme, s.locale)[colour];
-  const fill = hex(theme.terrain[colour].fill);
   const rare = rarity !== 'common';
-  const hasArt = art !== null && art !== undefined && art !== '';
   // A card the player can act on is a button; a card in a diagram is a
   // picture. Same class, same style, so the two cannot drift apart.
   const Box = onPick === undefined ? 'span' : 'button';
@@ -91,7 +100,7 @@ export function Tile({
       {...(onPick === undefined
         ? { role: 'img', 'aria-label': name }
         : { type: 'button' as const, 'aria-pressed': selected === true, onClick: onPick })}
-      className={hasArt ? 'tile has-art' : 'tile'}
+      className={selected === true ? 'tile chosen' : 'tile'}
       data-colour={colour}
       data-rarity={rarity}
       // The label is haloed rather than re-coloured — see `.tile` in ui.css.
@@ -106,61 +115,44 @@ export function Tile({
               onLens();
             }
       }
-      style={{
-        /*
-         * THREE things a card can say at once, on three different channels
-         * (2026-08-29, Marc: "revise the highlights of the selected tiles based
-         * on each background color and also magic = unique. they should all be
-         * easily identifiable and not confused").
-         *
-         * They were all saying it in HUE, on a card that had just started
-         * wearing its ground — so a violet border, an orange border and a gold
-         * selection ring were three colours competing on a fourth. In torchlit
-         * the selection ring (`accent`, 0xc79a4b) and UNIQUE (0xf2914a) are
-         * both warm gold-orange, which is the confusion reported.
-         *
-         *   RARITY  keeps the hue, on the BORDER — magic violet, unique
-         *           orange, and they are far apart on every direction's wheel.
-         *           Thicker, because a 2px hue on a coloured ground is a hint.
-         *   SELECTED is the label INK, not a hue at all. The ink is graded
-         *           against every terrain fill by `contrast.test.ts`, so it is
-         *           the one colour guaranteed to read on all four grounds — and
-         *           being colourless it can never be mistaken for a rarity.
-         *   GROUND   is the fill, and the mark and the name say it too.
-         */
-        borderColor: rare ? hex(rarity === 'magic' ? theme.ink.magic : theme.ink.unique) : fill,
-        borderWidth: rare ? 3 : 1,
-        /*
-         * The baked hex carries the ground, so the flat swatch behind it gets
-         * out of the way — Ashwake 1's `.tile.has-art` rule, and the reason is
-         * that a hex printed on its own colour has no shape. The panel is
-         * where `.tile-art`'s outline is graded against (see ui.css).
-         */
-        background: hasArt ? 'var(--panel)' : fill,
-        // Outside the box, so it takes no layout and cannot reflow the row —
-        // and offset outward so it never sits on top of the rarity border it
-        // has to be told apart from.
-        outline: selected === true ? `3px solid ${hex(theme.ink.ink)}` : undefined,
-        outlineOffset: selected === true ? '2px' : undefined,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.1rem',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'var(--font-label)',
-        letterSpacing: 'var(--label-tracking)',
-        fontSize: '0.8rem',
-      }}
     >
-      {hasArt && (
-        <img
-          className="tile-art"
-          src={art ?? undefined}
-          alt=""
-          draggable={false}
-          aria-hidden="true"
-        />
-      )}
+      {/*
+        THE THREE CHANNELS a card speaks on (2026-08-29, Marc: "revise the
+        highlights of the selected tiles based on each background color and also
+        magic = unique. they should all be easily identifiable and not
+        confused").
+
+        They were once all saying it in HUE — a violet border, an orange border
+        and a gold selection ring, three colours competing on a fourth. In
+        torchlit the old selection ring (`accent`, 0xc79a4b) and UNIQUE
+        (0xf2914a) are both warm gold-orange, which is the confusion reported.
+
+          GROUND   is the hex itself: its baked art, its mark and its name.
+          RARITY   keeps the hue, as a RING ON THE HEX — magic violet, unique
+                   orange, far apart on every direction's wheel, and the shape
+                   the board already uses for exactly this.
+          SELECTED is the label INK, not a hue at all, drawn as the one box in
+                   the row. The ink is graded against every terrain fill by
+                   `contrast.test.ts`, so it reads on all four grounds — and
+                   being colourless it can never be mistaken for a rarity.
+      */}
+      <Hex
+        id={`tile-${colour}-${rarity}-${slot ?? 'hand'}`}
+        className="tile-art"
+        theme={theme}
+        ground={colour}
+        art={art}
+        {...(rare
+          ? {
+              ring: rarity === 'magic' ? theme.ink.magic : theme.ink.unique,
+              // The board's own arithmetic for a rarity ring (`board/rings.ts`
+              // draws `edgeWidth * 2.5` in hex radii), read off the direction
+              // rather than eyeballed — so a card's ring is the width the board
+              // would draw round the same tile, in whichever direction.
+              ringWidth: theme.board.edgeWidth * 2.5 * HEX_R,
+            }
+          : {})}
+      />
       <span className="tile-mark" aria-hidden="true">
         <Icon name={COLOUR_ICON[colour]} />
       </span>

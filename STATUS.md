@@ -4,7 +4,39 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — the manual stops drawing its own
+Last checkpoint: **2026-08-30, last — a card stops being a box with a tile in
+it.** Marc: _"make sure unselected card tiles blend in with the game, no
+border, only the selected one."_ Every card sat in a bordered, panel-coloured
+rectangle with a hex inside it, so the hand read as a row of BOXES rather than
+of tiles — three frames competing with the three pictures they held, on the
+strip of screen the board is fighting for.
+
+**The border was carrying RARITY**, so taking it away needed somewhere for that
+to go, and the board already had one: `board/rings.ts` draws rarity as a ring
+around the hex at `edgeWidth * 2.5` in hex radii. A card wears the same ring
+now, at that width read off the DIRECTION rather than eyeballed. Which needed
+ONE hex drawing, and there were three — a rounded square in the legend, a flat
+polygon in the figures, an `<img>` in the hand, and an `<img>` cannot carry a
+ring. `ui/Hex` is that drawing: the legend asks it for its swatches, the hand
+for its cards, and the figures share its geometry and its art.
+
+The box is transparent rather than absent, so choosing a card cannot reflow the
+row under a reaching thumb, and the chosen one takes the INK — graded against
+every terrain fill and the panel, and colourless, so it can never be mistaken
+for a rarity.
+
+**And one regression of my own, caught in a screenshot**: replacing the card's
+inline `style` took its FLEX layout with it, so for one build the mark sat
+beside the name and wrapped only on the narrow cards. Those rules are CSS now,
+where they belonged. Pinned by the thing that was wrong: the computed border
+colour of every card, polled past the crossfade, asserting exactly one is
+inked.
+
+Verified: 1066 tests / 74 files, 78 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` across twenty-six
+screens × four directions.
+
+Previous checkpoint: **2026-08-30, last — the manual stops drawing its own
 pictures.** Marc: _"in how to play we reuse the same visuals as in game for
 all"_, and _"make sure all indentation is good."_
 

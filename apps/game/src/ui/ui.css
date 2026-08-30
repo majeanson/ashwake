@@ -956,26 +956,76 @@ button[disabled] {
  * reports it. That is correct and the row is marked `data-audit-halo` so it is
  * counted apart rather than mistaken for an unhandled one.
  */
+/*
+ * A card is its HEX, and only the chosen one wears a box (2026-08-30).
+ *
+ * Marc: *"make sure unselected card tiles blend in with the game, no border,
+ * only the selected one."* Every card sat in a bordered, panel-coloured
+ * rectangle with a hex inside it, so the hand read as a row of BOXES rather
+ * than as a row of tiles — three frames competing with the three pictures they
+ * held, on the strip of screen the board is fighting for.
+ *
+ * So the ground of the card is the controls panel it stands on, and the border
+ * is transparent rather than absent: the box still occupies its two pixels, so
+ * choosing a card cannot reflow the row under a reaching thumb.
+ */
 .tile {
   text-shadow: var(--card-text-shadow);
-  /* The baked hex is laid over the whole card, so the card has to be the box
-     it is positioned against. Harmless where no art is loaded. */
+  /* The hex is laid over the whole card, so the card has to be the box it is
+     positioned against. */
   position: relative;
+  background: transparent;
+  border: 2px solid transparent;
+  /*
+   * The mark over the name, both centred on the hex behind them.
+   *
+   * These lived in `Tile`'s inline `style` until 2026-08-30 and belonged here
+   * the whole time — an inline style beats every rule a stylesheet can write,
+   * which is how `flex: 1 1 0` came to be undefeatable in the manual's figure.
+   * Losing them for one build turned the card back into inline flow: the mark
+   * sat BESIDE the name and wrapped only on the cards too narrow to hold both,
+   * so a hand read as two different layouts at once.
+   */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.8rem;
 }
 
 /*
- * The card IS the tile, where the direction has baked one (2026-08-30).
+ * The one card you have picked up.
+ *
+ * The INK, not a hue: `contrast.test.ts` grades it against every terrain fill
+ * and against the panel, so it is the one colour guaranteed to read wherever
+ * the card is standing — and being colourless it can never be mistaken for a
+ * rarity, which is the confusion Marc reported on 2026-08-29 when three
+ * channels were all speaking in hue. The panel ground comes with it: a chosen
+ * card is lifted off the bar as well as outlined.
+ */
+.tile.chosen {
+  border-color: var(--ink);
+  background: var(--panel);
+}
+
+/*
+ * The card IS the tile (2026-08-30).
  *
  * The hex fills the card and the mark and the name sit ON it, exactly as they
- * sit on the ground it becomes. `contain` rather than `cover`: the art is
- * clipped to a hexagon with transparent surround (`scripts/terrain.ts`), and
- * cropping it would throw away the one thing it is here to show — the shape.
+ * sit on the ground it becomes. It is `ui/Hex` — the same drawing the manual's
+ * legend and figures ask for — so it keeps its aspect inside this box the way
+ * an SVG does, without cropping: the art is clipped to a hexagon with a
+ * transparent surround (`scripts/terrain.ts`), and cropping it would throw
+ * away the one thing it is here to show.
  *
  * The outline is Ashwake 1's fix, carried over for the same measured reason:
  * a terrain hex on the panel can run under 2:1 (torchlit MOSS at its light
  * end, daylight's EMBER), and a card the player reads every turn cannot be a
- * shape you have to hunt for. A `border` cannot do it — the art is a hex and
- * a border is a rounded rectangle — so the outline traces the image's own
+ * shape you have to hunt for. A `border` cannot do it — the card is a rounded
+ * rectangle and the art is a hexagon — so the outline traces the drawing's own
  * alpha. Two passes of a 1px shadow: one reads as a blur at this size, two
  * read as a line. `--ink-faint` is held at 4.5:1 against the panel by
  * `contrast.test.ts`, so the line is graded rather than picked.
@@ -985,15 +1035,14 @@ button[disabled] {
   inset: 0.1rem;
   width: calc(100% - 0.2rem);
   height: calc(100% - 0.2rem);
-  object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 0 1px var(--ink-faint)) drop-shadow(0 0 1px var(--ink-faint));
 }
 
 /* The words ride over the hex. Positioned rather than given a z-index alone:
-   an absolutely positioned image paints above static content whatever its
+   an absolutely positioned drawing paints above static content whatever its
    level, so the labels have to be positioned too or the art buries them. */
-.tile.has-art > span {
+.tile > span {
   position: relative;
 }
 
@@ -1009,8 +1058,10 @@ button[disabled] {
   visibility: hidden;
 }
 
+/* An EMPTY slot is the one card-shaped thing that should read as a frame:
+   there is nothing in it, and the dashes are what say so. */
 .tile.hold {
-  border-style: dashed;
+  border: 1px dashed var(--panel-edge);
   color: var(--ink-faint);
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);

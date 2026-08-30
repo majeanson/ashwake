@@ -5,7 +5,7 @@ import { LESSON_FOR_REWARD, lessonDefine, lessonName, lessonOf } from '@view/les
 import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { useGroundArt } from '../shell/art';
-import { GroundSwatch } from '../ui/GroundSwatch';
+import { Hex } from '../ui/Hex';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -44,8 +44,9 @@ import { Icon } from '../ui/Icon';
  * ground was a rounded SQUARE of the terrain's flat fill, and an edge was a
  * square with a border — neither of which the board draws. Every swatch here
  * is a HEX now, at the direction's own facing, filled with the very PNG the
- * board composites into that ground (`GroundSwatch`); the two edge rows draw
- * a ring the way the board rings a hex. The legend has always repainted with
+ * board composites into that ground (`ui/Hex`, the one drawing the figures and
+ * the hand's cards also ask for); the two edge rows draw a ring the way the
+ * board rings a hex. The legend has always repainted with
  * the board when a direction changes, and now it does so in the board's hand.
  */
 
@@ -70,7 +71,13 @@ export function Legend({ theme, s }: LegendProps) {
       <ul>
         {COLOURS.map((colour) => (
           <li key={colour} className="tall">
-            <GroundSwatch theme={theme} ground={colour} art={art} />
+            <Hex
+              id={`legend-${colour}`}
+              className="legend-swatch"
+              theme={theme}
+              ground={colour}
+              art={art[colour]}
+            />
             <span className="legend-mark" aria-hidden="true">
               <Icon name={COLOUR_ICON[colour]} />
             </span>
@@ -137,7 +144,13 @@ export function Legend({ theme, s }: LegendProps) {
           <span className="legend-name">{s.ui.legendRare}</span>
         </li>
         <li className="tall">
-          <GroundSwatch theme={theme} ground="stone" art={art} />
+          <Hex
+            id="legend-stone"
+            className="legend-swatch"
+            theme={theme}
+            ground="stone"
+            art={art.stone}
+          />
           <span className="legend-mark" aria-hidden="true">
             <Icon name={CONCEPT_ICON.stone} />
           </span>
@@ -151,7 +164,13 @@ export function Legend({ theme, s }: LegendProps) {
           </span>
         </li>
         <li>
-          <GroundSwatch theme={theme} ground="wall" art={art} />
+          <Hex
+            id="legend-wall"
+            className="legend-swatch"
+            theme={theme}
+            ground="wall"
+            art={art.wall}
+          />
           {/* The mark the board prints on a wall, so the legend teaches the
               same thing the board shows. Stone beside it carries its own mark
               for the same reason. */}
@@ -163,11 +182,21 @@ export function Legend({ theme, s }: LegendProps) {
         {/* The two rows that are about an EDGE rather than a ground: a ring
             around a hex, which is exactly what the board draws around one. */}
         <li>
-          <GroundSwatch theme={theme} ring={theme.board.ripeEdge} />
+          <Hex
+            id="legend-ripe"
+            className="legend-swatch"
+            theme={theme}
+            ring={theme.board.ripeEdge}
+          />
           <span className="legend-name">{s.ui.legendRipe}</span>
         </li>
         <li>
-          <GroundSwatch theme={theme} ring={theme.board.legalEdge} />
+          <Hex
+            id="legend-legal"
+            className="legend-swatch"
+            theme={theme}
+            ring={theme.board.legalEdge}
+          />
           <span className="legend-name">{s.ui.legendLegal}</span>
         </li>
       </ul>

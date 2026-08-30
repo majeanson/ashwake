@@ -2105,3 +2105,56 @@ asserting there is exactly one.
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-six screens × four directions — the manual's HAND tab is photographed
 now too, which is how the duplicated figure was seen at all.
+
+### Session 25 — a card stops being a box with a tile in it (2026-08-30)
+
+**Question:** Marc: _"make sure unselected card tiles blend in with the game,
+no border, only the selected one."_ The border was carrying RARITY. What
+carries it instead?
+
+**Answer: the same thing the board uses — a ring on the hex.** Every card sat
+in a bordered, panel-coloured rectangle with a hex inside it, so the hand read
+as a row of BOXES rather than a row of tiles: three frames competing with the
+three pictures they held, on the strip of screen the board is fighting for.
+Taking the border away frees it, and rarity is exactly the thing that had been
+sitting on it — magic violet, unique orange, drawn as a rounded rectangle
+around a hexagon.
+
+`board/rings.ts` has always drawn rarity as a ring around the hex itself, at
+`edgeWidth * 2.5` in hex radii. So the card wears one too, at that width read
+off the DIRECTION rather than eyeballed in pixels — a card's ring is now the
+ring the board would draw round the same tile, in whichever direction.
+
+**Which needed one hex drawing, and there were three.** The chrome drew a
+ground as a rounded SQUARE in the legend, a flat polygon in the figures, and an
+`<img>` in the hand — and an `<img>` cannot carry a ring. `ui/Hex` is the one
+drawing now: `corners()` from `render/layout.ts` at the direction's own facing,
+the flat fill under the baked art, and an optional ring. The legend asks it for
+its swatches, the hand asks it for its cards, and the figures use the same
+geometry and the same art in one shared SVG (a grid of hexes cannot be a grid
+of separate SVGs).
+
+**The box is transparent, not absent.** It still occupies its two pixels, so
+choosing a card cannot reflow the row under a reaching thumb — and the chosen
+one takes the INK, which `contrast.test.ts` grades against every terrain fill
+and against the panel, so it reads wherever the card stands and can never be
+mistaken for a rarity. That confusion is the one Marc reported on 2026-08-29,
+when three channels were all speaking in hue.
+
+**Twenty-two, and it was mine from an hour earlier.** Replacing the card's
+`style` block took the FLEX layout with it — `display: flex`, the column, the
+label face — because those had been written inline. For one build the card fell
+back to inline flow: the mark sat BESIDE the name, wrapping only on the cards
+too narrow to hold both, so a hand read as two different layouts at once.
+Caught in a screenshot. They are CSS now, where they belonged: an inline style
+beats every rule a stylesheet can write, which is the same property that made
+`flex: 1 1 0` undefeatable in the manual's figure yesterday.
+
+**Pinned by the thing that was wrong**: the computed border colour of every
+card in the hand, asserting exactly one is inked — and polled rather than read
+once, because `border-color` transitions over `--fade` and a single read
+catches two boxes mid-crossfade.
+
+**Verified:** 1066 tests / 74 files, 78 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
+twenty-six screens × four directions.

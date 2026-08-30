@@ -113,8 +113,8 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
 
   // What the HAND draws, which is the board's own baked art.
   const inHand = await page
-    .locator('.hand .tile-art')
-    .evaluateAll((els) => els.map((el) => (el as HTMLImageElement).getAttribute('src')));
+    .locator('.hand .tile-art image')
+    .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
   expect(inHand.length, 'the hand draws no baked tile').toBeGreaterThan(0);
 
   await page.locator('.camera .help').click();

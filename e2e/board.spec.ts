@@ -490,7 +490,9 @@ test('a pop after the first is brief, and any tap sends it away', async ({ page 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('a card in the hand is the tile it will become', async ({ page }) => {
+test('a card in the hand is the tile it will become, and only the chosen one has a box', async ({
+  page,
+}) => {
   /*
    * Marc, 2026-08-30: *"I also liked the tile card we had having the tile
    * itself."* Ashwake 1's hand cards carried the baked hex — the very PNG the
@@ -507,18 +509,59 @@ test('a card in the hand is the tile it will become', async ({ page }) => {
   await begin(page);
   await page.waitForTimeout(600);
 
-  const art = page.locator('.hand .tile.has-art .tile-art').first();
+  // The card's hex is `ui/Hex` — the same drawing the manual's legend and
+  // figures ask for — so the picture is an `<image>` inside an SVG rather than
+  // an `<img>`, and it is clipped to the hexagon the board draws.
+  const art = page.locator('.hand .tile-art image').first();
   await expect(art, 'no hand card carries its baked hex').toBeVisible({ timeout: 4000 });
-  const src = await art.getAttribute('src');
-  expect(src, 'the card points at something other than a terrain slot').toMatch(
-    /\/assets\/[a-z-]+\/terrain\.(green|yellow|red|blue)\.png$/,
-  );
-  // It loaded: a broken <img> is a card that reads as empty, which is the
-  // failure Ashwake 1 caught in a screenshot rather than in a test.
   expect(
-    await art.evaluate((el) => (el as HTMLImageElement).naturalWidth),
-    'the baked hex did not load',
-  ).toBeGreaterThan(0);
+    await art.getAttribute('href'),
+    'the card points at something other than a terrain slot',
+  ).toMatch(/\/assets\/[a-z-]+\/terrain\.(green|yellow|red|blue)\.png$/);
+  // It LOADED: a broken picture is a card that reads as empty, which is the
+  // failure Ashwake 1 caught in a screenshot rather than in a test. An SVG
+  // image has no `naturalWidth`, so the file is fetched the way the browser
+  // fetched it and its status is the witness.
+  const href = await art.getAttribute('href');
+  const res = await page.request.get(`${page.url().split('/?')[0] ?? ''}${href ?? ''}`);
+  expect(res.status(), 'the baked hex did not load').toBe(200);
+
+  /*
+   * And the hand is a row of TILES, not a row of boxes (2026-08-30, Marc:
+   * "make sure unselected card tiles blend in with the game, no border, only
+   * the selected one"). Measured through the computed border colour, because
+   * that is the thing that was drawing a frame around every card: transparent
+   * on the ones you have not picked up, inked on the one you have.
+   */
+  const bordered = async (): Promise<string[]> =>
+    page
+      .locator('.hand .tile:not(.hold):not(.gap)')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).borderTopColor));
+
+  const boxes = async (): Promise<number> =>
+    (await bordered()).filter((c) => c !== 'rgba(0, 0, 0, 0)').length;
+
+  // A run opens with a card already picked up, so the hand always has exactly
+  // one box in it: the chosen card's. Every other card is its hex and nothing
+  // else.
+  expect((await bordered()).length, 'the hand is empty').toBeGreaterThan(1);
+  expect(await boxes(), 'the hand is not showing exactly one box').toBe(1);
+
+  // And the box FOLLOWS the choice rather than accumulating. Asserted through
+  // a retrying locator first: a click is dispatched before React has committed
+  // the render it causes, and reading a computed style straight after it reads
+  // the frame before.
+  const second = page.locator('.hand .tile:not(.hold):not(.gap)').nth(1);
+  await second.click();
+  await expect(second, 'the tapped card was not chosen').toHaveClass(/chosen/);
+  await expect(
+    page.locator('.hand .tile.chosen'),
+    'choosing another card left two boxes in the hand',
+  ).toHaveCount(1);
+  // Polled, not read once: `border-color` transitions over `--fade`, so the
+  // card that just LOST the box is still fading it out for 140ms and a single
+  // read catches two boxes mid-crossfade.
+  await expect.poll(boxes, { message: 'a card without the chosen class kept its border' }).toBe(1);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
