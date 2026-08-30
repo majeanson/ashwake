@@ -173,6 +173,10 @@ export function Settings({
             <div key={feature.id} className="flag">
               <button
                 type="button"
+                // Named for the FLAG, so a test can ask about the one switch
+                // that has a second surface (the board’s ♪) rather than about
+                // a row index that moves when a flag is added.
+                data-feature={feature.id}
                 aria-pressed={on}
                 disabled={!feature.wired}
                 onClick={() => onFeature(feature.id, !on)}

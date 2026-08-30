@@ -24,6 +24,19 @@ import type { BoardHandle } from '../board/Board';
  * Every word is the catalogue's. They were `'FIT'` and `'HERE'`, typed into
  * this file in English, which D4 does not allow and which a French phone read
  * in English for two stages.
+ *
+ * **The ♪ button is back** (2026-08-30). Ashwake 1 carried it here from
+ * 2026-08-20 — Marc's launch call, *"a way to toggle on/off easily"* — and this
+ * body dropped it while keeping the sentence that promises it: `ui.sound`'s own
+ * note, in both languages, reads "the ♪ button on the board is this switch",
+ * and there was no such button. Sound lived only in SETTINGS, three taps and a
+ * panel away, which is not where anybody mutes a game.
+ *
+ * It is the SAME WIRE as the settings switch — one flag, written once, read by
+ * both — because two surfaces for one setting is how they come to disagree
+ * about it. The third button in a cluster that argues for as few as possible
+ * earns its place the way `?` does: it is not a camera control, it is the one
+ * thing a player in a quiet room needs within reach.
  */
 
 export type View = 'fit' | 'here' | 'flat' | 'home';
@@ -34,6 +47,9 @@ export type CameraProps = {
   readonly next: View;
   readonly onCycle: () => void;
   readonly onHelp: () => void;
+  /** Whether the board is currently voiced. The same flag SETTINGS writes. */
+  readonly sound: boolean;
+  readonly onSound: () => void;
 };
 
 /** Ashwake 1's number: close enough to read a hex, far enough to see a pocket. */
@@ -84,9 +100,22 @@ export function useCameraCycle(
   return { next, step };
 }
 
-export function Camera({ s, next, onCycle, onHelp }: CameraProps) {
+export function Camera({ s, next, onCycle, onHelp, sound, onSound }: CameraProps) {
   return (
     <div className="camera">
+      {/* The label says what a TAP WOULD DO, not what the state is: a toggle
+          labelled with its own state has to be read twice. `aria-pressed`
+          carries the state, which is what it is for. */}
+      <button
+        type="button"
+        className="sound"
+        data-action="sound"
+        aria-pressed={sound}
+        aria-label={sound ? s.ui.soundOn : s.ui.soundOff}
+        onClick={onSound}
+      >
+        ♪
+      </button>
       <button type="button" className="help" aria-label={s.ui.howToPlay} onClick={onHelp}>
         ?
       </button>

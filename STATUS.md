@@ -52,7 +52,15 @@ carrying no URL change, so the address bar never becomes a second authority on
 what is on screen. On Android, BACK with the manual open used to leave the
 site.
 
-Verified: 1060 tests / 74 files, 75 Playwright, `pnpm sim` byte-identical,
+**And the catalogue promised a button that did not exist.** `ui.sound`'s note
+says, in both languages, "the ♪ button on the board is this switch", and there
+was none: sound lived only in SETTINGS, three taps and a panel away. The ♪ is
+back by the camera, on the same wire as the switch. It survived a gesture
+matrix that LISTS it because the manual's MENU tab — the only way from a live
+board into SETTINGS — had the two doors in this game with no `data-go`, so
+nothing had ever walked that path.
+
+Verified: 1060 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions. **No rule moved**, and the first minute
 is the same game told better.

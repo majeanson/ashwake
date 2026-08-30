@@ -802,6 +802,13 @@ button[disabled] {
   font-size: 0.75rem;
 }
 
+/* A muted board says so by going quiet itself. `--ink-faint` is held at 4.5:1
+   against the panel by `contrast.test.ts`, so "off" is still legible rather
+   than merely dimmer. */
+.camera .sound[aria-pressed='false'] {
+  color: var(--ink-faint);
+}
+
 /* ---- the hand and the bar ----------------------------------------------- */
 
 /*

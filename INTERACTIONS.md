@@ -77,22 +77,22 @@ deliberately absent in both.
 
 ## 5. Dialogs, chrome, keyboard
 
-| Gesture                                  | Ashwake 1           | Ashwake 2                                           |
-| ---------------------------------------- | ------------------- | --------------------------------------------------- |
-| Tap the toast                            | dismisses it        | ✓                                                   |
-| Toast never auto-expires                 | yes                 | ✓                                                   |
-| Tap anywhere on an event card            | closes it           | ✓                                                   |
-| **Escape** closes the top dialog only    | yes                 | ✓                                                   |
-| Tap a glossary term in prose             | opens the term card | ✓                                                   |
-| Term card closes on GOT IT / Escape only | yes                 | ✓                                                   |
-| Manual tabs, `<details>` folds           | yes                 | ✓                                                   |
-| Two-tap confirm on anything destructive  | yes                 | ✓                                                   |
-| FIT ⇄ HERE camera toggle                 | yes                 | ✓                                                   |
-| Diary rows unfold                        | yes                 | ✓                                                   |
-| Shop: buy, wear, unfold a perk           | yes                 | ✓                                                   |
-| WORLDS: **BEGIN AT CAMP**                | yes, in that panel  | ✓ (2026-08-30 — the fifth shrine's unlock)          |
-| Sound toggle over the board              | yes                 | ✗ (no sound in this body yet)                       |
-| `✕` lens-clear button                    | yes                 | ✗ — the fog tap and a second long-press both let go |
+| Gesture                                  | Ashwake 1           | Ashwake 2                                                        |
+| ---------------------------------------- | ------------------- | ---------------------------------------------------------------- |
+| Tap the toast                            | dismisses it        | ✓                                                                |
+| Toast never auto-expires                 | yes                 | ✓                                                                |
+| Tap anywhere on an event card            | closes it           | ✓                                                                |
+| **Escape** closes the top dialog only    | yes                 | ✓                                                                |
+| Tap a glossary term in prose             | opens the term card | ✓                                                                |
+| Term card closes on GOT IT / Escape only | yes                 | ✓                                                                |
+| Manual tabs, `<details>` folds           | yes                 | ✓                                                                |
+| Two-tap confirm on anything destructive  | yes                 | ✓                                                                |
+| FIT ⇄ HERE camera toggle                 | yes                 | ✓                                                                |
+| Diary rows unfold                        | yes                 | ✓                                                                |
+| Shop: buy, wear, unfold a perk           | yes                 | ✓                                                                |
+| WORLDS: **BEGIN AT CAMP**                | yes, in that panel  | ✓ (2026-08-30 — the fifth shrine's unlock)                       |
+| Sound toggle over the board              | yes                 | ✓ since 2026-08-30 — the ♪ by the camera, one wire with SETTINGS |
+| `✕` lens-clear button                    | yes                 | ✗ — the fog tap and a second long-press both let go              |
 
 ## 6. The keyboard, on the board
 

@@ -91,6 +91,51 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('the board’s ♪ and the SETTINGS switch are one wire', async ({ page }) => {
+  /*
+   * `ui.sound`'s own note says, in both languages, "the ♪ button on the board
+   * is this switch" — and there was no such button (found 2026-08-30). Sound
+   * lived only in SETTINGS, three taps and a panel away, which is not where
+   * anybody mutes a game in a quiet room. Ashwake 1 has carried the button
+   * since 2026-08-20, on Marc's launch call: "a way to toggle on/off easily".
+   *
+   * The thing worth pinning is not that a button exists, it is that the two
+   * surfaces are ONE FLAG. Two surfaces for one setting is how they come to
+   * disagree about it, and a muted game that says it is unmuted is worse than
+   * either state.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&seed=7&place=12');
+  await begin(page);
+
+  const note = page.locator('[data-action="sound"]');
+  await expect(note, 'the board has no ♪ button').toBeVisible();
+  // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
+  // quiet room is uninstalled.
+  await expect(note).toHaveAttribute('aria-pressed', 'false');
+
+  await note.click();
+  await expect(note).toHaveAttribute('aria-pressed', 'true');
+
+  // SETTINGS agrees, because it is reading the same flag. From the BOARD,
+  // which is the manual's MENU tab and the only way in while a run is live.
+  await page.locator('.camera .help').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+  await panel(page, 'manual').locator('[data-go="settings"]').click();
+  await panel(page, 'settings').waitFor({ state: 'visible' });
+  const row = panel(page, 'settings').locator('[data-feature="ui.sound"]');
+  await expect(row).toHaveAttribute('aria-pressed', 'true');
+
+  // And flipping it there flips the board's button, on the way back out.
+  await row.click();
+  await expect(row).toHaveAttribute('aria-pressed', 'false');
+  await panel(page, 'settings').locator('.panel-back').click();
+  await panel(page, 'manual').locator('.panel-back').click();
+  await expect(note).toHaveAttribute('aria-pressed', 'false');
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('the phone’s BACK button closes the top panel, one at a time', async ({ page }) => {
   /*
    * The last gesture `INTERACTIONS.md` listed as missing (2026-08-30). On

@@ -724,6 +724,27 @@ function Game() {
     };
   }, []);
 
+  /**
+   * Sound, from either surface (2026-08-30).
+   *
+   * The board's ♪ button and SETTINGS' switch are ONE wire, which is Ashwake
+   * 1's rule and the reason this is a callback rather than two handlers: two
+   * surfaces writing one setting is how they come to disagree about it.
+   *
+   * Enabling it is also the user gesture every browser wants before any audio
+   * may exist, so the tap that turns sound on is spent on one note that
+   * confirms itself. Turning it off GIVES THE CONTEXT BACK rather than muting
+   * it — a suspended context is a resource a phone is still counting.
+   */
+  const setSound = useCallback(
+    (on: boolean) => {
+      setFeature('ui.sound', on);
+      if (on) voice.wake(theme.voice);
+      else voice.silence();
+    },
+    [setFeature, theme.voice],
+  );
+
   const manual = useDoor('manual');
   const settings = useDoor('settings');
   const more = useDoor('more');
@@ -1623,7 +1644,14 @@ ${s.view.harvest.firstPopWhen}`,
         />
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
         {playing && (
-          <Camera s={s} next={nextView} onCycle={cycleView} onHelp={() => manual.show()} />
+          <Camera
+            s={s}
+            next={nextView}
+            onCycle={cycleView}
+            onHelp={() => manual.show()}
+            sound={isEnabled(features, 'ui.sound')}
+            onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
+          />
         )}
       </div>
 
@@ -1793,10 +1821,15 @@ ${s.view.harvest.firstPopWhen}`,
           onBack={manual.hide}
           menu={
             <PanelMenu>
-              <button type="button" onClick={() => more.show()}>
+              {/* Named the way every other way into a room is named. These two
+                  are the ONLY doors in the game that had no `data-go`, which
+                  is why nothing had ever walked from the board into SETTINGS:
+                  a control a test cannot address is a control no test
+                  addresses. */}
+              <button type="button" data-go="more" onClick={() => more.show()}>
                 {s.ui.more}
               </button>
-              <button type="button" onClick={() => settings.show()}>
+              <button type="button" data-go="settings" onClick={() => settings.show()}>
                 {s.ui.settings}
               </button>
               <Confirming
@@ -1822,16 +1855,10 @@ ${s.view.harvest.firstPopWhen}`,
           onTheme={setStoredTheme}
           onLocale={setLocale}
           onFeature={(id, on) => {
-            setFeature(id, on);
-            // Enabling sound is the user gesture every browser wants before
-            // any audio may exist, so the toggle spends it on one note that
-            // confirms itself.
-            if (id !== 'ui.sound') return;
-            // On: the toggle's own tap is the user gesture browsers require
-            // before any audio may exist, spent on one note that confirms
-            // itself. Off: the context is GIVEN BACK, not merely muted.
-            if (on) voice.wake(theme.voice);
-            else voice.silence();
+            // SOUND goes through the one wire the board's ♪ button uses; every
+            // other flag is just a flag.
+            if (id === 'ui.sound') setSound(on);
+            else setFeature(id, on);
           }}
           /*
            * RESET TEACHING resets the TEACHING (2026-08-30).

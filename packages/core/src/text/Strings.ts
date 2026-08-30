@@ -499,6 +499,12 @@ export type Strings = {
      *  the language row directly above it. */
     readonly auto: string;
     readonly sound: string;
+    /** The board's ♪ button, which says what a tap on it would DO. Two
+     *  sentences rather than one and an "on/off": a toggle whose label is its
+     *  STATE has to be read twice, once to learn the state and once to work
+     *  out what pressing it does. */
+    readonly soundOn: string;
+    readonly soundOff: string;
     readonly resetTeaching: string;
     /** The disclosure a manual section folds its finer print into. */
     readonly details: string;

@@ -579,6 +579,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     appearance: 'APPEARANCE',
     auto: 'AUTO',
     sound: 'SOUND',
+    soundOn: 'Sound is on. Tap to mute.',
+    soundOff: 'Sound is off. Tap for sound.',
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     howToPlay: 'HOW TO PLAY',

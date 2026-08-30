@@ -1876,10 +1876,28 @@ somebody leaving and is left alone. On Android, BACK with the manual open used
 to leave the site — the worst thing this game does to a stranger who opens the
 rules.
 
+**Fifteen. The catalogue promised a button that did not exist.** `ui.sound`'s
+own note reads, in both languages, _"the ♪ button on the board is this
+switch"_ — and there was no such button. Ashwake 1 has carried it by the camera
+since 2026-08-20, on Marc's launch call (_"a way to toggle on/off easily"_);
+this body kept the sentence and dropped the control, so sound lived only in
+SETTINGS, three taps and a panel away, which is not where anybody mutes a game
+in a quiet room. It is back, and it is the SAME WIRE as the settings switch —
+one flag, written once, read by both, because two surfaces for one setting is
+how they come to disagree. The tap that turns sound on is also the user gesture
+every browser wants before audio may exist, spent on one note that confirms
+itself; turning it off gives the context back rather than muting it.
+
+**And the two doors nothing could address.** The manual's MENU tab is the only
+way from a live board into SETTINGS or MORE, and its two buttons were the only
+doors in the game with no `data-go` — so nothing had ever walked that path, in
+any test, which is why the missing ♪ survived a matrix that lists it. **A
+control a test cannot address is a control no test addresses.**
+
 **Nothing here changes a rule.** `pnpm sim` is byte-identical to
 `sim.golden.txt` and the freeze before Session A holds in the sense that
 matters: the first minute is the same game, told better.
 
-**Verified:** 1060 tests / 74 files, 75 Playwright, `pnpm sim` byte-identical,
+**Verified:** 1060 tests / 74 files, 76 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-five screens × four directions.
