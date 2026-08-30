@@ -63,6 +63,8 @@
   --tap: 44px;
   --radius: 8px;
   --fade: 140ms;
+  /* The column a section's mark hangs in, and the legend's first column. */
+  --mark-col: 1.6rem;
 }
 
 * {
@@ -353,6 +355,50 @@ button[disabled] {
 
 .card p {
   margin: 0;
+}
+
+/*
+ * A section heading keeps its mark in a column of its own (2026-08-30).
+ *
+ * Marc: *"make sure all indentation is good."* A lesson wears its mark in its
+ * heading where it has one, and half of them do — so POCKET started at the
+ * margin and BOUNTY started an icon's width in, down a page of sections that
+ * were supposed to read as a list. The column is reserved whether or not
+ * anything is in it, which is the same rule the legend rows below already
+ * follow and the reason their names line up.
+ */
+.panel-title.marked {
+  display: grid;
+  grid-template-columns: var(--mark-col) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.4rem;
+  /* Hung into the gutter the section indents by, so the heading's TEXT starts
+     where its prose starts. Without this the mark pushed the title right and
+     every heading was indented past its own paragraph. */
+  margin-left: calc((var(--mark-col) + 0.4rem) * -1);
+}
+
+/*
+ * A section hangs its mark and lines everything else up behind it.
+ *
+ * Marc, 2026-08-30: *"make sure all indentation is good."* Two things were
+ * ragged. Half the lessons carry a mark and half do not, so POCKET began at
+ * the margin and BOUNTY an icon's width in. And a marked heading was indented
+ * past its own body text, which reads as an accident rather than as a hang.
+ *
+ * One column for the mark, reserved whether or not anything is in it, and the
+ * section's whole content indented behind it — so the marks make a column down
+ * the page and every word in a section shares one left edge. It is the same
+ * shape the legend rows below already have, which is why the two now scan as
+ * one page rather than two.
+ */
+.panel-body > section {
+  padding-left: calc(var(--mark-col) + 0.4rem);
+}
+
+/* The legend is its own list and already indents; it must not indent twice. */
+.panel-body > section.legend {
+  padding-left: 0;
 }
 
 /* ---- tabs --------------------------------------------------------------- */
@@ -833,6 +879,31 @@ button[disabled] {
   color: var(--ink-faint);
 }
 
+/*
+ * The stash figure draws the REAL cards (2026-08-30).
+ *
+ * `FigureCards` hand-rolled its own spans in the terrain fill, beside a hand
+ * that draws a baked hex with its mark and its name — two pictures of one
+ * thing, and the one in the manual was the one nobody had looked at since the
+ * hand was rebuilt. It renders `Tile` now, which is a flex child sized by the
+ * hand's grid; here there is no grid, so the row gives each card a width and
+ * the hand's own minimum height.
+ */
+.figure-cards {
+  display: flex;
+  gap: 0.35rem;
+  align-items: stretch;
+}
+
+.figure-cards > .tile {
+  /* `Tile` carries `flex: 1 1 0` for the hand's grid, which here made the two
+     real cards grow to fill the row while the dashed slot beside them did not.
+     A figure is a picture, so the cards are the size they would be in a hand. */
+  flex: 0 0 4.6rem;
+  min-height: 3.4rem;
+  padding: 0.3rem 0.2rem;
+}
+
 /* ---- the hand and the bar ----------------------------------------------- */
 
 /*
@@ -855,10 +926,20 @@ button[disabled] {
   gap: 0.35rem;
 }
 
-.hand > button {
+.hand > button,
+.hand > .tile {
   min-height: 3.4rem;
   padding: 0.3rem 0.2rem;
 }
+
+/*
+ * `Tile` carried `flex: 1 1 0` as an inline style until 2026-08-30, where it
+ * did nothing at all: `.hand` is a GRID, and a grid item ignores flex. It only
+ * ever took effect in the manual's STASH figure — a flex row — where it made
+ * the two real cards grow to fill the width while the dashed slot beside them
+ * stayed put. An inline style also beats every rule a stylesheet can write, so
+ * the figure could not correct it. Removed rather than moved: nothing needs it.
+ */
 
 /*
  * The draft card's label wears the board's halo (2026-08-29).
@@ -1413,7 +1494,7 @@ button[disabled] {
 
 .legend li {
   display: grid;
-  grid-template-columns: 1.6rem 1.6rem minmax(0, 1fr);
+  grid-template-columns: var(--mark-col) var(--mark-col) minmax(0, 1fr);
   align-items: center;
   gap: 0.4rem;
 }
@@ -1453,17 +1534,23 @@ button[disabled] {
   text-align: center;
 }
 
+/*
+ * A swatch is a HEX, drawn (2026-08-30).
+ *
+ * It was a 1.4rem rounded square of the terrain's flat fill, and an edge was
+ * the same square with a border. The board draws neither: a ground is a baked,
+ * textured hex and an edge is a ring around one. `GroundSwatch` draws both
+ * from `corners()`, so the shape here follows the direction's facing and the
+ * texture is the very PNG the board composites — Marc: "in how to play we
+ * reuse the same visuals as in game for all."
+ *
+ * `.legend-edge` went with the square: a ring is a property of the drawing
+ * now, not a border on a box.
+ */
 .legend-swatch {
+  display: block;
   width: 1.4rem;
   height: 1.4rem;
-  border-radius: 0.25rem;
-  display: block;
-}
-
-/* An EDGE is a border, not a fill — the board draws it that way too. */
-.legend-edge {
-  background: transparent;
-  border: 2px solid;
 }
 
 /*

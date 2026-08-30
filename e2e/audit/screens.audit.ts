@@ -129,6 +129,7 @@ const SCREENS: readonly Screen[] = [
    */
   { name: 'manual-play', query: FRESH, reach: viaTab('play') },
   { name: 'manual-expedition', query: FRESH, reach: viaTab('start') },
+  { name: 'manual-hand', query: FRESH, reach: viaTab('hand') },
   { name: 'settings', query: FRESH, reach: open('[data-door="settings"]') },
   { name: 'more', query: FRESH, reach: open('[data-door="more"]') },
   { name: 'more-played', query: PLAYED, reach: viaMore('shop') },

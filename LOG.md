@@ -2033,3 +2033,75 @@ typecheck/lint/format/build clean, `pnpm bake` runs end to end and
 `icons.gen.ts` is formatted by the project's own Prettier so a re-bake leaves
 the tree clean. `pnpm audit:screens` regenerated: 156 findings, down from 162,
 the six being the characters that are words now.
+
+### Session 24 — the manual stops drawing its own pictures (2026-08-30)
+
+**Question:** Marc: _"in how to play we reuse the same visuals as in game for
+all"_, and _"make sure all indentation is good"_. How much of the manual was a
+second-hand copy of something the game already draws?
+
+**Answer: all four of its picture kinds, and it had been written down.** This
+file's own `Figure` docblock has said since Stage 3 that Ashwake 1 drew its
+figures from the BAKED tile art and that this one would "when the asset book
+reaches the chrome" — which happened on 2026-08-30, for the hand's cards, and
+the figures were not revisited. So the manual drew:
+
+- a GROUND as a rounded square of `theme.terrain[c].fill`, beside a board that
+  draws a textured hex;
+- an EDGE as a square with a border, beside a board that draws a ring;
+- a FIGURE's hexes as flat polygons, beside the same;
+- and the STASH figure's cards as hand-rolled spans, beside a hand that draws a
+  baked hex with its mark and its name on it — **two pictures of one thing, and
+  the one in the manual was the one nobody had looked at since the hand was
+  rebuilt.**
+
+**Every one of them is the game's own picture now.** `useGroundArt` extends the
+hand's art hook to all six grounds (the four terrains plus STONE and WALL,
+which the legend names and the board draws). `GroundSwatch` draws a hex from
+the same `corners()` the board and the figures use, at the direction's own
+facing, clipped over the very PNG the board composites. `Figure` fills each hex
+the same way and falls back to the flat fill where a direction has none baked.
+`FigureCards` renders `Tile` — the hand's own component — so the card in the
+lesson is the card under your thumb, dashed HOLD slot included.
+
+**The pin is IDENTITY rather than resemblance** (`e2e/menus.spec.ts`): every
+file the hand's cards point at must be a file the legend's swatches point at.
+Anything weaker passes while the two drift, which is exactly what happened.
+
+**A card with nothing to do stopped being a button.** `Tile` is a `<button>`,
+and the manual's rule since 2026-08-29 is that nothing in it is tappable — so
+the figure's cards were three tab stops that did nothing on the one screen that
+forbids them. No `onPick` means no button: same class, same CSS, a picture with
+a name.
+
+**And two things fell out of looking.**
+
+**Twenty. `Tile` carried `flex: 1 1 0` as an INLINE style, where it did
+nothing.** `.hand` is a grid and a grid item ignores flex; the declaration only
+ever took effect in the manual's new figure — a flex row — where it made the two
+real cards grow while the dashed slot beside them stayed put. An inline style
+also beats every rule a stylesheet can write, so the figure could not correct
+it. Removed rather than moved: nothing needs it.
+
+**Twenty-one. MAGIC and UNIQUE drew the same figure twice, a paragraph apart.**
+They share it by design — `lessons.ts` gives them the same shared sentence for
+the same reason, and the caption reads "magic, then unique", so it is one
+picture about a PAIR. A figure is claimed by the first lesson on a tab that
+carries it now; the rest read under the picture already above them. Tracked in
+the manual rather than in the registry, because it is a fact about a PAGE: a
+teaching card shows the same figure and should.
+
+**INDENTATION, and it was two faults.** Half the lessons carry a mark and half
+do not, so POCKET began at the margin and BOUNTY an icon's width in, down a
+page of sections meant to read as one list. And a marked heading was indented
+past its own body text, which reads as an accident rather than as a hang. Both
+are one rule now: a section reserves a mark column whether or not it fills it,
+HANGS the mark in it, and indents everything else behind — so the marks make a
+column down the page and every word in a section shares one left edge. Pinned
+by measuring the left edge of every heading, paragraph and caption on a tab and
+asserting there is exactly one.
+
+**Verified:** 1066 tests / 74 files, 78 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
+twenty-six screens × four directions — the manual's HAND tab is photographed
+now too, which is how the duplicated figure was seen at all.

@@ -4,7 +4,45 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — the marks stop being a request and become
+Last checkpoint: **2026-08-30, last — the manual stops drawing its own
+pictures.** Marc: _"in how to play we reuse the same visuals as in game for
+all"_, and _"make sure all indentation is good."_
+
+**All four of the manual's picture kinds were second-hand**, and this had been
+written down: `Figure`'s own docblock has said since Stage 3 that Ashwake 1
+drew its figures from the BAKED tile art and that this one would "when the
+asset book reaches the chrome" — which happened for the hand's cards and never
+came back here. A ground was a rounded square of the flat fill, an edge a
+square with a border, a figure's hexes flat polygons, and the STASH figure's
+cards hand-rolled spans beside a hand that draws a baked hex with its mark and
+name on it. Every one of them is the game's own picture now: `useGroundArt`
+covers all six grounds, `GroundSwatch` and `Figure` clip the board's PNG into a
+hex from the same `corners()` the board uses, and `FigureCards` renders `Tile`
+itself. **The pin is IDENTITY** — every file the hand points at must be a file
+the legend points at — because anything weaker passes while the two drift.
+
+**Three things fell out of looking.** A card with nothing to do stopped being a
+button, on the one screen whose rule is that nothing in it is tappable.
+`Tile`'s inline `flex: 1 1 0` did NOTHING in the hand (a grid item ignores
+flex) and only ever took effect in the new figure, where it made two cards grow
+and an inline style beat every rule that could have corrected it. And MAGIC and
+UNIQUE drew the same figure twice a paragraph apart — they share it by design,
+so a figure is claimed by the first lesson on a tab that carries it.
+
+**Indentation was two faults, now one rule.** Half the lessons carry a mark, so
+POCKET began at the margin and BOUNTY an icon's width in; and a marked heading
+was indented past its own prose. A section reserves the mark column whether or
+not it fills it, hangs the mark in it, and indents everything else behind — so
+the marks make a column down the page and every word in a section shares one
+left edge. Pinned by measuring every heading, paragraph and caption on a tab
+and asserting one edge.
+
+Verified: 1066 tests / 74 files, 78 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` across twenty-six
+screens × four directions — the manual's HAND tab is photographed now too,
+which is how the duplicated figure was seen at all.
+
+Previous checkpoint: **2026-08-30, last — the marks stop being a request and become
 a shape.** Marc: _"no emojis only phosphor icons or assets."_ Every mark this
 game drew was a Unicode character, and a character is a REQUEST for a shape:
 what answers it is the font stack. **The board was asking `cinzel.ttf` — a face

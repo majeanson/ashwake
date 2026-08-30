@@ -91,6 +91,87 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('the manual draws the game’s own pictures, and lines them all up', async ({ page }) => {
+  /*
+   * Marc, 2026-08-30: *"in how to play we reuse the same visuals as in game for
+   * all"*, and *"make sure all indentation is good."*
+   *
+   * The manual drew a ground as a rounded SQUARE of the terrain's flat fill,
+   * its figures as flat polygons, and its STASH figure as hand-rolled spans —
+   * three second-hand copies of things the board and the hand already draw. A
+   * legend whose alphabet is in a different hand from the board's is teaching a
+   * second alphabet.
+   *
+   * The pin is IDENTITY, not resemblance: the file a legend swatch points at
+   * must be the file the hand's own card points at. Anything weaker passes
+   * while the two drift.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&seed=7&place=12');
+  await begin(page);
+  await page.waitForTimeout(800);
+
+  // What the HAND draws, which is the board's own baked art.
+  const inHand = await page
+    .locator('.hand .tile-art')
+    .evaluateAll((els) => els.map((el) => (el as HTMLImageElement).getAttribute('src')));
+  expect(inHand.length, 'the hand draws no baked tile').toBeGreaterThan(0);
+
+  await page.locator('.camera .help').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+  await page.locator('[data-tab="play"]').click();
+  await page.waitForTimeout(800);
+
+  // What the LEGEND draws. Same files, plus the two grounds the hand never
+  // holds: a legend names STONE and WALL and the board draws both.
+  const inLegend = await page
+    .locator('.legend-swatch image')
+    .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+  expect(inLegend.length, 'the legend draws no baked ground').toBeGreaterThan(0);
+  for (const src of inHand) {
+    expect(inLegend, `the legend does not draw ${src}, which the hand does`).toContain(src);
+  }
+  expect(
+    inLegend.some((h) => h?.includes('terrain.stone')),
+    'no baked stone',
+  ).toBe(true);
+  expect(
+    inLegend.some((h) => h?.includes('terrain.wall')),
+    'no baked wall',
+  ).toBe(true);
+
+  // And a FIGURE fills its hexes with the same art rather than a flat colour.
+  await page.locator('[data-tab="start"]').click();
+  await page.waitForTimeout(800);
+  const inFigure = await page
+    .locator('figure svg image')
+    .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+  expect(inFigure.length, 'a figure draws no baked ground').toBeGreaterThan(0);
+  for (const src of inFigure) {
+    expect(src, 'a figure drew something that is not a terrain slot').toMatch(/terrain\./);
+  }
+
+  /*
+   * INDENTATION. Every section on a tab starts at one left edge: the heading's
+   * text, its prose, its figure and its caption. Half the lessons carry a mark
+   * and half do not, so before this the marked ones were indented past their
+   * own paragraphs and the markless ones sat at the margin.
+   */
+  const edges = await page.locator('[data-panel="manual"] section').evaluateAll((sections) =>
+    sections.flatMap((section) => {
+      const bits = section.querySelectorAll<HTMLElement>('h2 > span:last-child, p, figcaption');
+      return [...bits].map((el) => Math.round(el.getBoundingClientRect().left));
+    }),
+  );
+  expect(edges.length, 'the tab has no sections').toBeGreaterThan(3);
+  expect(
+    new Set(edges).size,
+    `the manual is ragged: left edges ${[...new Set(edges)].join(', ')}`,
+  ).toBe(1);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('every mark on every screen is drawn, not typed', async ({ page }) => {
   /*
    * `DECISIONS.md` D10 (2026-08-30). Marc: *"no emojis only phosphor icons or

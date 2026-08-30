@@ -1,18 +1,20 @@
 import { COLOURS, TUNING } from '@content/tuning';
 import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON } from '@theme/icons';
-import { hex, namesOf, type Theme } from '@theme/tokens';
-import { Icon } from '../ui/Icon';
+import { namesOf, type Theme } from '@theme/tokens';
 import { LESSON_FOR_REWARD, lessonDefine, lessonName, lessonOf } from '@view/lessons';
 import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
+import { useGroundArt } from '../shell/art';
+import { GroundSwatch } from '../ui/GroundSwatch';
+import { Icon } from '../ui/Icon';
 
 /**
  * Every mark the board can show you, and what it means (Stage 5, 2026-08-29).
  *
  * Marc's ask: *"adding visuals and assets and symbols in the how to play"*.
  * The manual explains the RULES well and had never once shown the alphabet
- * they are written in — a player meets `◈` on a hex and the only way to learn
- * it is to tap that hex, which requires already having walked to it.
+ * they are written in — a player meets a mark on a hex and the only way to
+ * learn it is to tap that hex, which requires already having walked to it.
  *
  * **Nothing here invents a mark.** Every icon is read from the registry that
  * owns it — `COLOUR_ICON`, `LANDMARK_ICON`, `TILE_ICON` — and every name and
@@ -34,12 +36,17 @@ import type { Strings } from '@text/Strings';
  * own definition. The four sections are gone from `Manual`'s PLAY tab, and
  * nothing was rewritten to do it — `lessonDefine` is the same function those
  * sections were printing, so there is still exactly one place each of these
- * sentences lives. STONE moved the same way and for the same reason; its row
- * used to carry a hand-shortened copy of the STONE lesson (`ui.legendStone`,
- * now deleted) rather than the lesson.
+ * sentences lives. STONE moved the same way and for the same reason.
  *
- * The colour swatches are the direction's real terrain fills, so the legend
- * repaints with the board when a direction changes.
+ * ## And the pictures are the board's own (2026-08-30)
+ *
+ * Marc: *"in how to play we reuse the same visuals as in game for all."* A
+ * ground was a rounded SQUARE of the terrain's flat fill, and an edge was a
+ * square with a border — neither of which the board draws. Every swatch here
+ * is a HEX now, at the direction's own facing, filled with the very PNG the
+ * board composites into that ground (`GroundSwatch`); the two edge rows draw
+ * a ring the way the board rings a hex. The legend has always repainted with
+ * the board when a direction changes, and now it does so in the board's hand.
  */
 
 /** The five destinations, and the lesson that names and explains each. */
@@ -54,6 +61,7 @@ export type LegendProps = {
 
 export function Legend({ theme, s }: LegendProps) {
   const names = namesOf(theme, s.locale);
+  const art = useGroundArt(theme.id);
   const stone = lessonOf('stone');
 
   return (
@@ -62,11 +70,7 @@ export function Legend({ theme, s }: LegendProps) {
       <ul>
         {COLOURS.map((colour) => (
           <li key={colour} className="tall">
-            <span
-              className="legend-swatch"
-              aria-hidden="true"
-              style={{ background: hex(theme.terrain[colour].fill) }}
-            />
+            <GroundSwatch theme={theme} ground={colour} art={art} />
             <span className="legend-mark" aria-hidden="true">
               <Icon name={COLOUR_ICON[colour]} />
             </span>
@@ -133,11 +137,7 @@ export function Legend({ theme, s }: LegendProps) {
           <span className="legend-name">{s.ui.legendRare}</span>
         </li>
         <li className="tall">
-          <span
-            className="legend-swatch"
-            aria-hidden="true"
-            style={{ background: hex(theme.stone.fill) }}
-          />
+          <GroundSwatch theme={theme} ground="stone" art={art} />
           <span className="legend-mark" aria-hidden="true">
             <Icon name={CONCEPT_ICON.stone} />
           </span>
@@ -151,11 +151,7 @@ export function Legend({ theme, s }: LegendProps) {
           </span>
         </li>
         <li>
-          <span
-            className="legend-swatch"
-            aria-hidden="true"
-            style={{ background: hex(theme.wall.fill) }}
-          />
+          <GroundSwatch theme={theme} ground="wall" art={art} />
           {/* The mark the board prints on a wall, so the legend teaches the
               same thing the board shows. Stone beside it carries its own mark
               for the same reason. */}
@@ -164,20 +160,14 @@ export function Legend({ theme, s }: LegendProps) {
           </span>
           <span className="legend-name">{s.ui.legendWall}</span>
         </li>
+        {/* The two rows that are about an EDGE rather than a ground: a ring
+            around a hex, which is exactly what the board draws around one. */}
         <li>
-          <span
-            className="legend-swatch legend-edge"
-            aria-hidden="true"
-            style={{ borderColor: hex(theme.board.ripeEdge) }}
-          />
+          <GroundSwatch theme={theme} ring={theme.board.ripeEdge} />
           <span className="legend-name">{s.ui.legendRipe}</span>
         </li>
         <li>
-          <span
-            className="legend-swatch legend-edge"
-            aria-hidden="true"
-            style={{ borderColor: hex(theme.board.legalEdge) }}
-          />
+          <GroundSwatch theme={theme} ring={theme.board.legalEdge} />
           <span className="legend-name">{s.ui.legendLegal}</span>
         </li>
       </ul>

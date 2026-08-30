@@ -33,6 +33,13 @@ import type { Strings } from '@text/Strings';
  * one channel left that says "this one" without taking a channel that already
  * means something else.
  *
+ * **A card with nothing to do is not a button** (2026-08-30). The manual draws
+ * real cards in its STASH figure — Marc: *"in how to play we reuse the same
+ * visuals as in game for all"* — and a `<button>` there would be a tab stop
+ * that does nothing, on the one screen whose standing rule is that nothing in
+ * it is tappable. No `onPick` means no button: same markup, same CSS, drawn as
+ * a picture with a name.
+ *
  * **And where the direction has baked art, the card IS the tile** (2026-08-30,
  * Marc: *"I also liked the tile card we had having the tile itself"*). Ashwake
  * 1 put the baked hex on the card — the same PNG the board composites into the
@@ -76,18 +83,21 @@ export function Tile({
   const fill = hex(theme.terrain[colour].fill);
   const rare = rarity !== 'common';
   const hasArt = art !== null && art !== undefined && art !== '';
+  // A card the player can act on is a button; a card in a diagram is a
+  // picture. Same class, same style, so the two cannot drift apart.
+  const Box = onPick === undefined ? 'span' : 'button';
   return (
-    <button
-      type="button"
+    <Box
+      {...(onPick === undefined
+        ? { role: 'img', 'aria-label': name }
+        : { type: 'button' as const, 'aria-pressed': selected === true, onClick: onPick })}
       className={hasArt ? 'tile has-art' : 'tile'}
       data-colour={colour}
       data-rarity={rarity}
       // The label is haloed rather than re-coloured — see `.tile` in ui.css.
       // The audit cannot measure a halo, so it is told the halo is there.
       data-audit-halo=""
-      aria-pressed={selected === true}
       {...(slot === undefined ? {} : { 'data-hold': slot, 'aria-label': s.ui.holdSwap(name) })}
-      onClick={onPick}
       onContextMenu={
         onLens === undefined
           ? undefined
@@ -140,7 +150,6 @@ export function Tile({
         fontFamily: 'var(--font-label)',
         letterSpacing: 'var(--label-tracking)',
         fontSize: '0.8rem',
-        flex: '1 1 0',
       }}
     >
       {hasArt && (
@@ -166,6 +175,6 @@ export function Tile({
           {s.figure.held}
         </span>
       )}
-    </button>
+    </Box>
   );
 }

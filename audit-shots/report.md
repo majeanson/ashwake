@@ -1,6 +1,6 @@
 # Screen audit
 
-156 findings across 25 screens × 4 directions,
+156 findings across 26 screens × 4 directions,
 at 390×844. Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,
 no horizontal page scroll, no clipped text.
 

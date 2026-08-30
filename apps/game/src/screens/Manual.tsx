@@ -10,6 +10,7 @@ import {
   type Lesson,
   type LessonId,
 } from '@view/lessons';
+import type { FigureId } from '@view/figure';
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
@@ -85,6 +86,27 @@ const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
 
+/**
+ * The lessons of one tab, each with the figure it should actually draw.
+ *
+ * A figure is claimed by the FIRST lesson on the tab that carries it; every
+ * lesson after gets `null` and reads under the picture already there.
+ */
+function drawnOnce(
+  ids: readonly LessonId[],
+): readonly { id: LessonId; lesson: Lesson; figure: FigureId | null }[] {
+  const drawn = new Set<FigureId>();
+  const out: { id: LessonId; lesson: Lesson; figure: FigureId | null }[] = [];
+  for (const id of ids) {
+    const lesson = LESSONS.find((l) => l.id === id);
+    if (lesson === undefined) continue;
+    const figure = lesson.figure !== undefined && !drawn.has(lesson.figure) ? lesson.figure : null;
+    if (figure !== null) drawn.add(figure);
+    out.push({ id, lesson, figure });
+  }
+  return out;
+}
+
 export type ManualProps = {
   readonly theme: Theme;
   readonly s: Strings;
@@ -142,7 +164,10 @@ export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
       */}
       {on === 'start' && (
         <section>
-          <h2 className="panel-title">{s.ui.expedition.title}</h2>
+          <h2 className="panel-title marked">
+            <span className="card-glyph" aria-hidden="true" />
+            <span>{s.ui.expedition.title}</span>
+          </h2>
           {s.ui.expedition.lines.map((line) => (
             <p key={line}>{line}</p>
           ))}
@@ -163,7 +188,10 @@ export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
       */}
       {on === 'start' && keyboard === true && (
         <section>
-          <h2 className="panel-title">{s.ui.board.keys.title}</h2>
+          <h2 className="panel-title marked">
+            <span className="card-glyph" aria-hidden="true" />
+            <span>{s.ui.board.keys.title}</span>
+          </h2>
           <ul className="keys">
             {KEY_LINES.map((id) => (
               <li key={id}>{s.ui.board.keys[id]}</li>
@@ -174,12 +202,22 @@ export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
 
       {on === 'menu'
         ? menu
-        : SECTIONS[on].map((id) => {
-            const lesson = LESSONS.find((l) => l.id === id);
-            return lesson === undefined ? null : (
-              <Section key={id} lesson={lesson} theme={theme} s={s} />
-            );
-          })}
+        : /*
+             One picture per tab, however many lessons share it (2026-08-30).
+
+             MAGIC and UNIQUE carry the same figure BY DESIGN — `lessons.ts`
+             gives them the same shared sentence for the same reason — and its
+             caption says "magic, then unique", so it is one picture about a
+             pair. The HAND tab drew it twice, identical, a paragraph apart.
+
+             The first lesson to want a figure gets it; the ones after read the
+             text with the picture already above them. Tracked here rather than
+             in the registry because it is a fact about a PAGE, not about a
+             lesson: a teaching card shows the same figure and should.
+           */
+          drawnOnce(SECTIONS[on]).map(({ id, lesson, figure }) => (
+            <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
+          ))}
     </Panel>
   );
 }
@@ -203,10 +241,14 @@ export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
  */
 function Section({
   lesson,
+  figure,
   theme,
   s,
 }: {
   readonly lesson: Lesson;
+  /** The figure to draw under this section, or null where a section above it
+   *  on this tab has already drawn the same one. */
+  readonly figure: FigureId | null;
   readonly theme: Theme;
   readonly s: Strings;
 }) {
@@ -218,20 +260,26 @@ function Section({
 
   return (
     <section>
-      {/* The heading wears the lesson's own mark, where it has one: a rule
-          about a thing you can SEE on the board should be findable by that
-          thing. The mark comes from the lesson, which reads it from a
-          registry — nothing here picks a shape. */}
-      <h2 className="panel-title">
-        {lesson.icon !== undefined && (
-          <span className="card-glyph" aria-hidden="true">
-            <Icon name={lesson.icon} />{' '}
-          </span>
-        )}
-        {lessonName(lesson, s)}
+      {/*
+        The heading wears the lesson's own mark, where it has one: a rule about
+        a thing you can SEE on the board should be findable by that thing. The
+        mark comes from the lesson, which reads it from a registry — nothing
+        here picks a shape.
+
+        The COLUMN is reserved either way (2026-08-30, Marc: "make sure all
+        indentation is good"). Half the lessons carry a mark and half do not,
+        so POCKET began at the margin and BOUNTY an icon's width in, down a
+        page of sections meant to read as one list. `.panel-title.marked` is a
+        two-column grid whether or not the first column has anything in it.
+      */}
+      <h2 className="panel-title marked">
+        <span className="card-glyph" aria-hidden="true">
+          {lesson.icon !== undefined && <Icon name={lesson.icon} />}
+        </span>
+        <span>{lessonName(lesson, s)}</span>
       </h2>
       <ProseLines text={lines.join('\n')} s={s} />
-      {lesson.figure !== undefined && <Figure id={lesson.figure} theme={theme} s={s} caption />}
+      {figure !== null && <Figure id={figure} theme={theme} s={s} caption />}
       {detail.length > 0 && (
         <Fold summary={s.ui.details}>
           <ProseLines text={detail.join('\n')} s={s} />

@@ -80,9 +80,42 @@ export function useArtSlot(themeId: ThemeId, slot: AssetId): string | null {
  * art — the card keeps its drawn version and simply gets better.
  */
 export function useTerrainArt(themeId: ThemeId): Readonly<Record<Colour, string | null>> {
+  const ground = useGroundArt(themeId);
+  return useMemo(
+    () => ({ green: ground.green, yellow: ground.yellow, red: ground.red, blue: ground.blue }),
+    [ground],
+  );
+}
+
+/** Every ground a player can be shown, including the two that are never
+ *  playable. `GroundArt` is keyed the way `FigCell.ground` is, so a figure and
+ *  a legend row ask for their picture the same way. */
+export type GroundArt = Readonly<Record<Colour | 'stone' | 'wall', string | null>>;
+
+/**
+ * The baked hex for every ground (2026-08-30).
+ *
+ * Marc: *"in how to play we reuse the same visuals as in game for all."* The
+ * manual drew its grounds as flat rectangles of `theme.terrain[c].fill` while
+ * the board drew the same grounds as baked, textured hexes — so the legend was
+ * teaching an alphabet in a typeface the game does not use. STONE and WALL are
+ * here for the same reason: the legend names them, the board draws them, and
+ * they had the same flat square standing in.
+ *
+ * Six fixed `useArtSlot` calls rather than a loop, for the reason
+ * `useTerrainArt` had four: hooks are positional, and the grounds are a closed
+ * set. Null per ground where nothing is baked, which is the ordinary state and
+ * why every caller keeps its drawn fallback.
+ */
+export function useGroundArt(themeId: ThemeId): GroundArt {
   const green = useArtSlot(themeId, 'terrain.green');
   const yellow = useArtSlot(themeId, 'terrain.yellow');
   const red = useArtSlot(themeId, 'terrain.red');
   const blue = useArtSlot(themeId, 'terrain.blue');
-  return useMemo(() => ({ green, yellow, red, blue }), [green, yellow, red, blue]);
+  const stone = useArtSlot(themeId, 'terrain.stone');
+  const wall = useArtSlot(themeId, 'terrain.wall');
+  return useMemo(
+    () => ({ green, yellow, red, blue, stone, wall }),
+    [green, yellow, red, blue, stone, wall],
+  );
 }
