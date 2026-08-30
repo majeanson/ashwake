@@ -17,16 +17,15 @@ purse and the shop are one arithmetic — earned per run, then spent through
 because thirty runs is the only point at which the shop has rows on both sides
 of the affordable line.
 
-**It found seven more inert numbers, three of them by turning on itself, and
-one of those in a SCREENSHOT rather than in the code.** The
+**It found eight more inert numbers, four of them by turning on itself, and two
+of those in a SCREENSHOT rather than in the code.** The
 SURVEY paid nothing — `Goal.reward`, 25 to 40 relics across five goals, had no
 consumer anywhere, so a milestone was detected, written into `goalsMet`, listed
 on the end screen and never banked. A found PERK never reached
 `WorldMemory.perks`, so it died on the next reload and `economyFor` never saw
 one, which means the dials a worn perk sets were never set. `mergeRun` had **no
-caller**, so world memory was written only at `settle`, a closed tab lost the
-territory just claimed, and the end screen's list of what a run UNLOCKED was
-always empty because it read a disk nothing had updated. `?taught=1` handed
+caller**, so world memory was written only at `settle` and a closed tab lost the
+territory just claimed. `?taught=1` handed
 `useDevice` a whole `Progress` built on `EMPTY_PROGRESS`, so the
 three-hundred-run shop photographed `0` relics — the exact picture the axis was
 built to make impossible. And **the audit's own PLAYED device had stopped being
@@ -35,8 +34,11 @@ so it banked nothing, stayed virgin, and three tests timed out and silently kept
 the previous run's screenshots. And the ATLAS read `FINDS 6/5` on the
 three-hundred-run world, counting find hexes against the size of the perk pool —
 two different things wearing one slash, both expressions correct on their own,
-and reachable in ordinary play. All seven fixed, each with a test that asks
-whether a NUMBER moves.
+and reachable in ordinary play. And the END SCREEN said BOTH halves of one bug:
+its list of what a run unlocked was always empty, because it read a disk nothing
+had updated — and on the FIRST run of a page it said the opposite, claiming a
+returning player had just woken every shrine their world already held. All eight
+fixed, each with a test that asks whether a NUMBER moves.
 
 **CAMPS crossed** — the last piece of world memory that had not. BEGIN AT CAMP
 lives in the WORLDS panel, `campFor` carries Ashwake 1's conditions verbatim,
@@ -49,7 +51,7 @@ Two smaller findings on the way past: RESET TEACHING was resetting the whole
 ledger including the relic purse, and a detour or daily could grant a perk with
 nowhere to write it.
 
-Verified: 1059 tests / 74 files, 67 Playwright, `pnpm sim` byte-identical,
+Verified: 1059 tests / 74 files, 68 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean. **Nothing that changes the first minute
 shipped** — the freeze before Session A holds.
 

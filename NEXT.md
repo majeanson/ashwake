@@ -70,10 +70,10 @@ pin both halves. `camp` is still deliberately absent from `applyUnlocks`: it
 gates a door rather than a dial, and `economy.test.ts` pins that too so a later
 reading of "the fifth unlock does nothing" does not become a bug report.
 
-**SEVEN MORE INERT NUMBERS, found by building the instrument that could see
+**EIGHT MORE INERT NUMBERS, found by building the instrument that could see
 them** (2026-08-30, `LOG.md` Session 21). All fixed; recorded here because they
-are the strongest case yet for this file's own warning, and because three of them
-were found by the instrument rather than by a grep — one of them in a SHOT:
+are the strongest case yet for this file's own warning, and because four of them
+were found by the instrument rather than by a grep — two of those in a SHOT:
 
 1. **The survey paid nothing.** `Goal.reward` — 25 to 40 relics a goal, five
    goals — had no consumer anywhere. Detected, written into `goalsMet`, listed
@@ -110,6 +110,15 @@ were found by the instrument rather than by a grep — one of them in a SHOT:
    always equalled `unlocksAtStart`. The WOKE toast fired (it comes from the
    receipts, which read the run's own state); the end screen's summary of what
    the run CHANGED did not. It reads the live copy now.
+8. **And then the SAME list said the opposite**, on the first run of a page:
+   `perksAtStart`/`unlocksAtStart` were set by every door into a run except the
+   one the page opens on — BEGIN on the front door, and `?end=1` before React
+   mounts — so that run measured its gains against empty lists and told a
+   returning player they had just woken every shrine and found every perk their
+   world already held. Invisible on a fresh device, where empty IS the right
+   answer, which is how it survived. The three refs are one lazily-initialised
+   object now (`startedFrom`), and `e2e/world.spec.ts` pins it. **Also found in
+   a shot** — `end-many`, in all four directions.
 
 **THE SWEEP, item by item, so nobody has to re-derive it.** Every reward number
 `NEXT.md` listed, and where the test that watches it lives:

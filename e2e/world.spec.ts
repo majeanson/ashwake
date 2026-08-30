@@ -90,6 +90,33 @@ test('a fully-awake world offers BEGIN AT CAMP, and camping wakes out there', as
   expect(errors).toEqual([]);
 });
 
+test('a run that gains nothing says it gained nothing', async ({ page }) => {
+  const errors = watchErrors(page);
+  /*
+   * The first run of a PAGE, in a world that already holds everything.
+   *
+   * `perksAtStart` and `unlocksAtStart` were set by every door into a run
+   * except the one the page opens on — BEGIN on the front door, or `?end=1`
+   * before React has mounted — so that run measured its gains against empty
+   * lists and the end screen told a returning player they had just woken every
+   * shrine and found every perk their world already held. Invisible on a fresh
+   * device, where empty IS the right answer, which is how it survived; found
+   * in the audit's `end-many` shot, which is what the fixture axis is for.
+   */
+  await page.goto('/?taught=1&runs=300&end=1');
+  await begin(page);
+  await expect(page.locator('[data-hud="end"]')).toHaveCount(1);
+
+  // The block only renders when something was gained, so its absence IS the
+  // assertion — and its presence would name five shrines this run did not wake.
+  await expect(
+    page.locator('[data-hud="gained"]'),
+    'a run in a finished world claimed it had just unlocked the world',
+  ).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('a world three hundred runs deep does not look like a fresh one', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?taught=1&runs=300');

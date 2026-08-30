@@ -231,15 +231,63 @@ function Game() {
    *  diary row. Held rather than re-captured: the board keeps playing. */
   const [shot, setShot] = useState<string | null>(null);
   /**
-   * What this run CHANGED — perks found, shrine unlocks woken.
+   * WHAT THIS RUN STARTED FROM — the three ledgers its gains are measured
+   * against.
    *
    * Captured at the moment a run BEGINS, because "new" is a difference and the
-   * ledgers have already moved on by the time the end screen renders. Refs
+   * ledgers have already moved on by the time the end screen renders. A ref
    * rather than state: nothing renders from the starting values, only from the
-   * difference computed against them at settle.
+   * difference computed against them at settle. And the reach in particular
+   * must be captured rather than re-read — the world's memory is kept current
+   * by the merge now, so a live read would move the boundary the moment the
+   * run crossed it and NEW GROUND would never fire.
+   *
+   * **One object rather than three refs, lazily initialised** (2026-08-30).
+   * They were three, each defaulting to empty, and every run set them EXCEPT
+   * the one the page opens on: that run arrives through BEGIN on the front
+   * door, or through `?end=1` before React has mounted at all. So the first
+   * run after opening the app measured its gains against nothing, and the end
+   * screen told a returning player they had woken every shrine and found every
+   * perk their world already held. Invisible on a fresh device — where the
+   * world holds neither and the empty default is right by accident — which is
+   * how it survived, and it is what the audit's `end-many` shot showed in
+   * every direction: five WOKE lines and five A FIND lines on a run that
+   * gained nothing.
+   *
+   * The null check is the initialisation, which is the one shape
+   * `react-hooks/refs` allows during a render and the reason this is one
+   * object: an effect would run AFTER the settle effect that reads it, and on
+   * an `?end=1` boot the run is already over by the first render.
    */
-  const perksAtStart = useRef<readonly string[]>([]);
-  const unlocksAtStart = useRef<readonly string[]>([]);
+  type StartedFrom = {
+    readonly reach: number;
+    readonly perks: readonly string[];
+    readonly unlocks: readonly string[];
+  };
+  const startedFrom = useRef<StartedFrom | null>(null);
+  if (startedFrom.current == null) {
+    const world = readWorld(activeSlot());
+    startedFrom.current = {
+      reach: world?.farthestReach ?? 0,
+      perks: world?.perks ?? [],
+      unlocks: unlockedBy(world ?? newWorld(0)),
+    };
+  }
+  /** What a run beginning HERE starts from — one place, so the four doors into
+   *  a run (BEGIN, NEW RUN, BEGIN AT CAMP, a world switch) cannot disagree. */
+  const startsFrom = useCallback(
+    (slot: Slot, perks: readonly string[]): StartedFrom => {
+      const world = readWorld(slot);
+      return {
+        reach: world?.farthestReach ?? 0,
+        perks,
+        unlocks: unlockedBy(world ?? newWorld(0)),
+      };
+    },
+    // `StartedFrom` is a type; nothing here closes over a value.
+    [],
+  );
+
   const [gained, setGained] = useState<{
     readonly perks: readonly string[];
     readonly unlocks: readonly string[];
@@ -254,16 +302,9 @@ function Game() {
   const [saidCard, setSaidCard] = useState<Said | null>(null);
   /** Goals this run was the one to meet, for the end screen. */
   const [goals, setGoals] = useState<readonly GoalId[]>([]);
-  /**
-   * What this run has already said once, and the reach it started from.
-   *
-   * Refs, not state: nothing renders from them, and the reach in particular
-   * must be captured when the run BEGINS and not re-read — the world's memory
-   * is kept current by the keeper's merge, so a live read would move the
-   * boundary the moment the run crossed it and NEW GROUND would never fire.
-   */
+  /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
-  const reachAtStart = useRef(0);
+
   const [purseOpen, setPurseOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
   /**
@@ -527,10 +568,10 @@ function Game() {
     const wokeNow = unlockedBy(ending ?? newWorld(snap.state.rootSeed));
     setGained({
       perks: progress.found
-        .filter((id) => !perksAtStart.current.includes(id))
+        .filter((id) => !(startedFrom.current?.perks ?? []).includes(id))
         .map((id) => perkText(id, s).name),
       unlocks: wokeNow
-        .filter((id) => !unlocksAtStart.current.includes(id))
+        .filter((id) => !(startedFrom.current?.unlocks ?? []).includes(id))
         .map((id) => unlockLabel(id as UnlockId, s)),
     });
 
@@ -848,7 +889,7 @@ function Game() {
           {
             state: now.state,
             hud: now.hud,
-            reachAtStart: reachAtStart.current,
+            reachAtStart: startedFrom.current?.reach ?? 0,
             said: saidOnce.current,
           },
           s,
@@ -1246,9 +1287,7 @@ ${s.view.harvest.firstPopWhen}`,
       setDaily(null);
       setGoals([]);
       saidOnce.current = new Set();
-      reachAtStart.current = readWorld(activeSlot())?.farthestReach ?? 0;
-      perksAtStart.current = progress.found;
-      unlocksAtStart.current = unlockedBy(readWorld(activeSlot()) ?? newWorld(0));
+      startedFrom.current = startsFrom(activeSlot(), progress.found);
 
       banked.current = null;
       /*
@@ -1266,7 +1305,7 @@ ${s.view.harvest.firstPopWhen}`,
       session.restart(seed, null, memoryFor(at, seed), economyAt(at, seed), wakeAt);
       setLens(null);
     },
-    [session, setDaily, progress.found],
+    [session, setDaily, progress.found, startsFrom],
   );
 
   const newRun = useCallback(() => startRun(null), [startRun]);
@@ -1355,9 +1394,7 @@ ${s.view.harvest.firstPopWhen}`,
       // Another world entirely: the held copy is the one being left.
       forgetWorld();
       saidOnce.current = new Set();
-      reachAtStart.current = readWorld(next)?.farthestReach ?? 0;
-      perksAtStart.current = progress.found;
-      unlocksAtStart.current = unlockedBy(readWorld(next) ?? newWorld(0));
+      startedFrom.current = startsFrom(next, progress.found);
       // The world being entered, on the world's own seed — everything else
       // here already reads `readWorld(next)`, and the seed was the one field
       // that did not, so stepping from world 1 to world 2 changed the name on
@@ -1370,7 +1407,7 @@ ${s.view.harvest.firstPopWhen}`,
       more.hide();
       setStarted(true);
     },
-    [session, setSlot, setDaily, worlds, more, progress.found, forgetWorld],
+    [session, setSlot, setDaily, worlds, more, progress.found, forgetWorld, startsFrom],
   );
 
   const playing = started && !snap.hud.ended;

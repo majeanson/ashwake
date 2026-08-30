@@ -1,6 +1,6 @@
 # Screen audit
 
-192 findings across 23 screens × 4 directions,
+204 findings across 23 screens × 4 directions,
 at 390×844. Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,
 no horizontal page scroll, no clipped text.
 
@@ -9,7 +9,7 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 
 - **tap-target-allowed** — 68
 - **contrast-haloed** — 42
-- **contrast-disabled** — 82
+- **contrast-disabled** — 94
 
 | screen | direction | kind | where | text | measured | bar | detail |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -139,6 +139,9 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | shop-many | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
 | shop-many | daylight | contrast-disabled | `button` | WORN | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
 | end-many | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
+| end-many | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
+| end-many | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
+| end-many | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
 | board | settlement | contrast-haloed | `span.tile-mark` | ● | 3.26 | 4.5 | rgb(242, 230, 207) on rgb(95, 131, 155) at 18.4px |
 | board | settlement | contrast-haloed | `span` | ROADS | 3.26 | 4.5 | rgb(242, 230, 207) on rgb(95, 131, 155) at 12.8px |
 | board-grown | settlement | contrast-haloed | `span.tile-mark` | ● | 3.26 | 4.5 | rgb(242, 230, 207) on rgb(95, 131, 155) at 18.4px |
@@ -167,6 +170,9 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | shop-many | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
 | shop-many | torchlit | contrast-disabled | `button` | WORN | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
 | end-many | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
+| end-many | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
+| end-many | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
+| end-many | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
 | more-played | settlement | contrast-disabled | `button` | 35 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
 | more-played | settlement | contrast-disabled | `button` | 50 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
 | more-played | settlement | contrast-disabled | `button` | 40 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
@@ -186,6 +192,9 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | shop-many | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
 | shop-many | settlement | contrast-disabled | `button` | WORN | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
 | end-many | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
+| end-many | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
+| end-many | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
+| end-many | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
 | more-played | torchlit-bright | contrast-disabled | `button` | 35 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
 | more-played | torchlit-bright | contrast-disabled | `button` | 50 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
 | more-played | torchlit-bright | contrast-disabled | `button` | 40 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
@@ -204,4 +213,7 @@ shot beside it — `audit-shots/<direction>/<screen>.png`.
 | shop-many | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
 | shop-many | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
 | shop-many | torchlit-bright | contrast-disabled | `button` | WORN | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
+| end-many | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
+| end-many | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
+| end-many | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
 | end-many | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |

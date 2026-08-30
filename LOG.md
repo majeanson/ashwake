@@ -1532,7 +1532,7 @@ because nobody could SEE the number. Can that be turned into an instrument —
 a fixture of a world three hundred runs old, rendered — and does the
 instrument find a seventh?
 
-**Answer: yes, and it found seven — three of them with its own hands, and one
+**Answer: yes, and it found eight — four of them with its own hands, and two
 of those in a SCREENSHOT rather than in the code.**
 
 **THE INSTRUMENT.** `shell/fixture.ts` and `?runs=n`: the screen audit's third
@@ -1643,6 +1643,19 @@ finds were paying nothing at all: _"in the end screen I still see 0/5."_ It is
 reachable in ordinary play, and no grep would ever have found it: both
 expressions had consumers, and both were correct on their own.
 
+**Fourteen, and it is twelve saying the opposite thing.** The same end-screen
+list, on the FIRST run of a page. `perksAtStart` and `unlocksAtStart` were set
+by every door into a run except the one the page opens on — BEGIN on the front
+door, and `?end=1` before React has mounted at all — so that run measured its
+gains against empty lists and told a returning player they had just woken every
+shrine and found every perk their world already held. Invisible on a fresh
+device, where empty IS the right answer, which is exactly how it survived; and
+found, again, in `end-many` rather than in the code — five WOKE lines and five A
+FIND lines on a run that gained nothing, in all four directions. The three refs
+are one lazily-initialised object now, which is also the shape `react-hooks/refs`
+allows during a render, and `e2e/world.spec.ts` asserts the block is ABSENT —
+its absence being the whole claim.
+
 **CAMPS — the last piece of world memory to cross.** `newRun`'s `wakeAt` was
 hard-wired `null` in `store.ts`'s `open`, because the fifth shrine gates a BEGIN
 AT CAMP button this body never built, so the last rung of the ladder woke a door
@@ -1685,6 +1698,6 @@ wants its own question.
 query, camps are behind the fifth shrine, and the two paid rewards are numbers
 a player only reaches after a run.
 
-**Verified:** 1059 tests / 74 files, 67 Playwright, `pnpm sim` byte-identical,
+**Verified:** 1059 tests / 74 files, 68 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, `pnpm audit:screens` regenerated across
 twenty-three screens × four directions.
