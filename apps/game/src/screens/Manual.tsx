@@ -40,7 +40,18 @@ type TabId = (typeof TABS)[number];
 
 /** The key list, in the order somebody learns it: point at a hex, act on it,
  *  then move the camera, then the shortcuts that only save time. */
-const KEY_LINES = ['move', 'act', 'pan', 'zoom', 'turn', 'lean', 'view', 'cards', 'mouse'] as const;
+const KEY_LINES = [
+  'move',
+  'act',
+  'pan',
+  'zoom',
+  'turn',
+  'lean',
+  'view',
+  'cards',
+  'hold',
+  'mouse',
+] as const;
 
 /**
  * Which lessons belong under which tab, in reading order.
