@@ -1,6 +1,7 @@
 import type { Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { HarvestChoice } from '@engine/state';
+import { CONCEPT_ICON, type IconName } from '@theme/icons';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
 import { useTerrainArt } from '../shell/art';
@@ -104,6 +105,7 @@ export function ActionBar({
         {hud.canHarvest && (
           <ActButton
             testId="pop"
+            icon={CONCEPT_ICON.pop}
             label={s.ui.pop}
             value={
               hud.showPoints
@@ -116,6 +118,7 @@ export function ActionBar({
         {hud.canHarvest && !hud.singlePayout && hud.showPoints && (
           <ActButton
             testId="pop-points"
+            icon={CONCEPT_ICON.pop}
             label={s.ui.pop}
             value={`${hud.harvestPoints} pts`}
             onClick={() => onHarvest('points')}
@@ -148,6 +151,7 @@ export function ActionBar({
         {burn > 0 && (
           <ActButton
             testId="pop-burn"
+            icon={CONCEPT_ICON.sacrifice}
             label={s.ui.sacrifice}
             value={hud.burnPaysRelics ? s.ui.relicsPaid(burn) : s.ui.luckPaid(burn)}
             onClick={() => onHarvest('burn')}
@@ -261,14 +265,28 @@ export function ActionBar({
 /**
  * A verb over a payment, with one accessible name that reads as a sentence.
  * Without it a screen reader runs the two lines together.
+ *
+ * **The mark rides WITH the verb** (2026-08-30, Marc: *"make em icons,
+ * associate in how to play and cards too"*). Beside the word rather than above
+ * it: the button is already two lines and a third would make it a tile. The
+ * same mark heads the same lesson in the manual and leads the receipt the
+ * action leaves behind, which is the whole of "associate" — three places, one
+ * shape, and the registry (`@theme/icons`) is the only thing that picks it.
+ *
+ * `aria-hidden`, because the label says the same thing in words and a screen
+ * reader that reads both is reading a decoration aloud. And optional, because
+ * TAKE has no mark: it appears on one button, only when a pocket earns a
+ * treasure, and the registry's rule is a mark only for an idea that recurs.
  */
 function ActButton({
   testId,
+  icon,
   label,
   value,
   onClick,
 }: {
   readonly testId: string;
+  readonly icon?: IconName | undefined;
   readonly label: string;
   readonly value: string;
   readonly onClick: () => void;
@@ -281,7 +299,14 @@ function ActButton({
       aria-label={value === '' ? label : `${label}, ${value}`}
       onClick={onClick}
     >
-      <span className="act-label">{label}</span>
+      <span className="act-label">
+        {icon !== undefined && (
+          <span className="act-mark" aria-hidden="true">
+            <Icon name={icon} />
+          </span>
+        )}
+        {label}
+      </span>
       {value !== '' && <span className="act-value">{value}</span>}
     </button>
   );

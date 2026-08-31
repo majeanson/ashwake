@@ -176,6 +176,14 @@ MENU tab, two rooms in, and it is the one quick action a live run actually
 wants — left off because it destroys a run and everything else on the list is
 harmless.
 
+**The two new marks, by reading them (2026-08-30).** POP is a hand taking and
+SACRIFICE is a flame, on the button, at the head of the manual section and on
+the receipt. Both were picked for being the silhouettes furthest from the twenty
+already in the set, which is an argument, not a look: whether a hand reads as
+"cash this in" at 16px is a thing only an eye can say, and the alternative was a
+basket. Also worth a glance: the SACRIFICE lesson is new prose in both
+languages and nobody has read the French yet.
+
 **The bottom of the screen, by playing fifty placements (2026-08-30).** The hand
 is the footer, the harvest row sits above it — _"tiles hand always footer but in
 finger zone, accessible"_ — and every button in that row wears the accent,

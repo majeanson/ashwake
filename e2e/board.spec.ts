@@ -1098,3 +1098,89 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('POP and SACRIFICE wear one mark each, on the bar, in the manual and on the card', async ({
+  page,
+}) => {
+  /*
+   * Marc, 2026-08-30: *"make em icons, associate in how to play and cards
+   * too."*
+   *
+   * The point is not that a button has a picture on it — it is that the SAME
+   * shape says the same thing in every place the idea turns up, which is the
+   * whole argument for the game having a symbol language at all
+   * (`theme/icons.ts`: "a symbol language with a homonym in it is a language
+   * nobody learns"). Three places, and a check for each, because they are
+   * three separate wirings and any one of them can be forgotten:
+   *
+   *   - the ACTION BAR, where you press it;
+   *   - HOW TO PLAY, where the section that explains it carries the mark in
+   *     its heading — and SACRIFICE had no section at all until this, in
+   *     either language, with the button on the board since Stage 3;
+   *   - the CARD a harvest leaves, which had no mark on the reasoning that
+   *     "the board is the thing that popped" — true while POP was only a
+   *     button and not while it is a concept in the registry.
+   *
+   * Compared by the PATH the SVG draws, not by a class name: two different
+   * icons under one class would pass a name check and be the bug.
+   */
+  const errors = watchErrors(page);
+
+  const pathOf = (sel: string): Promise<string | null> =>
+    page
+      .locator(sel)
+      .first()
+      .evaluate((el) => el.querySelector('svg path')?.getAttribute('d') ?? null);
+
+  // 1. THE BAR. A device with relics known, so SACRIFICE is offered.
+  await page.goto('/?taught=1&runs=1&place=24');
+  await begin(page);
+  await page.waitForTimeout(700);
+  await clearCards(page);
+
+  const onPop = await pathOf('[data-action="pop"] .act-mark');
+  const onBurn = await pathOf('[data-action="pop-burn"] .act-mark');
+  expect(onPop, 'POP wears no mark').not.toBeNull();
+  expect(onBurn, 'SACRIFICE wears no mark').not.toBeNull();
+  expect(onPop, 'POP and SACRIFICE draw the same shape').not.toBe(onBurn);
+
+  // 2. THE CARD a harvest leaves.
+  await page
+    .getByRole('button', { name: /POP|RÉCOLT/ })
+    .first()
+    .click();
+  await page.locator('[data-action="pop-details"]').click({ timeout: 6000 });
+  expect(
+    await pathOf('.card-scrim .card .card-glyph'),
+    'the pop receipt does not lead with the mark its button wears',
+  ).toBe(onPop);
+
+  // 3. HOW TO PLAY, where both are explained.
+  await page.goto('/?taught=1');
+  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+  await page.locator('[data-tab="start"]').click();
+  await page.waitForTimeout(400);
+
+  const heads = await page
+    .locator('[data-panel="manual"] section h2.marked')
+    .evaluateAll((els) =>
+      els.map((el) => [
+        el.textContent?.trim() ?? '',
+        el.querySelector('svg path')?.getAttribute('d') ?? null,
+      ]),
+    );
+  const headOf = (word: RegExp): string | null =>
+    heads.find(([name]) => word.test(String(name)))?.[1] ?? null;
+
+  expect(
+    headOf(/POP|RÉCOLTER/),
+    'the manual POP section does not wear the mark its button wears',
+  ).toBe(onPop);
+  expect(
+    headOf(/SACRIFICE|SACRIFIER/),
+    'the manual has no SACRIFICE section, or it wears a different mark',
+  ).toBe(onBurn);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

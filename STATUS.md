@@ -4,7 +4,41 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — the corner splits in two.** Marc, on a
+Last checkpoint: **2026-08-30, last — POP and SACRIFICE become shapes.** Marc:
+_"make sure tiles in hand have a lil bit more height, same for pop and
+sacrifice. make em icons, associate in how to play and cards too."_
+
+**Two marks, and the registry's own rule picked them.** A mark is for an idea
+that RECURS across screens, so POP and SACRIFICE qualify — button, manual
+section, receipt — and TAKE does not: one button, only when a pocket earns a
+treasure. A hand taking and a flame, the two silhouettes furthest from the
+twenty already in the set.
+
+**SACRIFICE had no lesson, in either language.** The button has been on the
+board since Stage 3 and nothing said what pressing it does; found only because a
+mark cannot be associated with words that do not exist. It has a section on the
+EXPEDITION tab now, under POP, because the two are what one ripe pocket can
+become.
+
+**The registry taught the new lesson two of its own rules.** A lesson may never
+go silent whatever the dials say, so what the action IS is unconditional and
+what it PAYS is a beat a dial can remove; and a term has to appear in its own
+lesson, so the French terms say SACRIFIER, which is what the button says. Both
+tests predate this session and both caught the first draft.
+
+**One mark, three places, pinned by comparing the SVG path** rather than a class
+name — two different icons under one class would pass a name check.
+
+**The heights.** Hand 3.1rem → 3.4rem, and the action bar's 44px floor to the
+same: the two rows read as one block and had a step in it. Sixteen pixels of
+board, spent on purpose.
+
+Verified: 1064 tests / 74 files, 83 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 156 findings with **no new rows**.
+Pins re-recorded deliberately; the diff is only the new lesson plus `pop`
+gaining its mark.
+
+Previous checkpoint: **2026-08-30 — the corner splits in two.** Marc, on a
 board whose accent was in two places: _"the accented button should be with the
 luck buttons... this, but menu move top right."_
 

@@ -1192,11 +1192,17 @@ button[disabled] {
  * stashed or spent, so the board resized under a reaching thumb.
  *
  * The two labels are badges now (`.tile-rarity`, `.tile-held`) rather than
- * rows. 3.1rem is above the 44px tap floor with room for the hex, and no more.
+ * rows.
+ *
+ * **3.4rem since 2026-08-30** (Marc: *"make sure tiles in hand have a lil bit
+ * more height"*). It was 3.1 — over the 44px tap floor with room for the hex
+ * and not a pixel more, which is the right instinct for a strip the board is
+ * fighting for and one notch too mean for the thing a run is fifty taps of.
+ * Five pixels, and the hex inside gets to be a hex rather than a sliver.
  */
 .hand > button,
 .hand > .tile {
-  height: 3.1rem;
+  height: 3.4rem;
   padding: 0.25rem 0.15rem;
 }
 
@@ -1401,17 +1407,47 @@ button[disabled] {
   flex-direction: column;
   justify-content: center;
   gap: 0.05rem;
+  /* The same 3.4rem the hand takes (Marc, 2026-08-30: *"same for pop and
+     sacrifice"*). The two rows are read as one block and were 44 and 54, so
+     the block had a step in it — and POP is the button a run is pressed on. */
+  min-height: 3.4rem;
   padding: 0.3rem 0.6rem;
   min-width: 0;
   border-color: var(--accent);
 }
 
+/*
+ * The verb, wearing its own mark (2026-08-30).
+ *
+ * Marc: *"make em icons, associate in how to play and cards too."* Beside the
+ * word rather than above it: the button is already two lines and a third would
+ * make it a tile. The same shape heads the same lesson in the manual and leads
+ * the receipt the action leaves behind — three places, one mark, and
+ * `@theme/icons` is the only thing that picks it.
+ */
 .act-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
   font-size: clamp(0.8rem, 2.4vw, 0.95rem);
   white-space: nowrap;
   color: var(--accent);
+}
+
+/* Sized to the WORD it stands beside rather than to the button, so it grows and
+   shrinks with the label's own clamp instead of drifting off its baseline on a
+   narrow phone. */
+.act-mark {
+  display: inline-flex;
+  flex: none;
+}
+
+.act-mark svg {
+  width: 1em;
+  height: 1em;
 }
 
 .act-value {

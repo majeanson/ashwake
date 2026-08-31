@@ -68,6 +68,15 @@ export const STRINGS_FR: Strings = {
       terms: ['RÉCOLTER', 'RÉCOLTE'],
       core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.`,
     },
+    sacrifice: {
+      name: 'SACRIFIER',
+      // SACRIFICE is not here: a term has to appear in its own lesson
+      // (`lessons.test.ts`), and the sentences say SACRIFIER — which is what
+      // the button says too.
+      terms: ['SACRIFIER'],
+      core: `SACRIFIER brûle une poche mûre au lieu de l’encaisser${D}: pas de tuiles, pas de points, rien qui revienne dans cette partie.`,
+      pays: `Ce que ça paie à la place, ce sont des RELIQUES, et les reliques te suivent quand la partie finit${D}: une poche que tu ne peux pas te permettre d’attendre achète la prochaine partie.`,
+    },
     pocket: {
       name: 'POCHE',
       terms: ['POCHE'],

@@ -62,6 +62,12 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "ripe · TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround. Only ASH counts stone as a match.",
   "ripe · TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
   "ripe · TUNING · torchlit": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround. Only ASH counts stone as a match.",
+  "sacrifice · BARE_TUNING · daylight": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
+  "sacrifice · BARE_TUNING · settlement": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
+  "sacrifice · BARE_TUNING · torchlit": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
+  "sacrifice · TUNING · daylight": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run. What it pays instead is RELICS, which follow you out when the run ends. A pocket you cannot afford to wait on buys the next run.",
+  "sacrifice · TUNING · settlement": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run. What it pays instead is RELICS, which follow you out when the run ends. A pocket you cannot afford to wait on buys the next run.",
+  "sacrifice · TUNING · torchlit": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run. What it pays instead is RELICS, which follow you out when the run ends. A pocket you cannot afford to wait on buys the next run.",
   "shrine · BARE_TUNING · daylight": "A SHRINE switches a system on for your world, permanently, the moment you claim it. Once every shrine unlock is woken, the next one offers a crossing to a new world instead.",
   "shrine · BARE_TUNING · settlement": "A SHRINE switches a system on for your world, permanently, the moment you claim it. Once every shrine unlock is woken, the next one offers a crossing to a new world instead.",
   "shrine · BARE_TUNING · torchlit": "A SHRINE switches a system on for your world, permanently, the moment you claim it. Once every shrine unlock is woken, the next one offers a crossing to a new world instead.",
@@ -118,11 +124,19 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "icon": null,
+    "icon": "pop",
     "id": "pop",
     "ink": null,
     "terms": [
       "POP",
+    ],
+  },
+  {
+    "icon": "sacrifice",
+    "id": "sacrifice",
+    "ink": null,
+    "terms": [
+      "SACRIFICE",
     ],
   },
   {
@@ -487,6 +501,12 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "ripe · TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi. Seules CENDRES comptent la pierre comme une ressemblance.",
   "ripe · TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
   "ripe · TUNING · torchlit": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi. Seules CENDRES comptent la pierre comme une ressemblance.",
+  "sacrifice · BARE_TUNING · daylight": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
+  "sacrifice · BARE_TUNING · settlement": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
+  "sacrifice · BARE_TUNING · torchlit": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
+  "sacrifice · TUNING · daylight": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie. Ce que ça paie à la place, ce sont des RELIQUES, et les reliques te suivent quand la partie finit : une poche que tu ne peux pas te permettre d’attendre achète la prochaine partie.",
+  "sacrifice · TUNING · settlement": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie. Ce que ça paie à la place, ce sont des RELIQUES, et les reliques te suivent quand la partie finit : une poche que tu ne peux pas te permettre d’attendre achète la prochaine partie.",
+  "sacrifice · TUNING · torchlit": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie. Ce que ça paie à la place, ce sont des RELIQUES, et les reliques te suivent quand la partie finit : une poche que tu ne peux pas te permettre d’attendre achète la prochaine partie.",
   "shrine · BARE_TUNING · daylight": "Un SANCTUAIRE allume un système pour ton monde, pour de bon, dès que tu le réclames. Une fois tous les sanctuaires éveillés, le suivant offre plutôt un passage vers un nouveau monde.",
   "shrine · BARE_TUNING · settlement": "Un SANCTUAIRE allume un système pour ton monde, pour de bon, dès que tu le réclames. Une fois tous les sanctuaires éveillés, le suivant offre plutôt un passage vers un nouveau monde.",
   "shrine · BARE_TUNING · torchlit": "Un SANCTUAIRE allume un système pour ton monde, pour de bon, dès que tu le réclames. Une fois tous les sanctuaires éveillés, le suivant offre plutôt un passage vers un nouveau monde.",
@@ -543,12 +563,20 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "icon": null,
+    "icon": "pop",
     "id": "pop",
     "ink": null,
     "terms": [
       "RÉCOLTER",
       "RÉCOLTE",
+    ],
+  },
+  {
+    "icon": "sacrifice",
+    "id": "sacrifice",
+    "ink": null,
+    "terms": [
+      "SACRIFIER",
     ],
   },
   {

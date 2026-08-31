@@ -39,6 +39,30 @@ export type LessonStrings = {
     readonly cardPlain: string;
   };
   readonly pop: LessonHead & { readonly core: string };
+  /**
+   * The other thing a ripe pocket can be spent on (2026-08-30).
+   *
+   * It had no lesson at all, in either language: the button has been on the
+   * board since Stage 3 and nothing anywhere said what pressing it does. Found
+   * while giving POP and SACRIFICE their marks — Marc: *"make em icons,
+   * associate in how to play and cards too"* — because a mark can only be
+   * associated with words that exist. `CLAUDE.md`'s standing rule is to grep
+   * for a consumer of every action a screen can produce; this is the same gap
+   * seen from the other end, an action with no explanation.
+   *
+   * Not a `TeachId`: it teaches no MOMENT and spends no ledger entry. It joins
+   * `pocket`, `worth` and the rest of `LessonId`'s extras — concepts the
+   * manual explains and the drip never interrupts anybody with.
+   */
+  readonly sacrifice: LessonHead & {
+    /** What the action IS, and it holds under every dial: a lesson may never
+     *  go silent, which `lessons.test.ts` checks against BARE_TUNING. */
+    readonly core: string;
+    /** What it pays, which a dial CAN turn off. Split from `core` for exactly
+     *  that reason — a world where burning pays nothing should not be told it
+     *  pays relics, and should still be told what the button does. */
+    readonly pays: string;
+  };
   readonly pocket: LessonHead & { readonly core: string };
   readonly worth: LessonHead & { readonly core: string };
   readonly cache: LessonHead & {

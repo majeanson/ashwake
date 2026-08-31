@@ -6,7 +6,7 @@ import type { Action, GameState } from '@engine/state';
 import { distance, parse, type HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
-import type { IconName } from '@theme/icons';
+import { CONCEPT_ICON, type IconName } from '@theme/icons';
 import type { Theme } from '@theme/tokens';
 import {
   harvestNote,
@@ -287,6 +287,20 @@ export function createSession(opts: {
 
     if (action.type === 'HARVEST' && cashed !== null && cashed.count > 0) {
       lines.push(harvestNote(before, action.choice, cashed, opts.strings));
+      /*
+       * A harvest leads with the mark its BUTTON wears (2026-08-30).
+       *
+       * Marc: *"make em icons, associate in how to play and cards too."* A pop
+       * had no mark at all, on the reasoning that "the board is the thing that
+       * popped" — which was true while POP was only a button. It is a concept
+       * with a registry entry now: on the bar, at the head of its own manual
+       * section, and here. Three places, one shape.
+       *
+       * A CLAIM still overrules it below. A placement that pops a pocket and
+       * wakes a shrine at once is a shrine moment, and `saidOf` already ranks
+       * that — this only fills the case that had nothing.
+       */
+      icon = action.choice === 'burn' ? CONCEPT_ICON.sacrifice : CONCEPT_ICON.pop;
     }
 
     if (action.type === 'SPEND') {

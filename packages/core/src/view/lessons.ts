@@ -83,7 +83,7 @@ import type { TipRow } from './view';
  * are the ones `glossary.ts` added on 2026-08-27 for exactly that reason.
  */
 export type LessonId =
-  TeachId | 'pocket' | 'worth' | 'bounty' | 'stash' | 'sizeBonus' | 'stone' | 'find';
+  TeachId | 'pocket' | 'worth' | 'bounty' | 'stash' | 'sizeBonus' | 'stone' | 'find' | 'sacrifice';
 
 /** How heavy a sentence is. Absent means `more`. */
 export type Weight = 'core' | 'more' | 'card' | 'detail';
@@ -259,7 +259,42 @@ export const LESSONS: readonly Lesson[] = [
       },
     ],
   },
-  { id: 'pop', figure: 'pop', beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pop.core }] },
+  /*
+   * The two ways to spend a pocket, side by side (2026-08-30).
+   *
+   * Both wear the mark their BUTTON wears — Marc: *"make em icons, associate in
+   * how to play and cards too"* — so a flame on the action bar and the flame at
+   * the head of this section are the same shape saying the same thing, and the
+   * receipt a burn leaves wears it a third time.
+   *
+   * SACRIFICE had no lesson at all until this: the button has been on the board
+   * since Stage 3 and nothing in either language said what pressing it does.
+   * Its sentences are written from the DIALS, so a world where burning pays
+   * nothing says nothing.
+   */
+  {
+    id: 'pop',
+    icon: CONCEPT_ICON.pop,
+    figure: 'pop',
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pop.core }],
+  },
+  {
+    id: 'sacrifice',
+    icon: CONCEPT_ICON.sacrifice,
+    beats: [
+      // What the action IS holds under every dial. A lesson may never go
+      // silent — `lessons.test.ts` runs every one of them against BARE_TUNING
+      // and this one said nothing at all for one build.
+      { at: 'core', say: (_t, _theme, s) => s.lesson.sacrifice.core },
+      // What it PAYS can be turned off, and then the sentence is not spoken:
+      // the same rule `redAshMatches` and `holdSlots` follow. A world where
+      // burning pays nothing is not told that it pays relics.
+      {
+        at: 'core',
+        say: (t, _theme, s) => (t.burnRelics > 0 ? s.lesson.sacrifice.pays : null),
+      },
+    ],
+  },
   { id: 'pocket', beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pocket.core }] },
   { id: 'worth', beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.worth.core }] },
   {

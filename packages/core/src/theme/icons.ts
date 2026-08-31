@@ -58,6 +58,11 @@ export type IconName =
   | 'fame'
   | 'met'
   | 'notYet'
+  // The two things a ripe pocket can be spent ON. They are concepts rather
+  // than chrome: the same pair names a button, a manual section and the
+  // receipt the pop leaves behind.
+  | 'pop'
+  | 'sacrifice'
   // The chrome's own affordances, which say something about the SCREEN rather
   // than about the plane. Nothing on the board may ever be one of these.
   | 'back'
@@ -98,6 +103,21 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
   shrine: 'fill/key-fill.svg',
   territory: 'fill/flag-banner-fill.svg',
   find: 'fill/sparkle-fill.svg',
+
+  /*
+   * The two ways to spend a pocket (2026-08-30, Marc: *"make em icons,
+   * associate in how to play and cards too"*).
+   *
+   * A HAND TAKING and a FLAME, and the pair is the point: one keeps what the
+   * pocket is worth, the other burns it for what the next run is worth. Chosen
+   * for being the two silhouettes furthest from everything already in the set
+   * — there is no other hand and no other fire here, and a mark is only worth
+   * having if it cannot be mistaken at 16px for one of the twenty beside it.
+   * `site` is a star and `find` a sparkle, which is why neither of these is a
+   * burst.
+   */
+  pop: 'fill/hand-grabbing-fill.svg',
+  sacrifice: 'fill/flame-fill.svg',
 
   relic: 'fill/coins-fill.svg',
   luck: 'fill/clover-fill.svg',
@@ -149,8 +169,20 @@ export const CONCEPT_ICON = {
   fame: 'fame',
   met: 'met',
   notYet: 'notYet',
+  // Both earn a place by the registry's own rule — a mark only for an idea
+  // that RECURS across screens. POP is the action bar, the manual's own POP
+  // section and the receipt every harvest leaves; SACRIFICE is the bar, its
+  // manual section, and the receipt a burn leaves. TAKE is deliberately not
+  // here: it appears on one button, only when a pocket earns a treasure, and
+  // a mark for a thing seen in one place is vocabulary nobody has room to
+  // learn.
+  pop: 'pop',
+  sacrifice: 'sacrifice',
 } as const satisfies Readonly<
-  Record<'relic' | 'luck' | 'wall' | 'stone' | 'fame' | 'met' | 'notYet', IconName>
+  Record<
+    'relic' | 'luck' | 'wall' | 'stone' | 'fame' | 'met' | 'notYet' | 'pop' | 'sacrifice',
+    IconName
+  >
 >;
 
 /**

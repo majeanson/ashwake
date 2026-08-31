@@ -70,6 +70,12 @@ export const STRINGS_EN: Strings = {
       terms: ['POP'],
       core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
     },
+    sacrifice: {
+      name: 'SACRIFICE',
+      terms: ['SACRIFICE'],
+      core: 'SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.',
+      pays: 'What it pays instead is RELICS, which follow you out when the run ends. A pocket you cannot afford to wait on buys the next run.',
+    },
     pocket: {
       name: 'POCKET',
       terms: ['POCKET'],

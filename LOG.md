@@ -2486,3 +2486,52 @@ typecheck/lint/format/build clean, `pnpm audit:screens` at 156 findings with
 **no new rows**. Measured at 320×568 with the row fully loaded — POP 55px,
 SACRIFICE 111px, LUCK 53px in a 304px row, no horizontal scroll, every control
 at 44px. **Still not seen on a phone.**
+
+### Session 30 — POP and SACRIFICE become shapes, and the burn gets explained at last (2026-08-30)
+
+**Question:** Marc: _"make sure tiles in hand have a lil bit more height, same
+for pop and sacrifice. make em icons, associate in how to play and cards too.
+consice and simple ui."_ The heights are arithmetic. The interesting half is
+what "associate" turns out to require.
+
+**Two marks, and the registry's own rule decided which.** `theme/icons.ts` says
+a mark is for an idea that RECURS across screens, so POP and SACRIFICE qualify
+— each is a button, a manual section and a receipt — and **TAKE does not**: one
+button, only when a pocket earns a treasure, and a mark for a thing seen in one
+place is vocabulary nobody has room to learn. A HAND TAKING and a FLAME, chosen
+as the two silhouettes furthest from the twenty already in the set: there is no
+other hand and no other fire here, and `site` is a star and `find` a sparkle,
+which is why neither of these is a burst.
+
+**Thirty-two. SACRIFICE had no lesson, in either language.** The button has been
+on the board since Stage 3 and nothing anywhere said what pressing it does —
+found only because a mark cannot be associated with words that do not exist.
+`CLAUDE.md`'s standing rule is to grep for a consumer of every action a screen
+can produce; this is that gap seen from the other end, an action with no
+explanation. It has a section on the EXPEDITION tab now, directly under POP,
+because the two are what one ripe pocket can become.
+
+**And the lesson taught the registry two of its own rules on the way in.** The
+first draft folded the payout into one sentence gated on `burnRelics > 0`, and
+`lessons.test.ts` refused it: **a lesson may never go silent, whatever the
+dials say**. So what the action IS is unconditional and what it PAYS is a
+second beat a dial can remove — the same split `redAshMatches` and
+`holdSlots` already use. Then the French draft listed SACRIFICE as a term of a
+lesson whose sentences say SACRIFIER, and the registry refused that too: **a
+term has to appear in its own lesson.** Both are tests that existed before this
+session and both caught a real mistake on the first run.
+
+**One mark, three places, and a test that says so.** The e2e compares the SVG
+PATH rather than a class name — two different icons under one class would pass
+a name check and be exactly the bug the no-collision rule exists to prevent.
+
+**The heights.** The hand went 3.1rem → 3.4rem and the action bar's 44px floor
+went to the same 3.4rem: the two rows are read as one block and were 54 and 44,
+so the block had a step in it. Sixteen pixels of board, spent on purpose —
+Marc: _"a lil bit more height"_, on the thing a run is fifty taps of.
+
+**Verified:** 1064 tests / 74 files, 83 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` at 156 findings with
+**no new rows**. The pins were re-recorded deliberately and the diff is only the
+new lesson in both languages plus `pop` gaining its mark — no existing sentence
+moved. **Still not seen on a phone.**

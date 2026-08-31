@@ -54,6 +54,11 @@ deliberately absent in both.
 
 ## 3. Action bar, purse, stats
 
+Since 2026-08-30 POP and SACRIFICE wear MARKS — a hand taking and a flame — and
+the same two shapes head their own sections in HOW TO PLAY and lead the receipt
+each action leaves. TAKE has none: it appears on one button, only when a pocket
+earns a treasure, and the registry only marks ideas that recur.
+
 Since 2026-08-30 the hand is the FOOTER and the bar sits above it (Marc:
 _"tiles hand always footer but in finger zone, accessible"_), and every button
 in the bar wears the accent, because spending a pocket is the loudest thing the

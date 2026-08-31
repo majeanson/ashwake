@@ -81,7 +81,7 @@ const KEY_LINES = [
  * so it has no row in an alphabet.
  */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
-  start: ['ripe', 'pop', 'sizeBonus', 'worth'],
+  start: ['ripe', 'pop', 'sacrifice', 'sizeBonus', 'worth'],
   play: ['pocket', 'bounty'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
