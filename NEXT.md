@@ -164,16 +164,29 @@ honest while something else owns the moment.**
 
 ## 1. Needs Marc, and only Marc
 
-**The board's corner, by reaching for it (2026-08-30).** It is MENU · LUCK ·
-VIEW now, on your call: _"make sure sound on or off and how to play stays in
-the menu, add a menu button instead"_, and _"put the luck button next to the
-FIT button."_ Three things about it are guesses waiting on a thumb. Whether
-MUTE being three taps away (MENU → SETTINGS → SOUND) is far enough to matter in
-a quiet room — Ashwake 1 carried the ♪ on the board since 2026-08-20 for
-exactly that reason, and this is the first time it has not. Whether LUCK reads
-as an ACTION beside two pieces of chrome or merely as a third button. And
-whether the ORDER is right: the door is on the left, farthest from a right
-thumb, on the reasoning that leaving is the thing you do least.
+**The two corners, by reaching for them (2026-08-30).** MENU is top-right and
+the camera is alone bottom-right, on your call: _"this, but menu move top
+right."_ **The mute worry that stood here is answered twice over** — sound is a
+row behind MENU, one tap from the board and costing no button on it. What is
+left is a thumb's opinion, and it is the trade this deliberately made: whether
+the top-right corner is reachable one-handed on a large phone. The door left the
+thumb zone on purpose, and a door you cannot reach is worse than a door in the
+way. Also open: whether that list should carry RESTART. It is on the manual's
+MENU tab, two rooms in, and it is the one quick action a live run actually
+wants — left off because it destroys a run and everything else on the list is
+harmless.
+
+**The bottom of the screen, by playing fifty placements (2026-08-30).** The hand
+is the footer, the harvest row sits above it — _"tiles hand always footer but in
+finger zone, accessible"_ — and every button in that row wears the accent,
+including the LUCK purse, which came back down from the corner. Two things only
+a hand can settle: whether the cards being lowest is right when the row above
+them is what a live pocket makes you reach for, and whether four accented
+buttons in one row is the ration spent or the ration broken.
+`theme/tokens.ts` says "if everything is accent, nothing is", and this is the
+closest the board has come to testing that sentence. Measured at 320×568 it
+fits with room — POP 55px, SACRIFICE 111px, LUCK 53px in a 304px row — so the
+question is taste, not width.
 
 **The pop line, by popping fifty times (2026-08-30).** A routine pop is the
 receipt's lead sentence over the board's bottom edge, with the rest behind a

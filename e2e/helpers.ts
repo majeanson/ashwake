@@ -79,14 +79,17 @@ export async function clearCards(page: Page): Promise<void> {
  * The board's own way into MORE: MENU, then the list's last row.
  *
  * One helper rather than two lines in six specs, because the walk changed
- * twice in one day — the board's corner went from a `?` straight into the
- * manual, to a MENU straight into MORE, to a MENU that opens a short list with
- * MORE on it (Marc, 2026-08-30: *"menu could add a submenu for quick actions
- * like sound in off etc and then an option that goes to menu"*). A route this
- * many specs walk should be written down once.
+ * three times in one day — the board's corner went from a `?` straight into
+ * the manual, to a MENU straight into MORE, to a MENU that opens a short list
+ * with MORE on it, and then that button moved to the opposite corner. A route
+ * this many specs walk should be written down once.
+ *
+ * Addressed by `data-go`, never by which corner it is in: a selector that
+ * names a POSITION is a selector that breaks every time the layout is an
+ * opinion, and this one has been an opinion four times.
  */
 export async function openMore(page: Page): Promise<void> {
-  await page.locator('.camera .menu').click();
+  await page.locator('[data-go="quick"]').click();
   await page.locator('[data-quick="more"]').click();
   await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
 }

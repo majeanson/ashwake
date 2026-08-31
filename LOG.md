@@ -2428,3 +2428,61 @@ typecheck/lint/format/build clean, `pnpm audit:screens` at 156 findings with
 **no new rows** — the accent on the harvest bar is graded against the panel it
 stands on. **Still not seen on a phone**, and the whole of this session is a
 guess about a thumb.
+
+### Session 29 — the corner splits in two (2026-08-30)
+
+**Question:** Marc, looking at a board whose accent was in two places: _"the
+accented button should be with the luck buttons, some populs with actions to
+do, what yiu think?"_ — a question rather than an instruction, so the session
+started by checking the two assumptions the current layout rested on. **Both
+were wrong, and both were mine.**
+
+**`singlePayout` is TRUE in the shipped tuning**, so POP FOR POINTS never
+renders. The action bar is POP and SACRIFICE, occasionally TAKE — two buttons,
+not four. `.act`'s comment about a crowded row squeezing to 65px was measured
+when the purse still lived in that row AND points were a choice, and neither
+had been true for a day. A comment that describes a layout it no longer
+describes is worse than no comment: it was the main argument for hiding the bar.
+
+**And the bar is not a standing cost.** `.action-bar` has no `min-height`, so
+with no live pocket it collapses to zero and the board keeps the 44px. It takes
+height only at the moment it is earning it. So "hide POP in a popup to get the
+board back" was buying height that mostly is not spent, at the price of a tap on
+the game's most-repeated verb and of the pocket's price — `+5 · 4 pts` is the
+decision being made, not decoration. Marc, given the numbers, chose **no
+drawer**, and: _"this, but menu move top right."_
+
+**The rule that came out of it, and it is worth more than the layout: chrome
+floats over the board, actions sit in the footer.**
+
+- **LUCK came back down** into the action row, beside POP and SACRIFICE, at the
+  far end because it is the one thing there priced in a different currency.
+  Every accented control is now in one row, in the thumb zone, with room for
+  its price. It spent exactly one day in the corner.
+- **MENU went top-right**, out of the arc a thumb sweeps fifty times a run. A
+  door pressed twice does not belong where a hand lives. Its own file now
+  (`screens/Menu.tsx`) — it stopped being a camera control the moment it
+  stopped being a `?`, and `Camera.tsx`'s docblock had become an argument
+  about three unrelated things.
+- **The camera is alone in the corner it is named for**, one button, which is
+  what the file's own 2026-08-29 note asked for before four things moved in.
+
+**Thirty-one. The MENU list opened a screen away from its button.** Moving the
+button to the top left the drawer hanging off the bottom of the shell, where it
+had been correct one commit earlier. It hangs off the TOP now — still a flex
+child of the shell, still the purse's own trick, mirrored: the purse hangs up
+off the controls, this hangs down off the stat row. It cannot be
+`position: fixed` and hung off the button, because where the board starts and
+stops depends on the stat row above it and the hand below it, and the hand's
+height is a run's. Caught by a geometry assertion added for exactly this —
+everything else about the list still passed.
+
+Both e2e selectors for the button were `.camera .menu`. They are `[data-go]`
+now: **a selector that names a POSITION breaks every time the layout is an
+opinion, and this one has been an opinion four times in a day.**
+
+**Verified:** 1064 tests / 74 files, 82 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` at 156 findings with
+**no new rows**. Measured at 320×568 with the row fully loaded — POP 55px,
+SACRIFICE 111px, LUCK 53px in a 304px row, no horizontal scroll, every control
+at 44px. **Still not seen on a phone.**

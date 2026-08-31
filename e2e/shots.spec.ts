@@ -166,7 +166,7 @@ test('shoots the first minute', async ({ page }) => {
   await writeFile(join(SHOTS, 's3-playing.png'), await page.screenshot());
 
   // The board's one door: a short list, then MORE, then the manual.
-  await page.locator('.camera .menu').click();
+  await page.locator('[data-go="quick"]').click();
   await page.waitForTimeout(200);
   await writeFile(join(SHOTS, 's3-quick.png'), await page.screenshot());
   await page.locator('[data-quick="more"]').click();

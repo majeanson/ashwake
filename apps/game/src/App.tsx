@@ -35,7 +35,8 @@ import { Board, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { ActionBar } from './screens/ActionBar';
-import { Camera, QuickMenu, useCameraCycle } from './screens/Camera';
+import { Camera, useCameraCycle } from './screens/Camera';
+import { MenuButton, QuickMenu } from './screens/Menu';
 import { Directions } from './screens/Directions';
 import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
@@ -1827,6 +1828,41 @@ ${s.view.harvest.firstPopWhen}`,
       {playing && <Hud hud={snap.hud} s={s} onNote={say} />}
 
       {/*
+        The MENU list — a drawer under the stat row, near the button that opens
+        it (2026-08-30).
+
+        Two things decide where this is rendered and they pull the same way. It
+        may not be inside the board host: the host goes `inert` the moment
+        anything is on the stack, and this is on the stack, so every row would
+        draw and none of them could be tapped — the same shape as the MORE bug
+        the session opened with, and it shipped that way for one build. And it
+        wants to hang off its button, which is now the top-right corner of the
+        BOARD; a `position: fixed` box cannot find that edge, because where the
+        board starts and stops depends on the stat row above it and the hand
+        below it, and the hand's height is a run's.
+
+        A flex child of the shell IS that edge, and the purse drawer has been
+        one since it was built. So this is a drawer too, at the same measure,
+        opening from the top where the purse opens from the bottom.
+
+        Its two journeys RAISE a panel over the list rather than closing it
+        first, which is deliberate — see `QuickMenu`. Two history calls in one
+        handler is a `go(-1)` racing a `pushState`, and the panel's own entry
+        is what loses. BACK from the manual landing back on the list it was
+        opened from is also simply correct.
+      */}
+      {quick.open && (
+        <QuickMenu
+          s={s}
+          sound={isEnabled(features, 'ui.sound')}
+          onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
+          onHowToPlay={() => manual.show()}
+          onFullMenu={() => more.show()}
+          onDismiss={quick.hide}
+        />
+      )}
+
+      {/*
         Reachable only while it is the thing on screen.
 
         A panel covers it, the front door covers it, and — since 2026-08-30 —
@@ -1916,70 +1952,32 @@ ${s.view.harvest.firstPopWhen}`,
           </p>
         )}
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
+        {/*
+          The two corners, and the rule that split them (2026-08-30).
+
+          **Chrome floats over the board, actions sit in the footer.** MENU is
+          the way OUT of the game rather than a move in it, so it is top-right,
+          clear of the arc a thumb sweeps fifty times a run; the camera keeps
+          the bottom corner it is named for; and LUCK went down to the action
+          row with POP and SACRIFICE, which is where the things that spend
+          something live. Marc: *"the accented button should be with the luck
+          buttons... this, but menu move top right."*
+
+          Both survive the run, because the ending's board is walked with the
+          same two controls — see `walking`.
+        */}
         {(playing || walking) && (
-          <Camera
+          <MenuButton
             s={s}
-            next={nextView}
-            onCycle={cycleView}
-            quickOpen={quick.open}
-            /*
-             * ONE door out, where a ♪ and a `?` used to stand (2026-08-30).
-             *
-             * Marc: *"make sure sound on or off and how to play stays in the
-             * menu, add a menu button instead"*, and then, on the cost of that:
-             * *"menu could add a submenu for quick actions like sound in off
-             * etc and then an option that goes to menu."* So it opens a list of
-             * three before it opens a room, and SOUND is one tap from the board
-             * again without being a button on it.
-             */
-            // A toggle, for the keyboard. A finger never reaches this while the
-            // list is open — the scrim is over it — but Enter on a focused
-            // button does, and a door that only opens is a door.
-            onMenu={() => (quick.open ? quick.hide() : quick.show())}
-            luck={snap.hud.luck}
-            // Nothing left to spend on a run that is over: the purse is a
-            // control for a board still being played.
-            canSpend={playing && snap.hud.spends.length > 0}
-            onPurse={onPurse}
-            purseOpen={purseOpen}
+            open={quick.open}
+            // A toggle. A finger never reaches this while the list is open —
+            // the scrim is over it — but Enter on a focused button does, and a
+            // door that only opens is a door.
+            onToggle={() => (quick.open ? quick.hide() : quick.show())}
           />
         )}
+        {(playing || walking) && <Camera s={s} next={nextView} onCycle={cycleView} />}
       </div>
-
-      {/*
-        The board's MENU list — a drawer, in the same slot the purse uses.
-
-        Two things decide where this is rendered, and they pull the same way.
-        It may not be inside the board host: the host goes `inert` the moment
-        anything is on the stack, and this is on the stack, so every row would
-        draw and none of them could be tapped — the same shape as the MORE bug
-        this session opened with. And it wants to sit exactly where the cluster
-        it belongs to sits, which is the line between the board and the
-        controls; a `position: fixed` box cannot find that line, because the
-        controls' height is the hand's and the hand's height is a run's.
-
-        A flex child of the shell IS that line, and the purse drawer has been
-        one since it was built. So this is a drawer too, at the same measure,
-        and it is up here rather than inside the `playing` block because the
-        cluster outlives a run — the ending's board is walked with the same
-        MENU button.
-
-        Its two journeys RAISE a panel over the list rather than closing it
-        first, which is deliberate — see `QuickMenu`. Two history calls in one
-        handler is a `go(-1)` racing a `pushState`, and the panel's own entry
-        is what loses. BACK from the manual landing back on the list it was
-        opened from is also simply correct.
-      */}
-      {quick.open && (
-        <QuickMenu
-          s={s}
-          sound={isEnabled(features, 'ui.sound')}
-          onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
-          onHowToPlay={() => manual.show()}
-          onFullMenu={() => more.show()}
-          onDismiss={quick.hide}
-        />
-      )}
 
       {playing && (
         <>
@@ -2025,6 +2023,8 @@ ${s.view.harvest.firstPopWhen}`,
             // SACRIFICE in `ActionBar`.
             knowsRelics={hasMet(progress, 'relic')}
             onHarvest={onHarvest}
+            onPurse={onPurse}
+            purseOpen={purseOpen}
             onNewRun={newRun}
           />
         </>

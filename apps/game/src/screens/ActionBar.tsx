@@ -4,6 +4,7 @@ import type { HarvestChoice } from '@engine/state';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
 import { useTerrainArt } from '../shell/art';
+import { Icon } from '../ui/Icon';
 import { Tile } from '../ui/Tile';
 
 /**
@@ -19,16 +20,29 @@ import { Tile } from '../ui/Tile';
  * — until each button was given a deterministic accessible name of its own.
  * That is what `aria-label` is doing here, and it is not decoration.
  *
- * **And the bar is HARVESTS only** (2026-08-30). The LUCK button — the door to
- * the purse — stood at the right end of it, and Marc moved it up to the board's
- * own corner beside the view button: *"put the luck button next to the FIT
- * button, as a new button ... luck button is another colour more like an action
- * one, but not in hand."* It was the one control here that was not a way to
- * spend THIS pocket, and it was taking a share of a row that gets crowded — POP,
- * POP for points, TAKE and SACRIFICE is an ordinary late run, and this file's
- * own `.act` comment measures what happens when that row runs out of width.
- * It is `Camera` now; the drawer it opens is still `Purse`, still above the
- * hand, and still `id="spends"`.
+ * **The bar is where SPENDING lives, and that is why LUCK is on it**
+ * (2026-08-30). It sat at the right end of this row, went up to the board's
+ * corner beside the view button for a day — *"put the luck button next to the
+ * FIT button ... luck button is another colour more like an action one, but not
+ * in hand"* — and came back down when the accent turned out to be in two places
+ * that read as two systems. Marc: *"the accented button should be with the luck
+ * buttons."*
+ *
+ * The rule the round trip produced is the one worth keeping: **chrome floats
+ * over the board, actions sit in the footer.** POP, TAKE, SACRIFICE and the
+ * purse are the four ways to spend something, they wear the one accent between
+ * them, and they are in the row a thumb reaches — with MENU moved to the
+ * opposite corner and the camera left alone in this one.
+ *
+ * The purse rides at the far end (`marginLeft: auto`) rather than beside
+ * SACRIFICE, because it spends a DIFFERENT currency: everything to its left is
+ * priced in the pocket you are looking at, and it is priced in luck.
+ *
+ * **The row is two buttons, not four.** `singlePayout` is true in the shipped
+ * tuning, so POP FOR POINTS never renders; the ordinary late run is POP and
+ * SACRIFICE, with TAKE when a pocket earns one. The `.act` note in `ui.css`
+ * about a crowded row squeezing to 65px was measured when the purse was here
+ * AND points were a choice, and neither is true now.
  */
 
 export type ActionBarProps = {
@@ -43,6 +57,9 @@ export type ActionBarProps = {
   readonly onHarvest: (choice: HarvestChoice) => void;
   /** Whether the device has met relics — the gate on offering a burn. */
   readonly knowsRelics: boolean;
+  /** The purse drawer, which opens above this bar and never moves it. */
+  readonly onPurse: () => void;
+  readonly purseOpen: boolean;
   readonly onNewRun: () => void;
 };
 
@@ -55,6 +72,8 @@ export function ActionBar({
   onHold,
   onHarvest,
   knowsRelics,
+  onPurse,
+  purseOpen,
   onNewRun,
 }: ActionBarProps) {
   // The baked hex per ground, so a card in the hand is the tile it will
@@ -136,6 +155,37 @@ export function ActionBar({
         )}
         {hud.ended && (
           <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
+        )}
+        {hud.spends.length > 0 && (
+          <button
+            type="button"
+            className="purse-toggle"
+            data-action="purse"
+            // The drawer opens ABOVE this bar, so it is earlier in the document
+            // than its own control — which is exactly the case `aria-controls`
+            // exists for.
+            aria-expanded={purseOpen}
+            aria-controls="spends"
+            // A mark and a number reads as "12" to a screen reader and says
+            // nothing about what it opens.
+            aria-label={s.ui.luckPurse(hud.luck)}
+            onClick={onPurse}
+            // The far end of the row: everything to its left is priced in the
+            // pocket, and this is priced in luck.
+            style={{ marginLeft: 'auto' }}
+          >
+            {/*
+              The REGISTRY's mark, not a lookalike (2026-08-30).
+
+              Luck is one of the two currencies that follow a player between the
+              board, the purse, the shop and the end screen, so the concept
+              registry names it and every one of those surfaces draws the same
+              thing. This button — the door to the purse, and the most-seen luck
+              on the screen — was drawing `♦`, a second symbol for the idea the
+              registry already had.
+            */}
+            <Icon name="luck" /> {hud.luck}
+          </button>
         )}
       </div>
 

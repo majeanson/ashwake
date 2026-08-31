@@ -59,6 +59,12 @@ _"tiles hand always footer but in finger zone, accessible"_), and every button
 in the bar wears the accent, because spending a pocket is the loudest thing the
 board does and they were drawn in the ink of the empty HOLD slot beside them.
 
+And since the same day the LUCK purse is back on this row, at its far end —
+**chrome floats over the board, actions sit in the footer.** POP, TAKE,
+SACRIFICE and the purse are the four ways to spend something, they share the
+one accent, and the board corners hold only MENU (top right) and the camera
+(bottom right).
+
 | Gesture                                          | Ashwake 1                                     | Ashwake 2                                                                                                                                                       |
 | ------------------------------------------------ | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | POP (tiles)                                      | flies the camera to the pocket, then harvests | → glides, then harvests                                                                                                                                         |
@@ -98,7 +104,7 @@ board does and they were drawn in the ink of the empty HOLD slot beside them.
 | WORLDS: **BEGIN AT CAMP**                | yes, in that panel         | ✓ (2026-08-30 — the fifth shrine's unlock)                                                                                                                                                                                                   |
 | Sound toggle over the board              | yes                        | ✓ again since 2026-08-30 — a ROW behind MENU rather than a button on the board: _"menu could add a submenu for quick actions like sound in off etc."_ One tap from the board, costing no board. Still one wire with SETTINGS, still one flag |
 | `✕` lens-clear button                    | yes                        | ✗ — the fog tap and a second long-press both let go                                                                                                                                                                                          |
-| MENU over the board                      | ✗ (it had ♪ and ?)         | ✓ 2026-08-30 — one door onto a short list: SOUND (switches in place), HOW TO PLAY, MORE. A drawer where the purse opens, and a door on the stack, so Escape and Android BACK close it                                                        |
+| MENU over the board                      | ✗ (it had ♪ and ?)         | ✓ 2026-08-30 — TOP-RIGHT, out of the arc a thumb sweeps: one door onto a short list (SOUND, HOW TO PLAY, MORE) that opens as a drawer under the stat row. A door on the stack, so Escape and Android BACK close it                           |
 | THE GROUND YOU WALKED, on the ending     | a picture of the board     | ✓ 2026-08-30 — a DOOR onto the live board: the ending steps aside to a bar and the real board takes the screen back, pan and pinch and FIT. Marc: _"i dont want a picture i want to actual screengame where we can move around"_             |
 | Starting a world or a daily              | opened framed on the start | ✓ 2026-08-30 — the rig fits ONCE EVER, so a new world used to open wherever the last one was left. Every way into a run now flies to its wake hex                                                                                            |
 

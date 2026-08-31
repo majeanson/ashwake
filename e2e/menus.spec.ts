@@ -331,7 +331,7 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await clean('the purse');
   await page.locator('[data-action="purse"]').click();
 
-  await page.locator('.camera .menu').click();
+  await page.locator('[data-go="quick"]').click();
   await clean("the board's own MENU list");
   await page.locator('[data-quick="more"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
@@ -389,17 +389,41 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
   await page.goto('/?taught=1&seed=7&place=12');
   await begin(page);
 
-  // ONE button, and the two it replaced are gone from over the board.
-  await expect(page.locator('.camera .menu'), 'the board has no MENU button').toBeVisible();
+  // ONE button, in the TOP corner, and the two it replaced are gone.
+  await expect(page.locator('.board-menu .menu'), 'the board has no MENU button').toBeVisible();
   expect(await page.locator('.camera .help').count(), '? is still on the board').toBe(0);
   expect(
-    await page.locator('.camera [data-action="sound"]').count(),
+    await page.locator('[data-action="sound"]').count(),
     'the sound button is still on the board',
   ).toBe(0);
+  // And the camera is alone in the bottom corner again.
+  expect(
+    await page.locator('.camera button').count(),
+    'the camera corner grew a second control back',
+  ).toBe(1);
 
-  await page.locator('.camera .menu').click();
+  /*
+   * The button is in the top half, and its list opens near it.
+   *
+   * Marc, 2026-08-30: *"menu move top right"* — the door out of the game left
+   * the corner a thumb sweeps fifty times a run. The thing that would silently
+   * regress is the LIST: it hung off the bottom of the screen while its button
+   * was up here, which is a menu a screen away from what opened it, and only a
+   * geometry check catches that. Everything else about it still passes.
+   */
+  const topHalf = (sel: string): Promise<number> =>
+    page.locator(sel).evaluate((el) => el.getBoundingClientRect().top / window.innerHeight);
+  expect(await topHalf('.board-menu'), 'MENU is not in the top half of the screen').toBeLessThan(
+    0.5,
+  );
+
+  await page.locator('[data-go="quick"]').click();
   const sound = page.locator('[data-quick="sound"]');
   await expect(sound, 'MENU opened no list').toBeVisible();
+  expect(
+    await topHalf('.quick'),
+    'the list opened at the bottom, a screen away from the button that opened it',
+  ).toBeLessThan(0.5);
 
   // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
   // quiet room is uninstalled.

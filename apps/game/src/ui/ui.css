@@ -983,6 +983,37 @@ button[disabled] {
   color: var(--ink-faint);
 }
 
+/* ---- the two corners ---------------------------------------------------- */
+
+/*
+ * MENU, top right (2026-08-30).
+ *
+ * **Chrome floats over the board, actions sit in the footer**, and this is the
+ * chrome half. Marc: _"the accented button should be with the luck buttons...
+ * this, but menu move top right."_ LUCK went down to the action row where the
+ * things that spend something live; the camera kept the bottom corner it is
+ * named for; and the way OUT of the game came up here, clear of the arc a thumb
+ * sweeps fifty times a run. A door pressed twice does not belong where a hand
+ * lives.
+ *
+ * 12 rather than the cluster's 10, because `.directions` — the `?themes=1`
+ * picker — is at 11 and pins itself to this same `top: var(--gap)`. That is a
+ * debug surface and the two can still overlap on a narrow screen; the layer at
+ * least means the button is the one you can press.
+ */
+.board-menu {
+  position: absolute;
+  top: var(--gap);
+  right: var(--gap);
+  z-index: 12;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.board-menu button {
+  background: var(--panel);
+}
+
 /* ---- the camera cluster ------------------------------------------------- */
 
 .camera {
@@ -1004,13 +1035,14 @@ button[disabled] {
 /*
  * The short list behind MENU — a drawer, not a popover (2026-08-30).
  *
- * It opens where the purse opens: a flex child of the shell, in normal flow
- * between the board and the controls, at the same centred measure everything
- * down here shares. That is not a stylistic echo, it is the only place the
- * line it wants to hang off actually exists — the cluster sits at the bottom
- * of the board host, and how far up the screen that is depends on how tall the
- * hand is, which a `position: fixed` box cannot know. Being in the flow, this
- * IS that line.
+ * It opens where the purse opens, mirrored: a flex child of the shell, in
+ * normal flow, at the same centred measure — the purse hangs UP off the
+ * controls and this hangs DOWN off the stat row, because that is the edge its
+ * button now sits in. That is not a stylistic echo, it is the only place that
+ * edge actually exists. Where the board starts and stops depends on the stat
+ * row above it and the hand below it, and the hand's height is a run's, so a
+ * `position: fixed` box cannot find it — one guessed, for one build, and
+ * half-covered the cluster that opened it. Being in the flow, this IS the edge.
  *
  * `z-index` over its own scrim, and `position: relative` so the layer takes.
  *
@@ -1034,7 +1066,8 @@ button[disabled] {
   gap: 0.25rem;
   width: calc(100% - var(--gap) * 2);
   max-width: 34rem;
-  margin: 0 auto 0.35rem;
+  /* Below the stat row rather than above the controls: it hangs off the top. */
+  margin: 0.35rem auto 0;
   padding: 0.5rem;
   background: var(--panel);
   border: 1px solid var(--panel-edge-active);
@@ -1066,54 +1099,6 @@ button[disabled] {
    by `contrast.test.ts`, so "off" is legible rather than merely dimmer. */
 .quick-row[aria-pressed='false'] {
   color: var(--ink-faint);
-}
-
-/*
- * LUCK is the one ACTION in the corner, and it says so (2026-08-30).
- *
- * Marc: *"luck button is another colour more like an action one, but not in
- * hand."* MENU and VIEW are chrome — a door and a camera — and this one spends
- * a currency, so it wears `--accent`: the direction's own signature colour,
- * graded as text on `--panel` by `contrast.test.ts`, and the same pairing
- * `.door-begin` uses for the loud way in. That is the whole of the ration
- * `theme/tokens.ts` asks for — one accent on the board, on the one control
- * here that does something to the run.
- *
- * The mark and the number are one line, which is why the icon is sized down to
- * sit on the number's baseline rather than above it.
- */
-.camera .purse-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.camera .purse-toggle svg {
-  width: 1em;
-  height: 1em;
-}
-
-/*
- * An open drawer is a pressed button — said with a MARK, not a ground.
- *
- * It filled with `--panel-edge` for one build, and `pnpm audit:screens` found
- * it in daylight: the accent is graded at 6.16:1 as text on the panel and lands
- * at **3.1:1** on the panel's edge, under the 4.5 bar. Darken something, never
- * the threshold — but the thing to change here was the idea. A ground is what
- * the label is read against; an outline is a mark, answers to the 3:1 bar, and
- * changes nothing about what the number is standing on.
- *
- * Inside the border rather than outside it: this button is pinned in a cluster
- * `var(--gap)` from the edge of the screen, and a positive offset would draw
- * the ring off it.
- */
-.camera .purse-toggle[aria-expanded='true'] {
-  outline: 2px solid var(--ink);
-  outline-offset: -4px;
 }
 
 /*
@@ -1378,12 +1363,18 @@ button[disabled] {
 /*
  * A verb over a payment, on TWO LINES and never four (2026-08-30).
  *
- * The bar is a flex row that does not wrap, so a crowded one — POP, POP for
- * points, TAKE, SACRIFICE and the purse, which is an ordinary late run —
- * squeezed every button until its VALUE wrapped instead. Measured at 65px
- * where an uncrowded bar is 44: twenty-one pixels of board spent on a line
- * break. Both lines hold their line now and give font size instead, which is
- * the thing a reader loses least by.
+ * The bar is a flex row that does not wrap, so a crowded one squeezed every
+ * button until its VALUE wrapped instead — measured at 65px where an uncrowded
+ * bar is 44, twenty-one pixels of board spent on a line break. Both lines hold
+ * their line now and give font size instead, which is what a reader loses least
+ * by.
+ *
+ * That was measured on a row of five, and the row cannot be five any more: the
+ * purse left and came back, and `singlePayout` is TRUE in the shipped tuning,
+ * so POP FOR POINTS never renders at all. The ordinary late row is POP,
+ * SACRIFICE and the purse, with TAKE when a pocket earns one. The rule stands
+ * anyway — a dial can turn `singlePayout` off, and the row should not discover
+ * its own limit on a phone.
  */
 /*
  * And it is an ACTION, and says so (2026-08-30).
@@ -1429,8 +1420,49 @@ button[disabled] {
   white-space: nowrap;
 }
 
+/*
+ * LUCK: an action, in the row where the actions are (2026-08-30).
+ *
+ * It spent a day in the board's corner beside the camera — *"luck button is
+ * another colour more like an action one, but not in hand"* — and came back
+ * when the accent turned out to be in two places that read as two systems.
+ * Marc: *"the accented button should be with the luck buttons."* It wears
+ * `--accent`, graded as text on `--panel` by `contrast.test.ts` and the same
+ * pairing `.door-begin` uses for the loud way in; POP and SACRIFICE beside it
+ * wear the same, which is the ration `theme/tokens.ts` asks for spent on one
+ * kind of thing rather than scattered.
+ *
+ * The mark and the number are one line, so the icon is sized to the number's
+ * own em rather than to a button's.
+ */
 .purse-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-family: var(--font-display);
+  font-size: 0.85rem;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.purse-toggle svg {
+  width: 1em;
+  height: 1em;
+}
+
+/*
+ * An open drawer is a pressed button — said with a MARK, not a ground.
+ *
+ * It filled with `--panel-edge` for one build, and `pnpm audit:screens` found
+ * it in daylight: the accent is graded at 6.16:1 as text on the panel and lands
+ * at **3.1:1** on the panel's edge, under the 4.5 bar. Darken something, never
+ * the threshold — but the thing to change here was the idea. A ground is what
+ * the label is read against; an outline is a mark, answers to the 3:1 bar, and
+ * changes nothing about what the number is standing on.
+ */
+.purse-toggle[aria-expanded='true'] {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
 }
 
 /* Opens ABOVE the bar, so the bar never moves under a reaching thumb. */

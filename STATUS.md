@@ -4,8 +4,40 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — the bottom of the screen gets sorted
-out.** Marc: _"add pop and sacrifice as action buttons, tiles hand always footer
+Last checkpoint: **2026-08-30, last — the corner splits in two.** Marc, on a
+board whose accent was in two places: _"the accented button should be with the
+luck buttons... this, but menu move top right."_
+
+**Two assumptions checked first, and both were wrong.** `singlePayout` is TRUE
+in the shipped tuning, so POP FOR POINTS never renders — the bar is two buttons,
+not four, and `.act`'s comment about a crowded row was measured when the purse
+was still in it. And `.action-bar` has no `min-height`, so it collapses to zero
+with no live pocket: the row costs board only while it is earning it. Hiding POP
+behind a popup would have bought height that mostly is not spent, at the price
+of a tap on the game's most-repeated verb.
+
+**The rule, worth more than the layout: chrome floats over the board, actions
+sit in the footer.** LUCK came back down beside POP and SACRIFICE — every accent
+in one row, in the thumb zone, the purse at the far end because it is priced in
+a different currency. MENU went top-right, out of the arc a thumb sweeps fifty
+times a run, and into its own file. The camera is alone in the corner it is
+named for.
+
+**The MENU list opened a screen away from its button** for one build — it hung
+off the bottom of the shell, where it had been right one commit earlier. It
+hangs off the stat row now: the purse's own trick, mirrored. Caught by a
+geometry assertion; everything else about the list still passed.
+
+Both e2e selectors for the button were `.camera .menu` and are `[data-go]` now:
+a selector naming a POSITION breaks every time the layout is an opinion, and
+this one has been an opinion four times in a day.
+
+Verified: 1064 tests / 74 files, 82 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 156 findings with **no new rows**.
+Measured at 320×568 with the row loaded: POP 55px, SACRIFICE 111px, LUCK 53px
+in a 304px row, no horizontal scroll.
+
+Previous checkpoint: **2026-08-30 — the bottom of the screen gets sorted out.** Marc: _"add pop and sacrifice as action buttons, tiles hand always footer
 but in finger zone, accessible. menu could add a submenu for quick actions like
 sound in off etc and then an option that goes to menu."_
 

@@ -135,7 +135,7 @@ test('goes quiet while a panel is open, exactly as the board does', async ({ pag
   const before = await lean(page);
   // The board's one door is MENU, which opens a short list; HOW TO PLAY is on
   // it, one row above the way into MORE.
-  await page.locator('.camera .menu').click();
+  await page.locator('[data-go="quick"]').click();
   await page.locator('[data-quick="manual"]').click();
   await page.locator('[data-panel="manual"]').waitFor({ state: 'visible' });
   await page.keyboard.press('r');
