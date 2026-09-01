@@ -46,12 +46,16 @@ const ANGLES = [
   ['s2c-materials-relief', 'tilt=35&light=1&materials=1&relief=0.35'],
   ['s2c-materials-art', 'tilt=35&light=1&materials=1&art=1'],
   ['s2c-materials-art-relief', 'tilt=35&light=1&materials=1&art=1&relief=0.35'],
-  // Deep enough for destinations to be standing on the board — the props are
-  // the point of the third dimension and cannot be seen on an opening board.
-  // Torchlit, because a headless browser reports a light preference and AUTO
-  // gives it daylight — and a lit destination on a pale board is a pale thing
-  // on a pale thing. The props are meant to glow.
-  ['s2d-props', 'theme=torchlit&tilt=35&light=1&materials=1&art=1&relief=0.35&taught=1'],
+  // Deep enough that destinations are actually on the board — an opening
+  // board has none, and a picture of the board without them is a picture of
+  // ground. Torchlit, because a headless browser reports a light preference
+  // and AUTO gives it daylight, and a lit destination on a pale board is a
+  // pale thing on a pale thing.
+  //
+  // It was `s2d-props` until 2026-09-01, when the props were removed
+  // (`DECISIONS.md` D11): a destination is its MARK now, and a shot named for
+  // the objects would be a picture of a thing this board no longer draws.
+  ['s2d-destinations', 'theme=torchlit&tilt=35&light=1&materials=1&art=1&relief=0.35&taught=1'],
   // S5's candidate direction, shot beside the three that ship so it can be
   // judged by looking rather than by argument — which is the only way a
   // direction has ever been chosen here.
@@ -67,7 +71,7 @@ for (const [name, query] of ANGLES) {
   test(`draws ${name}`, async ({ page }) => {
     const errors = watchErrors(page);
     await page.goto(
-      `/?seed=7&place=${name === 's2d-props' || name.endsWith('-deep') ? 45 : 12}&${query}`,
+      `/?seed=7&place=${name === 's2d-destinations' || name.endsWith('-deep') ? 45 : 12}&${query}`,
     );
     await expect(page.locator('canvas')).toBeVisible();
     await begin(page);

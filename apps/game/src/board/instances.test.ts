@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  Color,
   InstancedMesh,
   Matrix4,
   MeshBasicMaterial,
@@ -81,5 +82,45 @@ describe('an instanced field', () => {
       [0, -3],
     ]);
     expect(tapAt(mesh, 0, -1.5)).toBeUndefined();
+  });
+});
+
+/**
+ * The OTHER thing that goes wrong with an instanced mesh here (2026-09-01).
+ *
+ * `commitInstances` above is the first: a cached bounding sphere that stops
+ * answering taps. This is the second, and it cost two wrong diagnoses of the
+ * same phone photo — Marc: *"still see some weird block shapes."*
+ *
+ * `Color.setRGB` writes into the WORKING colour space, which three keeps as
+ * linear-sRGB. Hand it a display-space colour and it is treated as if it were
+ * already linear, and comes back out lighter and far less saturated. Worse, the
+ * wash lands on the SHADING as well as the hue, so a lit solid stops reading as
+ * a solid and becomes a flat pale silhouette. That is what happened to the
+ * destination props, and it is why they read as blocks.
+ *
+ * `HexField` and `Pop` write `setRGB` ON PURPOSE and are correct: their
+ * materials carry `torchShader.ts`, which replaces `color_fragment` so the tint
+ * multiplies in DISPLAY space, and those materials want the raw display numbers
+ * in `vColor`. The rule is therefore not "never `setRGB`" but this:
+ *
+ *   **`setRGB` for a torch tint, `setHex` for a colour.**
+ *
+ * The props are gone (`DECISIONS.md` D11), so nothing in the board draws a
+ * display colour through `instanceColor` today. This stays because the next
+ * instanced mesh added here will face the same fork, and nothing else in the
+ * repository says which way to take it.
+ */
+describe('the colour space an instance colour is written in', () => {
+  /** Torchlit's own `ink.lit`, a mid gold. */
+  const GOLD = 0xc79a4b;
+
+  it('round-trips a display colour through setHex, and not through setRGB', () => {
+    expect(new Color().setHex(GOLD).getHexString()).toBe('c79a4b');
+
+    const washed = new Color()
+      .setRGB(((GOLD >> 16) & 0xff) / 255, ((GOLD >> 8) & 0xff) / 255, (GOLD & 0xff) / 255)
+      .getHexString();
+    expect(washed, 'setRGB no longer treats a display colour as linear').not.toBe('c79a4b');
   });
 });

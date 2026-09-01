@@ -4,7 +4,39 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-01, last — a spent destination stops being spent
+Last checkpoint: **2026-09-01, last — the destinations become their marks.**
+
+Marc, after three rounds on one phone photo and two wrong fixes: _"i want the
+star symbol and just that for example"_. His own screenshot was the argument —
+one clean STAR at the edge of the map and pale lumps everywhere else, because a
+BEACON is the one destination that gets no prop and therefore the one whose mark
+nothing covers.
+
+**The props are deleted** (`DECISIONS.md` D11). `Props.tsx` stood an object on
+the hex and `Labels.tsx` laid the mark flat underneath, so the object covered
+the only thing that said which of the five it was — while `landmarks.ts` claimed
+in its own docblock that "the mark stays the authority on MEANING". A
+destination is now its mark: full ink while it pays, `inkDim` once spent, on the
+destination ground, inside its ring. A revealed cache looks like the beacon that
+announced it.
+
+**The colour bug under it was real and was not the answer.** `Props.tsx` wrote
+instance colours with `Color.setRGB`, which writes into the LINEAR working
+space, so every prop rendered washed out with its own shading compressed. Fixing
+it made them gold objects instead of cream ones and did not make them a cache or
+a shrine. The rule it found outlives them and lives in `instances.test.ts`:
+**`setRGB` for a torch tint, `setHex` for a colour** — `HexField` and `Pop` use
+the first on purpose, because `torchShader.ts` wants raw display numbers.
+
+**And the lesson, which cost three sessions.** Two of them diagnosed from a
+compressed screenshot. What settled it was asking Marc, with the candidates
+drawn out.
+
+Verified: 1062 tests / 74 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
+none lost**. The count fell by 22 with the props' own test file.
+
+Previous checkpoint: **2026-09-01 — a spent destination stops being spent
 ground, and a parallel session lands with it.**
 
 Marc, a third time in one class: _"symbols used on used shrines, sites, caches,

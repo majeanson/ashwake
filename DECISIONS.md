@@ -368,6 +368,56 @@ chat, where an icon cannot go. And a ground's FIELD keeps saying its colour
 with a TEXTURE rather than a mark — a different channel, retired as a shape by
 Marc on 2026-08-18 and not revisited here.
 
+### D11 — A destination is its MARK, not an object — RULED 2026-09-01
+
+**Marc, after three rounds on one phone photo:** _"i want the star symbol and
+just that for example"_, _"theyre not associated with their right symbol it
+seems"_, and, given the choice, **symbol only, drop the 3D shape**.
+
+The board stood a thing on every destination hex — a drum, a spire, a level
+ring, a faceted stone, a crystal (`board/Props.tsx`, `board/landmarks.ts`,
+Stage 2d) — on the argument that a lit object reads at any zoom and says
+_someone was here_ in a way a printed mark cannot. `landmarks.ts` was careful to
+add that "the mark stays the authority on MEANING".
+
+**It could not be, and that is the ruling.** `Labels.tsx` lays a destination's
+mark flat on the hex and the prop stands on top of it, so the star, package,
+key, flag or sparkle that `theme/icons.ts` names as the authority was covered by
+the object the moment a destination was revealed. The only destinations whose
+symbol a player could actually see were BEACONS — glows through undrawn ground,
+which get no prop. Marc's own photo shows exactly that: one clean star at the
+edge of the map, and five pale lumps everywhere else.
+
+Two further facts made the objects worse rather than merely redundant. At the
+size a phone draws a hex, an eight-sided drum, an icosahedron and an octahedron
+are one silhouette, so three different destinations read the same. And they were
+being written to `instanceColor` with `Color.setRGB`, which writes into the
+linear working space — so they rendered washed-out and their own shading was
+compressed along with the hue (`LOG.md` Session 35). Fixing the colour made them
+gold objects instead of cream ones, and did not make them a cache, a site or a
+shrine.
+
+**So the props are deleted rather than dialled down.** `Props.tsx`,
+`landmarks.ts` and `landmarks.test.ts` are gone, and `Labels.tsx` is the whole of
+what a destination looks like: the direction's mark, at full ink while it pays
+and `inkDim` once it is spent, on the destination ground, inside its ring. A
+revealed cache now looks like the beacon that announced it, which is the
+strongest argument for this reading — the board was already drawing the right
+picture in the one place nothing could cover it.
+
+Deleted rather than kept behind a dial, on this repository's own precedent
+(`meta/route.ts`'s `searchFor`, D9): a system nobody may switch on is dead code,
+and dead code is this body's signature failure. The shapes are in git if a later
+pass wants to argue for them — with the mark on top, which is what would have to
+change for them to come back.
+
+**What it costs, stated so it is not re-litigated as a discovery.** The board
+loses its built, three-dimensional look on the five hexes that had one; a
+destination is now flat like everything else. That was the point of Stage 2d
+(Marc, 2026-08-29: _"map shrines, etc. cuter and more nice"_), and it is being
+traded for the thing he asked for three times running: being able to tell what
+he is walking toward without tapping it.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

@@ -14,7 +14,6 @@ import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } fro
 import { commitInstances } from './instances';
 import { Labels } from './Labels';
 import { thetaStartFor } from './prism';
-import { Props } from './Props';
 import { useBatchResources } from './resources';
 import { ringsOf } from './rings';
 import { TEXTURE_PX, type SurfaceTextures } from './surfaces';
@@ -34,6 +33,13 @@ import { TEXTURE_PX, type SurfaceTextures } from './surfaces';
  * in `prism.ts`; the GPU objects and their disposal in `resources.ts`. Each is
  * testable without a canvas, which is why materials could land without this
  * file growing.
+ *
+ * **A destination is a MARK, not an object** (2026-09-01, `DECISIONS.md` D11).
+ * `Props.tsx` and `landmarks.ts` stood a drum, a spire, a ring, a stone and a
+ * crystal on the five destination hexes, and the mark that says WHICH of the
+ * five it is was drawn flat on the hex underneath — so the object covered the
+ * only thing that identified it. Both files are gone; `Labels.tsx` is the
+ * whole of what a destination looks like now.
  *
  * Everything is positioned by `render/layout.ts`'s `place()` at size 1, so the
  * scene's unit is one hex radius and the camera decides what a unit is worth in
@@ -320,7 +326,6 @@ export function HexField({
           <meshBasicMaterial color={theme.ink.accent} toneMapped={false} />
         </mesh>
       )}
-      <Props cells={view.cells} theme={theme} layout={layout} relief={relief} />
       <Labels cells={view.cells} theme={theme} layout={layout} relief={relief} yaw={yaw} />
     </group>
   );

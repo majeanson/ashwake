@@ -2823,3 +2823,57 @@ has already guessed twice. `NEXT.md` carries it.
 **Verified:** 1084 tests / 75 files, 86 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
 none lost**.
+
+### Session 36 — the destinations become their marks (2026-09-01)
+
+**Question:** three rounds on one phone photo had produced two wrong answers, so
+this one opens by asking rather than guessing. Marc, given the candidates:
+_"i want the star symbol and just that for example"_, _"theyre not associated
+with their right symbol it seems"_, and, of the four ways forward, **symbol
+only, drop the 3D shape**.
+
+**His own screenshot was the argument.** One clean STAR at the left edge of the
+map, and pale lumps everywhere else. The star is a BEACON — a glow through
+ground the board has not grown to — and a beacon is the one destination that
+gets no prop, so it is the one whose mark nothing covers. The board was already
+drawing the right picture in the only place it could not be hidden.
+
+**`Props.tsx`, `landmarks.ts` and `landmarks.test.ts` are deleted**
+(`DECISIONS.md` D11). The props stood on the hex and `Labels.tsx` laid the
+mark flat underneath, so the object covered the only thing that said WHICH of
+the five it was — while `landmarks.ts`'s own docblock claimed "the mark stays
+the authority on MEANING". It could not be, and that is the ruling.
+
+Deleted rather than dialled down, on this repository's own precedent
+(`meta/route.ts`'s `searchFor`, D9): a system nobody may switch on is dead
+code, and dead code is this body's signature failure. The shapes are in git, and
+what would have to change for them to come back is written into D11.
+
+**What the last session's colour fix bought, and what it did not.** Session 35
+was a real bug — `setRGB` writes into the linear working space, so the props
+rendered washed out and their own shading compressed with the hue. Fixing it
+made them gold objects instead of cream ones, and did not make them a cache, a
+site or a shrine. Worth stating: the fix was correct and did not answer the
+question, which is the difference between a bug and a design.
+
+**The trap it found outlives the props.** `HexField` and `Pop` write `setRGB`
+ON PURPOSE — their materials carry `torchShader.ts`, which multiplies the tint
+in display space and wants the raw numbers in `vColor`. So the rule is not
+"never `setRGB`", it is **`setRGB` for a torch tint, `setHex` for a colour**,
+and it now lives in `instances.test.ts` beside the other thing that goes wrong
+with an instanced mesh on this board.
+
+**`s2d-props` became `s2d-destinations`.** A doc shot named for objects the
+board no longer draws is the stale ledger this repository keeps losing sessions
+to, in its smallest form.
+
+**The lesson, and it is the same one twice.** Session 34 diagnosed from a
+compressed phone photo and shipped the wrong fix; Session 35 rendered the scene
+locally, which found a real bug but still answered a question Marc had not
+asked. What settled it was ASKING him, with the candidates drawn out. Three
+sessions of inference lost to one question not asked.
+
+**Verified:** 1062 tests / 74 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
+none lost**. The test count fell by 22 because the props' own file went with
+them.
