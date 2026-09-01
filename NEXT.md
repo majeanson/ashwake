@@ -146,6 +146,27 @@ as working; `describeHexOf`'s `unlockLabel` and `crossingDowry` were never
 passed, so every shrine promised "a system"; and a daily's hidden finds granted
 nothing at all, because a perk needs a world to live on.
 
+**A ring's WIDTH is dead data** (found 2026-09-01, deliberately left). Every
+direction authors three widths (`edgeWidth`, `ripeEdgeWidth`, `home.ringWidth`),
+`board/rings.ts`'s ladder computes six values out of them, and `HexField` draws
+every ring from one shared `ringGeometry` with a hard-coded `0.16` band and
+never reads the field. So a ripe pocket's heavy outline, a legal hex's edge and
+home's deliberately quiet ring — torchlit's own comment says `ringWidth` "sits
+well under `ripeEdgeWidth`" — all draw identically.
+
+Wiring it is small and was built and backed out in the same session: a ring's
+width IS its geometry and an instanced mesh shares one, so it wants a mesh per
+width, the shape `groundBatches` already uses. It is out until Marc has looked,
+because honouring the authored numbers makes EVERY outline on the board thinner
+than the one it draws today — the legal edge, the most-used affordance the board
+has, loses 45% of its weight. The numbers were tuned by eye against the 0.16
+render, so honouring them is a re-tune of the whole board's line weight rather
+than a fix, and that is a look decision (`DECISIONS.md` on the look dials: they
+are working defaults, not rulings).
+
+**Needs Marc**, on a phone: is the board's line weight better at the authored
+numbers, or is 0.16 what it should have been all along?
+
 **THE SWEEP, item by item, so nobody has to re-derive it.** Every reward number
 `NEXT.md` listed, and where the test that watches it lives:
 

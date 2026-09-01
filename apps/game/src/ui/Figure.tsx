@@ -193,7 +193,6 @@ function FigureCards({
             theme={theme}
             s={s}
             art={art[card.colour]}
-            {...(card.held === true ? { held: true } : {})}
           />
         ),
       )}

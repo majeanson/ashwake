@@ -2627,3 +2627,97 @@ typecheck/lint/format/build clean, `pnpm audit:screens` at 132 findings with
 disabled shop buttons, pushed below the fold by the atlas — the audit only
 measures what is in the viewport, so that is a move, not a fix). **Still not
 seen on a phone.**
+
+### Session 32 — a spent destination stops being spent ground (2026-09-01)
+
+**Question:** Marc, for the third time in this class: _"make sure symbols used
+on 'used' shrines, sites, caches, etc. are the same as when they are highlighted
+and active, just grey and look deactivated instead (but keep same symbols like
+star, cache, etc.)."_ The glyph and the prop were both fixed on 2026-08-29, on
+his own words then. So what is still saying "gone" rather than "spent"?
+
+**Two channels were being DELETED rather than dimmed, and both are the hex
+rather than the thing standing on it.**
+
+The ring: `ringOf` read `cell.kind === 'landmark' && !cell.claimed`, so reaching
+a cache did not quieten its outline, it removed it — and an outline is what says
+"this hex is a PLACE" from across a board. The ground: `surfaceFor` dropped a
+claimed landmark to `theme.stone`, which is the surface a POPPED TILE wears, so
+on a board that fills with spent ground as a run goes on, the hex you walked all
+that way to reach became the same hex as everything around it. That is the
+identical fault the prop had in 2026-08-29's session (painted `stone.fill`) and
+the glyph had the same day (drawn in the faintest ink), one layer further down
+each time. Three sessions, four channels, one sentence: **quiet is not gone.**
+
+Both now speak `inkDim`, which is what the prop and the glyph already speak, so
+a spent destination says one thing in one tone across all four.
+
+**The new rung went in at the BOTTOM of the ladder, and that is the whole of
+"nothing that had a ring changes".** The cheap version — flipping `!claimed` to
+cover both — would have lifted the claimed case above `lensed`, so a claimed
+territory of the lit colour would have stopped answering the lens. `rings.ts` is
+a pure function that had no test at all; it has one now, and that case is in it.
+
+**The budget had never graded the spent voice.** `inkDim` is drawn four times
+over on a claimed destination and `materials.test.ts` graded `ink`, `halo`,
+`lit` and `accent` and never it — so "still here, just spent" rested on a colour
+no test looked at, and this session put `inkDim` ink on `inkDim`-speckled
+ground, which is exactly the pair that can cancel itself out. Graded now, at the
+same bars, in all four directions.
+
+**And a ring's WIDTH turned out to be dead data.** Found by giving the spent
+ring a thinner one and checking the board drew it thinner. It did not:
+`HexField` draws every ring from one geometry with a hard-coded `0.16` band and
+never reads the field, so six computed widths — including home's deliberately
+quiet one — all draw the same. Wiring it is small and was built, measured and
+**backed out in this session**: honouring the authored numbers makes every
+outline on the board thinner than today's, and the legal edge (the most-used
+affordance the board has) loses 45% of its weight. Those numbers were tuned by
+eye against the 0.16 render, so honouring them is a re-tune of the whole board's
+line weight rather than a fix — a look decision, which is Marc's on a phone and
+not a session's. `NEXT.md` carries it; the test deliberately does not assert a
+width difference no pixel honours.
+
+**Verified:** 1080 tests / 75 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit with no new rows. **Still not seen on
+a phone.**
+
+### Session 33 — landing a parallel session's work (2026-09-01)
+
+**Not a session's own record.** Another session worked this repository at the
+same time as Session 32 and left without writing one; this is the landing note,
+written from the evidence in the diff so that `main` does not carry undocumented
+work. Its reasoning is in its own docblocks, which are thorough and quote Marc
+directly — `screens/Device.tsx` and `ui/Tile.tsx` are the two to read.
+
+**What landed with it.** THIS DEVICE became a room rather than a footer — Marc:
+_"make sure in the more menu, the whole Cet appareil subsection is transformed
+into a new menu (similar to My worlds)"_ — so `screens/Device.tsx` is a panel
+`More` opens and `App` puts on the dialog stack, and the backup, restore and
+reset controls stop standing open under the list of places to go. And a hand
+card became a PICTURE: _"remove text in the hand tiles, keep color and symbol"_,
+so the ground's name, the rarity word and the HELD badge come off the card, the
+colour and the Phosphor mark stay, and the words move into a clipped span so a
+hand of buttons still announces what each one is. `hand.ts`, `Figure.tsx`,
+`view/figure.ts` and `ui.css` follow it; `e2e/board.spec.ts` and
+`menus.spec.ts` were updated with it.
+
+**It was left mid-refactor and `main` would not have compiled.** `TileProps`
+lost its `held` flag and `ActionBar` still passed one, so `pnpm typecheck` was
+red — `ActionBar.tsx(254,15)`, the stash's own card. Three files were also
+unformatted. Both are fixed here: the flag is gone from the call site, because
+`slot` is what says a card is stashed now and `Tile`'s own docblock states that
+rule ("a stashed card is the one standing in a stash slot").
+
+**The lesson, which is this file's business rather than that session's.** Two
+sessions in one working tree is a state this repository has no rule for, and the
+failure mode is not a merge conflict — nothing overlapped — it is a GREEN
+session committing a RED tree it never touched. Session 32 caught it only by
+running `pnpm typecheck` on the whole tree rather than on what it had changed,
+after a `set -e` chain hid the failure once by putting the check inside an `&&`
+list. **Verify the tree, not the diff.**
+
+**Verified, over both sessions' work together:** 1080 tests / 75 files, 86
+Playwright, `pnpm sim` byte-identical, typecheck/lint/format/build clean,
+`pnpm audit:screens` at 132 findings with **no new rows and none lost**. **Still
+not seen on a phone.**

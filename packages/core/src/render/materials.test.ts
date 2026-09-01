@@ -147,12 +147,56 @@ describe.each(DIRECTIONS.map((t) => [t.id, t] as const))('%s, as rendered', (_id
     }
   });
 
+  /**
+   * The SPENT voice, which nothing graded until 2026-09-01.
+   *
+   * A claimed destination is drawn in `inkDim` three times over — its prop
+   * (`Props.tsx`), its glyph (`Labels.tsx`'s `inkFor`) and, since this session,
+   * its ring (`rings.ts`) and the speckle on its own ground (`surfaceFor`). The
+   * budget graded `ink`, `halo`, `lit` and `accent`, and never this one, so the
+   * whole of "still here, just spent" rested on a colour no test looked at —
+   * and this session put `inkDim` ink on `inkDim`-speckled ground, which is
+   * exactly the pair that could quietly cancel itself out.
+   *
+   * Same bar as the live mark, over the same samples, and it may not be
+   * relaxed: the lever is a theme colour, not this number.
+   */
+  it('keeps a spent destination readable in the spent voice', () => {
+    const spent = surfaceFor(
+      { ...cell({ kind: 'landmark', claimed: true }) },
+      theme,
+      () => false,
+    ).surface;
+    for (const sample of samplesOf(theme, spent).label) {
+      const ground = renders(sample, lit, TOP);
+      const best = Math.max(
+        contrastRatio(theme.ink.inkDim, ground),
+        contrastRatio(theme.ink.halo, ground),
+      );
+      expect(best, `spent ink/halo over ${sample.toString(16)}`).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const sample of samplesOf(theme, spent).face) {
+      const ground = renders(sample, lit, TOP);
+      const alone = contrastRatio(theme.ink.inkDim, ground);
+      const cased = Math.max(
+        contrastRatio(theme.ink.halo, ground),
+        contrastRatio(theme.ink.ink, ground),
+      );
+      expect(
+        Math.max(alone, cased),
+        `the spent ring at ${sample.toString(16)}`,
+      ).toBeGreaterThanOrEqual(MIN_MARK_CONTRAST);
+    }
+  });
+
   it('keeps a meaningful edge visible on every colour a hex contains', () => {
     const edges: readonly Rgb[] = [
       theme.board.ripeEdge,
       theme.board.legalEdge,
       theme.ink.lit,
       theme.ink.accent,
+      // The spent destination's own edge, since 2026-09-01 — see above.
+      theme.ink.inkDim,
     ];
     for (const surface of standingSurfaces(theme)) {
       for (const sample of samplesOf(theme, surface).face) {

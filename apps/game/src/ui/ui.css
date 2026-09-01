@@ -1286,8 +1286,8 @@ button[disabled] {
  * comment defending; and it moved DURING a run, every time a rare was dealt,
  * stashed or spent, so the board resized under a reaching thumb.
  *
- * The two labels are badges now (`.tile-rarity`, `.tile-held`) rather than
- * rows.
+ * The two labels became badges, and on 2026-08-31 stopped being drawn at all:
+ * a card is a hex and a mark, and neither depends on what it is holding.
  *
  * **3.4rem since 2026-08-30** (Marc: *"make sure tiles in hand have a lil bit
  * more height"*). It was 3.1 — over the 44px tap floor with room for the hex
@@ -1362,25 +1362,9 @@ button[disabled] {
   gap: 0.1rem;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  /*
-   * Sized from the CARD, not from the screen.
-   *
-   * `--hand-cols` is the number of cards in the row, so this is roughly "how
-   * wide is one card" — which is the only thing the name's legibility actually
-   * depends on. Three cards on a phone get the full size; six get a smaller
-   * one; a desktop is clamped by the ceiling rather than by the arithmetic.
-   * It is what lets the hand stay ONE ROW at six across (`screens/hand.ts`),
-   * which is worth 60px of board.
-   */
-  font-size: clamp(0.55rem, calc(100vw / var(--hand-cols, 4) / 7), 0.8rem);
-}
-
-/* The name is the half that gives when a card is narrow: the hex and its mark
-   already say the colour, and a clipped word teaches less than a small one. */
-.tile > span {
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
+  /* Only the empty stash slot still writes a word inside a card; it sets its
+     own size (`.tile.hold`), and this is what it falls back to. */
+  font-size: 0.7rem;
 }
 
 /*
@@ -1426,10 +1410,13 @@ button[disabled] {
   filter: drop-shadow(0 0 1px var(--ink-faint)) drop-shadow(0 0 1px var(--ink-faint));
 }
 
-/* The words ride over the hex. Positioned rather than given a z-index alone:
+/* The mark rides over the hex. Positioned rather than given a z-index alone:
    an absolutely positioned drawing paints above static content whatever its
-   level, so the labels have to be positioned too or the art buries them. */
-.tile > span {
+   level, so the mark has to be positioned too or the art buries it. Scoped to
+   the mark rather than to every span: the card's remaining text is a clipped
+   `.visually-hidden` span, and giving that `position: relative` would put a
+   pixel of it back in the row. */
+.tile > .tile-mark {
   position: relative;
 }
 
@@ -2183,15 +2170,21 @@ button[disabled] {
 }
 
 /*
- * The colour's MARK on a card — the shape channel.
+ * The colour's MARK on a card — the shape channel, and since 2026-08-31 the
+ * only channel on the card that is not the hex itself.
  *
- * Bigger than the name it sits over, because at a six-card hand the name is
- * down to 56px of width and the mark is what a thumb aims at. Haloed with the
- * same shadow the label wears (`.tile`), so it reads on its own ground in
- * every direction rather than needing a per-theme ink.
+ * Sized from the CARD rather than from the screen, which is the arithmetic the
+ * ground's name used to carry: `--hand-cols` is how many cards are in the row,
+ * so this is roughly "how wide is one card". Three cards on a phone get a big
+ * mark, six get a smaller one, and a desktop is held by the ceiling rather
+ * than by the sum. Bigger than the word it replaced, because it is now the
+ * whole of what a thumb aims at.
+ *
+ * Haloed, so it reads on its own ground in every direction rather than needing
+ * a per-theme ink.
  */
 .tile-mark {
-  font-size: 1.15rem;
+  font-size: clamp(1.15rem, calc(100vw / var(--hand-cols, 4) / 4), 1.7rem);
   line-height: 1;
   display: inline-flex;
   /*
@@ -2221,50 +2214,14 @@ button[disabled] {
 }
 
 /*
- * MAGIC and UNIQUE, told apart at a glance.
+ * MAGIC and UNIQUE, and HELD: three words a card no longer says (2026-08-31).
  *
- * The word was 0.7rem of coloured text on a coloured ground, which is the
- * weakest of the three channels a rare card has and was doing most of the
- * work. It wears the same four-way outline the colour mark does, so the hue
- * is read against the halo rather than against whatever terrain is under it —
- * and it is the same size as the ground's own name, because "which rare is
- * this" is exactly as important as "which colour is this".
+ * Marc: *"remove text in the hand tiles, keep color and symbol."* The rarity
+ * word was the weakest of a rare card's three channels and the ring on the hex
+ * is the strongest, and HELD was naming the slot the card was already standing
+ * in. Their rules went with them; `.tile` is a hex, a mark and nothing else,
+ * so there is nothing left in a card that could make one taller than another.
  */
-/*
- * And it is a BADGE, not a row (2026-08-30).
- *
- * In flow it made a rare card taller than a common one — see `.hand > .tile`
- * for what that cost. Pinned to the card's top edge it says the same word in
- * the same ink over the hex it is about, and the card is one height whatever
- * it is holding. The halo is what lets it sit on the art rather than beside it,
- * and it was already there for exactly that reason.
- */
-.tile > .tile-rarity {
-  position: absolute;
-  top: 0.05rem;
-  left: 0;
-  right: 0;
-  font-size: 0.62rem;
-  font-weight: 700;
-  line-height: 1;
-  text-shadow:
-    1px 1px 0 var(--halo),
-    -1px 1px 0 var(--halo),
-    1px -1px 0 var(--halo),
-    -1px -1px 0 var(--halo);
-}
-
-/* The stash's own word, pinned to the bottom edge for the same reason: a
-   stashed card and a drafted one are the same size, so trading one for the
-   other does not move the row they share. */
-.tile > .tile-held {
-  position: absolute;
-  bottom: 0.05rem;
-  left: 0;
-  right: 0;
-  font-size: 0.6rem;
-  line-height: 1;
-}
 
 /* The run's own board, kept at the bottom of the ending — the thing you scroll
    back to. Bordered like a card, because it is a memento rather than chrome. */

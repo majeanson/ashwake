@@ -63,9 +63,8 @@ export type FigCell = {
   readonly tone?: 'magic' | 'unique';
 };
 
-/** One card in a `cards` figure. `held` draws the dashed HOLD slot. */
-export type FigCard =
-  { readonly colour: Colour; readonly held?: boolean } | { readonly slot: 'hold' };
+/** One card in a `cards` figure. `slot: 'hold'` draws the dashed HOLD slot. */
+export type FigCard = { readonly colour: Colour } | { readonly slot: 'hold' };
 
 export type FigureSpec = {
   readonly hexes?: readonly FigCell[];

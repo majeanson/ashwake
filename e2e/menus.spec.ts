@@ -70,9 +70,15 @@ test('every room off MORE opens and comes back', async ({ page }) => {
   await panel(page, 'more').waitFor({ state: 'visible' });
 
   // A virgin device is offered the rooms that mean something on one: the
-  // manual, its worlds, and settings. The shop and the hall of fame arrive
-  // with a run to show in them.
-  for (const room of ['manual', 'worlds', 'settings']) {
+  // manual, its worlds, settings, and the device itself. The shop and the hall
+  // of fame arrive with a run to show in them.
+  //
+  // THIS DEVICE joined the list on 2026-08-31, when it stopped being a section
+  // at the bottom of MORE and became a room like the others (Marc: *"the whole
+  // Cet appareil subsection is transformed into a new menu (similar to My
+  // worlds)"*) — which is exactly the thing this loop checks: it opens, it is
+  // the panel on top, and BACK comes home.
+  for (const room of ['manual', 'worlds', 'settings', 'device']) {
     await page.locator(`[data-go="${room}"]`).click();
     await panel(page, room).waitFor({ state: 'visible' });
     /*

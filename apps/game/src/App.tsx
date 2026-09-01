@@ -47,6 +47,7 @@ import { LessonCard } from './screens/LessonCard';
 import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
 import { Manual } from './screens/Manual';
+import { Device } from './screens/Device';
 import { More } from './screens/More';
 import { Purse } from './screens/Purse';
 import { Settings } from './screens/Settings';
@@ -883,6 +884,9 @@ function Game() {
   const shop = useDoor('shop');
   const fame = useDoor('fame');
   const worlds = useDoor('worlds');
+  // THIS DEVICE, a room off MORE since 2026-08-31 rather than a section at the
+  // bottom of it — see `screens/Device`.
+  const device = useDoor('device');
   /**
    * The short list behind the board's MENU (2026-08-30).
    *
@@ -2329,6 +2333,14 @@ ${s.view.harvest.firstPopWhen}`,
           onShop={() => shop.show()}
           onWorlds={() => worlds.show()}
           onDaily={enterDaily}
+          onDevice={() => device.show()}
+        />
+      )}
+
+      {device.open && (
+        <Device
+          s={s}
+          onBack={device.hide}
           onReset={() => {
             clearEverything();
             // Including the world this session was holding: an erased device

@@ -952,7 +952,7 @@ test('the hand is one height, whatever is written on its cards', async ({ page }
    * Marc, 2026-08-30: *"the height changes when we get magic tiles vs normal
    * or uniques, check why and make sure it stays the same."*
    *
-   * A rare card carries its rarity word and a stashed one carries HELD, and
+   * A rare card carried its rarity word and a stashed one carried HELD, and
    * both were ordinary flex children of a card with a `min-height`. So a card
    * with either was taller than a common one — and the hand is a GRID, so one
    * magic card in a four-card draft grew the whole row and took that many
@@ -961,11 +961,12 @@ test('the hand is one height, whatever is written on its cards', async ({ page }
    * reaching thumb. This file spends most of its other comments defending
    * board height; that is what was leaking.
    *
-   * The labels are BADGES now, out of flow and pinned to the card’s edges.
-   * The two are added here rather than waited for because a rare in the hand
-   * is a roll of the dice and FORGE costs 75 luck — and what actually broke
-   * was the rule, not the dealing. So the rule is what is measured: put both
-   * labels on a card and the row must not move a pixel.
+   * The cards carry no words at all since 2026-08-31 (Marc: *"remove text in
+   * the hand tiles, keep color and symbol"*), so the two labels cannot come
+   * back on their own. What is measured is the rule rather than the labels:
+   * every card in the row is the same height as every other, and putting
+   * ANYTHING inside one does not move the row — a card is a fixed box, and a
+   * hand that grows is board that shrinks under a reaching thumb.
    */
   const errors = watchErrors(page);
   await page.goto('/?taught=1&runs=1&place=24');
@@ -992,25 +993,40 @@ test('the hand is one height, whatever is written on its cards', async ({ page }
     .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
   expect(new Set(heights).size, `the hand's cards are ${heights.join('/')} tall`).toBe(1);
 
-  // Now write the two things a card can carry onto one of them.
+  // And no card in the hand SHOWS a word: a hand of words is what shrank the
+  // board, and the ground's name, the rarity and HELD all left with it. The
+  // clipped span is not one — it is the card's accessible name, and it is
+  // exactly what a screen reader has instead of the pictures.
+  const words = await page
+    .locator('.hand .tile:not(.hold)')
+    .evaluateAll((els) =>
+      els.flatMap((el) =>
+        [...el.querySelectorAll('*')]
+          .filter(
+            (child) =>
+              [...child.childNodes].some(
+                (node) =>
+                  node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
+              ) && child.closest('.visually-hidden') === null,
+          )
+          .map((child) => child.textContent?.trim() ?? ''),
+      ),
+    );
+  expect(words, `a card in the hand is still saying ${words.join('/')}`).toEqual([]);
+
+  // Now put something in a card anyway: the box is a fixed height, so it does
+  // not matter what lands in it.
   await page
     .locator('.hand .tile')
     .first()
     .evaluate((el) => {
-      const rare = document.createElement('span');
-      rare.className = 'tile-rarity ink-unique';
-      rare.textContent = 'UNIQUE';
-      const held = document.createElement('span');
-      held.className = 'tile-held fact-label';
-      held.textContent = 'HELD';
-      el.append(rare, held);
+      const extra = document.createElement('span');
+      extra.textContent = 'UNIQUE HELD';
+      el.append(extra);
     });
 
   const after = await measure();
-  expect(after.hand, 'a card with a rarity and a HELD label made the hand taller').toBeCloseTo(
-    before.hand,
-    1,
-  );
+  expect(after.hand, 'writing on a card made the hand taller').toBeCloseTo(before.hand, 1);
   expect(after.board, 'and the board paid for it').toBeCloseTo(before.board, 1);
 
   expect(errors, errors.join('\n')).toEqual([]);

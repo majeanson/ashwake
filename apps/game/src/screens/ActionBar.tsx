@@ -251,7 +251,13 @@ export function ActionBar({
               theme={theme}
               s={s}
               art={art[held.colour]}
-              held
+              // No `held` flag any more: the card lost its words on 2026-08-31
+              // (Marc: *"remove text in the hand tiles, keep color and
+              // symbol"*), and the HELD badge went with them. `slot` is what
+              // says a card is stashed now — it is what draws `data-hold` and
+              // the swap label — and `Tile`'s own docblock states the rule
+              // this call site has to keep: "a stashed card is the one
+              // standing in a stash slot."
               slot={i}
               onPick={() => onHold(i)}
             />

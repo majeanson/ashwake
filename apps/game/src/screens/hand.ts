@@ -10,11 +10,12 @@
  * The wrap was bought for one thing, and it was the right worry at the time:
  * six across on a 390px phone is 58px a card, "too narrow for the ground's
  * NAME, and the name is one of the three channels a card says its colour in".
- * Two of those three have since changed. The card is the baked HEX now, and
- * the mark on it is a Phosphor icon rather than a character — so the picture
- * carries the colour at any width, and the name scales with its own column
- * (`.tile-name` in `ui.css`, sized from `--hand-cols`) instead of being the
- * thing that decides the layout.
+ * All three have since changed, and the name is gone (2026-08-31, Marc:
+ * *"remove text in the hand tiles, keep color and symbol"*). The card is the
+ * baked HEX with a Phosphor mark on it and no words, so the picture carries the
+ * colour at any width and the mark scales with its own column (`.tile-mark` in
+ * `ui.css`, sized from `--hand-cols`). Nothing on a card decides the layout
+ * any more.
  *
  * **Six is the real maximum**, which is what makes one row safe: `draftWidth`
  * is 3 and the DRAFT unlock takes it to 4; `holdSlots` is 1 and the HOLD

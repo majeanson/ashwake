@@ -210,11 +210,36 @@ describe('which surface a cell wears', () => {
 
   const never = () => false;
 
-  it('gives a claimed destination the quiet of stone', () => {
+  /**
+   * Amended 2026-09-01, and the amendment is the point.
+   *
+   * This used to assert that a claimed destination IS `theme.stone` — the very
+   * surface a popped tile wears. So on a board that fills with spent ground as
+   * a run goes on, the hex you walked all that way to reach became the same hex
+   * as everything around it. Marc, for the third time in this class (the prop
+   * and the glyph were the first two, both 2026-08-29): *"symbols used on used
+   * shrines, sites, caches, etc. [should be] the same as when they are
+   * highlighted and active, just grey and look deactivated instead."*
+   *
+   * A spent destination keeps the ground a destination stands on and changes
+   * only its INK. What is asserted now is that pair: same base, quieter mark.
+   */
+  it('keeps a claimed destination standing on a destination ground, greyed', () => {
     const theme = resolveTheme('torchlit');
-    expect(surfaceFor(cell({ kind: 'landmark', claimed: true }), theme, never).surface).toBe(
-      theme.stone,
-    );
+    const spent = surfaceFor(cell({ kind: 'landmark', claimed: true }), theme, never).surface;
+    const live = surfaceFor(cell({ kind: 'landmark' }), theme, never).surface;
+
+    // Not the surface a popped tile wears. That was the bug.
+    expect(spent).not.toBe(theme.stone);
+    expect(spent.fill, 'a spent destination stopped being a place').toBe(live.fill);
+
+    expect(spent.pattern.kind).toBe('dots');
+    expect(live.pattern.kind).toBe('dots');
+    if (spent.pattern.kind !== 'dots' || live.pattern.kind !== 'dots') return;
+    // Same vocabulary, quieter and in the spent voice — the one the claimed
+    // prop and the claimed glyph already speak.
+    expect(spent.pattern.alpha).toBeLessThan(live.pattern.alpha);
+    expect(spent.pattern.ink).toBe(theme.ink.inkDim);
   });
 
   it('says less for a shimmer than for a destination', () => {

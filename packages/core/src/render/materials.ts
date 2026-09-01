@@ -5,10 +5,14 @@ import type { CellView } from './Renderer';
  * Which surface a cell wears (Stage 2c, 2026-08-29).
  *
  * Lifted from Ashwake 1's `PixiRenderer#surfaceFor`, which is where it should
- * never have lived: "a claimed destination goes quiet and wears stone" is a
- * statement about what the game means, not about a rendering library, and the
- * moment a second renderer existed it either re-derived the answer or disagreed
- * with the first. The values are unchanged and the arguments travel with them.
+ * never have lived: "a claimed destination goes quiet" is a statement about
+ * what the game means, not about a rendering library, and the moment a second
+ * renderer existed it either re-derived the answer or disagreed with the first.
+ * The arguments travel with the values.
+ *
+ * That sentence used to end "and wears stone", and the correction is the whole
+ * of this file's one change since (2026-09-01): quiet is not the same as gone,
+ * and stone is the surface a POPPED TILE wears. See the landmark branch.
  *
  * Pure, and no DOM: this says which `Surface` and which ghost, `paint.ts` turns
  * that into layers, and the app turns the layers into a texture.
@@ -57,21 +61,38 @@ export function surfaceFor(
       if (cell.shimmer) {
         return plain({ ...theme.wall, pattern: speckle(theme.ink.accent, 0.22), alpha: 0.3 });
       }
-      // A destination wears the wall's ground — it is solid, and should read as
-      // a THING standing on the plane — lit with the direction's own `lit`
-      // while unclaimed, gone quiet once reached. A territory glows in the
-      // colour of the field claiming it unfurls, so the walk is toward a known
-      // reward. A beacon is the same surface faded, glowing through ground that
-      // is not drawn yet.
-      const base: Surface = cell.claimed
-        ? theme.stone
-        : {
-            ...theme.wall,
-            pattern: speckle(
-              cell.colour !== null ? theme.terrain[cell.colour].fill : theme.ink.lit,
-              0.45,
-            ),
-          };
+      /*
+       * A destination wears the wall's ground — it is solid, and should read as
+       * a THING standing on the plane. A territory speckles in the colour of
+       * the field claiming it unfurls, so the walk is toward a known reward. A
+       * beacon is the same surface faded, glowing through ground that is not
+       * drawn yet.
+       *
+       * **A claimed one keeps that ground and goes GREY on it** (2026-09-01).
+       * It used to drop to `theme.stone`, which is the surface a popped tile
+       * wears — so on a board that fills with spent ground as a run goes on,
+       * the hex you walked all that way to reach became the same hex as
+       * everything around it. That is the third time the same fault has been
+       * found in a different channel: the PROP was painted `stone.fill` until
+       * 2026-08-29 (Marc: *"make sure when popped, caches, shrines, stars, etc.
+       * are still recognizable"*), the GLYPH was drawn in the faintest ink
+       * until the same day, and this is the GROUND under both. Marc, third
+       * time: *"symbols used on used shrines, sites, caches, etc. [should be]
+       * the same as when they are highlighted and active, just grey and look
+       * deactivated instead."*
+       *
+       * So the base does not change and only the ink does — `inkDim`, the
+       * palette's middle voice, which is exactly what the prop and the glyph
+       * above it already use. At a lower alpha than the lit speckle, because
+       * SPENT is allowed to be quieter than live; not a different surface,
+       * because spent is not the same thing as gone.
+       */
+      const base: Surface = {
+        ...theme.wall,
+        pattern: cell.claimed
+          ? speckle(theme.ink.inkDim, 0.26)
+          : speckle(cell.colour !== null ? theme.terrain[cell.colour].fill : theme.ink.lit, 0.45),
+      };
       return plain(cell.beacon ? { ...base, alpha: theme.board.beaconFade } : base);
     }
 

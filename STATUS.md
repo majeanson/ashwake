@@ -4,7 +4,42 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-01 — the fog comes back, and the board starts
+Last checkpoint: **2026-09-01, last — a spent destination stops being spent
+ground, and a parallel session lands with it.**
+
+Marc, a third time in one class: _"symbols used on used shrines, sites, caches,
+etc. are the same as when they are highlighted and active, just grey and look
+deactivated instead."_ The glyph and the prop were fixed on 2026-08-29; the two
+channels still being DELETED rather than dimmed were the hex itself. `ringOf`
+read `!cell.claimed`, so reaching a cache removed its outline rather than
+quietening it, and `surfaceFor` dropped a claimed landmark to `theme.stone` —
+the surface a POPPED TILE wears — so the hex you walked all that way to reach
+became the same hex as everything around it. Both speak `inkDim` now, which is
+what the prop and the glyph already speak.
+
+**The budget had never graded the spent voice.** `inkDim` is drawn four times on
+a claimed destination and `materials.test.ts` graded `ink`, `halo`, `lit` and
+`accent` and never it. Graded now, at the same bars, in all four directions —
+which matters because this session put `inkDim` ink on `inkDim`-speckled ground.
+
+**A ring's `width` is dead data, and is LEFT dead on purpose.** `HexField` draws
+every ring from one geometry with a hard-coded 0.16 band, so six computed widths
+all draw the same. Wiring it was built, measured and backed out: honouring the
+authored numbers thins every outline on the board and costs the legal edge 45%
+of its weight, which is a re-tune of the whole board's line weight rather than a
+fix. `NEXT.md` holds it, needing Marc on a phone.
+
+**A parallel session landed in the same commit** (`LOG.md` Session 33): THIS
+DEVICE became a room off MORE, and a hand card became a picture with no words.
+It was left mid-refactor and `main` would not have compiled — `TileProps` lost
+its `held` flag while `ActionBar` still passed one — so that call site is fixed
+here. The lesson is the general one: **verify the tree, not the diff.**
+
+Verified over both: 1080 tests / 75 files, 86 Playwright, `pnpm sim`
+byte-identical, typecheck/lint/format/build clean, audit at 132 findings with
+**no new rows and none lost**. Still not seen on a phone.
+
+Previous checkpoint: **2026-09-01 — the fog comes back, and the board starts
 answering.** Marc, with two phone photos: the shrine unlock on the end screen,
 a panel overflowing its top and wasting its bottom, _"i can click on any shrine
 or point in the map that I can see to get information"_, _"discovered biomes

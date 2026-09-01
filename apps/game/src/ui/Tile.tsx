@@ -11,23 +11,23 @@ import type { Strings } from '@text/Strings';
  *
  * Ashwake 1 built draft cards and held cards with two near-identical builders,
  * which is why the held one was missing the rarity badge for a week. One
- * component, one `held` flag.
+ * component for both.
  *
- * The name is the DIRECTION's word for that ground, per language — torchlit's
- * French red is LICHEN, not a translation of MOSS — so it comes through
- * `namesOf` and never from a component.
+ * **A card is a PICTURE: a colour and a mark, and no words at all**
+ * (2026-08-31, Marc: *"remove text in the hand tiles, keep color and symbol"*).
+ * It said its colour three ways — the ground's name in words, the fill in hue,
+ * the mark in shape — and the words were the channel that cost the most and
+ * survived the least: they shrank with every extra card in the row, they were
+ * the reason a rare card and a stashed one carried badges, and the board they
+ * describe never writes them. The two that are left are the two the board
+ * itself uses, and they are the two that survive greyscale, sunlight and
+ * colour blindness. `COLOUR_ICON` is the mark's registry.
  *
- * **A card says its colour three ways** (2026-08-29, Marc: "tile card should
- * have their symbol and their background color"). The NAME is words, the FILL
- * is hue, and the MARK is shape — and the third one is the one that survives
- * everything the other two do not: greyscale, sunlight, colour blindness, and
- * a 56px card on a six-card hand where the name has to shrink. `COLOUR_ICON`
- * is the registry and `theme/icons.ts` says in as many words that the cards
- * keep it; this body had dropped it and painted the fill only when a card was
- * SELECTED, so an unselected hand was four words in one colour.
- *
- * The mark is `aria-hidden`: it is the same fact the name already states, and
- * a screen reader that reads "▲ MOSS" is reading a decoration aloud.
+ * The words are not gone from the accessibility tree, only from the screen: a
+ * card's accessible name was its text, so the ground's name and the rarity's
+ * are kept in a clipped span (`.visually-hidden`) and a hand of buttons still
+ * announces what each one is. The mark stays `aria-hidden` — it says the same
+ * fact, and a screen reader that reads "▲ MOSS" is reading a decoration aloud.
  *
  * **Only the chosen card wears a box** (2026-08-30, Marc: *"make sure
  * unselected card tiles blend in with the game, no border, only the selected
@@ -43,23 +43,23 @@ import type { Strings } from '@text/Strings';
  * selection uses and from each other on every direction's wheel. A rounded
  * rectangle around a hexagon was never the right shape for it.
  *
- * **And the card is ONE HEIGHT, whatever is written on it** (2026-08-30, Marc:
+ * **And the card is ONE HEIGHT, whatever it is holding** (2026-08-30, Marc:
  * *"the height changes when we get magic tiles vs normal or uniques, check why
  * and make sure it stays the same"*). The rarity word and the HELD label were
  * ordinary flex children, so a card carrying either was taller than a common
  * one — and the hand is a grid, so ONE magic card in a draft grew the whole
  * row and took that many pixels off the board. Worse than the cost: the board
  * resized under the player mid-run, every time a rare was dealt or stashed and
- * every time it left. Both are badges now, out of flow (`.tile-rarity` and
- * `.tile-held` in `ui.css`), pinned to the card's top and bottom edges over the
- * hex they describe; the card's height is fixed and the row never moves.
+ * every time it left. They were badges out of flow after that, and since the
+ * card lost its words they are not drawn at all: the rarity is the ring on the
+ * hex, and a stashed card is the one standing in a stash slot.
  *
  * **A card with nothing to do is not a button** (2026-08-30). The manual draws
  * real cards in its STASH figure — Marc: *"in how to play we reuse the same
  * visuals as in game for all"* — and a `<button>` there would be a tab stop
  * that does nothing, on the one screen whose standing rule is that nothing in
  * it is tappable. No `onPick` means no button: same markup, same CSS, drawn as
- * a picture with a name.
+ * a picture that names itself.
  *
  * **And the card IS the tile** (2026-08-30, Marc: *"I also liked the tile card
  * we had having the tile itself"*). Ashwake 1 put the baked hex on the card —
@@ -77,7 +77,6 @@ export type TileProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly selected?: boolean;
-  readonly held?: boolean;
   /** The baked hex for this ground, where the direction has one. See
    *  `shell/art.ts`; null is the ordinary state and the card draws itself. */
   readonly art?: string | null | undefined;
@@ -89,18 +88,7 @@ export type TileProps = {
   readonly onLens?: (() => void) | undefined;
 };
 
-export function Tile({
-  colour,
-  rarity,
-  theme,
-  s,
-  selected,
-  held,
-  slot,
-  art,
-  onPick,
-  onLens,
-}: TileProps) {
+export function Tile({ colour, rarity, theme, s, selected, slot, art, onPick, onLens }: TileProps) {
   const name = namesOf(theme, s.locale)[colour];
   const rare = rarity !== 'common';
   // A card the player can act on is a button; a card in a diagram is a
@@ -114,8 +102,9 @@ export function Tile({
       className={selected === true ? 'tile chosen' : 'tile'}
       data-colour={colour}
       data-rarity={rarity}
-      // The label is haloed rather than re-coloured — see `.tile` in ui.css.
-      // The audit cannot measure a halo, so it is told the halo is there.
+      // What text is left is clipped rather than painted, and the mark over
+      // the hex is haloed rather than re-coloured — see `.tile-mark` in
+      // ui.css. The audit cannot measure a halo, so it is told it is there.
       data-audit-halo=""
       {...(slot === undefined ? {} : { 'data-hold': slot, 'aria-label': s.ui.holdSwap(name) })}
       onContextMenu={
@@ -167,13 +156,20 @@ export function Tile({
       <span className="tile-mark" aria-hidden="true">
         <Icon name={COLOUR_ICON[colour]} />
       </span>
-      <span>{name}</span>
-      {rare && (
-        <span className={`tile-rarity ${rarity === 'magic' ? 'ink-magic' : 'ink-unique'}`}>
-          {rarity === 'magic' ? s.lesson.rare.name : s.lesson.rareUnique.name}
-        </span>
-      )}
-      {held === true && <span className="tile-held fact-label">{s.figure.held}</span>}
+      {/*
+        The words a card no longer shows, kept for whoever is listening.
+
+        Clipped rather than deleted: a card's accessible name WAS its text,
+        so dropping the spans outright would leave a hand of buttons called
+        nothing. Two spans rather than one string, because gluing a rarity
+        onto a ground name is writing a phrase, and a phrase belongs to the
+        catalogue (D4). A screen reader joins them the way it joined the
+        badge and the name before.
+      */}
+      <span className="visually-hidden">
+        {rare && <span>{rarity === 'magic' ? s.lesson.rare.name : s.lesson.rareUnique.name}</span>}
+        <span>{name}</span>
+      </span>
     </Box>
   );
 }
