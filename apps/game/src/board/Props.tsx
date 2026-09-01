@@ -113,11 +113,38 @@ export function Props({ cells, theme, layout, relief }: PropsProps) {
          */
         const base = item.cell.claimed ? theme.ink.inkDim : theme.ink.lit;
         const shown = torched(base, cellTint(theme, item.cell));
-        scratch.setRGB(
-          ((shown >> 16) & 0xff) / 255,
-          ((shown >> 8) & 0xff) / 255,
-          (shown & 0xff) / 255,
-        );
+        /*
+         * `setHex`, NOT `setRGB` (2026-09-01).
+         *
+         * Marc, with a phone photo: *"still see some weird block shapes."* They
+         * are these, and the reason they read as pale featureless lumps rather
+         * than as lit gold objects is one method call.
+         *
+         * `Color.setRGB` writes into the WORKING colour space, which is
+         * linear-sRGB — so a display-space gold like torchlit's `lit`
+         * (0xc79a4b) was being handed to three as if those numbers were already
+         * linear, and encoded back out as roughly 0xe6cc92: a washed-out cream,
+         * lighter and far less saturated than the direction authored. Worse for
+         * the complaint, the wash lands hardest on the SHADING — the difference
+         * between a prop's lit top and its shaded side is compressed along with
+         * the hue, so a drum stops being a cylinder and becomes a blob.
+         *
+         * `setHex` defaults to `SRGBColorSpace` and converts, which is what
+         * every other display-space colour in this file's neighbourhood does.
+         * The ground does not have this bug because it does not go through
+         * `instanceColor` at all: `torchShader.ts` replaces `color_fragment`
+         * precisely so the tint multiplies in DISPLAY space, and its docblock
+         * spells out the linear-multiply trap in as many words. `HexField` and
+         * `Pop` therefore write `setRGB` on purpose — their materials carry
+         * that shader and want the raw display numbers in `vColor`. This one
+         * never had it, and inherited the call anyway.
+         *
+         * Lambert then multiplies by the rig's exposure in linear space, which
+         * is exactly what `theme/rig.ts`'s `litColour` models — so a prop's top
+         * face now renders as the authored colour, the same guarantee the
+         * budget already gives a hex top.
+         */
+        scratch.setHex(shown);
         mesh.setColorAt(i, scratch);
       });
       commitInstances(mesh, standing.length);

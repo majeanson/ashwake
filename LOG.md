@@ -2770,3 +2770,56 @@ typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
 none lost**. **Still not seen on a phone** — the two open look questions from
 Session 32 (ring line weight, and whether the spent ring's `inkDim` out-shouts
 the live one's gold on a dark board) are still Marc's.
+
+### Session 35 — the props were never the colour they were written in (2026-09-01)
+
+**Question:** Marc, twice, with a phone photo: _"still see some weird block
+shapes"_, and after Session 34 shipped, _"still same blocks after hard refresh"_.
+Session 34 read them as the WALL MARKS and removed those from the fog, which was
+a real regression and the wrong answer to this question. So: what are they?
+
+**They are the destination PROPS, and they render in the wrong colour space.**
+`Props.tsx` writes each prop's instance colour with `Color.setRGB`, which writes
+into the WORKING colour space — linear-sRGB. A display-space gold like
+torchlit's `ink.lit` (0xc79a4b) was therefore handed to three as if those
+numbers were already linear and encoded back out around 0xe6cc92: a washed-out
+cream, lighter and far less saturated than the direction authored. The wash
+lands hardest on the SHADING, because compressing the hue compresses the
+difference between a prop's lit top and its shaded side — so a drum stops
+reading as a cylinder and becomes a pale blob. Measured, not argued: the same
+hex at the same zoom before and after is a cream lump and a gold, faceted
+object.
+
+**The ground does not have this bug, and that is why this one survived.**
+`torchShader.ts` replaces `color_fragment` so the tint multiplies in DISPLAY
+space, and its docblock spells the linear-multiply trap out in as many words —
+"a linear multiply by 0.42 is about a display multiply by 0.70". Its materials
+therefore WANT raw display numbers in `vColor`, so `HexField` and `Pop` write
+`setRGB` on purpose and are correct. `Props.tsx` has no such shader and
+inherited the call anyway. One line looked identical in three files and was
+right in two of them.
+
+`setHex` defaults to `SRGBColorSpace` and converts, so a prop's top face now
+renders as the authored colour under the rig's exposure — the same guarantee
+`theme/rig.ts`'s `litColour` already models and the budget already gives a hex
+top. `landmarks.test.ts` pins the trap against three's own API, because nothing
+in this repository can stop the next person reaching for `setRGB` and only a
+test can say what it costs.
+
+**Two wrong answers before the right one, and the lesson is about evidence.**
+Session 34 diagnosed from a compressed phone screenshot and shipped. This
+session rendered the same scene locally, cropped one hex to 8× and looked at the
+pixels — which took four minutes and settled it. **A screenshot at arm's length
+is a report, not a diagnosis.**
+
+**What is still true and still open.** A prop stands over its hex's own mark,
+so the star/package/key/flag/sparkle that `LANDMARK_ICON` calls "the authority
+on MEANING" is buried the moment a destination is revealed — only a BEACON,
+which gets no prop, shows its symbol. Marc has asked for those symbols twice
+now. Raising the mark to float over the prop is a few lines and costs parallax
+at a lean; it is not done here because it is a look decision and this session
+has already guessed twice. `NEXT.md` carries it.
+
+**Verified:** 1084 tests / 75 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
+none lost**.

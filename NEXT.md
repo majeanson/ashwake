@@ -167,6 +167,30 @@ are working defaults, not rulings).
 **Needs Marc**, on a phone: is the board's line weight better at the authored
 numbers, or is 0.16 what it should have been all along?
 
+**A prop hides its own mark** (found 2026-09-01, needs Marc). `Props.tsx` stands
+a destination's 3D body on the hex and `Labels.tsx` lays its mark flat on the
+ground underneath, so the star, package, key, flag or sparkle that
+`theme/icons.ts` calls "the authority on MEANING" is covered the moment a
+destination is revealed. Only a BEACON shows its symbol, because a beacon gets
+no prop. At phone zoom the five props — an 8-gon drum, a cone, a level torus, an
+icosahedron and an octahedron — are hard to tell apart, so a revealed cache and
+a revealed territory read the same.
+
+Marc has asked for the symbols twice: _"keep same symbols like star, cache,
+etc."_ and then _"still see some weird block shapes."_ The colour-space bug
+under the second one is fixed (`LOG.md` Session 35); this is what is left.
+
+Raising the mark to float just above the prop is a few lines. It costs
+PARALLAX: at the shipped 35-degree tilt a mark half a hex-radius up sits about a
+third of a hex up-screen of the ground it belongs to, which may read as a
+floating decal rather than as a label. The alternatives are smaller props, or no
+props on revealed destinations at all — and props were Marc's own ask (_"map
+shrines, etc. cuter and more nice"_).
+
+**Needs Marc**, on a phone: symbol over the prop and accept the float, or leave
+the prop alone and accept that a revealed destination is identified by its tap
+rather than by its shape?
+
 **THE SWEEP, item by item, so nobody has to re-derive it.** Every reward number
 `NEXT.md` listed, and where the test that watches it lives:
 
