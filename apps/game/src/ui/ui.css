@@ -1421,6 +1421,29 @@ button[disabled] {
 }
 
 /*
+ * A card that is PUT AWAY (2026-09-01).
+ *
+ * Marc, once the cards lost their words: *"add a small visual for held tiles,
+ * no full words."* The HELD badge went with the ground name and the rarity
+ * word, and what was left telling a stashed card from a drafted one was its
+ * position in the row — a fact about the layout, not about the card.
+ *
+ * The dashes, because the game has already taught them: an empty slot has been
+ * a dashed frame since the stash was built, and the manual's figure says so in
+ * as many words ("The dashed slot is the stash"). A stashed card is a card
+ * standing in that frame, so the frame stays and the card fills it.
+ *
+ * It spends the two transparent pixels `.tile` already reserves, so putting a
+ * card away cannot move the row under a reaching thumb — the same reason that
+ * border exists at all. `--panel-edge` is the empty slot's own line, one weight
+ * up because a filled slot is a real card rather than a placeholder.
+ */
+.tile.stashed {
+  border-style: dashed;
+  border-color: var(--panel-edge);
+}
+
+/*
  * A slot the hand is not currently filling.
  *
  * Stashing a card takes it out of the draft and nothing puts one back until

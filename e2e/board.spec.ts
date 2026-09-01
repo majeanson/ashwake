@@ -213,6 +213,16 @@ test('stashes a card and takes it back', async ({ page }) => {
   await expect(hand.locator('[data-colour]').first()).toHaveAttribute('aria-pressed', 'true');
   await slot.click();
   await expect(slot).toHaveAttribute('data-colour', /green|yellow|red|blue/);
+  // And it SAYS it is stashed, without a word: the dashed frame the empty slot
+  // wears, kept by the card standing in it (Marc, 2026-09-01: "add a small
+  // visual for held tiles, no full words"). The HELD badge came off with the
+  // rest of the card's text, and position in the row is a fact about the
+  // layout rather than about the card.
+  // `toContainClass`, not `toHaveClass`: a RegExp given to the latter is matched
+  // against the WHOLE class attribute, so `/stashed/` fails on "tile stashed" —
+  // which reads as the class being absent when it is present, and is exactly the
+  // kind of green-looking red a pinned selector exists to prevent.
+  await expect(slot, 'a stashed card looks exactly like a drafted one').toContainClass('stashed');
 
   // The hand is one card lighter, and its shape has not reflowed — the
   // spacer holds the column until the next placement deals one back.

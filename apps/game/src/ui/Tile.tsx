@@ -99,7 +99,30 @@ export function Tile({ colour, rarity, theme, s, selected, slot, art, onPick, on
       {...(onPick === undefined
         ? { role: 'img', 'aria-label': name }
         : { type: 'button' as const, 'aria-pressed': selected === true, onClick: onPick })}
-      className={selected === true ? 'tile chosen' : 'tile'}
+      /*
+        A card in a stash slot says so, without a word (2026-09-01).
+
+        Marc, after the words came off the cards: *"add a small visual for held
+        tiles, no full words."* The HELD badge went with the ground name and the
+        rarity word on 2026-08-31, and what was left telling a stashed card from
+        a drafted one was its POSITION in the row — which is a fact about the
+        layout rather than about the card, and it is gone the moment the row is
+        read at a glance or photographed.
+
+        **The dashes, because the game already teaches them.** An empty slot has
+        been a dashed frame since the stash was built, and the manual's own
+        figure caption says it outright: *"The dashed slot is the stash. Tap it
+        to keep the selected card for later."* So a stashed card is a card
+        standing in a dashed slot, and the dashes are the one mark this screen
+        can spend that a player has already been taught. No new icon, no
+        invented vocabulary (`CLAUDE.md`), nothing added to the closed registry
+        in `theme/icons.ts` for an idea that already has a shape.
+
+        It costs no layout: `.tile` reserves two transparent pixels of border so
+        that choosing a card cannot reflow the row, and this spends the two it
+        already reserved.
+      */
+      className={`tile${selected === true ? ' chosen' : ''}${slot === undefined ? '' : ' stashed'}`}
       data-colour={colour}
       data-rarity={rarity}
       // What text is left is clipped rather than painted, and the mark over

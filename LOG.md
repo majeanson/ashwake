@@ -2721,3 +2721,52 @@ list. **Verify the tree, not the diff.**
 Playwright, `pnpm sim` byte-identical, typecheck/lint/format/build clean,
 `pnpm audit:screens` at 132 findings with **no new rows and none lost**. **Still
 not seen on a phone.**
+
+### Session 34 — the fog stops shouting, and a stashed card says so (2026-09-01)
+
+**Question:** two of Marc's, and the second one is a consequence of yesterday's
+fix. _"add a small visual for held tiles, no full words"_, and then, with a
+phone photo of a remembered world: _"still see some weird block shapes."_
+
+**The blocks are WALL MARKS, and the fog put dozens of them on screen.**
+`labelFor` gives every wall `CONCEPT_ICON.wall` at FULL ink — a brick, which at
+the eight pixels a hex label gets on a phone is a white rectangle with a line in
+it. That was a cost nobody could see for as long as the fog was not drawn: a
+live board carries a handful of walls and nobody counts a handful. The moment
+`RunMemory.revealed` reached `toBoardView` (Session 31), a three-hundred-run
+world drew one on every remembered wall, at full strength, across the entire
+map — which is what the photo shows and what it should have occurred to this
+session to check when it turned the layer on.
+
+**The mark's own argument is what rules it out of the fog.** It exists to
+separate a wall from SPENT STONE while you are choosing where to place (Marc,
+2026-08-29). Remembered ground has no stone in it — `toBoardView` reconstructs
+the fog as landmark, wall or empty — and no placement to choose. A wall out
+there is the shape of the world, which its own dark fill already draws. So the
+fog names DESTINATIONS and nothing else, which is the editorial rule it already
+keeps about worths and previews.
+
+**A stashed card wears the stash's own dashes.** The HELD badge came off with
+the ground name and the rarity word on 2026-08-31, and what was left telling a
+stashed card from a drafted one was its POSITION in the row — a fact about the
+layout, not about the card, and gone the moment the row is glanced at. The
+dashes are the one mark this screen can spend that the player has already been
+taught: an empty slot has been a dashed frame since the stash was built, and the
+manual's own figure says so in as many words. No new icon, and nothing added to
+the closed registry for an idea that already has a shape. It spends the two
+transparent pixels `.tile` reserves, so putting a card away cannot move the row.
+
+The class is `stashed` rather than `held`: `.tile.hold` is the EMPTY slot, and
+two classes one letter apart on the same element is a trap for whoever reads it
+next.
+
+**`toHaveClass` matches the WHOLE attribute.** The e2e pin failed green-looking
+red on `/stashed/` against `"tile stashed"` — it reads as the class being
+absent when it is present. `toContainClass` is the one that means what the
+assertion says.
+
+**Verified:** 1082 tests / 75 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
+none lost**. **Still not seen on a phone** — the two open look questions from
+Session 32 (ring line weight, and whether the spent ring's `inkDim` out-shouts
+the live one's gold on a dark board) are still Marc's.

@@ -47,8 +47,26 @@ export function labelFor(cell: CellView): Label | null {
    * Stone stays wordless on purpose, so the two read apart by PRESENCE rather
    * than by telling `▦` from `▨` at hex size — which is the discrimination
    * that retired the per-colour glyphs in 2026-08-18.
+   *
+   * **On the live board only** (2026-09-01). Marc, with a phone photo of a
+   * remembered world: *"still see some weird block shapes."* They are these —
+   * a brick at eight pixels is a white rectangle, and once the fog was actually
+   * drawn (2026-09-01, `RunMemory.revealed`) there was one on every wall of a
+   * three-hundred-run world, at full ink, scattered across the whole map. It
+   * had been an invisible cost for as long as the fog was: a handful of live
+   * walls carry a handful of marks, and nobody counts them.
+   *
+   * The mark's own argument is what rules it out there. It exists to separate a
+   * wall from SPENT STONE while you are choosing where to place — and
+   * remembered ground has no stone in it (`toBoardView` reconstructs the fog as
+   * landmark, wall or empty) and no placement to choose. A wall in the fog is
+   * the shape of the world, which its own dark fill already draws. So the fog
+   * names DESTINATIONS and nothing else, which is the same editorial rule it
+   * already keeps about worths and previews.
    */
-  if (cell.kind === 'wall') return { icon: CONCEPT_ICON.wall, faint: false };
+  if (cell.kind === 'wall') {
+    return cell.remembered ? null : { icon: CONCEPT_ICON.wall, faint: false };
+  }
   if (cell.ripe && cell.worth > 0) return { text: String(cell.worth), faint: false };
   if (cell.legal && cell.preview !== null && cell.preview > 0) {
     return { text: String(cell.preview), faint: true };

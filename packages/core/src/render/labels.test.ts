@@ -99,3 +99,32 @@ describe('a wall says so on its face', () => {
     expect(text).not.toContain('×');
   });
 });
+
+/**
+ * What the FOG is allowed to say (2026-09-01).
+ *
+ * Marc, with a phone photo of a remembered world: *"still see some weird block
+ * shapes."* A brick at eight pixels is a white rectangle, and the wall mark was
+ * drawn at full ink on every wall — invisible as a cost for as long as the fog
+ * itself was not drawn, and one white block per wall across a whole
+ * three-hundred-run map the day it was.
+ *
+ * The rule that settles it is the mark's own: it exists to tell a wall from
+ * SPENT STONE while you are choosing where to place, and the fog has neither.
+ * So the fog names destinations and nothing else.
+ */
+describe('what the fog draws, and what it keeps quiet', () => {
+  it('marks a wall on the board and not in the fog', () => {
+    expect(labelFor(cell({ kind: 'wall', landmark: null }))?.icon).toBe(CONCEPT_ICON.wall);
+    expect(
+      labelFor(cell({ kind: 'wall', landmark: null, remembered: true })),
+      'one white block per remembered wall, across the whole map',
+    ).toBeNull();
+  });
+
+  it('still marks a destination in the fog, which is what a map is FOR', () => {
+    for (const landmark of ['cache', 'site', 'shrine', 'territory', 'find'] as const) {
+      expect(labelFor(cell({ landmark, remembered: true })), landmark).not.toBeNull();
+    }
+  });
+});
