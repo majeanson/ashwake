@@ -422,10 +422,11 @@ export function worldSeedFor(slot: Slot): number {
 }
 
 /**
- * What a world already holds, in the shapes `newRun` takes them.
+ * What a world already holds, in the shapes `newRun` and the board take them.
  *
  * Plain data, exactly as Ashwake 1 passed it: the engine still knows nothing
- * about storage, and a run stays reproducible from seed + tuning + these three.
+ * about storage, and a run stays reproducible from seed + tuning + the three
+ * fields the reducer reads.
  */
 export type RunMemory = {
   /** Territories claimed in earlier runs. They start this one claimed. */
@@ -434,10 +435,31 @@ export type RunMemory = {
   readonly finds: readonly HexKey[];
   /** Spent shrines and finds reborn as this run's caches and sites. */
   readonly rearmed: Readonly<Record<HexKey, 'cache' | 'site'>>;
+  /**
+   * Every hex this world has ever had on a board — THE FOG (2026-09-01).
+   *
+   * The fourth field, and the only one the reducer never sees: `toBoardView`
+   * draws these as remembered ground under everything, terrain re-derived from
+   * the same pure hash that made it, so only the keys had to be kept.
+   *
+   * **Nothing in this body had ever supplied them.** `createSession`'s `build`
+   * passed a literal `[]` for the whole of Stages 2 to 5, so the fog layer —
+   * `Renderer`'s "the map you carry in your head, which is the whole
+   * meta-progression" — has never been drawn here at all. Every rule about it
+   * held perfectly over an empty list: the lens reached into memory, held
+   * territories unfurled their fields in it, a reborn landmark wore its new
+   * face in it, `describeHexOf` answered for it. There was no it.
+   *
+   * Found chasing Marc's *"discovered biomes should be highlightable"*, which
+   * cannot be true of a biome that is not on screen. Eighth of this body's
+   * signature miss and by some distance the largest surface: a whole rendering
+   * layer, tested in the core, reachable from nothing.
+   */
+  readonly revealed: readonly HexKey[];
 };
 
 /** A run that remembers nothing — a daily, a shared seed, a first visit. */
-export const NO_MEMORY: RunMemory = { claimed: [], finds: [], rearmed: {} };
+export const NO_MEMORY: RunMemory = { claimed: [], finds: [], rearmed: {}, revealed: [] };
 
 /**
  * What the slot's world lends a run on `seed`, or nothing at all.
@@ -450,7 +472,12 @@ export const NO_MEMORY: RunMemory = { claimed: [], finds: [], rearmed: {} };
 export function memoryFor(slot: Slot, seed: number): RunMemory {
   const world = readWorld(slot);
   if (world === null || world.worldSeed !== seed) return NO_MEMORY;
-  return { claimed: world.territories, finds: world.finds, rearmed: rearmedSpent(world) };
+  return {
+    claimed: world.territories,
+    finds: world.finds,
+    rearmed: rearmedSpent(world),
+    revealed: world.revealed,
+  };
 }
 
 export const readRun = (slot: Slot): GameState | null => decodeRun(read(slotKeys(slot).run));

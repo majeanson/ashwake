@@ -98,15 +98,26 @@ const OFF_AXIS = 1.5;
 const EPSILON = 1e-6;
 
 /**
- * Which cells the marker may stand on.
+ * Which cells the marker may stand on — everything the board draws
+ * (2026-09-01).
  *
- * Everything the board draws except a beacon, which is a promise about ground
- * that does not exist yet and can never be acted on — `HexField` refuses it a
- * raycast for the same reason. Remembered fog IS walked, because a tap on it
- * is how the colour lens is let go of, and a keyboard that could not reach the
- * fog would be missing a gesture the finger has.
+ * It used to refuse beacons, on the argument that a beacon is a promise about
+ * ground that does not exist yet and can never be acted on. Half of that is
+ * still true and it stopped being the question the moment a beacon could be
+ * TAPPED: `describeHexOf` says what is standing out there and what reaching it
+ * would pay, and Marc asked for exactly that — *"i can click on any shrine or
+ * point in the map that I can see to get information."* A keyboard that could
+ * not reach what a finger can is the gap this file was written to close, and it
+ * had reopened on the other side.
+ *
+ * `HexField`'s ray agrees, and ranks a beacon last for the same reason it ranks
+ * a wall late: informational ground never outbids ground you can play on.
  */
-const reachable = (cell: CellView): boolean => !cell.beacon;
+const reachable = (_cell: CellView): boolean => true;
+
+/** Ground a tile could ever stand on — where the marker PREFERS to appear. A
+ *  beacon is somewhere to go, not somewhere to start. */
+const substantial = (cell: CellView): boolean => !cell.beacon;
 
 export const cellAt = (cells: readonly CellView[], key: HexKey): CellView | null =>
   cells.find((c) => c.key === key) ?? null;
@@ -125,12 +136,15 @@ const screenAt = (
  *
  * Home if the board has one — the origin every distance is measured from, and
  * the one hex a player already knows the position of. Failing that the first
- * place a tile could legally go, and failing that anything at all.
+ * place a tile could legally go, then any ground that actually exists, and
+ * only then a beacon: the marker may WALK to a promise now (see `reachable`),
+ * but a first press should never open on one.
  */
 export function firstCursor(cells: readonly CellView[], layout: Layout, lean: Lean): Cursor | null {
   const pick =
-    cells.find((c) => c.home && reachable(c)) ??
+    cells.find((c) => c.home && substantial(c)) ??
     cells.find((c) => c.legal) ??
+    cells.find(substantial) ??
     cells.find(reachable) ??
     null;
   return pick === null ? null : anchored(pick, layout, lean);

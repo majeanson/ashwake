@@ -142,3 +142,104 @@ test('a world three hundred runs deep does not look like a fresh one', async ({ 
 
   expect(errors).toEqual([]);
 });
+
+test('remembered ground answers a tap, lights its biome, and the lens has a way out', async ({
+  page,
+}) => {
+  /*
+   * Three things that were built, documented as working, and unreachable
+   * (2026-09-01).
+   *
+   * `INTERACTIONS.md` has listed "tap remembered fog (the biome lens)" as
+   * working in this body since the matrix was written. `App`'s `onTap` has a
+   * whole branch for it — `rememberedNativeAt`, the spotlight, the sentence —
+   * and `HexField`'s raycast refused remembered ground outright, so the branch
+   * had no way to run. The keyboard could reach the fog (`cursor.ts` walks it
+   * on purpose); the finger could not.
+   *
+   * Marc: *"discovered biomes should be highlightable and a quick 'Lens off'
+   * button (see other repo)."* Both halves are here: the tap that lights a
+   * biome, and the control that puts it down.
+   *
+   * `?runs=300` is the only device history with fog to tap — a world with a
+   * few hundred runs of revealed ground around a run that has just started.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&runs=300');
+  await begin(page);
+  await clearCards(page);
+  // The camera eases into its fit before a ray can land where the eye is —
+  // measured 2026-08-29, taps miss at 300ms and land at 400ms.
+  await page.waitForTimeout(700);
+
+  // A run opens flown to its wake hex, close in, where the live board is.
+  // Zoom out until the world this device remembers is under the probe ring:
+  // the fog begins where this run has not grown, which is a few rings out.
+  for (let i = 0; i < 5; i++) {
+    await page.keyboard.press('-');
+    await page.waitForTimeout(120);
+  }
+  await page.waitForTimeout(400);
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const lensOff = page.locator('[data-action="lens-off"]');
+  const toast = page.locator('.toast');
+
+  // The fit frames the remembered world, so the fog is most of the screen and
+  // the live structure is a speck at the middle. Probe outward until one tap
+  // lands on fog that knows its colour: not every remembered hex has a native
+  // one, and a wall or a remembered landmark answers with a sentence instead.
+  const said = new Set<string>();
+  for (const r of [60, 90, 120, 150, 40, 20]) {
+    for (let i = 0; i < 12 && (await lensOff.count()) === 0; i++) {
+      const a = (Math.PI / 6) * i;
+      await page.mouse.click(cx + r * Math.cos(a), cy + r * Math.sin(a));
+      const text = (await toast.textContent())?.trim() ?? '';
+      if (text !== '') said.add(text);
+    }
+    if ((await lensOff.count()) > 0) break;
+  }
+
+  // A tap on ground you cannot build on still SAYS something, which is the
+  // rule this whole gesture belongs to.
+  expect(said.size, 'every tap on the fog was a silent no-op').toBeGreaterThan(0);
+
+  await expect(lensOff, 'no tap on remembered ground ever lit a biome').toHaveCount(1);
+  // The button names the colour it is holding up, in its own mark.
+  await expect(lensOff).toHaveAttribute('data-lens', /green|yellow|red|blue/);
+
+  // And it lets go, out loud — the half neither gesture that clears a lens
+  // has ever said.
+  await lensOff.click();
+  await expect(lensOff).toHaveCount(0);
+  await expect(toast).not.toHaveText('');
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the ending says what this world has become, not only what the run scored', async ({
+  page,
+}) => {
+  /*
+   * Marc, of a run whose shrine handed him the fourth draft card: *"in this
+   * game I got the shrine 4th tile, id like it shown in the end screen."*
+   *
+   * The WOKE line answers "what changed" and could not answer "where does that
+   * leave me" — the two facts the atlas carries were three taps away in MORE,
+   * on the one screen where they had just been earned.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&runs=300&end=1');
+  await begin(page);
+
+  const end = page.locator('[data-hud="end"]');
+  await expect(end).toHaveCount(1);
+  const atlas = end.locator('.atlas');
+  await expect(atlas, 'the ending said nothing about the world it was played in').toHaveCount(1);
+  // The shrine ledger, as a fraction: the number Marc went looking for.
+  await expect(atlas).toContainText(/\d\/\d/);
+
+  expect(errors).toEqual([]);
+});

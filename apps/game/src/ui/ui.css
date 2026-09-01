@@ -210,10 +210,36 @@ button[disabled] {
   display: flex;
   flex-direction: column;
   background: var(--bg);
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  /*
+   * THE PANEL DOES NOT SCROLL. ITS BODY DOES (2026-09-01).
+   *
+   * Marc, with a photo of HOW TO PLAY scrolled halfway down: *"when scrolling
+   * the top space is not overflowed"* — and in the photo a paragraph and a
+   * whole section heading are drawn ABOVE the sticky header, in the strip the
+   * notch reserves. The header looks like it has stopped covering.
+   *
+   * The cause is that this element was the scroll container AND carried
+   * `padding-top: env(safe-area-inset-top)`. A scroll container clips at its
+   * PADDING box, so content scrolled up into that inset strip is still painted
+   * — and a sticky child's own sticking edge is measured from the content box,
+   * so the header parks 59px lower than the top of what is visible. Everything
+   * between those two lines is a window onto the scrolling body that the header
+   * never covers, and it is exactly as tall as the phone's notch.
+   *
+   * Padding on a scroll container is the bug, so the padding is gone from here.
+   * The head is a flex item that never scrolls and carries the top inset
+   * itself; `.panel-body` is the scrollport and carries the bottom one INSIDE
+   * its own padding, which is the other half of Marc's sentence — *"make sure
+   * we use all bottom space"*. That inset used to be a dead band below the
+   * scrollport that nothing could ever be scrolled into; now the last line of a
+   * section scrolls right through it and stops clear of the home indicator.
+   *
+   * `overflow: hidden` rather than `visible`: the body is the only thing that
+   * may scroll, and a panel that could scroll as well would have two
+   * scrollbars answering one flick.
+   */
+  padding: 0;
+  overflow: hidden;
 }
 
 /* The head and its tab row stick as ONE block — see `Panel`. */
@@ -240,13 +266,26 @@ button[disabled] {
  * `.panel-head` keeps a border only when something follows it, which is the
  * head/tabs divider. On a panel with no tabs the head IS the block, and the
  * block's own border is the only line there should be.
+ *
+ * **It is no longer STICKY, it is simply outside the scroll** (2026-09-01).
+ * `position: sticky` means "part of the flow until the flow carries you off",
+ * and every failure this header has had is a failure of that promise measured
+ * against a scrollport with padding on it — see `.panel`. A head that is a
+ * fixed flex item over a scrolling sibling makes the same picture with nothing
+ * to get wrong: it cannot be scrolled off, so nothing can be drawn above it.
+ * It also takes the top safe-area inset, which is where the notch's strip
+ * belongs now that the scrollport has no padding.
+ *
+ * `position: relative` stays, for the fade below to hang off, and so does the
+ * `z-index`: the fade is drawn OUTSIDE this box, over the scrolling body.
  */
 .panel-top {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 1;
+  flex: none;
   background: var(--bg);
   border-bottom: 1px solid var(--panel-edge);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
 
 .panel-top::after {
@@ -282,8 +321,29 @@ button[disabled] {
   margin-left: auto;
 }
 
+/*
+ * The scrollport (2026-09-01) — see `.panel` for why it moved here.
+ *
+ * `min-height: 0` is what actually lets it scroll: a flex item's default
+ * `min-height: auto` is its content's height, so without this the body grows
+ * the column instead of overflowing inside it and the panel scrolls nothing at
+ * all. The pair with `flex: 1` is the whole of "take what is left of the
+ * screen, and no more".
+ *
+ * The insets are INSIDE the scroll, deliberately. Marc: *"make sure we use all
+ * bottom space."* A bottom inset on the container was a band the last line
+ * could never be scrolled into; here it is trailing padding the content passes
+ * through, so the page ends where the phone ends and the final sentence still
+ * clears the home indicator.
+ */
 .panel-body {
-  padding: var(--gap) calc(var(--gap) * 1.5) calc(var(--gap) * 3);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--gap) calc(var(--gap) * 1.5 + env(safe-area-inset-right))
+    calc(var(--gap) * 3 + env(safe-area-inset-bottom))
+    calc(var(--gap) * 1.5 + env(safe-area-inset-left));
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -689,8 +749,12 @@ button[disabled] {
    */
   justify-content: flex-start;
   overflow-y: auto;
+  overscroll-behavior: contain;
   gap: var(--gap);
-  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  /* The notch's own strip, added 2026-09-01 with `.end`'s — see there. A scene
+     that fills the screen has to keep its first line out from under the clock. */
+  padding: calc(2rem + env(safe-area-inset-top)) calc(1.5rem + env(safe-area-inset-right))
+    calc(2rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));
   text-align: center;
 }
 
@@ -1012,6 +1076,37 @@ button[disabled] {
 
 .board-menu button {
   background: var(--panel);
+}
+
+/*
+ * The lens's way out, top-left (2026-09-01) — see `screens/Lens`.
+ *
+ * The one corner of the board nothing else has claimed: MENU is top-right, the
+ * camera bottom-right, the toast along the bottom edge. Under `.board-menu`'s
+ * 12 rather than beside it, because the two can only ever meet on a very narrow
+ * phone and MENU is the door that must stay pressable.
+ *
+ * It wears the accent, which is this game's "something is ON": a lit lens is a
+ * state the board is in, and the button is the only thing on screen that says
+ * so in words.
+ */
+.lens-off {
+  position: absolute;
+  top: var(--gap);
+  left: var(--gap);
+  z-index: 11;
+}
+
+.lens-off button {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--panel);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.75rem;
 }
 
 /* ---- the camera cluster ------------------------------------------------- */
@@ -1604,11 +1699,22 @@ button[disabled] {
   z-index: 15;
   background: var(--bg);
   overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--gap);
-  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));
+  /*
+   * The top inset, added 2026-09-01. Marc's photo of an ending shows the
+   * payout's first row, RARE TILES, drawn straight through the status bar's
+   * clock: this scene is pinned to `inset: 0` and had insets on three sides out
+   * of four. A scrolling scene DOES paint its first line under the notch and
+   * the fix is trailing space, not a scroll offset — unlike `.panel`, nothing
+   * here is sticky, so padding on the scroll container costs nothing but the
+   * band it reserves.
+   */
+  padding: calc(2rem + env(safe-area-inset-top)) calc(1.5rem + env(safe-area-inset-right))
+    calc(2rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left));
   text-align: center;
 }
 
@@ -1652,6 +1758,29 @@ button[disabled] {
 
 .end .facts {
   width: min(24rem, 100%);
+}
+
+/*
+ * THIS WORLD, over the atlas on the ending (2026-09-01).
+ *
+ * The screen already has a stat grid of the RUN, so the block under it needs
+ * one word saying whose numbers these are. A label, at the same measure as
+ * everything else in the column, with the gap above it that separates a heading
+ * from the block before it rather than from its own.
+ */
+.end-world-head {
+  width: min(26rem, 100%);
+  text-align: start;
+  margin: var(--gap) 0 0;
+}
+
+/* The atlas keeps the column's measure like every other section here. */
+.end .atlas {
+  width: min(26rem, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  text-align: start;
 }
 
 .flag {

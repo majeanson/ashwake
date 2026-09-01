@@ -39,7 +39,7 @@ const session = (wakeAt: string | null) =>
     seed: 4242,
     theme: resolveTheme(null),
     strings: stringsFor(pickLocale(['en'])),
-    memory: { claimed: ['9,-4', '3,0'], finds: [], rearmed: {} },
+    memory: { claimed: ['9,-4', '3,0'], finds: [], rearmed: {}, revealed: [] },
     wakeAt,
   });
 

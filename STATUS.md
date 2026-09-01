@@ -4,7 +4,49 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-08-30, last — POP and SACRIFICE become shapes.** Marc:
+Last checkpoint: **2026-09-01 — the fog comes back, and the board starts
+answering.** Marc, with two phone photos: the shrine unlock on the end screen,
+a panel overflowing its top and wasting its bottom, _"i can click on any shrine
+or point in the map that I can see to get information"_, _"discovered biomes
+should be highlightable and a quick 'Lens off' button"_, and a daily with no
+sacrifice and no long-term-run shrines.
+
+**The fog had never been drawn in this body.** `createSession`'s `build()`
+passed `toBoardView` a literal `[]` where the world's revealed ground goes, and
+had since Stage 2 — so `Renderer`'s "the map you carry in your head, which is
+the whole meta-progression" was absent for four stages. Every rule about it held
+perfectly over an empty list. A world thirty runs deep opened as one tile in a
+black void, and the audit shot of it had been in the repo for two days.
+`RunMemory` carries `revealed` now. Compare `audit-shots/*/board-thirty.png`.
+
+**Three more of the same shape, found on the way.** `HexField`'s raycast refused
+beacons and remembered ground, so the fog would have been untappable even once
+drawn — while `INTERACTIONS.md` listed both taps as working and the KEYBOARD
+could reach the fog. And `describeHexOf`'s `unlockLabel`/`crossingDowry` were
+never passed, so every shrine said "unlock a system" whatever its world held.
+
+**The end screen was measured against the wrong world.** `gained` read the live
+merge, whose effect is declared after the settle effect and bails once the run
+has ended — so a shrine woken by the run's LAST placement was never reported. It
+reads `after.world` now, and the atlas rides under the WOKE line: three of five,
+and which three, on the screen where they were earned.
+
+**Padding on a scroll container is what made the header look broken.** `.panel`
+was the scrollport and carried the top safe-area inset; a scroll container clips
+at its padding box and a sticky child sticks from its content box, and the band
+between is exactly a notch tall. The head is a plain flex item now,
+`.panel-body` is the scrollport, and the bottom inset lives inside it so the
+last line scrolls through the band instead of stopping above it.
+
+**A daily has no finds any more.** Shrines already came out; finds did not, and
+a find grants a perk, and perks live on a world a daily does not have — so they
+shimmered, cost a placement, and paid nothing at all.
+
+Verified: 1071 tests / 74 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, audit at 132 findings with **no new rows**.
+Still not seen on a phone.
+
+Previous checkpoint: **2026-08-30, last — POP and SACRIFICE become shapes.** Marc:
 _"make sure tiles in hand have a lil bit more height, same for pop and
 sacrifice. make em icons, associate in how to play and cards too."_
 

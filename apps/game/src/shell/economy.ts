@@ -53,8 +53,47 @@ export type RunKind =
  */
 const NO_RELICS = { burnRelics: 0, claimRelics: 0, luckToRelics: 0, titheRate: 0 } as const;
 
+/**
+ * What a daily has no use for (2026-09-01).
+ *
+ * Marc: *"when in daily, all sacrifice or long term run shrines should be
+ * disabled so we only have points and caches or similar (since relics and
+ * shrines are useless in dailies)."*
+ *
+ * Today's board is played once, by everybody, and banked as a score on a
+ * ladder. Nothing it leaves behind survives it, so a landmark that pays into a
+ * LEDGER rather than into the run is a door that opens nothing:
+ *
+ * - **Shrines** already came out, on the same reasoning and Marc's own Day 2
+ *   ruling: `shrinesReborn` rewrites each one into a cache or a site,
+ *   deterministically, so the reveal, the beacons, the fog and the tap answers
+ *   all agree without a second rule anywhere.
+ * - **Finds** were the half that never came out. A find grants a PERK, perks
+ *   live on the world (2026-08-26), and a daily has no world, so `App`'s grant
+ *   is guarded by `daily === null` and a daily's finds were landmarks that
+ *   shimmered, cost a placement to reach, and paid **nothing at all**. Zeroed
+ *   here rather than guarded at the grant, so the whole game agrees there is
+ *   nothing out there: no shimmer, no reveal, no glyph, no tap answer.
+ *
+ * **SACRIFICE needs nothing here and is checked anyway.** The burn falls back
+ * to `burnLuck` when `burnRelics` is zero, the shipped tuning's `burnLuck` is
+ * zero too, so `harvestBurn` is 0 and `ActionBar` never draws the button. That
+ * is three files of chain to hold one of Marc's sentences up, which is exactly
+ * the kind of agreement that breaks silently — `economy.test.ts` pins it.
+ *
+ * TERRITORY stays. Its ledger half (+6 tiles to LATER runs) is dead in a
+ * daily, but the ground it claims is native the moment it is claimed, and that
+ * pays inside the run — which is the line this list is drawn on.
+ */
+const NO_LEDGER = {
+  shrinesReborn: true,
+  findEvery: 0,
+  findChance: 0,
+  findSense: 0,
+} as const;
+
 export function economyFor(run: RunKind, base: Tuning = TUNING): Tuning {
-  if (run.kind === 'daily') return { ...base, ...NO_RELICS, shrinesReborn: true };
+  if (run.kind === 'daily') return { ...base, ...NO_RELICS, ...NO_LEDGER };
   if (run.kind === 'detour') return { ...base, ...NO_RELICS };
 
   const woken = applyUnlocks(base, unlockedBy(run.world));

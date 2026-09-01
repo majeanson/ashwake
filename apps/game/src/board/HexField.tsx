@@ -200,17 +200,11 @@ export function HexField({
   /**
    * What the finger meant, out of everything the ray went through.
    *
-   * **A wall never wins over ground behind it** (Marc, 2026-08-29: "if we hit
-   * a wall and a tile underneath, prioritize the tile"). A wall is the tallest
-   * thing on the board, so the moment the camera leans it stands in front of
-   * the hexes beyond it and the ray reaches it first — and a wall is the one
-   * kind of ground you can never do anything with. Taking the nearest hit
-   * meant a leaned board quietly refusing placements that a flat one allowed,
-   * which reads as the game ignoring you.
-   *
-   * So the whole ray is considered, nearest first, and anything that is not a
-   * wall outranks a wall however far behind it stands. Walls stay tappable —
-   * `describeHexOf` has a sentence for them — they just go last.
+   * The whole ray is considered, nearest first, and the best RANK wins however
+   * far behind it stands — see `RAY_RANK` for the ladder and why each rung is
+   * where it is. Rank 0 answers immediately, because nothing can outrank it;
+   * anything else is held as the best candidate so far and only gets to speak
+   * once the ray is exhausted.
    *
    * The handler is attached per batch but resolves GLOBALLY, so whichever mesh
    * R3F reaches first answers for all of them and stops the rest.
@@ -231,26 +225,32 @@ export function HexField({
       if (mesh !== undefined) byMesh.set(mesh, b);
     }
 
-    let wall: CellView | null = null;
+    let best: CellView | null = null;
+    let bestRank = Number.POSITIVE_INFINITY;
     for (const hit of event.intersections) {
       const batch = byMesh.get(hit.object as InstancedMesh);
       if (batch === undefined || !isTappable(batch)) continue;
       const item = hit.instanceId === undefined ? undefined : batch.items[hit.instanceId];
       if (item === undefined) continue;
-      if (batch.kind === 'wall') {
-        wall ??= item.cell;
-        continue;
+      const rank = RAY_RANK[batch.kind];
+      if (rank === 0) {
+        // Nothing behind it can outrank live ground, so the ray stops here.
+        event.stopPropagation();
+        onTap(item.cell.key, item.cell);
+        return;
       }
-      event.stopPropagation();
-      onTap(item.cell.key, item.cell);
-      return;
+      // Nearest first, so the first hit at a rank is the nearest at that rank.
+      if (rank < bestRank) {
+        bestRank = rank;
+        best = item.cell;
+      }
     }
 
-    // Nothing but wall along the whole ray, so the wall is genuinely what was
-    // pointed at and gets to say its line.
-    if (wall !== null) {
+    // No live ground anywhere along the ray, so the best of what is left is
+    // genuinely what was pointed at and gets to say its line.
+    if (best !== null) {
       event.stopPropagation();
-      onTap(wall.key, wall);
+      onTap(best.key, best);
     }
   };
 
@@ -327,13 +327,55 @@ export function HexField({
 }
 
 /**
- * Which kinds of ground answer a tap.
+ * Which kinds of ground answer a tap — all of them (2026-09-01).
  *
- * Beacons and remembered fog are drawn but not asked: a beacon is a promise
- * about somewhere else and remembered ground is a memory, and neither is a
- * place a tile can go. One predicate, because the raycast and the render both
- * need the same answer and two copies of it is how they come to disagree.
+ * This used to refuse beacons and remembered fog, on the argument that neither
+ * is a place a tile can go. True, and beside the point: a tap on ground you
+ * cannot build on is how this game ANSWERS QUESTIONS, and those two are the
+ * ground a player has the most questions about. Marc: *"id like that i can
+ * click on any shrine or point in the map that I can see to get information ...
+ * is it a good shrine or one i dont need now?"*
+ *
+ * It also made two documented gestures dead. `INTERACTIONS.md` has listed "tap
+ * a beacon" and "tap remembered fog (the biome lens)" as working in this body
+ * since the matrix was written; `App`'s `onTap` has a whole branch for the fog
+ * that turns the colour lens, and `describeHexOf` has sentences for a beacon,
+ * a shimmer, remembered ground and dark ground that nothing could reach. The
+ * keyboard could get to all of it — `cursor.ts` walks the fog on purpose — so
+ * the finger was the one input that could not. Sixth of this body's signature
+ * miss (`CLAUDE.md`): a rule implemented, tested, and reachable from nothing.
+ *
+ * One predicate still, because the raycast and the render both need the same
+ * answer; what decides between two hits is `RAY_RANK` below.
  */
-function isTappable(batch: GroundBatch): boolean {
-  return batch.kind !== 'beacon' && batch.kind !== 'remembered';
+function isTappable(_batch: GroundBatch): boolean {
+  return true;
 }
+
+/**
+ * Which hit along the ray the finger meant, when it went through more than one.
+ *
+ * Lower wins however far behind it stands; nearest wins inside a rank. The
+ * ladder is by what a tap can DO there:
+ *
+ * 0. **Live ground.** Tiles, empty ground, stone, landmarks — the only hexes a
+ *    placement, a price or a claim can happen on. Marc, 2026-08-29: *"if we hit
+ *    a wall and a tile underneath, prioritize the tile."* A wall is the tallest
+ *    thing on the board, so a leaned camera puts it in front of the hexes
+ *    beyond it, and a leaned board quietly refusing placements a flat one
+ *    allowed reads as the game ignoring you.
+ * 1. **Walls.** Real ground, and the one kind nothing can ever be done with, so
+ *    it answers only when nothing else on the ray does.
+ * 2. **The map.** Beacons and remembered fog: information about somewhere
+ *    else, drawn nearly flat (`relief.ts` stands them 0.05 and 0.04 high) at
+ *    hexes no live cell occupies. Last, so a low fog hex in the foreground can
+ *    never steal the tap meant for the board behind it.
+ */
+const RAY_RANK: Readonly<Record<GroundBatch['kind'], number>> = {
+  tile: 0,
+  empty: 0,
+  stone: 0,
+  wall: 1,
+  beacon: 2,
+  remembered: 2,
+};

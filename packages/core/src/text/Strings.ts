@@ -258,6 +258,14 @@ export type Strings = {
       readonly shrineDetour: string;
       readonly shrineClaimed: string;
       readonly shrineCrossing: (dowry: number) => string;
+      /**
+       * A shrine on a world whose ledger is finished, with no crossing on
+       * offer (2026-09-01). Marc, of the board's tap answers: *"is it a good
+       * shrine or one i dont need now?"* — this is the "one you do not need"
+       * sentence, and without it `shrine(null)` promised "a system" that no
+       * longer exists.
+       */
+      readonly shrineAwake: string;
       readonly shrine: (next: string | null) => string;
       readonly findClaimed: string;
       readonly find: string;
@@ -676,6 +684,14 @@ export type Strings = {
     readonly atlasShrines: string;
     readonly atlasFinds: string;
     readonly atlasUnlocked: string;
+    /**
+     * The atlas, headed on the END SCREEN (2026-09-01).
+     *
+     * The ending already carries a stat grid of the RUN, so the world block
+     * under it needs a word saying whose numbers those are. In the WORLDS
+     * panel the panel title does that job and there is no head at all.
+     */
+    readonly thisWorld: string;
     /** A slot nobody has played yet. */
     readonly emptyWorld: string;
     /**
@@ -721,6 +737,22 @@ export type Strings = {
     readonly handEmpty: string;
     readonly lensOn: (ground: string) => string;
     readonly lensOff: string;
+    /**
+     * The lens's own way out, as a control (2026-09-01).
+     *
+     * Marc: *"a quick 'Lens off' button (see other repo)."* Ashwake 1 has
+     * carried one since 2026-08-27, for his own reason then: *"sometimes its
+     * hard with tiles in hand"*. The two gestures that let a lens go are a
+     * second long-press on the card that lit it and a second tap on the fog,
+     * and both ask you to remember which one you used. A button that is only
+     * there while a lens is lit asks nothing.
+     *
+     * `lensClear` is the word on it, short enough for a floating control.
+     * `lensClearLabel` is what a screen reader hears, which has room to name
+     * the ground the lens is holding up.
+     */
+    readonly lensClear: string;
+    readonly lensClearLabel: (ground: string) => string;
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;
     /** Hand this run to somebody. The game's only distribution mechanism. */

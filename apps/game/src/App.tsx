@@ -21,6 +21,7 @@ import { ONLY_WORLD } from '@meta/records';
 import {
   mergeRun,
   newWorld,
+  UNLOCKS,
   unlockedBy,
   unlockLabel,
   type UnlockId,
@@ -41,6 +42,7 @@ import { Directions } from './screens/Directions';
 import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
 import { Hud } from './screens/Hud';
+import { LensOff } from './screens/Lens';
 import { LessonCard } from './screens/LessonCard';
 import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
@@ -371,6 +373,13 @@ function Game() {
     readonly unlocks: readonly string[];
   }>({ perks: [], unlocks: [] });
   /**
+   * The world this run left behind, for the ending to show (2026-09-01).
+   *
+   * Written once by the settle effect, from the very copy that reaches the
+   * disk. Null on a detour and on a daily, neither of which HAS one.
+   */
+  const [endWorld, setEndWorld] = useState<WorldMemory | null>(null);
+  /**
    * A receipt that is holding the screen, waiting to be dismissed.
    *
    * Held rather than derived from the snapshot: a card outlives the dispatch
@@ -390,6 +399,26 @@ function Game() {
   const shellSaid = useRef(0);
   /** Goals this run was the one to meet, for the end screen. */
   const [goals, setGoals] = useState<readonly GoalId[]>([]);
+  /**
+   * Put the last ending down (2026-09-01).
+   *
+   * Three pieces of state belong to a RUN THAT HAS ENDED — what it woke, what
+   * world it left behind, what it was the first to prove — and all three are
+   * written by the settle effect, which **a daily returns from before it
+   * reaches them** (a daily banks down `settleDaily`'s much shorter path). So
+   * whatever the last home run left in them was still there when a daily's own
+   * ending rendered: `setGoals([])` was in `startRun` alone and covered exactly
+   * one of the five doors into a run.
+   *
+   * One function called by every door, for the reason `startRun`'s docblock
+   * gives about `wakeAt`: everything a run starts from has to be put down in
+   * one order, or two doors disagree about what a run starts from.
+   */
+  const forgetEnding = useCallback(() => {
+    setGained({ perks: [], unlocks: [] });
+    setEndWorld(null);
+    setGoals([]);
+  }, []);
   /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
 
@@ -642,26 +671,10 @@ function Game() {
     // For the diary row only — the ending walks the live board (see `walking`).
     const picture = board.current?.snapshot() ?? null;
 
-    /*
-     * What this run gained, measured against what it started with.
-     *
-     * Both are differences, and both have to be taken here: `progress.found`
-     * has already grown by the time the end screen renders, and the world's
-     * unlock ledger is about to be rewritten by `settle` below.
-     */
     // The world as this run left it — the LIVE copy, not the disk's, because
     // the keeper's last write may still be pending and the shrines this run
     // woke are exactly what is being reported.
     const ending = worldHeld(snap.state.rootSeed);
-    const wokeNow = unlockedBy(ending ?? newWorld(snap.state.rootSeed));
-    setGained({
-      perks: progress.found
-        .filter((id) => !(startedFrom.current?.perks ?? []).includes(id))
-        .map((id) => perkText(id, s).name),
-      unlocks: wokeNow
-        .filter((id) => !(startedFrom.current?.unlocks ?? []).includes(id))
-        .map((id) => unlockLabel(id as UnlockId, s)),
-    });
 
     const after = settle({
       state: snap.state,
@@ -674,6 +687,52 @@ function Game() {
       at: Date.now(),
       ...(picture === null ? {} : { shot: picture }),
     });
+
+    /*
+     * What this run gained, measured against what it started with.
+     *
+     * Both are differences: `progress.found` has already grown by the time the
+     * end screen renders, and the world's unlock ledger has just been rewritten
+     * by the `settle` above.
+     *
+     * ## Why it is measured AFTER the settle now (2026-09-01)
+     *
+     * Marc, of a run whose shrine handed him the fourth draft card: *"in this
+     * game I got the shrine 4th tile, id like it shown in the end screen."*
+     *
+     * It was measured against `ending` — the world as the LIVE merge left it —
+     * and that merge is a separate effect, declared after this one, which bails
+     * the moment `hud.ended` is true. React runs effects in declaration order,
+     * so on the render where a run ends this one goes first and the merge never
+     * runs again. Everything the run's FINAL action claimed was therefore
+     * missing from `ending`: the shrine woken by the placement that spent the
+     * last tile, which is a common way for a run to end and the single most
+     * exciting thing an ending can report, was silently dropped.
+     *
+     * `after.world` is `rememberRun` over the finished state, so it holds every
+     * claim including the last one. It is also the copy actually written to
+     * disk, which means the end screen and the atlas can no longer disagree
+     * about what this world holds.
+     */
+    setGained({
+      perks: progress.found
+        .filter((id) => !(startedFrom.current?.perks ?? []).includes(id))
+        .map((id) => perkText(id, s).name),
+      unlocks: unlockedBy(after.world)
+        .filter((id) => !(startedFrom.current?.unlocks ?? []).includes(id))
+        .map((id) => unlockLabel(id as UnlockId, s)),
+    });
+    /*
+     * And the world itself, for the ending to show (2026-09-01).
+     *
+     * The WOKE line says what CHANGED; it cannot say where that leaves you. A
+     * player who wakes their third shrine wants the same two facts the atlas
+     * carries — three of five, and which three — on the screen where they just
+     * earned it, rather than three taps away in MORE. A detour has no world and
+     * a daily settles down a different path entirely, so both leave this null
+     * and the ending simply does not carry the block.
+     */
+    setEndWorld(session.detour ? null : after.world);
     worldNow.current = after.world;
     keeper.saveWorld(after.world);
     keeper.flush();
@@ -710,6 +769,7 @@ function Game() {
     keeper,
     setProgress,
     s,
+    session,
     worldHeld,
   ]);
 
@@ -1163,11 +1223,34 @@ ${s.view.harvest.firstPopWhen}`,
    * arrow key LOOKS and Enter ACTS, and the looking half is exactly this
    * sentence. One copy, so the two doors into the board cannot describe it
    * differently.
+   *
+   * ## The ledger it was asking without (2026-09-01)
+   *
+   * Marc, of a tapped shrine: *"is it a good shrine or one i dont need now?"*
+   * `DescribeContext` has taken an `unlockLabel` and a `crossingDowry` since
+   * the rules were lifted and this call passed neither, so EVERY shrine on
+   * every board said the same vague sentence — "claim it to unlock **a
+   * system**" — whether it was about to hand over the fourth draft card or
+   * standing on a finished world with nothing left to give. The pin test has
+   * been passing both since it was written; the game passed neither. Seventh
+   * of this body's signature miss, and the smallest: two fields.
+   *
+   * `shrinesClaimed` came off `state.log.questsDone` — shrines woken THIS RUN
+   * — where the ledger is a fact about the WORLD, across every run it has
+   * held. On run two of a world with three shrines already awake it counted 0
+   * and would have named an unlock long since woken. `world.shrines.length` is
+   * the number `unlockedBy`, the atlas and `economyFor` all read, and the merge
+   * effect keeps it current within the run, so a shrine woken ten placements
+   * ago already counts.
    */
   const describe = useCallback(
     (key: string): string => {
       const now = session.get();
       const memory = ledgers.worlds[slot]?.revealed;
+      // The LIVE world, not the disk's: a shrine woken earlier in this run has
+      // to count, and the keeper's write may still be pending.
+      const world = session.detour ? null : worldHeld(now.state.rootSeed);
+      const woken = world?.shrines.length ?? 0;
       return describeHexOf(
         {
           state: now.state,
@@ -1176,13 +1259,28 @@ ${s.view.harvest.firstPopWhen}`,
           // The same fact the session was built with — a run on somebody
           // else's seed has no ledger to describe.
           detour: session.detour,
-          shrinesClaimed: now.state.log.questsDone,
+          shrinesClaimed: woken,
           ...(memory === undefined ? {} : { memory }),
+          // Only where there IS a ledger. Without a world the honest answer is
+          // the vague one, which is what omitting this asks for.
+          ...(world === null
+            ? {}
+            : {
+                unlockLabel: (nth: number) => {
+                  const id = UNLOCKS[nth]?.id;
+                  return id === undefined ? null : unlockLabel(id, s);
+                },
+              }),
+          // The way onward, priced the same way the crossing card prices it —
+          // offered by a shrine past the end of the ledger, on your own world.
+          ...(world !== null && woken >= UNLOCKS.length
+            ? { crossingDowry: () => dowryOf(world) }
+            : {}),
         },
         key,
       );
     },
-    [session, s, theme, ledgers, slot],
+    [session, s, theme, ledgers, slot, worldHeld],
   );
 
   /**
@@ -1256,8 +1354,18 @@ ${s.view.harvest.firstPopWhen}`,
        * numbers and is still there when the card is dismissed. The card is the
        * same one the glossary opens everywhere else, so a cache is defined in
        * exactly one place however you arrive at it.
+       *
+       * **Ground the board has actually reached, only** (2026-09-01). Beacons
+       * and remembered fog answer a tap since this session, and a MODAL over
+       * every glow on the horizon is the wrong weight for the question being
+       * asked: a tap on a light two rings out means "what is that", which the
+       * sentence answers in full — it even ends "Build your chain out to it."
+       * A tap on the thing itself, standing on your own board, is the moment
+       * the definition is worth interrupting for. It also keeps a stray tap
+       * near the edge of a young board from throwing a card, and a young board
+       * is mostly edge.
        */
-      if (cell.kind === 'landmark' && cell.landmark !== null) {
+      if (cell.kind === 'landmark' && cell.landmark !== null && !cell.beacon && !cell.remembered) {
         setTerm(LESSON_FOR_REWARD[cell.landmark]);
       }
       say(describe(key));
@@ -1329,6 +1437,20 @@ ${s.view.harvest.firstPopWhen}`,
     },
     [session, snap.hud.draft, lens],
   );
+
+  /**
+   * Put the lens down, from a control rather than from a gesture (2026-09-01).
+   *
+   * Marc: *"a quick 'Lens off' button (see other repo)."* The same three lines
+   * the fog's second tap runs, in one place, so the button and the gesture
+   * cannot come to disagree about what letting go MEANS — it says so out loud,
+   * which the long-press half never has.
+   */
+  const clearLens = useCallback(() => {
+    setLens(null);
+    session.spotlight(null);
+    say(s.ui.lensOff);
+  }, [session, s, say]);
 
   /**
    * A new run, in a world.
@@ -1430,13 +1552,14 @@ ${s.view.harvest.firstPopWhen}`,
     clearRun(slot);
 
     setSaidCard(null);
+    forgetEnding();
     banked.current = snap.state;
     // The world it crosses INTO — freshly minted, so no shrine is woken there
     // yet, but the purse and the perks it carried come with it.
     session.restart(seed, null, undefined, economyAt(slot, seed));
     setLens(null);
     setStarted(true);
-  }, [snap.state, ledgers, slot, progress, setProgress, keeper, keepWorld, session]);
+  }, [snap.state, ledgers, slot, progress, setProgress, keeper, keepWorld, session, forgetEnding]);
 
   /**
    * A fresh expedition into the world this device is standing in.
@@ -1454,7 +1577,7 @@ ${s.view.harvest.firstPopWhen}`,
   const startRun = useCallback(
     (wakeAt: HexKey | null) => {
       setDaily(null);
-      setGoals([]);
+      forgetEnding();
       saidOnce.current = new Set();
       startedFrom.current = startsFrom(activeSlot(), progress.found);
 
@@ -1477,7 +1600,7 @@ ${s.view.harvest.firstPopWhen}`,
       setWalking(false);
       frameTheRun();
     },
-    [session, setDaily, progress.found, startsFrom, frameTheRun],
+    [session, setDaily, progress.found, startsFrom, frameTheRun, forgetEnding],
   );
 
   const newRun = useCallback(() => startRun(null), [startRun]);
@@ -1538,6 +1661,9 @@ ${s.view.harvest.firstPopWhen}`,
   const today = useMemo(() => localToday(), []);
   const enterDaily = useCallback(() => {
     setDaily(today);
+    // The last ending is not this one’s — see forgetEnding. A daily banks
+    // down its own short path and never reaches the writes that would clear it.
+    forgetEnding();
     // A daily has no world memory at all. Letting go here means the held copy
     // cannot be merged into by a board the world never walked.
     forgetWorld();
@@ -1555,12 +1681,13 @@ ${s.view.harvest.firstPopWhen}`,
     leaveMenus();
     setStarted(true);
     frameTheRun();
-  }, [session, setDaily, today, leaveMenus, forgetWorld, frameTheRun]);
+  }, [session, setDaily, today, leaveMenus, forgetWorld, frameTheRun, forgetEnding]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
       const kept = readRun(next);
       setDaily(null);
+      forgetEnding();
       setSlot(next);
       // Another world entirely: the held copy is the one being left.
       forgetWorld();
@@ -1578,7 +1705,17 @@ ${s.view.harvest.firstPopWhen}`,
       setStarted(true);
       frameTheRun();
     },
-    [session, setSlot, setDaily, leaveMenus, progress.found, forgetWorld, startsFrom, frameTheRun],
+    [
+      session,
+      setSlot,
+      setDaily,
+      leaveMenus,
+      progress.found,
+      forgetWorld,
+      forgetEnding,
+      startsFrom,
+      frameTheRun,
+    ],
   );
 
   /**
@@ -1977,6 +2114,16 @@ ${s.view.harvest.firstPopWhen}`,
           />
         )}
         {(playing || walking) && <Camera s={s} next={nextView} onCycle={cycleView} />}
+        {/*
+          The lens's own way out, present exactly while a lens is lit
+          (2026-09-01) — see `screens/Lens`. Top-left, the one corner of the
+          board nothing else has claimed, and it survives the run for the same
+          reason MENU and the camera do: the ending's board is walked with the
+          same controls, and a lens lit during a run is still lit on it.
+        */}
+        {(playing || walking) && lens !== null && (
+          <LensOff s={s} colour={lens} name={namesOf(theme, s.locale)[lens]} onClear={clearLens} />
+        )}
       </div>
 
       {playing && (
@@ -2083,6 +2230,7 @@ ${s.view.harvest.firstPopWhen}`,
             onWalk={() => setWalking(true)}
             newPerks={gained.perks}
             newUnlocks={gained.unlocks}
+            world={endWorld}
             onMainMenu={toMainMenu}
           />
         </div>
@@ -2186,6 +2334,8 @@ ${s.view.harvest.firstPopWhen}`,
             // Including the world this session was holding: an erased device
             // that kept a merged world in a ref would write it straight back.
             forgetWorld();
+            // And the last ending, which is about a world that no longer exists.
+            forgetEnding();
             // The one place a reload would be honest — and it still is not one.
             // Everything erased is everything this shell was showing, so the
             // shell goes back to what a phone that has never played looks like.

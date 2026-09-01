@@ -338,6 +338,8 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       shrineClaimed: 'SHRINE: woken. It switched a system on for this world.',
       shrineCrossing: (dowry) =>
         `SHRINE: this world is fully awake, so reaching it offers the crossing. A NEW WORLD, with ${dowry} relics carried for what you leave.`,
+      shrineAwake:
+        'SHRINE: this world is fully awake. There is nothing left for one to unlock, so this is a walk you do not need.',
       shrine: (next) =>
         `SHRINE: claim it to unlock ${next ?? 'a system'} for this world, permanently.`,
       findClaimed: 'A hidden find, spent. It gave what it had.',
@@ -645,6 +647,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     atlasShrines: 'SHRINES',
     atlasFinds: 'FINDS',
     atlasUnlocked: 'UNLOCKED',
+    thisWorld: 'THIS WORLD',
     emptyWorld: 'begin new',
     camp: (ring) => `BEGIN AT CAMP · your farthest territory, ring ${ring}`,
     worn: 'WORN',
@@ -654,6 +657,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     lensOn: (ground) =>
       `Remembered ${ground} ground: every known patch of it is lit. Tap the fog again to let go.`,
     lensOff: 'The lens is off.',
+    lensClear: 'LENS OFF',
+    lensClearLabel: (ground) => `Turn the ${ground} lens off`,
     newVersion: 'NEW VERSION · TAP TO LOAD',
     share: 'SHARE',
     copied: 'COPIED',

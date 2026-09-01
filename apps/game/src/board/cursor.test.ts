@@ -78,10 +78,18 @@ describe('where the marker starts', () => {
     expect(firstCursor([], UNIT, FLAT)).toBeNull();
   });
 
-  it('never stands on a beacon, which is ground that does not exist yet', () => {
+  /**
+   * Amended 2026-09-01, when beacons became tappable: the marker WALKS to a
+   * beacon now (a tap on one says what is out there), it simply never OPENS on
+   * one — a first press should land somewhere that exists.
+   */
+  it('never opens on a beacon, but will walk to one', () => {
     const cells = [cell(0, 0, { beacon: true }), cell(1, 0)];
     expect(firstCursor(cells, UNIT, FLAT)?.key).toBe('1,0');
-    expect(stepCursor(cells, at([cell(1, 0)]), 'left', UNIT, FLAT)).toBeNull();
+    expect(stepCursor(cells, at([cell(1, 0)]), 'left', UNIT, FLAT)?.key).toBe('0,0');
+    // A board with nothing BUT beacons still answers a key rather than going
+    // dead: the marker has to be somewhere.
+    expect(firstCursor([cell(4, 0, { beacon: true })], UNIT, FLAT)?.key).toBe('4,0');
   });
 });
 

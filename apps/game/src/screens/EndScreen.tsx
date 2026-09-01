@@ -1,4 +1,5 @@
 import type { Progress } from '@meta/progress';
+import type { WorldMemory } from '@meta/world';
 import type { Theme } from '@theme/tokens';
 import { arcNote, type HudView } from '@view/view';
 import type { LessonId } from '@view/lessons';
@@ -7,6 +8,7 @@ import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Prose } from '../ui/Prose';
 import { useState } from 'react';
+import { Atlas } from './Atlas';
 import { Payout } from './Payout';
 import { Shop } from './Shop';
 import { statLabel } from './Hud';
@@ -78,6 +80,22 @@ export type EndScreenProps = {
    */
   readonly newPerks?: readonly string[];
   readonly newUnlocks?: readonly string[];
+  /**
+   * The world this run left behind, where there is one (2026-09-01).
+   *
+   * Marc, of a run whose shrine handed him the fourth draft card: *"in this
+   * game I got the shrine 4th tile, id like it shown in the end screen."*
+   *
+   * The WOKE line above answers "what changed" and cannot answer "where does
+   * that leave me" — three shrines of five, and WHICH three. Those are the two
+   * facts the atlas already carries, and until now they were three taps away in
+   * MORE, on the one screen where they have just been earned. So the atlas is
+   * shown here, unchanged: a world is described in one place however you arrive
+   * at it, exactly as a cache is.
+   *
+   * Absent on a detour and on a daily, neither of which has a world.
+   */
+  readonly world?: WorldMemory | null;
   /** Back to the front door: an ending needs a way out that is not another run. */
   readonly onMainMenu: () => void;
 };
@@ -86,6 +104,7 @@ export function EndScreen({
   onWalk,
   newPerks,
   newUnlocks,
+  world,
   onMainMenu,
   hud,
   harvests,
@@ -174,6 +193,21 @@ export function EndScreen({
             <li key={`p-${label}`}>{s.ui.perkFound(label)}</li>
           ))}
         </ul>
+      )}
+
+      {/*
+        WHERE THAT LEAVES THE WORLD (2026-09-01) — see `world` above.
+
+        Directly under the WOKE line, because the two are one sentence: this
+        run woke A FOURTH DRAFT CARD, and this world now stands at three
+        shrines of five with these three awake. The same component the WORLDS
+        panel shows, so a world reads the same wherever you meet it.
+      */}
+      {world != null && (
+        <>
+          <h2 className="fact-label end-world-head">{s.ui.thisWorld}</h2>
+          <Atlas world={world} s={s} />
+        </>
       )}
 
       {/*

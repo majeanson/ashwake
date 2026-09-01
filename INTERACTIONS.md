@@ -16,27 +16,28 @@ deliberately absent in both.
 
 ## 1. The board
 
-| Gesture                                              | Ashwake 1                                                                     | Ashwake 2                           |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
-| Tap a **legal empty hex** with a card                | places                                                                        | ✓                                   |
-| Tap a **legal hex, hand empty**                      | _"Your hand is empty — tap a card below to pick one up."_                     | → was a **silent no-op**            |
-| Tap a **ripe tile**                                  | prices that pocket, outlines it, and prints the whole `pocketNote` arithmetic | → priced, but **said nothing**      |
-| Tap a **cache / site / shrine / territory / find**   | `describeHexOf` — what it is, what claiming pays, in this run's numbers       | → was a **silent no-op**            |
-| Tap a **beacon** (a landmark glowing off-board)      | its line + _"Build your chain out to it."_                                    | → via `describeHexOf`               |
-| Tap a **wall**                                       | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`               |
-| Tap **spent stone**                                  | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`               |
-| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → via `describeHexOf`               |
-| Tap **native ground**                                | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`               |
-| Tap **remembered fog** (the biome lens)              | lights every known patch of that colour; the same tap lets go                 | → was a **silent no-op**            |
-| Tap **outside the map**                              | nothing at all                                                                | ✓                                   |
-| Drag                                                 | pan, cancels a camera flight                                                  | ✓ (plus momentum, which v1 had not) |
-| Pinch                                                | zoom                                                                          | ✓                                   |
-| Wheel                                                | zoom                                                                          | ✓                                   |
-| `touch-action: none` on the board                    | yes, since Stage 2                                                            | → **was missing entirely**          |
-| Refuse the 28px iOS edge swipe                       | yes                                                                           | → **was missing entirely**          |
-| Double-tap to zoom · drag-and-drop a card            | —                                                                             | —                                   |
-| **Right-drag / Shift-drag** to turn and lean         | —                                                                             | → the desktop's two fingers         |
-| Right-click raises the browser's menu over the board | yes                                                                           | → refused, because the button turns |
+| Gesture                                              | Ashwake 1                                                                     | Ashwake 2                                             |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Tap a **legal empty hex** with a card                | places                                                                        | ✓                                                     |
+| Tap a **legal hex, hand empty**                      | _"Your hand is empty — tap a card below to pick one up."_                     | → was a **silent no-op**                              |
+| Tap a **ripe tile**                                  | prices that pocket, outlines it, and prints the whole `pocketNote` arithmetic | → priced, but **said nothing**                        |
+| Tap a **cache / site / shrine / territory / find**   | `describeHexOf` — what it is, what claiming pays, in this run's numbers       | → was a **silent no-op**                              |
+| Tap a **shrine**, in particular                      | names the unlock the NEXT one gives, or offers the crossing                   | → **said "a system" on every world until 2026-09-01** |
+| Tap a **beacon** (a landmark glowing off-board)      | its line + _"Build your chain out to it."_                                    | → **refused a raycast until 2026-09-01**              |
+| Tap a **wall**                                       | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`                                 |
+| Tap **spent stone**                                  | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`                                 |
+| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → via `describeHexOf`                                 |
+| Tap **native ground**                                | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`                                 |
+| Tap **remembered fog** (the biome lens)              | lights every known patch of that colour; the same tap lets go                 | → **the fog was not drawn at all until 2026-09-01**   |
+| Tap **outside the map**                              | nothing at all                                                                | ✓                                                     |
+| Drag                                                 | pan, cancels a camera flight                                                  | ✓ (plus momentum, which v1 had not)                   |
+| Pinch                                                | zoom                                                                          | ✓                                                     |
+| Wheel                                                | zoom                                                                          | ✓                                                     |
+| `touch-action: none` on the board                    | yes, since Stage 2                                                            | → **was missing entirely**                            |
+| Refuse the 28px iOS edge swipe                       | yes                                                                           | → **was missing entirely**                            |
+| Double-tap to zoom · drag-and-drop a card            | —                                                                             | —                                                     |
+| **Right-drag / Shift-drag** to turn and lean         | —                                                                             | → the desktop's two fingers                           |
+| Right-click raises the browser's menu over the board | yes                                                                           | → refused, because the button turns                   |
 
 ## 2. The hand
 
@@ -108,7 +109,7 @@ one accent, and the board corners hold only MENU (top right) and the camera
 | Shop: buy, wear, unfold a perk           | yes                        | ✓                                                                                                                                                                                                                                            |
 | WORLDS: **BEGIN AT CAMP**                | yes, in that panel         | ✓ (2026-08-30 — the fifth shrine's unlock)                                                                                                                                                                                                   |
 | Sound toggle over the board              | yes                        | ✓ again since 2026-08-30 — a ROW behind MENU rather than a button on the board: _"menu could add a submenu for quick actions like sound in off etc."_ One tap from the board, costing no board. Still one wire with SETTINGS, still one flag |
-| `✕` lens-clear button                    | yes                        | ✗ — the fog tap and a second long-press both let go                                                                                                                                                                                          |
+| LENS OFF button over the board           | yes                        | ✓ 2026-09-01 — top-left, present exactly while a lens is lit, wearing the lit colour's own mark. Marc: _"a quick Lens off button (see other repo)"_. It is also the only one of the three ways out that SAYS the lens is off                 |
 | MENU over the board                      | ✗ (it had ♪ and ?)         | ✓ 2026-08-30 — TOP-RIGHT, out of the arc a thumb sweeps: one door onto a short list (SOUND, HOW TO PLAY, MORE) that opens as a drawer under the stat row. A door on the stack, so Escape and Android BACK close it                           |
 | THE GROUND YOU WALKED, on the ending     | a picture of the board     | ✓ 2026-08-30 — a DOOR onto the live board: the ending steps aside to a bar and the real board takes the screen back, pan and pinch and FIT. Marc: _"i dont want a picture i want to actual screengame where we can move around"_             |
 | Starting a world or a daily              | opened framed on the start | ✓ 2026-08-30 — the rig fits ONCE EVER, so a new world used to open wherever the last one was left. Every way into a run now flies to its wake hex                                                                                            |
@@ -157,16 +158,30 @@ Four rules that are not obvious from the table, each with its own test:
 
 ---
 
+## What this file got wrong, and what that is worth (2026-09-01)
+
+Three of its own rows were claims the code did not keep, and the file said so
+at the top: **check this against the code before trusting it.** Marc asked for
+tappable shrines and highlightable biomes; both were already ticked here.
+
+- **Tap a beacon** and **tap remembered fog** were ✓. `HexField`'s `isTappable`
+  refused both outright, and `App`'s `onTap` has carried a whole branch for the
+  fog since it was written. The keyboard could reach the fog and the finger
+  could not, which is the reverse of the gap this file was built to find.
+- **The fog itself was never drawn.** `createSession` passed `toBoardView` an
+  empty list where the world's revealed ground goes, for four stages. A matrix
+  of GESTURES cannot see that: there is nothing wrong with the gesture, there
+  was nothing to point at. Same blindness as the two surfaces at the bottom of
+  this file.
+
+The lesson is the one already at the top, with a sharper edge on it: a ✓ here
+means somebody read the shell and found a handler. It does not mean the input
+reaches it, and it does not mean the thing being pointed at is on screen.
+
 ## What is still missing
 
-1. **The lens-clear button.** The fog tap and a second long-press both let go,
-   so this is a convenience rather than a gap.
-
-   The name changed with the marks: there is no `✕` character anywhere in this
-   game since 2026-08-30 (`DECISIONS.md` D10). Every mark is a Phosphor icon
-   named in `theme/icons.ts`, drawn by `ui/Icon.tsx` in the chrome and by
-   `board/marks.ts` on the board — one shape from one file, rather than a
-   codepoint two fonts each answer their own way.
+1. Nothing this file has ever listed. The lens-clear button was the last entry
+   and it was built 2026-09-01 (see the row above).
 
 2. **~~The History-API router.~~ RULED OUT 2026-08-30** (`DECISIONS.md` D9),
    and **~~BACK on an open panel~~ BUILT the same day**. The one real gesture

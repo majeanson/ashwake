@@ -101,6 +101,33 @@ describe('the two kinds of run that earn nothing', () => {
     expect([t.burnRelics, t.claimRelics, t.luckToRelics, t.titheRate]).toEqual([0, 0, 0, 0]);
   });
 
+  /**
+   * The other half of the same ruling (2026-09-01). A find grants a perk, a
+   * perk lives on the world, and a daily has no world — so a daily's finds
+   * shimmered, cost a placement to reach and paid nothing. See `NO_LEDGER`.
+   */
+  it('puts no hidden finds in a daily at all', () => {
+    const t = economyFor({ kind: 'daily' });
+    expect([t.findEvery, t.findChance, t.findSense]).toEqual([0, 0, 0]);
+    // A detour is somebody else's world, played as it stands: its finds are
+    // real, they simply pay this device nothing.
+    const detour = economyFor({ kind: 'detour' });
+    expect(detour.findChance, 'a detour is not a daily').toBe(TUNING.findChance);
+  });
+
+  /**
+   * SACRIFICE, held up by a chain three files long — see `NO_LEDGER`.
+   *
+   * `toHudView`'s `harvestBurn` falls back from `burnRelics` to `burnLuck`,
+   * and `ActionBar` draws the button only above zero. Both dials are zero in a
+   * daily, so the button is gone; if either ever moves, this is what says so
+   * before a player is offered a burn that pays nothing.
+   */
+  it('offers a daily no burn, because a burn there buys nothing', () => {
+    const t = economyFor({ kind: 'daily' });
+    expect([t.burnRelics, t.burnLuck]).toEqual([0, 0]);
+  });
+
   it('plays a shared seed on the plain economy, with no relics', () => {
     const t = economyFor({ kind: 'detour' });
     expect(t.shrinesReborn, 'a detour is not a daily').toBe(TUNING.shrinesReborn);

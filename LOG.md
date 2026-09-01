@@ -2535,3 +2535,95 @@ typecheck/lint/format/build clean, `pnpm audit:screens` at 156 findings with
 **no new rows**. The pins were re-recorded deliberately and the diff is only the
 new lesson in both languages plus `pop` gaining its mark — no existing sentence
 moved. **Still not seen on a phone.**
+
+### Session 31 — the fog comes back, and the board starts answering (2026-09-01)
+
+**Question:** Marc, with two phone photos and five asks — the shrine unlock on
+the end screen, the panel overflowing its top and wasting its bottom, tapping
+anything on the map for information, highlightable biomes with a LENS OFF
+button, and a daily stripped of everything that only pays a ledger. Four of the
+five are small. The question is what the fifth one — _"discovered biomes should
+be highlightable"_ — turns out to be sitting on.
+
+**It was sitting on a rendering layer that has never been drawn.**
+`createSession`'s `build()` passes `toBoardView` a literal `[]` where the
+world's revealed ground goes, and has since Stage 2. So **the fog has not
+existed in this body at all**: `Renderer`'s "the map you carry in your head,
+which is the whole meta-progression", absent for four stages. Every rule about
+it held perfectly over an empty list — the lens reached into memory, held
+territories unfurled their fields in it, a reborn landmark wore its new face in
+it, `describeHexOf` had four sentences for it. There was no it. A world thirty
+runs deep opened as one tile in a black void; the audit shot said so and nobody
+read it as a bug, because a dark plane is what this game looks like.
+
+Eighth of this body's signature miss and by a distance the largest surface.
+`RunMemory` carries `revealed` now, `memoryFor` fills it from the world, and
+`restart` keeps it — one field, four stages late. Compare
+`audit-shots/*/board-thirty.png` before and after; it is not subtle.
+
+**Sixth and seventh, in the same neighbourhood.** `HexField`'s raycast refused
+beacons and remembered ground outright, so the whole fog layer would have been
+untappable even once drawn — and `App`'s `onTap` has carried a branch for the
+fog since it was written, and `INTERACTIONS.md` has listed **tap a beacon** and
+**tap remembered fog** as working in this body since the matrix existed. The
+keyboard could reach the fog (`cursor.ts` walks it on purpose, and says so in a
+comment); only the finger could not. And `describeHexOf` takes an `unlockLabel`
+and a `crossingDowry` that `App` passed neither of, so every shrine in the game
+said "claim it to unlock **a system**" whether it was about to hand over the
+fourth draft card or standing on a finished world with nothing left to give.
+The pin test has been passing both fields since it was written.
+
+**The ray needed a ladder, not a flag.** Making everything tappable is not
+enough: beacons and fog lie nearly flat at hexes no live cell occupies, and at a
+lean a foreground fog hex sits in front of the board behind it. `RAY_RANK` is
+the existing wall rule generalised — live ground, then walls, then the map —
+lower rank wins however far behind it stands.
+
+**A modal is the wrong weight for a light on the horizon.** The first version
+opened the glossary card for any landmark tapped, beacons included, and the
+board e2e went from 967ms to a timeout: a young board is mostly edge, and every
+stray tap threw a card. The card is for a landmark standing on your own board;
+a beacon gets the sentence, which already ends _"Build your chain out to it."_
+A test noticing a card is heavy is a better argument than a taste for one.
+
+**The end screen was measured against the wrong world.** `gained` came off the
+live merge, and that merge is a separate effect declared AFTER the settle one,
+which bails once `hud.ended`. React runs effects in declaration order, so
+everything the run's final action claimed was missing — including the shrine
+woken by the placement that spent the last tile, which is a common way for a run
+to end and the most exciting thing an ending can report. It reads `after.world`
+now, the copy that reaches the disk. The atlas rides under the WOKE line for the
+rest of Marc's ask: three of five, and which three, on the screen where they
+were earned rather than three taps away in MORE.
+
+**A daily kept the last ending's furniture.** `setGoals([])` was in `startRun`
+alone — one of five doors into a run — and a daily banks down `settleDaily`'s
+short path, which never reaches the writes that would clear the other two. One
+`forgetEnding`, called by all five, for the reason `startRun`'s own docblock
+gives about `wakeAt`.
+
+**Padding on a scroll container is what made the header look broken.** `.panel`
+was the scrollport AND carried `env(safe-area-inset-top)`. A scroll container
+clips at its PADDING box, so content scrolled into that strip is still painted,
+while a sticky child sticks from the CONTENT box — and the band between those
+two edges is exactly a notch tall, which is exactly what Marc photographed. The
+head is a plain flex item now and `.panel-body` is the scrollport, with the
+bottom inset INSIDE it so the last line scrolls through the band instead of
+stopping above it. `.end` and `.front-door` gained the top inset they never had;
+his other photo shows RARE TILES drawn through the status bar's clock.
+
+**The daily lost its finds.** Shrines already came out (`shrinesReborn`, Marc's
+Day 2 ruling). Finds did not, and a find grants a perk, and perks live on the
+world, and a daily has no world — so `App`'s grant is guarded by `daily === null`
+and a daily's finds shimmered, cost a placement to reach, and paid nothing at
+all. `NO_LEDGER` zeroes them at the tuning, so the whole game agrees there is
+nothing out there rather than one guard refusing at the end. SACRIFICE needed no
+change and is now pinned by a test anyway: it is held off a daily by three files
+agreeing that `burnRelics` and `burnLuck` are both zero.
+
+**Verified:** 1071 tests / 74 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/format/build clean, `pnpm audit:screens` at 132 findings with
+**no new rows** (156 → 132; the twenty-four that left are the end screen's
+disabled shop buttons, pushed below the fold by the atlas — the audit only
+measures what is in the viewport, so that is a move, not a fix). **Still not
+seen on a phone.**

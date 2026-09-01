@@ -120,6 +120,32 @@ were found by the instrument rather than by a grep — two of those in a SHOT:
    object now (`startedFrom`), and `e2e/world.spec.ts` pins it. **Also found in
    a shot** — `end-many`, in all four directions.
 
+**A NINTH, AND IT WAS A WHOLE RENDERING LAYER** (2026-09-01, `LOG.md`
+Session 31). `createSession`'s `build()` passed `toBoardView` a literal `[]`
+where the world's revealed ground goes, and had since Stage 2 — so **the fog has
+never been drawn in this body**. Not a number and not a control: the map a
+player carries in their head, and it was not on screen at all.
+
+It survived four stages because every rule about it was correct over an empty
+list. The lens reaches into memory, held territories unfurl their fields in it,
+a reborn landmark wears its new face in it, `describeHexOf` has four sentences
+for it, `cursor.ts` walks it on purpose — all of it tested, none of it reachable.
+And a black board is what this game looks like, so the audit shot of a
+thirty-run world showing one tile in a void read as art direction.
+
+**The lesson this adds to the two above.** The four earliest misses were
+controls nothing consumed; the 2026-08-30 pair were numbers nothing read. This
+one is a piece of DATA nothing supplied — the consumer was there, tested, and
+correct, and its input was hard-coded empty at the call site. Grepping for a
+consumer finds nothing wrong. Neither does reading the consumer. **What finds it
+is asking, of every argument a view takes, where the value comes from.**
+
+Three smaller ones came with it, all the same shape: `HexField`'s raycast
+refused beacons and remembered ground while `INTERACTIONS.md` listed both taps
+as working; `describeHexOf`'s `unlockLabel` and `crossingDowry` were never
+passed, so every shrine promised "a system"; and a daily's hidden finds granted
+nothing at all, because a perk needs a world to live on.
+
 **THE SWEEP, item by item, so nobody has to re-derive it.** Every reward number
 `NEXT.md` listed, and where the test that watches it lives:
 

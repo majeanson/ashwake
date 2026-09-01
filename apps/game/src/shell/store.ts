@@ -239,7 +239,20 @@ export function createSession(opts: {
   readonly wakeAt?: HexKey | null;
 }): Session {
   let tuning = opts.tuning ?? TUNING;
-  let state = opts.resume ?? open(opts.seed, tuning, opts.memory, opts.wakeAt ?? null);
+  /**
+   * What this run's WORLD remembers — held across dispatches, because the
+   * board is rebuilt on every one of them (2026-09-01).
+   *
+   * The fog is a fact about the world, fixed for the life of a run: ground
+   * revealed while this run plays is on the board already, and `toBoardView`
+   * skips a remembered key the board holds. So a snapshot taken when the run
+   * opens is exactly right, and re-reading the disk per dispatch would be the
+   * same answer at a cost.
+   *
+   * `build` passed a literal `[]` here for four stages — see `RunMemory`.
+   */
+  let memory = opts.memory;
+  let state = opts.resume ?? open(opts.seed, tuning, memory, opts.wakeAt ?? null);
   let harvestAt: HexKey | null = null;
   let spotlight: Colour | null = null;
   let popped: Snapshot['popped'] = null;
@@ -254,7 +267,14 @@ export function createSession(opts: {
     return {
       state,
       harvestAt,
-      board: toBoardView(state, harvestAt, spotlight, [], opts.theme.light, ctx),
+      board: toBoardView(
+        state,
+        harvestAt,
+        spotlight,
+        memory?.revealed ?? [],
+        opts.theme.light,
+        ctx,
+      ),
       hud: toHudView(state, opts.strings, harvestAt, spotlight, ctx),
       popped,
       said,
@@ -407,8 +427,12 @@ export function createSession(opts: {
       spotlight = colour;
       commit();
     },
-    restart(seed, from, memory, next, wakeAt) {
-      if (next !== undefined) tuning = next;
+    restart(seed, from, next, tune, wakeAt) {
+      if (tune !== undefined) tuning = tune;
+      // The world the new run is played in, fog and all. A door that hands over
+      // no memory is a run that remembers nothing, which is what a daily, a
+      // crossing into a fresh world and a reset all are.
+      memory = next;
       state = from ?? open(seed, tuning, memory, wakeAt ?? null);
       harvestAt = null;
       spotlight = null;

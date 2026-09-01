@@ -6,10 +6,12 @@ import { newRun, reduce } from '@engine/reduce';
 import { harvestMultiplier, harvestValue, legalPlacements, ripeKeys, scoreOf } from '@engine/rules';
 import type { GameState } from '@engine/state';
 import { destinationsWithin, findAt } from '@engine/world';
-import { arcNote, colourLesson, groundHead, toBoardView, toHudView } from './view';
+import { arcNote, colourLesson, describeHexOf, groundHead, toBoardView, toHudView } from './view';
 import { STRINGS_EN, STRINGS_EN as EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
+import { UNLOCKS, unlockLabel } from '@meta/world';
 import { THEMES } from '@theme/index';
+import { TORCHLIT } from '@theme/themes/torchlit';
 import { namesOf, powersOf } from '@theme/tokens';
 
 /**
@@ -593,5 +595,82 @@ describe('the sentences view/ builds itself', () => {
       expect(groundHead('MARKET', 'company', s)).toContain('MARKET');
       expect(groundHead('MARKET', 'company', s)).toContain('company');
     }
+  });
+});
+
+/**
+ * The three answers a shrine can give, and the one that was missing
+ * (2026-09-01).
+ *
+ * Marc, of the board's tap answers: *"is it a good shrine or one i dont need
+ * now?"* A shrine's sentence has always had a fork in it — name the unlock,
+ * offer the crossing, or say nothing useful — and the shell passed neither of
+ * the two fields the fork reads, so every shrine in the game gave the vague
+ * third answer whatever the world behind it held. This pins the fork itself;
+ * `App`'s `describe` is what now feeds it.
+ */
+describe('what a shrine says when you tap it', () => {
+  const AT = key(0, 0);
+  const withShrine = (): GameState => {
+    const run = newRun(1, TINY);
+    return {
+      ...run,
+      cells: { ...run.cells, [AT]: { kind: 'landmark', reward: 'shrine', claimed: false } },
+    };
+  };
+  const base = {
+    state: withShrine(),
+    theme: TORCHLIT,
+    strings: EN,
+    detour: false,
+  } as const;
+  /** The ledger, as `App` hands it over: what the NTH shrine of a world gives. */
+  const ledger = (nth: number): string | null => {
+    const id = UNLOCKS[nth]?.id;
+    return id === undefined ? null : unlockLabel(id, EN);
+  };
+
+  it('names what the next one unlocks, on a world with unlocks left', () => {
+    const said = describeHexOf({ ...base, shrinesClaimed: 0, unlockLabel: ledger }, AT);
+    expect(said).toContain(unlockLabel('draft', EN));
+  });
+
+  it('counts from the WORLD, so the second shrine names the second unlock', () => {
+    const said = describeHexOf({ ...base, shrinesClaimed: 1, unlockLabel: ledger }, AT);
+    expect(said).toContain(unlockLabel('hold', EN));
+    expect(said).not.toContain(unlockLabel('draft', EN));
+  });
+
+  it('offers the crossing once the ledger is finished and there is a door', () => {
+    const said = describeHexOf(
+      {
+        ...base,
+        shrinesClaimed: UNLOCKS.length,
+        unlockLabel: ledger,
+        crossingDowry: () => 42,
+      },
+      AT,
+    );
+    expect(said).toBe(EN.view.hex.shrineCrossing(42));
+  });
+
+  /**
+   * The answer that did not exist. With the ledger finished and no crossing on
+   * offer, `shrine(null)` promised "a system" that no longer exists — the
+   * "one you do not need" case, which is half of Marc's question.
+   */
+  it('says the world is finished rather than promising a system', () => {
+    const said = describeHexOf(
+      { ...base, shrinesClaimed: UNLOCKS.length, unlockLabel: ledger },
+      AT,
+    );
+    expect(said).toBe(EN.view.hex.shrineAwake);
+  });
+
+  /** A caller with no world to count — a detour is already handled above, a
+   *  test rig is the other — must keep the vague sentence rather than be told
+   *  a world it knows nothing about is finished. */
+  it('keeps the vague sentence for a caller that cannot count a world', () => {
+    expect(describeHexOf({ ...base, shrinesClaimed: 0 }, AT)).toBe(EN.view.hex.shrine(null));
   });
 });

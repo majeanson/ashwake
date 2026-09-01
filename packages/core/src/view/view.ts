@@ -1776,6 +1776,22 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
       if (next === null && ctx.crossingDowry !== undefined) {
         return x.shrineCrossing(ctx.crossingDowry());
       }
+      /*
+       * Fully awake with no crossing on offer (2026-09-01).
+       *
+       * `x.shrine(null)` reads "claim it to unlock A SYSTEM for this world,
+       * permanently" — which is true when the caller has no ledger to consult
+       * and a LIE on a world whose ledger is finished. Marc, asking for the
+       * board to answer better: *"is it a good shrine or one i dont need
+       * now?"* This is the second answer, and it is the whole reason the
+       * question is worth asking of a shrine at all.
+       *
+       * The fork is on `unlockLabel` being GIVEN, not on what it returned: a
+       * caller that cannot count a world's shrines (a detour is already
+       * handled above; a test rig is the other) must keep the vague sentence
+       * rather than be told a world it knows nothing about is finished.
+       */
+      if (next === null && ctx.unlockLabel !== undefined) return x.shrineAwake;
       return x.shrine(next);
     }
     if (reward === 'find') {

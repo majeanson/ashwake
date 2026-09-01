@@ -871,3 +871,73 @@ test('the ending hands the screen back to the board it ended on', async ({ page 
   expect(await canvasId(page), 'walking the ending remounted the board').toBe(before);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('a scrolled panel keeps its head, top and bottom', async ({ page }) => {
+  /*
+   * Marc, with a photo of HOW TO PLAY scrolled halfway down (2026-09-01):
+   * *"make sure we use all bottom space and that when scrolling the top space
+   * is not overflowed."* In the photo a paragraph and a whole section heading
+   * are drawn ABOVE the header, in the strip the notch reserves — the header
+   * reads as having stopped covering.
+   *
+   * The cause was one property in the wrong place: `.panel` was the scroll
+   * container AND carried `padding-top: env(safe-area-inset-top)`. A scroll
+   * container clips at its PADDING box, so content scrolled up into that inset
+   * is still painted, while a sticky child sticks from the CONTENT box — and
+   * the gap between those two edges is exactly a notch tall, and exactly what
+   * the photo shows. The bottom inset had the mirror problem: a dead band under
+   * the scrollport that no line could ever be scrolled into.
+   *
+   * So the head is a fixed flex item now and `.panel-body` is the scrollport.
+   * Both halves are geometry, which is why this is a browser test and not a
+   * unit one: the assertion is that the scrollport begins where the head ends
+   * and runs to the bottom of the screen, WHILE SCROLLED — the state the whole
+   * fault only appears in.
+   *
+   * Chromium reports every safe-area inset as 0, so this cannot see the notch
+   * itself. It can see the shape that made the notch dangerous, and that is the
+   * part a phone cannot be asked about on every push.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&seed=7&place=12');
+  await begin(page);
+  await openMore(page);
+  await panel(page, 'more').locator('[data-go="manual"]').click();
+  const manual = panel(page, 'manual');
+  await manual.waitFor({ state: 'visible' });
+  // The longest tab, so there is certainly something to scroll.
+  await page.locator('[data-tab="play"]').click();
+  await page.waitForTimeout(300);
+
+  const body = manual.locator('.panel-body');
+  const scrolled = await body.evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+    return el.scrollTop;
+  });
+  expect(scrolled, 'the panel body did not scroll at all').toBeGreaterThan(0);
+
+  // The PANEL itself never scrolls: two scrollports answering one flick is how
+  // the head came loose from the top of the screen in the first place.
+  expect(
+    await manual.evaluate((el) => el.scrollTop),
+    'the panel scrolled as well as its body',
+  ).toBe(0);
+
+  const head = await manual.locator('.panel-top').boundingBox();
+  const view = await body.boundingBox();
+  const size = page.viewportSize();
+  if (head === null || view === null || size === null) throw new Error('no layout');
+
+  // Nothing can be painted above the head, because nothing scrolls above it.
+  expect(Math.round(view.y), 'the scrollport begins above the head that covers it').toBe(
+    Math.round(head.y + head.height),
+  );
+  // And it runs to the bottom of the screen: every pixel below the head is
+  // page, rather than a band reserved and never used.
+  expect(
+    Math.round(view.y + view.height),
+    'the scrollport stops short of the bottom of the screen',
+  ).toBe(size.height);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
