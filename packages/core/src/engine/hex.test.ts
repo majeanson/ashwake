@@ -79,23 +79,56 @@ describe('neighbours', () => {
   });
 });
 
+/**
+ * ONE ASSERTION PER PROPERTY, NOT ONE PER PAIR (2026-09-01).
+ *
+ * The triangle law walks 37 cells cubed — 50,653 triples — and it used to call
+ * `expect` on every one of them. `expect` builds matcher state and a failure
+ * message per call, so the test spent its time inside vitest rather than inside
+ * `distance`: 425ms on this machine and **5110ms on a shared CI runner, against
+ * its own 5000ms timeout** (run 33561106597, which is how this was found — a
+ * red build on a commit that touched nothing in `engine/`).
+ *
+ * A test two per cent under its limit is a test that fails on whichever machine
+ * is busiest, which is the one kind of red that teaches a team to re-run rather
+ * than to read. So the loops collect violations in plain JS and assert once.
+ * The coverage does not move — every pair and every triple is still checked —
+ * and a real failure now names the cells rather than only the numbers, which is
+ * more useful than what it replaced.
+ *
+ * Capped at a handful of examples, because a genuinely broken `distance` would
+ * otherwise build a list of fifty thousand strings on its way to failing.
+ */
+const FEW = 5;
+
 describe('distance', () => {
   it('is zero to itself and symmetric', () => {
-    for (const a of disc(4)) {
-      expect(distance(a, a)).toBe(0);
-      for (const b of disc(4)) expect(distance(a, b)).toBe(distance(b, a));
+    const cells = disc(4);
+    const broken: string[] = [];
+    for (const a of cells) {
+      if (distance(a, a) !== 0 && broken.length < FEW) broken.push(`${keyOf(a)} to itself`);
+      for (const b of cells) {
+        if (distance(a, b) !== distance(b, a) && broken.length < FEW) {
+          broken.push(`${keyOf(a)} <-> ${keyOf(b)}`);
+        }
+      }
     }
+    expect(broken).toEqual([]);
   });
 
   it('satisfies the triangle inequality', () => {
     const cells = disc(3);
+    const broken: string[] = [];
     for (const a of cells) {
       for (const b of cells) {
         for (const c of cells) {
-          expect(distance(a, c)).toBeLessThanOrEqual(distance(a, b) + distance(b, c));
+          if (distance(a, c) > distance(a, b) + distance(b, c) && broken.length < FEW) {
+            broken.push(`${keyOf(a)} -> ${keyOf(b)} -> ${keyOf(c)}`);
+          }
         }
       }
     }
+    expect(broken).toEqual([]);
   });
 
   it('counts steps, not coordinate deltas', () => {

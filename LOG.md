@@ -2877,3 +2877,33 @@ sessions of inference lost to one question not asked.
 typecheck/lint/format/build clean, audit at 132 findings with **no new rows and
 none lost**. The test count fell by 22 because the props' own file went with
 them.
+
+### Session 36b — a property test that was two per cent under its own timeout
+
+**Not a question, a red build.** `4da7de1` — the commit that deleted the props —
+failed CI on `packages/core/src/engine/hex.test.ts > distance > satisfies the
+triangle inequality`, a file it did not touch. **Error: Test timed out in
+5000ms**, measured at 5110ms.
+
+**It was never about the change.** The test walks 37 cells cubed — 50,653
+triples — and called `expect` on every one of them. `expect` builds matcher
+state and a failure message per call, so the time went inside vitest rather than
+inside `distance`: 425ms on this machine, 5110ms on a shared runner. A test two
+per cent under its own limit is a test that fails on whichever machine is
+busiest, and that is the one kind of red that teaches a team to press re-run
+instead of reading.
+
+The loops collect violations in plain JS and assert once. Coverage does not move
+— every pair and every triple is still checked — and a failure now names the
+cells rather than only the numbers. 425ms → 4ms, and the sibling symmetry test
+43ms → 1ms.
+
+**The pattern was checked against a real violation before it was trusted.** The
+first counter-example picked to prove it was not vacuous — Manhattan distance on
+(q, r) — passed, because Manhattan is itself a metric and satisfies the law. The
+second, a squared metric, is rejected as it should be. Worth writing down: a
+test whose proof of life is itself wrong is exactly the shape of the thing being
+fixed here.
+
+**Verified:** 1062 tests / 74 files, `pnpm sim` byte-identical,
+typecheck/lint/format clean.
