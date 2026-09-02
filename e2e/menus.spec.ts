@@ -718,6 +718,43 @@ test('?themes=1 puts every direction one tap from the board', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
+test('the manual grows with the world', async ({ page }) => {
+  /*
+   * Ashwake 1's rule from `ideas/teaching.md`, restored 2026-09-02: a section
+   * about a concept this device has not MET stays out. This body printed all
+   * thirteen lessons to everyone, so a stranger opening HOW TO PLAY in their
+   * first minute read about relics, the stash, magic, unique and the luck purse
+   * before meeting any of them — the wall the teaching drip exists to take
+   * down, rebuilt inside the drip's own manual.
+   *
+   * The HAND tab is where the gating bites hardest: every lesson on it is a
+   * `TeachId`, so a virgin device sees almost none of it and a taught one sees
+   * all of it. The DOT is the other half — without it, a tab hiding three of
+   * five is indistinguishable from a tab that only ever had two.
+   */
+  const errors = watchErrors(page);
+  const read = async (url: string) => {
+    await page.goto(url);
+    await page.locator('[data-door="how"]').click();
+    await panel(page, 'manual').waitFor({ state: 'visible' });
+    await panel(page, 'manual').locator('.tab[data-tab="hand"]').click();
+    return {
+      sections: await panel(page, 'manual').locator('.panel-title').count(),
+      marks: await panel(page, 'manual').locator('.tab[data-grows]').count(),
+    };
+  };
+
+  const virgin = await read('/');
+  const veteran = await read('/?taught=1');
+
+  expect(virgin.sections, 'a virgin device is shown a shorter manual').toBeLessThan(
+    veteran.sections,
+  );
+  expect(virgin.marks, 'a tab holding sections back must say so').toBeGreaterThan(0);
+  expect(veteran.marks, 'a device that has met everything is promised nothing more').toBe(0);
+  expect(errors).toEqual([]);
+});
+
 test('the manual shows the alphabet the rules are written in', async ({ page }) => {
   // Marc, 2026-08-29: "adding visuals and assets and symbols in the how to
   // play". The manual explained the rules and never showed the marks — a

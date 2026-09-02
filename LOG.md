@@ -3084,3 +3084,54 @@ one has.
 **Next:** all five want an eye on a phone, and two want it badly — the contour
 lift changes the board's silhouette, and the legal edge changes the colour of
 the thing a player looks at fifty times a run.
+
+### Session 37c — a green suite against a bundle that was never built (2026-09-02)
+
+**Not a question, a bug report.** Marc, minutes after 37b landed: _"i had a
+visual bug where the first tile i put seems to refresh the whole map display."_
+
+**He was describing exactly what the code did, and it was mine.** 37b wired
+`cell.previewColour` into the legal ring, so a legal hex wore the colour of the
+card in hand. After a placement the hand redraws and the auto-selected card is
+usually a different colour — so **every legal edge on the board changed colour
+in one frame.** A dozen of them at first, more as a run goes on. The most
+frequent action in the game became the loudest visual event on the screen, and
+it is not an event at all.
+
+**Reverted, and the reason it worked in Ashwake 1 is WEIGHT, not colour.**
+Ashwake 1 drew a hairline stroke at `alpha: 0.75` over a flat board: a tint on a
+thin line. `HexField` draws a `0.16`-radius ring band at full opacity, an order
+of magnitude more ink. The colour SOURCE was ported and the WEIGHT was not, so
+four grounds authored to be fills became four outlines, none tuned for the job
+— `legalEdge` is one authored colour precisely so it can be balanced once
+against every terrain, and daylight's tan reads as nearly invisible on cream
+while its red outshouts the ripe edge, which is meant to be the loudest thing
+on the board. `rings.test.ts` now pins that the edge does NOT follow the hand,
+because the field is still there and a future audit will find it unread again.
+
+**And the process error under it, which is the more useful half.**
+`playwright.config.ts` starts `vite preview`, which serves `dist` and never
+builds it. `pnpm test:e2e` chains the build itself and is right; a bare
+`npx playwright test` does not, and that is what 37b ran. **So an eighty-six
+test suite came back green against code that had never been compiled** — every
+second-pass change was verified against the previous bundle. That is worse than
+a red suite, because a red one tells you something.
+
+The fault was not carelessness, it was that the safe command and the obvious
+command were different commands. They are the same command now: the web server
+builds before it serves. A few hundred milliseconds against a suite that takes
+minutes, so there is no version of this worth making optional.
+
+**What re-running on a real build actually proved**, which is why it mattered:
+the manual's drip works (a virgin device reads two sections of the HAND tab
+with two tabs marked as growing; `?taught=1` reads six and is promised nothing
+more) and is pinned in `menus.spec.ts` now; the contour lift is present and
+quiet; and the ring repaint was real and visible in a screenshot the moment the
+bundle was current.
+
+**The lesson worth keeping:** a suite that cannot fail is not evidence. Ask what
+the suite is actually running before believing what it says — the same question
+`CLAUDE.md` already asks about ledgers, pointed at the harness.
+
+**Verified, on a build:** 1077 tests / 76 files, 87 e2e, typecheck/lint/format
+clean, `pnpm sim` byte-identical.

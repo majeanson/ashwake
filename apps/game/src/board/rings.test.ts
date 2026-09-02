@@ -105,25 +105,30 @@ describe('the ladder, in the order it is climbed', () => {
   });
 
   /**
-   * A legal hex wears the colour you are holding.
+   * THE LEGAL EDGE DOES NOT FOLLOW THE HAND, and this is the test that says so.
    *
-   * `previewColour` came across with the core carrying its own docblock about
-   * the bug it was created to fix — a ghost drawn in one fixed tint whatever
-   * the player held — and nothing in this body read it until 2026-09-02, so
-   * the bug was back. Both directions pinned, because the fallback is the half
-   * that is easy to lose: with no card selected there is no colour to promise.
+   * `previewColour` was wired into the legal branch on 2026-09-02 and reverted
+   * the same day: after a placement the hand redraws, so every legal edge on
+   * the board changed colour at once and Marc read it, correctly, as *"the
+   * first tile I put seems to refresh the whole map display."* See the note at
+   * the bottom of `rings.ts` for why it worked in Ashwake 1 and not here — the
+   * difference is the WEIGHT of the mark, not the colour.
+   *
+   * Pinned rather than merely reverted, because the field is still there and
+   * still tempting: a future audit will find it unread again and this is the
+   * answer waiting for it.
    */
-  it('wears the held card’s ground on a legal hex, and the plain edge without one', () => {
-    const held = ringOf(
+  it('keeps one authored edge whatever card is held', () => {
+    const holding = ringOf(
       cell({ legal: true, kind: 'empty', colour: null, previewColour: 'red' }),
       THEME,
     );
-    expect(held?.colour).toBe(THEME.terrain.red.fill);
-    expect(held?.colour).not.toBe(THEME.board.legalEdge);
-
-    expect(
-      ringOf(cell({ legal: true, kind: 'empty', colour: null, previewColour: null }), THEME)
-        ?.colour,
-    ).toBe(THEME.board.legalEdge);
+    const empty = ringOf(
+      cell({ legal: true, kind: 'empty', colour: null, previewColour: null }),
+      THEME,
+    );
+    expect(holding?.colour).toBe(THEME.board.legalEdge);
+    expect(empty?.colour).toBe(THEME.board.legalEdge);
+    expect(holding?.colour, 'the board must not repaint when the hand changes').toBe(empty?.colour);
   });
 });

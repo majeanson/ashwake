@@ -28,10 +28,30 @@ export default defineConfig({
   workers: 1,
   retries: process.env['CI'] === undefined ? 0 : 1,
   use: { baseURL: 'http://localhost:4174' },
+  /**
+   * THE SERVER BUILDS FIRST (2026-09-02).
+   *
+   * `vite preview` serves `dist` and never builds it, so a bare
+   * `npx playwright test` silently tested whatever bundle happened to be on
+   * disk. That is not a hypothetical: it happened in this repository on
+   * 2026-09-02, and an eighty-six-test suite came back green against code that
+   * had not been compiled — which is worse than a red suite, because a red one
+   * tells you something.
+   *
+   * `pnpm test:e2e` chained the build itself and was right; the fault was that
+   * the safe way and the obvious way were different commands. They are the same
+   * command now. The build is a few hundred milliseconds against a suite that
+   * takes minutes, so there is no version of this worth making optional.
+   *
+   * `reuseExistingServer` locally means a server already up is trusted — which
+   * is the one hole left, and it is the deliberate one: it is what makes
+   * running a single spec fast while iterating. `CI` always builds.
+   */
   webServer: {
-    command: 'pnpm --filter @ashwake/game exec vite preview --port 4174 --strictPort',
+    command:
+      'pnpm --filter @ashwake/game build && pnpm --filter @ashwake/game exec vite preview --port 4174 --strictPort',
     url: 'http://localhost:4174',
     reuseExistingServer: process.env['CI'] === undefined,
-    timeout: 30_000,
+    timeout: 120_000,
   },
 });

@@ -229,10 +229,21 @@ every field of `CellView` and `BoardView` and grepped the board for each.
 | Field / export       | Was                                                         | Now                                                                |
 | -------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
 | `voice.dry`          | every direction tunes the note; **nothing ever played it**  | the low fade, with Ashwake 1's hysteresis (`shell/dry.ts`)         |
-| `cell.previewColour` | legal edges in one fixed ink — the very bug the field fixed | a legal hex wears the colour you are holding                       |
+| `cell.previewColour` | legal edges in one fixed ink — the very bug the field fixed | **tried and REVERTED the same day** — see below                    |
 | `cell.band`          | five contour bands; the **3D** board drew them flat         | the world's own slopes, under the rarity channel                   |
 | `startingPerk`       | exported "so the UI can say why", said by nothing           | the arrival line, through `beginRun`                               |
 | the manual's drip    | all thirteen lessons printed to everyone                    | grows with the ledger, and a tab says when it is holding some back |
+
+**`previewColour` is unread ON PURPOSE now**, and this is the row a fourth pass
+will otherwise re-open. Wiring it made a legal hex wear the held card's colour;
+Marc caught it on a phone within the hour — _"the first tile i put seems to
+refresh the whole map display"_ — because after a placement the hand redraws
+and **every legal edge changed colour at once**. It worked in Ashwake 1 because
+there it was a hairline at `alpha: 0.75`; here it is a `0.16` ring band at full
+opacity, so the colour source was ported and the weight was not. If the held
+colour is ever worth showing on this board it belongs to the preview FILL, not
+the outline, and that is Marc's call on a phone. `rings.test.ts` pins the edge
+against the hand.
 
 Verified rather than fixed, so a third pass need not re-walk them: the keeper's
 lifetime guards and hide-flush, `theme/tokens.ts` and `labelFor` (both

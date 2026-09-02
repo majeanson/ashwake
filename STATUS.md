@@ -75,11 +75,29 @@ supersets of Ashwake 1's), every remaining core-module diff (D4 text
 extraction; no rule moved), and **every key in the text catalogue has a
 consumer** — the first time that hunt has come back empty.
 
-Verified: 1077 tests / 76 files, 86 Playwright, `pnpm sim` byte-identical,
-typecheck/lint/build clean. **Nothing seen on a phone yet:** the signpost's
-cadence, the receipt's new line, the card's composition — and, most of all, the
-contour lift, which changes the board's silhouette, and the legal edge, which
-changes the colour of the thing a player looks at fifty times a run.
+**One of those five was wrong and Marc caught it on a phone within the hour**
+(2026-09-02, `LOG.md` S37c): _"the first tile i put seems to refresh the whole
+map display."_ Wiring `previewColour` into the legal ring meant that after a
+placement — when the hand redraws and the auto-selected card is a different
+colour — **every legal edge on the board changed colour at once.** Reverted.
+The reason it worked in Ashwake 1 is WEIGHT, not colour: there it was a
+hairline at `alpha: 0.75`, here a `0.16` ring band at full opacity, so the
+colour source was ported and the weight was not. `rings.test.ts` pins the edge
+against the hand, because the field is still there and a later audit will find
+it unread again.
+
+**And the process error under it is the more useful half.**
+`playwright.config.ts` starts `vite preview`, which serves `dist` and never
+builds it — so a bare `npx playwright test` ran the previous bundle, and an
+eighty-six test suite came back green against code that had never been
+compiled. The fault was that the safe command (`pnpm test:e2e`) and the obvious
+one were different commands. They are the same command now: **the web server
+builds before it serves.** A suite that cannot fail is not evidence.
+
+Verified, on a real build: 1077 tests / 76 files, 87 Playwright, `pnpm sim`
+byte-identical, typecheck/lint/build clean. **Still unseen on a phone:** the
+signpost's cadence, the receipt's new line, the share card's composition, and
+the contour lift, which changes the board's silhouette.
 
 Previous checkpoint: **2026-09-01, last — the destinations become their marks.**
 
