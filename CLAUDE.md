@@ -31,6 +31,13 @@ computed every render and read by nothing, `?ff=` tested with no caller so
 A gesture matrix cannot see a sentence the core writes that no screen prints.
 Run the check over `packages/core`, not only over a screen.
 
+**And once more over the FIELDS.** A module sweep cannot see a property:
+`CellView` has twenty-two, the board is the only thing that could read one, and
+"nothing imports it" is never true of a field. Walking them found five more the
+same day — `voice.dry` never played, `previewColour` unread so every legal edge
+drew in one ink, and `band` unread so a world with five contour bands was drawn
+flat by the body that has a Z axis.
+
 Hard rules — all inherited, all still enforced:
 
 - **The core is pure.** `packages/core` has no DOM, no `Math.random`, no

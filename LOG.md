@@ -3004,3 +3004,83 @@ signpost's cadence, the receipt's new line and the share card's composition are
 all Marc's to judge in portrait.
 
 **Next:** the phone pass on the above, and `NEXT.md` §5's art pipeline.
+
+### Session 37b — the second pass, and the five the first one walked past (2026-09-02)
+
+**Question:** the first audit compared MODULES and screens. Does the same
+consumer-grep, pointed at the render contract and the theme instead of at the
+exports list, find anything the first pass could not see?
+
+**Answer: five more, and they are a different shape.** Session 37's twelve were
+functions with no importer. These are FIELDS with no reader — `CellView` has
+twenty-two of them and the board is the only thing that could consume any, so
+"is it wired" is a question the module graph cannot answer at all. Three of the
+five were caught by walking every field of `CellView` and `BoardView` and
+grepping the board for it.
+
+1. **`voice.dry` — the third sound this game has, and nothing ever played it.**
+   Every direction has carried a tuned `dry` block since the rules were lifted;
+   `voice.ts` exports the note; no caller existed. It is the low fade when the
+   purse first sinks toward the next placement's cost, and it is not a death
+   sting — death stays silent, because the dread is the sound. `shell/dry.ts`
+   carries Ashwake 1's hysteresis (arm under cost+3, re-arm over cost+6) and
+   the reason for it: a bare threshold fires and clears across one pop and one
+   placement, and a warning that cries every other tap is one a player stops
+   hearing.
+
+2. **`cell.previewColour` — the fix came across and the bug came back.** The
+   field's own docblock in the core says it exists because _"the ghost used to
+   draw as one fixed tint regardless of what you were actually holding"_ —
+   Ashwake 1 found that and fixed it. This body never read the field, so every
+   legal edge drew in one ink again. It matters more here: a board of glowing
+   outlines in a single colour asks a player to hold the selected card's colour
+   in their head while reading it.
+
+3. **`cell.band` — the world has five contour bands and the 3D board drew them
+   flat.** `elevationBandAt` cuts the plane into `elevationBands` steps and the
+   shipped tuning sets five of nine hexes each; `relief.ts` lifted by kind,
+   rarity and jitter, and never by the one field that is actually terrain. The
+   irony is exact: Ashwake 1, which had no Z axis at all, at least tinted the
+   bands so contours were visible. `BAND_LIFT` is sized against this file's own
+   argument rather than by eye — four bands plus the whole jitter range must
+   stay under one rarity step, or a common tile on a hilltop out-stands a magic
+   one in a valley and height stops meaning rarity. `4 × 0.09 + 0.16 = 0.52 <
+0.55`, and `relief.test.ts` pins the inequality across every band, so moving
+   the number without moving `RARITY_LIFT` fails.
+
+4. **The manual did not grow with the world.** Ashwake 1's rule from
+   `ideas/teaching.md` — a section about a concept this device has not met stays
+   out — had not travelled, so a stranger opening HOW TO PLAY in their first
+   minute read about relics, the stash, magic, unique and the luck purse before
+   meeting any of them. That is the wall the teaching drip exists to take down,
+   rebuilt inside the drip's own manual. Gated on the same ledger the cards
+   write, with a dot on any tab still holding sections back — without a mark, a
+   tab hiding three of five is indistinguishable from a tab that only had two,
+   and the drip reads as a thinner game instead of a game arriving in order.
+
+5. **`startingPerk` was never said, and its own docblock is the indictment:**
+   _"Pure and exported so the UI can say WHY the starting number is not 30 — a
+   perk nobody can see is indistinguishable from a bug."_ Nothing in this body
+   called it. Hold four territories, start with more tiles, and nothing connects
+   the two. Said on the arrival beat now, through a new `beginRun` that every
+   one of the five doors into a run goes through — written first as an effect on
+   the framing counter, which `react-hooks` correctly refused: a run beginning
+   is something the player DID, and the counter misses the one door that matters
+   most anyway (BEGIN on the front door never frames).
+
+**What the pass VERIFIED rather than fixed**, and it is worth writing down so a
+third pass does not re-walk it: the keeper's lifetime guards and its
+pagehide/visibilitychange flush are complete; `theme/tokens.ts` and `labelFor`
+are supersets of Ashwake 1's, not subsets; every remaining core-module diff is
+D4 text extraction and no rule moved; `shimmer` and `native` ARE consumed, via
+`render/materials.ts` rather than by the board directly, which is why the first
+sweep flagged them and a reader had to check; and **every key in the text
+catalogue has a consumer** — that hunt came back empty, which is the first time
+one has.
+
+**Verified:** 1077 tests / 76 files, 86 e2e, typecheck/lint/format clean,
+`pnpm sim` byte-identical.
+
+**Next:** all five want an eye on a phone, and two want it badly — the contour
+lift changes the board's silhouette, and the legal edge changes the colour of
+the thing a player looks at fifty times a run.

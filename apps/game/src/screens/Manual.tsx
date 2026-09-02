@@ -11,6 +11,7 @@ import {
   type LessonId,
 } from '@view/lessons';
 import type { FigureId } from '@view/figure';
+import { TEACH_IDS, type TeachId } from '@meta/progress';
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
@@ -87,6 +88,34 @@ const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
 };
 
 /**
+ * THE MANUAL GROWS WITH THE WORLD (2026-09-02).
+ *
+ * Ashwake 1's rule, from `ideas/teaching.md`, and it had not travelled: a
+ * section about a concept this device has not MET stays out, and each
+ * first-contact card carries the words the manual will grow, so the two can
+ * never disagree. This body printed all thirteen lessons to everyone — so a
+ * stranger opening HOW TO PLAY in their first minute read about relics, the
+ * stash, magic, unique and the luck purse before meeting any of them, which is
+ * the exact wall the teaching drip exists to take down.
+ *
+ * A `LessonId` is a superset of `TeachId`: six of them are words the manual
+ * prints without ever firing a card. Those are ungated, because there is no
+ * ledger entry that could gate them and hiding one would mean hiding a term
+ * another lesson uses.
+ *
+ * **A device with no ledger shows everything.** That is the gallery, a bare
+ * test, and the audit's own shots, and it is the same degradation the drip
+ * itself keeps: `met === null` means "nothing is known about what is known",
+ * which is not the same as "nothing has been met".
+ */
+function metHere(id: LessonId, met: ReadonlySet<TeachId> | null): boolean {
+  if (met === null) return true;
+  // The six that no card ever fires for — see above.
+  if (!(TEACH_IDS as readonly string[]).includes(id)) return true;
+  return met.has(id as TeachId);
+}
+
+/**
  * The lessons of one tab, each with the figure it should actually draw.
  *
  * A figure is claimed by the FIRST lesson on the tab that carries it; every
@@ -94,10 +123,12 @@ const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
  */
 function drawnOnce(
   ids: readonly LessonId[],
+  met: ReadonlySet<TeachId> | null,
 ): readonly { id: LessonId; lesson: Lesson; figure: FigureId | null }[] {
   const drawn = new Set<FigureId>();
   const out: { id: LessonId; lesson: Lesson; figure: FigureId | null }[] = [];
   for (const id of ids) {
+    if (!metHere(id, met)) continue;
     const lesson = LESSONS.find((l) => l.id === id);
     if (lesson === undefined) continue;
     const figure = lesson.figure !== undefined && !drawn.has(lesson.figure) ? lesson.figure : null;
@@ -106,6 +137,11 @@ function drawnOnce(
   }
   return out;
 }
+
+/** Whether a tab still has sections a player has not unlocked — the quiet
+ *  promise that HOW TO PLAY is not all there is yet. */
+const grows = (ids: readonly LessonId[], met: ReadonlySet<TeachId> | null): boolean =>
+  met !== null && ids.some((id) => !metHere(id, met));
 
 export type ManualProps = {
   readonly theme: Theme;
@@ -129,13 +165,21 @@ export type ManualProps = {
    * simply does not print rather than guessing.
    */
   readonly mode?: 'world' | 'shared' | 'daily';
+  /**
+   * What this device has been taught, so the manual can grow with it.
+   *
+   * `undefined` means no ledger is available and every section prints — the
+   * gallery, a bare test, the audit's shots. See `metHere`.
+   */
+  readonly met?: readonly TeachId[];
   readonly onBack: () => void;
   /** The MENU tab's contents — settings, restart, the door home. Host-supplied
    *  because they are the SHELL's business, not the manual's. */
   readonly menu?: React.ReactNode;
 };
 
-export function Manual({ theme, s, keyboard, mode, onBack, menu }: ManualProps) {
+export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualProps) {
+  const known = met === undefined ? null : new Set(met);
   const tabs = (menu === undefined ? TABS : (['menu', ...TABS] as const)) as readonly (
     TabId | 'menu'
   )[];
@@ -151,7 +195,12 @@ export function Manual({ theme, s, keyboard, mode, onBack, menu }: ManualProps) 
       head={
         <Tabs
           label={s.ui.howToPlay}
-          tabs={tabs.map((id) => ({ id, label: s.ui.tabs[id] }))}
+          tabs={tabs.map((id) => ({
+            id,
+            label: s.ui.tabs[id],
+            // A tab with sections still to unlock says so — see `Tab.grows`.
+            grows: id !== 'menu' && grows(SECTIONS[id], known),
+          }))}
           on={on}
           onPick={setOn}
         />
@@ -259,7 +308,7 @@ export function Manual({ theme, s, keyboard, mode, onBack, menu }: ManualProps) 
              in the registry because it is a fact about a PAGE, not about a
              lesson: a teaching card shows the same figure and should.
            */
-          drawnOnce(SECTIONS[on]).map(({ id, lesson, figure }) => (
+          drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
             <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
           ))}
     </Panel>

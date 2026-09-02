@@ -219,6 +219,27 @@ And the ten that were facts computed and not said. All built 2026-09-02:
 | Midnight rollover on the daily             | re-read on `visible`                  | sampled once, on a page that never reloads   |
 | Fame TOTALS: worlds, perks found           | listed per world                      | four device-wide numbers                     |
 
+## And a second pass, on FIELDS rather than exports (2026-09-02)
+
+The sweep above walks the module graph. It cannot see a field: `CellView` has
+twenty-two, the board is the only thing that could read any of them, and
+"nothing imports it" is never true of a property. So the second pass walked
+every field of `CellView` and `BoardView` and grepped the board for each.
+
+| Field / export       | Was                                                         | Now                                                                |
+| -------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
+| `voice.dry`          | every direction tunes the note; **nothing ever played it**  | the low fade, with Ashwake 1's hysteresis (`shell/dry.ts`)         |
+| `cell.previewColour` | legal edges in one fixed ink — the very bug the field fixed | a legal hex wears the colour you are holding                       |
+| `cell.band`          | five contour bands; the **3D** board drew them flat         | the world's own slopes, under the rarity channel                   |
+| `startingPerk`       | exported "so the UI can say why", said by nothing           | the arrival line, through `beginRun`                               |
+| the manual's drip    | all thirteen lessons printed to everyone                    | grows with the ledger, and a tab says when it is holding some back |
+
+Verified rather than fixed, so a third pass need not re-walk them: the keeper's
+lifetime guards and hide-flush, `theme/tokens.ts` and `labelFor` (both
+supersets of Ashwake 1's), every remaining core diff (D4 text extraction, no
+rule moved), `shimmer` and `native` (consumed through `render/materials.ts`,
+not by the board directly), and every key in the text catalogue.
+
 ## What is still missing
 
 1. Nothing this file has ever listed as a GESTURE. The lens-clear button was

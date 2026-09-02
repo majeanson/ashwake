@@ -103,4 +103,27 @@ describe('the ladder, in the order it is climbed', () => {
     expect(ringOf(cell({ rarity: 'unique' }), THEME)?.colour).toBe(THEME.ink.unique);
     expect(ringOf(cell({ home: true }), THEME)?.colour).toBe(THEME.board.home.ring);
   });
+
+  /**
+   * A legal hex wears the colour you are holding.
+   *
+   * `previewColour` came across with the core carrying its own docblock about
+   * the bug it was created to fix — a ghost drawn in one fixed tint whatever
+   * the player held — and nothing in this body read it until 2026-09-02, so
+   * the bug was back. Both directions pinned, because the fallback is the half
+   * that is easy to lose: with no card selected there is no colour to promise.
+   */
+  it('wears the held card’s ground on a legal hex, and the plain edge without one', () => {
+    const held = ringOf(
+      cell({ legal: true, kind: 'empty', colour: null, previewColour: 'red' }),
+      THEME,
+    );
+    expect(held?.colour).toBe(THEME.terrain.red.fill);
+    expect(held?.colour).not.toBe(THEME.board.legalEdge);
+
+    expect(
+      ringOf(cell({ legal: true, kind: 'empty', colour: null, previewColour: null }), THEME)
+        ?.colour,
+    ).toBe(THEME.board.legalEdge);
+  });
 });

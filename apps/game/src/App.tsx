@@ -3,6 +3,7 @@ import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
 import { arcSparkline, dailyBadge, dailyName, dailySeed } from '@meta/daily';
 import { appendEntry } from '@meta/timeline';
+import { startingPerk } from '@engine/reduce';
 import { NAME } from '@meta/identity';
 import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
@@ -85,6 +86,7 @@ import {
   type Slot,
 } from './shell/storage';
 import { onceARun, type OnceId } from './shell/onceARun';
+import { runningDry } from './shell/dry';
 import { signpostFor } from './shell/signpost';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
@@ -456,6 +458,8 @@ function Game() {
    * `react-hooks/immutability` will not let anything write to.
    */
   const signpost = useRef<string | null | undefined>(undefined);
+  /** Whether the running-dry warning is standing. Per run — see `shell/dry.ts`. */
+  const dry = useRef(false);
   const forgetEnding = useCallback(() => {
     setGained({ perks: [], unlocks: [] });
     setEndWorld(null);
@@ -467,6 +471,8 @@ function Game() {
     // than announcing, on the next look, whatever happens to be near the wake
     // hex. See `shell/signpost.ts`.
     signpost.current = undefined;
+    // A fresh purse is not a dry one, whatever the last run ended on.
+    dry.current = false;
   }, []);
   /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
@@ -700,6 +706,33 @@ function Game() {
   }, []);
 
   const snap = useSession(session);
+
+  /**
+   * STEP ONTO THE BOARD — and say what the world is paying for it (2026-09-02).
+   *
+   * The five doors into a run all ended in `setStarted(true)` and nothing else,
+   * so nothing on the arrival beat spoke. `startingPerk`'s own docblock in the
+   * engine says why that matters: *"Pure and exported so the UI can say WHY the
+   * starting number is not 30 — a perk nobody can see is indistinguishable from
+   * a bug."* Nothing in this body called it, so the single thing territories DO
+   * between runs was invisible: hold four of them, start with more tiles, and
+   * be told nothing connecting the two.
+   *
+   * An event handler rather than an effect on the framing counter, which is
+   * where this was written first: a run beginning is something the player DID,
+   * and `react-hooks` is right that an effect setting state on it is a
+   * cascading render. It also covers the door the counter does not — BEGIN on
+   * the front door resumes the board this page booted with and never frames.
+   *
+   * Silent where nothing was paid, by arithmetic rather than by a guard: a
+   * detour and a daily hold no territories, and neither does a first run.
+   */
+  const beginRun = useCallback(() => {
+    setStarted(true);
+    const now = session.get().state;
+    const from = startingPerk(now.tuning, now.claimed.length);
+    if (from > 0) say(s.ui.fromTerritories(from));
+  }, [session, s, say]);
   const board = useRef<BoardHandle>(null);
 
   // Every state the reducer produces is offered to the keeper, which decides
@@ -1143,6 +1176,21 @@ function Game() {
           const cell = at === undefined ? undefined : now.state.cells[at];
           if (cell?.kind === 'landmark') voice.claim(theme.voice, cell.reward);
         }
+        /*
+         * RUNNING DRY — the third moment, which had no caller (2026-09-02).
+         *
+         * Every direction has carried a tuned `voice.dry` since the rules were
+         * lifted and nothing has ever played it. It is the low fade the moment
+         * the purse first sinks toward the next placement's cost: not a death
+         * sting, because death stays silent and the dread is the sound.
+         *
+         * The latch lives here because it is per-RUN state and the rule that
+         * moves it is `shell/dry.ts`, where the hysteresis can be tested. Only
+         * the EDGE sounds — see that file for why a bare threshold chatters.
+         */
+        const wasDry = dry.current;
+        dry.current = runningDry({ tiles: now.hud.tiles, cost: now.hud.cost, warned: wasDry });
+        if (dry.current && !wasDry) voice.dry(theme.voice);
       }
 
       /*
@@ -1754,8 +1802,19 @@ ${s.view.harvest.firstPopWhen}`,
     // yet, but the purse and the perks it carried come with it.
     session.restart(seed, null, undefined, economyAt(slot, seed));
     setLens(null);
-    setStarted(true);
-  }, [snap.state, ledgers, slot, progress, setProgress, keeper, keepWorld, session, forgetEnding]);
+    beginRun();
+  }, [
+    snap.state,
+    ledgers,
+    slot,
+    progress,
+    setProgress,
+    keeper,
+    keepWorld,
+    session,
+    forgetEnding,
+    beginRun,
+  ]);
 
   /**
    * A fresh expedition into the world this device is standing in.
@@ -1815,8 +1874,8 @@ ${s.view.harvest.firstPopWhen}`,
     if (where === null) return;
     startRun(where);
     leaveMenus();
-    setStarted(true);
-  }, [startRun, leaveMenus]);
+    beginRun();
+  }, [startRun, leaveMenus, beginRun]);
 
   /**
    * Out of the ending, without starting another run.
@@ -1899,9 +1958,9 @@ ${s.view.harvest.firstPopWhen}`,
     setLens(null);
     banked.current = null;
     leaveMenus();
-    setStarted(true);
+    beginRun();
     frameTheRun();
-  }, [session, setDaily, today, leaveMenus, forgetWorld, frameTheRun, forgetEnding]);
+  }, [session, setDaily, today, leaveMenus, forgetWorld, frameTheRun, forgetEnding, beginRun]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
@@ -1922,7 +1981,7 @@ ${s.view.harvest.firstPopWhen}`,
       setLens(null);
       banked.current = null;
       leaveMenus();
-      setStarted(true);
+      beginRun();
       frameTheRun();
     },
     [
@@ -1935,6 +1994,7 @@ ${s.view.harvest.firstPopWhen}`,
       forgetEnding,
       startsFrom,
       frameTheRun,
+      beginRun,
     ],
   );
 
@@ -2059,8 +2119,6 @@ ${s.view.harvest.firstPopWhen}`,
   useEffect(() => {
     if (framing === 0) return;
     board.current?.flyToHex(snap.state.wakeAt ?? key(0, 0), 1);
-    // The run this frames is the one that has just started; a later placement
-    // must not re-run it, which is why the counter is the only dependency.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [framing]);
 
@@ -2533,7 +2591,7 @@ ${s.view.harvest.firstPopWhen}`,
           <FrontDoor
             s={s}
             resuming={snap.hud.placements > 0 && !snap.hud.ended}
-            onBegin={() => setStarted(true)}
+            onBegin={beginRun}
             onHowToPlay={() => manual.show()}
             onSettings={() => settings.show()}
             onMore={() => more.show()}
@@ -2553,6 +2611,10 @@ ${s.view.harvest.firstPopWhen}`,
           s={s}
           keyboard={keyboard}
           mode={daily !== null ? 'daily' : session.detour ? 'shared' : 'world'}
+          /* The manual grows with the world — see `Manual`'s `met`. The
+             teaching ledger is the same one the drip writes, so a section
+             appears on the run after the card that taught it. */
+          met={progress.met}
           onBack={manual.hide}
           menu={
             <PanelMenu>

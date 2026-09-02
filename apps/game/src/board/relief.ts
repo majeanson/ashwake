@@ -97,6 +97,36 @@ const KIND_LADDER: Readonly<Record<Kind, number>> = {
 const JITTER = 0.16;
 
 /**
+ * WHAT A CONTOUR BAND IS WORTH, in hex radii of lift per band (2026-09-02).
+ *
+ * `CellView.band` is the world's own terrain: `elevationBandAt` cuts the plane
+ * into `elevationBands` steps of `elevationEvery` hexes, and the shipped
+ * `TUNING` sets that to **five bands of nine hexes**. The core has computed it
+ * for every cell since the rules were lifted, and **this file never read it**
+ * — so a body built around a real Z axis drew the one axis the world actually
+ * has as perfectly flat, while Ashwake 1, which had no Z at all, at least
+ * tinted the bands so contours were visible.
+ *
+ * It is deliberately the SMALLEST voice in the lift, and the size is chosen
+ * against this file's own argument rather than by eye. Height is a channel
+ * spent on RARITY, because rarity has no other; so the whole range of the
+ * terrain plus the whole range of the jitter has to stay under one rarity
+ * step, or a common tile on a hilltop would stand taller than a magic one in a
+ * valley and height would stop meaning what it says.
+ *
+ *     4 bands × 0.09 + jitter 0.16 = 0.52  <  magic's 0.55
+ *
+ * `relief.test.ts` pins that inequality across every band, so moving this
+ * number without moving `RARITY_LIFT` fails rather than quietly muddying the
+ * channel. What is left is enough that a slope reads as a slope from across
+ * the board, which is all terrain was ever asked to do here.
+ *
+ * Under the same `relief` dial as everything else, so `?relief=0` is still the
+ * flat board that shipped and the golden sim still cannot see any of it.
+ */
+const BAND_LIFT = 0.09;
+
+/**
  * A hex's own jitter, in 0..1 — a hash of its coordinates, so it is the same
  * on every device, every frame and every reload. `Math.random` would make a
  * board that shimmers when nothing happened.
@@ -117,7 +147,10 @@ export function liftOf(cell: CellView, relief: number): number {
   if (kind === 'beacon') return 0;
   const ground = KIND_LADDER[kind] + (RARITY_LIFT[cell.rarity ?? 'common'] ?? 0);
   const jitter = (jitterAt(cell.q, cell.r) - 0.5) * JITTER;
-  return Math.max(0, relief * (ground + jitter));
+  // The world's own contours, under everything else — see `BAND_LIFT`. Zero
+  // where the world is flat, which is every build with `elevationBands` off.
+  const contour = cell.band * BAND_LIFT;
+  return Math.max(0, relief * (ground + contour + jitter));
 }
 
 /** Where a cell's TOP sits — what a ring, a label and a leap stand on. */

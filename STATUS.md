@@ -54,10 +54,32 @@ Two `prose.pin` snapshots were re-recorded deliberately, in the same commit,
 for the receipt's new line — both languages, one line each. Marc's French
 review surface should be read for it.
 
-Verified: 1071 tests / 76 files, 86 Playwright, `pnpm sim` byte-identical,
+**A second pass, on FIELDS rather than exports, found five more.** The module
+sweep cannot see a property: `CellView` has twenty-two, the board is the only
+thing that could read any, and "nothing imports it" is never true of one. So
+every field of `CellView` and `BoardView` was walked against the board.
+`voice.dry` — the third sound this game has — had never been played by
+anything. `cell.previewColour` was unread, so every legal edge drew in one ink,
+which is the exact bug the field was created to fix. `cell.band` was unread, so
+a world with five contour bands was drawn flat **by the body that has a Z
+axis**, while Ashwake 1, which had none, at least tinted them. The manual
+printed all thirteen lessons to everyone, rebuilding inside the drip's own
+manual the wall the drip exists to take down. And `startingPerk`, whose
+docblock says it is exported "so the UI can say WHY the starting number is not
+30 — a perk nobody can see is indistinguishable from a bug", was said by
+nothing.
+
+Verified rather than fixed, so a third pass need not re-walk it: the keeper's
+lifetime guards and hide-flush, `theme/tokens.ts` and `labelFor` (both
+supersets of Ashwake 1's), every remaining core-module diff (D4 text
+extraction; no rule moved), and **every key in the text catalogue has a
+consumer** — the first time that hunt has come back empty.
+
+Verified: 1077 tests / 76 files, 86 Playwright, `pnpm sim` byte-identical,
 typecheck/lint/build clean. **Nothing seen on a phone yet:** the signpost's
-cadence, the receipt's new line and the card's composition are Marc's to judge
-in portrait.
+cadence, the receipt's new line, the card's composition — and, most of all, the
+contour lift, which changes the board's silhouette, and the legal edge, which
+changes the colour of the thing a player looks at fifty times a run.
 
 Previous checkpoint: **2026-09-01, last — the destinations become their marks.**
 

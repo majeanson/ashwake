@@ -84,18 +84,44 @@ describe('relief', () => {
     }
   });
 
-  it('does not let the jitter outrank what height means', () => {
-    // The jitter exists to stop a field being a plateau. If it could carry a
-    // common tile past a magic one, height would stop meaning rarity.
+  it('does not let the jitter or the terrain outrank what height means', () => {
+    /*
+     * The jitter exists to stop a field being a plateau, and the contour band
+     * exists so the world's own slopes are visible. Neither may carry a common
+     * tile past a magic one, or height stops meaning rarity — this file's whole
+     * argument for spending the channel that way.
+     *
+     * Across every BAND since 2026-09-02, which is the case that made this a
+     * real constraint rather than a restatement: the shipped world has five of
+     * them, and a common tile on the highest against a magic one on the lowest
+     * is the widest the comparison ever gets.
+     */
     let commonHigh = 0;
     let magicLow = Infinity;
-    for (let q = -14; q <= 14; q++) {
-      for (let r = -14; r <= 14; r++) {
-        commonHigh = Math.max(commonHigh, liftOf(cell({ q, r, rarity: 'common' }), 0.5));
-        magicLow = Math.min(magicLow, liftOf(cell({ q, r, rarity: 'magic' }), 0.5));
+    for (let band = 0; band < 5; band++) {
+      for (let q = -14; q <= 14; q++) {
+        for (let r = -14; r <= 14; r++) {
+          commonHigh = Math.max(commonHigh, liftOf(cell({ q, r, band, rarity: 'common' }), 0.5));
+          magicLow = Math.min(magicLow, liftOf(cell({ q, r, band, rarity: 'magic' }), 0.5));
+        }
       }
     }
     expect(commonHigh).toBeLessThan(magicLow);
+  });
+
+  it('stands the world’s own contours up, and stays flat where the world is', () => {
+    /*
+     * `CellView.band` is `elevationBandAt` — five bands of nine hexes under the
+     * shipped tuning — and this file ignored it entirely until 2026-09-02, so a
+     * body built around a real Z axis drew the one axis the world has as flat.
+     *
+     * Same hex, same jitter, same kind: only the band moves.
+     */
+    const at = (band: number) => liftOf(cell({ q: 3, r: -2, band }), 0.5);
+    expect(at(1)).toBeGreaterThan(at(0));
+    expect(at(4)).toBeGreaterThan(at(1));
+    // And a flat world is still flat — `elevationBands: 0` reports band 0.
+    expect(at(0)).toBe(liftOf(cell({ q: 3, r: -2, band: 0 }), 0.5));
   });
 
   it('tells the camera how much sky the board needs', () => {

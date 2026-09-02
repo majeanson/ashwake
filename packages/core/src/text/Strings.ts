@@ -695,6 +695,15 @@ export type Strings = {
     };
     /** The front door when a run is already in progress. */
     readonly resume: string;
+    /**
+     * What the world's territories are paying THIS run (2026-09-02).
+     *
+     * `startingPerk` says in its own docblock that it is exported so the UI can
+     * explain why the purse is not the number on the shelf, because "a perk
+     * nobody can see is indistinguishable from a bug" — and nothing in this
+     * body ever said it. It is the one thing territories do between runs.
+     */
+    readonly fromTerritories: (tiles: number) => string;
     /** What a card is dismissed with, once it has been read. */
     readonly gotIt: string;
     /** The heading over everything that can destroy something. */

@@ -43,7 +43,34 @@ export function ringOf(cell: CellView, theme: Theme): Ring | null {
       width: b.edgeWidth * 2.5,
     };
   }
-  if (cell.legal) return { colour: b.legalEdge, width: b.edgeWidth * 2.5 };
+  /*
+   * A LEGAL HEX WEARS THE COLOUR YOU ARE HOLDING (2026-09-02).
+   *
+   * `CellView.previewColour` — "the selected draft tile's own colour, mirrored
+   * wherever `preview` is" — exists because Ashwake 1 found and fixed exactly
+   * the bug this line had: *"the ghost used to draw as one fixed tint
+   * regardless of what you were actually holding."* The field came across with
+   * the core and **nothing in this body ever read it**, so the fix came with
+   * it and the bug came back.
+   *
+   * It matters more here than it did there. Every legal edge in one ink asks a
+   * player to hold the selected card's colour in their head while they read a
+   * board of glowing outlines; wearing the ground it would become answers the
+   * question the glow is asking. It is also the same channel the card, the
+   * purse's steer row and the manual's legend already use, so nothing new is
+   * being taught.
+   *
+   * `legalEdge` stays the fallback, and it is the honest one: with no card
+   * selected there is no colour to promise, and a legal hex is then only
+   * saying "something could go here".
+   */
+  if (cell.legal) {
+    const held = cell.previewColour;
+    return {
+      colour: held === null ? b.legalEdge : theme.terrain[held].fill,
+      width: b.edgeWidth * 2.5,
+    };
+  }
   if (cell.lensed) return { colour: theme.ink.accent, width: b.edgeWidth * 2 };
   /*
    * A SPENT destination keeps its outline, greyed (2026-09-01).

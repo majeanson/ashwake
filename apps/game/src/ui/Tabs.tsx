@@ -10,6 +10,16 @@
 export type Tab<Id extends string> = {
   readonly id: Id;
   readonly label: string;
+  /**
+   * This tab has more behind it than it is showing yet (2026-09-02).
+   *
+   * The manual grows with the world: a section about a concept this device has
+   * not met stays out. Without a mark, a tab that hides three of its five
+   * sections is indistinguishable from a tab that only ever had two, so the
+   * drip reads as a thinner game rather than as a game arriving in order.
+   * Ashwake 1 marked it and called the field `grows`.
+   */
+  readonly grows?: boolean;
 };
 
 export type TabsProps<Id extends string> = {
@@ -29,6 +39,7 @@ export function Tabs<Id extends string>({ label, tabs, on, onPick }: TabsProps<I
           role="tab"
           className="tab"
           data-tab={tab.id}
+          data-grows={tab.grows === true ? '' : undefined}
           aria-selected={tab.id === on}
           onClick={() => onPick(tab.id)}
         >

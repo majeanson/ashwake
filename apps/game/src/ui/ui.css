@@ -542,6 +542,29 @@ button[disabled] {
   color: var(--accent);
 }
 
+/*
+ * A tab with more behind it than it is showing (2026-09-02).
+ *
+ * The manual grows with the world, so a tab can be hiding three of its five
+ * sections — and without a mark that is indistinguishable from a tab that only
+ * ever had two, which makes the drip read as a thinner game instead of a game
+ * arriving in order. A dot rather than a count: how many is not the promise,
+ * "there is more" is.
+ *
+ * Drawn rather than typed, per D10 — a pseudo-element disc, not a character.
+ */
+.tab[data-grows]::after {
+  content: '';
+  display: inline-block;
+  width: 0.3em;
+  height: 0.3em;
+  margin-inline-start: 0.4em;
+  vertical-align: 0.35em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
 /* ---- rows, folds, grids ------------------------------------------------- */
 
 .tip-row {
