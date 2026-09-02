@@ -41,6 +41,31 @@ export function parseShopLevels(raw: string | null): Progress['bought'] | null {
 }
 
 /**
+ * The other half of the boundary (2026-09-02).
+ *
+ * `parseShopLevels` is a decoder written to treat its input as hostile, and it
+ * had no encoder — so `storage.ts` reached for `JSON.stringify` inline, the
+ * one writer in that file that did not go through a core codec while its
+ * reader correctly did. A shape written in one file and read in another is a
+ * shape that can drift, and the whole reason every other key has a matching
+ * pair is that a decoder alone cannot tell you what was meant to be there.
+ *
+ * It writes exactly what the parser keeps — known ids, positive integers — so
+ * an entry the parser would silently drop can never be written in the first
+ * place, and a round trip is the identity.
+ */
+export function encodeShopLevels(bought: Progress['bought']): string {
+  const known = new Set<string>(UPGRADES.map((u) => u.id));
+  const clean: Partial<Record<UpgradeId, number>> = {};
+  for (const [id, n] of Object.entries(bought)) {
+    if (known.has(id) && typeof n === 'number' && Number.isFinite(n) && n > 0) {
+      clean[id as UpgradeId] = Math.floor(n);
+    }
+  }
+  return JSON.stringify(clean);
+}
+
+/**
  * The inherit decision itself: a world's own levels win when it has any
  * (even an empty object — a world that has bought nothing since the split
  * is not "predating" it); `null` — nothing ever written for this world —

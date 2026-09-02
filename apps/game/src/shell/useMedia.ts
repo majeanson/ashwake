@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 /**
  * What the DEVICE is asking for, and kept up to date (2026-08-29).
@@ -20,21 +20,37 @@ import { useEffect, useState } from 'react';
  * missing one answers false rather than throwing — the honest default for
  * every query here, each of which asks "is something switched ON".
  */
+/**
+ * A media query IS an external store, so it is read as one (2026-09-02).
+ *
+ * This was `useState` plus an effect that called `setMatches(list.matches)` on
+ * subscribe — with a comment saying why: *"a change between the first render
+ * and this effect would otherwise be missed for the life of the page."* The
+ * concern is real and the fix was a cascading render on every mount of every
+ * one of the four queries this game asks, on the boot path, to set state to
+ * the value it already had.
+ *
+ * `useSyncExternalStore` is the shape that answers the concern without the
+ * cascade: React re-reads the snapshot itself after subscribing and again
+ * before every commit, so a change during the gap is caught by the mechanism
+ * rather than by an extra render.
+ *
+ * The third argument is the server snapshot, and it answers `false` for the
+ * same reason `askOnce` does: every query here asks "is something switched
+ * ON", so the honest answer where nothing can be asked is no.
+ */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => askOnce(query));
-
-  useEffect(() => {
-    if (typeof matchMedia !== 'function') return;
-    const list = matchMedia(query);
-    // Re-read on subscribe: a change between the first render and this effect
-    // would otherwise be missed for the life of the page.
-    setMatches(list.matches);
-    const onChange = (event: MediaQueryListEvent): void => setMatches(event.matches);
-    list.addEventListener('change', onChange);
-    return () => list.removeEventListener('change', onChange);
-  }, [query]);
-
-  return matches;
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      if (typeof matchMedia !== 'function') return () => {};
+      const list = matchMedia(query);
+      list.addEventListener('change', onChange);
+      return () => list.removeEventListener('change', onChange);
+    },
+    [query],
+  );
+  const now = useCallback(() => askOnce(query), [query]);
+  return useSyncExternalStore(subscribe, now, () => false);
 }
 
 function askOnce(query: string): boolean {

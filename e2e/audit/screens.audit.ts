@@ -77,6 +77,28 @@ const FIVE = 'taught=1&runs=5';
 const THIRTY = 'taught=1&runs=30';
 const MANY = 'taught=1&runs=300';
 
+/**
+ * THE FIRST MINUTE — the one age of this game the instrument could not see
+ * (2026-09-02).
+ *
+ * `FRESH` is the same seed with `taught=1` on it, and the docblock above says
+ * exactly why that flag exists: *"without it, most of these are pictures of a
+ * teaching card."* True, and it means **every fixture in this file is a device
+ * that has already learned the game.** Twenty-nine screens × four directions,
+ * and not one of them is what a stranger sees.
+ *
+ * That is the `PLAYTEST.md` Session C gate. It is also the one part of this
+ * game a player cannot get back to: the teaching drip runs once per device,
+ * over the first few placements, and it is the whole of somebody's first
+ * impression. A screen nobody has photographed is a screen nobody has looked
+ * at — that is this instrument's own argument, and the argument had a hole in
+ * it exactly where it mattered most.
+ *
+ * The same seed as `FRESH`, so the teaching shots and the taught shots are the
+ * same board with and without the lessons on it.
+ */
+const NEW = 'seed=7';
+
 type Screen = {
   readonly name: string;
   /** Query on top of the history this screen needs. */
@@ -103,6 +125,28 @@ const viaMore = (go: string) => async (page: Page) => {
   await page.locator('[data-door="more"]').click();
   await page.locator(`[data-go="${go}"]`).click();
 };
+
+/** MENU, on the board, and the short list under it. */
+const viaQuick = async (page: Page): Promise<void> => {
+  await page.locator('[data-go="quick"]').click();
+  await page.locator('[data-hud="quick"]').waitFor({ state: 'visible' });
+};
+
+/**
+ * Wait for whatever the game is teaching, and photograph it standing.
+ *
+ * The opposite of `e2e/helpers.ts`'s `clearCards`, and for the opposite
+ * reason: every gate in this repo dismisses the teaching to get at the board
+ * behind it, which is why nothing has ever had a picture of the teaching.
+ */
+const teaching = async (page: Page): Promise<void> => {
+  await page.locator('.card-scrim').first().waitFor({ state: 'visible' });
+};
+
+/** The board draws on demand and eases into its fit; the keyboard's marker
+ *  rides the same camera. A key pressed before either has landed is a key
+ *  pressed at a board that is still arriving. */
+const settle = (page: Page): Promise<void> => page.waitForTimeout(600);
 
 const SCREENS: readonly Screen[] = [
   { name: 'front-door', query: FRESH, reach: alreadyThere },
@@ -147,6 +191,131 @@ const SCREENS: readonly Screen[] = [
   },
 
   /*
+   * SIX SURFACES THAT HAD NEVER BEEN PHOTOGRAPHED (2026-09-02).
+   *
+   * Found by walking the `data-*` registry against this list rather than by
+   * reading the list — the same move that has found everything else in this
+   * body. Each is reachable with the helpers that were already here, which is
+   * the point: they were not missing because they were hard.
+   *
+   * The ATLAS is deliberately absent from this block and is NOT a gap — it
+   * renders inside the WORLDS panel, so `worlds`, `worlds-five`,
+   * `worlds-thirty` and `worlds-many` have been photographing it all along.
+   * Checked, not assumed.
+   */
+  {
+    name: 'quick',
+    query: FRESH,
+    reach: async (page) => {
+      await begin(page);
+      await viaQuick(page);
+    },
+  },
+  { name: 'device', query: PLAYED, reach: viaMore('device') },
+  { name: 'daily', query: FRESH, reach: open('[data-door="daily"]') },
+  /* The `?themes=1` picker, which is a debug surface that pins itself to the
+     same corner MENU uses — the one overlap `ui.css` admits to and nothing has
+     ever looked at. It is over the BOARD, not inside SETTINGS. */
+  { name: 'directions', query: `${FRESH}&themes=1&place=12`, reach: begin },
+  /*
+   * A lens lit. Right-click IS the gesture — see `ui/Tile`'s `onContextMenu`,
+   * which is the long press on a phone — so this is the real door and not a
+   * test-only one.
+   */
+  {
+    name: 'board-lens',
+    query: `${FRESH}&place=12`,
+    reach: async (page) => {
+      await begin(page);
+      await page.locator('.tile').first().click({ button: 'right' });
+      await page.locator('[data-action="lens-off"]').waitFor({ state: 'visible' });
+    },
+  },
+  /*
+   * The ROUTINE pop line — the tappable receipt over the board, which is what
+   * every pop after the first one looks like.
+   *
+   * `FIVE` rather than `FRESH`, and that is load-bearing: the first pop of the
+   * first run on a device is a CARD, not this line (see `first` in `App`), so
+   * a fresh device can only ever photograph the exception. A world five runs
+   * deep has banked a harvest, so this is the line a player actually lives
+   * with.
+   */
+  {
+    name: 'pop-line',
+    // `place=24`, not 12: twelve placements is not reliably a ripe pocket, and
+    // a screen that depends on one has to open on a board that HAS one.
+    // `e2e/targets.spec.ts` reaches the same line from the same opening.
+    query: `${FIVE}&place=24`,
+    reach: async (page) => {
+      await begin(page);
+      await settle(page);
+      // By its WORD, in either language — `data-action` starts `pop` on four
+      // buttons and one of them is SACRIFICE.
+      await page
+        .getByRole('button', { name: /POP|RÉCOLT/ })
+        .first()
+        .click();
+      await page.locator('[data-action="pop-details"]').waitFor({ state: 'visible' });
+    },
+  },
+
+  /*
+   * THE TEACHING DRIP — see `NEW`.
+   *
+   * Three moments, because the drip is not one card: the door a stranger opens
+   * on, the first thing the board says, and the lesson that arrives after the
+   * first placement — which is the first time this game asks somebody to
+   * understand something while they are holding it.
+   *
+   * The placement is made with the KEYBOARD, which is the only door into the
+   * board that is not a canvas coordinate: Enter summons the marker at home,
+   * an arrow steps it onto a legal neighbour, Enter spends the card. Exactly
+   * what `e2e/keyboard.spec.ts` does, for the same reason.
+   */
+  { name: 'teaching-door', query: NEW, reach: alreadyThere },
+  /*
+   * The board a stranger arrives on, before it has said anything.
+   *
+   * Written first as `teaching-first`, waiting for a card — and there is no
+   * card here, which is itself the finding: **the drip fires on ACTIONS, not
+   * on arrival**, so the first thing a stranger sees after BEGIN is an empty
+   * board with no instruction on it at all. That is a screen worth having a
+   * picture of, and it is not the picture the name promised.
+   */
+  {
+    name: 'teaching-board',
+    query: NEW,
+    reach: async (page) => {
+      await begin(page);
+      await settle(page);
+    },
+  },
+  {
+    name: 'teaching-placed',
+    query: NEW,
+    reach: async (page) => {
+      await begin(page);
+      await settle(page);
+      // The first press only SUMMONS the marker, at home — see
+      // `e2e/keyboard.spec.ts`. Everything after it steps and places.
+      await page.keyboard.press('Enter');
+      // PLAY UNTIL IT TEACHES. Which placement first says something is a
+      // property of the board and of the drip, not a number this file gets to
+      // assume: writing `place one tile` made this pass in one direction out
+      // of four, which is a fixture that photographs a different moment
+      // depending on the geography.
+      for (let i = 0; i < 10; i++) {
+        if ((await page.locator('.card-scrim').count()) > 0) break;
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(120);
+      }
+      await teaching(page);
+    },
+  },
+
+  /*
    * FIVE RUNS IN, THIRTY, and THREE HUNDRED — one world at three ages.
    *
    * These are the rows to read against each other. A screen that looks the
@@ -185,31 +354,135 @@ test.use({ viewport: { width: 390, height: 844 } });
  * A module-level array is why this config runs ONE worker: parallel workers are
  * separate processes, and each would write a third of the report over the other
  * two.
+ *
+ * `pass` is what the row was measured under — a direction at 390 in the phone's
+ * own language, or one of the two passes below. It is a column rather than a
+ * suffix on `direction` because a French clipping and a torchlit contrast
+ * failure are different findings and want to be sortable apart.
  */
-const report: { screen: string; direction: string; finding: Finding }[] = [];
+const report: { screen: string; direction: string; pass: string; finding: Finding }[] = [];
+
+/**
+ * Photograph one screen and collect what it fails.
+ *
+ * The folder is the pass, not the direction: three passes writing
+ * `settlement/board.png` would each be a picture of the last one to run.
+ */
+async function shoot(
+  page: Page,
+  screen: Screen,
+  direction: string,
+  pass: string,
+  folder: string,
+): Promise<void> {
+  await page.goto(`/?theme=${direction}&${screen.query}`);
+  await page.locator('canvas').waitFor({ state: 'attached' });
+  await screen.reach(page);
+  // The board draws on demand and the font has to land: a screen shot
+  // before either is a picture of neither.
+  await page.waitForTimeout(700);
+
+  const dir = join(OUT, folder);
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, `${screen.name}.png`), await page.screenshot({ fullPage: false }));
+
+  visited += 1;
+  for (const finding of await page.evaluate(AUDIT_IN_PAGE)) {
+    report.push({ screen: screen.name, direction, pass, finding });
+  }
+}
 
 for (const direction of DIRECTIONS) {
   for (const screen of SCREENS) {
     test(`${direction} · ${screen.name}`, async ({ page }) => {
-      await page.goto(`/?theme=${direction}&${screen.query}`);
-      await page.locator('canvas').waitFor({ state: 'attached' });
-      await screen.reach(page);
-      // The board draws on demand and the font has to land: a screen shot
-      // before either is a picture of neither.
-      await page.waitForTimeout(700);
-
-      const dir = join(OUT, direction);
-      await mkdir(dir, { recursive: true });
-      await writeFile(join(dir, `${screen.name}.png`), await page.screenshot({ fullPage: false }));
-
-      for (const finding of await page.evaluate(AUDIT_IN_PAGE)) {
-        report.push({ screen: screen.name, direction, finding });
-      }
+      await shoot(page, screen, direction, '390', direction);
     });
   }
 }
 
+/**
+ * THE SHIPPING LANGUAGE (2026-09-02).
+ *
+ * `index.html` says `lang="fr-CA"`, the manifest ships `fr-CA`, and D4 makes
+ * French the first catalogue and the fallback for a device that speaks neither
+ * — **so French is what this game is by default**, and every shot in this
+ * folder until today was English. Playwright's default locale is `en-US`, the
+ * app reads `navigator.languages` (`shell/locale.ts`), and nobody set it.
+ *
+ * That matters here more than anywhere else, because French is the LONG
+ * language: RÉCOLTER against POP, SACRIFIER against BURN, NOUVELLE PARTIE
+ * against NEW RUN — roughly a fifth longer through the whole catalogue. Every
+ * clipped-text and horizontal-scroll bar this instrument measures has only
+ * ever been measured against the short one.
+ *
+ * One direction rather than four. The question a French pass asks is about
+ * SENTENCE LENGTH, and a sentence is the same length in every direction; four
+ * of them would be the same finding four times. Settlement because it is
+ * `DEFAULT_THEME_ID` — the direction a player who changes nothing is in.
+ */
+test.describe('fr-CA', () => {
+  test.use({ locale: 'fr-CA' });
+  for (const screen of SCREENS) {
+    test(`fr-CA · ${screen.name}`, async ({ page }) => {
+      await shoot(page, screen, 'settlement', 'fr-CA', 'fr-CA');
+    });
+  }
+});
+
+/**
+ * THE SMALLEST PHONE STILL SOLD (2026-09-02).
+ *
+ * 320×568 is the iPhone SE's CSS viewport and the floor this chrome has always
+ * claimed to hold. `STATUS.md` records measurements taken there **by hand**,
+ * once, and nothing has held them since — a number checked once and never
+ * pinned is a number that is true on the day it was written.
+ *
+ * The board and the action bar rather than all of them: at this width the
+ * failure mode is a ROW that cannot fit its own contents, and every row this
+ * game has that can overflow is on one of these screens. The panels are a
+ * scrolling column of full-width blocks and they narrow honestly.
+ *
+ * In French, because a narrow screen and a long language are the same bug
+ * arriving from two directions, and the cheapest way to find it is both at
+ * once.
+ */
+const NARROW = ['board', 'board-grown', 'purse', 'pop-line', 'quick', 'teaching-placed'] as const;
+
+test.describe('320', () => {
+  test.use({ viewport: { width: 320, height: 568 }, locale: 'fr-CA' });
+  for (const screen of SCREENS.filter((s) => (NARROW as readonly string[]).includes(s.name))) {
+    test(`320 · ${screen.name}`, async ({ page }) => {
+      await shoot(page, screen, 'settlement', '320', '320');
+    });
+  }
+});
+
+/**
+ * How many screen-visits actually happened, so a PARTIAL run cannot pass
+ * itself off as the record (2026-09-02).
+ *
+ * `afterAll` writes `report.md` unconditionally, and Playwright runs it after
+ * a filtered run exactly as after a whole one — so
+ * `playwright test -g "torchlit · teaching-first"`, one test, silently
+ * replaced the entire report with an empty table. It did, this session. The
+ * committed record of what this game's screens measure was overwritten by a
+ * debugging command, and nothing said so.
+ *
+ * The count is what makes it visible: a header saying `4 of 216` is a report
+ * that admits what it is, and a run that gathered nothing does not overwrite
+ * a run that gathered something.
+ */
+let visited = 0;
+
 test.afterAll(async () => {
+  const expected = DIRECTIONS.length * SCREENS.length + SCREENS.length + NARROW.length;
+  // A run that visited nothing has nothing to say and must not say it over the
+  // top of a run that did.
+  if (visited === 0) {
+    console.log('\naudit: no screens visited, report.md left alone');
+    return;
+  }
+
   // Sorted by how badly each finding misses its own bar, so the top of the
   // table is the thing worth fixing first rather than the first screen visited.
   const rows = [...report].sort(
@@ -222,25 +495,31 @@ test.afterAll(async () => {
   const lines = [
     '# Screen audit',
     '',
-    `${rows.length} findings across ${SCREENS.length} screens × ${DIRECTIONS.length} directions,`,
-    'at 390×844. Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,',
+    `${rows.length} findings across ${visited} of ${expected} screen-visits:`,
+    `${SCREENS.length} screens × ${DIRECTIONS.length} directions at 390×844,`,
+    `the same ${SCREENS.length} again in fr-CA, and ${NARROW.length} of them at 320×568.`,
+    '',
+    'Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,',
     'no horizontal page scroll, no clipped text.',
     '',
     'This is a report, not a gate. A number here is a thing to look at in the',
-    'shot beside it — `audit-shots/<direction>/<screen>.png`.',
+    'shot beside it — `audit-shots/<pass>/<screen>.png`, where a pass is a',
+    'direction, `fr-CA`, or `320`.',
     '',
     ...[...counts].map(([kind, n]) => `- **${kind}** — ${n}`),
     '',
-    '| screen | direction | kind | where | text | measured | bar | detail |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| screen | pass | direction | kind | where | text | measured | bar | detail |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...rows.map(
       (r) =>
-        `| ${r.screen} | ${r.direction} | ${r.finding.kind} | \`${r.finding.where}\` | ${r.finding.text.replace(/\|/g, '\\|')} | ${r.finding.value} | ${r.finding.bar} | ${r.finding.detail} |`,
+        `| ${r.screen} | ${r.pass} | ${r.direction} | ${r.finding.kind} | \`${r.finding.where}\` | ${r.finding.text.replace(/\|/g, '\\|')} | ${r.finding.value} | ${r.finding.bar} | ${r.finding.detail} |`,
     ),
     '',
   ];
 
   await mkdir(OUT, { recursive: true });
   await writeFile(join(OUT, 'report.md'), lines.join('\n'));
-  console.log(`\naudit: ${rows.length} findings → audit-shots/report.md`);
+  console.log(
+    `\naudit: ${rows.length} findings over ${visited}/${expected} visits → audit-shots/report.md`,
+  );
 });

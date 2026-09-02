@@ -36,39 +36,69 @@ function whenIdle(work: () => void): void {
   else setTimeout(work, YIELD_MS);
 }
 
-export function registerWorker(onUpdate: () => void): void {
+/**
+ * Register, and hand back the way to undo it (2026-09-02).
+ *
+ * This returned `void`, and it starts three long-lived things: a
+ * `controllerchange` listener, an interval that polls for a new worker every
+ * few minutes, and a `visibilitychange` listener. Its caller is a React
+ * effect, and an effect that starts a timer and returns no cleanup is a timer
+ * that outlives whatever asked for it — under StrictMode, twice over, on the
+ * first mount of every dev session.
+ *
+ * A teardown, so the effect can be an effect. It is deliberately safe to call
+ * before the registration has resolved: the flag below is what the pending
+ * `then` checks, so a page torn down during the idle wait installs nothing it
+ * cannot stop.
+ */
+export function registerWorker(onUpdate: () => void): () => void {
   // Dev never registers one — a cached bundle is the last thing you want while
   // editing, and `import.meta.env.DEV` is compiled out of the build.
-  if (import.meta.env.DEV || !('serviceWorker' in navigator)) return;
+  if (import.meta.env.DEV || !('serviceWorker' in navigator)) return () => {};
 
   // `controllerchange` also fires on the very FIRST install, when the page
   // goes from uncontrolled to controlled. Telling a player who just arrived
   // that there is a new version would be a lie; only a page that already had a
   // controller has actually been updated under.
   const hadController = navigator.serviceWorker.controller !== null;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
+  const onController = (): void => {
     if (hadController) onUpdate();
+  };
+  navigator.serviceWorker.addEventListener('controllerchange', onController);
+
+  const stop: (() => void)[] = [
+    () => navigator.serviceWorker.removeEventListener('controllerchange', onController),
+  ];
+  let live = true;
+
+  whenIdle(() => {
+    if (!live) return;
+    void navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        if (!live) return;
+        // A backgrounded phone only looks for a new worker when it NAVIGATES,
+        // which on a launch day is exactly when a hotfix most needs to reach it.
+        const poll = setInterval(() => void registration.update().catch(() => undefined), CHECK_MS);
+        const onShow = (): void => {
+          if (document.visibilityState === 'visible') {
+            void registration.update().catch(() => undefined);
+          }
+        };
+        document.addEventListener('visibilitychange', onShow);
+        stop.push(() => {
+          clearInterval(poll);
+          document.removeEventListener('visibilitychange', onShow);
+        });
+      })
+      .catch(() => {
+        // No offline play. Everything else still works, so this is not worth a
+        // word on screen.
+      });
   });
 
-  whenIdle(register);
-}
-
-/** The install itself, once the first minute has had the machine to itself. */
-function register(): void {
-  void navigator.serviceWorker
-    .register('/sw.js')
-    .then((registration) => {
-      // A backgrounded phone only looks for a new worker when it NAVIGATES,
-      // which on a launch day is exactly when a hotfix most needs to reach it.
-      setInterval(() => void registration.update().catch(() => undefined), CHECK_MS);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          void registration.update().catch(() => undefined);
-        }
-      });
-    })
-    .catch(() => {
-      // No offline play. Everything else still works, so this is not worth a
-      // word on screen.
-    });
+  return () => {
+    live = false;
+    for (const undo of stop) undo();
+  };
 }

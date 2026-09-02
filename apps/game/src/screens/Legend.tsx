@@ -66,8 +66,21 @@ export function Legend({ theme, s }: LegendProps) {
   const stone = lessonOf('stone');
 
   return (
+    /*
+     * `h2`, not `h3` (2026-09-02).
+     *
+     * These three were `h3` under `Panel`'s `h1` with nothing at level two
+     * between them, and the legend OPENS the PLAY tab — so the first heading
+     * on the manual's longest page skipped a level, and a screen reader
+     * skimming by heading level was told a section was missing. The manual's
+     * own lesson headings below are `h2`; these are their siblings and now say
+     * so.
+     *
+     * A level is a document structure, not a size: `.fact-label` sets the face,
+     * so nothing about this moved a pixel.
+     */
     <section className="legend">
-      <h3 className="fact-label">{s.ui.legendGrounds}</h3>
+      <h2 className="fact-label">{s.ui.legendGrounds}</h2>
       <ul>
         {COLOURS.map((colour) => (
           <li key={colour} className="tall">
@@ -106,7 +119,7 @@ export function Legend({ theme, s }: LegendProps) {
         ))}
       </ul>
 
-      <h3 className="fact-label">{s.ui.legendPlaces}</h3>
+      <h2 className="fact-label">{s.ui.legendPlaces}</h2>
       <ul>
         {PLACES.map(({ reward, id }) => {
           const lesson = lessonOf(id);
@@ -135,7 +148,7 @@ export function Legend({ theme, s }: LegendProps) {
         })}
       </ul>
 
-      <h3 className="fact-label">{s.ui.legendMarks}</h3>
+      <h2 className="fact-label">{s.ui.legendMarks}</h2>
       <ul>
         <li>
           <span className="legend-mark" aria-hidden="true">

@@ -105,13 +105,43 @@ export function DialogStack({ children }: { readonly children: ReactNode }) {
     setOpen(next);
   }, []);
 
-  /** Back to whoever opened it, if it is still on the page. A control that has
-   *  since been removed hands focus on rather than swallowing it. */
+  /**
+   * Back to whoever opened it — AFTER the commit that lets it be focused
+   * (2026-09-02).
+   *
+   * This used to call `.focus()` inline, and it could not work. Every opener
+   * this stack has is a control on a surface that goes `inert` while the panel
+   * it opened is up — that is the whole point of the stack — and `pop` runs
+   * inside the click handler, before React has re-rendered anything. So the
+   * element being focused was still inert at the moment it was asked, `focus()`
+   * is a silent no-op on an inert element, and **focus fell to `<body>` every
+   * time a panel closed.** Not the drawer's bug: every panel's.
+   *
+   * A silent no-op is why it survived. Nothing throws, the panel closes, and
+   * the only symptom is that the next Tab starts from the top of the document
+   * instead of from the button you left.
+   *
+   * So the wish is recorded here and spent in an effect below, one commit
+   * later, when the surface is reachable again. If it is still inert then —
+   * because a second panel is open under this one — the no-op is the correct
+   * answer and it stays a no-op.
+   *
+   * A control that has since been removed hands focus on rather than
+   * swallowing it.
+   */
+  const wanted = useRef<HTMLElement | null>(null);
   const focusOpener = useCallback((id: string) => {
     const opener = openers.current.get(id);
     openers.current.delete(id);
-    if (opener !== null && opener !== undefined && opener.isConnected) opener.focus();
+    wanted.current = opener ?? null;
   }, []);
+
+  useEffect(() => {
+    const el = wanted.current;
+    wanted.current = null;
+    if (el === null || !el.isConnected) return;
+    el.focus();
+  }, [open]);
 
   /** Give back `n` of our own entries. One `go` raises ONE `popstate`. */
   const giveBack = useCallback((n: number) => {
@@ -247,23 +277,56 @@ export function useDoor(id: string): {
   const stack = useDialogStack();
   const open = stack.open.includes(id);
 
+  /*
+   * THE STACK, WITHOUT ITS IDENTITY (2026-09-02).
+   *
+   * `stack` is a `useMemo` over `open`, so **its identity changes every time
+   * anything opens or closes** — and this hook had it as a dependency of the
+   * Escape listener. `App` holds eight doors, so one panel opening tore down
+   * and rebound eight `keydown` listeners on the document, and closing it did
+   * it again. The listener does not want the stack that existed when it was
+   * bound; it wants the one that exists when a key is pressed.
+   *
+   * A ref, written from an effect so nothing here reads or writes it during
+   * render, and read only inside handlers — which is the one place a ref is
+   * the right answer rather than a shortcut.
+   */
+  const latest = useRef(stack);
+  useEffect(() => {
+    latest.current = stack;
+  }, [stack]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent): void => {
       // Only the top: a stack of two closes one at a time, because that is
       // what a back button means.
-      if (event.key === 'Escape' && stack.isTop(id)) {
+      if (event.key === 'Escape' && latest.current.isTop(id)) {
         event.stopPropagation();
-        stack.pop(id);
+        latest.current.pop(id);
       }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, id, stack]);
+  }, [open, id]);
 
-  return {
-    open,
-    show: (opener) => stack.push(id, opener ?? (document.activeElement as HTMLElement | null)),
-    hide: () => stack.pop(id),
-  };
+  /*
+   * And the two functions are stable.
+   *
+   * They were minted fresh on every render of every door, which makes every
+   * `useCallback` and every `useEffect` in `App` that lists one of them
+   * re-run whenever anything at all re-renders — and `App` lists them a lot.
+   * A door's identity is its `id`; nothing else about it changes.
+   */
+  const show = useCallback(
+    (opener?: HTMLElement | null) => {
+      latest.current.push(id, opener ?? (document.activeElement as HTMLElement | null));
+    },
+    [id],
+  );
+  const hide = useCallback(() => {
+    latest.current.pop(id);
+  }, [id]);
+
+  return useMemo(() => ({ open, show, hide }), [open, show, hide]);
 }

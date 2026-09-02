@@ -113,15 +113,61 @@ button[disabled] {
   cursor: default;
 }
 
+/*
+ * THE QUIET VOICE (written 2026-09-02; the class shipped without a rule).
+ *
+ * Two buttons wear `.quiet` — the ending's install invitation and the front
+ * door's KEEP THE SEED — and `.end-install`'s own comment says *"`.quiet`
+ * already carries that voice."* It did not: there was no such rule anywhere in
+ * this file, so both rendered at the full weight of an ordinary button, and
+ * the quietest thing on each screen was as loud as the loudest.
+ *
+ * A comment that asserts an invariant is not the invariant. Here is the rule.
+ *
+ * Border first, because the border is what makes a button read as a control at
+ * all: a quiet offer is a sentence you may act on, not a thing asking to be
+ * pressed. The dimmed ink and the smaller face follow `.note`, which is the
+ * voice these two were written to speak in.
+ */
+.quiet {
+  border-color: transparent;
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   button:active {
     transform: scale(0.97);
   }
 }
 
+/*
+ * THE FOCUS RING, AND THE SIX CONTROLS IT WAS INVISIBLE ON (2026-09-02).
+ *
+ * `2px solid var(--accent)` at a 2px offset, and the six loudest controls in
+ * this build already carry an accent border: `.tab[aria-selected]`,
+ * `.door-begin`, `.act`, `.purse-toggle`, `.lens-off button` and
+ * `.end-walk button`. Focusing one drew a second accent line two pixels
+ * outside the first, over whatever ground happened to be behind it. **Accent
+ * on accent is not a state anyone can see** — and these are exactly the
+ * controls a keyboard player is most often on.
+ *
+ * The look decision (Marc's ruling for this pass: resolve it with a defensible
+ * default and state it): **a two-tone ring**. The `box-shadow` fills the
+ * offset gap with the GROUND — the one colour on screen that is neither the
+ * ink nor the accent, and the colour every direction grades its whole palette
+ * against — so the marker always reads as accent · ground · control, three
+ * bands, whatever the control's own border is doing. The offset goes to 3px so
+ * the ground band is thick enough to be a band rather than a seam.
+ *
+ * Not "make the ring a different colour": the accent IS the game's one loud
+ * ink and focus is the loudest thing a control can be. What was missing is not
+ * a hue, it is separation.
+ */
 :focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px var(--bg);
 }
 
 /* ---- the shell ---------------------------------------------------------- */
@@ -398,7 +444,24 @@ button[disabled] {
   inset: 0;
   z-index: 30;
   display: grid;
-  place-items: center;
+  justify-items: center;
+  align-content: center;
+  /*
+   * A CARD TALLER THAN THE PHONE (2026-09-02).
+   *
+   * `place-items: center` alone overflows in BOTH directions, so a lesson card
+   * longer than the viewport put GOT IT below the fold with nothing to scroll —
+   * the one control that dismisses it, unreachable, on a scrim that eats every
+   * tap underneath. `.front-door` (`justify-content: flex-start; overflow-y:
+   * auto`) and `.end` both solved this already; the card never got it.
+   *
+   * `safe center` keeps the centring while it fits and pins to the start once
+   * it does not, so the top of the card is always reachable. The unprefixed
+   * `center` above is the fallback for anything that does not parse it.
+   */
+  align-content: safe center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1rem;
   background: color-mix(in srgb, var(--bg) 94%, transparent);
 }
@@ -466,6 +529,29 @@ button[disabled] {
 
 .card p {
   margin: 0;
+}
+
+/*
+ * A card's action row (2026-09-02).
+ *
+ * It was three inline styles on the element — including `gap: '0.5rem'`, which
+ * is `--gap` typed as a literal in the one place a token cannot reach it. The
+ * hazard is written down 900 lines below for `.tile`: a value that lives in the
+ * markup is a value the stylesheet cannot retune and nobody finds when they
+ * grep for it.
+ *
+ * The dismiss is always last and always to the trailing edge, whether or not
+ * there is an offer beside it — an offer that pushed GOT IT around would make
+ * the same button land in two places on two cards.
+ */
+.card-acts {
+  display: flex;
+  gap: var(--gap);
+  margin: 0;
+}
+
+.card-acts > button:last-child {
+  margin-inline-start: auto;
 }
 
 /*
@@ -658,6 +744,15 @@ button[disabled] {
   color: var(--ink-dim);
 }
 
+/* A heading LEVEL is document structure and must never be a size decision, or
+   fixing a heading skip becomes a look change and stops being done. The face
+   is above; this pins the space, so `h2` and `h3` in this voice are the same
+   picture. */
+h2.fact-label,
+h3.fact-label {
+  margin: 0.83em 0;
+}
+
 .fact-value {
   font-family: var(--font-display);
   font-size: 1.1rem;
@@ -722,6 +817,25 @@ button[disabled] {
 
 .ink-unique {
   color: var(--unique);
+}
+
+/*
+ * THE BOARD, AS IT STOOD, IN THE DIARY (written 2026-09-02).
+ *
+ * `Fame` has rendered `detail.shot` as an `<img class="fame-shot">` since the
+ * shot began being captured, and this file had no such rule — so the thumbnail
+ * came out at its own intrinsic width inside a `.panel-body` that does not
+ * clip, and every opened diary row pushed the panel into horizontal overflow
+ * on a phone. A picture with no width is not a small picture.
+ *
+ * `display: block` because an inline image sits on a text baseline and carries
+ * the descender gap with it, which reads as a crooked row inside a fold.
+ */
+.fame-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
 }
 
 /* ---- the front door ----------------------------------------------------- */
@@ -1271,6 +1385,21 @@ button[disabled] {
 }
 
 /* ---- the hand and the bar ----------------------------------------------- */
+
+/*
+ * A box for `inert` and for nothing else (2026-09-02).
+ *
+ * The purse drawer and the action bar go unreachable together under an open
+ * panel, and one attribute has to sit over both. `display: contents` is what
+ * lets that wrapper exist without existing: its children stay direct flex
+ * children of `.shell`, which is the only thing that knows where the board's
+ * edge actually is — see `screens/Menu` for why that matters — while `inert`
+ * still reaches them, because `inert` is inherited down the flat tree and does
+ * not care about boxes.
+ */
+.hand-host {
+  display: contents;
+}
 
 /*
  * The board gets the screen. Ashwake 1 went from ~53% to 69-73% on 2026-08-27
@@ -2049,6 +2178,36 @@ button[disabled] {
  * under a player mid-run would make the update mechanism eat the thing it
  * exists to protect.
  */
+/*
+ * THE NOTICE STACK (2026-09-02).
+ *
+ * The update note and the in-app warning are both `.toast`s outside the board
+ * host, and both inherited its absolute bottom offset — so when both were true
+ * they painted on identical pixels and source order decided which sentence the
+ * player got. See `App.tsx` for the shape.
+ *
+ * The column carries the offset; the notes inside it are ordinary blocks and a
+ * second one pushes the first up. Pass-through, because a stack that covers
+ * the bottom of the board must not eat a tap where it has nothing to say —
+ * `.update` below takes its own events back.
+ */
+.notices {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tap) + var(--gap) * 2);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
+  pointer-events: none;
+}
+
+.notices .toast {
+  position: static;
+}
+
 .update {
   pointer-events: auto;
 }

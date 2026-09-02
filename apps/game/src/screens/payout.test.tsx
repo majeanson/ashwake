@@ -95,7 +95,14 @@ describe('Arc', () => {
 describe('Payout', () => {
   it('names every colour, rarity and source the engine can count', () => {
     render(
-      <Payout theme={SETTLEMENT} summary={summary()} harvests={[3, 9, 1]} s={stringsFor('en')} />,
+      <Payout
+        theme={SETTLEMENT}
+        summary={summary()}
+        points={10}
+        reach={0}
+        harvests={[3, 9, 1]}
+        s={stringsFor('en')}
+      />,
     );
     const s = stringsFor('en');
     for (const source of POINT_SOURCES)
@@ -106,7 +113,14 @@ describe('Payout', () => {
 
   it('paints each colour bar in that colour, from the theme and not a literal', () => {
     render(
-      <Payout theme={SETTLEMENT} summary={summary()} harvests={[3]} s={stringsFor('fr-CA')} />,
+      <Payout
+        theme={SETTLEMENT}
+        summary={summary()}
+        points={10}
+        reach={0}
+        harvests={[3]}
+        s={stringsFor('fr-CA')}
+      />,
     );
     const painted = [...document.querySelectorAll<HTMLElement>('.bar-fill')]
       .map((el) => el.style.background)
@@ -122,6 +136,8 @@ describe('Payout', () => {
       <Payout
         theme={SETTLEMENT}
         summary={summary({ points: null })}
+        points={0}
+        reach={0}
         harvests={[]}
         s={stringsFor('en')}
       />,
@@ -132,11 +148,18 @@ describe('Payout', () => {
   it('adds the sites line only when sites were claimed', () => {
     const s = stringsFor('en');
     const { rerender } = render(
-      <Payout theme={SETTLEMENT} summary={summary()} harvests={[1]} s={s} />,
+      <Payout theme={SETTLEMENT} summary={summary()} points={10} reach={0} harvests={[1]} s={s} />,
     );
     expect(screen.queryByText(new RegExp(s.payout.sites))).toBeNull();
     rerender(
-      <Payout theme={SETTLEMENT} summary={summary({ sitePoints: 12 })} harvests={[1]} s={s} />,
+      <Payout
+        theme={SETTLEMENT}
+        summary={summary({ sitePoints: 12 })}
+        points={10}
+        reach={0}
+        harvests={[1]}
+        s={s}
+      />,
     );
     expect(screen.getByText(new RegExp(s.payout.sites))).toBeTruthy();
   });

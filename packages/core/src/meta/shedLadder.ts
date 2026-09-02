@@ -37,7 +37,26 @@ export type ShedRungId =
    * Every OTHER world's whole footprint (world, run, shop levels) — never
    * the one being played, which is the point of the ladder existing.
    */
-  | 'otherWorlds';
+  | 'otherWorlds'
+  /**
+   * NOT A RUNG: the ladder ran out (2026-09-02).
+   *
+   * Every rung spent and the write still failed, so the run in progress is
+   * lost and there is nothing left to give that is not the world being
+   * played. It is reported through the same channel because it is the same
+   * event from the player's side — "something happened to your storage" — and
+   * because a second channel is a second thing the shell has to remember to
+   * listen to.
+   *
+   * It was silent. `onShed` reported the rungs that WORKED, so a device that
+   * shed its diary AND its other worlds and still could not save said the
+   * three reassuring sentences and never the one that mattered. The only
+   * outcome a player can act on was the only one with no words.
+   *
+   * Deliberately absent from `SHED_LADDER`: it is an outcome, not a step, and
+   * a ladder you can climb onto is a world you can shed.
+   */
+  | 'lost';
 
 export type ShedRung = {
   readonly id: ShedRungId;

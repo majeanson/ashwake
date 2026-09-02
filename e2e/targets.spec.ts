@@ -84,14 +84,26 @@ async function assertAllThumbable(page: Page, screen: string): Promise<void> {
   /*
    * And the escape hatch is pinned shut.
    *
-   * A `data-audit-compact` that anybody may add is a floor that erodes one control
-   * at a time. Exactly one thing in this game has argued its way under the
-   * line — the HUD's stats, which explain rather than act — so anything else
-   * wearing the marker fails here and has to make its own argument in a diff.
+   * A `data-audit-compact` that anybody may add is a floor that erodes one
+   * control at a time. Two things in this game have argued their way under the
+   * line, and anything else wearing the marker fails here and has to make its
+   * own argument in a diff.
+   *
+   *   - `button.stat` — the HUD's stats, which explain rather than act. At tap
+   *     size the row would eat a third of the screen.
+   *   - `button.term` — a glossary word INSIDE a sentence (2026-09-02). It is
+   *     the size of the word and can be nothing else: padding it out would
+   *     push the lines of every paragraph in the manual apart around whichever
+   *     words happen to be glossary entries. It was the one undeclared
+   *     exemption in the build — small, and silent about it — which is the
+   *     state this marker exists to make impossible.
    */
-  const exempt = [...new Set(targets.filter((t) => t.argued).map((t) => t.where.split(' "')[0]))];
+  const ARGUED = ['button.stat', 'button.term'];
+  const exempt = [
+    ...new Set(targets.filter((t) => t.argued).map((t) => t.where.split(' "')[0] ?? '')),
+  ];
   expect(
-    exempt.filter((where) => where !== 'button.stat'),
+    exempt.filter((where) => !ARGUED.includes(where)),
     `${screen}: a NEW compact control`,
   ).toEqual([]);
 }

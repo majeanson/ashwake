@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { MeshLambertMaterial, type BufferGeometry, type Material, type Texture } from 'three';
 import { sideColour } from '@render/materials';
 import type { Orientation } from '@theme/tokens';
@@ -8,6 +8,7 @@ import { hexPrism, PRISM_BOTTOM, PRISM_SIDE, PRISM_TOP } from './prism';
 import { HEIGHT, KINDS, type Kind } from './relief';
 import type { SurfaceTextures } from './surfaces';
 import { withTorch } from './torchShader';
+import { useOnce } from '../shell/useOnce';
 
 /**
  * The GPU objects a board needs, and their disposal (Stage 2c, 2026-08-29).
@@ -43,31 +44,57 @@ export function useBatchResources(
   );
   useEffect(() => () => prisms.forEach((geometry) => geometry.dispose()), [prisms]);
 
-  // Materials outlive a render, so they are kept in a ref and pruned when the
-  // batch set changes — a board that grew a new kind of ground should not leak
-  // the material of ground it no longer has.
-  const made = useRef(new Map<string, readonly Material[]>());
+  /*
+   * MATERIALS OUTLIVE A RENDER, AND DISPOSING ONE IS NOT A COMPUTATION
+   * (rewritten 2026-09-02).
+   *
+   * The cache was a `useRef`, and the memo below both READ and WROTE
+   * `made.current` while rendering, and freed GPU resources on the way past.
+   * Three things wrong with that, in increasing order of how much they matter:
+   *
+   *   - A ref written during render is a value React cannot see change, which
+   *     is what `react-hooks/refs` is for. It went unseen because the rules of
+   *     hooks were scoped to `*.tsx` and this is a `.ts`.
+   *   - Under StrictMode the memo factory runs TWICE. It survived only because
+   *     the second pass finds everything already cached and disposes nothing —
+   *     survival by luck, not by construction.
+   *   - **`dispose()` frees a GPU handle.** React is allowed to throw a memo's
+   *     result away and recompute it, and a recompute that disposes the
+   *     materials the last committed frame is drawing with is a black board.
+   *
+   * So: the cache is a plain `Map`, built once by `useOnce` and owned by this
+   * hook the way the board owns every other mutable thing it holds — which is
+   * the exemption `eslint.config.js` grants `board/` and states the reason for.
+   * The memo only BUILDS. Everything that frees anything happens in an effect,
+   * after the render that uses the new set has been committed.
+   */
+  const cache = useOnce(() => new Map<string, readonly Material[]>());
 
   const materials = useMemo(() => {
     const next = new Map<string, readonly Material[]>();
     for (const batch of batches) {
-      const existing = made.current.get(batch.key);
-      next.set(batch.key, existing ?? build(batch, textures, artFor(batch)));
+      next.set(batch.key, cache.get(batch.key) ?? build(batch, textures, artFor(batch)));
     }
-    for (const [key, set] of made.current) {
-      if (!next.has(key)) for (const material of set) material.dispose();
-    }
-    made.current = next;
     return next;
-  }, [batches, textures, artFor]);
+  }, [batches, textures, artFor, cache]);
 
+  // The prune, once the new set is on screen: a material dropped here is one
+  // no committed frame is drawing with any more.
   useEffect(() => {
-    const held = made.current;
-    return () => {
-      for (const set of held.values()) for (const material of set) material.dispose();
-      held.clear();
-    };
-  }, []);
+    for (const [key, set] of cache) {
+      if (!materials.has(key)) for (const material of set) material.dispose();
+    }
+    cache.clear();
+    for (const [key, set] of materials) cache.set(key, set);
+  }, [materials, cache]);
+
+  useEffect(
+    () => () => {
+      for (const set of cache.values()) for (const material of set) material.dispose();
+      cache.clear();
+    },
+    [cache],
+  );
 
   return {
     geometryFor: (kind) => prisms.get(kind),

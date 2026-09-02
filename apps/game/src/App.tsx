@@ -89,6 +89,8 @@ import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
+import { enterRun, type StartedFrom } from './shell/beginning';
+import { useOnce } from './shell/useOnce';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
 import * as voice from './shell/voice';
@@ -98,7 +100,7 @@ import { canInstall, inAppBrowser, isInstalled, promptInstall } from './shell/in
 import { renderShareCard } from './shell/shareCard';
 import { settle, settleDaily, type Standing } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
-import { campFor, createSession, useSession, type Said } from './shell/store';
+import { campFor, createSession, useSession, type Said, type Session } from './shell/store';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
@@ -355,11 +357,6 @@ function Game() {
    * object: an effect would run AFTER the settle effect that reads it, and on
    * an `?end=1` boot the run is already over by the first render.
    */
-  type StartedFrom = {
-    readonly reach: number;
-    readonly perks: readonly string[];
-    readonly unlocks: readonly string[];
-  };
   const startedFrom = useRef<StartedFrom | null>(null);
   if (startedFrom.current == null) {
     const world = readWorld(activeSlot());
@@ -461,7 +458,27 @@ function Game() {
   const signpost = useRef<string | null | undefined>(undefined);
   /** Whether the running-dry warning is standing. Per run — see `shell/dry.ts`. */
   const dry = useRef(false);
+  /**
+   * SENTENCES STILL ON THEIR WAY (2026-09-02).
+   *
+   * A pop's card is held back for the length of the cascade it is accounting
+   * for, so the receipt lands as the tiles finish falling rather than over
+   * them. Two `setTimeout`s in `act` do that, and **neither was ever cancelled**
+   * — so POP and then immediately NEW RUN put the previous run's receipt on
+   * top of a fresh board, describing a pocket that no longer exists on a board
+   * it was never about.
+   *
+   * A set rather than one slot: two cards can legitimately be in flight (a
+   * first-pop lesson and the pop's own receipt), and replacing the pending id
+   * would silently drop one of them. Every door into a run clears it, through
+   * `forgetEnding`; so does unmount.
+   *
+   * Declared above `forgetEnding` for the reason `signpost` gives.
+   */
+  const saying = useRef<Set<number>>(new Set());
   const forgetEnding = useCallback(() => {
+    for (const id of saying.current) window.clearTimeout(id);
+    saying.current.clear();
     setGained({ perks: [], unlocks: [] });
     setEndWorld(null);
     setGoals([]);
@@ -478,6 +495,15 @@ function Game() {
     // left. The next dispatch aims it again; until then, nothing is promised.
     forgetShelf();
   }, []);
+  /* And a page being taken down has nothing left to say. */
+  useEffect(() => {
+    const held = saying.current;
+    return () => {
+      for (const id of held) window.clearTimeout(id);
+      held.clear();
+    };
+  }, []);
+
   /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
 
@@ -493,7 +519,7 @@ function Game() {
    */
   const [updated, setUpdated] = useState(false);
   useEffect(() => {
-    registerWorker(() => setUpdated(true));
+    return registerWorker(() => setUpdated(true));
   }, []);
 
   /*
@@ -565,7 +591,10 @@ function Game() {
    * which is why each rung has its own sentence.
    */
   useEffect(() => {
-    onShed((rung) => say(shedNote(rung, s)));
+    // Returns its own unsubscribe now: this effect re-runs on every language
+    // change, and a registry with one slot and no cleanup quietly kept the
+    // last closure registered past the life of the component that made it.
+    return onShed((rung) => say(shedNote(rung, s)));
   }, [s, say]);
 
   /*
@@ -589,8 +618,97 @@ function Game() {
   }, [storedTheme, wantsLight, wantsContrast]);
   useThemeVars(theme);
   useDocumentLocale(locale);
+  /**
+   * This session's live copy of the world memory.
+   *
+   * A ref rather than state, and rather than a read per action: the world is
+   * written by three separate seams now — the ground a run walks, the perk
+   * shelf, and the settle that closes a run — and each of them hands the
+   * keeper a WHOLE `WorldMemory`. Re-reading the disk for each would mean
+   * decoding a blob carrying every hex the player has ever revealed, on every
+   * tap; and two seams firing in one tick would each build from a copy that
+   * predates the other, so whichever wrote second would silently undo the
+   * first. One held object, and the seam that touches it last is the one the
+   * keeper writes.
+   *
+   * Null means "not read yet, or a different world" — `worldHeld` decides by
+   * SEED, exactly the way `settle`'s guard and `memoryFor` do.
+   *
+   * ## Declared UP HERE, above the session (2026-09-02)
+   *
+   * `shell/cross.ts` states the crossing's invariant in its own docblock:
+   * *"The card's offer and the amount actually banked are the same number by
+   * construction, because both call `dowryOf`."* Calling the same function is
+   * not the construction — **it has to be the same world**, and there were
+   * three different copies of it in this file:
+   *
+   *   - `crossingCarries`, which prices the offer, read `readWorld()` — the
+   *     DISK, which is whatever was last flushed.
+   *   - the card's own label and `takeCrossing`, which banks it, both read
+   *     `ledgers.worlds[slot]` — a snapshot refreshed only when a panel opens
+   *     or a run ends.
+   *   - and this, the live copy every seam writes to, was read by neither.
+   *
+   * `dowryOf` pays per territory HELD, and a territory claimed this run lands
+   * in the live copy first. So a crossing taken on the run that earned the
+   * territory offered one figure, printed a second on the card, and banked a
+   * third — the exact bug the docblock says is the worst kind, because the
+   * player only finds out after the world is gone.
+   *
+   * The block moved above `session` so `crossingCarries` can reach it. That is
+   * the whole reason it is here rather than beside `banked`.
+   */
+  const worldNow = useRef<WorldMemory | null>(null);
+  const worldHeld = useCallback((seed: number): WorldMemory | null => {
+    const held = worldNow.current;
+    if (held !== null && held.worldSeed === seed) return held;
+    const disk = readWorld(activeSlot());
+    return disk !== null && disk.worldSeed === seed ? disk : null;
+  }, []);
+  const keepWorld = useCallback(
+    (next: WorldMemory) => {
+      worldNow.current = next;
+      keeper.saveWorld(next);
+    },
+    [keeper],
+  );
+  /** A run is beginning somewhere else: let go, so nothing carries over. */
+  const forgetWorld = useCallback(() => {
+    worldNow.current = null;
+  }, []);
 
-  const session = useMemo(() => {
+  /**
+   * THE SESSION IS BUILT ONCE, AND A `useMemo` COULD NOT PROMISE THAT
+   * (2026-09-02).
+   *
+   * This was `useMemo(..., [])` behind an `exhaustive-deps` disable, and what
+   * it does inside is not a computation: it mints a world seed and **writes it
+   * to `localStorage`**, it reads the run off the disk, it registers callbacks,
+   * and with `?place=n` or `?end=1` it walks the reducer through a whole
+   * scripted run.
+   *
+   * `useMemo` gives no guarantee of running once. React may drop a memo at any
+   * time, and under StrictMode — which `main.tsx` turns on deliberately — it
+   * **double-invokes the factory on purpose**, which is exactly how it catches
+   * side effects in render. It was catching one: in dev, two sessions were
+   * built, two seeds could be minted, and `?end=1` played its whole run twice.
+   * The audit and the e2e suite both run against the production build, where
+   * StrictMode is off, so nothing ever saw it.
+   *
+   * The lazily-initialised ref is the shape this file already reaches for when
+   * something must be built exactly once during a render — `startedFrom` uses
+   * it and says why: an effect would run AFTER the effects that read it, and
+   * on an `?end=1` boot the run is already over by the first render.
+   *
+   * It is still a side effect in render, and that is still not free. What it is
+   * now is a side effect that happens ONCE, stated as such, rather than one
+   * hiding behind a memo's promise that it does not make. `shell/useOnce.ts`
+   * carries the whole argument, including why an effect and a lazy `useState`
+   * are both wrong here.
+   */
+  const session = useOnce(buildSession);
+
+  function buildSession(): Session {
     const params = new URLSearchParams(location.search);
     // A run this device left behind is resumed as the very object the reducer
     // left, not re-simulated — a replayed run is a run that can disagree with
@@ -704,9 +822,21 @@ function Game() {
        */
       perkAt,
       wornPerk,
+      /*
+       * The LIVE copy, by seed — see `worldHeld`. This read the disk, which is
+       * one flush behind every seam that writes a world.
+       *
+       * `react-hooks/refs` sees a function that reads a ref being handed to
+       * another function during render and refuses it, which is the right
+       * default and the wrong answer here: this is a CALLBACK, stored and
+       * invoked later from `speak()`, which only ever runs inside a dispatch.
+       * Nothing about it is rendered, so there is no render that could go
+       * stale. The alternative it would push us to — reading the disk — is the
+       * bug being fixed.
+       */
       crossingCarries: () => {
-        const world = readWorld(activeSlot());
         const here = made.get().state;
+        const world = worldHeld(here.rootSeed);
         return { dowry: dowryOf(world), carried: carriedBy(here, world) };
       },
     });
@@ -714,11 +844,10 @@ function Game() {
     // the end screen can be looked at without playing for ten minutes.
     if (dial(params, 'end', 0) > 0) walkToEnd(made);
     else walk(made, Math.max(0, Math.trunc(dial(params, 'place', 0))));
-    return made;
     // One session per run: language and direction change what it SAYS and how
     // it looks, never what it IS, so neither may restart it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return made;
+  }
 
   const snap = useSession(session);
 
@@ -753,9 +882,12 @@ function Game() {
   // Every state the reducer produces is offered to the keeper, which decides
   // when it actually reaches the disk — and refuses entirely once its session
   // is over. A finished run is CLEARED rather than kept, so BEGIN means begin.
+  // `slot` was in this list and is read by nothing in it: the keeper already
+  // knows its own place (`keeperFor`), and a dependency that is not a
+  // dependency is a reader asking which line uses it and finding none.
   useEffect(() => {
     if (!snap.hud.ended) keeper.saveRun(snap.state);
-  }, [snap.state, snap.hud.ended, keeper, slot]);
+  }, [snap.state, snap.hud.ended, keeper]);
 
   /**
    * A finished run is BANKED, once.
@@ -768,41 +900,6 @@ function Game() {
    * for this ending.
    */
   const banked = useRef<GameState | null>(null);
-
-  /**
-   * This session's live copy of the world memory.
-   *
-   * A ref rather than state, and rather than a read per action: the world is
-   * written by three separate seams now — the ground a run walks, the perk
-   * shelf, and the settle that closes a run — and each of them hands the
-   * keeper a WHOLE `WorldMemory`. Re-reading the disk for each would mean
-   * decoding a blob carrying every hex the player has ever revealed, on every
-   * tap; and two seams firing in one tick would each build from a copy that
-   * predates the other, so whichever wrote second would silently undo the
-   * first. One held object, and the seam that touches it last is the one the
-   * keeper writes.
-   *
-   * Null means "not read yet, or a different world" — `worldHeld` decides by
-   * SEED, exactly the way `settle`'s guard and `memoryFor` do.
-   */
-  const worldNow = useRef<WorldMemory | null>(null);
-  const worldHeld = useCallback((seed: number): WorldMemory | null => {
-    const held = worldNow.current;
-    if (held !== null && held.worldSeed === seed) return held;
-    const disk = readWorld(activeSlot());
-    return disk !== null && disk.worldSeed === seed ? disk : null;
-  }, []);
-  const keepWorld = useCallback(
-    (next: WorldMemory) => {
-      worldNow.current = next;
-      keeper.saveWorld(next);
-    },
-    [keeper],
-  );
-  /** A run is beginning somewhere else: let go, so nothing carries over. */
-  const forgetWorld = useCallback(() => {
-    worldNow.current = null;
-  }, []);
 
   useEffect(() => {
     if (!snap.hud.ended || banked.current === snap.state) return;
@@ -1407,7 +1504,12 @@ ${s.view.harvest.firstPopWhen}`,
         const wait = reducedMotion
           ? 0
           : cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1);
-        window.setTimeout(() => setSaidCard(shown), wait);
+        // Held, so a door out of this run can put it down — see `saying`.
+        const id = window.setTimeout(() => {
+          saying.current.delete(id);
+          setSaidCard(shown);
+        }, wait);
+        saying.current.add(id);
         return;
       }
 
@@ -1465,7 +1567,13 @@ ${s.view.harvest.firstPopWhen}`,
 
       if (said.card || isPop) {
         if (wait === 0) show();
-        else window.setTimeout(show, wait);
+        else {
+          const id = window.setTimeout(() => {
+            saying.current.delete(id);
+            show();
+          }, wait);
+          saying.current.add(id);
+        }
       } else say(said.text);
     },
     [session, ledgers, s, features, theme, progress, setProgress, reducedMotion, daily, say],
@@ -1819,6 +1927,31 @@ ${s.view.harvest.firstPopWhen}`,
   }, [snap.state, snap.hud, daily, s, theme, standing]);
 
   /**
+   * The shell's own hands, for `shell/beginning.ts` to put down in one order.
+   *
+   * Gathered once rather than passed door by door: the five doors differ by a
+   * `Door` and by nothing else, and a wiring assembled at each call site would
+   * be five copies of the same list — which is the thing being fixed.
+   */
+  const wiring = useMemo(
+    () => ({
+      session,
+      setDaily,
+      forgetEnding,
+      forgetWorld,
+      saidOnce,
+      startedFrom,
+      banked,
+      setLens,
+      setWalking,
+      leaveMenus,
+      frameTheRun,
+      begin: beginRun,
+    }),
+    [session, setDaily, forgetEnding, forgetWorld, leaveMenus, frameTheRun, beginRun],
+  );
+
+  /**
    * Take the crossing: forget this world, and step into a fresh one carrying
    * what it paid.
    *
@@ -1831,7 +1964,10 @@ ${s.view.harvest.firstPopWhen}`,
     const seed = Math.floor(Math.random() * 2 ** 31);
     const after = cross({
       state: snap.state,
-      world: ledgers.worlds[slot],
+      // The live copy, so what is banked is what the card offered — see
+      // `worldHeld`. This read `ledgers`, the offer read the disk, and the
+      // label read `ledgers` again; three copies of one world.
+      world: worldHeld(snap.state.rootSeed),
       progress,
       timeline: readTimeline(),
       seed,
@@ -1845,26 +1981,37 @@ ${s.view.harvest.firstPopWhen}`,
     keeper.flush();
     clearRun(slot);
 
+    // The card that offered this goes with the world it offered to leave.
     setSaidCard(null);
-    forgetEnding();
-    banked.current = snap.state;
-    // The world it crosses INTO — freshly minted, so no shrine is woken there
-    // yet, but the purse and the perks it carried come with it.
-    session.restart(seed, null, undefined, economyAt(slot, seed));
-    setLens(null);
-    beginRun();
-  }, [
-    snap.state,
-    ledgers,
-    slot,
-    progress,
-    setProgress,
-    keeper,
-    keepWorld,
-    session,
-    forgetEnding,
-    beginRun,
-  ]);
+    /*
+     * And in through the same door as every other run (2026-09-02).
+     *
+     * This used to write its own subset, and it was the subset that had
+     * drifted furthest: no `saidOnce` reset, so a UNIQUE greeted on the world
+     * you paid to leave stayed silent on the world you paid for; no
+     * `startedFrom`, so NEW GROUND on a brand-new world was measured against
+     * the abandoned one's reach; and no framing, so the camera stayed wherever
+     * the last world's ending had left it. See `shell/beginning.ts`.
+     *
+     * `keepsWorld` is the one thing that is genuinely different here: the
+     * crossing MINTS the world it is entering and has just handed it to the
+     * keeper, so letting go of the held copy would throw away the only copy
+     * that exists.
+     */
+    enterRun(wiring, {
+      daily: null,
+      resume: null,
+      seed,
+      // The world it crosses INTO is freshly minted: no ground revealed, no
+      // shrine woken. The purse and the perks it carried come with it.
+      memory: undefined,
+      economy: economyAt(slot, seed),
+      wakeAt: null,
+      from: { reach: 0, perks: after.progress.found, unlocks: unlockedBy(after.world) },
+      keepsWorld: true,
+      fromMenus: false,
+    });
+  }, [snap.state, worldHeld, slot, progress, setProgress, keeper, keepWorld, wiring]);
 
   /**
    * A fresh expedition into the world this device is standing in.
@@ -1881,12 +2028,6 @@ ${s.view.harvest.firstPopWhen}`,
    */
   const startRun = useCallback(
     (wakeAt: HexKey | null) => {
-      setDaily(null);
-      forgetEnding();
-      saidOnce.current = new Set();
-      startedFrom.current = startsFrom(activeSlot(), progress.found);
-
-      banked.current = null;
       /*
        * The world's seed, not a fresh roll (2026-08-29).
        *
@@ -1899,13 +2040,21 @@ ${s.view.harvest.firstPopWhen}`,
        */
       const at = activeSlot();
       const seed = worldSeedFor(at);
-      session.restart(seed, null, memoryFor(at, seed), economyAt(at, seed), wakeAt);
-      setLens(null);
-      // The ending is gone, so the way back to it is too.
-      setWalking(false);
-      frameTheRun();
+      enterRun(wiring, {
+        daily: null,
+        resume: null,
+        seed,
+        memory: memoryFor(at, seed),
+        economy: economyAt(at, seed),
+        wakeAt,
+        from: startsFrom(at, progress.found),
+        keepsWorld: false,
+        // NEW RUN is pressed on the ending or the board; BEGIN AT CAMP is
+        // pressed inside WORLDS and closes it on the way through.
+        fromMenus: wakeAt !== null,
+      });
     },
-    [session, setDaily, progress.found, startsFrom, frameTheRun, forgetEnding],
+    [wiring, progress.found, startsFrom],
   );
 
   const newRun = useCallback(() => startRun(null), [startRun]);
@@ -1922,10 +2071,11 @@ ${s.view.harvest.firstPopWhen}`,
   const beginAtCamp = useCallback(() => {
     const where = campFor(readWorld(activeSlot()));
     if (where === null) return;
+    // Closing the panel and saying the arrival are `enterRun`'s now, for every
+    // door — this used to add them after the fact, which is how NEW RUN came to
+    // be the one door that never said what its territories were paying.
     startRun(where);
-    leaveMenus();
-    beginRun();
-  }, [startRun, leaveMenus, beginRun]);
+  }, [startRun]);
 
   /**
    * Out of the ending, without starting another run.
@@ -1989,68 +2139,51 @@ ${s.view.harvest.firstPopWhen}`,
     return () => document.removeEventListener('visibilitychange', onWake);
   }, []);
   const enterDaily = useCallback(() => {
-    setDaily(today);
-    // The last ending is not this one’s — see forgetEnding. A daily banks
-    // down its own short path and never reaches the writes that would clear it.
-    forgetEnding();
-    // A daily has no world memory at all. Letting go here means the held copy
-    // cannot be merged into by a board the world never walked.
-    forgetWorld();
-    // A daily is a RUN, so what a run says once it may say again here (2026-09-02).
-    // Every other door into a run resets this and `enterDaily` did not, so a
-    // unique arriving in the hand on today's board stayed silent whenever the
-    // world run before it had already met one.
-    saidOnce.current = new Set();
-    // No ledger, so no unlocks and no relics — and its shrines are rewritten
-    // into caches and sites, because a door that opens nothing is worse than
-    // no door at all.
-    session.restart(
-      dailySeed(today),
-      readDailyRun(today),
-      undefined,
-      economyFor({ kind: 'daily' }),
-    );
-    setLens(null);
-    banked.current = null;
-    leaveMenus();
-    beginRun();
-    frameTheRun();
-  }, [session, setDaily, today, leaveMenus, forgetWorld, frameTheRun, forgetEnding, beginRun]);
+    enterRun(wiring, {
+      daily: today,
+      resume: readDailyRun(today),
+      seed: dailySeed(today),
+      // A daily has no world memory at all, and letting go of the held copy is
+      // what stops a board the world never walked being merged into it.
+      memory: undefined,
+      // No ledger, so no unlocks and no relics — and its shrines are rewritten
+      // into caches and sites, because a door that opens nothing is worse than
+      // no door at all.
+      economy: economyFor({ kind: 'daily' }),
+      wakeAt: null,
+      // NULL IS THE MODE. A daily has no world, so there is nothing for NEW
+      // GROUND to be new against — which is different from a world whose reach
+      // is zero, and the distinction is why `reachAtStart` is `number | null`.
+      from: null,
+      keepsWorld: false,
+      fromMenus: true,
+    });
+  }, [wiring, today]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
-      const kept = readRun(next);
-      setDaily(null);
-      forgetEnding();
+      // Before the run is entered, because everything below reads the slot the
+      // device is standing in.
       setSlot(next);
-      // Another world entirely: the held copy is the one being left.
-      forgetWorld();
-      saidOnce.current = new Set();
-      startedFrom.current = startsFrom(next, progress.found);
       // The world being entered, on the world's own seed — everything else
       // here already reads `readWorld(next)`, and the seed was the one field
       // that did not, so stepping from world 1 to world 2 changed the name on
       // the door and not the ground behind it.
       const seed = worldSeedFor(next);
-      session.restart(seed, kept, memoryFor(next, seed), economyAt(next, seed));
-      setLens(null);
-      banked.current = null;
-      leaveMenus();
-      beginRun();
-      frameTheRun();
+      enterRun(wiring, {
+        daily: null,
+        resume: readRun(next),
+        seed,
+        memory: memoryFor(next, seed),
+        economy: economyAt(next, seed),
+        wakeAt: null,
+        from: startsFrom(next, progress.found),
+        // Another world entirely: the held copy is the one being left.
+        keepsWorld: false,
+        fromMenus: true,
+      });
     },
-    [
-      session,
-      setSlot,
-      setDaily,
-      leaveMenus,
-      progress.found,
-      forgetWorld,
-      forgetEnding,
-      startsFrom,
-      frameTheRun,
-      beginRun,
-    ],
+    [wiring, setSlot, progress.found, startsFrom],
   );
 
   /**
@@ -2524,7 +2657,25 @@ ${s.view.harvest.firstPopWhen}`,
       </div>
 
       {playing && (
-        <>
+        /*
+          THE HAND IS BEHIND A PANEL TOO (2026-09-02).
+
+          `.board-host` has gone `inert` under an open dialog since the stack
+          was built, and the hand — the purse drawer and the action bar — never
+          did. So a Tab from inside the manual walked out of it and onto POP,
+          SACRIFICE and four cards sitting under an opaque panel: controls that
+          are invisible, that spend a run's resources, and that a keyboard
+          player reaches before they reach the panel's own BACK. The quick
+          drawer is the loudest case — it is a menu whose scrim blocks the taps
+          and does nothing about the tab order — but it is every panel.
+
+          `display: contents`, so the wrapper takes the `inert` and gives the
+          layout nothing: the purse and the bar stay direct flex children of
+          the shell, which is the whole reason the drawer knows where the
+          board's edge is (see `screens/Menu`). Inert crosses it either way —
+          it is inherited down the flat tree, not down the box tree.
+        */
+        <div className="hand-host" {...(anyOpen ? { inert: true } : {})}>
           {/*
             The GUIDE line is gone from over the hand (2026-08-29).
 
@@ -2571,7 +2722,7 @@ ${s.view.harvest.firstPopWhen}`,
             purseOpen={purseOpen}
             onNewRun={newRun}
           />
-        </>
+        </div>
       )}
 
       {/*
@@ -2836,15 +2987,59 @@ ${s.view.harvest.firstPopWhen}`,
         />
       )}
 
-      {updated && (
-        <p className="toast update" aria-live="polite">
-          <button type="button" data-action="update" onClick={() => location.reload()}>
-            {s.ui.newVersion}
-          </button>
-        </p>
-      )}
-
       {/*
+        THE NOTICES, IN A COLUMN (2026-09-02).
+
+        Both of the notes below inherited `.toast`'s absolute bottom offset,
+        and both can be true at once — a phone that opened a shared link inside
+        Instagram while a new build was waiting got two sentences painted on
+        the same pixels, the later one over the earlier. Nothing decided which;
+        source order did.
+
+        A stack that can hold two things has to be a stack. The column owns the
+        offset now and the notes are ordinary blocks in it, so a second notice
+        pushes the first up instead of erasing it.
+
+        **And both are live regions that were inserted with their own content**
+        — the exact fault the toast's docblock two hundred lines up states and
+        avoids: *"a region has to be on the page BEFORE its text changes or
+        nothing announces it."* An update arriving mid-run and a warning that a
+        world may not survive this browser are the two most important sentences
+        this game says without being asked, and neither was announced. The
+        paragraphs are unconditional now and the BUTTONS are what come and go;
+        `.toast:empty` keeps an empty one out of the layout, which is the same
+        trick the toast uses.
+      */}
+      <div className="notices">
+        <p className="toast update" aria-live="polite">
+          {updated && (
+            <button
+              type="button"
+              data-action="update"
+              /*
+               * FLUSH BEFORE THE RELOAD (2026-09-02).
+               *
+               * This is one of the two reloads `CLAUDE.md` allows, and it is
+               * the one a player takes MID-RUN. The keeper batches writes and
+               * is flushed by `visibilitychange` and `pagehide` — and a
+               * same-document reload started by a click does not fire
+               * `pagehide` on every engine, so up to a keeper interval of play
+               * could be dropped by the mechanism that exists to protect a run
+               * from an update. The whole argument for making this a button
+               * instead of an automatic reload is that it must not eat the
+               * thing it protects.
+               */
+              onClick={() => {
+                keeper.flush();
+                location.reload();
+              }}
+            >
+              {s.ui.newVersion}
+            </button>
+          )}
+        </p>
+
+        {/*
         "YOUR WORLD MAY NOT BE KEPT HERE" (2026-09-02).
 
         A shared link most often lands inside Instagram or TikTok, whose WebView
@@ -2857,13 +3052,33 @@ ${s.view.harvest.firstPopWhen}`,
         unannounced over a game somebody is starting, and a sentence that cannot
         be put down is worse than the risk it describes.
       */}
-      {inApp && (
         <p className="toast update in-app" role="status">
-          <button type="button" data-action="in-app" onClick={() => setInApp(false)}>
-            {s.ui.inApp}
-          </button>
+          {inApp && (
+            <button type="button" data-action="in-app" onClick={() => setInApp(false)}>
+              {s.ui.inApp}
+            </button>
+          )}
         </p>
-      )}
+      </div>
+
+      {/*
+        WHAT A BRIEF CARD SAID (2026-09-02).
+
+        A brief card is a note over the board that goes on its own, and it used
+        to carry `role="status"` itself — on an element the shell mounts fresh
+        per utterance, keyed on the said id so a second pop is a second card.
+        A live region inserted together with its content is not reliably
+        announced, which is the rule the toast twelve hundred lines up states in
+        its own docblock and follows.
+
+        So the region lives out here, where it is on the page before there is
+        anything to put in it, and outlives every card that passes through. Only
+        the BRIEF ones: a card that holds the screen takes focus and is read for
+        being focused, and announcing it twice is worse than not at all.
+      */}
+      <p className="visually-hidden" role="status">
+        {saidCard !== null && saidCard.brief === true ? saidCard.text : ''}
+      </p>
 
       {saidCard !== null && (
         <SaidCard
@@ -2882,7 +3097,11 @@ ${s.view.harvest.firstPopWhen}`,
           {...(saidCard.offers === 'crossing'
             ? {
                 offer: {
-                  label: s.claim.crossLabel(carriedBy(snap.state, ledgers.worlds[slot])),
+                  // The number the card's own sentence was written from, priced
+                  // at the moment the offer was made — see `Said.carried`. It
+                  // recomputed from `ledgers`, which is a different copy of the
+                  // world from the one the offer was priced against.
+                  label: s.claim.crossLabel(saidCard.carried ?? 0),
                   armed: s.claim.crossArmed,
                   onTake: takeCrossing,
                 },

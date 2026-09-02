@@ -10,7 +10,7 @@ import { FactGrid } from '../ui/FactGrid';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
-import { Tabs } from '../ui/Tabs';
+import { panelOf, tabOf, Tabs } from '../ui/Tabs';
 import { SLOTS, type Slot } from '../shell/storage';
 
 /**
@@ -80,8 +80,10 @@ export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
       back={s.ui.back}
       closeAll={s.ui.closeAll}
       onBack={onBack}
+      tabbed={{ panelId: panelOf('fame', on), labelledBy: tabOf('fame', on) }}
       head={
         <Tabs
+          base="fame"
           label={s.ui.tabs.after}
           tabs={[
             { id: 'diary', label: s.ui.tabs.after },

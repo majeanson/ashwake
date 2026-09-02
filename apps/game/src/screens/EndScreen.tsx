@@ -8,7 +8,7 @@ import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Icon } from '../ui/Icon';
 import { Prose } from '../ui/Prose';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Standing } from '../shell/settle';
 import { Atlas } from './Atlas';
 import { Payout } from './Payout';
@@ -131,6 +131,11 @@ export type EndScreenProps = {
   readonly fromLink?: boolean;
 };
 
+/** How long COPIED stands before the button goes back to being a button. Long
+ *  enough to be read on a phone that has just come back from a share sheet,
+ *  short enough that it is gone before a second tap is considered. */
+const SAID_MS = 2000;
+
 export function EndScreen({
   onWalk,
   newPerks,
@@ -153,13 +158,54 @@ export function EndScreen({
   onShare,
   goals,
 }: EndScreenProps) {
-  // What the share button says after it has been tapped. A share sheet needs
-  // no word — the sheet IS the feedback — but a silent copy is a tap that
-  // looks like it did nothing.
+  /*
+   * WHAT THE SHARE BUTTON SAYS AFTER IT HAS BEEN TAPPED.
+   *
+   * A share sheet needs no word — the sheet IS the feedback — but a silent
+   * copy is a tap that looks like it did nothing.
+   *
+   * Three things were wrong with saying it by replacing the label
+   * (2026-09-02).
+   *
+   * **It never went back.** `said` was set to COPIED and nothing ever cleared
+   * it, so the SECOND share on the same ending changed nothing on screen: the
+   * button already read COPIED, and the one tap that most needs an
+   * acknowledgement — the one where you are not sure the first worked — is the
+   * one that got none.
+   *
+   * **The accessible name went with it,** permanently. A button whose name is
+   * COPIED is a button that says it has been pressed, not one that says what
+   * it does; a screen-reader user arriving at the end of the run afterwards is
+   * offered a control called COPIED.
+   *
+   * **And nothing announced it.** A label that changes under a focus is not an
+   * event; a live region is.
+   *
+   * So: the visible label still swaps, because that is the feedback the screen
+   * was designed around and a phone has nowhere else to put it; the button
+   * keeps its own name through `aria-label`; the word is announced from a
+   * region that is in the document before it has anything to say; and it goes
+   * back to SHARE after a beat.
+   */
   const [said, setSaid] = useState<string | null>(null);
+  const saidFor = useRef<ReturnType<typeof setTimeout> | 0>(0);
+  useEffect(
+    () => () => {
+      if (saidFor.current !== 0) clearTimeout(saidFor.current);
+    },
+    [],
+  );
   const onShare2 = () => {
     void onShare().then((how) => {
-      setSaid(how === 'copied' ? s.ui.copied : null);
+      // `'shared'` needs no word — the sheet IS the feedback. The other two
+      // both do, and `'failed'` was mapped to `null`, which on this button is
+      // indistinguishable from never having tapped it.
+      setSaid(how === 'copied' ? s.ui.copied : how === 'failed' ? s.ui.shareFailed : null);
+      if (saidFor.current !== 0) clearTimeout(saidFor.current);
+      saidFor.current = setTimeout(() => {
+        saidFor.current = 0;
+        setSaid(null);
+      }, SAID_MS);
     });
   };
 
@@ -189,7 +235,14 @@ export function EndScreen({
         </p>
       ) : null}
 
-      <p className="end-score">{hud.points}</p>
+      {/* The page's one `h1`, and it is the score — see `s.ui.ending.scored`.
+          The digits stay on screen; the sentence is what the heading list and
+          the screen reader get, because "heading level 1, 4210" is a landmark
+          that names nothing. */}
+      <h1 className="end-score">
+        <span aria-hidden="true">{hud.points}</span>
+        <span className="visually-hidden">{s.ui.ending.scored(hud.points)}</span>
+      </h1>
 
       {/*
         NEW BEST, or how far short of it (2026-09-02).
@@ -395,9 +448,14 @@ export function EndScreen({
             listing and no account, so a run reaches another person because
             somebody pasted this. It sits under the score rather than beside
             NEW RUN, which is the one button the v2.0 gate turns on. */}
-        <button type="button" data-action="share" onClick={onShare2}>
+        <button type="button" data-action="share" aria-label={s.ui.share} onClick={onShare2}>
           {said ?? s.ui.share}
         </button>
+        {/* In the document before it has anything to say — the rule
+            `screens/Device` states and the reason a live region works at all. */}
+        <span className="visually-hidden" role="status">
+          {said ?? ''}
+        </span>
         <button type="button" data-door="main" onClick={onMainMenu}>
           {s.ui.mainMenu}
         </button>

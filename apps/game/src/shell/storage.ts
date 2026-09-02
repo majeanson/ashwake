@@ -8,7 +8,7 @@ import {
 import { decodeFeatures, encodeFeatures, type FeatureSet } from '@meta/features';
 import { decodeProgress, encodeProgress, EMPTY_PROGRESS, type Progress } from '@meta/progress';
 import { isOwnKey, restorePlan, type Backup } from '@meta/backup';
-import { parseShopLevels } from '@meta/shopLevels';
+import { encodeShopLevels, parseShopLevels } from '@meta/shopLevels';
 import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
 import { decodeTimeline, encodeTimeline, type Timeline } from '@meta/timeline';
@@ -186,12 +186,29 @@ function read(key: string): string | null {
 
 /**
  * Told when a write had to spend a rung of the shed ladder, so the shell can
- * say which. Registered once; a device that never fills its quota never calls
- * it.
+ * say which — and, since 2026-09-02, when the ladder ran out (`'lost'`).
+ *
+ * ## It was one slot, and it leaked (2026-09-02)
+ *
+ * *"Registered once"*, said the old comment, and the caller registers it in an
+ * effect keyed on the strings: **every language change re-registered it**, and
+ * with one slot and no cleanup the previous closure was silently dropped. That
+ * was survivable only because both closures said the same thing. What was not
+ * survivable is the shape: an unmount left the registration standing, pointing
+ * at a `say` from a component that no longer exists.
+ *
+ * A set with an unsubscribe, like `onLedgersChanged` above. Same shape, same
+ * file, one thing to learn.
  */
-let reportShed: ((rung: ShedRungId) => void) | null = null;
-export const onShed = (report: (rung: ShedRungId) => void): void => {
-  reportShed = report;
+const shedWatchers = new Set<(rung: ShedRungId) => void>();
+export function onShed(report: (rung: ShedRungId) => void): () => void {
+  shedWatchers.add(report);
+  return () => {
+    shedWatchers.delete(report);
+  };
+}
+const reportShed = (rung: ShedRungId): void => {
+  for (const fn of shedWatchers) fn(rung);
 };
 
 /**
@@ -209,11 +226,64 @@ export const onShed = (report: (rung: ShedRungId) => void): void => {
  * geography into it. Hence the rule the ladder encodes — spend the genuinely
  * cheap things first, and **never touch the world being played**.
  */
+/**
+ * THE LEDGERS CHANGED, AND THIS FILE IS THE ONLY THING THAT KNOWS (2026-09-02).
+ *
+ * `useLedgers` re-reads the disk on a stamp its CALLER builds, and the caller
+ * built it by hand:
+ *
+ *     useLedgers(`${fame.open}${shop.open}${worlds.open}${snap.hud.ended}`)
+ *
+ * A hand-kept list of the ways a thing can change, maintained one file away
+ * from the thing. It had already missed four writers — RESTORE, RESET ALL,
+ * `takeCrossing` and `onSettle` — so a player who restored a backup and opened
+ * an already-open panel saw the device they had before the restore. This is
+ * `ui/dialog.tsx`'s own argument against Ashwake 1's `resetShell()`, which that
+ * file makes in its second paragraph, reproduced one file later.
+ *
+ * The fix is not a longer list. **The disk is the only thing that can know it
+ * was written**, so it says so: a counter and a set of listeners, bumped from
+ * inside `write` and `drop`, which every writer in this file already goes
+ * through and no writer can avoid.
+ *
+ * **Only the ledger keys.** The keeper writes the run in progress several times
+ * a minute, and refreshing the shelf, the diary and three worlds on each of
+ * those would decode every hex a player has ever revealed, repeatedly, during
+ * play. `useLedgers`' own docblock names the moments it cares about; this is
+ * that sentence written as a predicate rather than as a promise.
+ */
+const isLedgerKey = (key: string): boolean =>
+  key === DEVICE.records ||
+  key === DEVICE.timeline ||
+  SLOTS.some((slot) => key === slotKeys(slot).world);
+
+let ledgerStamp = 0;
+const ledgerWatchers = new Set<() => void>();
+
+/** A number that changes whenever a ledger key was written or dropped. */
+export const ledgersChangedAt = (): number => ledgerStamp;
+
+/** Tell me when. Returns the unsubscribe, which is what `useSyncExternalStore`
+ *  wants and what keeps a remounted hook from stacking listeners. */
+export function onLedgersChanged(fn: () => void): () => void {
+  ledgerWatchers.add(fn);
+  return () => {
+    ledgerWatchers.delete(fn);
+  };
+}
+
+function stamped(key: string): void {
+  if (!isLedgerKey(key)) return;
+  ledgerStamp += 1;
+  for (const fn of ledgerWatchers) fn();
+}
+
 function write(key: string, value: string): void {
   const d = disk();
   if (d === null) return;
   try {
     d.setItem(key, value);
+    stamped(key);
     return;
   } catch {
     // Fall through to the ladder. A quota error and a disabled-storage error
@@ -224,14 +294,28 @@ function write(key: string, value: string): void {
     shed(rung.id);
     try {
       d.setItem(key, value);
-      reportShed?.(rung.id);
+      stamped(key);
+      reportShed(rung.id);
       return;
     } catch {
       // Not enough yet. Climb.
     }
   }
-  // Every rung spent and still no room. The run in progress is lost, and
-  // there is nothing left to give that is not the world being played.
+  /*
+   * Every rung spent and still no room.
+   *
+   * The run in progress is lost, and there is nothing left to give that is not
+   * the world being played. **And this was silent** (2026-09-02): `onShed`
+   * reports the rungs that WORKED, so a device that shed its diary and its
+   * other worlds and still could not save said so — and a device that lost
+   * everything said nothing at all. The one outcome a player needs to know
+   * about was the one outcome with no words.
+   *
+   * Reported through the same registry, on a rung id of its own, so the shell
+   * has exactly one place to listen and this file stays the only thing that
+   * knows what a full disk looks like.
+   */
+  reportShed('lost');
 }
 
 /** Free one rung's worth of room. The ORDER is the ladder's; which keys each
@@ -316,8 +400,12 @@ export const setActiveSlot = (slot: Slot): void => write(DEVICE.slot, String(slo
 export const readShopLevels = (slot: Slot): Progress['bought'] | null =>
   parseShopLevels(read(slotKeys(slot).shop));
 
+/* Through the core's own encoder since 2026-09-02. It was a bare
+   `JSON.stringify` — the one writer in this file that did not have a codec
+   opposite the decoder its reader uses, which is a trust boundary open on one
+   side only. See `meta/shopLevels.ts`. */
 export const writeShopLevels = (slot: Slot, bought: Progress['bought']): void =>
-  write(slotKeys(slot).shop, JSON.stringify(bought));
+  write(slotKeys(slot).shop, encodeShopLevels(bought));
 
 /* ---- the last failure ----------------------------------------------------- */
 

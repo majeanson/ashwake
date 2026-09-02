@@ -28,19 +28,47 @@ export type PanelProps = {
   readonly children: ReactNode;
   /** A row of its own under the head — the manual's tabs live here. */
   readonly head?: ReactNode;
+  /**
+   * This panel's body IS the region a tab controls (2026-09-02).
+   *
+   * `ui/Tabs` declared `role="tablist"` with nothing playing the part of the
+   * panel, so the one relationship those roles exist to express was missing.
+   * The obvious fix — wrap the children in a `role="tabpanel"` div — is a trap
+   * here: `ui.css` scopes the section indent to `.panel-body > section`, and a
+   * wrapper would put every section one level down and silently unstyle five
+   * screens. CSS selectors match the DOM, so `display: contents` does not save
+   * it either.
+   *
+   * The scrollport is already the right element. It just had no name.
+   *
+   * Absent on the panels that have no tabs, which is most of them: a
+   * `tabpanel` with no `tablist` is the same kind of lie in the other
+   * direction.
+   */
+  readonly tabbed?: { readonly panelId: string; readonly labelledBy: string } | undefined;
 };
 
-export function Panel({ id, title, back, closeAll, onBack, children, head }: PanelProps) {
+export function Panel({ id, title, back, closeAll, onBack, children, head, tabbed }: PanelProps) {
   const sheet = useRef<HTMLDivElement>(null);
   const stack = useDialogStack();
   const top = stack.isTop(id);
 
-  // Focus the sheet itself rather than the first control: Ashwake 1's ruling,
-  // and the reason is that landing on BACK reads as "you are about to leave"
-  // when the panel has only just opened.
+  /*
+   * Focus the sheet itself rather than the first control: Ashwake 1's ruling,
+   * and the reason is that landing on BACK reads as "you are about to leave"
+   * when the panel has only just opened.
+   *
+   * **On every arrival, not only on mount** (2026-09-02). This ran once, with
+   * `[]`, and `ui/dialog.tsx`'s `push` has supported RAISING an already-open
+   * panel since 2026-08-30 — it was written for a real path: open the manual
+   * from the board, go to its MENU tab, open MORE, tap HOW TO PLAY. The manual
+   * comes back to the top, is no longer `inert`, paints over MORE, and had the
+   * focus of a screen nobody is on. The whole point of the raise was that the
+   * button appeared dead; half of it still did to a keyboard.
+   */
   useEffect(() => {
-    sheet.current?.focus();
-  }, []);
+    if (top) sheet.current?.focus();
+  }, [top]);
 
   return (
     <div
@@ -101,7 +129,14 @@ export function Panel({ id, title, back, closeAll, onBack, children, head }: Pan
           player needs to leave with is the one that gets pushed off. */}
         {head}
       </div>
-      <div className="panel-body">{children}</div>
+      <div
+        className="panel-body"
+        {...(tabbed === undefined
+          ? {}
+          : { role: 'tabpanel', id: tabbed.panelId, 'aria-labelledby': tabbed.labelledBy })}
+      >
+        {children}
+      </div>
     </div>
   );
 }

@@ -164,26 +164,67 @@ export function useDevice(opts: {
    * make them pick a world again — so the two are separate facts rather than
    * one. Only `place` decides where a run is written.
    */
-  const [place, setPlaceState] = useState<Place>(() =>
-    opts.daily === undefined ? activeSlot() : { daily: opts.daily },
-  );
+  /*
+   * THE PLACE AND ITS KEEPER ARE ONE FACT (2026-09-02).
+   *
+   * One keeper per PLACE — not per slot, which was the same thing right up
+   * until a link could open the daily directly. They have always changed
+   * together, in `move`, in one order that matters; they were two pieces of
+   * state, a `useState` and a `useRef`, and the ref was then read during
+   * render to build the returned object. Two things that must move together
+   * and cannot be seen to are two things that come apart — which is the
+   * argument `shell/finds.ts` makes in its own opening lines, and `App` makes
+   * about `note.more`.
+   *
+   * It was CORRECT: `place` is in the memo's dependencies and changes at
+   * exactly the moment the keeper does. It was correct invisibly, which is the
+   * kind of correct that stops being true when somebody adds a dependency —
+   * and a ref read during render is the one thing the React Compiler cannot
+   * reason about at all.
+   */
+  const [held, setHeld] = useState<{ readonly place: Place; readonly keeper: Keeper }>(() => {
+    const at = opts.daily === undefined ? activeSlot() : { daily: opts.daily };
+    return { place: at, keeper: keeperFor(at) };
+  });
 
-  // One keeper per PLACE — not per slot, which was the same thing right up
-  // until a link could open the daily directly.
-  const keeper = useRef<Keeper>(keeperFor(place));
+  /*
+   * The same object, mirrored, for the two things state cannot do: be read at
+   * unmount, and be read by a handler that must not go through a state
+   * updater. It is written from an EFFECT, so nothing here reads or writes a
+   * ref while rendering.
+   */
+  const latest = useRef(held);
   useEffect(() => {
-    const held = keeper.current;
-    return () => held.drop();
-  }, []);
+    latest.current = held;
+  }, [held]);
+
+  /*
+   * DROP WHICHEVER ONE IS HELD NOW (2026-09-02).
+   *
+   * This captured the keeper at mount and dropped THAT on unmount — the keeper
+   * the page opened with. `move()` replaces it (a link into the daily, a world
+   * switch, a crossing), and after any of those the first keeper is dropped a
+   * second time while the one actually holding the run is never dropped at
+   * all: its interval and its listeners outlive the page.
+   */
+  useEffect(
+    () => () => {
+      latest.current.keeper.drop();
+    },
+    [],
+  );
 
   /** Hand the keeper on. Flush, then drop, then make the new one — in that
    *  order, because a pending write from the place being left must land in the
    *  place it belongs to and never in the one being entered. */
   const move = useCallback((next: Place) => {
-    keeper.current.flush();
-    keeper.current.drop();
-    keeper.current = keeperFor(next);
-    setPlaceState(next);
+    // Not inside the updater: React runs those twice under StrictMode, and a
+    // doubled flush-then-drop is a keeper dropped while another is writing.
+    latest.current.keeper.flush();
+    latest.current.keeper.drop();
+    const made = { place: next, keeper: keeperFor(next) };
+    latest.current = made;
+    setHeld(made);
     // A world's shop is the world's, and so is its perk shelf. Stepping into
     // one puts on its build and its perks; stepping into the daily — which has
     // neither of its own — keeps whatever the player was carrying.
@@ -219,7 +260,7 @@ export function useDevice(opts: {
   // pending is written the moment the page is hidden. `visibilitychange` fires
   // where `beforeunload` does not on iOS, which is the platform that matters.
   useEffect(() => {
-    const flush = (): void => keeper.current.flush();
+    const flush = (): void => latest.current.keeper.flush();
     const onHide = (): void => {
       if (document.visibilityState === 'hidden') flush();
     };
@@ -284,9 +325,9 @@ export function useDevice(opts: {
       setProgress,
       slot,
       setSlot,
-      daily: isDaily(place) ? place.daily : null,
+      daily: isDaily(held.place) ? held.place.daily : null,
       setDaily,
-      keeper: keeper.current,
+      keeper: held.keeper,
     }),
     [
       locale,
@@ -299,7 +340,7 @@ export function useDevice(opts: {
       setProgress,
       slot,
       setSlot,
-      place,
+      held,
       setDaily,
     ],
   );

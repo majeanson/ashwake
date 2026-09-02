@@ -219,8 +219,23 @@ export default tseslint.config(
    * dispatch and handed to everyone". A missed dependency there is a HUD
    * showing the previous turn.
    */
+  /*
+   * `.ts` AS WELL AS `.tsx` (2026-09-02).
+   *
+   * This was `*.tsx` only, and four of this app's hooks are not components and
+   * therefore have no JSX in them: `shell/useDevice.ts` — 300 lines holding
+   * every piece of device state, the keeper's whole lifetime, and half a dozen
+   * effects — plus `shell/useMedia.ts`, `shell/ledgers.ts` and
+   * `shell/useOnce.ts`. **The file with the most hook logic in the build was
+   * the file the rules of hooks did not read.**
+   *
+   * It found two things immediately, both fixed in the same pass: a cleanup
+   * that captured the keeper from mount and dropped the wrong one after any
+   * `move()`, and a ref read during render inside a `useMemo` that did not
+   * list it.
+   */
   {
-    files: ['apps/game/src/**/*.tsx'],
+    files: ['apps/game/src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
   },
@@ -241,7 +256,7 @@ export default tseslint.config(
    * effect, which cost the pop a frame of latency).
    */
   {
-    files: ['apps/game/src/board/**/*.tsx'],
+    files: ['apps/game/src/board/**/*.{ts,tsx}'],
     rules: { 'react-hooks/immutability': 'off', 'react-hooks/purity': 'off' },
   },
 

@@ -376,8 +376,10 @@ export type Strings = {
     Record<'reach20' | 'territories4' | 'known40' | 'shrinesAll' | 'perksAll', string>
   >;
   readonly unlock: Readonly<Record<'draft' | 'hold' | 'luck' | 'reach' | 'camp', string>>;
+  /** One sentence per rung of `meta/shedLadder`, plus `lost` — the outcome
+   *  where every rung was spent and the run went anyway. */
   readonly shed: Readonly<
-    Record<'lastError' | 'otherReceipts' | 'timeline' | 'otherWorlds', string>
+    Record<'lastError' | 'otherReceipts' | 'timeline' | 'otherWorlds' | 'lost', string>
   >;
   readonly feature: Readonly<
     Record<'debug.overlay' | 'ui.sound', { readonly label: string; readonly note: string }>
@@ -836,6 +838,18 @@ export type Strings = {
      *   lifted and nothing printed it.
      */
     readonly ending: {
+      /**
+       * WHAT THIS SCREEN IS, said once, in a heading (2026-09-02).
+       *
+       * The end screen had no `h1`: the score was a `<p>`, and the first
+       * heading on the page was an `h2` that only exists when the run had a
+       * world. So the screen a run ends on had no name at all — heading
+       * navigation, which is how a screen reader arrives anywhere, landed on
+       * nothing — and the loudest thing on it announced as a bare number.
+       *
+       * The score IS the heading; this is what the heading says.
+       */
+      readonly scored: (n: number) => string;
       readonly newBest: string;
       readonly shortOfBest: (n: number) => string;
       readonly run: (n: number) => string;
@@ -877,6 +891,24 @@ export type Strings = {
     readonly wear: string;
     /** An upgrade at the top of its ladder — a rung you can see the end of. */
     readonly maxed: string;
+    /**
+     * THE SHOP, SAID ALOUD (2026-09-02).
+     *
+     * Three labels for three things the shop showed and never named. A screen
+     * reader takes a control's name from its content, and the shop's contents
+     * are numbers: the buy button was called `12`, the balance line was called
+     * `412`, and the perk heading was a level-two heading called `3/5`. Each is
+     * legible beside the thing it belongs to and meaningless in a list of
+     * controls, which is how a screen reader gives them.
+     *
+     * Sentences, so the catalogue decides how a quantity meets a noun and the
+     * component never does (D4).
+     */
+    readonly buy: (name: string, price: number) => string;
+    /** The relic balance, as a sentence rather than a bare count. */
+    readonly relicsHeld: (n: number) => string;
+    /** How much of the perk pool this device has found. */
+    readonly perksTally: (found: number, all: number) => string;
     /**
      * The legend's own headings — every mark the board can show, and what it
      * means (Marc, 2026-08-29: "adding visuals and assets and symbols in the
@@ -944,6 +976,17 @@ export type Strings = {
     readonly share: string;
     /** No share sheet here, so it went to the clipboard instead. */
     readonly copied: string;
+    /**
+     * Neither worked (2026-09-02).
+     *
+     * `share()` has returned `'failed'` since it was written — no share sheet
+     * AND no clipboard, which is an in-app browser with permissions locked
+     * down, the exact place a shared link most often lands — and the end
+     * screen mapped it to `null`, which is the same thing it shows for a tap
+     * that has not happened yet. So the one distribution mechanism this game
+     * has could fail in total silence, on the screen it exists on.
+     */
+    readonly shareFailed: string;
     /**
      * The failure panel and SETTINGS ▸ LAST ERROR.
      *

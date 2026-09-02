@@ -478,6 +478,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       'Le stockage était plein. Ton journal a été effacé pour que ta partie puisse être sauvegardée; tes mondes, tes reliques et tes atouts sont intacts.',
     otherWorlds:
       'Le stockage était plein. Tes AUTRES mondes ont été oubliés pour que cette partie puisse être sauvegardée; le monde où tu es est intact.',
+    lost: 'Le stockage est plein et cette partie ne peut pas être sauvegardée. Libère de l’espace sur ton appareil, ou finis la partie dans cet onglet.',
   },
   feature: {
     'debug.overlay': {
@@ -687,6 +688,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     settleNote: `La graine devient un monde à toi${D}: neuf, inexploré, et joué avec tes reliques et ses propres sanctuaires à partir de là. Cette partie reste exactement telle quelle.`,
     cameByLink: 'Ce monde t’est arrivé par un lien. Il repart par le même chemin.',
     ending: {
+      scored: (n) => `Partie terminée${D}: ${nb(n)} point${pl(n, '', 's')}`,
       newBest: 'NOUVEAU RECORD',
       shortOfBest: (n) => `${nb(n)} sous le record`,
       run: (n) => `PARTIE ${n}`,
@@ -705,6 +707,10 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     worn: 'PORTÉ',
     wear: 'PORTER',
     maxed: 'AU MAX',
+    buy: (name, price) => `Acheter ${name} pour ${nb(price)} reliques`,
+    relicsHeld: (n) => `${nb(n)} relique${pl(n, '', 's')}`,
+    perksTally: (found, all) =>
+      `${nb(found)} atout${pl(found, '', 's')} trouvé${pl(found, '', 's')} sur ${nb(all)}`,
     handEmpty: 'Ta main est vide. Touche une carte en bas pour en prendre une.',
     lensOn: (ground) =>
       `Sol ${ground} dont on se souvient${D}: chaque parcelle connue est éclairée. Touche encore le brouillard pour lâcher.`,
@@ -718,6 +724,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     dismiss: 'Pas maintenant',
     share: 'PARTAGER',
     copied: 'COPIÉ',
+    shareFailed: 'PARTAGE IMPOSSIBLE',
     crash: {
       broke:
         'Quelque chose a brisé. Ta partie est sauvegardée. CONTINUER si le jeu fonctionne encore en dessous, RECHARGER sinon.',

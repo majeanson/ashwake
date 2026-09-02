@@ -81,6 +81,24 @@ export type Said = {
   /** An offer the shell must carry out. Only the crossing makes one. */
   readonly offers?: 'crossing' | undefined;
   /**
+   * What that offer carries, priced at the moment it was made (2026-09-02).
+   *
+   * `shell/cross.ts` says the crossing's offer and its payment *"are the same
+   * number by construction"*, and they were not: the sentence in the card came
+   * from `crossingCarries` (the live world), the BUTTON'S LABEL recomputed it
+   * from `ledgers` — a snapshot that only refreshes when a panel opens or a run
+   * ends — and `takeCrossing` banked from `ledgers` again. A territory claimed
+   * on the run that reaches the last shrine is in the live copy and in neither
+   * of the others, so all three could differ, on the one card where finding out
+   * afterwards is too late.
+   *
+   * It travels WITH the text rather than beside it in a second piece of state,
+   * for the reason `App`'s `note.more` gives: two states that must be set and
+   * cleared together are two states that come apart. It also keeps the label
+   * out of render-time ref reads, which `react-hooks/refs` is right to refuse.
+   */
+  readonly carried?: number | undefined;
+  /**
    * The mark this utterance leads with, where it has one.
    *
    * BESIDE the words rather than inside them. A claim's mark used to be
@@ -95,6 +113,32 @@ export type Said = {
    * any tap sends it away, and it goes on its own. Set by the SHELL, never by
    * the reducer — whether a thing has been seen before is a device fact, not
    * a rule (`App`'s harvest branch, and `ui/Card.tsx`).
+   *
+   * ## NOTHING SETS IT (found 2026-09-02, deliberately left — needs Marc)
+   *
+   * The harvest branch this docblock names is the branch that STOPPED setting
+   * it, on 2026-08-30, when Marc asked for a routine pop to be a line over the
+   * board instead of a card: *"i asked previously to not pop as a card
+   * everytime, just show points in the bottom and we can tap for details or
+   * tap out."* `App` now sends a routine pop to the toast and a first pop to a
+   * full card, and **no caller anywhere writes `brief: true`.**
+   *
+   * So the whole brief path is unreachable from the running game:
+   * `.card-scrim.brief` and `.card-scrim.brief .card` in `ui.css`, `BRIEF_MS`
+   * and the pointerdown dismissal in `ui/Card.tsx`, the "takes no focus" rule,
+   * and `SaidCard`'s `brief` prop. Every piece of it is correct; nothing can
+   * reach it.
+   *
+   * This is the repo's signature miss in the one shape the sweeps kept walking
+   * past — an OPTIONAL field, which is the same blind spot `receipts.ts`'s
+   * `perkAt` hid in. `CLAUDE.md`'s own rule, added the day that was found:
+   * sweep the optional inputs too, and ask who passes them.
+   *
+   * **Left in place rather than deleted, because the decision is Marc's and it
+   * is a screen decision.** "Is there any receipt this game wants to show and
+   * not make the player dismiss?" is a question about how the board should
+   * feel, not one this file can derive — and the answer decides whether this
+   * is dead weight to cut or a mode to wire back up. `NEXT.md` carries it.
    */
   readonly brief?: boolean | undefined;
   /** Distinct per utterance, so a component can tell "said again" from "still
@@ -366,6 +410,11 @@ export function createSession(opts: {
       card,
       ...(rows === undefined ? {} : { rows }),
       ...(offers === undefined ? {} : { offers }),
+      // The same call the claim's own sentence was written from, so the button
+      // under it cannot name a different number — see `Said.carried`.
+      ...(offers === undefined || opts.crossingCarries === undefined
+        ? {}
+        : { carried: opts.crossingCarries().carried }),
       ...(icon === undefined ? {} : { icon }),
       id: ++saidCount,
     };

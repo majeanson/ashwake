@@ -50,8 +50,18 @@ export type ShopProps = {
 export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopProps) {
   const body = (
     <>
+      {/*
+        The balance said "412" — a mark that is a picture of a word, and a
+        number with nothing naming it.
+
+        Two spans rather than an `aria-label`, because a `<p>` is a `paragraph`
+        and a paragraph takes no accessible name: the attribute would simply be
+        dropped, which is the same silence with a fix in front of it. The
+        digits stay for the eye and the sentence goes to the reader.
+      */}
       <p className="note">
-        <Icon name="relic" /> {progress.relics}
+        <Icon name="relic" /> <span aria-hidden="true">{progress.relics}</span>
+        <span className="visually-hidden">{s.ui.relicsHeld(progress.relics)}</span>
       </p>
 
       <section>
@@ -72,6 +82,10 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
               <button
                 type="button"
                 data-buy={upgrade.id}
+                // A button whose content is a price is a button CALLED `12`.
+                // The name says what the tap does and to which row; the face
+                // keeps the number, which is what the eye is comparing.
+                {...(done ? {} : { 'aria-label': s.ui.buy(words.name, price) })}
                 disabled={done || !canAfford(progress, upgrade)}
                 onClick={() => onProgress((was) => buy(was, upgrade))}
               >
@@ -85,8 +99,17 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
       </section>
 
       <section>
+        {/* A heading called `3/5` is a landmark nobody can navigate by: heading
+            lists are how a screen reader skims a panel, and a fraction says
+            nothing about what it heads. */}
         <h2 className="fact-label">
-          <Icon name="fame" /> {progress.found.length}/{PERKS.length}
+          <Icon name="fame" />{' '}
+          <span aria-hidden="true">
+            {progress.found.length}/{PERKS.length}
+          </span>
+          <span className="visually-hidden">
+            {s.ui.perksTally(progress.found.length, PERKS.length)}
+          </span>
         </h2>
         {progress.found.length === 0 && (
           <p className="note">

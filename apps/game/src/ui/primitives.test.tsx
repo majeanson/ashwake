@@ -129,6 +129,7 @@ describe('tabs', () => {
       const [on, setOn] = useState<'start' | 'play'>('start');
       return (
         <Tabs
+          base="manual"
           label="THE MANUAL"
           tabs={[
             { id: 'start', label: 'START' },
@@ -145,5 +146,73 @@ describe('tabs', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'PLAY' }));
     expect(screen.getByRole('tab', { name: 'PLAY' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'START' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  /*
+   * The three promises `role="tablist"` makes, which it kept none of until
+   * 2026-09-02. Pinned here rather than described in a docblock, because a
+   * role is a claim about behaviour and a claim about behaviour is a test.
+   */
+  it('is one tab stop, and the arrows move it', async () => {
+    function Manual() {
+      const [on, setOn] = useState<'start' | 'play' | 'hand'>('start');
+      return (
+        <Tabs
+          base="manual"
+          label="THE MANUAL"
+          tabs={[
+            { id: 'start', label: 'START' },
+            { id: 'play', label: 'PLAY' },
+            { id: 'hand', label: 'HAND' },
+          ]}
+          on={on}
+          onPick={setOn}
+        />
+      );
+    }
+    render(<Manual />);
+
+    // A roving tabindex: Tab reaches the row once and then leaves it, rather
+    // than walking across every tab before it can reach the panel.
+    expect(screen.getByRole('tab', { name: 'START' })).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('tab', { name: 'PLAY' })).toHaveAttribute('tabindex', '-1');
+
+    screen.getByRole('tab', { name: 'START' }).focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: 'PLAY' })).toHaveAttribute('aria-selected', 'true');
+    // The focus goes with the selection, or the next arrow press does nothing.
+    expect(document.activeElement).toBe(screen.getByRole('tab', { name: 'PLAY' }));
+
+    // A ring, not a line.
+    await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+    expect(screen.getByRole('tab', { name: 'HAND' })).toHaveAttribute('aria-selected', 'true');
+
+    await userEvent.keyboard('{Home}');
+    expect(screen.getByRole('tab', { name: 'START' })).toHaveAttribute('aria-selected', 'true');
+    await userEvent.keyboard('{End}');
+    expect(screen.getByRole('tab', { name: 'HAND' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('names the region it controls, and only where that region exists', () => {
+    render(
+      <Tabs
+        base="fame"
+        label="FAME"
+        tabs={[
+          { id: 'diary', label: 'DIARY' },
+          { id: 'totals', label: 'TOTALS' },
+        ]}
+        on="diary"
+        onPick={() => {}}
+      />,
+    );
+    // One panel element is reused and carries the id of whatever is showing
+    // (see `Panel`'s `tabbed`), so a second `aria-controls` would point at
+    // nothing — which is worse than none.
+    expect(screen.getByRole('tab', { name: 'DIARY' })).toHaveAttribute(
+      'aria-controls',
+      'fame-tabpanel-diary',
+    );
+    expect(screen.getByRole('tab', { name: 'TOTALS' })).not.toHaveAttribute('aria-controls');
   });
 });

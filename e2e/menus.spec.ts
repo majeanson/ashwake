@@ -737,7 +737,30 @@ test('the manual grows with the world', async ({ page }) => {
     await page.goto(url);
     await page.locator('[data-door="how"]').click();
     await panel(page, 'manual').waitFor({ state: 'visible' });
-    await panel(page, 'manual').locator('.tab[data-tab="hand"]').click();
+    /*
+     * LAND ON THE TAB, and say so before reading it (2026-09-02).
+     *
+     * This test was flaky — roughly one run in three — and always in the
+     * reassuring-looking direction: it counted the sections of whichever tab
+     * happened to be showing, and if that was still MENU the count was 1 and
+     * the assertion failed against a manual that is perfectly correct. The tab
+     * row is horizontally scrollable at 390 and `data-grows` changes the tabs'
+     * widths between a virgin device and a taught one, so a click can be
+     * dispatched at a row that re-lays-out underneath it.
+     *
+     * **A test that reads a screen has to say which screen it is reading**, and
+     * the tab's own `aria-selected` is that statement — the same fact the
+     * player's screen reader is given. Polled rather than waited on, because a
+     * click that landed on the wrong tab is not a click that will come good on
+     * its own.
+     */
+    const hand = panel(page, 'manual').locator('.tab[data-tab="hand"]');
+    await expect
+      .poll(async () => {
+        if ((await hand.getAttribute('aria-selected')) !== 'true') await hand.click();
+        return hand.getAttribute('aria-selected');
+      })
+      .toBe('true');
     return {
       sections: await panel(page, 'manual').locator('.panel-title').count(),
       marks: await panel(page, 'manual').locator('.tab[data-grows]').count(),

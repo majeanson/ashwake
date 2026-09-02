@@ -19,7 +19,7 @@ import { Figure } from '../ui/Figure';
 import { Legend } from './Legend';
 import { Panel } from '../ui/Panel';
 import { ProseLines } from '../ui/Prose';
-import { Tabs } from '../ui/Tabs';
+import { panelOf, tabOf, Tabs } from '../ui/Tabs';
 
 /**
  * The manual — HOW TO PLAY (Stage 3, 2026-08-29).
@@ -192,8 +192,10 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
       back={s.ui.back}
       closeAll={s.ui.closeAll}
       onBack={onBack}
+      tabbed={{ panelId: panelOf('manual', on), labelledBy: tabOf('manual', on) }}
       head={
         <Tabs
+          base="manual"
           label={s.ui.howToPlay}
           tabs={tabs.map((id) => ({
             id,

@@ -56,7 +56,28 @@ export function Settings({
   // except this panel, and a screen that re-reads the disk on every render is
   // a screen doing work nobody asked for.
   const [lastError] = useState(readLastError);
-  const [sent, setSent] = useState<string | null>(null);
+  /**
+   * WHERE THE CRASH REPORT HAS GOT TO (2026-09-02).
+   *
+   * A state rather than the sentence it prints. It was the sentence — one
+   * `string | null` doing both jobs, and `disabled={sent !== null}` therefore
+   * meant the button that reads SEND FAILED was **permanently dead**, on the
+   * one screen whose entire purpose is getting a report out of a phone that
+   * broke. A failure is exactly the state a retry is for: the network dropped,
+   * the tab was backgrounded, the send raced a reload. The tap that would fix
+   * it was the tap the failure disabled.
+   *
+   * `sending` is the only state that must refuse a second press — two reports
+   * of one crash from one tap. `sent` refuses one too, because it succeeded.
+   * `failed` is a button again.
+   */
+  const [send, setSend] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const sendSays: Record<typeof send, string> = {
+    idle: s.ui.crash.send,
+    sending: s.ui.crash.sending,
+    sent: s.ui.crash.sent,
+    failed: s.ui.crash.sendFailed,
+  };
 
   return (
     <Panel
@@ -146,19 +167,19 @@ export function Settings({
               <button
                 type="button"
                 data-crash="send-kept"
-                disabled={sent !== null}
+                disabled={send === 'sending' || send === 'sent'}
                 onClick={() => {
-                  setSent(s.ui.crash.sending);
+                  setSend('sending');
                   void sendCrashReport({
                     build: lastError.sha,
                     mode: 'settings',
                     count: lastError.count,
                     userAgent: navigator.userAgent,
                     detail: lastError.text,
-                  }).then((ok) => setSent(ok ? s.ui.crash.sent : s.ui.crash.sendFailed));
+                  }).then((ok) => setSend(ok ? 'sent' : 'failed'));
                 }}
               >
-                {sent ?? s.ui.crash.send}
+                {sendSays[send]}
               </button>
             </>
           )}
@@ -177,7 +198,17 @@ export function Settings({
                 // that has a second surface (the board’s ♪) rather than about
                 // a row index that moves when a flag is added.
                 data-feature={feature.id}
-                aria-pressed={on}
+                /*
+                 * A switch that is NOT BUILT is not a switch that is off
+                 * (2026-09-02).
+                 *
+                 * `aria-pressed` was set on every row including the unwired
+                 * ones, so a feature with nothing behind it announced as "not
+                 * pressed" — a toggle in a known state, which is exactly the
+                 * wrong promise. The label already says NOT BUILT; the role
+                 * should agree with it rather than contradict it.
+                 */
+                {...(feature.wired ? { 'aria-pressed': on } : {})}
                 disabled={!feature.wired}
                 onClick={() => onFeature(feature.id, !on)}
               >

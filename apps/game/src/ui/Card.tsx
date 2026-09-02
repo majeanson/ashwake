@@ -123,10 +123,22 @@ export function Card({
       <div
         ref={panel}
         className="card"
-        {...(brief
-          ? { role: 'status', 'aria-live': 'polite' as const }
-          : { role: 'dialog', 'aria-modal': true, tabIndex: -1 })}
-        aria-labelledby={name === undefined ? undefined : `${id}-name`}
+        /*
+         * A BRIEF CARD IS NOT A LIVE REGION (2026-09-02).
+         *
+         * It used to declare `role="status" aria-live="polite"` — and it is
+         * mounted per utterance (the shell keys it on the said id, deliberately,
+         * so a second pop is a second card). **A live region inserted together
+         * with its content is not reliably announced at all**: the rule the
+         * toast and `screens/Device` both state, broken here by the one thing
+         * that makes the card work.
+         *
+         * So the region moved to the shell, where it can outlive any one card,
+         * and this is what it always actually was: a note over the board. It
+         * takes no focus, it takes no role, and any tap sends it away.
+         */
+        {...(brief ? {} : { role: 'dialog', 'aria-modal': true, tabIndex: -1 })}
+        {...(brief || name === undefined ? {} : { 'aria-labelledby': `${id}-name` })}
       >
         {(icon !== undefined || name !== undefined) && (
           <p className="card-lead" id={`${id}-name`}>
@@ -139,12 +151,28 @@ export function Card({
           </p>
         )}
         {children}
-        <p style={{ display: 'flex', gap: '0.5rem', margin: 0 }}>
-          {action}
-          <button type="button" onClick={onDismiss} style={{ marginLeft: 'auto' }}>
-            {dismiss}
-          </button>
-        </p>
+        {/*
+          A BRIEF CARD HAS NO BUTTON (2026-09-02).
+
+          It had one, and it was worse than useless. It was pointless, because
+          any pointerdown anywhere dismisses a brief card — a button that does
+          what tapping anywhere already does is a control that teaches nothing,
+          which is the same argument `App`'s toast makes about its own plain
+          sentences. And it was harmful: it is focusable, it is the only
+          focusable thing inside the card, and the 4200ms clock removes it from
+          under whatever focus it is holding — dropping a keyboard player to
+          `<body>`, off the board, mid-run, for a note they never asked for.
+
+          A card that goes on its own is not a card you dismiss.
+        */}
+        {!brief && (
+          <p className="card-acts">
+            {action}
+            <button type="button" onClick={onDismiss}>
+              {dismiss}
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );

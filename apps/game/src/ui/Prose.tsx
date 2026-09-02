@@ -70,6 +70,24 @@ function inked(text: string, s: Strings, onTerm?: (id: LessonId) => void): React
         key={i}
         type="button"
         className={['term', term.ink].filter(Boolean).join(' ')}
+        /*
+         * BELOW THE 44px FLOOR ON PURPOSE, and now saying so (2026-09-02).
+         *
+         * A term is a WORD INSIDE A SENTENCE. It is the size of the word, and
+         * it cannot be anything else: padding it to a tap target would push
+         * the lines of every paragraph in the manual apart around whichever
+         * words happen to be glossary entries, which is a worse reading
+         * experience for everyone in exchange for an easier tap on something
+         * that only ever opens an explanation.
+         *
+         * `.stat` is the other exemption in this build and it declares itself
+         * (`screens/Hud`). This one did not, so it was the one undeclared
+         * sub-44px control in the app — sixty-odd rows a run in the audit's
+         * unhandled column, drowning the ones that need deciding. The claim is
+         * the same claim, made in the same attribute, which is what stops two
+         * checks disagreeing about who is allowed to be small.
+         */
+        data-audit-compact=""
         onClick={() => onTerm(term.id)}
       >
         {piece}

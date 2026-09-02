@@ -44,10 +44,7 @@ export function useAssets(themeId: ThemeId, enabled: boolean): AssetBook {
   const [book, setBook] = useState<AssetBook>(NO_ASSETS);
 
   useEffect(() => {
-    if (!enabled) {
-      setBook(NO_ASSETS);
-      return;
-    }
+    if (!enabled) return;
     let alive = true;
     void loadBook(themeId).then((loaded) => {
       if (alive) setBook(loaded);
@@ -57,7 +54,20 @@ export function useAssets(themeId: ThemeId, enabled: boolean): AssetBook {
     };
   }, [themeId, enabled]);
 
-  return book;
+  /*
+   * The dial's zero is DERIVED, not set (2026-09-02).
+   *
+   * The effect used to open with `setBook(NO_ASSETS)` on the disabled path —
+   * which is the DEFAULT path, so every board mount ran a state update whose
+   * only job was to write the value the state already held. It was harmless
+   * only because `NO_ASSETS` is a module constant and React bails out on an
+   * identical reference; the shape is a cascading render waiting for somebody
+   * to make that object inline.
+   *
+   * "No art when the dial is at zero" is a fact about the arguments, and a
+   * fact about the arguments belongs in the return.
+   */
+  return enabled ? book : NO_ASSETS;
 }
 
 async function loadBook(themeId: ThemeId): Promise<AssetBook> {

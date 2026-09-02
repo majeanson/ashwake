@@ -284,8 +284,36 @@ export function Board(props: BoardProps) {
     if (el === null) return;
     const ro = new ResizeObserver(([entry]) => {
       if (entry === undefined) return;
-      const { width, height } = entry.contentRect;
-      setSize({ width, height });
+      /*
+       * Rounded, latched, and only when it MOVED (2026-09-02).
+       *
+       * Three things, all one observer's business.
+       *
+       * **Rounded**, because `contentRect` is fractional and a phone's URL bar
+       * collapsing walks it through a dozen sub-pixel steps. The canvas is
+       * sized in whole device pixels either way.
+       *
+       * **Only when it moved**, because each of those steps was a `setSize`,
+       * and every `setSize` re-renders the entire Canvas subtree.
+       *
+       * **Latched**, and this is the load-bearing one. The canvas below is
+       * gated on `size.width > 0`, and that gate was reading a LIVE
+       * measurement — so any transient zero UNMOUNTED the `<Canvas>` and took
+       * the WebGL context with it, along with every geometry, material and
+       * texture hanging off it. `CLAUDE.md` makes "the board host never
+       * remounts" a hard rule and this was the hole in it: a `display: none`
+       * on an ancestor, a layout transition, a host observed before it is laid
+       * out — any of them, and the board comes back blank. The gate exists to
+       * stop the canvas being CREATED at 0×0; a zero after that is not a size,
+       * it is the absence of a measurement, and the last real one still holds.
+       */
+      const width = Math.round(entry.contentRect.width);
+      const height = Math.round(entry.contentRect.height);
+      setSize((was) => {
+        if (width === 0 || height === 0) return was;
+        if (was.width === width && was.height === height) return was;
+        return { width, height };
+      });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -418,6 +446,8 @@ export function Board(props: BoardProps) {
           {props.keyHelp}
         </p>
       )}
+      {/* Once, and then never again: `size` never returns to zero — see the
+          observer above for why that is a hard rule and not an optimisation. */}
       {size.width > 0 && (
         <Canvas
           frameloop="demand"
@@ -709,6 +739,15 @@ function Rig({
     refitted.current = refit;
     fly(fitCamera(frameRef.current, focusRef.current));
   }, [refit, fly]);
+
+  /* An excursion's return is a timer, and a timer outlives the thing that set
+     it. It writes `cam` and calls `invalidate` on a rig that may be gone. */
+  useEffect(
+    () => () => {
+      if (visiting.current !== 0) clearTimeout(visiting.current);
+    },
+    [],
+  );
 
   useImperativeHandle(
     handle,

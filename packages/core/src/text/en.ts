@@ -470,6 +470,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       'Storage was full. Your diary was cleared so your run could be saved; your worlds, relics and perks are untouched.',
     otherWorlds:
       'Storage was full. Your OTHER worlds were forgotten so this run could be saved; the world you are in is untouched.',
+    lost: 'Storage is full and this run cannot be saved. Free some space on your device, or finish the run in this tab.',
   },
   feature: {
     'debug.overlay': {
@@ -679,6 +680,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       'The seed becomes a world of your own: fresh, unexplored, and played with your relics and its own shrines from then on. This run stays exactly as it was.',
     cameByLink: 'This world reached you by a link. It travels the same way out.',
     ending: {
+      scored: (n) => `Run over: ${n} point${plural(n, '', 's')}`,
       newBest: 'NEW BEST',
       shortOfBest: (n) => `${n} short of best`,
       run: (n) => `RUN ${n}`,
@@ -697,6 +699,9 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     worn: 'WORN',
     wear: 'WEAR',
     maxed: 'MAXED',
+    buy: (name, price) => `Buy ${name} for ${price} relics`,
+    relicsHeld: (n) => `${n} relics`,
+    perksTally: (found, all) => `${found} of ${all} perks found`,
     handEmpty: 'Your hand is empty. Tap a card below to pick one up.',
     lensOn: (ground) =>
       `Remembered ${ground} ground: every known patch of it is lit. Tap the fog again to let go.`,
@@ -710,6 +715,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     dismiss: 'Not now',
     share: 'SHARE',
     copied: 'COPIED',
+    shareFailed: 'COULD NOT SHARE',
     crash: {
       broke:
         'Something broke. Your run is saved. CONTINUE if the game still works underneath, RELOAD if it does not.',
