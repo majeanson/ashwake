@@ -134,25 +134,50 @@ export function blockDestination(
       ? (COLOURS[Math.floor(hashAt(seed ^ 0x1f83d9ab, q, r) * COLOURS.length) % COLOURS.length] ??
         null)
       : null;
-  return { q, r, reward, colour };
+  return reborn({ q, r, reward, colour }, seed, t);
+}
+
+/**
+ * A SHRINE REBORN, applied where a destination is MADE (2026-09-02).
+ *
+ * A world with nothing to unlock has no use for shrines (Marc, Day 2: *"in
+ * dailies, shrines have no meaning so they should always be tile cache or
+ * points"*), so `shrinesReborn` rewrites each one into a cache or a site,
+ * deterministically from the same hash that placed it.
+ *
+ * **It used to live in `destinationAt` alone, and that was the bug.** Its
+ * comment there claimed the placement was chosen "so the reveal, the beacons,
+ * the fog and the tap answers all agree without a second rule anywhere" — but
+ * `destinationsWithin`, which is the function the view calls **to draw the
+ * beacons**, reaches `blockDestination` directly and never passed through it.
+ * So on a daily a shrine glowed off-board as a SHRINE, the signpost said "a
+ * SHRINE, five hexes out", the ending's what-still-glows said the same — and
+ * walking there handed you a cache. The one surface the rewrite was written to
+ * keep honest was the one surface it missed.
+ *
+ * Ashwake 1 has the identical hole (`../tiles`, same two functions), so this is
+ * a bug inherited rather than a port regression, and it is live there.
+ *
+ * Here, at the bottom, both callers get it and a third cannot be written that
+ * does not. `destinationAt` keeps only the position test it always had.
+ *
+ * Invisible to the golden sim: `shrinesReborn` is `false` in `TUNING` and in
+ * the plane, and only `economyFor({ kind: 'daily' })` turns it on.
+ */
+function reborn(d: Destination, seed: number, t: Tuning): Destination {
+  if (d.reward !== 'shrine' || !t.shrinesReborn) return d;
+  return { ...d, reward: hashAt(seed ^ 0x5e17ab1e, d.q, d.r) % 2 === 0 ? 'cache' : 'site' };
 }
 
 /** The destination standing at exactly this hex, if any. What reveal consults. */
 export function destinationAt(seed: number, q: number, r: number, t: Tuning): Destination | null {
   const size = Math.max(1, t.destinationEvery);
   const d = blockDestination(seed, Math.floor(q / size), Math.floor(r / size), t);
-  if (d === null || d.q !== q || d.r !== r) return null;
-  // A world with nothing to unlock has no use for shrines (Marc, Day 2:
-  // "in dailies, shrines have no meaning so they should always be tile
-  // cache or points"): the dial rewrites every shrine into a cache or a
-  // site, deterministically from the same hash that placed it — applied
-  // HERE so the reveal, the beacons, the fog and the tap answers all
-  // agree without a second rule anywhere. The daily flips it at the edge
-  // (main.ts); every world with a ledger keeps its shrines.
-  if (d.reward === 'shrine' && t.shrinesReborn) {
-    return { ...d, reward: hashAt(seed ^ 0x5e17ab1e, q, r) % 2 === 0 ? 'cache' : 'site' };
-  }
-  return d;
+  // The shrine rewrite used to live here and moved down into
+  // `blockDestination` on 2026-09-02, because the beacons never came through
+  // this function at all — see `reborn`. This is a position test and nothing
+  // else now, which is what it always claimed to be.
+  return d === null || d.q !== q || d.r !== r ? null : d;
 }
 
 /**

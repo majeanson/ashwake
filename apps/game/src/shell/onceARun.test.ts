@@ -62,3 +62,52 @@ describe('once a run', () => {
     ).not.toBe('newGround');
   });
 });
+
+/**
+ * A RUN WITH NO WORLD (2026-09-02).
+ *
+ * NEW GROUND says "farther than THIS WORLD has ever reached". A daily has no
+ * world and a shared seed is somebody else's, so on both the claim is about
+ * nothing — and the shell used to hand either of them the HOME world's reach,
+ * which made the sentence wrong in two directions at once: a player whose
+ * world had reached 20 had to out-reach their own history before the daily
+ * would say a word, and a player on a fresh device was told the daily was new
+ * ground on their first placement.
+ *
+ * `null` is the mode saying it has nothing to measure against. UNIQUE is a
+ * fact about the HAND and keeps firing, which is the half a blanket "say
+ * nothing on a daily" guard would have thrown away.
+ */
+describe('a run with no world', () => {
+  it('never claims new ground', () => {
+    const sess = session();
+    walk(sess, 12);
+    const now = sess.get();
+    expect(now.hud.depthValue, 'the fixture never left home').toBeGreaterThan(0);
+
+    expect(
+      onceARun({ state: now.state, hud: now.hud, reachAtStart: 0, said: none }, s)?.id,
+      'a run WITH a world still marks new ground',
+    ).toBe('newGround');
+
+    expect(
+      onceARun({ state: now.state, hud: now.hud, reachAtStart: null, said: none }, s)?.id,
+      'a daily claimed ground for a world it does not have',
+    ).not.toBe('newGround');
+  });
+
+  it('still says what a hand can say', () => {
+    const sess = session();
+    walk(sess, 12);
+    const now = sess.get();
+    // Force the other moment: a unique in the draft is a fact about this run,
+    // true on a daily as much as anywhere.
+    const withUnique = {
+      ...now.state,
+      draft: [{ id: 'u1', colour: 'green', rarity: 'unique' }, ...now.state.draft],
+    } as typeof now.state;
+    expect(
+      onceARun({ state: withUnique, hud: now.hud, reachAtStart: null, said: none }, s)?.id,
+    ).toBe('unique');
+  });
+});

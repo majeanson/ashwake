@@ -120,6 +120,67 @@ describe('destinations', () => {
     expect(destinationAt(9, 12, 12, none)).toBeNull();
   });
 
+  /**
+   * THE TWO DOORS ONTO A DESTINATION MUST GIVE THE SAME ANSWER (2026-09-02).
+   *
+   * `destinationAt` is what the reveal and a tap consult; `destinationsWithin`
+   * is what draws the BEACONS, the signpost's "a CACHE, five out" and the
+   * ending's what-still-glows. They read the same generator, and for four
+   * stages one of them applied the shrine rewrite and the other did not.
+   *
+   * So on a daily a shrine glowed off-board as a SHRINE, the signpost named it
+   * a shrine, the ending named it a shrine — and building out to it handed you
+   * a cache. The rewrite's own comment said it was placed "so the reveal, the
+   * beacons, the fog and the tap answers all agree without a second rule
+   * anywhere"; the beacons were the one surface it missed. Ashwake 1 has the
+   * identical hole and it is live there.
+   *
+   * Pinned as AGREEMENT rather than as "no shrines on a daily", because the
+   * bug was never really about shrines: it was two paths to one fact. A third
+   * caller that skipped the rewrite would pass a shrine-shaped test and fail
+   * this one.
+   */
+  describe('the reveal and the beacons', () => {
+    const daily: Tuning = { ...TUNING, shrinesReborn: true };
+
+    it('agree about every destination, under either economy', () => {
+      for (const t of [TUNING, daily]) {
+        for (let seed = 1; seed <= 12; seed++) {
+          for (const d of destinationsWithin(seed, 60, t)) {
+            const here = destinationAt(seed, d.q, d.r, t);
+            expect(here, `nothing at ${key(d.q, d.r)}, which a beacon claims`).not.toBeNull();
+            expect(here?.reward, `the beacon and the ground disagree at ${key(d.q, d.r)}`).toBe(
+              d.reward,
+            );
+          }
+        }
+      }
+    });
+
+    it('put no shrine on a plane that cannot unlock one', () => {
+      for (let seed = 1; seed <= 12; seed++) {
+        expect(destinationsWithin(seed, 60, daily).some((d) => d.reward === 'shrine')).toBe(false);
+      }
+    });
+
+    it('leave a world with a ledger its shrines', () => {
+      // The other half, and the one a careless fix would break: the rewrite
+      // must fire only where the dial is on.
+      const shrines = [1, 2, 3, 4, 5].flatMap((seed) =>
+        destinationsWithin(seed, 60, TUNING).filter((d) => d.reward === 'shrine'),
+      );
+      expect(shrines.length).toBeGreaterThan(0);
+    });
+
+    it('moves no destination when the rewrite fires — only relabels it', () => {
+      for (let seed = 1; seed <= 8; seed++) {
+        const plain = destinationsWithin(seed, 60, TUNING);
+        const reborn = destinationsWithin(seed, 60, daily);
+        expect(reborn.map((d) => key(d.q, d.r))).toEqual(plain.map((d) => key(d.q, d.r)));
+      }
+    });
+  });
+
   // Deep water (2026-08-18): the MIX tilts with distance, never the
   // POSITIONS. `blockDestination` picks where before it ever asks which
   // kind, so switching the tilt on or off must never move a single hex —

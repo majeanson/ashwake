@@ -3197,3 +3197,76 @@ can look at it.
 **Verified:** 1077 tests / 76 files, 87 e2e on a real build,
 typecheck/lint/format clean, `pnpm sim` byte-identical. No behaviour changed
 this session — the diff is comments, `NEXT.md` and this entry.
+
+### Session 38 — the daily was advertising shrines it could not give (2026-09-02)
+
+**Question:** Marc asked for a review of fog and shrine detection on a world
+versus a daily, and across an abrupt switch between them. Do the two modes
+actually differ in the two things a player sees first, and does the switch
+carry anything across that it should not?
+
+**Answer: the fog is clean, the shrines were not, and the switch leaked two
+refs.** Three findings, and the first is a bug that is live in Ashwake 1 too.
+
+**1. `destinationsWithin` never applied the shrine rewrite.** A daily has no
+ledger, so `shrinesReborn` turns each shrine into a cache or a site
+deterministically — and the rewrite lived in `destinationAt` alone, whose own
+comment claimed it was placed there _"so the reveal, the beacons, the fog and
+the tap answers all agree without a second rule anywhere."_
+
+`destinationsWithin` is the function the view calls **to draw the beacons**. It
+reaches `blockDestination` directly and never passed through that rewrite. So
+on a daily a shrine glowed off-board as a SHRINE, the signpost said _"a SHRINE,
+five hexes out"_, the ending's what-still-glows said the same — and building
+out to it handed you a cache. **The one surface the rewrite existed to keep
+honest was the one surface it missed**, and the comment asserting otherwise is
+what made it invisible for four stages.
+
+`../tiles` has the identical hole in the identical two functions, so this is
+inherited rather than a port regression, and it is live on the deployed
+Ashwake 1.
+
+Fixed by moving the rewrite DOWN into `blockDestination`, where a destination
+is made: both callers get it and a third cannot be written that does not.
+`destinationAt` is the position test it always claimed to be. Invisible to the
+golden — `shrinesReborn` is false in `TUNING` and in the plane, and only
+`economyFor({ kind: 'daily' })` turns it on.
+
+The test is written as **agreement** rather than as "no shrines on a daily",
+because the bug was never really about shrines: it was two paths to one fact. A
+third caller that skipped the rewrite would pass a shrine-shaped test and fail
+this one.
+
+**2. `enterDaily` did not reset `saidOnce`.** Every other door into a run does.
+So a UNIQUE arriving in the hand on today's board stayed silent whenever the
+world run before it had already met one — a per-run moment leaking across a
+mode change.
+
+**3. NEW GROUND was measured against the wrong world, and `null` is the fix.**
+The line says _"farther than THIS WORLD has ever reached"_ — a claim about a
+world. A daily has none and a shared seed is somebody else's, and the shell
+handed both the HOME world's reach. **Wrong in two directions from one missing
+distinction:** a player whose world had reached 20 had to out-reach their own
+history before the daily would say anything, and a player on a fresh device was
+told the daily was new ground on their first placement.
+
+`reachAtStart` is `number | null` now, and null is a mode saying it has nothing
+to measure against. UNIQUE still fires on both, which is the half a blanket
+"say nothing on a daily" guard would have thrown away.
+
+**What was already right, checked rather than assumed:** the fog. `restart`
+takes the memory as an argument and `enterDaily` passes `undefined`, so the
+remembered ground is dropped on the way in and handed back on the way out —
+68 cells to 0 to 68 in the test. `move()` flushes, drops, then builds the new
+keeper, in that order, so a pending write from the place being left lands where
+it belongs. And every mid-run world merge is guarded on `daily !== null`.
+
+**The lesson, and it is the sharpest of the four passes.** A comment that
+asserts an invariant is not the invariant. `destinationAt`'s said the rewrite
+was placed where all four surfaces would agree, which is exactly the sentence
+that stops a reader checking whether they do — and the surface it named first,
+the beacons, was the one that never came through. **Where a docblock claims
+"there is no second rule anywhere", grep for the second rule.**
+
+**Verified:** 1085 tests / 76 files, 87 e2e on a real build,
+typecheck/lint/format clean, `pnpm sim` byte-identical.

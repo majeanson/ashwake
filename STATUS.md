@@ -4,7 +4,57 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-02 — the audit against Ashwake 1, and the twelve
+Last checkpoint: **2026-09-02 — the daily was advertising shrines it could not
+give.**
+
+Marc asked for a review of fog and shrine detection on a world versus a daily,
+and across an abrupt switch between them. **The fog was clean. The shrines were
+not, and the bug is live in Ashwake 1 too.**
+
+A daily has no ledger, so `shrinesReborn` rewrites each shrine into a cache or
+a site — and the rewrite lived in `destinationAt` alone, whose own comment
+claimed it sat there _"so the reveal, the beacons, the fog and the tap answers
+all agree without a second rule anywhere."_ But `destinationsWithin`, **the
+function the view calls to draw the beacons**, reaches the generator directly
+and never passed through it. So a daily glowed a SHRINE off-board, the signpost
+named it a shrine, the ending's what-still-glows named it a shrine — and
+walking there handed you a cache. The one surface the rewrite existed to keep
+honest was the one it missed, and the comment asserting otherwise is what made
+it invisible for four stages. `../tiles` has the identical hole and it is live
+on the deployed Ashwake 1.
+
+Fixed by moving the rewrite DOWN into `blockDestination`, where a destination is
+made: both callers get it and a third cannot be written that does not. Pinned as
+**agreement between the two doors** rather than as "no shrines on a daily",
+because the bug was two paths to one fact — a third caller that skipped the
+rewrite would pass a shrine-shaped test and fail this one. Invisible to the
+golden: `shrinesReborn` is false everywhere but the daily economy.
+
+Two smaller leaks across the switch, both in `enterDaily`: it never reset
+`saidOnce`, so a UNIQUE on today's board stayed silent if the world run before
+it had met one; and NEW GROUND — _"farther than THIS WORLD has ever reached"_ —
+was measured against the HOME world's reach on a board that has no world.
+**Wrong in two directions from one missing distinction:** a reach-20 world had
+to be out-reached before the daily said anything, and a fresh device was told
+the daily was new ground on its first placement. `reachAtStart` is
+`number | null` now, and null is a mode saying it has nothing to measure
+against; UNIQUE still fires, which a blanket guard would have thrown away.
+
+The fog itself was already right and is now tested: `restart` takes the memory
+as an argument, `enterDaily` passes `undefined`, and it goes 68 cells to 0 to
+68 across the switch. `move()` flushes, drops, then builds the new keeper, in
+that order.
+
+**The lesson, and it is the sharpest of four passes:** a comment that asserts
+an invariant is not the invariant. **Where a docblock claims "there is no
+second rule anywhere", grep for the second rule.**
+
+Verified, on a real build: 1085 tests / 76 files, 87 Playwright, `pnpm sim`
+byte-identical, typecheck/lint/build clean. **Still unseen on a phone:** the
+signpost's cadence, the receipt's new line, the share card's composition, and
+the contour lift.
+
+Previous checkpoint: **2026-09-02 — the audit against Ashwake 1, and the twelve
 things it found.**
 
 Marc asked what was still missing compared to `../tiles`, then asked for it to

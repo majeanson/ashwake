@@ -240,3 +240,99 @@ describe('the session narrates', () => {
     expect(s.get().said).toBeNull();
   });
 });
+
+/**
+ * STEPPING BETWEEN A WORLD AND THE DAILY, ABRUPTLY (2026-09-02).
+ *
+ * The two modes differ in the two things a player sees FIRST: the fog — ground
+ * this world remembers from earlier runs — and what the plane has out there to
+ * walk to. A daily has no world, so it must have neither: no remembered
+ * ground, and no shrine, because a shrine unlocks a ledger a daily does not
+ * keep.
+ *
+ * Every piece of that was tested apart (`economy.test.ts` the dials,
+ * `keeper.test.ts` the writes, `settle.test.ts` the banking) and **the switch
+ * itself was not tested at all** — which is where a mode leak would actually
+ * live, because it is one call carrying five things across.
+ *
+ * "Abrupt" is the point: this is the door the player takes, straight from a
+ * board mid-run into another, with no reload between. Ashwake 2 has no reload
+ * to hide a leak behind.
+ */
+describe('a world and the daily, switched between', () => {
+  const DAILY_LIKE = { ...TUNING, shrinesReborn: true, findEvery: 0, findSense: 0 };
+
+  const look = (s: ReturnType<typeof createSession>) => {
+    const cells = s.get().board.cells;
+    return {
+      fog: cells.filter((c) => c.remembered).length,
+      shrines: cells.filter((c) => c.kind === 'landmark' && c.landmark === 'shrine').length,
+      beaconShrines: cells.filter((c) => c.beacon && c.landmark === 'shrine').length,
+    };
+  };
+
+  /** A world with ground behind it, so there is fog to lose. */
+  const remembered = (n: number) => {
+    const warm = createSession({
+      seed: 7,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+    });
+    walk(warm, n);
+    return Object.keys(warm.get().state.cells);
+  };
+
+  it('drops the fog on the way in and gives it back on the way out', () => {
+    const revealed = remembered(40);
+    const memory = { claimed: [], finds: [], rearmed: {}, revealed };
+
+    const s = createSession({
+      seed: 7,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+      memory,
+    });
+    expect(look(s).fog, 'a played world opens with fog').toBeGreaterThan(0);
+
+    // Into the daily, exactly as `enterDaily` does it: no memory at all.
+    s.restart(20260902, null, undefined, DAILY_LIKE);
+    expect(look(s).fog, 'a daily wore another world’s fog').toBe(0);
+
+    // And back out, exactly as `startRun` does it.
+    s.restart(7, null, memory, TUNING);
+    expect(look(s).fog, 'the world did not get its fog back').toBeGreaterThan(0);
+  });
+
+  /**
+   * The same seed, the same walk, and only the economy different — so the
+   * shrines the world shows and the daily does not are the rewrite and nothing
+   * else. Seed 11 walks into beacon range of one; a seed that never meets a
+   * shrine would let both halves pass by saying nothing.
+   */
+  it('shows a world its shrines and a daily none, on the board or glowing off it', () => {
+    const played = (tuning?: typeof TUNING) => {
+      const s = createSession({
+        seed: 11,
+        theme: resolveTheme(null),
+        strings: stringsFor(pickLocale(['en'])),
+        ...(tuning === undefined ? {} : { tuning }),
+      });
+      walk(s, 80);
+      return look(s);
+    };
+
+    const world = played();
+    expect(
+      world.shrines + world.beaconShrines,
+      'the fixture never reached a shrine, so this proves nothing',
+    ).toBeGreaterThan(0);
+
+    const daily = played(DAILY_LIKE);
+    expect(daily.shrines, 'a daily grew a shrine').toBe(0);
+    // The half that was broken until 2026-09-02: a BEACON is drawn from
+    // `destinationsWithin`, which skipped the rewrite, so a daily advertised
+    // shrines it would never hand over — and the signpost and the ending's
+    // what-still-glows named them too. See `engine/world.ts`'s `reborn`.
+    expect(daily.beaconShrines, 'a daily advertised a shrine it cannot give').toBe(0);
+  });
+});

@@ -27,8 +27,24 @@ export type Moment = {
   readonly state: GameState;
   /** How far this run has actually built — the view's own measure. */
   readonly hud: HudView;
-  /** The world's farthest reach when this run began. */
-  readonly reachAtStart: number;
+  /**
+   * The world's farthest reach when this run began, or `null` where the run
+   * has no world at all.
+   *
+   * **Null is not zero, and that distinction is the bug this field was given a
+   * type for** (2026-09-02). NEW GROUND says *"farther than this world has ever
+   * reached"* — a sentence about a WORLD. A daily has none, and a shared seed
+   * is somebody else's, so on both there is nothing for the claim to be about.
+   *
+   * It used to take a plain number and the shell handed it the HOME world's
+   * reach whatever mode was running, so stepping from a world into the daily
+   * measured today's board against a ladder it was not on: a player whose world
+   * had reached 20 had to out-reach their own history before the daily would
+   * say anything, and a player on a fresh device was told the daily was new
+   * ground on the first placement. Wrong in both directions, from one missing
+   * distinction.
+   */
+  readonly reachAtStart: number | null;
   /** What this run has already said. */
   readonly said: ReadonlySet<OnceId>;
 };
@@ -38,7 +54,11 @@ export type Moment = {
  * every time, and the point.
  */
 export function onceARun(now: Moment, s: Strings): { id: OnceId; text: string } | null {
-  if (!now.said.has('newGround') && now.hud.depthValue > now.reachAtStart) {
+  if (
+    !now.said.has('newGround') &&
+    now.reachAtStart !== null &&
+    now.hud.depthValue > now.reachAtStart
+  ) {
     return { id: 'newGround', text: s.onceARun.newGround };
   }
   if (!now.said.has('unique') && now.state.draft.some((tile) => tile.rarity === 'unique')) {

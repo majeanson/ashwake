@@ -1281,7 +1281,14 @@ function Game() {
           {
             state: now.state,
             hud: now.hud,
-            reachAtStart: startedFrom.current?.reach ?? 0,
+            /*
+             * NEW GROUND is a claim about a WORLD, so a run without one makes
+             * it about nothing — see `Moment.reachAtStart`. A daily and a
+             * shared seed both pass null; UNIQUE, which is a fact about the
+             * hand, still fires on both.
+             */
+            reachAtStart:
+              daily !== null || session.detour ? null : (startedFrom.current?.reach ?? 0),
             said: saidOnce.current,
           },
           s,
@@ -1946,6 +1953,11 @@ ${s.view.harvest.firstPopWhen}`,
     // A daily has no world memory at all. Letting go here means the held copy
     // cannot be merged into by a board the world never walked.
     forgetWorld();
+    // A daily is a RUN, so what a run says once it may say again here (2026-09-02).
+    // Every other door into a run resets this and `enterDaily` did not, so a
+    // unique arriving in the hand on today's board stayed silent whenever the
+    // world run before it had already met one.
+    saidOnce.current = new Set();
     // No ledger, so no unlocks and no relics — and its shrines are rewritten
     // into caches and sites, because a door that opens nothing is worse than
     // no door at all.

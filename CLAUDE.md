@@ -38,6 +38,16 @@ same day — `voice.dry` never played, `previewColour` unread so every legal edg
 drew in one ink, and `band` unread so a world with five contour bands was drawn
 flat by the body that has a Z axis.
 
+**And where a docblock claims there is no second rule, grep for the second
+rule.** The daily's shrine rewrite sat in `destinationAt` under a comment
+saying it was placed there "so the reveal, the beacons, the fog and the tap
+answers all agree without a second rule anywhere" — while
+`destinationsWithin`, the function that draws the beacons, reached the
+generator directly and never came through it. A daily advertised shrines it
+would hand over as caches, for four stages, and Ashwake 1 has the same hole.
+**A comment that asserts an invariant is not the invariant, and it is the
+sentence that stops a reader checking.**
+
 **But the grep finds gaps, not answers.** A third pass over the theme found
 five more unread channels and **none of them was fixed**, because what a
 vignette's strength or a hex's gutter should look like is a screen and an eye,
