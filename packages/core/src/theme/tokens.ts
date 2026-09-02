@@ -296,7 +296,16 @@ export type Surface = {
   readonly overlay: Pattern;
   /** Bitmap slot that supersedes fill and pattern once the file exists. */
   readonly asset: AssetId | null;
-  /** 0..1 of the hex radius. A gutter is what makes the grid read as cells. */
+  /**
+   * 0..1 of the hex radius. A gutter is what makes the grid read as cells.
+   *
+   * **NOT READ BY THIS BODY** (audit, 2026-09-02). Ashwake 1 read it three
+   * times in its renderer and once in the baker. The authored values are not
+   * uniform and the difference is deliberate: every terrain sits at `0.06` and
+   * **`empty` sits at `0.09`** on four of the five directions, so open ground
+   * reads looser than built ground. `board/ground.ts`'s one constant flattens
+   * that distinction. A look change; see `NEXT.md`.
+   */
   readonly inset: number;
   /** Drawn at this alpha. Only the ghost/preview surface is below 1. */
   readonly alpha: number;
@@ -444,7 +453,16 @@ export type Type = {
  */
 export type Board = {
   readonly background: Rgb;
-  /** Gap between hexes, as a fraction of the hex radius. */
+  /**
+   * Gap between hexes, as a fraction of the hex radius.
+   *
+   * **NOT READ BY THIS BODY** (audit, 2026-09-02). `board/ground.ts` hard-codes
+   * `SEAM = 0.06` and every direction but the placeholder authors 0.04 or 0.05,
+   * so four of the five ship with a wider gutter than they asked for. Wiring it
+   * is one line and a look change — every hex grows — which is why it is stated
+   * here rather than done. See `NEXT.md`, "the look the directions author and
+   * the board does not read".
+   */
   readonly seam: number;
   /** Outline every cell gets. */
   readonly edge: Rgb;
@@ -462,6 +480,17 @@ export type Board = {
    * the board to fall off into fog rather than stop at a border; there is no fog
    * mechanic yet, so this is the honest half of it — atmosphere, no information.
    * `null` switches it off entirely.
+   *
+   * **NOT READ BY THIS BODY** (audit, 2026-09-02), and it is the costliest of
+   * the four: Ashwake 1 drew it (`PixiRenderer#drawVignette`) and **torchlit,
+   * the direction that ships, authors `strength: 0.72`** — so the default board
+   * is missing atmosphere its own direction asks for. Settlement authors 0.55;
+   * the other three are `null` and lose nothing.
+   *
+   * Its rule travels if it is ever built: `strength` is a CEILING, not a
+   * target. No in-play tile drops below `1 − strength` of its own luminance
+   * however far into the falloff it sits — darkness hides the space, never the
+   * ground you have built. See `NEXT.md`.
    */
   readonly vignette: { readonly colour: Rgb; readonly strength: number } | null;
   /**
@@ -672,7 +701,20 @@ export type Theme = {
   readonly stone: Surface;
   /** Ground with nothing on it. */
   readonly empty: Surface;
-  /** What the selected tile would look like here. Drawn under the preview number. */
+  /**
+   * What the selected tile would look like here. Drawn under the preview number.
+   *
+   * **NOT READ BY THIS BODY** (audit, 2026-09-02) — every direction authors a
+   * full surface and an alpha from 0.16 to 0.34, and nothing has ever drawn one.
+   * Ashwake 1 laid it under the preview as a sprite.
+   *
+   * It is also the honest home for `CellView.previewColour`, which the same
+   * audit wired into the legal RING and reverted within the hour: showing what
+   * you are holding belongs to a FILL under the number, not to the outline,
+   * because an outline is a state and a fill is a proposal. See the note at the
+   * bottom of `board/rings.ts` for what that cost, and `NEXT.md` for the
+   * decision this is waiting on.
+   */
   readonly ghost: Surface;
 
   /**

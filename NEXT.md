@@ -615,6 +615,42 @@ screen audit regenerated so Marc can look at what changed while he slept.
 
 ---
 
+## 5b. The look the directions author and the board does not read
+
+Found by the third audit pass (2026-09-02, `LOG.md` S37d), which pointed the
+consumer-grep at the THEME. **Five authored channels reach no pixel.** Each is
+a number a direction author tunes into a void today, so each is now stated at
+its own declaration in `theme/tokens.ts` rather than left silent.
+
+All five are LOOK decisions, and none is being taken without Marc — the ring
+repaint of the same day is why (`board/rings.ts`, bottom note): a look change
+guessed at from a session that cannot see the phone cost a bug report within
+the hour.
+
+| Channel          | Authored                                        | Drawn           | Ashwake 1                  |
+| ---------------- | ----------------------------------------------- | --------------- | -------------------------- |
+| `board.vignette` | **torchlit 0.72**, settlement 0.55, rest `null` | nothing         | `#drawVignette`            |
+| `theme.ghost`    | a whole Surface, alpha 0.16–0.34, every one     | nothing         | a sprite under the preview |
+| `Surface.inset`  | 0.06 everywhere, **`empty` 0.09** on four       | one constant    | 3 reads + the baker        |
+| `board.seam`     | 0.04–0.05, placeholder 0.06                     | hard-coded 0.06 | not read there either      |
+| `Ring.width`     | three widths per direction                      | one 0.16 band   | drawn                      |
+
+**The vignette is the one to look at first**, because torchlit is what ships:
+the default board is missing atmosphere its own direction asks for. Its rule
+travels with it — `strength` is a CEILING, so no in-play tile drops below
+`1 − strength` of its own luminance. Darkness hides the space, never the ground
+you have built.
+
+**`theme.ghost` is the second**, and it answers a question already asked: it is
+where "show me the colour I am holding" belongs. A fill under the preview
+number is a PROPOSAL; an outline is a STATE — which is exactly why tinting the
+outline made every legal edge repaint on every placement.
+
+`inset`, `seam` and `width` are one decision rather than three: they are the
+board's gutter and line weight, all three were tuned by eye against what
+renders today, and honouring any one of them is a re-tune of the whole grid
+rather than a fix.
+
 ## 5. The art pipeline — DONE 2026-08-29, and now it needs an eye
 
 Found auditing this body against Ashwake 1 (`LOG.md` Session 13) and built the

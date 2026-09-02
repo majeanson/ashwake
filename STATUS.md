@@ -94,6 +94,25 @@ compiled. The fault was that the safe command (`pnpm test:e2e`) and the obvious
 one were different commands. They are the same command now: **the web server
 builds before it serves.** A suite that cannot fail is not evidence.
 
+**A third pass swept the theme, the tuning and the state shapes.** Four sweeps
+that found something last time came back EMPTY, which is the first honest
+signal the mechanical hunt is near its end: every one of the ~100 tuning dials
+has a reader, so there is no dead balance; so does every field of `GameState`,
+`WorldMemory`, `Progress`, `Records` and `HudView`; so does every key in the
+text catalogue and every class in `ui.css`.
+
+The theme did not. **Five authored channels reach no pixel** — `board.vignette`
+(and **torchlit, the direction that ships, authors `strength: 0.72`**),
+`theme.ghost` (a whole Surface per direction, never drawn), `Surface.inset`
+(`empty` is authored looser than terrain and the board flattens it),
+`board.seam`, and the already-known `Ring.width`. **None was fixed**, and that
+is the finding: three passes of "wire the unread thing" met its limit, because
+an unread number is a gap only when there is a right answer to what it should
+draw. For `hud.hint` there was one; for a vignette's strength there is a screen
+and an eye — and the two look changes guessed at from here were both wrong
+within the hour. They are stated at their declarations and tabulated with
+measured values in `NEXT.md` §5b, so the decision can be made from numbers.
+
 Verified, on a real build: 1077 tests / 76 files, 87 Playwright, `pnpm sim`
 byte-identical, typecheck/lint/build clean. **Still unseen on a phone:** the
 signpost's cadence, the receipt's new line, the share card's composition, and

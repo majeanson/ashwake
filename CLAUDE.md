@@ -38,6 +38,15 @@ same day — `voice.dry` never played, `previewColour` unread so every legal edg
 drew in one ink, and `band` unread so a world with five contour bands was drawn
 flat by the body that has a Z axis.
 
+**But the grep finds gaps, not answers.** A third pass over the theme found
+five more unread channels and **none of them was fixed**, because what a
+vignette's strength or a hex's gutter should look like is a screen and an eye,
+not a derivation. The two look changes guessed at from a session that could not
+see the phone were both wrong within the hour. So: where the answer lives in
+the core — a sentence, a number, a record — wiring it is the whole fix. Where
+the answer lives on a screen, **the finding is the deliverable**; state it at
+the declaration and in `NEXT.md`, and leave the decision to Marc.
+
 Hard rules — all inherited, all still enforced:
 
 - **The core is pure.** `packages/core` has no DOM, no `Math.random`, no

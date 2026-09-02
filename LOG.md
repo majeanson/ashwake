@@ -3135,3 +3135,65 @@ the suite is actually running before believing what it says — the same questio
 
 **Verified, on a build:** 1077 tests / 76 files, 87 e2e, typecheck/lint/format
 clean, `pnpm sim` byte-identical.
+
+### Session 37d — the third pass, and a class of gap that is not mine to close (2026-09-02)
+
+**Question:** the first pass swept exports, the second swept the render
+contract's FIELDS. Point the same grep at the THEME, the TUNING and the state
+shapes: is there anything left, and is it the same kind of thing?
+
+**Answer: nothing in the rules, five in the look — and the right move is not to
+fix them.**
+
+**What came back clean, and it is worth writing down because it is the first
+time.** Every one of the ~100 `Tuning` dials has a reader, so there is no dead
+balance anywhere. Every field of `GameState`, `WorldMemory`, `Progress` and
+`Records` has a reader. Every field of `HudView` has one. Every key in the text
+catalogue has one. Every class in `ui.css` is used by a component. The public
+assets are complete and `sw.js` is a superset of Ashwake 1's. Four sweeps that
+each found something on the last two passes came back empty on this one, which
+is the first honest signal that the mechanical hunt is near its end.
+
+**What did not: the theme.** Five channels a direction author tunes and no
+pixel reads.
+
+- **`board.vignette`** — Ashwake 1 drew it, and **torchlit, the direction that
+  ships, authors `strength: 0.72`**. So the default board is missing atmosphere
+  its own direction asks for. Settlement authors 0.55; the other three are
+  `null` and lose nothing.
+- **`theme.ghost`** — a whole `Surface` per direction, alpha 0.16 to 0.34,
+  never drawn. Read only by `theme.test.ts`, which is the shape of a channel
+  that is checked and not used.
+- **`Surface.inset`** — 0.06 on every terrain and **0.09 on `empty`** in four
+  of five directions, so open ground is authored to read looser than built
+  ground. `board/ground.ts`'s single `SEAM = 0.06` flattens the distinction.
+- **`board.seam`** — 0.04 or 0.05 everywhere but the placeholder, against that
+  same hard-coded 0.06.
+- **`Ring.width`** — already known and already documented (2026-09-01).
+
+**And the decision, which is the actual output of this session.** All five are
+LOOK changes, and I had already got exactly this class wrong once today: the
+legal ring's colour, guessed at from a session that cannot see the phone, cost
+a bug report within the hour. Three passes of "find the unread thing and wire
+it" is a good instinct that has now met its limit — **an unread number is a gap
+only when there is a right answer to what it should draw.** For `hud.hint`
+there was one; for a vignette's strength there is a screen and an eye.
+
+So they are STATED rather than built: a note at each declaration in
+`tokens.ts`, so nobody tunes into a void again, and `NEXT.md` §5b with the
+authored values measured and tabulated so the decision can be made from numbers
+instead of from memory. `theme.ghost` carries the extra note that it is the
+honest home for `previewColour` — a fill under the preview number is a
+PROPOSAL, an outline is a STATE, which is precisely why tinting the outline
+repainted the board on every placement.
+
+**The lesson, and it is a correction to the last two sessions' own lesson:**
+the consumer-grep finds gaps, not answers. It says a channel is unread; it
+cannot say what should come out of it. Where the answer is in the core
+(a sentence, a number, a record) wiring it is the whole fix. Where the answer
+is on a screen, the finding is the deliverable and the fix belongs to whoever
+can look at it.
+
+**Verified:** 1077 tests / 76 files, 87 e2e on a real build,
+typecheck/lint/format clean, `pnpm sim` byte-identical. No behaviour changed
+this session — the diff is comments, `NEXT.md` and this entry.
