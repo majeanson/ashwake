@@ -51,6 +51,89 @@ describe('banking a run', () => {
   });
 });
 
+/**
+ * WHERE THE RUN STANDS.
+ *
+ * `recordRun` has folded every run into the book since the rules were lifted,
+ * so this function has always KNOWN whether a score beat the standing best —
+ * and returned the book and nothing else, which is why no ending in this body
+ * ever printed NEW BEST (audit, 2026-09-02).
+ *
+ * The case that has to be right is the empty one: a device with no finished
+ * run has no best to be short of, and "0 short of best" under a score is a
+ * line lying twice. Ashwake 1 guarded it and named it in the same words.
+ */
+describe('where a run stands', () => {
+  const bank = (records: Parameters<typeof settle>[0]['records']) => {
+    const snap = finished();
+    return {
+      snap,
+      after: settle({
+        state: snap.state,
+        hud: snap.hud,
+        slot: 1,
+        world: null,
+        records,
+        timeline: [],
+        progress: EMPTY_PROGRESS,
+        at: 1_756_000_000_000,
+      }),
+    };
+  };
+
+  it('counts the run, and calls a first finish no record at all', () => {
+    const { after } = bank({});
+    expect(after.standing.run).toBe(1);
+    expect(after.standing.previousBest, 'a device with no history has no best').toBeNull();
+  });
+
+  it('says NEW BEST when the score passes the standing one', () => {
+    const first = bank({});
+    const points = first.snap.hud.points;
+    // A book whose best is one point under this run's.
+    const { after } = bank({
+      endless: {
+        runs: 3,
+        bestPoints: Math.max(0, points - 1),
+        tilesHarvests: 3,
+        pointsHarvests: 0,
+        arcSum: 1,
+        arcRuns: 3,
+      },
+    });
+    expect(after.standing.isNewBest).toBe(true);
+    expect(after.standing.run).toBe(4);
+  });
+
+  it('reports the gap, and never claims a tie is a win', () => {
+    const points = bank({}).snap.hud.points;
+    const tie = bank({
+      endless: {
+        runs: 2,
+        bestPoints: points,
+        tilesHarvests: 2,
+        pointsHarvests: 0,
+        arcSum: 1,
+        arcRuns: 2,
+      },
+    });
+    expect(tie.after.standing.isNewBest, 'equalling the best is not beating it').toBe(false);
+    expect(tie.after.standing.previousBest).toBe(points);
+
+    const behind = bank({
+      endless: {
+        runs: 2,
+        bestPoints: points + 500,
+        tilesHarvests: 2,
+        pointsHarvests: 0,
+        arcSum: 1,
+        arcRuns: 2,
+      },
+    });
+    expect(behind.after.standing.previousBest).toBe(points + 500);
+  });
+});
+
 describe('banking a daily', () => {
   it('touches the ladder and the diary, and nothing else', () => {
     const snap = finished();

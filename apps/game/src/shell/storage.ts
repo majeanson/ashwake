@@ -71,6 +71,21 @@ const DEVICE = {
    * somebody can still describe.
    */
   lastError: `${NS}.error.v1`,
+  /**
+   * Two things this device has been told once, and must never be told twice
+   * (2026-09-02).
+   *
+   * `installed` is the end screen's install nudge: an invitation, in the
+   * quietest voice on the screen, and one that becomes nagging the third time
+   * it is read. `inApp` is the "your world may not be kept here" warning, whose
+   * whole usefulness is the first time somebody opens a shared link inside
+   * Instagram.
+   *
+   * Marked when SHOWN rather than when acted on, which is the honest reading of
+   * "once ever": a player who saw the offer and declined it has been offered.
+   */
+  installNudge: `${NS}.installnudge.v1`,
+  inAppNote: `${NS}.inappnote.v1`,
 } as const;
 
 export type Slot = 1 | 2 | 3;
@@ -338,6 +353,21 @@ export const writeLastError = (error: LastError): void =>
 
 export const clearLastError = (): void => drop(DEVICE.lastError);
 
+/* ---- said once, ever ------------------------------------------------------ */
+
+/**
+ * The two once-ever notes — see `DEVICE.installNudge` and `DEVICE.inAppNote`.
+ *
+ * Reading a mark that cannot be written comes back `false`, which shows the
+ * note again. That is the right way round for the in-app warning in
+ * particular: a storage that keeps nothing is the very condition the sentence
+ * is warning about, so the failure mode proves the point rather than hiding it.
+ */
+export const wasSaid = (which: 'installNudge' | 'inAppNote'): boolean =>
+  read(DEVICE[which]) !== null;
+
+export const markSaid = (which: 'installNudge' | 'inAppNote'): void => write(DEVICE[which], '1');
+
 /* ---- the daily ------------------------------------------------------------ */
 
 /**
@@ -500,6 +530,39 @@ export function clearSlot(slot: Slot): void {
   // shop you no longer own — which is what the crossing's card promises.
   drop(keys.shop);
 }
+
+/**
+ * SETTLE a seed into a slot — keep a shared world as one of your own
+ * (2026-09-02).
+ *
+ * Ashwake 1's `settleSlot`, and the miss it was written to fix travels with it:
+ * this used to be `createWorld` alone, so when the "empty" slot was the VIRGIN
+ * ACTIVE one, its saved run and its shop survived into the settled world — and
+ * a run whose seed no longer matches its world is exactly the corruption the
+ * seed guard in `settle` refuses. Wiping the footprint is the half that stops
+ * it happening at all.
+ *
+ * The seed settles EXACTLY as played. Ashwake 1 masked it to 31 bits here and
+ * would have settled a different world than the one just previewed whenever a
+ * hand-typed seed was negative.
+ */
+export function settleSlot(slot: Slot, worldSeed: number): void {
+  clearSlot(slot);
+  writeWorld(slot, newWorld(worldSeed));
+}
+
+/**
+ * A slot with nothing in it, or nothing that was ever PLAYED.
+ *
+ * The active slot is minted at boot by `worldSeedFor` whether or not anybody
+ * played it, so "has a world" is not the same question as "is taken". A virgin
+ * world counts as empty: otherwise a brand-new device arriving through a shared
+ * link burns world 1 on a random board nobody chose.
+ */
+export const isFreeSlot = (slot: Slot): boolean => {
+  const world = readWorld(slot);
+  return world === null || (world.runs === 0 && world.revealed.length === 0);
+};
 
 /** Every key this game owns. RESET ALL, and the thing RESTORE writes over. */
 export function clearEverything(): void {

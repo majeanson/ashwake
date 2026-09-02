@@ -178,10 +178,52 @@ The lesson is the one already at the top, with a sharper edge on it: a ✓ here
 means somebody read the shell and found a handler. It does not mean the input
 reaches it, and it does not mean the thing being pointed at is on screen.
 
+## What a GESTURE MATRIX cannot see, proved a third time (2026-09-02)
+
+Marc asked what was still missing against `../tiles`. This file said "nothing",
+and it was right — and twelve surfaces were missing anyway. Every one of them
+sits one level below a gesture: **a tested export in `packages/core` with no
+importer in `apps/game`.** A matrix asks what a finger can do; it cannot see a
+sentence the core writes that no screen prints.
+
+So the standing check in `CLAUDE.md` grew a second half, and it is the one that
+found all twelve: **before calling a MODULE done, grep for a consumer of every
+export it has.** Run it over the core, not only over a screen.
+
+The two that were purely dead code, both now wired:
+
+| Export                             | Was                                                                          | Now                                                       |
+| ---------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `HudView.hint` (`hintFor`)         | computed every render, read by **nothing** — the plane's own signpost        | a toast on change, `shell/signpost.ts`, with its 3 guards |
+| `parseOverrides` / `withOverrides` | `?ff=` tested since the lift, **no caller** — so `debug.overlay` had no door | applied and persisted in `useDevice`                      |
+| `debug.overlay` (`wired: true`)    | no reader either                                                             | `view#debugLine`, over the board                          |
+
+And the ten that were facts computed and not said. All built 2026-09-02:
+
+| Surface                                    | Ashwake 1                             | Was here                                     |
+| ------------------------------------------ | ------------------------------------- | -------------------------------------------- |
+| A pop's SCORE, with its recipe             | every term named                      | `+8971 pts.` under nothing at all            |
+| NEW BEST · N short of best                 | on the ending                         | computed by `settle`, discarded              |
+| RUN N · TRY N                              | on the ending                         | never said                                   |
+| The two end-of-run bonuses, itemised       | POPS · SITES · REACH · CLAIMS · TOTAL | the breakdown summed to less than the score  |
+| Relics banked this run                     | CARRIED OUT                           | never printed, with the shop right under it  |
+| The run's shape (placements, biggest pop…) | six fixed facts                       | restated the score, double-counted the purse |
+| TRY AGAIN, on a daily's ending             | beside the try count                  | no way back onto today's board but MORE      |
+| The SHARE CARD                             | a picture with the link               | the link alone                               |
+| WHICH GAME · the mode line on the door     | named in three places                 | a `?seed=` recipient was told nothing        |
+| SETTLE THIS WORLD (keep the seed)          | front door and ending                 | a shared board could never be kept           |
+| The onward-share line                      | beside SHARE                          | the chain propagated silently                |
+| THE SURVEY, met and unmet                  | a standing ledger                     | only the goal a run happened to meet         |
+| The install prompt                         | caught, offered once                  | thrown away by the browser                   |
+| The in-app-browser warning                 | once ever                             | absent, on the mode links land in most       |
+| Midnight rollover on the daily             | re-read on `visible`                  | sampled once, on a page that never reloads   |
+| Fame TOTALS: worlds, perks found           | listed per world                      | four device-wide numbers                     |
+
 ## What is still missing
 
-1. Nothing this file has ever listed. The lens-clear button was the last entry
-   and it was built 2026-09-01 (see the row above).
+1. Nothing this file has ever listed as a GESTURE. The lens-clear button was
+   the last entry and it was built 2026-09-01 (see the row above); the sixteen
+   rows above this section were all built 2026-09-02.
 
 2. **~~The History-API router.~~ RULED OUT 2026-08-30** (`DECISIONS.md` D9),
    and **~~BACK on an open panel~~ BUILT the same day**. The one real gesture

@@ -265,7 +265,10 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         `Bounty ×${bonus}: missed (+0). Pop ${need}+ tiles within ${radius} of the site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tiles: ${perTile} per tile, +1 more per ${worthPerExtra} worth${depthRings === null ? '' : `, +${depthRings} for the depth`}.`,
-      scored: (pts) => `+${pts} pts.`,
+      scored: (pts, worth, counted, cap, multiplier, bounty, rate) =>
+        `+${pts} pts = worth ${worth} × pocket ${counted}${cap === null ? '' : ` (the size bonus stops at ${cap})`} × distance ${multiplier}` +
+        (bounty === null ? '' : ` × BOUNTY ${bounty}`) +
+        `, at ${rate}% per pop.`,
       luck: (gained, oddsRose) =>
         `Luck +${gained}.${oddsRose ? ' Your rare-tile odds just rose.' : ''}`,
       treasure: (rarity) =>
@@ -491,6 +494,9 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       `${name}: ${pts} pts in ${placements} placements${arc === '' ? '' : ` · ${arc}`}. Beat my run:`,
     daily: (name, day, pts, reach, arc, tries) =>
       `${name} ${day} · ${pts} pts · reach ${reach}${arc === '' ? '' : ` · ${arc}`} · ${ordinal(tries, 'en')} try · beat it:`,
+    cardScore: (points) => `${points} pts`,
+    cardReach: (reach) => `REACH ${reach}`,
+    cardSeed: (seed) => `SEED ${seed}`,
   },
   daily: {
     badge: (day, record, streak) =>
@@ -639,6 +645,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     resetAllArmed: 'ERASE EVERY WORLD?',
     worlds: 'MY WORLDS',
     worldN: (n) => `WORLD ${n}`,
+    perksFound: 'PERKS FOUND',
+    noPerksYet: 'None yet. Hidden finds are out there.',
     atlasRuns: 'RUNS',
     atlasBest: 'BEST',
     atlasFarthest: 'FARTHEST',
@@ -647,8 +655,43 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     atlasShrines: 'SHRINES',
     atlasFinds: 'FINDS',
     atlasUnlocked: 'UNLOCKED',
+    survey: 'THE SURVEY',
     thisWorld: 'THIS WORLD',
     emptyWorld: 'begin new',
+    which: {
+      title: 'WHICH GAME',
+      nowWorld: 'RIGHT NOW: YOUR OWN WORLD. Everything in this manual applies.',
+      nowShared: 'RIGHT NOW: A SHARED RUN. Nothing below about keeping or buying applies here.',
+      nowDaily: 'RIGHT NOW: THE DAILY. Nothing below about keeping or buying applies here.',
+      world:
+        'YOUR WORLD is one of three this device keeps. It is remembered between runs, and played with everything you have bought and found.',
+      shared:
+        'A SHARED RUN is a link with a seed in it. Somebody else’s world, played plain: no upgrades, no perk, nothing kept.',
+      daily:
+        'THE DAILY is one world everybody gets for that date. Played plain, your tries counted, your own world untouched.',
+      howToShare: 'SHARE, on the end screen, turns your run into such a link.',
+    },
+    beginShared: 'BEGIN · SHARED RUN',
+    beginDaily: (day) => `BEGIN DAILY ${day}`,
+    settleWorld: (slot) => `SETTLE THIS WORLD · keep the seed as WORLD ${slot}`,
+    settleNote:
+      'The seed becomes a world of your own: fresh, unexplored, and played with your relics and its own shrines from then on. This run stays exactly as it was.',
+    cameByLink: 'This world reached you by a link. It travels the same way out.',
+    ending: {
+      newBest: 'NEW BEST',
+      shortOfBest: (n) => `${n} short of best`,
+      run: (n) => `RUN ${n}`,
+      try: (n) => `TRY ${n}`,
+      tryAgain: 'TRY AGAIN',
+      relicsBanked: (n) => `${n} relics banked`,
+      placements: 'PLACEMENTS',
+      popped: 'POPPED',
+      biggestPop: 'BIGGEST POP',
+      biggestPopAt: (points, pct) => `${points} at ${pct}%`,
+      destinations: 'DESTINATIONS',
+      bounties: 'BOUNTIES',
+      none: '0',
+    },
     camp: (ring) => `BEGIN AT CAMP · your farthest territory, ring ${ring}`,
     worn: 'WORN',
     wear: 'WEAR',
@@ -660,6 +703,10 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     lensClear: 'LENS OFF',
     lensClearLabel: (ground) => `Turn the ${ground} lens off`,
     newVersion: 'NEW VERSION · TAP TO LOAD',
+    install: 'INSTALL ASHWAKE',
+    inApp:
+      'You are in an in-app browser, and your world may not be kept here. Open this page in Safari or Chrome to keep it.',
+    dismiss: 'Not now',
     share: 'SHARE',
     copied: 'COPIED',
     crash: {
@@ -706,6 +753,10 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     sites: 'SITES CLAIMED',
     arc: 'THE SHAPE OF THE RUN',
+    pops: 'POPS',
+    reachBonus: (reach, per) => `REACH ${reach} × ${per}`,
+    claimBonus: (claims, per) => `CLAIMS ${claims} × ${per}`,
+    total: 'TOTAL',
   },
 };
 

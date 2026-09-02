@@ -112,11 +112,41 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   const end = page.locator('[data-hud="end"]');
   await end.waitFor({ state: 'visible' });
 
+  /*
+   * WHICH RUN THIS WAS, and where it stands (2026-09-02).
+   *
+   * `settle` has computed both since the rules were lifted and returned
+   * neither, so this screen never once said RUN 1 or NEW BEST. A first finish
+   * on a clean device is a new best by definition and has no PREVIOUS best to
+   * be short of, which is the case Ashwake 1 named: "0 short of best" under a
+   * score is a line lying twice.
+   */
+  await expect(end.locator('[data-hud="which-run"]')).toBeVisible();
+  await expect(end.locator('[data-hud="new-best"]')).toBeVisible();
+  expect(await end.locator('[data-hud="short-of-best"]').count()).toBe(0);
+
   // The breakdown is folded, and opening it is the whole of the answer to
   // "why was the number what it was".
   await end.locator('summary').first().click();
   expect(await end.locator('.bars').count()).toBeGreaterThan(0);
   expect(await end.locator('.arc-chart').count()).toBe(1);
+
+  /*
+   * AND THE LEDGER ADDS UP.
+   *
+   * The bars can only ever speak for tiles that were POPPED, so before the
+   * two end-of-run bonuses were printed they summed to a fraction of the score
+   * with nothing on screen accounting for the difference. Read the rows back
+   * and check the arithmetic against the score itself: a breakdown that does
+   * not add up reads as a bug in the game rather than an incomplete breakdown.
+   */
+  const rows = end.locator('.payout-row');
+  expect(await rows.count()).toBeGreaterThanOrEqual(4);
+  const values = await rows.locator('dd').allInnerTexts();
+  const total = Number(values.at(-1));
+  const parts = values.slice(0, -1).reduce((n, v) => n + Number(v.replace('+', '')), 0);
+  expect(parts, 'the payout rows must sum to the total they stand under').toBe(total);
+  expect(total).toBe(Number(await end.locator('.end-score').innerText()));
 
   // The shop is on the end screen because that is where the relics were
   // earned. At least one upgrade row, whether or not it is affordable.
@@ -635,6 +665,13 @@ test('a run can be handed to somebody', async ({ page }) => {
   const share = page.locator('[data-action="share"]');
   await share.waitFor({ state: 'visible' });
   await share.click();
+
+  // Waited for, not read straight after the click (2026-09-02): sharing now
+  // DRAWS a card first — fonts, the board's snapshot, a PNG encode — so the
+  // clipboard write lands a beat after the tap. The button's own COPIED is the
+  // honest signal that it has, and reading before it appears was a race that
+  // came back with an empty clipboard.
+  await expect(share).toHaveText(/COPIED|COPIÉ/);
 
   const said = await page.evaluate(() => navigator.clipboard.readText());
   // The sentence, and a link that carries the SEED rather than this session's

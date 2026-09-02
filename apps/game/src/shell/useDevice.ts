@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isLocale, pickLocale, type Locale } from '@content/locale';
-import type { FeatureId, FeatureSet } from '@meta/features';
+import { parseOverrides, withOverrides, type FeatureId, type FeatureSet } from '@meta/features';
 import { meet, TEACH_IDS, withWorldPerks, type Progress } from '@meta/progress';
 import { inheritShopLevels } from '@meta/shopLevels';
 import { AUTO_THEME_ID } from '@theme/index';
@@ -87,7 +87,30 @@ export function useDevice(opts: {
   const [theme, setThemeState] = useState<ThemeId>(
     () => opts.theme ?? readTheme() ?? AUTO_THEME_ID,
   );
-  const [features, setFeatures] = useState<FeatureSet>(readFeatures);
+  /**
+   * The device's flags, with `?ff=` applied (2026-09-02).
+   *
+   * `parseOverrides` and `withOverrides` have been in the core, tested, since
+   * the rules were lifted, and **nothing in this body called either** — so the
+   * one door to a `player: false` flag did not exist, and `debug.overlay`
+   * shipped `wired: true` with no way to turn it on and nothing reading it.
+   * `features.ts`'s own header says a registry of aspirational flags is a
+   * to-do list that lies; this is the half of the fix that gives the flag a
+   * door, and `view#debugLine` is the half that gives it a reader.
+   *
+   * PERSISTED, exactly as Ashwake 1 did it: testing happens on the deployed
+   * site from a phone, and a flag that has to be re-typed into the address bar
+   * after every navigation is a flag nobody uses. `?ff=-debug.overlay` is how
+   * it comes back off, which is why the parser has always taken a minus.
+   */
+  const [features, setFeatures] = useState<FeatureSet>(() => {
+    const asked = parseOverrides(location.search);
+    const stored = readFeatures();
+    if (Object.keys(asked).length === 0) return stored;
+    const next = withOverrides(stored, asked);
+    writeFeatures(next);
+    return next;
+  });
   /**
    * The device's ledger, wearing THIS world's shop levels AND its perk shelf.
    *

@@ -29,6 +29,29 @@ export type FrontDoorProps = {
   readonly dailyBadge: string;
   /** Which direction's lockup to look for. */
   readonly themeId: ThemeId;
+  /**
+   * WHICH GAME IS BEHIND THIS DOOR (2026-09-02).
+   *
+   * A `?seed=` link is how a stranger meets Ashwake, and this screen greeted
+   * them identically to a returning player standing in their own world: the
+   * same BEGIN, no mention that the board belongs to somebody else and that
+   * nothing they do on it will be kept. Ashwake 1 named the mode on the button
+   * and again in a line under it, and its reason is the sharper one: the person
+   * who most needs to be told what game this is, is the person who did not
+   * choose it.
+   */
+  readonly mode: 'world' | 'shared' | 'daily';
+  /** Which day a daily door is for, already named by the catalogue. The badge
+   *  beside it is a whole standing and far too long for a button. */
+  readonly day?: string | undefined;
+  /**
+   * SETTLE THIS WORLD — keep this shared seed as one of your three.
+   *
+   * Present only on a shared door with a free slot. Ashwake 1's answer to a
+   * board worth keeping, and the one thing on this screen that becomes
+   * permanent, so it names the slot it would take.
+   */
+  readonly settle?: { readonly slot: number; readonly onSettle: () => void } | null;
 };
 
 export function FrontDoor({
@@ -41,6 +64,9 @@ export function FrontDoor({
   onDaily,
   dailyBadge,
   themeId,
+  mode,
+  day,
+  settle,
 }: FrontDoorProps) {
   const lockup = useArtSlot(themeId, 'ui.logo');
   return (
@@ -82,16 +108,58 @@ export function FrontDoor({
       </div>
 
       <button type="button" className="door-begin" data-door="begin" onClick={onBegin}>
-        {resuming ? s.ui.resume : s.ui.begin}
+        {resuming
+          ? s.ui.resume
+          : mode === 'shared'
+            ? s.ui.beginShared
+            : mode === 'daily' && day !== undefined
+              ? s.ui.beginDaily(day)
+              : s.ui.begin}
       </button>
+
+      {/*
+        WHICH GAME (2026-09-02) — see `mode`.
+
+        Only where the board is not this device's own: standing in your own
+        world needs no explanation, and a paragraph under BEGIN saying so on
+        every visit is chrome. On the two doors that DO need it, it is the
+        difference between a stranger understanding the deal and finding out
+        afterwards that their run banked nothing.
+      */}
+      {mode !== 'world' && (
+        <p className="note door-mode" data-door="mode">
+          {mode === 'shared' ? s.ui.which.shared : s.ui.which.daily}
+        </p>
+      )}
+
+      {/*
+        Keep the seed — see `settle`. Above the quiet choices and under the
+        explanation of what a shared run IS, because it is the answer to the
+        sentence directly above it.
+      */}
+      {settle != null && (
+        <>
+          <button
+            type="button"
+            className="quiet door-settle"
+            data-door="settle"
+            onClick={settle.onSettle}
+          >
+            {s.ui.settleWorld(settle.slot)}
+          </button>
+          <p className="note door-settle-note">{s.ui.settleNote}</p>
+        </>
+      )}
 
       {/* Today's board, under BEGIN and above the quiet choices: it is the
           second thing a returning player wants and never the first thing a
           stranger should meet. The badge is the catalogue's sentence — this
-          screen counts nothing. */}
-      <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
-        {dailyBadge}
-      </button>
+          screen counts nothing. Absent on a door that is already a daily's. */}
+      {mode !== 'daily' && (
+        <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
+          {dailyBadge}
+        </button>
+      )}
 
       <nav className="panel-menu door-more">
         <button type="button" data-door="how" onClick={onHowToPlay}>

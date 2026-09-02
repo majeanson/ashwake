@@ -4,10 +4,14 @@ import type { Strings } from '@text/Strings';
 import { dailiesOf, runsOf, streamOf, type TimelineEntry } from '@meta/timeline';
 import type { RecordBook } from '@meta/records';
 import { ONLY_WORLD } from '@meta/records';
+import { perkText } from '@meta/progress';
+import type { WorldMemory } from '@meta/world';
 import { FactGrid } from '../ui/FactGrid';
 import { Fold } from '../ui/Fold';
+import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import { Tabs } from '../ui/Tabs';
+import { SLOTS, type Slot } from '../shell/storage';
 
 /**
  * THE HALL OF FAME (Stage 4, 2026-08-29).
@@ -33,9 +37,18 @@ export type FameProps = {
   readonly records: RecordBook;
   readonly s: Strings;
   readonly onBack: () => void;
+  /**
+   * The three worlds, for the TOTALS tab (2026-09-02).
+   *
+   * A hall of fame that reports only device-wide sums answers "how much" and
+   * never "where", and the perk shelf in particular is per-world — so the only
+   * place a player could see a perk they found on world 2 was by standing in
+   * world 2. See the TOTALS block below.
+   */
+  readonly worlds: Readonly<Record<Slot, WorldMemory | null>>;
 };
 
-export function Fame({ timeline, records, s, onBack }: FameProps) {
+export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
   const [on, setOn] = useState<TabId>('diary');
   // `null` slot: every world. The diary is the DEVICE's story, and the
   // per-world filter chips arrive with the crossing that makes them mean
@@ -44,6 +57,21 @@ export function Fame({ timeline, records, s, onBack }: FameProps) {
   const dailies = useMemo(() => [...dailiesOf(timeline)].reverse(), [timeline]);
   const runs = useMemo(() => runsOf(timeline, null), [timeline]);
   const book = records[ONLY_WORLD];
+  /* Every perk this device holds, and which world it was found in. Flattened
+     from the three worlds because a perk belongs to the world that found it —
+     `Progress.found` is a per-world composite, so the device has no single
+     shelf to read and this is the only place all three can be seen at once. */
+  const found = useMemo(
+    () =>
+      SLOTS.flatMap((slot) =>
+        (worlds[slot]?.perks ?? []).map((perk) => ({
+          slot,
+          perk,
+          worn: worlds[slot]?.worn === perk,
+        })),
+      ),
+    [worlds],
+  );
 
   return (
     <Panel
@@ -80,14 +108,67 @@ export function Fame({ timeline, records, s, onBack }: FameProps) {
         ))}
 
       {on === 'totals' && (
-        <FactGrid
-          facts={[
-            { label: s.ui.newRun, value: runs.length },
-            { label: 'PTS', value: book?.bestPoints ?? 0 },
-            { label: s.ui.pop, value: (book?.tilesHarvests ?? 0) + (book?.pointsHarvests ?? 0) },
-            { label: s.ui.daily, value: dailies.length },
-          ]}
-        />
+        <>
+          <FactGrid
+            facts={[
+              { label: s.ui.newRun, value: runs.length },
+              { label: 'PTS', value: book?.bestPoints ?? 0 },
+              { label: s.ui.pop, value: (book?.tilesHarvests ?? 0) + (book?.pointsHarvests ?? 0) },
+              { label: s.ui.daily, value: dailies.length },
+            ]}
+          />
+
+          {/*
+            THE THREE WORLDS, AND WHAT HAS BEEN FOUND IN THEM (2026-09-02).
+
+            This tab was four device-wide numbers, which is the hall of fame
+            answering "how much" and never "where". Ashwake 1 listed the worlds
+            and the perks here for the reason the diary rows exist at all: a
+            list of scores is not a memory. A perk found on world 2 three weeks
+            ago is a thing that happened somewhere, and the shelf in the shop
+            only ever shows the world you are standing in.
+
+            Untouched worlds say so rather than being hidden: three slots is the
+            shape of the game, and a list that showed two would be describing a
+            different one.
+          */}
+          <section>
+            <h2 className="fact-label">{s.ui.worlds}</h2>
+            <ul className="survey">
+              {SLOTS.map((slot) => {
+                const world = worlds[slot];
+                return (
+                  <li key={slot}>
+                    <Icon name={world === null ? 'notYet' : 'met'} />
+                    <span>{s.ui.worldN(slot)}</span>
+                    <b>
+                      {world === null
+                        ? s.ui.emptyWorld
+                        : `${world.runs} · ${world.bestPoints} · ${world.farthestReach}`}
+                    </b>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="fact-label">{s.ui.perksFound}</h2>
+            {found.length === 0 ? (
+              <p className="note">{s.ui.noPerksYet}</p>
+            ) : (
+              <ul className="survey">
+                {found.map(({ slot, perk, worn }) => (
+                  <li key={`${slot}-${perk}`} className={worn ? 'met' : undefined}>
+                    <Icon name="fame" />
+                    <span>{perkText(perk, s).name}</span>
+                    <b>{worn ? `${s.ui.worldN(slot)} · ${s.ui.worn}` : s.ui.worldN(slot)}</b>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
       )}
     </Panel>
   );

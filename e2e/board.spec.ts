@@ -77,14 +77,21 @@ test('speaks French to a French phone, English to an English one', async ({ brow
   // Both the FIRST word a player reads and a word from inside the run, because
   // the door and the HUD reach the catalogue by different paths and either
   // could be the one that regressed.
+  // The door label is the SHARED one, because `?seed=` is somebody else's
+  // world: since 2026-09-02 the button names the mode rather than saying BEGIN
+  // over any board at all. Checking that spelling here means this test also
+  // pins the one sentence a stranger arriving by link reads first.
   for (const [locale, door, stat] of [
-    ['fr-CA', 'COMMENCER', 'TUILES'],
-    ['en-US', 'BEGIN', 'TILES'],
+    ['fr-CA', 'COMMENCER · PARTIE PARTAGÉE', 'TUILES'],
+    ['en-US', 'BEGIN · SHARED RUN', 'TILES'],
   ] as const) {
     const context = await browser.newContext({ locale, viewport: { width: 390, height: 844 } });
     const page = await context.newPage();
     await page.goto('/?seed=7');
     await expect(page.locator('[data-door="begin"]')).toHaveText(door);
+    // And the line under it says what a shared run IS — the deal a recipient
+    // was never told before.
+    await expect(page.locator('[data-door="mode"]')).toBeVisible();
     await begin(page);
     await expect(page.locator('[data-stat="tiles"]')).toContainText(stat);
     await context.close();

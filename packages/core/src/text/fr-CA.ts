@@ -267,7 +267,10 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `Prime ×${bonus}${D}: manquée (+0). Récolte ${need} tuiles ou plus à ${radius} du site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tuiles${D}: ${perTile} par tuile, +1 de plus par ${worthPerExtra} de valeur${depthRings === null ? '' : `, +${depthRings} pour la profondeur`}.`,
-      scored: (pts) => `+${nb(pts)} pts.`,
+      scored: (pts, worth, counted, cap, multiplier, bounty, rate) =>
+        `+${nb(pts)} pts = valeur ${nb(worth)} × poche ${counted}${cap === null ? '' : ` (le bonus de taille s’arrête à ${cap})`} × distance ${multiplier}` +
+        (bounty === null ? '' : ` × PRIME ${bounty}`) +
+        `, à ${pc(rate)} par récolte.`,
       luck: (gained, oddsRose) =>
         `Chance +${gained}.${oddsRose ? ' Tes chances de tuile rare viennent de monter.' : ''}`,
       treasure: (rarity) =>
@@ -500,6 +503,9 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       `${name}${D}: ${nb(pts)} pts en ${placements} poses${arc === '' ? '' : ` · ${arc}`}. Bats ma partie${D}:`,
     daily: (name, day, pts, reach, arc, tries) =>
       `${name} ${day} · ${nb(pts)} pts · portée ${reach}${arc === '' ? '' : ` · ${arc}`} · ${ordinal(tries, 'fr-CA')} essai · bats-la${D}:`,
+    cardScore: (points) => `${nb(points)} pts`,
+    cardReach: (reach) => `PORTÉE ${reach}`,
+    cardSeed: (seed) => `GRAINE ${seed}`,
   },
   daily: {
     badge: (day, record, streak) =>
@@ -649,6 +655,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     resetAllArmed: 'EFFACER TOUS LES MONDES?',
     worlds: 'MES MONDES',
     worldN: (n) => `MONDE ${n}`,
+    perksFound: 'ATOUTS TROUVÉS',
+    noPerksYet: 'Aucun pour l’instant. Les trouvailles cachées sont là, dehors.',
     atlasRuns: 'PARTIES',
     atlasBest: 'MEILLEUR',
     atlasFarthest: 'PLUS LOIN',
@@ -657,8 +665,41 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     atlasShrines: 'SANCTUAIRES',
     atlasFinds: 'TROUVAILLES',
     atlasUnlocked: 'DÉBLOQUÉ',
+    survey: 'L’ARPENTAGE',
     thisWorld: 'CE MONDE',
     emptyWorld: 'nouvelle partie',
+    which: {
+      title: 'QUELLE PARTIE',
+      nowWorld: `EN CE MOMENT${D}: TON PROPRE MONDE. Tout ce manuel s’applique.`,
+      nowShared: `EN CE MOMENT${D}: UNE PARTIE PARTAGÉE. Rien de ce qui suit sur garder ou acheter ne s’applique ici.`,
+      nowDaily: `EN CE MOMENT${D}: LE QUOTIDIEN. Rien de ce qui suit sur garder ou acheter ne s’applique ici.`,
+      world:
+        'TON MONDE est un des trois que cet appareil garde. Il se souvient d’une partie à l’autre, et se joue avec tout ce que tu as acheté et trouvé.',
+      shared: `UNE PARTIE PARTAGÉE est un lien qui porte une graine. Le monde de quelqu’un d’autre, joué nu${D}: pas d’améliorations, pas d’atout, rien de gardé.`,
+      daily:
+        'LE QUOTIDIEN est un monde que tout le monde reçoit pour cette date. Joué nu, tes essais comptés, ton propre monde intact.',
+      howToShare: 'PARTAGER, à la fin d’une partie, transforme la tienne en un tel lien.',
+    },
+    beginShared: 'COMMENCER · PARTIE PARTAGÉE',
+    beginDaily: (day) => `COMMENCER LE QUOTIDIEN ${day}`,
+    settleWorld: (slot) => `S’ÉTABLIR ICI · garder la graine comme MONDE ${slot}`,
+    settleNote: `La graine devient un monde à toi${D}: neuf, inexploré, et joué avec tes reliques et ses propres sanctuaires à partir de là. Cette partie reste exactement telle quelle.`,
+    cameByLink: 'Ce monde t’est arrivé par un lien. Il repart par le même chemin.',
+    ending: {
+      newBest: 'NOUVEAU RECORD',
+      shortOfBest: (n) => `${nb(n)} sous le record`,
+      run: (n) => `PARTIE ${n}`,
+      try: (n) => `ESSAI ${n}`,
+      tryAgain: 'REJOUER',
+      relicsBanked: (n) => `${nb(n)} reliques mises de côté`,
+      placements: 'POSES',
+      popped: 'RÉCOLTES',
+      biggestPop: 'PLUS GROSSE',
+      biggestPopAt: (points, pct) => `${nb(points)} à ${pc(pct)}`,
+      destinations: 'DESTINATIONS',
+      bounties: 'PRIMES',
+      none: '0',
+    },
     camp: (ring) => `PARTIR DU CAMP · ton territoire le plus loin, anneau ${ring}`,
     worn: 'PORTÉ',
     wear: 'PORTER',
@@ -670,6 +711,10 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     lensClear: 'ÉTEINDRE',
     lensClearLabel: (ground) => `Éteindre la lentille ${ground}`,
     newVersion: 'NOUVELLE VERSION · TOUCHER POUR CHARGER',
+    install: 'INSTALLER ASHWAKE',
+    inApp:
+      'Tu es dans le navigateur d’une autre application, et ton monde risque de ne pas être gardé ici. Ouvre cette page dans Safari ou Chrome pour le garder.',
+    dismiss: 'Pas maintenant',
     share: 'PARTAGER',
     copied: 'COPIÉ',
     crash: {
@@ -715,5 +760,9 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     },
     sites: 'SITES RÉCLAMÉS',
     arc: 'LA COURBE DE LA PARTIE',
+    pops: 'RÉCOLTES',
+    reachBonus: (reach, per) => `PORTÉE ${reach} × ${per}`,
+    claimBonus: (claims, per) => `RÉCLAMÉS ${claims} × ${per}`,
+    total: 'TOTAL',
   },
 };

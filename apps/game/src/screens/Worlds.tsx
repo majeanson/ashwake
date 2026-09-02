@@ -1,4 +1,5 @@
 import type { WorldMemory } from '@meta/world';
+import type { GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { Atlas } from './Atlas';
 import { Confirming } from '../ui/Confirming';
@@ -45,9 +46,27 @@ export type WorldsProps = {
    * it is a way INTO this world, and this panel is the list of those.
    */
   readonly camp?: { readonly ring: number; readonly onBegin: () => void } | null;
+  /**
+   * Which of the five world goals the ACTIVE world has met.
+   *
+   * Computed by the shell rather than here: the answer depends on the device's
+   * perk shelf as well as on the world (`metGoalIds` takes both), and a panel
+   * that read `progress` to decide a rule would be a second place for that rule
+   * to be wrong. See `Atlas`'s `survey`.
+   */
+  readonly survey?: readonly GoalId[];
 };
 
-export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon, camp }: WorldsProps) {
+export function Worlds({
+  s,
+  active,
+  worlds,
+  onBack,
+  onOpen,
+  onAbandon,
+  camp,
+  survey,
+}: WorldsProps) {
   return (
     <Panel
       id="worlds"
@@ -94,7 +113,7 @@ export function Worlds({ s, active, worlds, onBack, onOpen, onAbandon, camp }: W
         seven facts per slot would make the list a wall, and the only world
         whose history you are about to act on is the one you are in.
       */}
-      {worlds[active] !== null && <Atlas world={worlds[active]} s={s} />}
+      {worlds[active] !== null && <Atlas world={worlds[active]} s={s} survey={survey ?? []} />}
 
       {worlds[active] !== null && (
         <section>

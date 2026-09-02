@@ -1,7 +1,7 @@
 import { endingPayout } from '@engine/reduce';
 import type { GameState } from '@engine/state';
 import { arcSparkline, recordDaily, type DailyBook } from '@meta/daily';
-import { recordRun, type RecordBook } from '@meta/records';
+import { ONLY_WORLD, recordRun, type RecordBook } from '@meta/records';
 import { appendEntry, capShots, runHighlights, type Timeline } from '@meta/timeline';
 import { GOALS, type GoalId } from '@content/goals';
 import { newlyMetGoals } from '@meta/goals';
@@ -66,7 +66,39 @@ export type Settled = {
    * disagree about what a run was worth.
    */
   readonly progress: Progress;
+  /**
+   * WHERE THIS RUN STANDS — computed here since the rules were lifted, and
+   * thrown away until 2026-09-02.
+   *
+   * `recordRun` folds the run into the book, so this function has always known
+   * whether the score beat the standing best and which run it was. It returned
+   * the book and nothing else, and the end screen had no records prop at all —
+   * so the single most screenshot-worthy line the game can print, NEW BEST, has
+   * never been printed in this body.
+   *
+   * `previousBest` is the book BEFORE this run, which is the only version of
+   * the number worth comparing against: after the fold, a new best equals its
+   * own record and every run is "0 short".
+   */
+  readonly standing: Standing;
 };
+
+/** How a finished run compares to the ones before it. */
+export type Standing = {
+  /** Which run this was, device-wide. Zero where nothing was recorded. */
+  readonly run: number;
+  readonly isNewBest: boolean;
+  /**
+   * The best before this run, or null where there was none.
+   *
+   * Null is not zero: a device that has never finished a home run has no
+   * standing best, and "0 short of best" under a score is a line lying twice.
+   */
+  readonly previousBest: number | null;
+};
+
+/** A run that banked nothing has no standing to report. */
+const NO_STANDING: Standing = { run: 0, isNewBest: false, previousBest: null };
 
 export type Settling = {
   readonly state: GameState;
@@ -128,11 +160,26 @@ export function settle(now: Settling): Settled {
        * who opened it — which is a thing people would post on purpose.
        */
       progress: now.progress,
+      // A detour is not on the shelf of bests and never was. Saying "3 short"
+      // against records it did not compete for would be the ending claiming a
+      // rank in a race it was excluded from.
+      standing: NO_STANDING,
     };
   }
 
   const walked = rememberRun(before, now.state);
+  const wasBest = now.records[ONLY_WORLD]?.bestPoints ?? 0;
+  const hadRuns = (now.records[ONLY_WORLD]?.runs ?? 0) > 0;
   const records = recordRun(now.records, now.state);
+  const standing: Standing = {
+    run: records[ONLY_WORLD]?.runs ?? 0,
+    // Strictly greater: equalling the best is not beating it, and a run that
+    // ties should not get the loudest line on the screen.
+    isNewBest: now.hud.points > wasBest,
+    // A device with no finished run has no best to be short of — see
+    // `Standing.previousBest`.
+    previousBest: hadRuns && wasBest > 0 ? wasBest : null,
+  };
 
   // The survey, read against the world this run just made and then WRITTEN
   // into it — a goal reports once, and the world is what remembers that it
@@ -206,7 +253,7 @@ export function settle(now: Settling): Settled {
     SHOTS_KEPT,
   );
 
-  return { world, records, timeline, goals, progress: banked };
+  return { world, records, timeline, goals, progress: banked, standing };
 }
 
 /* ---- the daily ------------------------------------------------------------ */
@@ -215,6 +262,17 @@ export type SettledDaily = {
   readonly book: DailyBook;
   readonly timeline: Timeline;
   readonly isNewBest: boolean;
+  /**
+   * Which try this was, confessed (2026-09-02).
+   *
+   * `recordDaily` has counted tries since the rules were lifted and the number
+   * reached the diary and the share line, never the ending — so the one screen
+   * where a player is deciding whether to press TRY AGAIN was the one screen
+   * that would not say how many times they already had. The design's honesty
+   * rule is that replaying is allowed and the count is stated, and half of that
+   * rule was missing here.
+   */
+  readonly try: number;
 };
 
 export type SettlingDaily = {
@@ -271,5 +329,5 @@ export function settleDaily(now: SettlingDaily): SettledDaily {
     SHOTS_KEPT,
   );
 
-  return { book, timeline, isNewBest };
+  return { book, timeline, isNewBest, try: record.tries };
 }

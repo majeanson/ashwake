@@ -6,8 +6,10 @@ import type { LessonId } from '@view/lessons';
 import { GOALS, type GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
+import { Icon } from '../ui/Icon';
 import { Prose } from '../ui/Prose';
 import { useState } from 'react';
+import type { Standing } from '../shell/settle';
 import { Atlas } from './Atlas';
 import { Payout } from './Payout';
 import { Shop } from './Shop';
@@ -98,6 +100,35 @@ export type EndScreenProps = {
   readonly world?: WorldMemory | null;
   /** Back to the front door: an ending needs a way out that is not another run. */
   readonly onMainMenu: () => void;
+  /**
+   * WHERE THIS RUN STANDS (2026-09-02).
+   *
+   * `settle` has computed all three since the rules were lifted and returned
+   * none of them, so this screen has never once said NEW BEST. See
+   * `shell/settle.ts`'s `Standing`.
+   *
+   * Null on a daily and on a detour, neither of which competes for the shelf.
+   */
+  readonly standing?: Standing | null;
+  /**
+   * The daily this ending belongs to, and the way back onto it.
+   *
+   * Ashwake 1 put TRY AGAIN here because this is where the itch is: the tries
+   * counter above confesses every press, which is the design's honesty rule,
+   * and the retry has to be beside the confession or the confession is just a
+   * number. NEW RUN on a daily LEAVES the daily, so without this there was no
+   * way back onto today's board except three taps through MORE.
+   */
+  readonly daily?: { readonly try: number; readonly onRetry: () => void } | null;
+  /**
+   * Put Ashwake on the home screen, where the browser has offered us a dialog
+   * to do it with. Absent everywhere else, which is most places: iOS never
+   * offers one, an already-installed app has nothing to offer, and a device
+   * that has been asked once is not asked again. See `shell/install.ts`.
+   */
+  readonly onInstall?: (() => void) | undefined;
+  /** This run came from a shared link, so the chain can carry on from here. */
+  readonly fromLink?: boolean;
 };
 
 export function EndScreen({
@@ -106,6 +137,10 @@ export function EndScreen({
   newUnlocks,
   world,
   onMainMenu,
+  standing,
+  daily,
+  onInstall,
+  fromLink,
   hud,
   harvests,
   s,
@@ -139,7 +174,41 @@ export function EndScreen({
   return (
     <div className="end" data-hud="end">
       {hero !== null && <img className="end-hero" src={hero} alt="" width={876} height={330} />}
+
+      {/*
+        WHICH RUN THIS WAS, over the score (2026-09-02).
+
+        A number with no ordinal is a number with no story: RUN 41 says a device
+        has a history and this score belongs somewhere in it, and TRY 3 says
+        today's board has been played twice already. Both facts were computed
+        and discarded — see `standing` and `daily` above.
+      */}
+      {(standing != null && standing.run > 0) || daily != null ? (
+        <p className="end-run" data-hud="which-run">
+          {daily != null ? s.ui.ending.try(daily.try) : s.ui.ending.run(standing?.run ?? 0)}
+        </p>
+      ) : null}
+
       <p className="end-score">{hud.points}</p>
+
+      {/*
+        NEW BEST, or how far short of it (2026-09-02).
+
+        The loudest line the ending can carry, and this body has never printed
+        it. `shortOfBest` rather than restating the record: "how far short" is
+        the question a player has, and it is silent where there is no standing
+        best rather than claiming a run is zero short of nothing.
+      */}
+      {standing?.isNewBest === true && (
+        <p className="end-best" data-hud="new-best">
+          {s.ui.ending.newBest}
+        </p>
+      )}
+      {standing?.isNewBest === false && standing.previousBest !== null && (
+        <p className="note end-best-short" data-hud="short-of-best">
+          {s.ui.ending.shortOfBest(Math.max(0, standing.previousBest - hud.points))}
+        </p>
+      )}
 
       {hud.epitaph !== null && (
         <p className="end-epitaph">
@@ -151,20 +220,73 @@ export function EndScreen({
         {s.ui.newRun}
       </button>
 
+      {/* The retry loop, beside the count that confesses it — see `daily`. */}
+      {daily != null && (
+        <button type="button" data-action="retry" onClick={daily.onRetry}>
+          {s.ui.ending.tryAgain}
+        </button>
+      )}
+
       {hud.glowBeyondEdge !== null && (
         <p className="note">
           <Prose text={hud.glowBeyondEdge} s={s} onTerm={onTerm} />
         </p>
       )}
 
+      {/*
+        THE RUN'S SHAPE, in the six facts Ashwake 1 fixed this grid at
+        (2026-09-02).
+
+        It was TILES · POINTS · MAP · LUCK: two numbers already printed larger
+        higher up the screen, and LUCK, which double-counts — the ending bonus
+        has already folded the unspent purse into the relics line below. So the
+        grid restated the score and then told a small lie about the currency.
+
+        These six are what a run WAS rather than what it scored, and every one
+        was already in `hud.summary`, on its way into the diary entry, unread by
+        the screen it came off. Fixed at six so the ending does not change shape
+        between a short run and a long one.
+      */}
       <FactGrid
         facts={[
-          { label: statLabel('tiles', s), value: hud.tiles },
-          { label: statLabel('points', s), value: hud.points },
           { label: statLabel('map', s), value: hud.depthValue },
-          { label: statLabel('luck', s), value: hud.luck },
+          { label: s.ui.ending.placements, value: hud.placements },
+          { label: s.ui.ending.popped, value: summary?.harvests ?? 0 },
+          {
+            label: s.ui.ending.biggestPop,
+            // How big, and how far through the run it landed — the second half
+            // is Gate D's whole subject, and the arc below draws the same fact
+            // as a picture.
+            value:
+              summary != null && summary.biggestHarvest > 0
+                ? s.ui.ending.biggestPopAt(
+                    summary.biggestHarvest,
+                    Math.round(summary.biggestAt * 100),
+                  )
+                : s.ui.ending.none,
+          },
+          { label: s.ui.ending.destinations, value: summary?.claims ?? 0 },
+          { label: s.ui.ending.bounties, value: summary?.quests ?? 0 },
         ]}
       />
+
+      {/*
+        WHAT THE RUN PAID INTO THE NEXT ONE (2026-09-02).
+
+        As distinct from what it scored, which is everything above. `hud.relics`
+        is `endingPayout`'s own number and had no reader: every ending in this
+        body reported a score and then said nothing at all about the currency
+        the whole roguelite loop is built on, with the shop sitting directly
+        below asking to be spent in it.
+
+        Absent on a detour and a daily, where nothing is banked and saying so
+        would be the ending lying about the one thing those modes promise.
+      */}
+      {world != null && hud.relics > 0 && (
+        <p className="note end-banked" data-hud="banked">
+          <Icon name="relic" /> {s.ui.ending.relicsBanked(hud.relics)}
+        </p>
+      )}
 
       {arc !== null && (
         <p className="note">
@@ -224,7 +346,16 @@ export function EndScreen({
       )}
 
       {/* Why the number was what it was, one tap down — see `Payout`. */}
-      {summary !== null && <Payout summary={summary} harvests={harvests} theme={theme} s={s} />}
+      {summary !== null && (
+        <Payout
+          summary={summary}
+          points={hud.points}
+          reach={hud.depthValue}
+          harvests={harvests}
+          theme={theme}
+          s={s}
+        />
+      )}
 
       {/* The relics this run earned are spent HERE, on the screen where they
           were earned — Ashwake 1's ruling, and the whole of the roguelite
@@ -232,6 +363,32 @@ export function EndScreen({
           the next one. The shop is the same component the shop panel is, with
           its own back button omitted because this is not a panel. */}
       <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
+
+      {/*
+        THE INSTALL OFFER, once ever, in the quietest voice on the screen
+        (2026-09-02).
+
+        Chrome hands the page a native one-tap install dialog and throws it away
+        if nothing catches it; this body caught nothing and offered nothing, so
+        the way to get Ashwake onto a home screen was to know your own browser's
+        menu. Ashwake 1's launch audit found the same gap and named it: where
+        the browser gave us a real dialog, a real button beats a paragraph of
+        directions.
+
+        After the actions and before the map, because it is an invitation rather
+        than a gate — and once ever, marked at the moment it is SHOWN, so a
+        player who declined it is not asked again next run.
+      */}
+      {onInstall !== undefined && (
+        <button
+          type="button"
+          className="quiet end-install"
+          data-action="install"
+          onClick={onInstall}
+        >
+          {s.ui.install}
+        </button>
+      )}
 
       <nav className="panel-menu">
         {/* SHARE is the game's entire distribution mechanism: it has no store
@@ -248,6 +405,17 @@ export function EndScreen({
           {s.ui.more}
         </button>
       </nav>
+
+      {/*
+        THE ONWARD INVITATION (2026-09-02).
+
+        A run that arrived by link gets the same SHARE button as everybody, and
+        the chain propagates — but nothing ever said so, so a recipient read it
+        as an offer to share a run they felt they had borrowed. One quiet line,
+        beside the button that acts on it. Ashwake 1 added it for the same
+        reason and called it the cheapest growth in the game.
+      */}
+      {fromLink === true && <p className="note end-onward">{s.ui.cameByLink}</p>}
 
       {/*
         THE MAP, last: the run you just walked, and you can walk it again.

@@ -955,13 +955,39 @@ button[disabled] {
 
 /* ---- what the game is saying -------------------------------------------- */
 
-.toast,
-.hint {
+.toast {
   margin: 0;
   padding: 0.35rem var(--gap);
   font-size: 0.85rem;
   color: var(--ink-dim);
   min-height: 1.4rem;
+}
+
+/*
+ * The debug line, behind `?ff=debug.overlay` (2026-09-02).
+ *
+ * `.hint` shared the rule above until today and had not been rendered by
+ * anything since the guide line was removed on 2026-08-29 — dead CSS pointing
+ * at a dead reader. This is the surface that replaces it, and it is the only
+ * console a phone on the deployed site has.
+ *
+ * Pinned to the TOP of the board host, over the stat row's own shadow rather
+ * than over the map: it must never cost a pixel of the thing it is used to
+ * debug. Monospace, because half of it is columns of digits that are read by
+ * comparing them against another screenshot.
+ */
+.debug-line {
+  position: absolute;
+  inset: 0 0 auto 0;
+  margin: 0;
+  padding: 0.15rem var(--gap);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  line-height: 1.3;
+  color: var(--ink-dim);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  pointer-events: none;
+  overflow-wrap: anywhere;
 }
 
 /*
@@ -1760,10 +1786,84 @@ button[disabled] {
   margin: 0;
 }
 
+/*
+ * WHICH RUN, and HOW IT STANDS (2026-09-02).
+ *
+ * Three lines around the score, in a deliberate hierarchy: RUN 41 above it in
+ * the label voice, because it is an index and not a result; NEW BEST below it
+ * in the accent, because it is the one line on this screen worth a
+ * screenshot; and "12 short of best" below in the dim voice, because a near
+ * miss is information rather than an announcement.
+ */
+.end-run {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+.end-best {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.end-best-short {
+  margin: 0;
+}
+
 .end-epitaph {
   max-width: 24rem;
   margin: 0;
   color: var(--ink-dim);
+}
+
+/* What the run paid into the next one, beside its mark. */
+.end-banked {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0;
+  color: var(--accent);
+}
+
+/*
+ * THE PAYOUT LEDGER (2026-09-02).
+ *
+ * A description list of terms and values: the label runs to the left, the
+ * number sits hard right, and the column of numbers can therefore be read down
+ * — which is the whole reason a ledger is a ledger and not a paragraph. The
+ * total rules off above itself the way a receipt does.
+ */
+.payout-rows {
+  margin: 0 0 var(--gap);
+  width: 100%;
+}
+
+.payout-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: 0.15rem 0;
+}
+
+.payout-row dt {
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
+.payout-row dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.payout-total {
+  border-top: 1px solid var(--panel-edge);
+  margin-top: 0.25rem;
+  padding-top: 0.35rem;
+  font-weight: 600;
 }
 
 .end .facts {
@@ -1940,6 +2040,64 @@ button[disabled] {
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
   font-size: 0.75rem;
+}
+
+/*
+ * The in-app-browser warning (2026-09-02).
+ *
+ * The update note's shape, because it is the same kind of thing: a line that
+ * arrives unannounced over a running game and goes away on a tap. It is a
+ * SENTENCE rather than a label, so it wraps and reads in the ordinary voice —
+ * the accent belongs to the update, which is an action, and this is a caution.
+ */
+.in-app button {
+  border-color: var(--panel-edge);
+  color: var(--ink-dim);
+  font-family: inherit;
+  letter-spacing: normal;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: start;
+  max-width: min(26rem, 92vw);
+}
+
+/* The install invitation: the quietest thing on the ending, after the actions
+   and before the map. `.quiet` already carries that voice. */
+.end-install {
+  width: min(26rem, 100%);
+}
+
+/*
+ * THE SURVEY, in the atlas (2026-09-02).
+ *
+ * One row per goal: its mark, what it asks, and — on the ones still open — what
+ * it pays. A met row goes to the accent and drops its price, because a goal you
+ * have done is a fact rather than an offer.
+ */
+.survey {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.survey li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  padding: 0.2rem 0;
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
+.survey li.met {
+  color: var(--accent);
+}
+
+.survey li b {
+  margin-inline-start: auto;
+  font-weight: 400;
+  white-space: nowrap;
+  color: var(--ink-faint);
 }
 
 /* The kept error, in SETTINGS. Monospace and selectable, because the one

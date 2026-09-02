@@ -191,7 +191,34 @@ export type Strings = {
         worthPerExtra: number,
         depthRings: number | null,
       ) => string;
-      readonly scored: (pts: number) => string;
+      /**
+       * The score a pop banked, WITH its recipe (2026-09-02).
+       *
+       * It printed the bare number while the TILES line beside it spelled out
+       * every term of its own arithmetic, so the smaller number was fully
+       * explained and the one seventy times bigger was not. Marc's phone
+       * caught it: a pocket paying `+113 tiles: 1 per tile, +1 more per 2
+       * worth, +8 for the depth` and then, under nothing at all, `+8971 pts.`
+       *
+       * The BOUNTY belongs in HERE rather than only on its own line: the ×3 is
+       * inside this number, and a separate sentence saying "collected" reads
+       * as something that happened alongside the score rather than a term of
+       * it. Its own line stays, because "collected" is still the news.
+       *
+       * `rate` is `pointsPerPop` as whole percent, and it is the term nothing
+       * on screen has ever named: under the single payout a pocket's raw worth
+       * is scaled before it is banked, which is why no product of the numbers
+       * a player could see ever reached the total.
+       */
+      readonly scored: (
+        pts: number,
+        worth: number,
+        counted: number,
+        cap: number | null,
+        multiplier: number,
+        bounty: number | null,
+        rate: number,
+      ) => string;
       readonly luck: (gained: number, oddsRose: boolean) => string;
       readonly treasure: (rarity: string) => string;
       readonly points: (
@@ -390,6 +417,22 @@ export type Strings = {
       arc: string,
       tries: number,
     ) => string;
+    /**
+     * THE THREE LINES ON THE SHARE CARD (2026-09-02).
+     *
+     * The card is a picture, and a picture is still something a player reads —
+     * so its words come from here like every other sentence. Ashwake 1 drew
+     * `${points} pts` and `REACH ${n}` straight into the canvas, which is
+     * exactly the mistake D4 exists to make impossible: a French player's run,
+     * shared into a French chat, labelled in English.
+     *
+     * `cardSeed` is the run's own seed, printed small: it is what makes the
+     * card a door rather than a boast. Absent on a daily, which plays a date
+     * nobody outside this device's book could use.
+     */
+    readonly cardScore: (points: number) => string;
+    readonly cardReach: (reach: number) => string;
+    readonly cardSeed: (seed: number) => string;
   };
   readonly daily: {
     readonly badge: (
@@ -669,6 +712,16 @@ export type Strings = {
     /** One world of the three, by number. */
     readonly worldN: (n: number) => string;
     /**
+     * The perk hunt, across all three worlds — the hall of fame's TOTALS tab.
+     *
+     * A perk belongs to the world that found it, so the shop's shelf only ever
+     * shows the world you are standing in. This is the one place all three can
+     * be seen at once, which is what makes a find on world 2 a thing you can
+     * still point at a month later.
+     */
+    readonly perksFound: string;
+    readonly noPerksYet: string;
+    /**
      * The atlas: what a world has become, in the panel that holds it.
      *
      * Ashwake 1 kept these as a block in the manual's MENU tab, and its
@@ -684,6 +737,8 @@ export type Strings = {
     readonly atlasShrines: string;
     readonly atlasFinds: string;
     readonly atlasUnlocked: string;
+    /** The five world goals, met and unmet — the atlas's own fold. */
+    readonly survey: string;
     /**
      * The atlas, headed on the END SCREEN (2026-09-01).
      *
@@ -694,6 +749,109 @@ export type Strings = {
     readonly thisWorld: string;
     /** A slot nobody has played yet. */
     readonly emptyWorld: string;
+    /**
+     * WHICH GAME YOU ARE IN (2026-09-02).
+     *
+     * There are three modes and this body named none of them. A `?seed=` link
+     * is the ordinary way a stranger meets Ashwake — it is what SHARE hands
+     * out — and the recipient landed on an unchanged front door, began, played
+     * a run on somebody else's world, banked nothing, and was never told that
+     * was the deal. Ashwake 1 said so in three places, and START is the one it
+     * argued about hardest, because a shared link's recipient is exactly the
+     * person reading a manual for the first time.
+     *
+     * `now` is which one you are in and is the only line always shown. The
+     * other three fold: they are a reference, not a lesson.
+     */
+    readonly which: {
+      readonly title: string;
+      readonly nowWorld: string;
+      readonly nowShared: string;
+      readonly nowDaily: string;
+      readonly world: string;
+      readonly shared: string;
+      readonly daily: string;
+      /** SHARE, on the ending, is what turns a run into such a link. */
+      readonly howToShare: string;
+    };
+    /**
+     * BEGIN, on a door that is not this device's own world.
+     *
+     * The button said BEGIN whatever board was behind it, so the loudest
+     * control on the screen was the one place the mode could have been named
+     * and was not.
+     */
+    readonly beginShared: string;
+    readonly beginDaily: (day: string) => string;
+    /**
+     * SETTLE THIS WORLD — keep a shared seed as one of your three (2026-09-02).
+     *
+     * Ashwake 1's answer to "this board is good and I am about to lose it": the
+     * geography becomes one of this device's worlds, fresh and unexplored,
+     * played with your own economy from then on. Only the SEED travels; the
+     * sender's run stays theirs.
+     *
+     * It names the slot, because with three worlds there is no "the empty one"
+     * to assume, and a button that picks for you is a surprise rather than a
+     * choice.
+     */
+    readonly settleWorld: (slot: number) => string;
+    readonly settleNote: string;
+    /**
+     * The onward invitation, beside SHARE on a run that arrived by link.
+     *
+     * A recipient gets the same SHARE button as everybody and the chain
+     * propagates; nothing ever said so. One quiet line, next to the button that
+     * acts on it.
+     */
+    readonly cameByLink: string;
+    /**
+     * THE ENDING'S HEADLINE AND ITS LEDGER (2026-09-02).
+     *
+     * The audit of this body against Ashwake 1 found the end screen was where
+     * the most had been lost, and all of it the same kind of thing: facts the
+     * game had already computed and then declined to say.
+     *
+     * - `settle` folded the run into the record book and threw the answer away,
+     *   so a run that beat the standing best said nothing. It is the one line
+     *   on this screen a player might screenshot.
+     * - `shortOfBest` rather than restating the best beside a run that missed
+     *   it: Ashwake 1's ruling, and the reason is that "how far short" is the
+     *   question and "best 480" is not an answer to it. Silent where there is
+     *   no standing best at all, which a shared-seed replay on a fresh device
+     *   has: "0 short of best" under a score is a line lying twice.
+     * - `run` and `try` name WHICH run this was. A daily counts tries and
+     *   confesses them, per the design's own honesty rule.
+     * - `relicsBanked` is what the run pays into the roguelite, as distinct
+     *   from the score. `endingPayout` has computed it since the rules were
+     *   lifted and nothing printed it.
+     */
+    readonly ending: {
+      readonly newBest: string;
+      readonly shortOfBest: (n: number) => string;
+      readonly run: (n: number) => string;
+      readonly try: (n: number) => string;
+      /** Replay today's board. The retry loop lives where the itch is. */
+      readonly tryAgain: string;
+      readonly relicsBanked: (n: number) => string;
+      /**
+       * The run's own shape, as the six facts Ashwake 1 fixed the grid at.
+       *
+       * Fixed so the screen does not change shape between a short run and a
+       * long one. LUCK is deliberately not among them: the ending bonus has
+       * already folded the unspent purse into the relics line, and this grid is
+       * about the run's shape rather than its currency.
+       */
+      readonly placements: string;
+      readonly popped: string;
+      readonly biggestPop: string;
+      /** "412 at 78%" — how big, and how far through the run it landed. */
+      readonly biggestPopAt: (points: number, pct: number) => string;
+      readonly destinations: string;
+      readonly bounties: string;
+      /** Nothing to report in a cell that is always present. */
+      readonly none: string;
+    };
     /**
      * BEGIN AT CAMP, and where the camp is — the fifth shrine's unlock
      * (2026-08-30).
@@ -755,6 +913,24 @@ export type Strings = {
     readonly lensClearLabel: (ground: string) => string;
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;
+    /**
+     * THE TWO NOTES ABOUT WHERE THIS GAME IS LIVING (2026-09-02).
+     *
+     * `install` is an invitation, in the quietest voice on the ending, and only
+     * where the browser actually handed over a dialog to open — Ashwake 1's
+     * launch audit found it printing directions to a menu while Chrome held the
+     * real thing unopened, so words are the fallback and a button is the offer.
+     *
+     * `inApp` is the counterweight to the game's own distribution: a SHARE link
+     * most often lands inside Instagram or TikTok, whose WebView storage is
+     * partitioned and commonly wiped when the host app closes. The useful half
+     * of the sentence is the instruction, not the diagnosis, so it says what to
+     * do about it.
+     */
+    readonly install: string;
+    readonly inApp: string;
+    /** Put a note down. Short, because it sits inside a floating line. */
+    readonly dismiss: string;
     /** Hand this run to somebody. The game's only distribution mechanism. */
     readonly share: string;
     /** No share sheet here, so it went to the clipboard instead. */
@@ -804,5 +980,23 @@ export type Strings = {
     readonly sites: string;
     /** The shape of the run's harvests, over the run. */
     readonly arc: string;
+    /**
+     * THE SCORE, IN THE THREE TERMS THE ENGINE ADDS IT UP IN (2026-09-02).
+     *
+     * The breakdown above answers "off which tiles"; it cannot answer "why is
+     * the total bigger than the tiles". `endingBonus` pays two things once, at
+     * the moment a run stops — reach, and claims — and neither had ever
+     * appeared on a screen, so three honest columns summed to a number the
+     * player could see was wrong and could not find.
+     *
+     * SITES is its own row rather than part of POPS: a ★ is paid outright the
+     * moment it is claimed, and folding it into pops made one word name two
+     * unlike things. Ashwake 1 split them the day its own breakdown could not
+     * explain the row above it.
+     */
+    readonly pops: string;
+    readonly reachBonus: (reach: number, per: number) => string;
+    readonly claimBonus: (claims: number, per: number) => string;
+    readonly total: string;
   };
 };

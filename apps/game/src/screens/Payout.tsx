@@ -1,4 +1,4 @@
-import { COLOURS, RARITIES, POINT_SOURCES } from '@content/tuning';
+import { COLOURS, RARITIES, POINT_SOURCES, TUNING } from '@content/tuning';
 import { COLOUR_ICON } from '@theme/icons';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
@@ -26,6 +26,10 @@ import { Fold } from '../ui/Fold';
 
 export type PayoutProps = {
   readonly summary: NonNullable<HudView['summary']>;
+  /** The score itself, so the rows can add up to something on screen. */
+  readonly points: number;
+  /** How far out the run reached — the reach bonus is paid per ring of it. */
+  readonly reach: number;
   /** The direction, for its own names for the four grounds. A bar labelled
    *  with a SHAPE was fine while the shape was a character in the same face as
    *  the words; an icon beside a nameless bar is a picture with no caption. */
@@ -35,12 +39,50 @@ export type PayoutProps = {
   readonly s: Strings;
 };
 
-export function Payout({ summary, harvests, theme, s }: PayoutProps) {
+export function Payout({ summary, points, reach, harvests, theme, s }: PayoutProps) {
   const split = summary.points;
   const names = namesOf(theme, s.locale);
 
+  /*
+   * THE SCORE, IN THE THREE TERMS THE ENGINE ADDS IT UP IN (2026-09-02).
+   *
+   * `endingBonus` pays two things once, at the moment a run stops: a bonus per
+   * ring of reach, and one per destination claimed. Neither had ever been on a
+   * screen in this body, so the bars below — which can only ever speak for
+   * tiles that were POPPED — summed to a fraction of the total with nothing
+   * accounting for the difference. A breakdown that does not add up reads as a
+   * bug in the game rather than as an incomplete breakdown.
+   *
+   * Derived from the same numbers the reducer paid with rather than restated:
+   * `reach` is `reachOf(state)` through the HUD, and `summary.claims` counts
+   * the identical landmarks `endingBonus` counts. POPS is the remainder, which
+   * is what makes the column honest — if a rule is ever added that pays points
+   * some other way, it lands visibly in POPS instead of silently nowhere.
+   *
+   * Silent where both dials are off: there is nothing to break down, and four
+   * rows of zero is worse than no rows.
+   */
+  const reachBonus = reach * TUNING.endReachBonus;
+  const claimBonus = summary.claims * TUNING.endClaimBonus;
+  const pops = points - reachBonus - claimBonus - summary.sitePoints;
+  const bonuses = TUNING.endReachBonus > 0 || TUNING.endClaimBonus > 0;
+
   return (
     <Fold summary={s.ui.details}>
+      {bonuses && (
+        <dl className="payout-rows">
+          <Row label={s.payout.pops} value={pops} />
+          {summary.sitePoints > 0 && <Row label={s.payout.sites} value={summary.sitePoints} sign />}
+          <Row label={s.payout.reachBonus(reach, TUNING.endReachBonus)} value={reachBonus} sign />
+          <Row
+            label={s.payout.claimBonus(summary.claims, TUNING.endClaimBonus)}
+            value={claimBonus}
+            sign
+          />
+          <Row label={s.payout.total} value={points} total />
+        </dl>
+      )}
+
       <Arc points={harvests} label={s.payout.arc} />
 
       {split !== null && (
@@ -78,11 +120,44 @@ export function Payout({ summary, harvests, theme, s }: PayoutProps) {
         </>
       )}
 
-      {summary.sitePoints > 0 && (
+      {/*
+        SITES used to be a loose note here and is a ROW in the ledger above
+        since 2026-09-02: it is a term of the total, and a fact that belongs in
+        a sum reads wrong sitting beside it. Kept as a note only where there is
+        no ledger to put it in, which is a build with both end dials at zero.
+      */}
+      {!bonuses && summary.sitePoints > 0 && (
         <p className="note">
           {s.payout.sites} {summary.sitePoints}
         </p>
       )}
     </Fold>
+  );
+}
+
+/**
+ * One line of the ledger: what it is called, and what it was worth.
+ *
+ * A `<dl>` rather than a table or a row of spans, because that is what this is
+ * — terms and their values — and it is the markup a screen reader reads as
+ * pairs rather than as ten loose numbers.
+ */
+function Row({
+  label,
+  value,
+  sign,
+  total,
+}: {
+  readonly label: string;
+  readonly value: number;
+  /** A bonus reads as an addition; the base and the total do not. */
+  readonly sign?: boolean;
+  readonly total?: boolean;
+}) {
+  return (
+    <div className={total === true ? 'payout-row payout-total' : 'payout-row'}>
+      <dt>{label}</dt>
+      <dd>{sign === true ? `+${value}` : value}</dd>
+    </div>
   );
 }

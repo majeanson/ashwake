@@ -38,14 +38,36 @@ export function shareUrl(params: Readonly<Record<string, string>>): string {
  * changed their mind, and telling them something went wrong would be a lie —
  * so it comes back as `shared` and the screen says nothing.
  */
-export async function share(subject: ShareSubject, s: Strings, name: string): Promise<ShareResult> {
+export async function share(
+  subject: ShareSubject,
+  s: Strings,
+  name: string,
+  /**
+   * The run's own picture, where one could be drawn (2026-09-02).
+   *
+   * Optional, and every rung below survives its absence: a browser with no
+   * canvas, an image that would not decode, a share sheet that refuses files —
+   * each falls through to exactly the text-and-link share this function did
+   * before the card existed. See `shell/shareCard.ts` for why the card matters
+   * at all.
+   */
+  card?: Blob | null,
+): Promise<ShareResult> {
   const { text, params } = shareOf(name, subject, s);
   const url = shareUrl(params);
+  const file = card == null ? null : new File([card], 'ashwake-run.png', { type: 'image/png' });
 
   // `navigator.share` is undefined on desktop, and on some in-app browsers the
   // property exists while the call rejects. Both end at the clipboard.
   if (typeof navigator.share === 'function') {
     try {
+      // The picture first, where the platform will take one. `canShare` is the
+      // only honest test: a sheet handed files it will not accept rejects the
+      // whole share, which would lose the link as well as the card.
+      if (file !== null && navigator.canShare?.({ files: [file] }) === true) {
+        await navigator.share({ text, url, files: [file] });
+        return 'shared';
+      }
       await navigator.share({ text, url });
       return 'shared';
     } catch (error) {
@@ -60,6 +82,32 @@ export async function share(subject: ShareSubject, s: Strings, name: string): Pr
     // Ashwake 1 learned that on a panel whose own error handler then ate the
     // report it was copying. The try has to wrap the reach, not the promise.
     if (navigator.clipboard === undefined) return 'failed';
+    /*
+     * DESKTOP IS DISCORD AND TWITTER (Ashwake 1's launch audit, 2026-08-20).
+     *
+     * There is no share sheet here to hand a picture to, and a downloaded file
+     * rots in a folder — but one Ctrl+V posts the actual card where a link
+     * alone would be scrolled past. Written as one clipboard item carrying both
+     * the image and the text, so a target that takes only text still gets the
+     * whole share rather than nothing.
+     *
+     * Its own try: image clipboard writes are refused by permission policy on
+     * some browsers and by nothing at all on others, and that refusal must fall
+     * through to the plain text copy rather than out of the function.
+     */
+    if (card != null && typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': card,
+            'text/plain': new Blob([`${text} ${url}`], { type: 'text/plain' }),
+          }),
+        ]);
+        return 'copied';
+      } catch {
+        // Images refused. The text below is the share that always works.
+      }
+    }
     await navigator.clipboard.writeText(`${text} ${url}`);
     return 'copied';
   } catch {

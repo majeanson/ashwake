@@ -1,7 +1,10 @@
 import { knownFraction, unlockedBy, UNLOCKS, unlockLabel, type WorldMemory } from '@meta/world';
 import { PERKS } from '@meta/progress';
+import { GOALS, type GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
+import { Fold } from '../ui/Fold';
+import { Icon } from '../ui/Icon';
 
 /**
  * The atlas: what a world has BECOME (Stage 5, 2026-08-29).
@@ -22,8 +25,34 @@ import { FactGrid } from '../ui/FactGrid';
  * against, which is why FARTHEST lives here and REACH lives in the stat row.
  */
 
-export function Atlas({ world, s }: { readonly world: WorldMemory; readonly s: Strings }) {
+export function Atlas({
+  world,
+  s,
+  survey,
+}: {
+  readonly world: WorldMemory;
+  readonly s: Strings;
+  /**
+   * THE SURVEY — the five world goals, met and unmet (2026-09-02).
+   *
+   * `content/goals.ts` calls them "five world-scale goals, legible from run
+   * one", `metGoalIds` detects them, `settle` pays them and the ending names
+   * the one a run was the first to prove. The standing LEDGER — which five,
+   * and which of them this world has done — existed nowhere: a player could
+   * be told they had met a goal and had no way to ask what the others were.
+   *
+   * The met ids are computed by the shell and handed in, because the answer
+   * depends on the device's perk shelf as well as on the world, and an atlas
+   * that read `progress` would be a component deciding a rule.
+   *
+   * Absent on the ending, deliberately: that screen already names the goals
+   * THIS RUN met, and a ledger of five underneath it would answer a question
+   * nobody has asked at the moment they are reading a score.
+   */
+  readonly survey?: readonly GoalId[];
+}) {
   const awake = unlockedBy(world);
+  const met = new Set(survey ?? []);
 
   return (
     <section className="atlas">
@@ -62,6 +91,32 @@ export function Atlas({ world, s }: { readonly world: WorldMemory; readonly s: S
           {s.ui.atlasUnlocked} ·{' '}
           {awake.map((id) => unlockLabel(id as (typeof UNLOCKS)[number]['id'], s)).join(' · ')}
         </p>
+      )}
+
+      {/*
+        THE SURVEY, folded — see `survey`.
+
+        Folded because a ledger of five is a reference and the seven facts above
+        it are the answer to "how is this world doing". Every goal is listed
+        whether or not it is met, including on a world that has met none: the
+        unmet ones are the point, and a list that only shows what you have done
+        cannot tell you what there is to do.
+      */}
+      {survey !== undefined && (
+        <Fold summary={s.ui.survey}>
+          <ul className="survey">
+            {GOALS.map((goal) => (
+              <li key={goal.id} className={met.has(goal.id) ? 'met' : undefined}>
+                <Icon name={met.has(goal.id) ? 'met' : 'notYet'} />
+                <span>{s.goal[goal.id]}</span>
+                {/* What it PAYS, on the ones still open: a goal with no price
+                    beside it is a chore, and this is the number that makes
+                    walking another five rings worth it. */}
+                {!met.has(goal.id) && <b>{s.ui.ending.relicsBanked(goal.reward)}</b>}
+              </li>
+            ))}
+          </ul>
+        </Fold>
       )}
     </section>
   );

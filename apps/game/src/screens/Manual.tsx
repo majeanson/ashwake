@@ -114,13 +114,28 @@ export type ManualProps = {
    *  keys work everywhere; this only decides whether to spend a screen of a
    *  phone's manual listing keys nobody there has. */
   readonly keyboard?: boolean;
+  /**
+   * WHICH GAME the reader is in right now (2026-09-02).
+   *
+   * The manual described one game and the player might be in any of three.
+   * That matters most for the reader least equipped to notice: a `?seed=`
+   * link's recipient opens START first, and every sentence about keeping
+   * ground, banking relics and buying upgrades is false for them. Ashwake 1
+   * put this section here after finding exactly that, and its note is the
+   * reason it is not folded away: this is the most-read passage in the game
+   * and it was the most-read false one.
+   *
+   * Absent means an unknown mode — a bare test, the gallery — and the section
+   * simply does not print rather than guessing.
+   */
+  readonly mode?: 'world' | 'shared' | 'daily';
   readonly onBack: () => void;
   /** The MENU tab's contents — settings, restart, the door home. Host-supplied
    *  because they are the SHELL's business, not the manual's. */
   readonly menu?: React.ReactNode;
 };
 
-export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
+export function Manual({ theme, s, keyboard, mode, onBack, menu }: ManualProps) {
   const tabs = (menu === undefined ? TABS : (['menu', ...TABS] as const)) as readonly (
     TabId | 'menu'
   )[];
@@ -171,6 +186,35 @@ export function Manual({ theme, s, keyboard, onBack, menu }: ManualProps) {
           {s.ui.expedition.lines.map((line) => (
             <p key={line}>{line}</p>
           ))}
+        </section>
+      )}
+
+      {/*
+        WHICH GAME — see `mode` (2026-09-02).
+
+        The line that says which of the three you are in is always visible; the
+        three definitions fold, because they are a reference rather than a
+        lesson and only one of them is about the run in front of you.
+      */}
+      {on === 'start' && mode !== undefined && (
+        <section>
+          <h2 className="panel-title marked">
+            <span className="card-glyph" aria-hidden="true" />
+            <span>{s.ui.which.title}</span>
+          </h2>
+          <p>
+            {mode === 'world'
+              ? s.ui.which.nowWorld
+              : mode === 'shared'
+                ? s.ui.which.nowShared
+                : s.ui.which.nowDaily}
+          </p>
+          <Fold summary={s.ui.details}>
+            <p>{s.ui.which.world}</p>
+            <p>{s.ui.which.shared}</p>
+            <p>{s.ui.which.daily}</p>
+            <p>{s.ui.which.howToShare}</p>
+          </Fold>
         </section>
       )}
 

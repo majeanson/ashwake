@@ -4,7 +4,62 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-01, last — the destinations become their marks.**
+Last checkpoint: **2026-09-02 — the audit against Ashwake 1, and the twelve
+things it found.**
+
+Marc asked what was still missing compared to `../tiles`, then asked for it to
+be fixed. A module-by-module diff plus a consumer-grep over every core export
+found twelve surfaces. **No rule moved:** `pnpm sim` is byte-identical,
+`content/tuning.ts` differs only by two registries that moved out of
+`engine/state.ts`, and `TEACH_IDS` is unchanged. Every one of the twelve is a
+fact the game had already computed and then declined to say.
+
+**The method is the finding.** `INTERACTIONS.md` asks "what can a finger do
+here" and was right about every gesture; all twelve misses sit one level below a
+gesture — a tested export in `packages/core` with no importer in `apps/game`. So
+`CLAUDE.md`'s standing check now has a second half: **before calling a MODULE
+done, grep for a consumer of every export it has.**
+
+**Two dead-code findings, the fifth and sixth of this body's signature miss.**
+`HudView.hint` — the nearest destination, the endless plane's whole answer to
+"where do I go?" — was computed every render and read by nothing; it is a toast
+on change again (`shell/signpost.ts`), with Ashwake 1's three guards intact. And
+`debug.overlay` shipped `wired: true` with **no reader and no door**:
+`parseOverrides` (`?ff=`) had no caller either, so the only route to a
+`player: false` flag did not exist. Both halves built.
+
+**The pop receipt was right and silent.** `+8971 pts.` under nothing, beside a
+`+113 tiles` line that named every term of its own much smaller sum. The number
+checks out end to end (178 worth × 16 pocket × 3 distance × 3 bounty × 35% per
+pop); the recipe was unreachable, because `h.points` lives in a branch
+`singlePayout` never dispatches. It carries the whole equation now — including
+`pointsPerPop`, a term **no surface in either body had ever named**, which is
+why no product of the visible numbers had ever reached the visible total.
+
+**The end screen had lost the most.** NEW BEST and the run number were computed
+by `settle` and discarded; the two end-of-run bonuses had never been drawn, so
+the breakdown summed to a fraction of the score with nothing explaining the gap;
+relics banked was never printed, on the screen with the shop under it. An e2e
+now reads the payout rows back and checks they sum to the score.
+
+**And the share card is back**, with one change: every string is handed in
+already worded. Ashwake 1 drew `${points} pts` into the canvas in English on a
+card a French player was about to send — **D4 covers pictures.** With it: the
+front door and the manual name which of the three games you are in, a shared
+seed can be SETTLED as one of three worlds, the onward-share line returned, the
+install prompt is caught rather than thrown away, and an in-app WebView is
+warned that the world may not be kept there.
+
+Two `prose.pin` snapshots were re-recorded deliberately, in the same commit,
+for the receipt's new line — both languages, one line each. Marc's French
+review surface should be read for it.
+
+Verified: 1071 tests / 76 files, 86 Playwright, `pnpm sim` byte-identical,
+typecheck/lint/build clean. **Nothing seen on a phone yet:** the signpost's
+cadence, the receipt's new line and the card's composition are Marc's to judge
+in portrait.
+
+Previous checkpoint: **2026-09-01, last — the destinations become their marks.**
 
 Marc, after three rounds on one phone photo and two wrong fixes: _"i want the
 star symbol and just that for example"_. His own screenshot was the argument —

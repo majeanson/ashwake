@@ -1458,21 +1458,45 @@ export function harvestNote(
     // this line used to spell `floor(points * pointsPerPop)` itself, and
     // would have gone on printing the zero the engine stopped banking the
     // day a scoring pop gained its floor of one.
+    //
+    // With its whole recipe since 2026-09-02. It printed the number alone,
+    // beside a TILES line that named every term of its own much smaller sum —
+    // so the pocket that mattered was the one nothing explained. The terms are
+    // the engine's, in `harvestValue`'s own order: worth, the size bonus (and
+    // where it stops), the distance multiplier, the bounty, and `pointsPerPop`
+    // last, which is the scaling no surface in either body has ever named.
     const scored =
-      t.singlePayout && t.pointsPerPop > 0 ? `\n${h.scored(scoreOf(value.points, t))}` : '';
+      t.singlePayout && t.pointsPerPop > 0
+        ? `\n${h.scored(
+            scoreOf(value.points, t),
+            worth,
+            countedOf(value.count, t),
+            cappedAt(value.count, t),
+            multiplier,
+            value.questPays ? (before.quest?.bonus ?? null) : null,
+            Math.round(t.pointsPerPop * 100),
+          )}`
+        : '';
     return `${head}\n${h.tiles(value.tiles, t.tilesPerPop, t.worthPerExtraTile, rings > 0 ? rings : null)}${scored}${luck}${bounty}`;
   }
   if (choice === 'treasure') {
     return `${head}\n${h.treasure(String(value.treasure))}`;
   }
 
-  const counted = t.harvestSizeCap > 0 ? Math.min(value.count, t.harvestSizeCap) : value.count;
-  const capped = t.harvestSizeCap > 0 && value.count > t.harvestSizeCap ? t.harvestSizeCap : null;
   return (
-    `${head}\n${h.points(value.points, worth, counted, capped, multiplier, value.questPays ? t.questBonus : null)}` +
+    `${head}\n${h.points(value.points, worth, countedOf(value.count, t), cappedAt(value.count, t), multiplier, value.questPays ? t.questBonus : null)}` +
     bounty
   );
 }
+
+/** How many of a pocket's tiles the size bonus actually counts. */
+const countedOf = (count: number, t: Tuning): number =>
+  t.harvestSizeCap > 0 ? Math.min(count, t.harvestSizeCap) : count;
+
+/** The cap, but only where this pocket reached it — a limit nobody is near is
+ *  a number in the way. */
+const cappedAt = (count: number, t: Tuning): number | null =>
+  t.harvestSizeCap > 0 && count > t.harvestSizeCap ? t.harvestSizeCap : null;
 
 /**
  * One line of a set: a mark, and the sentence beside it.
@@ -1878,4 +1902,39 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
     case 'empty':
       return cell.native === undefined ? x.open : x.native(name(cell.native));
   }
+}
+
+/**
+ * THE DEBUG LINE — the only console this project has (2026-09-02).
+ *
+ * Testing happens on the deployed site, on a phone, in portrait: there is no
+ * dev server, no console worth opening and no way to read a number that is not
+ * on the screen. `debug.overlay` has been a declared flag since the core was
+ * lifted, marked `wired: true`, and **nothing in this body has ever read it**
+ * — while `?ff=`, its only door, was never parsed either. Two halves of one
+ * miss, and the exact shape `features.ts`'s own header warns about.
+ *
+ * Ashwake 1 carried this as `Game#debugLine`. The fields are its, unchanged:
+ * the seed a bug is reproduced from, the board's size, the four run numbers,
+ * both RNG cursors (which is how a desync is spotted at all), the death cause,
+ * the relics, the worn perk, the find sense and the claim count.
+ *
+ * **Not `text/`, and that is not a D4 exception.** D4 governs every sentence a
+ * PLAYER reads. This is a diagnostic: ids and integers, in no language,
+ * addressed to whoever is holding the phone next to a bug report. Translating
+ * `rng 41/12` would make it harder to read in both languages at once.
+ */
+export function debugLine(state: GameState, worn: string | null): string {
+  let claims = 0;
+  for (const cell of Object.values(state.cells)) {
+    if (cell.kind === 'landmark' && cell.claimed) claims++;
+  }
+  return (
+    `seed ${state.rootSeed} · cells ${Object.keys(state.cells).length} · ` +
+    `p${state.placements} t${state.tiles} pts${state.points} luck${state.luck} · ` +
+    `rng ${state.rng.tiles.cursor}/${state.rng.loot.cursor}` +
+    (state.death === null ? '' : ` · ${state.death}`) +
+    ` · relics${state.relics} · perk:${worn ?? '-'} · sense${state.tuning.findSense} · ` +
+    `claims${claims}`
+  );
 }

@@ -2907,3 +2907,100 @@ fixed here.
 
 **Verified:** 1062 tests / 74 files, `pnpm sim` byte-identical,
 typecheck/lint/format clean.
+
+### Session 37 — the audit against Ashwake 1, and the twelve things it found (2026-09-02)
+
+**Question:** Marc asked what is still missing in this body compared to
+`../tiles`, and asked for it to be fixed. So: what does a module-by-module
+audit find that four stages of ledgers did not — and is any of it a rule rather
+than a screen?
+
+**Answer: no rule moved, and twelve surfaces were missing.** `pnpm sim` is
+byte-identical, `content/tuning.ts` differs from Ashwake 1's only by two
+registries that moved out of `engine/state.ts`, and `TEACH_IDS` is unchanged.
+Every one of the twelve is a fact the game had already computed and then
+declined to say.
+
+**The audit's method, and why it beat the ledgers.** `INTERACTIONS.md` asks
+"what can a finger do here" and had been right about every gesture. The misses
+are all one level below a gesture: a function in `packages/core` with a test, an
+export, and no importer in `apps/game`. Diffing the two trees module by module
+and then grepping each core export for a consumer found them in an afternoon —
+which is `CLAUDE.md`'s own standing check, run over the CORE rather than over a
+screen. **Extend the check: before calling a MODULE done, grep for a consumer
+of every export it has.**
+
+**The two dead-code findings, which are the fifth and sixth of this body's
+signature miss.**
+
+1. **`HudView.hint`.** `hintFor` computes the nearest unclaimed destination
+   every render — "a CACHE, five hexes out" — and nothing in this body has ever
+   read it. It is the endless plane's whole answer to "where do I go?". Back as
+   a toast on CHANGE (`shell/signpost.ts`), with Ashwake 1's three guards:
+   primed rather than greeting, only on a beat where nothing louder spoke, and
+   silent until RIPE is taught — that last one cost Ashwake 1 a run-one killer,
+   where a stranger was told to build out and touch the light before the game
+   had said what ripening was.
+2. **`debug.overlay` shipped `wired: true` with no reader AND no door.**
+   `parseOverrides`/`withOverrides` — `?ff=`, tested since the lift — had no
+   caller either, so the only way to reach a `player: false` flag did not
+   exist. Both halves built: `useDevice` applies and persists `?ff=`, and
+   `view#debugLine` is the reader. `features.ts`'s own header says a registry of
+   aspirational flags is a to-do list that lies; it was lying about itself.
+
+**The pop receipt was arithmetically right and rhetorically silent.** Marc's
+phone: a pocket paying `+113 tuiles : 1 par tuile, +1 de plus par 2 de valeur,
++8 pour la profondeur` and then, under nothing at all, `+8971 pts.` The 8971 is
+correct — 178 worth × 16 pocket × 3 distance × 3 bounty × 35% per pop, checked
+against `harvestValue` and `scoreOf` end to end — but **the only number on the
+card with no recipe was the one seventy times bigger than the one that had
+one.** `h.points`, which spells out every term, was unreachable: it lives in the
+`choice === 'points'` branch and `singlePayout` means `ActionBar` never
+dispatches that. `scored` carries the whole recipe now, `pointsPerPop` included,
+which is a term **no surface in either body has ever named** — so no product of
+the numbers a player could see had ever reached their own total. And the bounty
+moved INSIDE the equation: the ×3 is in the number, and a separate line saying
+"COLLECTED" read as something that happened alongside the score.
+
+**The end screen was where the most had been lost.** NEW BEST and the run
+number were computed by `settle` and thrown away (`Settled.standing` now
+returns them); the two end-of-run bonuses had never been on a screen, so the
+breakdown's three honest columns summed to a fraction of the score with nothing
+accounting for the difference; relics banked was never printed at all, on the
+screen with the shop under it; and the fact grid restated the score and then
+double-counted the purse. An e2e now reads the ledger rows back and checks they
+sum to the score itself.
+
+**And the distribution mechanism had lost its picture.** `shell/share.ts` calls
+sharing "the game's entire distribution mechanism" and this body pasted a
+sentence. `render/shareCard.ts` is ported — with one change that matters: every
+string is handed in already worded, because Ashwake 1 drew `${points} pts` and
+`REACH ${n}` straight into the canvas, in English, on a card a French player was
+about to send. **D4 covers pictures.** Beside it: the front door and the manual
+now name which of the three games you are in, a shared seed can be SETTLED as
+one of your three worlds, and the onward-share line is back.
+
+**Two things about where the game LIVES, both Ashwake 1 shipped.** Chrome's
+`beforeinstallprompt` was being thrown away, so the only route to a home screen
+was knowing your own browser's menu; and nothing warned a player inside an
+Instagram or TikTok WebView that the world they were about to build might not be
+kept — which is precisely where a SHARE link lands most often. The counterweight
+to the growth mechanism was missing on the same axis as the growth mechanism.
+
+**Two snapshots re-recorded, deliberately, and this is the reason** (`CLAUDE.md`
+requires it in the same commit): `prose.pin.test.ts` moves `+1 pts.` to `+1 pts
+= worth 1 × pocket 1 × distance 1, at 35% per pop.` in both languages, and that
+is the whole diff. Marc's French review surface should be read for the new line.
+
+**One thing lint taught, worth keeping.** `react-hooks/immutability` refuses a
+write to a ref that a hook declared ABOVE it already closes over. The fix was
+better than the workaround: the signpost now reads and writes its ref once per
+dispatch, before any branch can return, rather than assigning on each of three
+exit paths — which had been three places for "did we look" to drift apart.
+
+**Verified:** 1071 tests / 76 files, 86 e2e, typecheck/lint clean, `pnpm sim`
+byte-identical to `sim.golden.txt`. **Nothing seen on a phone yet** — the
+signpost's cadence, the receipt's new line and the share card's composition are
+all Marc's to judge in portrait.
+
+**Next:** the phone pass on the above, and `NEXT.md` §5's art pipeline.

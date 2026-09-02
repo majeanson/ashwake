@@ -23,6 +23,14 @@ the core implements and tested, reachable from nothing. A rendered control is
 not a wired one. `INTERACTIONS.md` is the gesture-by-gesture matrix against
 Ashwake 1, and it is the answer to "did we get back what we had".
 
+**And before calling a MODULE done, grep for a consumer of every export it
+has.** The matrix above was right about every gesture and twelve surfaces were
+still missing (2026-09-02): `HudView.hint` — the plane's own signpost —
+computed every render and read by nothing, `?ff=` tested with no caller so
+`debug.overlay` had no door, `settle` computing NEW BEST and throwing it away.
+A gesture matrix cannot see a sentence the core writes that no screen prints.
+Run the check over `packages/core`, not only over a screen.
+
 Hard rules — all inherited, all still enforced:
 
 - **The core is pure.** `packages/core` has no DOM, no `Math.random`, no

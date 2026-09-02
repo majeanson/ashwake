@@ -21,6 +21,17 @@ misses of one shape: a screen that renders a thing without connecting it. Worth
 a standing check — **before calling a screen done, grep for a consumer of every
 action it can produce.**
 
+**Run 2026-09-02 over the CORE rather than over the screens, and it found
+twelve more** (`LOG.md` Session 37, `INTERACTIONS.md`'s new table). Two were
+purely dead: `HudView.hint`, the endless plane's own signpost, computed every
+render and read by nothing; and `parseOverrides` — `?ff=`, tested since the
+lift — with no caller at all, which meant `debug.overlay` shipped `wired: true`
+with neither a reader nor a door. Ten more were facts `settle`, `endingPayout`
+and `harvestNote` had already computed and no screen printed. **All twelve are
+built.** The lesson is now in `CLAUDE.md`: a gesture matrix cannot see a
+sentence the core writes that no screen prints, so grep every EXPORT for a
+consumer, not only every action.
+
 **This section was itself stale, and in the reassuring direction** (corrected
 2026-08-29, `LOG.md` Session 13, by grepping rather than trusting). It listed
 `route`, `goals`, `shedLadder`, `shopLevels` and `mark` as unconsumed, and

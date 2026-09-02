@@ -319,7 +319,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 Luck +1.",
   "harvest · tiles · TUNING": "POPPED 1, total worth 1
 +1 tiles: 1 per tile, +1 more per 2 worth.
-+1 pts.
++1 pts = worth 1 × pocket 1 × distance 1, at 35% per pop.
 Luck +10.",
   "harvest · treasure · BARE_TUNING": "POPPED 1, total worth 1
 A NULL tile goes to your stash. No tiles, no points.",
@@ -954,7 +954,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 Chance +1.",
   "harvest · tiles · TUNING": "RÉCOLTÉ 1, valeur totale 1
 +1 tuiles : 1 par tuile, +1 de plus par 2 de valeur.
-+1 pts.
++1 pts = valeur 1 × poche 1 × distance 1, à 35 % par récolte.
 Chance +10.",
   "harvest · treasure · BARE_TUNING": "RÉCOLTÉ 1, valeur totale 1
 Une tuile NULL va dans ta réserve. Pas de tuiles, pas de points.",

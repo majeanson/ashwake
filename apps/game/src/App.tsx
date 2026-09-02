@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
-import { arcSparkline, dailyBadge, dailySeed } from '@meta/daily';
+import { arcSparkline, dailyBadge, dailyName, dailySeed } from '@meta/daily';
+import { appendEntry } from '@meta/timeline';
 import { NAME } from '@meta/identity';
 import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
@@ -10,13 +11,15 @@ import { distance, key, parse, type HexKey } from '@engine/hex';
 import { namesOf } from '@theme/tokens';
 import {
   colourLesson,
+  debugLine,
   describeHexOf,
   pocketNote,
   purseLesson,
   rememberedNativeAt,
 } from '@view/view';
 import { isEnabled } from '@meta/features';
-import { EMPTY_PROGRESS, grantFind, hasMet, perkText } from '@meta/progress';
+import { EMPTY_PROGRESS, grantFind, hasMet, perkText, withWorldPerks } from '@meta/progress';
+import { metGoalIds } from '@meta/goals';
 import { ONLY_WORLD } from '@meta/records';
 import {
   mergeRun,
@@ -71,17 +74,26 @@ import {
   memoryFor,
   worldSeedFor,
   onShed,
+  wasSaid,
+  markSaid,
+  isFreeSlot,
+  settleSlot,
+  setActiveSlot,
+  SLOTS,
   writeRecords,
   writeTimeline,
   type Slot,
 } from './shell/storage';
 import { onceARun, type OnceId } from './shell/onceARun';
+import { signpostFor } from './shell/signpost';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
 import * as voice from './shell/voice';
 import { registerWorker } from './shell/worker';
 import { carriedBy, cross, dowryOf } from './shell/cross';
-import { settle, settleDaily } from './shell/settle';
+import { canInstall, inAppBrowser, isInstalled, promptInstall } from './shell/install';
+import { renderShareCard } from './shell/shareCard';
+import { settle, settleDaily, type Standing } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
 import { campFor, createSession, useSession, type Said } from './shell/store';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
@@ -381,6 +393,25 @@ function Game() {
    */
   const [endWorld, setEndWorld] = useState<WorldMemory | null>(null);
   /**
+   * Where the run that just ended stands, and which try a daily was.
+   *
+   * Both are written by the two settle paths and read only by the ending. They
+   * are STATE rather than derived, for `goals`' own reason: a standing is the
+   * difference between a book before and after, and once the book is written
+   * that difference is gone.
+   */
+  const [standing, setStanding] = useState<Standing | null>(null);
+  const [dailyTry, setDailyTry] = useState<number | null>(null);
+  /**
+   * The board as this run left it, taken once at the settle.
+   *
+   * Two readers, and they must be the same frame: the diary row, and the share
+   * card that ghosts it behind the score. A ref rather than state because
+   * nothing RENDERS from it — the ending walks the live board — and because it
+   * has to be readable from `onShare` at a moment the settle is long past.
+   */
+  const endShot = useRef<string | null>(null);
+  /**
    * A receipt that is holding the screen, waiting to be dismissed.
    *
    * Held rather than derived from the snapshot: a card outlives the dispatch
@@ -415,10 +446,27 @@ function Game() {
    * gives about `wakeAt`: everything a run starts from has to be put down in
    * one order, or two doors disagree about what a run starts from.
    */
+  /**
+   * The nearest destination at the last look.
+   *
+   * `undefined` until this run has looked once, which is the priming beat and
+   * is silent — a player resuming a board should not be greeted with a toast
+   * about ground they already knew was there. Declared ABOVE `forgetEnding`,
+   * which resets it: a ref referenced by a hook declared before it is a ref
+   * `react-hooks/immutability` will not let anything write to.
+   */
+  const signpost = useRef<string | null | undefined>(undefined);
   const forgetEnding = useCallback(() => {
     setGained({ perks: [], unlocks: [] });
     setEndWorld(null);
     setGoals([]);
+    setStanding(null);
+    setDailyTry(null);
+    endShot.current = null;
+    // A new board is a new set of neighbours: the signpost primes again rather
+    // than announcing, on the next look, whatever happens to be near the wake
+    // hex. See `shell/signpost.ts`.
+    signpost.current = undefined;
   }, []);
   /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
@@ -437,6 +485,65 @@ function Game() {
   useEffect(() => {
     registerWorker(() => setUpdated(true));
   }, []);
+
+  /*
+   * WHERE THIS GAME IS LIVING — two notes, each said once ever (2026-09-02).
+   *
+   * `install` is offered only where all three are true: the browser actually
+   * handed us a dialog, the app is not already installed, and this device has
+   * not been asked before. Sampled into state rather than read during render
+   * because `canInstall()` changes when the browser fires its event, and a
+   * render that reads a moving global is a render that disagrees with itself.
+   *
+   * `inApp` is raised at boot rather than on the ending: the whole point is to
+   * be read BEFORE a world is built inside storage that will not keep it.
+   */
+  /*
+   * Both are LAZY INITIALISERS rather than effects that set state.
+   *
+   * Whether this is an in-app browser, and whether the app is already
+   * installed, are true or false before the first paint — nothing about them
+   * arrives later. Deciding in an effect would render once with the answer
+   * missing and once with it, which is the cascading render `react-hooks`
+   * refuses and which would flash the note in and out. The one thing that DOES
+   * arrive later is `beforeinstallprompt`, and that has a listener below.
+   *
+   * The mark is written during initialisation, which is a side effect in a
+   * render — deliberately, and it is the same shape `startedFrom` uses: it runs
+   * exactly once for the life of the component, and the alternative is showing
+   * the note twice on a device that reloads.
+   */
+  const [installable, setInstallable] = useState(() => canInstall() && !isInstalled());
+  const [inApp, setInApp] = useState(() => {
+    if (!inAppBrowser() || wasSaid('inAppNote')) return false;
+    markSaid('inAppNote');
+    return true;
+  });
+  useEffect(() => {
+    // The event can arrive after mount. `beforeinstallprompt` is captured at
+    // module scope (see `shell/install.ts`); this is only the shell noticing.
+    const look = (): void => setInstallable(canInstall() && !isInstalled());
+    window.addEventListener('beforeinstallprompt', look);
+    return () => window.removeEventListener('beforeinstallprompt', look);
+  }, []);
+
+  /**
+   * The end screen's install offer, or nothing at all.
+   *
+   * Marked as said at the moment it is OFFERED rather than accepted: a player
+   * who read the invitation and did not take it has been invited, and asking
+   * again next run is how an invitation becomes nagging.
+   */
+  const offerInstall = useMemo(() => {
+    if (!installable || wasSaid('installNudge')) return undefined;
+    return () => {
+      markSaid('installNudge');
+      // False means the browser withdrew the offer between render and tap. The
+      // button simply goes, which is honest: there is nothing to open.
+      promptInstall();
+      setInstallable(false);
+    };
+  }, [installable]);
 
   const s = useMemo(() => stringsFor(locale), [locale]);
   /*
@@ -653,12 +760,26 @@ function Game() {
     if (!snap.hud.ended || banked.current === snap.state) return;
     banked.current = snap.state;
 
+    /*
+     * The board as it ended, taken ONCE — for the diary row and for the share
+     * card, which must be the same frame or the picture in the chat is not the
+     * picture in the hall of fame. See `endShot`.
+     *
+     * Above the daily branch since 2026-09-02: `settleDaily` has accepted a
+     * `shot` since it was written and this file never passed one, so every
+     * daily row in the diary opened without a picture while every world run's
+     * had one. The ending is the same board either way.
+     */
+    const picture = board.current?.snapshot() ?? null;
+    endShot.current = picture;
+
     // A daily leaves two things behind rather than four — see `settleDaily`.
     if (daily !== null) {
       const after = settleDaily({
         date: daily,
         state: snap.state,
         hud: snap.hud,
+        ...(picture === null ? {} : { shot: picture }),
         book: readDailyBook(),
         timeline: readTimeline(),
         at: Date.now(),
@@ -666,11 +787,12 @@ function Game() {
       writeDailyBook(after.book);
       writeTimeline(after.timeline);
       clearDailyRun();
+      // Which try this was, for the ending to confess above TRY AGAIN. The
+      // number reached the diary and the share line and never the screen the
+      // player is deciding on.
+      setDailyTry(after.try);
       return;
     }
-
-    // For the diary row only — the ending walks the live board (see `walking`).
-    const picture = board.current?.snapshot() ?? null;
 
     // The world as this run left it — the LIVE copy, not the disk's, because
     // the keeper's last write may still be pending and the shrines this run
@@ -734,6 +856,8 @@ function Game() {
      * and the ending simply does not carry the block.
      */
     setEndWorld(session.detour ? null : after.world);
+    // NEW BEST, or how far short — see `Settled.standing`.
+    setStanding(after.standing);
     worldNow.current = after.world;
     keeper.saveWorld(after.world);
     keeper.flush();
@@ -1085,6 +1209,19 @@ function Game() {
       const said = now.said;
 
       /*
+       * THE SIGNPOST'S OWN LOOK, taken once per action (2026-09-02).
+       *
+       * Read and written HERE, in one place, before any branch below can
+       * return — so every dispatch counts as a look whether or not it was
+       * quiet enough to speak. The alternative was an assignment on each exit
+       * path, which is three places for "did we look" to drift apart, and one
+       * of them ran after a hook had already read the ref.
+       */
+      const nearest = now.hud.hint;
+      const wasNearest = signpost.current;
+      signpost.current = nearest;
+
+      /*
        * The two things a run says once, at their first occurrence.
        *
        * After a receipt, never instead of one: a receipt is about what the
@@ -1104,7 +1241,23 @@ function Game() {
         if (mark !== null) {
           saidOnce.current.add(mark.id);
           say(mark.text);
+          return;
         }
+        /*
+         * THE SIGNPOST — the quietest thing the run says (2026-09-02).
+         *
+         * `hud.hint` is the core's answer to "where do I go?" on an endless
+         * plane, and it had no reader at all in this body. It speaks last, on
+         * a beat where nothing else wanted the toast, and only when the nearest
+         * destination has actually CHANGED. See `shell/signpost.ts` for the
+         * three guards and what each of them cost Ashwake 1.
+         */
+        const sign = signpostFor({
+          hint: nearest,
+          last: wasNearest,
+          knowsRipe: hasMet(progress, 'ripe'),
+        });
+        if (sign !== null) say(sign);
         return;
       }
 
@@ -1504,7 +1657,7 @@ ${s.view.harvest.firstPopWhen}`,
    * board, and a world run carries its SEED. `shareOf` writes both; this only
    * decides which one this run is and hands over the numbers.
    */
-  const onShare = useCallback((): Promise<ShareResult> => {
+  const onShare = useCallback(async (): Promise<ShareResult> => {
     const arc = arcSparkline(snap.state.log.harvests);
     const subject: ShareSubject =
       daily === null
@@ -1525,8 +1678,47 @@ ${s.view.harvest.firstPopWhen}`,
             // honesty rule. Read after settling, so it counts this run.
             tries: readDailyBook()[daily]?.tries ?? 1,
           };
-    return share(subject, s, NAME);
-  }, [snap.state, snap.hud, daily, s]);
+
+    /*
+     * THE PICTURE (2026-09-02).
+     *
+     * `shell/share.ts` calls this the game's entire distribution mechanism, and
+     * until today it handed over a sentence. Ashwake 1 handed over a card: the
+     * score, the run's shape, the board ghosted behind it, and the address to
+     * go and do something about it. Every field is one the ending has already
+     * drawn from the same `hud` and `standing`, so the card cannot say a number
+     * the screen did not.
+     *
+     * Best effort and never fatal: a browser missing a piece of the canvas API
+     * hands back null and everything below falls through to the text-and-link
+     * share exactly as before.
+     */
+    let card: Blob | null;
+    try {
+      card = await renderShareCard(theme, {
+        scoreLine: s.share.cardScore(snap.hud.points),
+        reachLine: s.share.cardReach(snap.hud.depthValue),
+        arc: snap.state.log.harvests.map((h) => h.points),
+        headline: standing?.isNewBest === true ? s.ui.ending.newBest : null,
+        // A daily's ladder line already carries the number RUN/TRY would say.
+        topLine:
+          daily !== null
+            ? dailyBadge(readDailyBook(), daily, s)
+            : standing !== null && standing.run > 0
+              ? s.ui.ending.run(standing.run)
+              : '',
+        // A daily plays a DATE, and a date is not a seed anybody outside this
+        // device's book can open. The footer stays empty rather than printing a
+        // number that means nothing, exactly as the text share drops it.
+        footerLine: daily !== null ? '' : s.share.cardSeed(snap.state.rootSeed),
+        shot: endShot.current,
+      });
+    } catch {
+      card = null;
+    }
+
+    return share(subject, s, NAME, card);
+  }, [snap.state, snap.hud, daily, s, theme, standing]);
 
   /**
    * Take the crossing: forget this world, and step into a fresh one carrying
@@ -1662,7 +1854,31 @@ ${s.view.harvest.firstPopWhen}`,
    * Leaving it steps back into the world the player came from — `slot` was
    * never given up, so there is nothing to choose on the way back.
    */
-  const today = useMemo(() => localToday(), []);
+  /*
+   * TODAY, RE-READ WHEN THE PAGE COMES BACK (2026-09-02).
+   *
+   * It was `useMemo(localToday, [])` — sampled once, on a page that never
+   * reloads. "One page, many sessions" is a house rule, and the installed PWA's
+   * NORMAL state is being left open: a phone put down before midnight and
+   * picked up after it went on offering YESTERDAY's daily from the front door,
+   * and BEGIN would have opened a board whose date the ladder no longer counts.
+   * Ashwake 1 hit this in its launch audit and answered it exactly here.
+   *
+   * Only on `visible`, and only when the date has actually turned, so a phone
+   * that is merely unlocked re-renders nothing. A run in PROGRESS is never
+   * touched: it banks under the date it started, which is the Wordle rule, and
+   * `daily` holds that date independently of this.
+   */
+  const [today, setToday] = useState(localToday);
+  useEffect(() => {
+    const onWake = (): void => {
+      if (document.visibilityState !== 'visible') return;
+      const now = localToday();
+      setToday((was) => (was === now ? was : now));
+    };
+    document.addEventListener('visibilitychange', onWake);
+    return () => document.removeEventListener('visibilitychange', onWake);
+  }, []);
   const enterDaily = useCallback(() => {
     setDaily(today);
     // The last ending is not this one’s — see forgetEnding. A daily banks
@@ -1721,6 +1937,52 @@ ${s.view.harvest.firstPopWhen}`,
       frameTheRun,
     ],
   );
+
+  /**
+   * KEEP THE SEED — settle a shared world as one of this device's three
+   * (2026-09-02).
+   *
+   * Ashwake 1's front-door SETTLE, absent from this body entirely. `?seed=` is
+   * how a stranger meets the game and how a good board reaches a friend, and
+   * without this a link was a one-sitting visit, always, however good the
+   * ground turned out to be. Only the SEED travels: the sender's run, their
+   * relics and their shrines stay theirs.
+   *
+   * Offered only on a shared door with a free slot. `isFreeSlot` counts a
+   * VIRGIN active world as free, which is the case that matters most — a
+   * brand-new device arriving through a link should not have to burn a world
+   * nobody chose in order to keep the one somebody did.
+   *
+   * It goes in through `enterWorld`, not by writing state here, for that
+   * function's own reason: everything a run starts from has to be put down in
+   * one order, or two doors disagree about what a run starts from.
+   */
+  const settleThisWorld = useMemo(() => {
+    if (!session.detour || daily !== null) return null;
+    const free = SLOTS.find(isFreeSlot);
+    if (free === undefined) return null;
+    const seed = snap.state.rootSeed;
+    return {
+      slot: free,
+      onSettle: () => {
+        settleSlot(free, seed);
+        // The diary's arrival entry, before the navigation that follows:
+        // settling is a world-scale moment rather than a run, and it happens on
+        // a door no run-end hook ever sees.
+        writeTimeline(
+          appendEntry(readTimeline(), {
+            at: Date.now(),
+            kind: 'world',
+            event: 'settled',
+            slot: free,
+            worldSeed: seed,
+          }),
+        );
+        setActiveSlot(free);
+        enterWorld(free);
+      },
+    };
+  }, [session.detour, daily, snap.state.rootSeed, enterWorld]);
 
   /**
    * The LUCK button, which is on the BOARD now (2026-08-30).
@@ -2094,6 +2356,24 @@ ${s.view.harvest.firstPopWhen}`,
         )}
         {look.directions && <Directions s={s} stored={storedTheme} onTheme={setStoredTheme} />}
         {/*
+          THE DEBUG LINE, behind `?ff=debug.overlay` (2026-09-02).
+
+          The flag shipped `wired: true` with nothing reading it and no door to
+          turn it on. Both halves are built now: `useDevice` applies `?ff=`, and
+          this is the reader. Over the board, above the toast, in the smallest
+          type the palette has — it is for whoever is holding the phone beside a
+          bug report, and it must never take space from the map.
+
+          `aria-hidden`, deliberately: it is ids and integers in no language, and
+          a screen reader working through `rng 41/12` before every note is a
+          worse experience than not having it.
+        */}
+        {playing && isEnabled(features, 'debug.overlay') && (
+          <p className="debug-line" aria-hidden="true">
+            {debugLine(snap.state, progress.equipped[0] ?? null)}
+          </p>
+        )}
+        {/*
           The two corners, and the rule that split them (2026-08-30).
 
           **Chrome floats over the board, actions sit in the footer.** MENU is
@@ -2236,6 +2516,14 @@ ${s.view.harvest.firstPopWhen}`,
             newUnlocks={gained.unlocks}
             world={endWorld}
             onMainMenu={toMainMenu}
+            standing={standing}
+            /* TRY AGAIN is `enterDaily`, not a second door: the settle above
+               has already cleared the kept board, so entering today's daily IS
+               starting today's board over. Two doors would be two places for
+               "what a retry resets" to drift apart. */
+            daily={dailyTry === null ? null : { try: dailyTry, onRetry: enterDaily }}
+            onInstall={offerInstall}
+            fromLink={session.detour}
           />
         </div>
       )}
@@ -2252,6 +2540,9 @@ ${s.view.harvest.firstPopWhen}`,
             onDaily={enterDaily}
             themeId={theme.id}
             dailyBadge={dailyBadge(readDailyBook(), today, s)}
+            mode={daily !== null ? 'daily' : session.detour ? 'shared' : 'world'}
+            day={daily === null ? undefined : dailyName(daily)}
+            settle={settleThisWorld}
           />
         </div>
       )}
@@ -2261,6 +2552,7 @@ ${s.view.harvest.firstPopWhen}`,
           theme={theme}
           s={s}
           keyboard={keyboard}
+          mode={daily !== null ? 'daily' : session.detour ? 'shared' : 'world'}
           onBack={manual.hide}
           menu={
             <PanelMenu>
@@ -2381,6 +2673,28 @@ ${s.view.harvest.firstPopWhen}`,
             enterWorld(which);
           }}
           camp={campHere === null ? null : { ring: campHere.ring, onBegin: beginAtCamp }}
+          /*
+           * THE SURVEY, finally readable (2026-09-02).
+           *
+           * Computed here rather than in the panel because it takes BOTH the
+           * world and the device's perk shelf — `withWorldPerks` is what makes
+           * `perksAll` true, and Ashwake 1's own note says a survey reports the
+           * world while the paid ledger underneath it is an accounting detail.
+           * So this asks what is TRUE, not what has been PAID: a shelf finished
+           * on world 1 shows as met on world 2 the day it is settled.
+           */
+          survey={
+            ledgers.worlds[slot] === null
+              ? []
+              : metGoalIds(
+                  ledgers.worlds[slot],
+                  withWorldPerks(
+                    progress,
+                    ledgers.worlds[slot].perks,
+                    ledgers.worlds[slot].worn ?? null,
+                  ),
+                )
+          }
         />
       )}
 
@@ -2396,13 +2710,40 @@ ${s.view.harvest.firstPopWhen}`,
       )}
 
       {fame.open && (
-        <Fame timeline={ledgers.timeline} records={ledgers.records} s={s} onBack={fame.hide} />
+        <Fame
+          timeline={ledgers.timeline}
+          records={ledgers.records}
+          worlds={ledgers.worlds}
+          s={s}
+          onBack={fame.hide}
+        />
       )}
 
       {updated && (
         <p className="toast update" aria-live="polite">
           <button type="button" data-action="update" onClick={() => location.reload()}>
             {s.ui.newVersion}
+          </button>
+        </p>
+      )}
+
+      {/*
+        "YOUR WORLD MAY NOT BE KEPT HERE" (2026-09-02).
+
+        A shared link most often lands inside Instagram or TikTok, whose WebView
+        storage is partitioned and commonly wiped when the host app closes —
+        which means the mode this game grows by is also the mode in which a
+        world can silently evaporate. Ashwake 1 shipped this warning; this body
+        shipped the share link without it.
+
+        Dismissible and once ever, in the update note's own shape: it arrives
+        unannounced over a game somebody is starting, and a sentence that cannot
+        be put down is worse than the risk it describes.
+      */}
+      {inApp && (
+        <p className="toast update in-app" role="status">
+          <button type="button" data-action="in-app" onClick={() => setInApp(false)}>
+            {s.ui.inApp}
           </button>
         </p>
       )}
