@@ -3270,3 +3270,57 @@ the beacons, was the one that never came through. **Where a docblock claims
 
 **Verified:** 1085 tests / 76 files, 87 e2e on a real build,
 typecheck/lint/format clean, `pnpm sim` byte-identical.
+
+### Session 38b — the receipt denied the perk it had just handed over (2026-09-02)
+
+**Question:** Marc, following 38: does a daily and a world on the same plane
+actually play differently, and is the difference only the shrines?
+
+**Answer: they differ by more than shrines, the daily is device-independent as
+it must be — and verifying it turned up a fourth bug next door.**
+
+**What the check found, and it is reassuring.** `economyFor` gives a daily
+`{...TUNING, ...NO_RELICS, ...NO_LEDGER}` and reads no progress at all, so a
+fully-upgraded device and a fresh one get a byte-identical daily tuning. That
+is the invariant the whole ladder rests on and it holds. Against it, a world
+carrying three woken shrines and a bought shelf runs `startingTiles 27` against
+the daily's 22, `holdSlots 2` against 1, `findSense 2` against 0, finds on
+against off, and relics payable against zeroed. The two are not the same game
+on the same plane, which is the answer.
+
+**The bug next door: `perkAt` and `wornPerk` had no producer.**
+`view/receipts.ts` takes both so a find's claim can name the perk it gave,
+`shell/store.ts` forwards both into the session, and **`App` passed neither**.
+So `perkAt?.(hex) ?? null` was always null and every find claimed in the real
+game returned `findNothing` — _"Nothing new inside. A find grants only what you
+do not already carry, and only on your own world."_ — including the ones that
+had just granted a perk. Worse, the shell's own `perkFound` toast fires a few
+lines EARLIER in the same handler and is then overwritten by that denial. **The
+one moment the perk hunt pays out, the game denied it in the player's face.**
+
+`receipts.test.ts` is green throughout and always was: it supplies `perkAt`
+itself. **The machinery was proved and the wiring was not** — the signature miss
+of this repository, wearing an OPTION this time instead of an export, which is
+why three passes of grepping exports and fields walked past it. Worth adding to
+the hunt: **a hook a test can inject is a hook a test cannot prove is
+connected.**
+
+**The fix, and why it is a module rather than a ref.** The receipt is built
+INSIDE `dispatch`, so the shelf it must be judged against is the one from an
+instant before the grant — a value only the dispatching handler knows. The
+obvious shape is a React ref read by the session's closure, and the React
+Compiler refuses it outright: the session is built during render, and a ref may
+not be read there even from a closure that runs later. So the holder is module
+scope (`shell/finds.ts`), the same deliberate choice `shell/install.ts` makes
+for `beforeinstallprompt`: a value that has to outlive a render without
+belonging to one. `aim` is called from an event handler, where that write is
+allowed to live.
+
+`grantFind` is asked with the pre-grant shelf, so the receipt names the very
+perk the shell is about to hand out rather than a second guess at it — one
+rule, asked twice, which is the only arrangement in which the two cannot
+disagree. `grants: false` on a daily and a shared seed keeps `findNothing`
+there, where its "and only on your own world" is already the honest sentence.
+
+**Verified:** 1091 tests / 77 files, 87 e2e on a real build,
+typecheck/lint/format clean, `pnpm sim` byte-identical.

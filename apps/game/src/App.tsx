@@ -87,6 +87,7 @@ import {
 } from './shell/storage';
 import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
+import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
@@ -473,6 +474,9 @@ function Game() {
     signpost.current = undefined;
     // A fresh purse is not a dry one, whatever the last run ended on.
     dry.current = false;
+    // And the shelf a find would be judged against belongs to the board being
+    // left. The next dispatch aims it again; until then, nothing is promised.
+    forgetShelf();
   }, []);
   /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
@@ -689,6 +693,17 @@ function Game() {
        * same number by construction. Read through the session's OWN state
        * rather than a captured one, because the run has moved by then.
        */
+      /*
+       * A find's receipt names what it gave — see `finds` and `act`.
+       *
+       * `grantFind` is deterministic in (shelf, world seed, hex), and the shelf
+       * handed over is the one from just before the grant, so this is the very
+       * perk the shell is about to hand out rather than a second guess at it.
+       * Null wherever nothing will be granted, which is what makes the daily
+       * and the shared seed go on saying "only on your own world".
+       */
+      perkAt,
+      wornPerk,
       crossingCarries: () => {
         const world = readWorld(activeSlot());
         const here = made.get().state;
@@ -1156,6 +1171,34 @@ function Game() {
       // happened yet.
       const poppedBefore = session.get().state.log.popped;
       const claimedBefore = session.get().state.claimed.length;
+      /*
+       * WHAT A FIND HOLDS, handed over a beat before the receipt asks for it
+       * (2026-09-02).
+       *
+       * `receipts.ts` takes a `perkAt` and a `worn` so a find's claim can name
+       * the perk it just gave; `store.ts` forwards both; **`App` passed
+       * neither**. So every find in the real game returned `findNothing` —
+       * *"Nothing new inside"* — including the ones that had just granted a
+       * perk, and the toast naming it was overwritten by that denial a line
+       * later. The one moment the perk hunt pays out, the game denied it.
+       *
+       * `receipts.test.ts` is green because it supplies the hook itself: the
+       * machinery was proved and the wiring was not, which is this repository's
+       * signature miss wearing an option instead of an export.
+       *
+       * Written HERE rather than in a render or an effect because the receipt
+       * is built INSIDE `dispatch`, before any of the shell's own handling
+       * below runs — so the shelf this must be judged against is the one the
+       * run has right now, an instant before the grant changes it.
+       */
+      aim({
+        progress,
+        seed: session.get().state.rootSeed,
+        // A perk lives on the world that found it, so a daily and a shared
+        // seed grant none — and a receipt there must go on saying so. The
+        // same condition the grant below keeps.
+        grants: daily === null && !session.detour,
+      });
       session.dispatch(action);
       const now = session.get();
 

@@ -38,6 +38,13 @@ same day — `voice.dry` never played, `previewColour` unread so every legal edg
 drew in one ink, and `band` unread so a world with five contour bands was drawn
 flat by the body that has a Z axis.
 
+**A hook a test can inject is a hook a test cannot prove is connected.**
+`receipts.ts` takes a `perkAt` so a find's claim can name the perk it gave;
+`receipts.test.ts` supplies one and is green; `App` supplied none, so every
+find in the real game said "Nothing new inside" while a perk was being handed
+over. Three passes of grepping exports and fields walked past it, because the
+gap was an OPTION. Sweep the optional inputs too, and ask who passes them.
+
 **And where a docblock claims there is no second rule, grep for the second
 rule.** The daily's shrine rewrite sat in `destinationAt` under a comment
 saying it was placed there "so the reveal, the beacons, the fog and the tap

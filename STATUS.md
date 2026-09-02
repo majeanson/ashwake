@@ -4,8 +4,8 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-02 — the daily was advertising shrines it could not
-give.**
+Last checkpoint: **2026-09-02 — the daily differs by more than shrines, and the
+receipt denied the perk it had just handed over.**
 
 Marc asked for a review of fog and shrine detection on a world versus a daily,
 and across an abrupt switch between them. **The fog was clean. The shrines were
@@ -45,11 +45,31 @@ as an argument, `enterDaily` passes `undefined`, and it goes 68 cells to 0 to
 68 across the switch. `move()` flushes, drops, then builds the new keeper, in
 that order.
 
-**The lesson, and it is the sharpest of four passes:** a comment that asserts
-an invariant is not the invariant. **Where a docblock claims "there is no
-second rule anywhere", grep for the second rule.**
+**Then Marc asked whether the two modes differ by more than shrines. They do,
+and the daily is device-independent as it must be:** `economyFor` reads no
+progress at all, so a fully-upgraded device and a fresh one get a byte-identical
+daily tuning — the invariant the whole ladder rests on. Against it, a world with
+three woken shrines and a bought shelf runs 27 starting tiles to the daily's 22,
+two stash slots to one, find-sense on, finds on, relics payable.
 
-Verified, on a real build: 1085 tests / 76 files, 87 Playwright, `pnpm sim`
+**Verifying that turned up a fourth bug next door.** `view/receipts.ts` takes a
+`perkAt` so a find's claim can name the perk it gave, `store.ts` forwards it,
+and **`App` passed none** — so every find claimed in the real game reported
+_"Nothing new inside"_, including the ones that had just granted a perk, and
+the shell's own `perkFound` toast was overwritten by that denial a few lines
+later. The one moment the perk hunt pays out, the game denied it.
+`receipts.test.ts` was green throughout because it supplies the hook itself.
+Wired through `shell/finds.ts` — module scope rather than a ref, because the
+React Compiler refuses a ref read from a closure built during render, and
+because `install.ts` already makes that choice for the same reason.
+
+**Two lessons, and they are the sharpest of five passes.** A comment that
+asserts an invariant is not the invariant: **where a docblock claims "there is
+no second rule anywhere", grep for the second rule.** And **a hook a test can
+inject is a hook a test cannot prove is connected** — three passes of grepping
+exports and fields walked past `perkAt`, because the gap was an OPTION.
+
+Verified, on a real build: 1091 tests / 77 files, 87 Playwright, `pnpm sim`
 byte-identical, typecheck/lint/build clean. **Still unseen on a phone:** the
 signpost's cadence, the receipt's new line, the share card's composition, and
 the contour lift.
