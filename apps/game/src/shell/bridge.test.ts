@@ -25,6 +25,13 @@ import { EMPTY_PROGRESS } from '@meta/progress';
  * And `DECISIONS.md` D3 makes this the v1 → v2 migration path, which is the
  * case that could not work at all: every key in an Ashwake 1 backup begins
  * `tiles.`, and this body's filter took none of them.
+ *
+ * **Named for its SUBJECT, not for a module** — the one place this directory
+ * departs from `x.ts` ↔ `x.test.ts`, and deliberately. What it pins crosses
+ * several files at once and belongs to none of them; a name that picked one
+ * would send a reader to the wrong place for the other half. `bridge`, `camp`,
+ * `homeworld`, `shed` and `shelf` are the five, and they are the five that
+ * describe a behaviour rather than a file (noted 2026-09-02).
  */
 
 beforeEach(() => {

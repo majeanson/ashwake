@@ -1,7 +1,7 @@
 import type { CellView } from '@render/Renderer';
 import { place, type Layout } from '@render/layout';
 import { surfaceFor } from '@render/materials';
-import { flatPlan, paintPlan, planKey, type PaintOp } from '@render/paint';
+import { flatPlan, paintPlan, type PaintOp } from '@render/paint';
 import type { AssetId, Depth, Surface, Theme } from '@theme/tokens';
 import { HEIGHT, kindOf, liftOf, type Kind } from './relief';
 
@@ -85,20 +85,43 @@ export function groundBatches(
           ? { alpha: 1, replaces: true }
           : undefined;
 
-    const plan =
-      opts.materials > 0
-        ? paintPlan(surface, {
-            texturePx: opts.texturePx,
-            depth: opts.depth,
-            ...(art === undefined ? {} : { art }),
-          })
-        : flatPlan(surface);
-
-    // Two surfaces with the same plan but different art are different paint —
-    // the plan says "art at 1.0", not WHICH art — so the slot joins the key.
-    const key = `${kind}|${asset ?? '-'}|${planKey(plan)}`;
+    /*
+     * KEYED BY THE SURFACE, AND THE PLAN BUILT ONCE PER BATCH (2026-09-02).
+     *
+     * The key used to be `${kind}|${asset}|${planKey(plan)}` — which meant
+     * `paintPlan` and a `JSON.stringify` of its whole result ran **once per
+     * CELL**. On a five-hundred-hex board that is five hundred plan graphs and
+     * a few hundred kilobytes of transient JSON, on every view change — every
+     * placement, every pop, every flip of what is legal — to discover about
+     * twenty distinct answers. The batching was already the answer; it was
+     * being computed after the expensive part instead of before it.
+     *
+     * The surface is what the plan is a pure function OF (with `opts`, which is
+     * fixed for the whole call), so keying on the surface groups exactly as
+     * finely and the plan can be built when a bucket is opened.
+     *
+     * **It also closes a real hole.** `surface.alpha` is not in the plan — it
+     * reaches the GPU through the material — so two surfaces that differed only
+     * in alpha shared a key, shared a batch, and every cell in it drew at
+     * whichever alpha arrived first. The ghost/preview surface is the one below
+     * 1, which is exactly where it would have shown.
+     *
+     * `JSON.stringify` rather than a hand-written signature, for the reason
+     * `planKey`'s own docblock gives about being generated from the ops: a
+     * structural key cannot forget a field, and a hand-written one is one
+     * `Surface` field away from silently merging two paints.
+     */
+    const key = `${kind}|${asset ?? '-'}|${art?.alpha ?? '-'}|${JSON.stringify(surface)}`;
     let bucket = out.get(key);
     if (bucket === undefined) {
+      const plan =
+        opts.materials > 0
+          ? paintPlan(surface, {
+              texturePx: opts.texturePx,
+              depth: opts.depth,
+              ...(art === undefined ? {} : { art }),
+            })
+          : flatPlan(surface);
       bucket = { batch: { key, kind, surface, plan, asset }, items: [] };
       out.set(key, bucket);
     }

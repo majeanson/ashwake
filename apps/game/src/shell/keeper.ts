@@ -42,6 +42,20 @@ export type Keeper = {
    * precisely the write that resurrects a spent world.
    */
   readonly drop: () => void;
+  /**
+   * Whether this keeper still writes.
+   *
+   * **No production consumer, and that is the right answer** (checked
+   * 2026-09-02). Nothing in the shell asks — nothing should: a caller that
+   * branched on it would be a second place deciding whether a session is over,
+   * and `drop` exists precisely so there is one.
+   *
+   * What it is for is the only thing that CAN check the promise this file is
+   * built on — that switching places drops the old keeper before the new one
+   * exists, so two keepers never write to one world. `keeper.test.ts` and
+   * `useDevice.test.ts` are its readers, and a hand-over is invisible from the
+   * outside without it.
+   */
   readonly alive: () => boolean;
 };
 

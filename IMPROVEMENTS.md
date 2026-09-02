@@ -93,7 +93,7 @@ what actually fails instead:
 | B2.2 | done   | six unphotographed surfaces: quick menu, THIS DEVICE, the daily, the directions picker, the board with a lens on, the routine pop line | `e2e/audit/screens.audit.ts` |
 | B2.3 | done   | a French pass. French is the shipping default, runs ~20% longer, and the clipped/overflow checks have never run against it             | `e2e/audit/screens.audit.ts` |
 | B2.4 | done   | a 320px pass on the board and the action bar — `STATUS.md` records 320×568 measurements taken by hand and never pinned                 | `e2e/audit/screens.audit.ts` |
-| B2.5 | open   | regenerate `audit-shots/` and `report.md`                                                                                              | —                            |
+| B2.5 | done   | regenerate `audit-shots/` and `report.md`                                                                                              | —                            |
 
 ### What Batch 2 changed its mind about, and what it found
 
@@ -141,22 +141,52 @@ BEHIND it — controls a player cannot reach — and counting them as findings.
 
 | id    | status | statement                                                                                                                            | where                                         |
 | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
-| B4.1  | open   | `paintPlan` + `planKey` run once per **cell**, not once per surface — ~500 plan graphs and ~300 KB of transient JSON per view change | `board/ground.ts:88`                          |
-| B4.2  | open   | the beacon breath pins the board at 60 fps for the whole run, and recomputes `cellTint` per instance per frame                       | `HexField.tsx:183`                            |
-| B4.3  | open   | the same per-instance `cellTint` recompute, at the busiest moment on the board                                                       | `Pop.tsx:208`                                 |
-| B4.4  | open   | every batch is allocated capacity for the whole board — ~780 KB of GPU buffers, >95% never drawn                                     | `HexField.tsx:263`, `Pop.tsx:267`             |
-| B4.5  | open   | the keyboard marker is geometrically **inside** its taller neighbours and invisible on most sides                                    | `HexField.tsx:317`                            |
-| B4.6  | open   | no WebGL context-loss handling exists anywhere; three module-level GPU caches would survive a restore holding dead handles           | `glow.ts:19`, `marks.ts:44`, `surfaces.ts:30` |
+| B4.1  | done   | `paintPlan` + `planKey` run once per **cell**, not once per surface — ~500 plan graphs and ~300 KB of transient JSON per view change | `board/ground.ts:88`                          |
+| B4.2  | done   | the beacon breath pins the board at 60 fps for the whole run, and recomputes `cellTint` per instance per frame                       | `HexField.tsx:183`                            |
+| B4.3  | done   | the same per-instance `cellTint` recompute, at the busiest moment on the board                                                       | `Pop.tsx:208`                                 |
+| B4.4  | done   | every batch is allocated capacity for the whole board — ~780 KB of GPU buffers, >95% never drawn                                     | `HexField.tsx:263`, `Pop.tsx:267`             |
+| B4.5  | done   | the keyboard marker is geometrically **inside** its taller neighbours and invisible on most sides                                    | `HexField.tsx:317`                            |
+| B4.6  | done   | no WebGL context-loss handling exists anywhere; three module-level GPU caches would survive a restore holding dead handles           | `glow.ts:19`, `marks.ts:44`, `surfaces.ts:30` |
 | B4.7  | done   | `material.dispose()` inside a `useMemo`, with a ref mutated during render, under StrictMode                                          | `resources.ts:51`                             |
-| B4.8  | open   | Pop builds and destroys 6 prism geometries per harvest                                                                               | `resources.ts:40`                             |
-| B4.9  | open   | `frame` and `focus` recompute on every half-degree — ~4 passes over every cell, up to 720 times per full turn                        | `Board.tsx:535`                               |
-| B4.10 | open   | `apply()` reallocates every frame whether or not anything moved                                                                      | `Board.tsx:644`                               |
-| B4.11 | open   | one `planeGeometry` + one material per mark                                                                                          | `Labels.tsx:152`                              |
-| B4.12 | open   | `tap()` mints a new handler per mesh per render — R3F re-registers on ~20 meshes every 0.5° of orbit                                 | `HexField.tsx:218`                            |
-| B4.13 | open   | `setAnisotropy` mutates textures without `needsUpdate` — works today only by render order                                            | `surfaces.ts:39`                              |
-| B4.14 | open   | ground materials are the only ones without `toneMapped: false`                                                                       | `resources.ts:85`                             |
-| B4.15 | ruled  | `visit()` is not honoured by `reducedMotion` — the excursion becomes two teleports. **Default: skip the excursion entirely**         | `Board.tsx:756`                               |
-| B4.16 | ruled  | no low-end path. **Default: cap dpr at 1.5 above devicePixelRatio 2, drop MSAA at dpr ≥ 2**                                          | `Board.tsx:426`                               |
+| B4.8  | done   | Pop builds and destroys 6 prism geometries per harvest                                                                               | `resources.ts:40`                             |
+| B4.9  | done   | `frame` and `focus` recompute on every half-degree — ~4 passes over every cell, up to 720 times per full turn                        | `Board.tsx:535`                               |
+| B4.10 | done   | `apply()` reallocates every frame whether or not anything moved                                                                      | `Board.tsx:644`                               |
+| B4.11 | done   | one `planeGeometry` + one material per mark                                                                                          | `Labels.tsx:152`                              |
+| B4.12 | done   | `tap()` mints a new handler per mesh per render — R3F re-registers on ~20 meshes every 0.5° of orbit                                 | `HexField.tsx:218`                            |
+| B4.13 | done   | `setAnisotropy` mutates textures without `needsUpdate` — works today only by render order                                            | `surfaces.ts:39`                              |
+| B4.14 | done   | ground materials are the only ones without `toneMapped: false`                                                                       | `resources.ts:85`                             |
+| B4.15 | done   | `visit()` is not honoured by `reducedMotion` — the excursion becomes two teleports. **Default: skip the excursion entirely**         | `Board.tsx:756`                               |
+| B4.16 | done   | no low-end path. **Default: cap dpr at 1.5 above devicePixelRatio 2, drop MSAA at dpr ≥ 2**                                          | `Board.tsx:426`                               |
+
+### What Batch 4 changed its mind about, and what it found
+
+**B4.1 closed a bug the plan did not know was there.** The plan asked for
+`paintPlan`/`planKey` to be memoised on the surface's identity — which cannot
+work, because `surfaceFor` builds a fresh object per cell. What does work is
+better: **key the batch by the SURFACE and build the plan when a bucket is
+opened**, since the plan is a pure function of the surface and the (fixed)
+options. Once per batch instead of once per cell — and it fixes a real hole,
+because `surface.alpha` is not in the plan at all, so two surfaces differing
+only in alpha shared a key, shared a batch, and every cell in it drew at
+whichever alpha arrived first. The ghost/preview surface is the one below 1.
+
+**B4.2's real cost was the frame loop, not the arithmetic.** `useFrame` only
+runs because something invalidated, so "animate while any beacon exists" meant
+invalidating every frame forever — a `useFrame` cannot stop asking for frames
+without stopping being called. It is a 30 Hz timer now, which is the only shape
+that can actually stop.
+
+**B4.6 needed less than the plan thought, and the reason is worth keeping.**
+The plan proposed resetting three module-level GPU caches on context restore.
+`three` re-initialises itself and re-uploads from the CPU-side data every one of
+those objects still holds — a `BufferGeometry` keeps its arrays, a
+`CanvasTexture` keeps its canvas — so a reset would rebuild, from scratch, a set
+of objects about to be re-uploaded anyway, on the one frame where a phone has
+just proved it is short of memory. What was genuinely missing is two lines:
+`preventDefault()` on `webglcontextlost` (without it the browser never tries to
+restore) and an `invalidate()` on restore (without it `frameloop="demand"` draws
+a permanently blank board). Written down at `board/gl.ts` so the next reader
+does not re-derive the reset.
 
 ## Batch 5 — shell correctness
 
@@ -266,20 +296,20 @@ compiler-safe, because those lint rules have been enforcing exactly that.
 
 | id    | status | statement                                                                                                      | where                                                  |
 | ----- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| B7.21 | open   | `.toast` declared twice; the orphaned `min-height` is why `.toast:empty` is needed at all                      | `ui.css:981`, `1032`                                   |
+| B7.21 | done   | `.toast` declared twice; the orphaned `min-height` is why `.toast:empty` is needed at all                      | `ui.css:981`, `1032`                                   |
 | B7.22 | open   | `.panel-back` declared twice and the first is dead                                                             | `ui.css:320`, `2229`                                   |
 | B7.23 | open   | six classNames with no rule — plus `.quiet` from B1.1                                                          | `ui.css`                                               |
 | B7.24 | open   | two verbatim-duplicated comment blocks, both looking like a merge that kept both sides                         | `ui.css:1275`, `879`                                   |
 | B7.25 | open   | physical and logical properties for one idea, in a bilingual app                                               | `ui.css`                                               |
-| B7.26 | open   | `.tile-mark` rules live 900 lines apart                                                                        | `ui.css:1468`, `2390`                                  |
+| B7.26 | done   | `.tile-mark` rules live 900 lines apart                                                                        | `ui.css:1468`, `2390`                                  |
 | B7.27 | open   | inline styles that belong in the stylesheet — the exact hazard `ui.css:1354` documents                         | `ui/Card.tsx:142`, `ui/Figure.tsx:63`, `ActionBar.tsx` |
 | B7.28 | open   | empty spans occupying a grid column `.panel-title.marked` already reserves                                     | `Manual.tsx:232`, `252`, `273`                         |
 | B7.29 | open   | `Confirming`'s `className` prop is dead — joined but never passed                                              | `ui/Confirming.tsx`                                    |
 | B7.30 | open   | `--mark-hang` couples a negative margin to a padding via two copies of one calc                                | `ui.css:481`, `507`                                    |
-| B7.31 | open   | `keeper.alive()` has no production consumer                                                                    | `shell/keeper.ts:45`                                   |
+| B7.31 | done   | `keeper.alive()` has no production consumer                                                                    | `shell/keeper.ts:45`                                   |
 | B7.32 | open   | unnecessary exports in `camera.ts`                                                                             | `board/camera.ts`                                      |
-| B7.33 | open   | `isTappable()` always returns true — a predicate with no predicate in it                                       | `HexField.tsx:356`                                     |
-| B7.34 | open   | repeated math worth one helper each — the tint unpack ×3, degree→radian ×3, the rotation reset ×4, `kindOf` ×3 | `board/`                                               |
+| B7.33 | done   | `isTappable()` always returns true — a predicate with no predicate in it                                       | `HexField.tsx:356`                                     |
+| B7.34 | done   | repeated math worth one helper each — the tint unpack ×3, degree→radian ×3, the rotation reset ×4, `kindOf` ×3 | `board/`                                               |
 | B7.35 | open   | `App.tsx` duplications — the mode ternary twice, a book decoded twice in one handler, `session.get()` ×3       | `App.tsx`                                              |
 | B7.36 | open   | `lang` has two authorities; the `<html>` one is correct                                                        | `App.tsx:2343`, `ui/theme.ts:63`                       |
 | B7.37 | open   | a dropped word in a comment, and eight identical restated signatures                                           | `Board.tsx:590`, `Board.tsx:80`                        |
@@ -315,10 +345,34 @@ compiler-safe, because those lint rules have been enforcing exactly that.
 
 | id   | status | statement                                                                                                     | where                |
 | ---- | ------ | ------------------------------------------------------------------------------------------------------------- | -------------------- |
-| B9.1 | open   | `storage.ts` has no test — 606 lines, and the file declares itself the trust boundary                         | `shell/storage.ts`   |
-| B9.2 | open   | `useDevice.ts` has no test — 306 lines, all device state                                                      | `shell/useDevice.ts` |
-| B9.3 | open   | `teaching.ts` has no test, while it says it is pure "which is what lets it be tested by handing it two views" | `shell/teaching.ts`  |
-| B9.4 | open   | five orphan test files named by subject while every other file follows `x.ts` ↔ `x.test.ts`                   | `shell/`             |
+| B9.1 | done   | `storage.ts` has no test — 606 lines, and the file declares itself the trust boundary                         | `shell/storage.ts`   |
+| B9.2 | done   | `useDevice.ts` has no test — 306 lines, all device state                                                      | `shell/useDevice.ts` |
+| B9.3 | done   | `teaching.ts` has no test, while it says it is pure "which is what lets it be tested by handing it two views" | `shell/teaching.ts`  |
+| B9.4 | done   | five orphan test files named by subject while every other file follows `x.ts` ↔ `x.test.ts`                   | `shell/`             |
+
+### What Batch 9 changed its mind about, and what it found
+
+**B9.4's rename would have been wrong.** The five orphans — `bridge`, `camp`,
+`homeworld`, `shed`, `shelf` — are not tests OF a module that got the wrong
+name: each pins a behaviour crossing `storage.ts`, `store.ts`, `settle.ts` and
+`useDevice.ts` at once, and a name that picked one of those would send a reader
+to the wrong place for the other half. Taken the plan's second option instead:
+the convention, and the reason these five depart from it, is stated at the top
+of each.
+
+**And `storage.test.ts` found a bug on its first run.** `drop()` did not bump
+the ledger stamp — while the docblock I had just written two hundred lines up
+said it was bumped "from inside `write` and `drop`". So RESET ALL, a crossing
+and the shed ladder's own world-shedding all changed the ledgers without
+telling anyone. A comment that asserts an invariant is not the invariant; a
+test is.
+
+**`keeper.alive()` (B7.31) is not dead and should not be deleted.** It has no
+production consumer and should not have one — a caller that branched on it
+would be a second place deciding whether a session is over, which is what
+`drop` exists to prevent. It is the only thing that can check the promise the
+file is built on: that switching places drops the old keeper before the new one
+exists. Stated at the declaration; `useDevice.test.ts` is its second reader.
 
 ---
 

@@ -23,6 +23,13 @@ import { campFor, createSession } from './store';
  * from, and the score is measured from where you wake rather than from origin
  * — which is `homeOf`'s whole job, and the reason `mergeRun`'s farthest-reach
  * fold was moved onto it in Ashwake 1.
+ *
+ * **Named for its SUBJECT, not for a module** — the one place this directory
+ * departs from `x.ts` ↔ `x.test.ts`, and deliberately. What it pins crosses
+ * several files at once and belongs to none of them; a name that picked one
+ * would send a reader to the wrong place for the other half. `bridge`, `camp`,
+ * `homeworld`, `shed` and `shelf` are the five, and they are the five that
+ * describe a behaviour rather than a file (noted 2026-09-02).
  */
 
 const ORIGIN = { q: 0, r: 0 };

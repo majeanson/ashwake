@@ -146,7 +146,10 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   const total = Number(values.at(-1));
   const parts = values.slice(0, -1).reduce((n, v) => n + Number(v.replace('+', '')), 0);
   expect(parts, 'the payout rows must sum to the total they stand under').toBe(total);
-  expect(total).toBe(Number(await end.locator('.end-score').innerText()));
+  // The DIGITS, not the heading: `.end-score` is an `h1` since 2026-09-02 and
+  // carries a visually-hidden sentence beside the number, because "heading
+  // level 1, 4210" is a landmark that names nothing.
+  expect(total).toBe(Number(await end.locator('.end-score [aria-hidden="true"]').innerText()));
 
   // The shop is on the end screen because that is where the relics were
   // earned. At least one upgrade row, whether or not it is affordable.
@@ -463,9 +466,9 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
 
   // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
   // quiet room is uninstalled.
-  await expect(sound).toHaveAttribute('aria-pressed', 'false');
+  await expect(sound).toHaveAttribute('aria-checked', 'false');
   await sound.click();
-  await expect(sound, 'the sound row did not switch').toHaveAttribute('aria-pressed', 'true');
+  await expect(sound, 'the sound row did not switch').toHaveAttribute('aria-checked', 'true');
   await expect(
     sound,
     'the list closed on a toggle, so nothing showed whether it took',
@@ -489,7 +492,7 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
   await expect(sound, 'the list did not survive the rooms it opened').toBeVisible();
-  await expect(sound).toHaveAttribute('aria-pressed', 'false');
+  await expect(sound).toHaveAttribute('aria-checked', 'false');
 
   // Escape closes the list itself, like any other door.
   await page.keyboard.press('Escape');

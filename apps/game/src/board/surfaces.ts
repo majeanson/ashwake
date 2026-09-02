@@ -41,7 +41,21 @@ export class SurfaceTextures {
     if (wanted === this.#anisotropy) return;
     this.#anisotropy = wanted;
     for (const texture of this.#cache.values()) {
-      if (texture !== null) texture.anisotropy = wanted;
+      if (texture === null) continue;
+      texture.anisotropy = wanted;
+      /*
+       * AND SAY SO (2026-09-02).
+       *
+       * Anisotropy is a sampler parameter, and `three` only re-applies those
+       * when a texture's version has moved. Without this, changing the number
+       * on an already-uploaded texture does nothing at all — and it worked only
+       * because of render ORDER: this is called from a layout effect that
+       * happens to run before the first frame, while every texture in the cache
+       * is still waiting for its first upload. A texture baked later, or a
+       * renderer whose maximum is read after a context restore, would silently
+       * keep the old sampling.
+       */
+      texture.needsUpdate = true;
     }
   }
 

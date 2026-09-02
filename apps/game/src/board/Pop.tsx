@@ -10,7 +10,7 @@ import type { AssetBook } from './assets';
 import { embersFor, emberPhase, type Ember } from './ambient';
 import { glowTexture } from './glow';
 import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
-import { commitInstances } from './instances';
+import { commitInstances, tintInto } from './instances';
 import { cascadeDelays, cascadeMs, glowPhase, leapPhase, REDUCED_MS } from './leap';
 import { useBatchResources } from './resources';
 import { topOf } from './relief';
@@ -155,6 +155,23 @@ export function Pop({
   const glowColour = useMemo(() => new Color(theme.motion.popColour), [theme.motion.popColour]);
 
   /**
+   * Each popped cell's tint, unpacked once (2026-09-02).
+   *
+   * The leap loop called `cellTint` and unpacked its bytes **per instance, per
+   * frame** — and a leap is the busiest the board ever is: a whole pocket of
+   * prisms, a glow disc each, and up to 140 embers, every one of them writing
+   * matrices and colours sixty times a second for the length of the cascade. A
+   * cell's tint does not change while it is jumping; only its matrix does.
+   *
+   * Beside `spots`, which is precomputed for the same reason and says so.
+   */
+  const tints = useMemo(() => {
+    const out = new Map<HexKey, number>();
+    for (const cell of cells) out.set(cell.key, cellTint(theme, cell));
+    return out;
+  }, [cells, theme]);
+
+  /**
    * The sparks a harvest throws.
    *
    * Ashwake 1 spawned four to seven per hex and capped the whole board at 140
@@ -170,7 +187,7 @@ export function Pop({
       if (out.length >= EMBER_CAP) break;
       const spot = spots.get(cell.key);
       if (spot === undefined) continue;
-      const tint = cellTint(theme, cell);
+      const tint = tints.get(cell.key) ?? 0;
       out.push(
         ...embersFor(
           theme.motion,
@@ -182,7 +199,7 @@ export function Pop({
       );
     }
     return out.slice(0, EMBER_CAP);
-  }, [cells, spots, delays, theme, reducedMotion]);
+  }, [cells, spots, delays, tints, theme.motion, reducedMotion]);
   const emberMesh = useRef<InstancedMesh | null>(null);
 
   useFrame(() => {
@@ -205,12 +222,7 @@ export function Pop({
         dummy.updateMatrix();
         dummy.rotation.set(0, 0, 0);
         mesh.setMatrixAt(i, dummy.matrix);
-        const tint = cellTint(theme, item.cell);
-        scratch.setRGB(
-          ((tint >> 16) & 0xff) / 255,
-          ((tint >> 8) & 0xff) / 255,
-          (tint & 0xff) / 255,
-        );
+        tintInto(scratch, tints.get(item.cell.key) ?? 0, 1);
         mesh.setColorAt(i, scratch);
       });
       commitInstances(mesh, batch.items.length);
@@ -275,12 +287,16 @@ export function Pop({
         if (geometry === undefined || material === undefined) return null;
         return (
           <instancedMesh
-            key={`${batch.key}-${capacity}`}
+            // Room for its OWN items, not for the whole pocket — see the same
+            // note in `HexField`. A pop is the one moment the board has no
+            // budget to spare, and it was allocating every batch a buffer big
+            // enough for every cell in the harvest.
+            key={`${batch.key}-${capacityFor(batch.items.length)}`}
             ref={(mesh) => {
               if (mesh !== null) meshes.current.set(batch.key, mesh);
               else meshes.current.delete(batch.key);
             }}
-            args={[geometry, undefined, capacity]}
+            args={[geometry, undefined, capacityFor(batch.items.length)]}
             material={material}
             frustumCulled={false}
             raycast={() => null}

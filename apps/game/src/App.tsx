@@ -3011,7 +3011,7 @@ ${s.view.harvest.firstPopWhen}`,
         trick the toast uses.
       */}
       <div className="notices">
-        <p className="toast update" aria-live="polite">
+        <p className="notice-line update" aria-live="polite">
           {updated && (
             <button
               type="button"
@@ -3052,7 +3052,7 @@ ${s.view.harvest.firstPopWhen}`,
         unannounced over a game somebody is starting, and a sentence that cannot
         be put down is worse than the risk it describes.
       */}
-        <p className="toast update in-app" role="status">
+        <p className="notice-line update in-app" role="status">
           {inApp && (
             <button type="button" data-action="in-app" onClick={() => setInApp(false)}>
               {s.ui.inApp}

@@ -1,5 +1,5 @@
-import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { useThree, type ThreeEvent } from '@react-three/fiber';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Color, Object3D, type InstancedMesh } from 'three';
 import type { HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
@@ -7,11 +7,11 @@ import type { Layout } from '@render/layout';
 import { cellTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
-import { breath, STILL_BREATH } from './ambient';
+import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
-import { commitInstances } from './instances';
+import { commitInstances, tintInto } from './instances';
 import { Labels } from './Labels';
 import { thetaStartFor } from './prism';
 import { useBatchResources } from './resources';
@@ -144,11 +144,7 @@ export function HexField({
         // A beacon sits at its still value until the breath takes over, so a
         // reduced-motion board is lit rather than merely un-animated.
         const lit = batch.kind === 'beacon' ? STILL_BREATH : 1;
-        scratchColor.setRGB(
-          (((tint >> 16) & 0xff) / 255) * lit,
-          (((tint >> 8) & 0xff) / 255) * lit,
-          ((tint & 0xff) / 255) * lit,
-        );
+        tintInto(scratchColor, tint, lit);
         mesh.setColorAt(i, scratchColor);
       });
       commitInstances(mesh, batch.items.length);
@@ -172,36 +168,75 @@ export function HexField({
   }, [batches, rings, theme, invalidate]);
 
   /**
-   * The beacons breathe.
+   * Every beacon's still colour, unpacked once (2026-09-02).
+   *
+   * The breath below used to call `cellTint` and unpack its bytes **per
+   * instance, per frame** — the same answer, recomputed sixty times a second
+   * for the whole of a run, because a beacon's tint is a property of the cell
+   * and the theme and neither moves between renders. Only the multiplier does.
+   *
+   * A flat `Float32Array` rather than an array of triples: this is read in a
+   * tight loop and the point is to not allocate in it.
+   */
+  const beaconTints = useMemo(() => {
+    const out = new Map<string, Float32Array>();
+    for (const batch of batches) {
+      if (batch.kind !== 'beacon' || batch.items.length === 0) continue;
+      const rgb = new Float32Array(batch.items.length * 3);
+      batch.items.forEach((item, i) => {
+        const tint = cellTint(theme, item.cell);
+        rgb[i * 3] = ((tint >> 16) & 0xff) / 255;
+        rgb[i * 3 + 1] = ((tint >> 8) & 0xff) / 255;
+        rgb[i * 3 + 2] = (tint & 0xff) / 255;
+      });
+      out.set(batch.key, rgb);
+    }
+    return out;
+  }, [batches, theme]);
+
+  /**
+   * The beacons breathe — on a clock of their own (2026-09-02).
    *
    * A beacon is a promise that there is somewhere to go, and the pulse is what
    * keeps the promise visible on a board that is otherwise still. It is the
-   * only thing on the board that asks for frames when nothing has happened, so
-   * it stops asking the moment there are no beacons — an empty board should
-   * draw nothing at all.
+   * only thing on the board that asks for frames when nothing has happened.
+   *
+   * It used to ask from inside `useFrame`, which is a loop that only runs
+   * because something invalidated — so "animate while any beacon exists" meant
+   * **invalidate every frame, for the whole run**, and beacons exist almost
+   * always. Every instanced draw and every `<Text>` on the board redrew at
+   * 60fps over a game where nothing was happening.
+   *
+   * A timer instead. It paints and then asks for one frame, thirty times a
+   * second (`BREATH_STEP_MS`), and it stops existing the moment there are no
+   * beacons — which is the same promise the old comment made and could not
+   * keep, because `useFrame` cannot stop asking for frames without stopping
+   * being called.
+   *
+   * Writing GPU buffers outside the render loop is what the layout effect above
+   * already does; `invalidate()` is what schedules the frame that shows them.
    */
-  useFrame(() => {
-    if (reducedMotion) return;
-    let breathing = false;
-    for (const batch of batches) {
-      if (batch.kind !== 'beacon' || batch.items.length === 0) continue;
-      const mesh = meshes.current.get(batch.key);
-      if (mesh === undefined) continue;
-      breathing = true;
+  useEffect(() => {
+    if (reducedMotion || beaconTints.size === 0) return;
+    const paint = (): void => {
+      // ONE `breath` for the whole tick. It was computed per BATCH, which is
+      // the same number two or three times and a wave that could disagree with
+      // itself across two meshes drawn in one frame.
       const lit = breath(performance.now());
-      batch.items.forEach((item, i) => {
-        const tint = cellTint(theme, item.cell);
-        scratchColor.setRGB(
-          (((tint >> 16) & 0xff) / 255) * lit,
-          (((tint >> 8) & 0xff) / 255) * lit,
-          ((tint & 0xff) / 255) * lit,
-        );
-        mesh.setColorAt(i, scratchColor);
-      });
-      if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
-    }
-    if (breathing) invalidate();
-  });
+      for (const [key, rgb] of beaconTints) {
+        const mesh = meshes.current.get(key);
+        if (mesh === undefined) continue;
+        for (let i = 0; i < rgb.length / 3; i++) {
+          scratchColor.setRGB(rgb[i * 3]! * lit, rgb[i * 3 + 1]! * lit, rgb[i * 3 + 2]! * lit);
+          mesh.setColorAt(i, scratchColor);
+        }
+        if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
+      }
+      invalidate();
+    };
+    const timer = setInterval(paint, BREATH_STEP_MS);
+    return () => clearInterval(timer);
+  }, [beaconTints, reducedMotion, invalidate]);
 
   /**
    * What the finger meant, out of everything the ray went through.
@@ -215,50 +250,63 @@ export function HexField({
    * The handler is attached per batch but resolves GLOBALLY, so whichever mesh
    * R3F reaches first answers for all of them and stops the rest.
    */
-  const tap = () => (event: ThreeEvent<MouseEvent>) => {
-    // A tap is a lift that never travelled: R3F reports how far the pointer
-    // moved between down and up, and past the slop this was a drag.
-    if (event.delta > TAP_SLOP) return;
-    // The secondary button and Shift are the desktop's turn-and-lean gesture
-    // (`Board`), and a gesture that ends without travelling far enough to
-    // register must not fall through into a PLACEMENT — the one action on this
-    // board that cannot be undone.
-    if (event.button !== 0 || event.shiftKey) return;
+  /*
+   * ONE HANDLER, not one per mesh per render (2026-09-02).
+   *
+   * `tap` was a factory — `onClick={tap()}` — so every one of the ~20 meshes
+   * got a brand-new function on every render, and R3F re-registers a pointer
+   * handler whenever its identity changes. This component re-renders on every
+   * half-degree of orbit, so turning the board once rebound fourteen thousand
+   * handlers. The handler does not depend on which mesh it is attached to: it
+   * resolves GLOBALLY over the whole ray.
+   */
+  const tap = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      // A tap is a lift that never travelled: R3F reports how far the pointer
+      // moved between down and up, and past the slop this was a drag.
+      if (event.delta > TAP_SLOP) return;
+      // The secondary button and Shift are the desktop's turn-and-lean gesture
+      // (`Board`), and a gesture that ends without travelling far enough to
+      // register must not fall through into a PLACEMENT — the one action on
+      // this board that cannot be undone.
+      if (event.button !== 0 || event.shiftKey) return;
 
-    const byMesh = new Map<InstancedMesh, GroundBatch>();
-    for (const b of batches) {
-      const mesh = meshes.current.get(b.key);
-      if (mesh !== undefined) byMesh.set(mesh, b);
-    }
+      const byMesh = new Map<InstancedMesh, GroundBatch>();
+      for (const b of batches) {
+        const mesh = meshes.current.get(b.key);
+        if (mesh !== undefined) byMesh.set(mesh, b);
+      }
 
-    let best: CellView | null = null;
-    let bestRank = Number.POSITIVE_INFINITY;
-    for (const hit of event.intersections) {
-      const batch = byMesh.get(hit.object as InstancedMesh);
-      if (batch === undefined || !isTappable(batch)) continue;
-      const item = hit.instanceId === undefined ? undefined : batch.items[hit.instanceId];
-      if (item === undefined) continue;
-      const rank = RAY_RANK[batch.kind];
-      if (rank === 0) {
-        // Nothing behind it can outrank live ground, so the ray stops here.
+      let best: CellView | null = null;
+      let bestRank = Number.POSITIVE_INFINITY;
+      for (const hit of event.intersections) {
+        const batch = byMesh.get(hit.object as InstancedMesh);
+        if (batch === undefined) continue;
+        const item = hit.instanceId === undefined ? undefined : batch.items[hit.instanceId];
+        if (item === undefined) continue;
+        const rank = RAY_RANK[batch.kind];
+        if (rank === 0) {
+          // Nothing behind it can outrank live ground, so the ray stops here.
+          event.stopPropagation();
+          onTap(item.cell.key, item.cell);
+          return;
+        }
+        // Nearest first, so the first hit at a rank is the nearest at that rank.
+        if (rank < bestRank) {
+          bestRank = rank;
+          best = item.cell;
+        }
+      }
+
+      // No live ground anywhere along the ray, so the best of what is left is
+      // genuinely what was pointed at and gets to say its line.
+      if (best !== null) {
         event.stopPropagation();
-        onTap(item.cell.key, item.cell);
-        return;
+        onTap(best.key, best);
       }
-      // Nearest first, so the first hit at a rank is the nearest at that rank.
-      if (rank < bestRank) {
-        bestRank = rank;
-        best = item.cell;
-      }
-    }
-
-    // No live ground anywhere along the ray, so the best of what is left is
-    // genuinely what was pointed at and gets to say its line.
-    if (best !== null) {
-      event.stopPropagation();
-      onTap(best.key, best);
-    }
-  };
+    },
+    [batches, onTap],
+  );
 
   const capacity = capacityFor(view.cells.length);
   const thetaStart = thetaStartFor(orientation);
@@ -273,18 +321,36 @@ export function HexField({
         const geometry = geometryFor(batch.kind);
         const material = materialsFor(batch);
         if (geometry === undefined || material === undefined) return null;
-        const tappable = isTappable(batch);
+        /*
+         * SIZED FOR ITSELF, not for the whole board (2026-09-02).
+         *
+         * Every one of the ~20 batches was allocated `capacityFor(cells.length)`
+         * — room for every hex on the board, in every mesh — so a 500-cell
+         * board built 20 × 512 instances' worth of matrix and colour buffers,
+         * about 780 KB on the GPU, of which more than 95% is never drawn. A
+         * batch holds the cells that wear ONE paint, and most paints are worn
+         * by a handful.
+         *
+         * The rounding is what keeps this from being a rebuild per placement:
+         * `capacityFor` doubles, so a batch grows by allocating twice and then
+         * not again for a while. That was the whole reason the total was used,
+         * and it works per batch for the same reason.
+         *
+         * The shared ring mesh below keeps the board-wide capacity: it is one
+         * mesh holding every outline there is, so its count really is the
+         * board's.
+         */
         return (
           <instancedMesh
-            key={`${batch.key}-${capacity}`}
+            key={`${batch.key}-${capacityFor(batch.items.length)}`}
             ref={(mesh) => {
               if (mesh !== null) meshes.current.set(batch.key, mesh);
               else meshes.current.delete(batch.key);
             }}
-            args={[geometry, undefined, capacity]}
+            args={[geometry, undefined, capacityFor(batch.items.length)]}
             material={material}
             frustumCulled={false}
-            {...(tappable ? { onClick: tap() } : {})}
+            onClick={tap}
           />
         );
       })}
@@ -313,17 +379,31 @@ export function HexField({
 
         One mesh, not an instanced one: there is at most a single marker, and
         it costs a draw call only while somebody is using a keyboard.
+
+        **AND IT WAS INSIDE ITS NEIGHBOURS** (2026-09-02). It is drawn flat at
+        its own cell's top, spanning 1.00 to 1.18 hex radii — which reaches over
+        the seam and into the six hexes around it. A tile's near face stands at
+        about 0.918, so on any side where the neighbour is as tall or taller,
+        the ring is geometrically buried in solid ground and simply does not
+        appear. On a real board that is most sides, and it is the one affordance
+        the whole keyboard and screen-reader path rests on: if you cannot see
+        where the marker is, the arrows are pressing something invisible.
+
+        `depthTest={false}` with a late `renderOrder` draws it over whatever is
+        in front of it, which is the honest reading of what it is — a marker
+        belonging to the player rather than a thing standing on the plane.
       */}
       {marker !== null && (
         <mesh
           position={[marker.x, marker.top, marker.z]}
           rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={1}
           raycast={() => null}
         >
           <ringGeometry
             args={[HEX_RADIUS + 0.06, HEX_RADIUS + 0.24, 6, 1, thetaStart + Math.PI / 2]}
           />
-          <meshBasicMaterial color={theme.ink.accent} toneMapped={false} />
+          <meshBasicMaterial color={theme.ink.accent} toneMapped={false} depthTest={false} />
         </mesh>
       )}
       <Labels cells={view.cells} theme={theme} layout={layout} relief={relief} yaw={yaw} />
@@ -332,14 +412,15 @@ export function HexField({
 }
 
 /**
- * Which kinds of ground answer a tap — all of them (2026-09-01).
+ * EVERY KIND OF GROUND ANSWERS A TAP (2026-09-01), and there is no longer a
+ * function saying so (2026-09-02).
  *
- * This used to refuse beacons and remembered fog, on the argument that neither
- * is a place a tile can go. True, and beside the point: a tap on ground you
- * cannot build on is how this game ANSWERS QUESTIONS, and those two are the
- * ground a player has the most questions about. Marc: *"id like that i can
- * click on any shrine or point in the map that I can see to get information ...
- * is it a good shrine or one i dont need now?"*
+ * `isTappable(batch)` used to refuse beacons and remembered fog, on the
+ * argument that neither is a place a tile can go. True, and beside the point:
+ * a tap on ground you cannot build on is how this game ANSWERS QUESTIONS, and
+ * those two are the ground a player has the most questions about. Marc: *"id
+ * like that i can click on any shrine or point in the map that I can see to get
+ * information ... is it a good shrine or one i dont need now?"*
  *
  * It also made two documented gestures dead. `INTERACTIONS.md` has listed "tap
  * a beacon" and "tap remembered fog (the biome lens)" as working in this body
@@ -350,12 +431,12 @@ export function HexField({
  * the finger was the one input that could not. Sixth of this body's signature
  * miss (`CLAUDE.md`): a rule implemented, tested, and reachable from nothing.
  *
- * One predicate still, because the raycast and the render both need the same
- * answer; what decides between two hits is `RAY_RANK` below.
+ * What was left behind is what this note replaces: a predicate whose body was
+ * `return true`, called twice per render per batch, and read by anyone new to
+ * the file as though it decided something. **A rule with no exceptions is not a
+ * predicate, it is a sentence.** What decides between two hits is `RAY_RANK`
+ * below, which is where the reading should go.
  */
-function isTappable(_batch: GroundBatch): boolean {
-  return true;
-}
 
 /**
  * Which hit along the ray the finger meant, when it went through more than one.

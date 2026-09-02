@@ -78,7 +78,12 @@ export type Frame = {
   readonly lean: Lean;
 };
 
-const rad = (deg: number): number => (deg * Math.PI) / 180;
+/** Degrees to radians. The board authors every angle in degrees — the dials,
+ *  the lean, the yaw a label turns back by — and three wants radians, so this
+ *  is the one place the conversion is written. It was written out by hand in
+ *  three files (2026-09-02); a formula copied is a formula that can be copied
+ *  wrong. */
+export const rad = (deg: number): number => (deg * Math.PI) / 180;
 
 /**
  * Board plane to screen, at one pixel a unit.

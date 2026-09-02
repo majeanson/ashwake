@@ -26,6 +26,13 @@ import {
  * version shed a world while leaving its run, so the next boot minted a fresh
  * world and resumed a run whose seed no longer matched it. Hence: cheap things
  * first, and never the world being played.
+ *
+ * **Named for its SUBJECT, not for a module** — the one place this directory
+ * departs from `x.ts` ↔ `x.test.ts`, and deliberately. What it pins crosses
+ * several files at once and belongs to none of them; a name that picked one
+ * would send a reader to the wrong place for the other half. `bridge`, `camp`,
+ * `homeworld`, `shed` and `shelf` are the five, and they are the five that
+ * describe a behaviour rather than a file (noted 2026-09-02).
  */
 
 /** A `localStorage` that refuses to grow past `room` entries. */
@@ -56,7 +63,10 @@ afterEach(() => vi.unstubAllGlobals());
 describe('a write that will not fit', () => {
   it('sheds the diary and saves the run anyway', () => {
     const spent: ShedRungId[] = [];
-    onShed((rung) => spent.push(rung));
+    // Unsubscribed after the assertion: `onShed` hands one back since
+    // 2026-09-02, and a registry that accumulates across tests is a listener
+    // from the last test still counting during this one.
+    const stop = onShed((rung) => spent.push(rung));
 
     // Two slots of room: enough for the diary, not enough for the diary AND
     // the run that arrives after it.
@@ -74,11 +84,15 @@ describe('a write that will not fit', () => {
     // Nothing above the diary was needed, so nothing above it was spent.
     expect(spent).not.toContain('otherWorlds');
     expect(readTimeline()).toHaveLength(0);
+    stop();
   });
 
   it('spends the cheapest rung it can and stops there', () => {
     const spent: ShedRungId[] = [];
-    onShed((rung) => spent.push(rung));
+    // Unsubscribed after the assertion: `onShed` hands one back since
+    // 2026-09-02, and a registry that accumulates across tests is a listener
+    // from the last test still counting during this one.
+    const stop = onShed((rung) => spent.push(rung));
 
     vi.stubGlobal('localStorage', fullAfter(1));
     writeTimeline([{ at: 1, kind: 'world', event: 'settled', slot: 1, worldSeed: 7 }]);
@@ -88,6 +102,7 @@ describe('a write that will not fit', () => {
     // The FIRST rung that frees enough room is the last one spent — the
     // ladder climbs, it does not empty itself.
     expect(spent).toHaveLength(1);
+    stop();
   });
 
   it('never gives up the world being played', () => {

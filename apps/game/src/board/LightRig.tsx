@@ -1,4 +1,5 @@
 import type { Rig } from '@theme/rig';
+import { rad } from './camera';
 
 /**
  * The lights, built from the rig the budget test measures (Stage 2c,
@@ -28,7 +29,7 @@ export type LightRigProps = {
 
 export function LightRig({ rig, yaw }: LightRigProps) {
   return (
-    <group rotation={[0, (yaw * Math.PI) / 180, 0]}>
+    <group rotation={[0, rad(yaw), 0]}>
       <ambientLight intensity={rig.ambient} />
       {rig.lights.map((light, i) => (
         <directionalLight

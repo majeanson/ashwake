@@ -46,7 +46,7 @@ import {
   type Lean,
 } from './camera';
 import { cellAt, firstCursor, refreshed, stepCursor, type Cursor, type Direction } from './cursor';
-import { GL_PROPS } from './gl';
+import { GL_PROPS, watchContext } from './gl';
 import { useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
 import { Pop } from './Pop';
@@ -180,6 +180,15 @@ const CURSOR_MARGIN = 72;
 
 /** Half a degree, which is the finest step worth re-fitting a board for. */
 const round2 = (deg: number): number => Math.round(deg * 2) / 2;
+
+/**
+ * The pixel budget, and the antialiasing that goes with it — see the `<Canvas>`
+ * below for the argument. Read once: a phone's `devicePixelRatio` is fixed for
+ * the life of the page, and this decides how the renderer is BUILT.
+ */
+const DENSE = typeof devicePixelRatio === 'number' && devicePixelRatio > 2;
+const DPR: [number, number] = DENSE ? [1, 1.5] : [1, 2];
+const GL = DENSE ? { ...GL_PROPS, antialias: false } : GL_PROPS;
 
 export function Board(props: BoardProps) {
   const { theme, tilt = 0, yaw = 0, relief = 0, light = 0, materials = 0, art = false } = props;
@@ -452,18 +461,50 @@ export function Board(props: BoardProps) {
         <Canvas
           frameloop="demand"
           orthographic
-          dpr={[1, 2]}
+          /*
+            HOW MANY PIXELS THIS PHONE ACTUALLY HAS TO DRAW (2026-09-02).
+
+            `[1, 2]` on every device, with MSAA always on, while `gl.ts` asks
+            for `low-power` — the configuration wanting the least of the GPU and
+            the one asking the most of it, on the same canvas.
+
+            A dpr-3 phone renders 9× the fragments of a dpr-1 one, and a hex at
+            34 CSS pixels is already carrying a 256px texture: past about 1.5
+            device pixels per CSS pixel there is nothing left in the source for
+            the extra samples to resolve. **The look decision** (Marc's ruling
+            for this pass: pick a defensible default and state it): cap at 1.5
+            where the device asks for more than 2, and let 2 stand where it is
+            2 — which is most phones and every one this game has been looked at
+            on.
+
+            MSAA goes with it above dpr 2, and that is the same argument from
+            the other side: antialiasing is a cure for a stair-step a pixel
+            wide, and at three device pixels per CSS pixel the stair-step is
+            already a third of one. It is the most expensive thing in
+            `GL_PROPS` and it buys least exactly where the pixels are smallest.
+          */
+          dpr={DPR}
           // `flat` turns OFF tone mapping. R3F applies ACES otherwise, which
           // would sit between the graded palette and the screen — see `gl.ts`
           // for why that made the contrast budget describe a board that did
           // not exist.
           flat
-          gl={GL_PROPS}
-          // The board says when it is up, so the failure panel never blames a
-          // crash on "this browser has no WebGL" while WebGL is plainly
-          // working — and never probes for a context while three holds one,
-          // which on a phone at its context limit drops the oldest: the board.
-          onCreated={markBoardAlive}
+          gl={GL}
+          /*
+            The board says when it is up, and asks for its context back if the
+            browser takes it (2026-09-02) — see `gl.ts`. Nothing in this
+            repository handled a lost context, and with `frameloop="demand"` a
+            context that came back would have drawn nothing at all.
+
+            The subscription hangs off the renderer for the life of the page,
+            which is exactly the `<Canvas>`'s own life: it is never unmounted
+            (`CLAUDE.md`), so there is nowhere to hang a cleanup that would ever
+            run, and the listeners die with the canvas they are on.
+          */
+          onCreated={(state) => {
+            markBoardAlive();
+            watchContext(state.gl.domElement, state.invalidate);
+          }}
           camera={{ position: [0, 100, 0], zoom: 30, near: 0.1, far: 1000 }}
           style={{ width: size.width, height: size.height }}
         >
@@ -561,22 +602,39 @@ function Rig({
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
 
-  // The fit frames the STRUCTURE, never the beacon disc (Ashwake 1's rule).
-  const frame = useMemo<Frame>(() => {
+  /**
+   * WHAT THE FIT MEASURES, AND HOW TALL IT IS — separately from the ANGLE
+   * (2026-09-02).
+   *
+   * The fit frames the STRUCTURE, never the beacon disc (Ashwake 1's rule).
+   *
+   * All of it used to live in one memo keyed on the lean, so **every half
+   * degree of turn re-filtered every cell, re-mapped every cell into a fresh
+   * `{q, r}`, and re-walked every cell for the tallest thing on the board** —
+   * two arrays of five hundred objects and three passes, up to 720 times in a
+   * full rotation of the board, to recompute three answers that cannot change
+   * when the camera moves. A turn is a camera fact; which cells exist and how
+   * tall they stand are board facts.
+   *
+   * Split, so the angle recomputes only what the angle decides.
+   */
+  const framed = useMemo(() => {
     const anchored = view.cells.filter((c) => !c.beacon);
-    const framed = anchored.length > 0 ? anchored : view.cells;
-    // A leaning camera has to be told how tall the board is: what stands on
-    // the far ground leans into the top of the frame and would be cropped by
-    // a fit that only measured floors.
-    const lean: Lean = { tilt, yaw, tallest: tallestOf(framed, relief) };
-    return frameFor(
-      framed.map((c) => ({ q: c.q, r: c.r })),
-      width,
-      height,
-      theme.orientation,
-      lean,
-    );
-  }, [view, width, height, theme.orientation, tilt, yaw, relief]);
+    return (anchored.length > 0 ? anchored : view.cells).map((c) => ({ q: c.q, r: c.r }));
+  }, [view]);
+
+  /** How tall the board stands, for the sky a leaning camera has to reserve:
+   *  what is on the far ground leans into the top of the frame and would be
+   *  cropped by a fit that only measured floors. */
+  const tallest = useMemo(() => {
+    const anchored = view.cells.filter((c) => !c.beacon);
+    return tallestOf(anchored.length > 0 ? anchored : view.cells, relief);
+  }, [view, relief]);
+
+  const frame = useMemo<Frame>(() => {
+    const lean: Lean = { tilt, yaw, tallest };
+    return frameFor(framed, width, height, theme.orientation, lean);
+  }, [framed, tallest, width, height, theme.orientation, tilt, yaw]);
 
   /**
    * Where the game is still being played, for a FIT that has had to crop.
@@ -593,22 +651,25 @@ function Rig({
    * framing means, and averaging cell positions would pull the camera toward
    * whichever side happens to hold more of them.
    */
+  /** The frontier's cells, kept out of the memo below for the same reason
+   *  `framed` is: which hexes are live is a board fact, not a camera one. */
+  const live = useMemo(
+    () =>
+      view.cells
+        .filter(
+          (c) =>
+            !c.beacon &&
+            !c.remembered &&
+            (c.legal || c.kind === 'tile' || (c.kind === 'landmark' && !c.claimed)),
+        )
+        .map((c) => ({ q: c.q, r: c.r })),
+    [view],
+  );
+
   const focus = useMemo<{ readonly cx: number; readonly cz: number }>(() => {
-    const live = view.cells.filter(
-      (c) =>
-        !c.beacon &&
-        !c.remembered &&
-        (c.legal || c.kind === 'tile' || (c.kind === 'landmark' && !c.claimed)),
-    );
     if (live.length === 0) return frame.centre;
-    return frameFor(
-      live.map((c) => ({ q: c.q, r: c.r })),
-      width,
-      height,
-      theme.orientation,
-      frame.lean,
-    ).centre;
-  }, [view, width, height, theme.orientation, frame]);
+    return frameFor(live, width, height, theme.orientation, frame.lean).centre;
+  }, [live, width, height, theme.orientation, frame]);
 
   // Camera state lives in a ref: gestures write it many times a second and
   // React must not re-render for any of them.
@@ -671,15 +732,50 @@ function Rig({
    * must never re-render for one. See `eslint.config.js` for why the purity
    * rules are scoped off for `board/` and loud everywhere else.
    */
+  /**
+   * The eye, and what the camera was last set to (2026-09-02).
+   *
+   * `apply` ran unconditionally on every frame, and `eyeOf` allocates — so a
+   * beacon breathing or a pocket leaping, neither of which moves the camera,
+   * still rebuilt the eye, rewrote three vectors and recomputed the projection
+   * matrix sixty times a second. The camera is the one thing on this board that
+   * is genuinely cheap to know about: five numbers, and it either moved or it
+   * did not.
+   *
+   * `lean` is compared by IDENTITY on purpose. It comes out of the `frame` memo
+   * as a fresh object exactly when the angle changes, which makes the object
+   * itself the change stamp — and comparing three numbers instead would be
+   * re-deriving what the memo already decided.
+   */
+  const eye = useRef<{ lean: Lean; at: ReturnType<typeof eyeOf> } | null>(null);
+  const applied = useRef<{ zoom: number; cx: number; cz: number; size: number; lean: Lean } | null>(
+    null,
+  );
+
   const apply = (): void => {
     const c = cam.current;
     const f = frameRef.current;
-    const eye = eyeOf(f.lean, EYE_DISTANCE);
+    const was = applied.current;
+    if (
+      was !== null &&
+      was.zoom === c.zoom &&
+      was.cx === c.cx &&
+      was.cz === c.cz &&
+      was.size === f.fit.size &&
+      was.lean === f.lean
+    ) {
+      return;
+    }
+    if (eye.current === null || eye.current.lean !== f.lean) {
+      eye.current = { lean: f.lean, at: eyeOf(f.lean, EYE_DISTANCE) };
+    }
+    const at = eye.current.at;
     camera.zoom = f.fit.size * c.zoom;
-    camera.position.set(c.cx + eye.x, eye.y, c.cz + eye.z);
-    camera.up.set(eye.upX, eye.upY, eye.upZ);
+    camera.position.set(c.cx + at.x, at.y, c.cz + at.z);
+    camera.up.set(at.upX, at.upY, at.upZ);
     camera.lookAt(c.cx, 0, c.cz);
     camera.updateProjectionMatrix();
+    applied.current = { zoom: c.zoom, cx: c.cx, cz: c.cz, size: f.fit.size, lean: f.lean };
   };
 
   useFrame(() => {
@@ -791,8 +887,24 @@ function Rig({
        * that never returns, so the timer checks whether the camera is still
        * where the excursion put it — a drag, a pinch or a flick all move it,
        * and any of them means the player would rather be here.
+       *
+       * **AND UNDER REDUCED MOTION THERE IS NO EXCURSION AT ALL** (2026-09-02).
+       * `fly` honours the preference by dropping the tween — which is right for
+       * a flight, and turns THIS into two hard cuts: the board teleports to the
+       * hex, sits there, and teleports back. A person who has asked for less
+       * motion has asked for less of exactly that; a cut is the most jarring
+       * thing a camera can do, not the least.
+       *
+       * The look decision (Marc's ruling for this pass: pick a defensible
+       * default and state it): **skip it entirely.** The claim's own sentence
+       * still arrives, the receipt still names the place, and the board stays
+       * where the player put it — which is what "reduce motion" asks for. It is
+       * the only camera move in this file that exists purely to show something
+       * off, so it is the only one that can honestly be dropped rather than
+       * shortened.
        */
       visit(hex, holdMs) {
+        if (reducedMotion) return;
         const back = cam.current;
         const fitBefore = wasFit.current;
         const { q, r } = parse(hex);
@@ -859,7 +971,7 @@ function Rig({
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),
     }),
-    [invalidate, fly, theme.orientation, gl, scene, camera],
+    [invalidate, fly, theme.orientation, gl, scene, camera, reducedMotion],
   );
 
   /*

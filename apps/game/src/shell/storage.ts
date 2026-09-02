@@ -350,6 +350,11 @@ function shed(rung: ShedRungId): void {
 function drop(key: string): void {
   try {
     disk()?.removeItem(key);
+    // A world FORGOTTEN is a ledger change exactly as a world written is —
+    // RESET ALL, a crossing, the shed ladder shedding another world. This was
+    // missing while the docblock above claimed both, and `storage.test.ts`
+    // found it on the first run.
+    stamped(key);
   } catch {
     /* nothing to undo */
   }

@@ -32,17 +32,43 @@ export type BatchResources = {
   readonly materialsFor: (batch: GroundBatch) => readonly Material[] | undefined;
 };
 
+/**
+ * THE PRISMS ARE SHARED AND NEVER REBUILT (2026-09-02).
+ *
+ * There are six kinds and two orientations, so there are twelve prisms that
+ * this game can ever need, and every one of them is immutable: a prism is a
+ * radius, a height and a rotation, none of which depends on a board.
+ *
+ * They used to be a `useMemo` inside the hook with a disposal effect — and
+ * `useBatchResources` is called by TWO components. `Pop` mounts for the length
+ * of a harvest and unmounts, so **every pop built six geometries and threw
+ * them away**: buffer churn on the GPU at the exact moment the board has the
+ * least to spare, for six objects that were already sitting in `HexField`.
+ *
+ * Module scope, built on first ask, and not disposed — because "dispose" here
+ * would mean freeing something that is about to be asked for again. Twelve
+ * small geometries is the whole of what this cache can ever hold, and a lost
+ * WebGL context does not invalidate them: `three` re-uploads from the arrays
+ * the geometry still holds (see `board/gl.ts`).
+ */
+const PRISMS = new Map<Orientation, Map<Kind, BufferGeometry>>();
+
+function prismsFor(orientation: Orientation): Map<Kind, BufferGeometry> {
+  let set = PRISMS.get(orientation);
+  if (set === undefined) {
+    set = new Map(KINDS.map((kind) => [kind, hexPrism(HEX_RADIUS, HEIGHT[kind], orientation)]));
+    PRISMS.set(orientation, set);
+  }
+  return set;
+}
+
 export function useBatchResources(
   batches: readonly GroundBatch[],
   orientation: Orientation,
   textures: SurfaceTextures,
   artFor: (batch: GroundBatch) => CanvasImageSource | null,
 ): BatchResources {
-  const prisms = useMemo(
-    () => new Map(KINDS.map((kind) => [kind, hexPrism(HEX_RADIUS, HEIGHT[kind], orientation)])),
-    [orientation],
-  );
-  useEffect(() => () => prisms.forEach((geometry) => geometry.dispose()), [prisms]);
+  const prisms = prismsFor(orientation);
 
   /*
    * MATERIALS OUTLIVE A RENDER, AND DISPOSING ONE IS NOT A COMPUTATION
@@ -116,6 +142,19 @@ function build(
     // neighbouring segments — a six-sided prism shades as a rounded blob
     // otherwise, which was most of why the board read flat.
     flatShading: true,
+    /*
+     * And NOT tone mapped, like every other material on this board.
+     *
+     * The rings, the marks and the marker all pass `toneMapped: false`; the
+     * ground — the largest surface on screen and the one the contrast budget is
+     * graded against — did not. It is harmless today only because the `<Canvas>`
+     * is `flat`, which turns tone mapping off globally, so the invariant
+     * `gl.ts` spends a page arguing for is being kept by exactly one thing. A
+     * second statement of it costs nothing and means a future `flat` being
+     * dropped is a look change somebody notices rather than a palette quietly
+     * going through a filmic curve.
+     */
+    toneMapped: false,
   };
 
   const top = withTorch(new MeshLambertMaterial(common));

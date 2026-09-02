@@ -11,6 +11,12 @@ acting on it.
 `LOG.md` is the per-session record. This file is the short answer to "what
 now", sorted by whether it needs Marc.
 
+**`IMPROVEMENTS.md` is the 2026-09-02 improvement pass, row by row** — a wide
+sweep over what already ships, opened on Marc's ask and tracked there so it is
+resumable. A pointer rather than a copy, on purpose: two lists of the same work
+is how one of them goes stale, which is the hazard the paragraph above exists
+to warn about. What that pass leaves for Marc is in §5b and §5c below.
+
 ---
 
 ## 0. Wired, and what it revealed
@@ -650,6 +656,39 @@ outline made every legal edge repaint on every placement.
 board's gutter and line weight, all three were tuned by eye against what
 renders today, and honouring any one of them is a re-tune of the whole grid
 rather than a fix.
+
+**All five are still unwired after the 2026-09-02 improvement pass**
+(`IMPROVEMENTS.md`), deliberately and for this section's own reason. That pass
+had a ruling from Marc to resolve look findings with a defensible default —
+and these five are not findings with defaults, they are a re-tune of the whole
+board's atmosphere and line weight. The pass took every look decision that had
+one honest answer and left these, which have none until somebody looks.
+
+## 5c. Nothing sets `Said.brief` — needs Marc
+
+Found 2026-09-02 walking the OPTIONAL fields (`IMPROVEMENTS.md` Batch 5), which
+is the blind spot `CLAUDE.md`'s newest rule names and the same one `perkAt` hid
+in.
+
+A brief card is a receipt the player does not have to dismiss: it takes no
+focus, any tap sends it away, and it goes on its own after 4200ms. All of it is
+built and none of it is reachable — `.card-scrim.brief` and its `.card` rule in
+`ui.css`, `BRIEF_MS` and the pointerdown dismissal in `ui/Card.tsx`, and
+`SaidCard`'s `brief` prop. **No caller anywhere writes `brief: true`.**
+
+The docblock on `Said.brief` names `App`'s harvest branch as the writer, and
+that is the branch which STOPPED writing it on 2026-08-30, when Marc asked for
+a routine pop to be a line over the board rather than a card: _"i asked
+previously to not pop as a card everytime, just show points in the bottom and
+we can tap for details or tap out."_
+
+**The question is yours, and it is one sentence:** is there any receipt this
+game wants to show and not make the player put down? If no, the whole path is
+dead weight and should be cut. If yes, it wants one caller. The pass fixed
+what was wrong with the path — it announced from a live region inserted with
+its own content, and it held a focusable button that the timer removed out from
+under the focus — so whichever way this goes, it goes from a correct starting
+point.
 
 ## 5. The art pipeline — DONE 2026-08-29, and now it needs an eye
 

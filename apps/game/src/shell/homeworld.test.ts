@@ -38,6 +38,13 @@ import {
  *
  * These are the two ends of that: the seed a run is played on, and what the
  * world lends it.
+ *
+ * **Named for its SUBJECT, not for a module** — the one place this directory
+ * departs from `x.ts` ↔ `x.test.ts`, and deliberately. What it pins crosses
+ * several files at once and belongs to none of them; a name that picked one
+ * would send a reader to the wrong place for the other half. `bridge`, `camp`,
+ * `homeworld`, `shed` and `shelf` are the five, and they are the five that
+ * describe a behaviour rather than a file (noted 2026-09-02).
  */
 
 beforeEach(() => {

@@ -1,4 +1,5 @@
 import { Text } from '@react-three/drei';
+import { MeshBasicMaterial, PlaneGeometry, type Texture } from 'three';
 import { useMemo } from 'react';
 import type { HexKey } from '@engine/hex';
 import type { IconName } from '@theme/icons';
@@ -6,6 +7,7 @@ import type { CellView } from '@render/Renderer';
 import { labelFor } from '@render/labels';
 import { place, type Layout } from '@render/layout';
 import { hex, type Theme } from '@theme/tokens';
+import { rad } from './camera';
 import { markTexture } from './marks';
 import { kindOf, topOf } from './relief';
 
@@ -107,7 +109,7 @@ export function Labels({ cells, theme, layout, relief, yaw }: LabelsProps) {
             // Lying flat on the hex's top, and turned back by the yaw: a number
             // printed on a board that has been turned 45 degrees is a number read
             // at 45 degrees, and a number on a hex has to be read at a glance.
-            rotation={[-Math.PI / 2, 0, (yaw * Math.PI) / 180]}
+            rotation={[-Math.PI / 2, 0, rad(yaw)]}
             raycast={() => null}
           >
             {label.text}
@@ -149,16 +151,62 @@ function Mark({
     [icon, label, theme],
   );
   if (texture === null) return null;
+  /*
+   * ONE PLANE AND ONE MATERIAL PER MARK, SHARED (2026-09-02).
+   *
+   * Declaring `<planeGeometry>` and `<meshBasicMaterial>` as children means R3F
+   * constructs and disposes one of each PER MARK — so a board with a dozen
+   * beacons and a dozen claimed destinations built two dozen identical squares
+   * and two dozen materials, and rebuilt them whenever the board re-rendered.
+   *
+   * The geometry is literally the same square every time: `MARK_SIZE` is a
+   * constant. The material varies only by its texture, and `markTexture` is
+   * already cached by `(icon, ink, halo)` — so a material cached by the same
+   * texture is cached by the same three things.
+   *
+   * `toneMapped` off for the reason the canvas turns tone mapping off at all —
+   * the palette is graded to 4.5:1 in display colours, and a curve between that
+   * grade and the screen would make the whole budget a description of a board
+   * that does not exist.
+   */
   return (
     <mesh
       position={[label.x, label.top, label.z]}
-      rotation={[-Math.PI / 2, 0, (yaw * Math.PI) / 180]}
+      rotation={[-Math.PI / 2, 0, rad(yaw)]}
+      geometry={MARK_PLANE}
+      material={markMaterial(texture)}
       raycast={() => null}
-    >
-      <planeGeometry args={[MARK_SIZE, MARK_SIZE]} />
-      <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} />
-    </mesh>
+    />
   );
+}
+
+/** The square every mark is drawn on. One, for all of them. */
+const MARK_PLANE = new PlaneGeometry(MARK_SIZE, MARK_SIZE);
+
+/**
+ * A mark's material, cached by its texture.
+ *
+ * The texture is already the cache key that matters: `markTexture` hands back
+ * the same object for the same `(icon, ink, halo)`, so two marks that look the
+ * same share one, and two that do not cannot collide. Never disposed, for the
+ * reason the shared prisms are not (`resources.ts`): the pool is bounded by the
+ * icon registry crossed with three inks, and everything in it is about to be
+ * asked for again.
+ */
+const MARK_MATERIALS = new Map<Texture, MeshBasicMaterial>();
+
+function markMaterial(texture: Texture): MeshBasicMaterial {
+  let material = MARK_MATERIALS.get(texture);
+  if (material === undefined) {
+    material = new MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    MARK_MATERIALS.set(texture, material);
+  }
+  return material;
 }
 
 /**

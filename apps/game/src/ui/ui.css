@@ -1092,12 +1092,29 @@ h3.fact-label {
 
 /* ---- what the game is saying -------------------------------------------- */
 
-.toast {
+/*
+ * THE VOICE a note is said in — the board's line and the shell's notices both.
+ *
+ * It was `.toast` declared TWICE, four hundred lines apart, and the first copy
+ * carried a `min-height: 1.4rem` that nothing wanted: a live region has to be
+ * in the DOCUMENT before its text changes, not in the LAYOUT, and reserving a
+ * band for a sentence that is usually absent is exactly what the second
+ * declaration's own docblock argues against. `.toast:empty` existed to undo it.
+ *
+ * One declaration, no floor, and `:empty` kept for the padding and the ground
+ * an empty paragraph would otherwise still paint.
+ */
+.toast,
+.notice-line {
   margin: 0;
   padding: 0.35rem var(--gap);
   font-size: 0.85rem;
   color: var(--ink-dim);
-  min-height: 1.4rem;
+}
+
+.toast:empty,
+.notice-line:empty {
+  display: none;
 }
 
 /*
@@ -1157,12 +1174,6 @@ h3.fact-label {
   text-align: center;
   pointer-events: auto;
   background: color-mix(in srgb, var(--panel) 88%, transparent);
-}
-
-/* Nothing to say, nothing to see: an empty live region must not paint a band
-   across the bottom of the board. */
-.toast:empty {
-  display: none;
 }
 
 /* And a note that is a BUTTON carries its own ground: the band behind it is
@@ -2204,8 +2215,25 @@ h3.fact-label {
   pointer-events: none;
 }
 
-.notices .toast {
-  position: static;
+/*
+ * A NOTICE IS NOT A TOAST, and giving it that class cost six e2e tests
+ * (2026-09-02).
+ *
+ * These two borrowed `.toast` for its typography while being a different
+ * thing: the toast is the BOARD's line, pinned over the board's bottom edge,
+ * one of them, and the thing every spec means when it writes `.toast`. Once
+ * the notices became unconditional — they are live regions, and a live region
+ * has to be in the document before it has anything to say — `.toast` matched
+ * three elements and Playwright's strict mode was right to refuse.
+ *
+ * The lesson is smaller than the fix: **a class is a name, and two things that
+ * are laid out differently are two things.** They share a voice, and the voice
+ * is what `.notice-line` above shares with `.toast`; the column below is what
+ * makes them a stack rather than a band.
+ */
+.notice-line {
+  color: var(--ink);
+  text-align: center;
 }
 
 .update {

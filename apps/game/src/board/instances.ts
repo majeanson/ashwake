@@ -1,4 +1,4 @@
-import type { InstancedMesh } from 'three';
+import type { Color, InstancedMesh } from 'three';
 
 /**
  * Publishing a batch of instances (Stage 2c, 2026-08-29).
@@ -33,4 +33,28 @@ export function commitInstances(mesh: InstancedMesh, count: number): void {
   if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
   mesh.boundingSphere = null;
   mesh.boundingBox = null;
+}
+
+/**
+ * A packed `0xRRGGBB` tint, into a `Color`, at a brightness.
+ *
+ * Three copies of this byte-unpack were written out by hand — twice in
+ * `HexField` and once in `Pop` — and one of them runs per instance per frame.
+ * It is the kind of arithmetic that is obviously right in each copy and
+ * silently drifts between them: an off-by-one shift here reads as a
+ * "the board's colours are wrong on the pop layer" bug report.
+ *
+ * `setRGB` writes into the working space unchanged, which is what lets the
+ * torch shader read display-space numbers back out (`torchShader.ts`). That is
+ * the whole reason this is not `Color.setHex`.
+ *
+ * Mutates rather than returns, because it is called in a loop over hundreds of
+ * instances and a `Color` per instance is a `Color` per instance.
+ */
+export function tintInto(target: Color, tint: number, lit: number): void {
+  target.setRGB(
+    (((tint >> 16) & 0xff) / 255) * lit,
+    (((tint >> 8) & 0xff) / 255) * lit,
+    ((tint & 0xff) / 255) * lit,
+  );
 }

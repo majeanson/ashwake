@@ -27,6 +27,20 @@ export function breath(clock: number): number {
 /** Still, under reduced motion — the same light, no pulse. */
 export const STILL_BREATH = 0.8;
 
+/**
+ * How often the breath is repainted (2026-09-02).
+ *
+ * It used to be every frame, which meant **the board asked for 60fps for the
+ * whole of every run**: beacons exist almost always, and one beacon anywhere
+ * kept `invalidate()` firing, so every instanced draw and every `<Text>` on the
+ * board redrew continuously on a board where nothing had happened. On a phone
+ * that is the single biggest thing this renderer spends.
+ *
+ * 33ms is thirty a second against a 2600ms pulse, so the wave advances by about
+ * 1.3% of a cycle between repaints. Nobody can see that; a battery can.
+ */
+export const BREATH_STEP_MS = 33;
+
 export type Ember = {
   /** Where it started, in hex radii from the board's origin. */
   readonly x: number;
