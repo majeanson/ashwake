@@ -276,14 +276,22 @@ export function EndScreen({
         </p>
       )}
 
-      <button type="button" className="door-begin" data-action="new-run" onClick={onNewRun}>
-        {s.ui.newRun}
-      </button>
-
-      {/* The retry loop, beside the count that confesses it — see `daily`. */}
-      {daily != null && (
-        <button type="button" data-action="retry" onClick={daily.onRetry}>
+      {/*
+        THE PRIMARY LOOP ACTION, over the score — unchanged ruling for a world
+        ending (see the doc comment above). A daily's itch is TRY AGAIN, not
+        NEW RUN: this board is everybody's, so the button beside the tries
+        confession is the retry, and NEW RUN — which leaves the daily for this
+        device's own world — moves to the bottom nav as CONTINUE IN MY WORLD
+        (2026-09-03, Marc: didn't see a way back to his world from a daily's
+        end screen; the door was there, worded for the wrong context).
+      */}
+      {daily != null ? (
+        <button type="button" className="door-begin" data-action="retry" onClick={daily.onRetry}>
           {s.ui.ending.tryAgain}
+        </button>
+      ) : (
+        <button type="button" className="door-begin" data-action="new-run" onClick={onNewRun}>
+          {s.ui.newRun}
         </button>
       )}
 
@@ -421,8 +429,16 @@ export function EndScreen({
           were earned — Ashwake 1's ruling, and the whole of the roguelite
           loop: a run that ends on a purchase is a run that ends pointing at
           the next one. The shop is the same component the shop panel is, with
-          its own back button omitted because this is not a panel. */}
-      <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
+          its own back button omitted because this is not a panel.
+
+          Absent on a detour and a daily (`world == null`), the same gate
+          `relicsBanked` above uses: neither banks a thing, so a shop asking to
+          spend a currency this ending could not have earned is world-chrome
+          bleeding onto a board that has no world (2026-09-03, Marc: "when
+          playing dailies, dont show the shop or anything world-related"). */}
+      {world != null && (
+        <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
+      )}
 
       {/*
         THE INSTALL OFFER, once ever, in the quietest voice on the screen
@@ -451,6 +467,15 @@ export function EndScreen({
       )}
 
       <nav className="panel-menu">
+        {/* The way back onto this device's OWN world, off a daily's ending —
+            see the doc comment on the top button above. `onNewRun` is the
+            same door NEW RUN opens everywhere else; only the label and the
+            place it sits change here. */}
+        {daily != null && (
+          <button type="button" data-action="new-run" onClick={onNewRun}>
+            {s.ui.ending.continueInWorld}
+          </button>
+        )}
         {/* SHARE is the game's entire distribution mechanism: it has no store
             listing and no account, so a run reaches another person because
             somebody pasted this. It sits under the score rather than beside
