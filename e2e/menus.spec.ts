@@ -654,11 +654,11 @@ test('the appearance picker shows each direction, and switching one repaints', a
   // then a paint, and a single read can land between the two.
   await expect.poll(groundOf).toBe('rgb(232, 220, 196)');
   const light = await groundOf();
-  await page.locator('[data-theme-pick="torchlit"]').click();
+  await page.locator('[data-theme-pick="settlement"]').click();
   await expect.poll(groundOf).not.toBe(light);
 
   // And the choice is remembered, which is what makes it a setting.
-  await expect(page.locator('[data-theme-pick="torchlit"]')).toHaveAttribute(
+  await expect(page.locator('[data-theme-pick="settlement"]')).toHaveAttribute(
     'aria-pressed',
     'true',
   );
@@ -710,7 +710,8 @@ test('?themes=1 puts every direction one tap from the board', async ({ page }) =
   await strip.waitFor({ state: 'visible' });
 
   // Every direction that ships, plus AUTO — and the board still showing.
-  expect(await strip.locator('[data-theme-pick]').count()).toBeGreaterThanOrEqual(5);
+  // Two directions since D12 (2026-09-03): settlement and daylight.
+  expect(await strip.locator('[data-theme-pick]').count()).toBeGreaterThanOrEqual(3);
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('[data-theme-pick="settlement"]')).toBeVisible();
 

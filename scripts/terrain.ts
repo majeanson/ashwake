@@ -3,9 +3,7 @@ import { fileURLToPath, URL } from 'node:url';
 import sharp from 'sharp';
 import { rngNext, stream, type RngStream } from '../packages/core/src/engine/rng';
 import { DAYLIGHT } from '../packages/core/src/theme/themes/daylight';
-import { TORCHLIT } from '../packages/core/src/theme/themes/torchlit';
 import { SETTLEMENT } from '../packages/core/src/theme/themes/settlement';
-import { TORCHLIT_BRIGHT } from '../packages/core/src/theme/themes/torchlit-bright';
 import {
   hex,
   isLight,
@@ -96,12 +94,13 @@ import {
  * new direction is a new entry here and nothing else — and it earns its art by
  * passing the guardrail at the bottom, not by being liked.
  *
- * The placeholder is still skipped: it is the control, it has no art slots,
- * and baking it would give the greyscale test's reference a coat of paint.
+ * `placeholder`, `torchlit` and `torchlit-bright` are gone (D12, 2026-09-03):
+ * two directions ship now, and `daylight` bakes under settlement's own motif
+ * rather than the plane's — see `themes/daylight.ts`'s own docblock.
  */
-const THEMES_TO_BAKE: readonly Theme[] = [TORCHLIT, TORCHLIT_BRIGHT, DAYLIGHT, SETTLEMENT];
+const THEMES_TO_BAKE: readonly Theme[] = [DAYLIGHT, SETTLEMENT];
 
-let T: Theme = TORCHLIT;
+let T: Theme = SETTLEMENT;
 let outDir = '';
 const at = (name: string): string => `${outDir}${name}`;
 
@@ -230,7 +229,7 @@ function depthRect(w = TW, h = TH): string {
   );
 }
 
-/** The scorch — see `theme/themes/torchlit.ts`'s `stone` surface for why. */
+/** The scorch — see `theme/themes/settlement.ts`'s `stone` surface for why. */
 function scorchRect(): string {
   const cx = TW * 0.46;
   const cy = TH * 0.57;

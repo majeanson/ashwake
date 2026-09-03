@@ -36,14 +36,18 @@ const at = (p: string): string =>
 const FONT = fileURLToPath(new URL('./fonts/cinzel.ttf', import.meta.url));
 
 /**
- * The directions with an asset folder — the placeholder stays drawn.
+ * The directions with an asset folder.
  *
- * A hand-kept list rather than "every theme", because the placeholder must NOT
- * be baked: it is the control the greyscale test measures against, and giving
- * it art would give that reference a coat of paint. `settlement` joined on
- * 2026-08-29 with the rest of the pipeline (D7).
+ * A hand-kept list rather than "every theme" is a habit from when a
+ * `placeholder` entry lived in the registry and had to stay drawn: it was the
+ * control the greyscale test measured against, and giving it art would have
+ * given that reference a coat of paint. `placeholder`, `torchlit` and
+ * `torchlit-bright` are gone (D12, 2026-09-03) and the registry is two
+ * entries now, so this list and `THEMES` finally say the same thing — kept as
+ * its own constant anyway, so a future candidate direction can exist in
+ * `THEMES` for a session before it earns art.
  */
-const BAKED = new Set(['torchlit', 'torchlit-bright', 'daylight', 'settlement']);
+const BAKED = new Set(['daylight', 'settlement']);
 
 // ------------------------------------------------------------------ ui.logo
 

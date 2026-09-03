@@ -150,7 +150,7 @@ Both halves are the ruling. A scene sits below the panels (15), **and** it goes
 `inert` while one is open: a z-index alone leaves focus and taps reaching a
 screen the player cannot see, which is the half a repaint would not fix.
 
-### D7 — SETTLEMENT is built, and it is a CANDIDATE — 2026-08-29
+### D7 — SETTLEMENT is built, and it is a CANDIDATE — RULED 2026-08-29 (closed 2026-09-03, D12)
 
 Marc's own reading of the colours (D4.4) exists as a direction now: FARM ·
 MARKET · QUARRY · ROADS, in `theme/themes/settlement.ts`. The fiction is the
@@ -417,6 +417,50 @@ destination is now flat like everything else. That was the point of Stage 2d
 (Marc, 2026-08-29: _"map shrines, etc. cuter and more nice"_), and it is being
 traded for the thing he asked for three times running: being able to tell what
 he is walking toward without tapping it.
+
+### D12 — Two directions, not four: SETTLEMENT and a bright SETTLEMENT — RULED 2026-09-03
+
+Marc: _"we can officialize the Settlement ui avenue and adapt the daylight
+skin for it, then keep only those two."_
+
+D7 chose settlement and left one line unfinished — its own words: _"the honest
+fix is a bright settlement that passes the same budgets [as `contrast.test.ts`
+and `theme.test.ts`], not a line in `pickForScheme`."_ This closes it.
+`torchlit`, `torchlit-bright` and `placeholder` are deleted — not archived,
+`git log` is the archive — and `daylight` is reskinned onto settlement rather
+than left as a second, unrelated fiction: FARM · MARKET · QUARRY · ROADS in
+both languages, `motif: 'settlement'` so the baked art matches (awning cloth,
+cut benches, paving courses — not moss tufts and embers), and `powerNames`
+equal to `terrainNames` the same way settlement's already are, because the
+words-carry-the-rule argument that won D7 is true of the light board too.
+
+**What moved and what did not.** Every colour, pattern number and budget in
+`daylight.ts` is untouched — `board`, `ink`, `motion`, `voice`, the four
+`surface()` calls' `fill`/`fillTo`, `wall`, `stone`, `ghost`, `light`, `fog`.
+Renumbering a palette that already cleared `contrast.test.ts`'s ladder and the
+light-skin dead-band it was built to avoid would have spent a budget this pass
+did not need to spend. Two terrains needed their `pattern`/`overlay` OBJECTS
+reordered to satisfy the settlement motif's guardrail (D8): MARKET's cloth and
+goods were swapped from EMBER's sparks-then-blades order, and QUARRY's overlay
+was reshaped from ash-on-ash dots into the cut-bench hatch settlement's own
+red already draws — same ink, same alpha, new geometry. `pnpm bake` throws
+rather than baking a mismatch silently (D8's own rule), which is what caught
+both before either shipped.
+
+**What this makes true that was not.** `pickForScheme`'s gap is closed:
+`prefersLight` and `prefersContrast` both resolve to `daylight` now, so the
+player who asks for more contrast gets the settlement fiction the front door
+told them, not the plane's. `daylight`'s ink is already 16.7:1 on vellum — the
+highest contrast of any direction this game has shipped — so there is nothing
+a dedicated "high contrast" entry would have added.
+
+**What this costs.** The registry drops from five entries to two. A stranger
+who bookmarked `?theme=torchlit` lands on the default rather than what they
+saved — the same fallback `resolveTheme` already gives a typo, stated in D7
+when the first two candidates were deleted and true again here. The historical
+comments in `theme/index.ts`, `contrast.test.ts` and elsewhere that measure
+torchlit's own numbers stay as they were graded; they are a record of a
+direction that shipped and was retired; the direction itself is not.
 
 ## Open
 

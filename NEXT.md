@@ -375,13 +375,15 @@ shown, which raises the stakes on the same look questions — the four grounds a
 as dirt. `docs/shots/s5-settlement*.png`, `s5-directions.png` and
 `s3-door.png` are the pictures; the phone is the judge.
 
-**One thing the ruling did NOT carry, and it is an accessibility one.**
-`pickForScheme` still answers a stated preference with the plane —
-`torchlit-bright` for more contrast, `daylight` for light — so the player who
-needs contrast is the one player who does not get the fiction the front door
-just told them, and that is exactly the population that fork exists to serve.
-The honest fix is a bright settlement that passes the same 152 palette
-assertions, which is a palette sitting rather than a line of code.
+**~~One thing the ruling did NOT carry, and it is an accessibility one.~~
+CLOSED 2026-09-03, D12.** `pickForScheme` used to answer a stated preference
+with the plane — `torchlit-bright` for more contrast, `daylight` for light —
+so the player who needed contrast was the one player who did not get the
+fiction the front door just told them. `torchlit` and `torchlit-bright` are
+retired, `daylight` is reskinned onto settlement's own names and rules, and
+both `prefersLight` and `prefersContrast` answer `daylight` now: the bright
+settlement this note asked for, built by reskinning a palette that already
+passed every assertion rather than authoring a new one.
 
 **Three concept questions the fiction cannot answer for itself.** Found
 reviewing the backstory against what a settlement player actually reads:

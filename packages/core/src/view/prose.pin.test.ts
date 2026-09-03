@@ -10,7 +10,7 @@ import { SHED_LADDER, shedNote } from '@meta/shedLadder';
 import { UNLOCKS, unlockLabel } from '@meta/world';
 import { dailyBadge, recordDaily } from '@meta/daily';
 import { DAYLIGHT } from '@theme/themes/daylight';
-import { TORCHLIT } from '@theme/themes/torchlit';
+import { SETTLEMENT } from '@theme/themes/settlement';
 import type { Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
@@ -55,7 +55,7 @@ const TUNINGS: readonly (readonly [string, Tuning])[] = [
   ['BARE_TUNING', BARE_TUNING],
 ];
 const THEMES: readonly (readonly [string, Theme])[] = [
-  ['torchlit', TORCHLIT],
+  ['settlement', SETTLEMENT],
   ['daylight', DAYLIGHT],
 ];
 
@@ -179,7 +179,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
         for (const detour of [false, true]) {
           const ctx = {
             state: run,
-            theme: TORCHLIT,
+            theme: SETTLEMENT,
             strings: s,
             detour,
             shrinesClaimed: 0,

@@ -29,12 +29,14 @@ import { AUDIT_IN_PAGE, type Finding } from './audit';
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'audit-shots');
 
 /**
- * Every direction offered, candidates included. A screen is only as good as
- * its worst one, and a direction nobody audits is a direction whose chrome
- * nobody has looked at — which is how a candidate gets chosen on the strength
- * of its BOARD and then ships with an unreadable settings panel.
+ * Every direction offered (D12, 2026-09-03: two, not four — `torchlit`,
+ * `torchlit-bright` and `placeholder` are retired; `daylight` is settlement's
+ * own names reskinned bright). A screen is only as good as its worst
+ * direction, and a direction nobody audits is a direction whose chrome nobody
+ * has looked at — which is how a candidate gets chosen on the strength of its
+ * BOARD and then ships with an unreadable settings panel.
  */
-const DIRECTIONS = ['torchlit', 'daylight', 'torchlit-bright', 'settlement'] as const;
+const DIRECTIONS = ['settlement', 'daylight'] as const;
 
 /**
  * A device with history, so the screens that only exist once you have played
@@ -377,7 +379,7 @@ test.use({ viewport: { width: 390, height: 844 } });
  *
  * `pass` is what the row was measured under — a direction at 390 in the phone's
  * own language, or one of the two passes below. It is a column rather than a
- * suffix on `direction` because a French clipping and a torchlit contrast
+ * suffix on `direction` because a French clipping and a settlement contrast
  * failure are different findings and want to be sortable apart.
  */
 const report: { screen: string; direction: string; pass: string; finding: Finding }[] = [];

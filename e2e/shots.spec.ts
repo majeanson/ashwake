@@ -48,17 +48,18 @@ const ANGLES = [
   ['s2c-materials-art-relief', 'tilt=35&light=1&materials=1&art=1&relief=0.35'],
   // Deep enough that destinations are actually on the board — an opening
   // board has none, and a picture of the board without them is a picture of
-  // ground. Torchlit, because a headless browser reports a light preference
-  // and AUTO gives it daylight, and a lit destination on a pale board is a
-  // pale thing on a pale thing.
+  // ground. Settlement (D12: torchlit is retired), because a headless
+  // browser reports a light preference and AUTO gives it daylight, and a lit
+  // destination on a pale board is a pale thing on a pale thing.
   //
   // It was `s2d-props` until 2026-09-01, when the props were removed
   // (`DECISIONS.md` D11): a destination is its MARK now, and a shot named for
   // the objects would be a picture of a thing this board no longer draws.
-  ['s2d-destinations', 'theme=torchlit&tilt=35&light=1&materials=1&art=1&relief=0.35&taught=1'],
-  // S5's candidate direction, shot beside the three that ship so it can be
-  // judged by looking rather than by argument — which is the only way a
-  // direction has ever been chosen here.
+  ['s2d-destinations', 'theme=settlement&tilt=35&light=1&materials=1&art=1&relief=0.35&taught=1'],
+  // Settlement is the direction that ships (D7, D12), shot beside daylight —
+  // the only other one that does — so both can be judged by looking rather
+  // than by argument, which is the only way a direction has ever been chosen
+  // here.
   ['s5-settlement', 'theme=settlement&tilt=35&light=1&materials=1&relief=0.35&taught=1'],
   ['s5-settlement-deep', 'theme=settlement&tilt=35&light=1&materials=1&relief=0.35&taught=1'],
   // The workbench itself, so the strip is judged for how much board it costs.

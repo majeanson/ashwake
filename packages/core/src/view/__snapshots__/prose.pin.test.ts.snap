@@ -342,7 +342,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     "text": "LUCK IS FOR SPENDING
 Every button under your hand is priced in luck, and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
   },
-  "BARE_TUNING · torchlit": {
+  "BARE_TUNING · settlement": {
     "icon": "luck",
     "rows": [],
     "text": "LUCK IS FOR SPENDING
@@ -356,19 +356,19 @@ Every button under your hand is priced in luck, and you CAN lose it all: whateve
       },
       {
         "colour": "green",
-        "text": "MOSS · 30. A hand leaning MOSS, and the next 6 draws with it.",
+        "text": "FARM · 30. A hand leaning FARM, and the next 6 draws with it.",
       },
       {
         "colour": "yellow",
-        "text": "EMBER · 30. A hand leaning EMBER, and the next 6 draws with it.",
+        "text": "MARKET · 30. A hand leaning MARKET, and the next 6 draws with it.",
       },
       {
         "colour": "red",
-        "text": "ASH · 30. A hand leaning ASH, and the next 6 draws with it.",
+        "text": "QUARRY · 30. A hand leaning QUARRY, and the next 6 draws with it.",
       },
       {
         "colour": "blue",
-        "text": "TIDE · 30. A hand leaning TIDE, and the next 6 draws with it.",
+        "text": "ROADS · 30. A hand leaning ROADS, and the next 6 draws with it.",
       },
       {
         "text": "FORGE · 75. Turn the selected card UNIQUE.",
@@ -380,7 +380,7 @@ Every button under your hand is priced in luck, and you CAN lose it all: whateve
     "text": "LUCK IS FOR SPENDING
 Every button under your hand is priced in luck, and you CAN lose it all: the run’s end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
   },
-  "TUNING · torchlit": {
+  "TUNING · settlement": {
     "icon": "luck",
     "rows": [
       {
@@ -388,19 +388,19 @@ Every button under your hand is priced in luck, and you CAN lose it all: the run
       },
       {
         "colour": "green",
-        "text": "MOSS · 30. A hand leaning MOSS, and the next 6 draws with it.",
+        "text": "FARM · 30. A hand leaning FARM, and the next 6 draws with it.",
       },
       {
         "colour": "yellow",
-        "text": "EMBER · 30. A hand leaning EMBER, and the next 6 draws with it.",
+        "text": "MARKET · 30. A hand leaning MARKET, and the next 6 draws with it.",
       },
       {
         "colour": "red",
-        "text": "ASH · 30. A hand leaning ASH, and the next 6 draws with it.",
+        "text": "QUARRY · 30. A hand leaning QUARRY, and the next 6 draws with it.",
       },
       {
         "colour": "blue",
-        "text": "TIDE · 30. A hand leaning TIDE, and the next 6 draws with it.",
+        "text": "ROADS · 30. A hand leaning ROADS, and the next 6 draws with it.",
       },
       {
         "text": "FORGE · 75. Turn the selected card UNIQUE.",
@@ -510,128 +510,128 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 
 exports[`the prose pins — every other word, exactly as it reads today · en > pins what tapping a hex says, on and off the board 1`] = `
 {
-  "BARE_TUNING · detour · -1,-1": "EMBER tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -1,-1": "MARKET tile, worth 2. It ripens when all six sides are covered.",
   "BARE_TUNING · detour · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches.",
-  "BARE_TUNING · detour · -2,1": "TIDE tile, worth 0. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · -2,2": "ASH tile, worth 2. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · -3,-1": "Ground native to EMBER: a EMBER tile here is worth one more.",
-  "BARE_TUNING · detour · -3,0": "MOSS tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · -3,2": "ASH tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · -3,3": "MOSS tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -2,1": "ROADS tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -2,2": "QUARRY tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -3,-1": "Ground native to MARKET: a MARKET tile here is worth one more.",
+  "BARE_TUNING · detour · -3,0": "FARM tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -3,2": "QUARRY tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · -3,3": "FARM tile, worth 0. It ripens when all six sides are covered.",
   "BARE_TUNING · detour · -4,0": "Open ground: you can build here once something of yours touches it.",
-  "BARE_TUNING · detour · -4,4": "Ground native to ASH: a ASH tile here is worth one more.",
+  "BARE_TUNING · detour · -4,4": "Ground native to QUARRY: a QUARRY tile here is worth one more.",
   "BARE_TUNING · detour · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
   "BARE_TUNING · detour · -6,1": "Dark ground: nothing any run has seen yet. Grow toward it.",
-  "BARE_TUNING · detour · 0,1": "EMBER tile, worth 3. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · 1,1": "ASH tile, worth 0. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · 2,-1": "TIDE tile, worth 2. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · 2,-3": "EMBER tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · detour · 2,0": "TIDE tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · -1,-1": "EMBER tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 0,1": "MARKET tile, worth 3. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 1,1": "QUARRY tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 2,-1": "ROADS tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 2,-3": "MARKET tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · detour · 2,0": "ROADS tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -1,-1": "MARKET tile, worth 2. It ripens when all six sides are covered.",
   "BARE_TUNING · home · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches.",
-  "BARE_TUNING · home · -2,1": "TIDE tile, worth 0. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · -2,2": "ASH tile, worth 2. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · -3,-1": "Ground native to EMBER: a EMBER tile here is worth one more.",
-  "BARE_TUNING · home · -3,0": "MOSS tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · -3,2": "ASH tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · -3,3": "MOSS tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -2,1": "ROADS tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -2,2": "QUARRY tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -3,-1": "Ground native to MARKET: a MARKET tile here is worth one more.",
+  "BARE_TUNING · home · -3,0": "FARM tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -3,2": "QUARRY tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · -3,3": "FARM tile, worth 0. It ripens when all six sides are covered.",
   "BARE_TUNING · home · -4,0": "Open ground: you can build here once something of yours touches it.",
-  "BARE_TUNING · home · -4,4": "Ground native to ASH: a ASH tile here is worth one more.",
+  "BARE_TUNING · home · -4,4": "Ground native to QUARRY: a QUARRY tile here is worth one more.",
   "BARE_TUNING · home · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
   "BARE_TUNING · home · -6,1": "Dark ground: nothing any run has seen yet. Grow toward it.",
-  "BARE_TUNING · home · 0,1": "EMBER tile, worth 3. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · 1,1": "ASH tile, worth 0. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · 2,-1": "TIDE tile, worth 2. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · 2,-3": "EMBER tile, worth 1. It ripens when all six sides are covered.",
-  "BARE_TUNING · home · 2,0": "TIDE tile, worth 1. It ripens when all six sides are covered.",
-  "TUNING · detour · -1,-1": "EMBER tile, worth 5. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · detour · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for ASH, which counts it as one.",
-  "TUNING · detour · -1,0": "MOSS tile, worth 0. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.",
-  "TUNING · detour · -1,1": "ASH tile, worth 1. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
-  "TUNING · detour · -2,-1": "Ground native to EMBER: a EMBER tile here is worth one more.",
-  "TUNING · detour · -2,0": "ASH tile, worth 0. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
-  "TUNING · detour · -2,1": "TIDE tile, worth 1. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · detour · -2,2": "ASH tile, worth 3. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
+  "BARE_TUNING · home · 0,1": "MARKET tile, worth 3. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 1,1": "QUARRY tile, worth 0. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 2,-1": "ROADS tile, worth 2. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 2,-3": "MARKET tile, worth 1. It ripens when all six sides are covered.",
+  "BARE_TUNING · home · 2,0": "ROADS tile, worth 1. It ripens when all six sides are covered.",
+  "TUNING · detour · -1,-1": "MARKET tile, worth 5. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for QUARRY, which counts it as one.",
+  "TUNING · detour · -1,0": "FARM tile, worth 0. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.",
+  "TUNING · detour · -1,1": "QUARRY tile, worth 1. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · detour · -2,-1": "Ground native to MARKET: a MARKET tile here is worth one more.",
+  "TUNING · detour · -2,0": "QUARRY tile, worth 0. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · detour · -2,1": "ROADS tile, worth 1. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · -2,2": "QUARRY tile, worth 3. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
   "TUNING · detour · -2,4": "CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
   "TUNING · detour · -3,0": "Open ground: you can build here once something of yours touches it.",
   "TUNING · detour · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
   "TUNING · detour · -6,1": "Dark ground: nothing any run has seen yet. Grow toward it.",
-  "TUNING · detour · 0,-1": "TIDE tile, worth 0. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · detour · 0,-2": "EMBER tile, worth 2. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · detour · 0,0": "EMBER tile, worth 6. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · detour · 0,2": "EMBER tile, worth 3. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · detour · 0,3": "Ground native to TIDE: a TIDE tile here is worth one more.",
-  "TUNING · detour · 1,-1": "MOSS tile, worth 1. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.",
-  "TUNING · detour · 1,1": "ASH tile, worth 2. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
-  "TUNING · detour · 2,-1": "TIDE tile, worth 3. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · detour · 2,0": "TIDE tile, worth 4. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · detour · 2,1": "MOSS tile, worth 3. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.
+  "TUNING · detour · 0,-1": "ROADS tile, worth 0. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · 0,-2": "MARKET tile, worth 2. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · 0,0": "MARKET tile, worth 6. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · 0,2": "MARKET tile, worth 3. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · detour · 0,3": "Ground native to ROADS: a ROADS tile here is worth one more.",
+  "TUNING · detour · 1,-1": "FARM tile, worth 1. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.",
+  "TUNING · detour · 1,1": "QUARRY tile, worth 2. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · detour · 2,-1": "ROADS tile, worth 3. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · 2,0": "ROADS tile, worth 4. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · detour · 2,1": "FARM tile, worth 3. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "TUNING · detour · 3,-1": "MOSS tile, worth 4. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.
+  "TUNING · detour · 3,-1": "FARM tile, worth 4. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "TUNING · detour · 3,-2": "TIDE tile, worth 2. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · home · -1,-1": "EMBER tile, worth 5. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · home · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for ASH, which counts it as one.",
-  "TUNING · home · -1,0": "MOSS tile, worth 0. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.",
-  "TUNING · home · -1,1": "ASH tile, worth 1. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
-  "TUNING · home · -2,-1": "Ground native to EMBER: a EMBER tile here is worth one more.",
-  "TUNING · home · -2,0": "ASH tile, worth 0. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
-  "TUNING · home · -2,1": "TIDE tile, worth 1. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · home · -2,2": "ASH tile, worth 3. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
+  "TUNING · detour · 3,-2": "ROADS tile, worth 2. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · -1,-1": "MARKET tile, worth 5. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · -1,-2": "Wall: cannot be built on. It surrounds, so it helps things ripen, but it never matches, except for QUARRY, which counts it as one.",
+  "TUNING · home · -1,0": "FARM tile, worth 0. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.",
+  "TUNING · home · -1,1": "QUARRY tile, worth 1. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · home · -2,-1": "Ground native to MARKET: a MARKET tile here is worth one more.",
+  "TUNING · home · -2,0": "QUARRY tile, worth 0. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · home · -2,1": "ROADS tile, worth 1. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · -2,2": "QUARRY tile, worth 3. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
   "TUNING · home · -2,4": "CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
   "TUNING · home · -3,0": "Open ground: you can build here once something of yours touches it.",
   "TUNING · home · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
   "TUNING · home · -6,1": "Dark ground: nothing any run has seen yet. Grow toward it.",
-  "TUNING · home · 0,-1": "TIDE tile, worth 0. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · home · 0,-2": "EMBER tile, worth 2. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · home · 0,0": "EMBER tile, worth 6. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · home · 0,2": "EMBER tile, worth 3. It ripens when all six sides are covered.
-EMBER: COMPANY. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "TUNING · home · 0,3": "Ground native to TIDE: a TIDE tile here is worth one more.",
-  "TUNING · home · 1,-1": "MOSS tile, worth 1. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.",
-  "TUNING · home · 1,1": "ASH tile, worth 2. It ripens when all six sides are covered.
-ASH. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
-  "TUNING · home · 2,-1": "TIDE tile, worth 3. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · home · 2,0": "TIDE tile, worth 4. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
-  "TUNING · home · 2,1": "MOSS tile, worth 3. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.
+  "TUNING · home · 0,-1": "ROADS tile, worth 0. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 0,-2": "MARKET tile, worth 2. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · 0,0": "MARKET tile, worth 6. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · 0,2": "MARKET tile, worth 3. It ripens when all six sides are covered.
+MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
+  "TUNING · home · 0,3": "Ground native to ROADS: a ROADS tile here is worth one more.",
+  "TUNING · home · 1,-1": "FARM tile, worth 1. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.",
+  "TUNING · home · 1,1": "QUARRY tile, worth 2. It ripens when all six sides are covered.
+QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.",
+  "TUNING · home · 2,-1": "ROADS tile, worth 3. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 2,0": "ROADS tile, worth 4. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 2,1": "FARM tile, worth 3. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "TUNING · home · 3,-1": "MOSS tile, worth 4. It ripens when all six sides are covered.
-MOSS: CROWDS. Wants one big mob of its own colour: +1 worth per MOSS neighbour past the first.
+  "TUNING · home · 3,-1": "FARM tile, worth 4. It ripens when all six sides are covered.
+FARM. Wants one big mob of its own colour: +1 worth per FARM neighbour past the first.
 MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "TUNING · home · 3,-2": "TIDE tile, worth 2. It ripens when all six sides are covered.
-TIDE. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
+  "TUNING · home · 3,-2": "ROADS tile, worth 2. It ripens when all six sides are covered.
+ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
 }
 `;
 
@@ -977,7 +977,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     "text": "LA CHANCE, ÇA SE DÉPENSE
 Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui reste à la fin de la partie est perdu net. Dépense-la.",
   },
-  "BARE_TUNING · torchlit": {
+  "BARE_TUNING · settlement": {
     "icon": "luck",
     "rows": [],
     "text": "LA CHANCE, ÇA SE DÉPENSE
@@ -991,19 +991,19 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui 
       },
       {
         "colour": "green",
-        "text": "LICHEN · 30. Une main qui penche LICHEN, et les 6 prochaines pioches avec.",
+        "text": "FERME · 30. Une main qui penche FERME, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "yellow",
-        "text": "TISONS · 30. Une main qui penche TISONS, et les 6 prochaines pioches avec.",
+        "text": "MARCHÉ · 30. Une main qui penche MARCHÉ, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "red",
-        "text": "CENDRES · 30. Une main qui penche CENDRES, et les 6 prochaines pioches avec.",
+        "text": "CARRIÈRE · 30. Une main qui penche CARRIÈRE, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "blue",
-        "text": "RIVIÈRES · 30. Une main qui penche RIVIÈRES, et les 6 prochaines pioches avec.",
+        "text": "CHEMINS · 30. Une main qui penche CHEMINS, et les 6 prochaines pioches avec.",
       },
       {
         "text": "FORGER · 75. Rends UNIQUE la carte choisie.",
@@ -1015,7 +1015,7 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui 
     "text": "LA CHANCE, ÇA SE DÉPENSE
 Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin de la partie ne rend que 5 % de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue. Dépense-la.",
   },
-  "TUNING · torchlit": {
+  "TUNING · settlement": {
     "icon": "luck",
     "rows": [
       {
@@ -1023,19 +1023,19 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin 
       },
       {
         "colour": "green",
-        "text": "LICHEN · 30. Une main qui penche LICHEN, et les 6 prochaines pioches avec.",
+        "text": "FERME · 30. Une main qui penche FERME, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "yellow",
-        "text": "TISONS · 30. Une main qui penche TISONS, et les 6 prochaines pioches avec.",
+        "text": "MARCHÉ · 30. Une main qui penche MARCHÉ, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "red",
-        "text": "CENDRES · 30. Une main qui penche CENDRES, et les 6 prochaines pioches avec.",
+        "text": "CARRIÈRE · 30. Une main qui penche CARRIÈRE, et les 6 prochaines pioches avec.",
       },
       {
         "colour": "blue",
-        "text": "RIVIÈRES · 30. Une main qui penche RIVIÈRES, et les 6 prochaines pioches avec.",
+        "text": "CHEMINS · 30. Une main qui penche CHEMINS, et les 6 prochaines pioches avec.",
       },
       {
         "text": "FORGER · 75. Rends UNIQUE la carte choisie.",
@@ -1145,127 +1145,127 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 
 exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins what tapping a hex says, on and off the board 1`] = `
 {
-  "BARE_TUNING · detour · -1,-1": "Tuile TISONS, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · -1,-1": "Tuile MARCHÉ, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · detour · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.",
-  "BARE_TUNING · detour · -2,1": "Tuile RIVIÈRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · -2,2": "Tuile CENDRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · -3,-1": "Sol natal de TISONS : une tuile TISONS ici vaut un de plus.",
-  "BARE_TUNING · detour · -3,0": "Tuile LICHEN, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · -3,2": "Tuile CENDRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · -3,3": "Tuile LICHEN, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · -2,1": "Tuile CHEMINS, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · -2,2": "Tuile CARRIÈRE, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · -3,-1": "Sol natal de MARCHÉ : une tuile MARCHÉ ici vaut un de plus.",
+  "BARE_TUNING · detour · -3,0": "Tuile FERME, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · -3,2": "Tuile CARRIÈRE, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · -3,3": "Tuile FERME, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · detour · -4,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
-  "BARE_TUNING · detour · -4,4": "Sol natal de CENDRES : une tuile CENDRES ici vaut un de plus.",
+  "BARE_TUNING · detour · -4,4": "Sol natal de CARRIÈRE : une tuile CARRIÈRE ici vaut un de plus.",
   "BARE_TUNING · detour · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
   "BARE_TUNING · detour · -6,1": "Sol noir : rien qu’aucune partie n’a encore vu. Pousse vers lui.",
-  "BARE_TUNING · detour · 0,1": "Tuile TISONS, valeur 3. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · 1,1": "Tuile CENDRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · 2,-1": "Tuile RIVIÈRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · 2,-3": "Tuile TISONS, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · detour · 2,0": "Tuile RIVIÈRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · -1,-1": "Tuile TISONS, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · 0,1": "Tuile MARCHÉ, valeur 3. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · 1,1": "Tuile CARRIÈRE, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · 2,-1": "Tuile CHEMINS, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · 2,-3": "Tuile MARCHÉ, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · detour · 2,0": "Tuile CHEMINS, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · -1,-1": "Tuile MARCHÉ, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · home · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.",
-  "BARE_TUNING · home · -2,1": "Tuile RIVIÈRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · -2,2": "Tuile CENDRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · -3,-1": "Sol natal de TISONS : une tuile TISONS ici vaut un de plus.",
-  "BARE_TUNING · home · -3,0": "Tuile LICHEN, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · -3,2": "Tuile CENDRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · -3,3": "Tuile LICHEN, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · -2,1": "Tuile CHEMINS, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · -2,2": "Tuile CARRIÈRE, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · -3,-1": "Sol natal de MARCHÉ : une tuile MARCHÉ ici vaut un de plus.",
+  "BARE_TUNING · home · -3,0": "Tuile FERME, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · -3,2": "Tuile CARRIÈRE, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · -3,3": "Tuile FERME, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
   "BARE_TUNING · home · -4,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
-  "BARE_TUNING · home · -4,4": "Sol natal de CENDRES : une tuile CENDRES ici vaut un de plus.",
+  "BARE_TUNING · home · -4,4": "Sol natal de CARRIÈRE : une tuile CARRIÈRE ici vaut un de plus.",
   "BARE_TUNING · home · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
   "BARE_TUNING · home · -6,1": "Sol noir : rien qu’aucune partie n’a encore vu. Pousse vers lui.",
-  "BARE_TUNING · home · 0,1": "Tuile TISONS, valeur 3. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · 1,1": "Tuile CENDRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · 2,-1": "Tuile RIVIÈRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · 2,-3": "Tuile TISONS, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "BARE_TUNING · home · 2,0": "Tuile RIVIÈRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
-  "TUNING · detour · -1,-1": "Tuile TISONS, valeur 5. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · detour · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CENDRES, qui le comptent.",
-  "TUNING · detour · -1,0": "Tuile LICHEN, valeur 0. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.",
-  "TUNING · detour · -1,1": "Tuile CENDRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
-  "TUNING · detour · -2,-1": "Sol natal de TISONS : une tuile TISONS ici vaut un de plus.",
-  "TUNING · detour · -2,0": "Tuile CENDRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
-  "TUNING · detour · -2,1": "Tuile RIVIÈRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · detour · -2,2": "Tuile CENDRES, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
+  "BARE_TUNING · home · 0,1": "Tuile MARCHÉ, valeur 3. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · 1,1": "Tuile CARRIÈRE, valeur 0. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · 2,-1": "Tuile CHEMINS, valeur 2. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · 2,-3": "Tuile MARCHÉ, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "BARE_TUNING · home · 2,0": "Tuile CHEMINS, valeur 1. Elle mûrit quand ses six côtés sont couverts.",
+  "TUNING · detour · -1,-1": "Tuile MARCHÉ, valeur 5. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · detour · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CARRIÈRE, qui le comptent.",
+  "TUNING · detour · -1,0": "Tuile FERME, valeur 0. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.",
+  "TUNING · detour · -1,1": "Tuile CARRIÈRE, valeur 1. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
+  "TUNING · detour · -2,-1": "Sol natal de MARCHÉ : une tuile MARCHÉ ici vaut un de plus.",
+  "TUNING · detour · -2,0": "Tuile CARRIÈRE, valeur 0. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
+  "TUNING · detour · -2,1": "Tuile CHEMINS, valeur 1. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · detour · -2,2": "Tuile CARRIÈRE, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · detour · -2,4": "CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
   "TUNING · detour · -3,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
   "TUNING · detour · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
   "TUNING · detour · -6,1": "Sol noir : rien qu’aucune partie n’a encore vu. Pousse vers lui.",
-  "TUNING · detour · 0,-1": "Tuile RIVIÈRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · detour · 0,-2": "Tuile TISONS, valeur 2. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · detour · 0,0": "Tuile TISONS, valeur 6. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · detour · 0,2": "Tuile TISONS, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · detour · 0,3": "Sol natal de RIVIÈRES : une tuile RIVIÈRES ici vaut un de plus.",
-  "TUNING · detour · 1,-1": "Tuile LICHEN, valeur 1. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.",
-  "TUNING · detour · 1,1": "Tuile CENDRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
-  "TUNING · detour · 2,-1": "Tuile RIVIÈRES, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · detour · 2,0": "Tuile RIVIÈRES, valeur 4. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · detour · 2,1": "Tuile LICHEN, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.
+  "TUNING · detour · 0,-1": "Tuile CHEMINS, valeur 0. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · detour · 0,-2": "Tuile MARCHÉ, valeur 2. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · detour · 0,0": "Tuile MARCHÉ, valeur 6. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · detour · 0,2": "Tuile MARCHÉ, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · detour · 0,3": "Sol natal de CHEMINS : une tuile CHEMINS ici vaut un de plus.",
+  "TUNING · detour · 1,-1": "Tuile FERME, valeur 1. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.",
+  "TUNING · detour · 1,1": "Tuile CARRIÈRE, valeur 2. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
+  "TUNING · detour · 2,-1": "Tuile CHEMINS, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · detour · 2,0": "Tuile CHEMINS, valeur 4. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · detour · 2,1": "Tuile FERME, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "TUNING · detour · 3,-1": "Tuile LICHEN, valeur 4. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.
+  "TUNING · detour · 3,-1": "Tuile FERME, valeur 4. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "TUNING · detour · 3,-2": "Tuile RIVIÈRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · home · -1,-1": "Tuile TISONS, valeur 5. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · home · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CENDRES, qui le comptent.",
-  "TUNING · home · -1,0": "Tuile LICHEN, valeur 0. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.",
-  "TUNING · home · -1,1": "Tuile CENDRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
-  "TUNING · home · -2,-1": "Sol natal de TISONS : une tuile TISONS ici vaut un de plus.",
-  "TUNING · home · -2,0": "Tuile CENDRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
-  "TUNING · home · -2,1": "Tuile RIVIÈRES, valeur 1. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · home · -2,2": "Tuile CENDRES, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
+  "TUNING · detour · 3,-2": "Tuile CHEMINS, valeur 2. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · home · -1,-1": "Tuile MARCHÉ, valeur 5. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · home · -1,-2": "Mur : on ne peut pas bâtir dessus. Il entoure, alors il aide à mûrir, mais il ne ressemble jamais, sauf pour CARRIÈRE, qui le comptent.",
+  "TUNING · home · -1,0": "Tuile FERME, valeur 0. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.",
+  "TUNING · home · -1,1": "Tuile CARRIÈRE, valeur 1. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
+  "TUNING · home · -2,-1": "Sol natal de MARCHÉ : une tuile MARCHÉ ici vaut un de plus.",
+  "TUNING · home · -2,0": "Tuile CARRIÈRE, valeur 0. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
+  "TUNING · home · -2,1": "Tuile CHEMINS, valeur 1. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · home · -2,2": "Tuile CARRIÈRE, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · home · -2,4": "CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
   "TUNING · home · -3,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
   "TUNING · home · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
   "TUNING · home · -6,1": "Sol noir : rien qu’aucune partie n’a encore vu. Pousse vers lui.",
-  "TUNING · home · 0,-1": "Tuile RIVIÈRES, valeur 0. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · home · 0,-2": "Tuile TISONS, valeur 2. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · home · 0,0": "Tuile TISONS, valeur 6. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · home · 0,2": "Tuile TISONS, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-TISONS : COMPAGNIE. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "TUNING · home · 0,3": "Sol natal de RIVIÈRES : une tuile RIVIÈRES ici vaut un de plus.",
-  "TUNING · home · 1,-1": "Tuile LICHEN, valeur 1. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.",
-  "TUNING · home · 1,1": "Tuile CENDRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.
-CENDRES. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
-  "TUNING · home · 2,-1": "Tuile RIVIÈRES, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · home · 2,0": "Tuile RIVIÈRES, valeur 4. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
-  "TUNING · home · 2,1": "Tuile LICHEN, valeur 3. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.
+  "TUNING · home · 0,-1": "Tuile CHEMINS, valeur 0. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · home · 0,-2": "Tuile MARCHÉ, valeur 2. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · home · 0,0": "Tuile MARCHÉ, valeur 6. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · home · 0,2": "Tuile MARCHÉ, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
+  "TUNING · home · 0,3": "Sol natal de CHEMINS : une tuile CHEMINS ici vaut un de plus.",
+  "TUNING · home · 1,-1": "Tuile FERME, valeur 1. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.",
+  "TUNING · home · 1,1": "Tuile CARRIÈRE, valeur 2. Elle mûrit quand ses six côtés sont couverts.
+CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.",
+  "TUNING · home · 2,-1": "Tuile CHEMINS, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · home · 2,0": "Tuile CHEMINS, valeur 4. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · home · 2,1": "Tuile FERME, valeur 3. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "TUNING · home · 3,-1": "Tuile LICHEN, valeur 4. Elle mûrit quand ses six côtés sont couverts.
-LICHEN : FOULE. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine LICHEN passé la première.
+  "TUNING · home · 3,-1": "Tuile FERME, valeur 4. Elle mûrit quand ses six côtés sont couverts.
+FERME. Veut une seule grosse gang de sa couleur : +1 de valeur par voisine FERME passé la première.
 MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "TUNING · home · 3,-2": "Tuile RIVIÈRES, valeur 2. Elle mûrit quand ses six côtés sont couverts.
-RIVIÈRES : COURANT. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
+  "TUNING · home · 3,-2": "Tuile CHEMINS, valeur 2. Elle mûrit quand ses six côtés sont couverts.
+CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
 }
 `;

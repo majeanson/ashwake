@@ -11,7 +11,7 @@ import { STRINGS_EN, STRINGS_EN as EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
 import { UNLOCKS, unlockLabel } from '@meta/world';
 import { THEMES } from '@theme/index';
-import { TORCHLIT } from '@theme/themes/torchlit';
+import { SETTLEMENT } from '@theme/themes/settlement';
 import { namesOf, powersOf } from '@theme/tokens';
 
 /**
@@ -620,7 +620,7 @@ describe('what a shrine says when you tap it', () => {
   };
   const base = {
     state: withShrine(),
-    theme: TORCHLIT,
+    theme: SETTLEMENT,
     strings: EN,
     detour: false,
   } as const;

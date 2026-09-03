@@ -1241,9 +1241,11 @@ playable. Nothing has been seen on a phone.**
 - **S4's remainder:** the PWA and its service worker, `?seed=` share links, and
   the History-API router. Everything else in S4 has landed — store, keeper,
   save/resume, three world slots, the daily, backup/restore.
-- **S5 — the look.** Built: the settlement direction, the typeface, and the art
-  pipeline that makes both (2026-08-29). What is left is the CHOOSING, on a
-  phone.
+- **S5 — the look.** Chosen: settlement (D7, 2026-08-29), officialized and the
+  registry closed to two directions — settlement and a bright settlement
+  reskinned onto `daylight` (D12, 2026-09-03; `torchlit`, `torchlit-bright`
+  and `placeholder` retired). What is left is the same as everything else in
+  S6: on a phone, not from a build.
 - **S6 — the console, Session A on v2, then the stranger.** `/playtest` with
   COPY SHEET; Session A re-run against the deployed v2; fixes; Session C.
 

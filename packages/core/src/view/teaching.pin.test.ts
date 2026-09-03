@@ -4,7 +4,6 @@ import { newRun } from '@engine/reduce';
 import { PERKS, UPGRADES, upgradeText } from '@meta/progress';
 import { SETTLEMENT } from '@theme/themes/settlement';
 import { DAYLIGHT } from '@theme/themes/daylight';
-import { TORCHLIT } from '@theme/themes/torchlit';
 import type { Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
@@ -54,16 +53,18 @@ const TUNINGS: readonly (readonly [string, Tuning])[] = [
   ['BARE_TUNING', BARE_TUNING],
 ];
 
-/** Three directions, because a definition may name a terrain and the four names
- *  belong to the theme, not the game. */
+/** Two directions, because a definition may name a terrain and the four names
+ *  belong to the theme, not the game.
+ *
+ *  Both entries now show the same shape (D12, 2026-09-03): `daylight` was
+ *  reskinned onto settlement's own names, so there is no shipped direction
+ *  left whose power words differ from its ground names — the split pattern
+ *  `torchlit` used to demonstrate is retired with it. Two entries stay rather
+ *  than one so a regression that made them diverge again would still show up
+ *  here as a snapshot diff. */
 const THEMES: readonly (readonly [string, Theme])[] = [
-  ['torchlit', TORCHLIT],
-  ['daylight', DAYLIGHT],
-  // The direction that ships (D7, 2026-08-29). It is here because it is the
-  // one whose ground names ARE its power words, so it is the only entry that
-  // shows what the dropped word looks like — a pin that only held the plane
-  // would pin the case that did not change.
   ['settlement', SETTLEMENT],
+  ['daylight', DAYLIGHT],
 ];
 
 /** The ids `statNote` switches on. Built by the stat row rather than carried

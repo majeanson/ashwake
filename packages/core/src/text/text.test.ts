@@ -6,7 +6,7 @@ import { fmtInt, fmtPct, NNBSP, ordinal } from './format';
 import { stringsFor } from './index';
 import type { Strings } from './Strings';
 import { SETTLEMENT } from '@theme/themes/settlement';
-import { TORCHLIT } from '@theme/themes/torchlit';
+import { DAYLIGHT } from '@theme/themes/daylight';
 import { THEMES } from '@theme/index';
 import { namesOf, powersOf } from '@theme/tokens';
 
@@ -179,21 +179,30 @@ describe('Québec French', () => {
   /*
    * Moved 2026-08-29, not deleted: these four words are per DIRECTION now
    * (`Theme.powerNames`), because one shared set could not be right for two
-   * fictions — and two of them, CENDRES and COURANT, are torchlit's own ground
-   * names in French. They are still Marc's words and still asserted, one layer
-   * down, where a direction that wants its own can have them.
+   * fictions. That was `torchlit`'s reason to exist as a second table — it
+   * named its ground for what it was MADE of, so its power word was a second
+   * word.
+   *
+   * Retired 2026-09-03 (D12): `torchlit` is gone and `daylight` was reskinned
+   * onto settlement's own names, so both shipped directions now say a power
+   * with the SAME word as the ground — settlement's whole argument (D7) is
+   * true of the entire registry, not one entry in it. Nothing here still
+   * demonstrates the split; what stays worth pinning is that `powersOf` reads
+   * Marc's accented Québec spelling for every direction, not just one.
    */
-  it('names the four powers by Marc’s words, in the direction that uses them', () => {
-    expect(powersOf(TORCHLIT, 'fr-CA')).toEqual({
-      green: 'FOULE',
-      yellow: 'COMPAGNIE',
-      red: 'CENDRES',
-      blue: 'COURANT',
+  it('names the four powers by Marc’s words, accents kept, in every shipped direction', () => {
+    for (const theme of [SETTLEMENT, DAYLIGHT]) {
+      // Each direction says its powers with its own ground names now, which is
+      // the whole argument for the reskin (D7, D12) — so the two tables agree.
+      expect(powersOf(theme, 'fr-CA')).toEqual(namesOf(theme, 'fr-CA'));
+      expect(powersOf(theme, 'en')).toEqual(namesOf(theme, 'en'));
+    }
+    expect(powersOf(SETTLEMENT, 'fr-CA')).toEqual({
+      green: 'FERME',
+      yellow: 'MARCHÉ',
+      red: 'CARRIÈRE',
+      blue: 'CHEMINS',
     });
-    // The direction that ships says its powers with its ground names, which is
-    // the whole argument for it (D7) — so the two tables are the same table.
-    expect(powersOf(SETTLEMENT, 'fr-CA')).toEqual(namesOf(SETTLEMENT, 'fr-CA'));
-    expect(powersOf(SETTLEMENT, 'en')).toEqual(namesOf(SETTLEMENT, 'en'));
   });
 });
 

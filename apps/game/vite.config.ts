@@ -153,19 +153,20 @@ function serviceWorkerStamp(sha: string): Plugin {
             : [`${prefix}${name}`];
         });
       /*
-       * ONE DIRECTION'S ART, not four (2026-09-02).
+       * ONE DIRECTION'S ART, not four (2026-09-02; two directions ship at all
+       * since D12, 2026-09-03 — see `theme/index.ts`).
        *
-       * The walk swept every theme folder, so the precache carried about 1.2 MB
-       * of PNGs for three directions this device will never render — downloaded
-       * in the background of somebody's first minute, which is the minute the
+       * The walk swept every theme folder, so the precache carried PNGs for
+       * directions this device will never render — downloaded in the
+       * background of somebody's first minute, which is the minute the
        * stranger test measures.
        *
        * A device renders exactly one direction: `pickForScheme` gives it
-       * `daylight` if it prefers light, `torchlit-bright` if it prefers
-       * contrast, and the default otherwise, and only an explicit `?theme=` or
-       * the picker reaches the rest. The three it does not render are cached
-       * by the FETCH handler the moment anything asks for them, which is what
-       * makes this a saving rather than a loss.
+       * `daylight` if it prefers light or more contrast, and the default
+       * otherwise, and only an explicit `?theme=` or the picker reaches the
+       * other one. What it does not render is cached by the FETCH handler the
+       * moment anything asks for it, which is what makes this a saving rather
+       * than a loss.
        *
        * The default stays IN, and that is the part worth keeping: art fetched
        * on visit one goes through an uncontrolled page and never reaches the

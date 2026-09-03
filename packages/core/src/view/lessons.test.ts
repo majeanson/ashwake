@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BARE_TUNING, TUNING, type Tuning } from '@content/tuning';
 import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { DAYLIGHT } from '@theme/themes/daylight';
-import { TORCHLIT } from '@theme/themes/torchlit';
+import { SETTLEMENT } from '@theme/themes/settlement';
 import type { Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
@@ -34,9 +34,9 @@ import { conceptPattern, conceptTerms } from './tips';
 const LANGUAGES: readonly Strings[] = [STRINGS_EN, STRINGS_FR];
 
 const CASES: readonly (readonly [string, Tuning, Theme])[] = [
-  ['TUNING · torchlit', TUNING, TORCHLIT],
+  ['TUNING · settlement', TUNING, SETTLEMENT],
   ['TUNING · daylight', TUNING, DAYLIGHT],
-  ['BARE_TUNING · torchlit', BARE_TUNING, TORCHLIT],
+  ['BARE_TUNING · settlement', BARE_TUNING, SETTLEMENT],
   ['BARE_TUNING · daylight', BARE_TUNING, DAYLIGHT],
 ];
 

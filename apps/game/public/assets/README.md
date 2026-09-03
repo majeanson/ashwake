@@ -4,18 +4,19 @@ Every bitmap the game can use is an optional **slot**. The game is complete and
 playable with this folder empty, and each PNG you add replaces one procedural
 surface with real art. Nothing needs wiring up.
 
-**Torchlit's eight terrain/fx slots are filled** (2026-08-19, WORKPLAN Stage 3):
+**Both shipped directions' eight terrain/fx slots are filled** (2026-08-19,
+WORKPLAN Stage 3; two directions since D12, 2026-09-03):
 `terrain.green/yellow/red/blue/wall/stone/ghost` and `fx.pop`, baked by
 `scripts/terrain.ts` — a deterministic, offline Node script in the same spirit
 as `scripts/icons.ts` and `scripts/social.ts`, reading colour and pattern
-straight off `TORCHLIT` rather than a hand-copied palette. Regenerate with
-`pnpm exec tsx scripts/terrain.ts` after the theme moves. No CC0 texture
-assets were used to seed any layer — the decision of record permits it, and
-this session judged procedural generation (reading the theme's own tokens
-rather than a stock photo, with no network fetch or licence bookkeeping to
-verify) the better fit at this size. `fog.hard`, `fog.soft`, `ui.cardFrame`
-stay empty — no mechanic reads them yet, and shipping art for a slot nothing
-draws would be a beautiful lie.
+straight off `SETTLEMENT`/`DAYLIGHT` rather than a hand-copied palette.
+Regenerate with `pnpm exec tsx scripts/terrain.ts` after the theme moves. No
+CC0 texture assets were used to seed any layer — the decision of record
+permits it, and this session judged procedural generation (reading the
+theme's own tokens rather than a stock photo, with no network fetch or
+licence bookkeeping to verify) the better fit at this size. `fog.hard`,
+`fog.soft`, `ui.cardFrame` stay empty — no mechanic reads them yet, and
+shipping art for a slot nothing draws would be a beautiful lie.
 
 ## The workflow
 
@@ -28,11 +29,12 @@ and writes `assets/manifest.json`; the client fetches that one file and loads
 only what exists. There is no list to keep in sync, and a slot with no file costs
 no request.
 
-- **`<themeId>`** — the theme's `id`: `placeholder` or `torchlit` (`cold-survey`
-  and `rot-bloom` were deleted 2026-08-19, WORKPLAN Stage 1's goodbye). Art is
-  per-direction on purpose. Two directions that both want a crypt want two
-  different crypts, and sharing a folder would make switching direction mean
-  moving files.
+- **`<themeId>`** — the theme's `id`: `settlement` or `daylight` (`torchlit`,
+  `torchlit-bright` and `placeholder` were deleted 2026-09-03, D12;
+  `cold-survey` and `rot-bloom` were deleted 2026-08-19, WORKPLAN Stage 1's
+  goodbye). Art is per-direction on purpose. Two directions that both want a
+  quarry want two different quarries, and sharing a folder would make
+  switching direction mean moving files.
 - **`<slotId>`** — an id from `ASSET_SLOTS` in `src/theme/assets.ts`, which is
   also the authority on export size and on what each piece has to do.
 
@@ -58,7 +60,7 @@ Things worth knowing:
    one, though it is the most common cell in the back half of a run. Baked
    2026-08-19: a dark off-centre **scorch** blot and radiating **crack**
    lines out of it, on top of the existing dot pitting — the aftermath of a
-   pop, not a fourth flavour of furniture. See `theme/themes/torchlit.ts`'s
+   pop, not a fourth flavour of furniture. See `theme/themes/settlement.ts`'s
    own `stone` surface and its `scorch`/`overlay` fields.
 2. **The bottom three slots are not read by anything.** They describe fog and
    a nine-slice card frame, neither of which exist. A beautiful PNG in one of
@@ -70,10 +72,11 @@ Things worth knowing:
 
 ## Orientation
 
-Terrain art is drawn to a **flat-top** hex for torchlit and a **pointy-top**
-hex for the placeholder — `theme.orientation`, per direction. Art is scaled to
-the hex's bounding box, so a file drawn to the wrong orientation will be
-visibly squashed rather than subtly wrong.
+Terrain art is drawn to whatever hex `theme.orientation` declares, per
+direction — both shipped directions are **flat-top**, a settlement reading as
+built rather than grown. Art is scaled to the hex's bounding box, so a file
+drawn to the wrong orientation will be visibly squashed rather than subtly
+wrong.
 
 ## Checking it landed
 

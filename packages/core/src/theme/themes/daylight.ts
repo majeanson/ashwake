@@ -1,7 +1,29 @@
 import { surface, type Theme } from '../tokens';
 
 /**
- * Daylight. "The same expedition, written up afterwards."
+ * Daylight. "The same settlement, at midday."
+ *
+ * **Reskinned onto SETTLEMENT (2026-09-03), closing the gap D7 wrote down and
+ * left open:** *"the honest fix is a bright settlement that passes the same
+ * budgets, not a line in `pickForScheme`."* Until today this direction was its
+ * own fiction — ink on vellum, a survey drawn after the fact, MOSS · EMBER ·
+ * ASH · TIDE naming what the ground was made of. Now that Gate E is closed and
+ * torchlit and its bright twin are retired (`THEMES` above; see the deleted
+ * `torchlit.ts` / `torchlit-bright.ts` in `git log` for the direction as it
+ * shipped), keeping a second, unrelated fiction alive just to be the light
+ * option was a direction competing with itself. This is the settlement
+ * unchanged — FARM · MARKET · QUARRY · ROADS, the same names, the same rule
+ * per name — seen at midday instead of dusk.
+ *
+ * **Every colour, pattern and budget number below is untouched from the
+ * direction this replaces.** Only the words and the art figures moved: the
+ * hue-to-ground correspondence already matched (green a farmer's field, gold a
+ * market awning, terracotta a quarry's cut face, slate a paved road) before
+ * anyone renamed it, which is the evidence the reskin was sound rather than
+ * forced. Renumbering the palette from scratch was the one thing this pass
+ * deliberately did not do: every value here already cleared `contrast.test.ts`
+ * and `theme.test.ts`'s ladder, and a defensible reskin spends nothing it does
+ * not have to.
  *
  * The first direction in this game that is not dark, and the first that had to
  * teach `theme/` what a pale board even is — several rules in `tokens.ts` were
@@ -9,40 +31,33 @@ import { surface, type Theme } from '../tokens';
  * which is the same sentence on a dark board and the opposite one here. See
  * `clearance` and `isLight`.
  *
- * The fiction is deliberately NOT torchlit inverted. Torchlit is being in the
- * dark plane with a torch; this is the survey you draw when you get back — ink
- * on vellum, ground tinted rather than lit, everything legible because a map is
- * a thing you read rather than a place you stand in. The four colours keep their
- * names and their textures, because a player switching directions must not have
- * to relearn the board.
- *
  * Two consequences worth knowing before touching a value here:
  *
  *   1. **There is no torch.** `light.floor` is 0.94 — daylight falls on
  *      everything. The falloff is not deleted (the structure still carries a
  *      faint lift, so built ground reads as the subject of the drawing) but it
- *      is a whisper. This direction gives up torchlit's best idea on purpose;
- *      it is the price of being readable in the sun.
+ *      is a whisper. This direction gives up settlement's lamplight on
+ *      purpose; it is the price of being readable in the sun.
  *   2. **The label pair runs the other way.** `ink` is near-black and `halo` is
  *      white, so a mid-value ground is read by the INK and a dark one by the
- *      HALO — the mirror of every dark direction. That leaves a dead band
+ *      HALO — the mirror of settlement's own dusk. That leaves a dead band
  *      around L* 0.50 where neither clears 4.5:1, and every terrain end below
  *      is placed to miss it. `contrast.test.ts` is what stops that being
  *      forgotten.
  */
 export const DAYLIGHT: Theme = {
   id: 'daylight',
-  name: { en: 'Daylight Survey', 'fr-CA': 'Relevé de jour' },
+  name: { en: 'Daylight', 'fr-CA': 'Plein jour' },
   note: {
-    en: 'The expedition written up afterwards: ink on vellum, ground tinted rather than lit, nothing hidden. No torch and no gloom: a map is a thing you read. For bright sun, for anyone whose phone is set to light, and for eyes that would rather not hunt for a number.',
+    en: 'The same settlement, at midday: farm, market, quarry and roads, lit by the sun instead of by lamps. Nothing hidden, no torch needed. For bright sun, for anyone whose phone is set to light, and for eyes that would rather not hunt for a number.',
     'fr-CA':
-      'L’expédition mise au propre après coup : encre sur vélin, sol teinté plutôt qu’éclairé, rien de caché. Pas de torche, pas de pénombre : une carte, ça se lit. Pour le grand soleil, pour un téléphone réglé en clair, et pour les yeux qui préfèrent ne pas chercher un chiffre.',
+      'Le même établissement, en plein jour : ferme, marché, carrière et chemins, éclairés par le soleil plutôt que par des lampes. Rien de caché, aucune torche requise. Pour le grand soleil, pour un téléphone réglé en clair, et pour les yeux qui préfèrent ne pas chercher un chiffre.',
   },
   source:
-    'Authored 2026-08-25 for the contrast pass; register borrowed from the retired cold-survey direction.',
+    'Authored 2026-08-25 for the contrast pass, reskinned 2026-09-03 onto settlement (D12) — palette untouched, fiction and figures moved.',
 
   orientation: 'flat',
-  motif: 'plane',
+  motif: 'settlement',
 
   board: {
     // Warm vellum, not white. A pure-white board is a torch of its own at night,
@@ -218,16 +233,34 @@ export const DAYLIGHT: Theme = {
      * whose hue was the paper's own, so it lost on both channels at once.
      * This one is the only amber on the board.
      */
+    /*
+     * Pattern and overlay SWAPPED here, values untouched (2026-09-03, D12).
+     * Settlement's motif draws MARKET's cloth off `pattern` and its goods off
+     * `overlay`; this direction's old plane fiction drew EMBER's sparks the
+     * other way round (`planeYellow`'s own comment: "the roles swapped
+     * 2026-08-20... dots are the pattern now"). Reskinning onto settlement
+     * without swapping them back would bake this slot with no texture at all
+     * — exactly the bug D8's guardrail exists to catch — so the two objects
+     * traded places and neither's ink, alpha or geometry moved.
+     */
     yellow: surface(0xccae70, {
       fillTo: 0xb59857,
-      pattern: { kind: 'dots', ink: 0x8a5e13, alpha: 0.3, radius: 2.1, pitch: 14 },
-      overlay: { kind: 'hatch', angleDeg: 90, ink: 0x715623, alpha: 0.1, bar: 1, gap: 5 },
+      pattern: { kind: 'hatch', angleDeg: 90, ink: 0x715623, alpha: 0.1, bar: 1, gap: 5 },
+      overlay: { kind: 'dots', ink: 0x8a5e13, alpha: 0.3, radius: 2.1, pitch: 14 },
       asset: 'terrain.yellow',
     }),
+    /*
+     * QUARRY's overlay reshaped from dots to hatch (2026-09-03, D12): the
+     * plane's red carries ash on ash (`planeRed`), settlement's carries cut
+     * benches (`settlementRed`) — a shape settlement's fiction needs and the
+     * plane's never declared. The ink and alpha are the same two numbers this
+     * overlay already had; only the geometry is new, angled and spaced the
+     * way settlement's own QUARRY cuts are (`themes/settlement.ts`).
+     */
     red: surface(0xc45a2c, {
       fillTo: 0x9e401c,
       pattern: { kind: 'dots', ink: 0x4a2210, alpha: 0.22, radius: 1.5, pitch: 9 },
-      overlay: { kind: 'dots', ink: 0x4a2210, alpha: 0.12, radius: 0.6, pitch: 5 },
+      overlay: { kind: 'hatch', angleDeg: 30, ink: 0x4a2210, alpha: 0.12, bar: 1, gap: 6 },
       asset: 'terrain.red',
     }),
     blue: surface(0x87a6b3, {
@@ -237,17 +270,25 @@ export const DAYLIGHT: Theme = {
       asset: 'terrain.blue',
     }),
   },
+  /*
+   * FARM · MARKET · QUARRY · ROADS — settlement's own names (2026-09-03), not
+   * a translation of MOSS · EMBER · ASH · TIDE. The hue-to-ground mapping this
+   * direction already had lines up with them exactly (green a field, gold a
+   * market, terracotta a quarry, slate a road), which is what made the reskin
+   * a renaming rather than a repaint. See `themes/settlement.ts` — same words,
+   * same rule per word, both languages, because D4.2 requires the name to
+   * carry the power and a settlement seen by day is still the same rules.
+   */
   terrainNames: {
-    en: { green: 'MOSS', yellow: 'EMBER', red: 'ASH', blue: 'TIDE' },
-    // Marc's own words (2026-08-28): each still names its power.
-    'fr-CA': { green: 'LICHEN', yellow: 'TISONS', red: 'CENDRES', blue: 'RIVIÈRES' },
+    en: { green: 'FARM', yellow: 'MARKET', red: 'QUARRY', blue: 'ROADS' },
+    'fr-CA': { green: 'FERME', yellow: 'MARCHÉ', red: 'CARRIÈRE', blue: 'CHEMINS' },
   },
 
-  // The plane's powers, unchanged: this direction names its ground for what it
-  // is MADE of, so the second word is doing real work. See `Theme.powerNames`.
+  // Settlement's own principle applies here too: the power word IS the ground
+  // name, so there is no second word to print. See `SETTLEMENT.powerNames`.
   powerNames: {
-    en: { green: 'CROWDS', yellow: 'COMPANY', red: 'ASH', blue: 'TIDE' },
-    'fr-CA': { green: 'FOULE', yellow: 'COMPAGNIE', red: 'CENDRES', blue: 'COURANT' },
+    en: { green: 'FARM', yellow: 'MARKET', red: 'QUARRY', blue: 'ROADS' },
+    'fr-CA': { green: 'FERME', yellow: 'MARCHÉ', red: 'CARRIÈRE', blue: 'CHEMINS' },
   },
 
   // Blocked ground is the DARKEST thing on this board, which is the inversion in
