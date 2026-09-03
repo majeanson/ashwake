@@ -150,12 +150,36 @@ export const AUDIT_IN_PAGE = (): Finding[] => {
     return `${owner}${el.tagName.toLowerCase()}${classes}`;
   };
 
+  /*
+   * NOT bounded by the viewport (2026-09-03).
+   *
+   * This used to also require `box.top < innerHeight && box.bottom > 0` — a
+   * check against the WINDOW, on a game whose panels scroll internally
+   * (`.panel-body`, `.front-door`, the end screen: `overflow-y: auto`) inside
+   * a shell that never itself scrolls. Playwright never scrolls a panel
+   * before this runs, so every element past the fold — in the page or inside
+   * a scrolling panel, `getBoundingClientRect` does not tell them apart —
+   * reported a `top` past `innerHeight` and was silently walked past. Two
+   * screens' worth of chrome (`board.png`'s stat row) got checked on every
+   * visit; the last stat NOTE, the SEND REPORT button, the bottom of the shop
+   * ladder never did, in any of 183 visits, in either language. 24 of 35
+   * screens reported zero findings for exactly this reason, not because they
+   * were clean.
+   *
+   * `getBoundingClientRect` is still viewport-relative and still correct for
+   * an UNSCROLLED page regardless of how far down an element sits — a
+   * genuinely offscreen trick (transformed miles off-canvas) is not a pattern
+   * this codebase uses to hide anything; `.visually-hidden` collapses a box
+   * to a point instead, which `display`/`visibility`/`opacity` below already
+   * catch. So dropping the bound costs nothing already being caught and
+   * measures the rest of the screen instead of the top ~844px of it.
+   */
   const shown = (el: Element): boolean => {
     const style = getComputedStyle(el);
     if (style.visibility === 'hidden' || style.display === 'none') return false;
     if (Number(style.opacity) < 0.1) return false;
     const box = el.getBoundingClientRect();
-    return box.width > 0 && box.height > 0 && box.top < innerHeight && box.bottom > 0;
+    return box.width > 0 && box.height > 0;
   };
 
   /** Text this element owns itself, rather than text its children own. */

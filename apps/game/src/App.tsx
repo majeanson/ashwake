@@ -846,6 +846,20 @@ function Game() {
         const world = worldHeld(here.rootSeed);
         return { dowry: dowryOf(world), carried: carriedBy(here, world) };
       },
+      /*
+       * The shrine claim's own receipt reads the same live count `describe`
+       * does (2026-09-03) — a shrine reached mid-run used to be named by
+       * `countShrines`, THIS run's own cells alone, so a world already a few
+       * shrines awake had its next claim announce an unlock the player
+       * already had (Marc: tapped a shrine promising the fourth draft card
+       * he already owned, and it granted the fifth unlock when he reached
+       * it — the tap's own preview had been fixed to read the world; this
+       * receipt, its sibling, had not).
+       */
+      shrinesClaimed: () => {
+        const here = made.get().state;
+        return detour ? 0 : (worldHeld(here.rootSeed)?.shrines.length ?? 0);
+      },
     });
     // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so
     // the end screen can be looked at without playing for ten minutes.
@@ -2582,8 +2596,18 @@ function Game() {
         ending is up and the board is still the thing being used, which is what
         it is for.
       */}
+      {/*
+        `role="main"` (2026-09-03): the board is the one thing this whole app
+        is for, and no landmark anywhere named it — a screen reader's "jump to
+        main content" and a browser's landmark navigation had nothing to land
+        on. Safe beside `inert`: `inert` already removes a subtree from the
+        accessibility tree (`board-host` goes inert exactly when something
+        else — a panel, the end screen — is the thing actually on screen), so
+        this can never register as a second, competing landmark.
+      */}
       <div
         className="board-host"
+        role="main"
         {...(anyOpen || !started || (snap.hud.ended && !walking) ? { inert: true } : {})}
       >
         <Board

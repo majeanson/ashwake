@@ -571,9 +571,16 @@ Every movement is explicable, which is the point of running it:
 - **`contrast-disabled` went to zero.** B7.20: `button[disabled]` was
   `opacity: 0.45` over ink the palette already grades, and is `--ink-faint` now
   — a colour `contrast.test.ts` holds at 4.5:1 against every ground.
-- **`tap-target-allowed` rose because `.term` now declares itself** (B3.9). It
-  was the one undeclared sub-pixel exemption in the build; those rows were
-  invisible before, not absent.
+- **`tap-target-allowed` rose because the audit visits more screens, not
+  because `.term` declares itself.** Every one of the 256 rows is
+  `button.stat` — the six-chip header row's below-44px exemption, present on
+  nearly every screen since Stage 4. `.term` never appears in the report at
+  all: it renders as a `<button>` only where `App.tsx`, `EndScreen.tsx`,
+  `SaidCard.tsx`, `Shop.tsx` and `TipRows.tsx` pass it `onTerm` — never in
+  `Manual.tsx`, so the manual's glossary words are plain unclickable spans, a
+  separate gap this pass did not touch. The count moved because this pass
+  took the audit from 104 screen-visits to 183; `button.stat` was exempt and
+  counted on every one of them, before and after.
 - **`clipped` rose from 0 to 9 and that is the instrument working**, not a
   regression. Seven are the stat row cutting French — the finding that argued
   B7.11 — and they were only ever visible because the French and 320px passes

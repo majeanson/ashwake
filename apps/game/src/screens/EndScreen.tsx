@@ -218,7 +218,14 @@ export function EndScreen({
   const arc = summary === null ? null : arcNote(summary, s);
 
   return (
-    <div className="end" data-hud="end">
+    /*
+     * `role="main"` (2026-09-03): a run's end is the primary content while it
+     * is on screen, not a dialog stacked over something else — it does not go
+     * through `<Panel>`'s `role="dialog"`, and nothing else here named it a
+     * landmark at all. `board-host` goes `inert` for exactly this state
+     * (`App.tsx`), so the two never compete for the one `role="main"`.
+     */
+    <div className="end" data-hud="end" role="main">
       {hero !== null && <img className="end-hero" src={hero} alt="" width={876} height={330} />}
 
       {/*
