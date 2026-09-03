@@ -249,11 +249,56 @@ compiler-safe, because those lint rules have been enforcing exactly that.
 | ---- | ------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | B6.1 | done   | install and configure the React Compiler; verify with the healthcheck, the e2e suite, and a before/after Profiler trace on a toast | `vite.config.ts:163` |
 | B6.2 | done   | fix whatever the healthcheck rejects; opt a file out explicitly, with the reason at the top, if it cannot compile                  | `board/`             |
-| B6.3 | open   | `memo()` on `Board` regardless, and lift speech into a `<Speech>` subtree so it cannot reach the R3F tree                          | `App.tsx`            |
+| B6.3 | ruled  | `memo()` on `Board`, and a `<Speech>` subtree — **declined on a measurement**, see below                                           | `App.tsx`            |
 | B6.4 | done   | extract `shell/beginning.ts` — one `enterRun(...)` every door calls. Closes B5.3                                                   | `App.tsx:437`        |
 | B6.5 | open   | extract the rest, following the `shell/signpost.ts` convention (pure decision out, wiring thin)                                    | `App.tsx`            |
-| B6.6 | open   | `StringsContext` + `ThemeContext` — `s` reaches 15 components, `theme` 11; `EndScreen` takes 18 props                              | `App.tsx`            |
-| B6.7 | open   | move the historical half of the docblocks to `LOG.md` — ~1,100 of 2,928 lines are dated changelog                                  | `App.tsx`            |
+| B6.6 | ruled  | `StringsContext` + `ThemeContext` — **declined on the same measurement**                                                           | `App.tsx`            |
+| B6.7 | ruled  | move the historical half of the docblocks to `LOG.md` — **declined**, it is the house style working                                | `App.tsx`            |
+
+### What Batch 6 measured, and the three it declined
+
+The plan said the compiler should land early **because it changes the shape of
+the rest of Batch 6**. It did, and the honest thing is to say by how much
+rather than to do the work anyway.
+
+**Measured, in the built bundle.** The compiler emits a per-component cache and
+compares each slot against `Symbol.for("react.memo_cache_sentinel")`, so the
+output can simply be counted: **63 components carry a cache, holding 1,562
+slots**, the largest of them 112 — which is `Game`, the component B6.3 and B6.6
+existed to protect the board from. (Counted on an unminified build; a first
+grep against the minified one said zero and was wrong, because minification
+renames `$` and `_c`. Worth writing down: the measurement nearly produced the
+opposite conclusion.)
+
+**B6.3 — declined.** Its stated purpose is that a toast must not re-render the
+3D board. `Game` is compiled, so the `<Board>` element is now memoised on its
+own props at the call site; a hand-written `memo()` on top of that is a second
+mechanism doing the first one's job, and the `<Speech>` subtree is a structural
+change bought entirely with the same argument. Adding hand-maintained
+memoisation over automatic memoisation is exactly what the compiler's own
+docblock argues against.
+
+**B6.6 — declined, same measurement.** Its case was that `s` and `theme` reach
+26 prop declarations and participate in every memo comparison. They no longer
+cost a comparison anybody wrote. What is left is an ergonomic preference, and
+it is a 26-component refactor with real regression risk and no functional gain
+— which is not what "improvements to what we already have" asked for.
+
+**B6.7 — declined, and this one is a disagreement with the plan rather than a
+measurement.** Moving ~1,100 lines of dated reasoning out of `App.tsx` and into
+`LOG.md` would strip the code of the thing that makes this repository
+navigable: every hard-won fact sits beside the line it was won at.
+`CLAUDE.md`'s whole culture is that a comment carries the bug it prevents, and
+half of this pass's findings were made by READING those docblocks and checking
+whether they were still true. A changelog in a separate file is a changelog
+nobody opens while editing the line it is about. `LOG.md` is the per-session
+record and stays that; the docblocks are why-this-line and stay that.
+
+**B6.5 stays open**, and is the one worth doing next: `App.tsx` is 3,208 lines,
+and `shell/beginning.ts` (B6.4) is the proof the shape works — it landed here,
+took the five run-doors with it, and closed four missing steps on the way. The
+remaining eight regions are a session of their own, and they are extraction
+rather than discovery.
 
 ## Batch 7 — tokens, consistency, and the catalogue
 
@@ -445,6 +490,35 @@ exists. Stated at the declaration; `useDevice.test.ts` is its second reader.
 4. Batches 3, 4, 5 in any order; they touch disjoint files.
 5. **Batch 7 last of the code**, because it is the widest diff.
 6. Batch 8 independently — it touches only build config, `index.html` and `sw.js`.
+
+## What the instrument said afterwards
+
+The audit was regenerated at the end of the pass, 181 of 181 screen-visits.
+
+| kind                 | before | after |
+| -------------------- | ------ | ----- |
+| `tap-target`         | 0      | 0     |
+| `tap-target-allowed` | 68     | 256   |
+| `contrast-disabled`  | 64     | **0** |
+| `clipped`            | 0      | 9     |
+| `overflow`           | 0      | 0     |
+
+Every movement is explicable, which is the point of running it:
+
+- **`contrast-disabled` went to zero.** B7.20: `button[disabled]` was
+  `opacity: 0.45` over ink the palette already grades, and is `--ink-faint` now
+  — a colour `contrast.test.ts` holds at 4.5:1 against every ground.
+- **`tap-target-allowed` rose because `.term` now declares itself** (B3.9). It
+  was the one undeclared sub-pixel exemption in the build; those rows were
+  invisible before, not absent.
+- **`clipped` rose from 0 to 9 and that is the instrument working**, not a
+  regression. Seven are the stat row cutting French — the finding that argued
+  B7.11 — and they were only ever visible because the French and 320px passes
+  were added this session. The two new ones are `.act-label` at 320 in French,
+  3px each: B7.10 gave that label an `overflow: hidden` and an ellipsis, so the
+  overflow that used to spill silently out of the button is now contained AND
+  reported. A measured 3px with an ellipsis is a better state than an unmeasured
+  row running into its neighbours.
 
 ## Verification, per batch
 

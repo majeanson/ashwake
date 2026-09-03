@@ -1,6 +1,6 @@
 # Screen audit
 
-343 findings across 181 of 181 screen-visits:
+265 findings across 181 of 181 screen-visits:
 35 screens × 4 directions at 390×844,
 the same 35 again in fr-CA, and 6 of them at 320×568.
 
@@ -12,8 +12,7 @@ shot beside it — `audit-shots/<pass>/<screen>.png`, where a pass is a
 direction, `fr-CA`, or `320`.
 
 - **tap-target-allowed** — 256
-- **contrast-disabled** — 80
-- **clipped** — 7
+- **clipped** — 9
 
 | screen | pass | direction | kind | where | text | measured | bar | detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -273,89 +272,11 @@ direction, `fr-CA`, or `320`.
 | teaching-placed | 320 | settlement | tap-target-allowed | `button.stat` | PTS 0 | 31 | 44 | 72×31px, pseudo-target included |
 | teaching-placed | 320 | settlement | tap-target-allowed | `button.stat` | PORTÉE 1 | 31 | 44 | 72×31px, pseudo-target included |
 | teaching-placed | 320 | settlement | tap-target-allowed | `button.stat` | COÛT 1 | 31 | 44 | 72×31px, pseudo-target included |
-| more-played | 390 | daylight | contrast-disabled | `button` | 35 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| more-played | 390 | daylight | contrast-disabled | `button` | 50 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| more-played | 390 | daylight | contrast-disabled | `button` | 40 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop | 390 | daylight | contrast-disabled | `button` | 35 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop | 390 | daylight | contrast-disabled | `button` | 50 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop | 390 | daylight | contrast-disabled | `button` | 40 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-thirty | 390 | daylight | contrast-disabled | `button` | 105 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-thirty | 390 | daylight | contrast-disabled | `button` | 150 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-thirty | 390 | daylight | contrast-disabled | `button` | 80 | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-thirty | 390 | daylight | contrast-disabled | `button` | WORN | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-many | 390 | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-many | 390 | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-many | 390 | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-many | 390 | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-many | 390 | daylight | contrast-disabled | `button` | MAXED | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| shop-many | 390 | daylight | contrast-disabled | `button` | WORN | 2.96 | 4.5 | rgb(14, 11, 7) on rgb(232, 220, 196) at 16px |
-| more-played | 390 | torchlit | contrast-disabled | `button` | 35 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| more-played | 390 | torchlit | contrast-disabled | `button` | 50 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| more-played | 390 | torchlit | contrast-disabled | `button` | 40 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop | 390 | torchlit | contrast-disabled | `button` | 35 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop | 390 | torchlit | contrast-disabled | `button` | 50 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop | 390 | torchlit | contrast-disabled | `button` | 40 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-thirty | 390 | torchlit | contrast-disabled | `button` | 105 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-thirty | 390 | torchlit | contrast-disabled | `button` | 150 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-thirty | 390 | torchlit | contrast-disabled | `button` | 80 | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-thirty | 390 | torchlit | contrast-disabled | `button` | WORN | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-many | 390 | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-many | 390 | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-many | 390 | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-many | 390 | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-many | 390 | torchlit | contrast-disabled | `button` | MAXED | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| shop-many | 390 | torchlit | contrast-disabled | `button` | WORN | 3.79 | 4.5 | rgb(242, 228, 196) on rgb(10, 8, 6) at 16px |
-| more-played | 390 | settlement | contrast-disabled | `button` | 35 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| more-played | 390 | settlement | contrast-disabled | `button` | 50 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| more-played | 390 | settlement | contrast-disabled | `button` | 40 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop | 390 | settlement | contrast-disabled | `button` | 35 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop | 390 | settlement | contrast-disabled | `button` | 50 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop | 390 | settlement | contrast-disabled | `button` | 40 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | 390 | settlement | contrast-disabled | `button` | 105 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | 390 | settlement | contrast-disabled | `button` | 150 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | 390 | settlement | contrast-disabled | `button` | 80 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | 390 | settlement | contrast-disabled | `button` | WORN | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | 390 | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | 390 | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | 390 | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | 390 | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | 390 | settlement | contrast-disabled | `button` | MAXED | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | 390 | settlement | contrast-disabled | `button` | WORN | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| more-played | fr-CA | settlement | contrast-disabled | `button` | 35 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| more-played | fr-CA | settlement | contrast-disabled | `button` | 50 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| more-played | fr-CA | settlement | contrast-disabled | `button` | 40 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop | fr-CA | settlement | contrast-disabled | `button` | 35 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop | fr-CA | settlement | contrast-disabled | `button` | 50 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop | fr-CA | settlement | contrast-disabled | `button` | 40 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | fr-CA | settlement | contrast-disabled | `button` | 105 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | fr-CA | settlement | contrast-disabled | `button` | 150 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | fr-CA | settlement | contrast-disabled | `button` | 80 | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-thirty | fr-CA | settlement | contrast-disabled | `button` | PORTÉ | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | fr-CA | settlement | contrast-disabled | `button` | AU MAX | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | fr-CA | settlement | contrast-disabled | `button` | AU MAX | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | fr-CA | settlement | contrast-disabled | `button` | AU MAX | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | fr-CA | settlement | contrast-disabled | `button` | AU MAX | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | fr-CA | settlement | contrast-disabled | `button` | AU MAX | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| shop-many | fr-CA | settlement | contrast-disabled | `button` | PORTÉ | 3.89 | 4.5 | rgb(242, 230, 207) on rgb(20, 16, 12) at 16px |
-| more-played | 390 | torchlit-bright | contrast-disabled | `button` | 35 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| more-played | 390 | torchlit-bright | contrast-disabled | `button` | 50 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| more-played | 390 | torchlit-bright | contrast-disabled | `button` | 40 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop | 390 | torchlit-bright | contrast-disabled | `button` | 35 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop | 390 | torchlit-bright | contrast-disabled | `button` | 50 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop | 390 | torchlit-bright | contrast-disabled | `button` | 40 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-thirty | 390 | torchlit-bright | contrast-disabled | `button` | 105 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-thirty | 390 | torchlit-bright | contrast-disabled | `button` | 150 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-thirty | 390 | torchlit-bright | contrast-disabled | `button` | 80 | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-thirty | 390 | torchlit-bright | contrast-disabled | `button` | WORN | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-many | 390 | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-many | 390 | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-many | 390 | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-many | 390 | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-many | 390 | torchlit-bright | contrast-disabled | `button` | MAXED | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
-| shop-many | 390 | torchlit-bright | contrast-disabled | `button` | WORN | 4.18 | 4.5 | rgb(255, 246, 230) on rgb(0, 0, 0) at 16px |
 | pop-line | fr-CA | settlement | clipped | `span.stat-label` | TUILES | 3 | 2 | 3px of content is cut off |
 | board-grown | 320 | settlement | clipped | `span.stat-label` | COÛT | 3 | 2 | 3px of content is cut off |
 | pop-line | 320 | settlement | clipped | `span.stat-label` | COÛT | 3 | 2 | 3px of content is cut off |
+| pop-line | 320 | settlement | clipped | `span.act-label` | RÉCOLTER | 3 | 2 | 3px of content is cut off |
+| pop-line | 320 | settlement | clipped | `span.act-label` | SACRIFIER | 3 | 2 | 3px of content is cut off |
 | board-grown | 320 | settlement | clipped | `span.stat-label` | TUILES | 10 | 2 | 10px of content is cut off |
 | board-grown | 320 | settlement | clipped | `span.stat-label` | PORTÉE | 14 | 2 | 14px of content is cut off |
 | pop-line | 320 | settlement | clipped | `span.stat-label` | PORTÉE | 15 | 2 | 15px of content is cut off |

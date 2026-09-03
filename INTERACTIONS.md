@@ -294,3 +294,31 @@ what a matrix is blind to.
 | The OS's **reduced-motion** switch       | honoured, with a `change` listener | → **threaded through the board and never passed**                |
 | The OS's **light/dark** switch, mid-page | followed                           | → was sampled once at boot, on a page that never reloads         |
 | A **render error**, then CONTINUE        | the run carries on                 | → no boundary, so CONTINUE revealed a blank page                 |
+
+## The gestures that only a keyboard could ever have found (2026-09-02)
+
+The improvement pass (`IMPROVEMENTS.md`, `LOG.md` Session 39) added four
+gestures and fixed one that had never worked. None of them is on the board, so
+none of them is in the tables above — and that is the shape of this batch: a
+matrix that asks "what can a FINGER do here" is blind to the widget contracts a
+role declares.
+
+| Gesture                                     | Before                                                                   | Now                                                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Tab, from anywhere, after a panel shuts** | dropped to `<body>` — every panel, since the stack was built             | ✓ back to the control that opened it. `focus()` was called one commit before `inert` came off, and a no-op is silent |
+| **Tab, with a panel open**                  | walked out of the panel and onto POP and SACRIFICE, under an opaque page | ✓ the hand is `inert` too                                                                                            |
+| **← → Home End, on a tab row**              | nothing; all four tabs were separate tab stops                           | ✓ one stop, arrows move and select, the row is a ring                                                                |
+| **↑ ↓ Home End, in the board's MENU**       | nothing; Tab walked out of the drawer into an inert board                | ✓ the drawer takes focus on open and walks its own rows                                                              |
+| **Long-press / right-click a card**         | worked, and was the only door to the colour lens                         | ✓ unchanged — now photographed (`audit-shots/*/board-lens.png`)                                                      |
+
+**And three things a screen reader was told wrongly rather than not at all**,
+which is the harder half to notice: `role="tablist"` with no tabpanel and no
+`aria-controls`; `aria-pressed` on a `role="menuitem"`, which is dropped rather
+than read, so the sound toggle announced no state; and a `data-grows` dot — a
+`::after`, visible only to an eye — carrying the one fact the mark exists for.
+
+The lesson this adds to the three above: **a ROLE is a promise about
+behaviour**, and declaring one without keeping it is worse than declaring
+neither. A screen reader announces "tab, 1 of 4" and then hands the player a
+row of buttons. Nothing in a gesture matrix can see that, because from a
+finger's side it works.

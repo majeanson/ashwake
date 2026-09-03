@@ -4,8 +4,76 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-02 — the daily differs by more than shrines, and the
-receipt denied the perk it had just handed over.**
+Last checkpoint: **2026-09-02 — the wide improvement pass: 121 items, 116
+landed, five ruled.**
+
+Marc asked for improvements to what already ships — UI/UX and beyond — with no
+new features and no new rules. `IMPROVEMENTS.md` is the row-by-row record and
+`LOG.md` Session 39 is the reasoning; this is what is now true and verified.
+
+**It opened by finding CI red.** `pnpm typecheck` did not pass on `main` and
+gates the deploy: `Payout` grew two props, its test kept passing the old four,
+and `vitest` does not typecheck — so 1091 green tests sat on five type errors.
+Everything else in the pass is verified by a command that could not run first.
+
+**Verified, and each of these was broken before:**
+
+- The `<Canvas>` could unmount on a transient zero-width measure, taking the
+  WebGL context — a hard rule in `CLAUDE.md`. The measurement latches now.
+- Focus fell to `<body>` every time ANY panel closed, because `focusOpener`
+  called `.focus()` on an element that was still `inert`. And the hand was
+  tabbable behind every panel, so a Tab out of the manual reached POP and
+  SACRIFICE under an opaque page.
+- The beacons' breath asked for 60fps for the whole of every run: `useFrame`
+  only runs because something invalidated, so "animate while any beacon exists"
+  meant invalidating forever. A 30 Hz timer now, which is the only shape that
+  can stop.
+- `paintPlan` ran once per CELL, not once per surface — 500 plan graphs per
+  view change to find ~20 answers. Keying the batch by its surface also closed
+  a hole where two surfaces differing only in alpha shared a batch.
+- The crossing read three different copies of the world under a comment saying
+  they were "the same number by construction".
+- `useLedgers` took a hand-kept list of the ways the disk can change and had
+  missed four writers. The disk says so itself now, from inside `write` and
+  `drop` — and `storage.test.ts` caught that `drop` had been left out on its
+  first run.
+- The five run-doors are one `shell/beginning.ts`, which closed four steps the
+  crossing and NEW RUN had drifted into missing.
+- `createSession` minted a world seed and walked a whole scripted run inside a
+  `useMemo`, which StrictMode double-invokes on purpose.
+- **The rules of hooks were scoped to `*.tsx`**, so the four hooks with no JSX
+  in them — including the 300-line `useDevice.ts` — were never linted. Widened;
+  it found four more bugs immediately.
+- The React Compiler is ON and verified in the built bundle: **63 components
+  carry a cache holding 1,562 slots.** `react-compiler-healthcheck` compiles
+  70 of 70.
+- The vendor chunk is split: a returning player re-downloads 115 KB instead of 449. The service worker stopped precaching 872 KB of art for three directions
+  the device will never render.
+- Two literals said torchlit while the game ships settlement, including the one
+  baked into the installed icon.
+
+**The instrument is wider and now honest about itself.** 181 screen-visits: 35
+screens × 4 directions, the same 35 in French — the shipping default, never
+photographed before — and 6 at 320×568. The teaching drip has a picture for the
+first time, which is the `PLAYTEST.md` Session C gate. `contrast-disabled` went
+from 64 findings to **zero**; the 9 `clipped` are all French, all argued, and
+seven of them are the evidence that decided the stat row's ellipsis.
+
+**Five items ruled rather than done**, with the arguments at the declarations:
+`memo()`/contexts (B6.3, B6.6) are what the compiler now does, measured;
+moving the docblock history out of `App.tsx` (B6.7) would strip the code of
+what makes this repository navigable; CI running the screen audit (B8.6) costs
+fifteen minutes a push for pictures a runner draws differently from a phone.
+
+**What is left for Marc** is in `NEXT.md` §5b (five unread theme channels, a
+re-tune rather than a fix) and the new §5c (nothing sets `Said.brief`).
+
+`pnpm sim` is byte-identical throughout; 1118 unit tests and 87 e2e pass.
+
+---
+
+Previous checkpoint: **2026-09-02 — the daily differs by more than shrines, and
+the receipt denied the perk it had just handed over.**
 
 Marc asked for a review of fog and shrine detection on a world versus a daily,
 and across an abrupt switch between them. **The fog was clean. The shrines were

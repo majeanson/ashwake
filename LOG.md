@@ -3324,3 +3324,117 @@ there, where its "and only on your own world" is already the honest sentence.
 
 **Verified:** 1091 tests / 77 files, 87 e2e on a real build,
 typecheck/lint/format clean, `pnpm sim` byte-identical.
+
+### Session 39 — the wide pass, and a gate that was already red (2026-09-02)
+
+**Question:** with the rules frozen and no new features allowed, how much of
+what already ships is wrong, and how much of it can be fixed from a session
+that cannot see a phone?
+
+**Answer: a lot, and most of it.** `IMPROVEMENTS.md` is the row-by-row record —
+121 items, 116 landed, five ruled. What follows is only what the pass changed
+its mind about, because that is the part a future session cannot re-derive.
+
+**It opened by finding the gate red.** `pnpm typecheck` — step three of five in
+CI, before `test`, `build`, the e2e suite, the golden and the bake — did not
+pass on `main`. `Payout` grew `points` and `reach` when the ending learned to
+account for the reach bonus (`c929c0d`); its test kept rendering the old four
+props; **`vitest` does not typecheck**, so 1091 green tests sat on top of five
+type errors for a day. Verified by stashing the work and running it on a clean
+tree. Every other row in the pass is verified by a command that could not run
+until that was fixed, which is why it is item zero.
+
+**The plan was wrong in four places, and each correction is the finding.**
+
+1. **The focus bug was not the drawer's.** The plan read "MENU goes inert while
+   its own menu is open" and proposed loosening `inert` on the board host.
+   Wrong: a scrim is over the board and nothing behind it should be actable.
+   What actually fails is `focusOpener`, which called `.focus()` **inline,
+   inside the click handler, one commit before React removes `inert`** — and
+   `focus()` on an inert element is a silent no-op. So focus fell to `<body>`
+   when ANY panel closed, and had since the stack was built. A silent no-op is
+   why it survived: nothing throws, the panel closes, and the only symptom is
+   that the next Tab starts from the top of the document.
+2. **The hand was tabbable behind every panel**, not only behind the drawer.
+   `{playing && …}` carried no `inert` at all, so a Tab out of the manual landed
+   on POP and SACRIFICE under an opaque page.
+3. **`paintPlan` could not be memoised on the surface's identity**, because
+   `surfaceFor` builds a fresh object per cell. What works is better: key the
+   BATCH by the surface and build the plan when a bucket is opened. Once per
+   batch instead of once per cell — and it closed a real hole, because
+   `surface.alpha` is not in the plan, so two surfaces differing only in alpha
+   shared a batch and every cell in it drew at whichever alpha arrived first.
+4. **Context loss needed two lines, not three cache resets.** `three`
+   re-initialises and re-uploads from the CPU-side data every cached object
+   still holds; resetting would rebuild, from scratch, a set of objects about to
+   be re-uploaded, on the one frame where a phone has just proved it is short of
+   memory. What was missing is `preventDefault()` on `webglcontextlost` — without
+   it the browser never tries to restore — and an `invalidate()` on restore,
+   because `frameloop="demand"` otherwise draws a permanently blank board.
+
+**The signature miss came back twice, in the two shapes `CLAUDE.md` names.**
+
+`Said.brief` is set by nothing. The whole brief-card path — the scrim rule, the
+4200ms clock, the pointerdown dismissal, the "takes no focus" rule, `SaidCard`'s
+prop — is unreachable from the running game, and its own docblock names as its
+writer the branch that stopped writing it on 2026-08-30. Found by walking the
+OPTIONAL fields, which is the blind spot `perkAt` hid in and the newest rule in
+`CLAUDE.md`. **Left in place**: whether this game wants a receipt you do not
+dismiss is a screen decision, and it is in `NEXT.md` §5c.
+
+And **the rules of hooks were scoped to `*.tsx`.** `eslint.config.js` says "the
+rules of hooks, on the chrome" — and four of this app's hooks have no JSX in
+them, including `useDevice.ts`, the 300-line file holding every piece of device
+state and the keeper's whole lifetime. **The file with the most hook logic in
+the build was the file the lint did not open.** Widened to `{ts,tsx}`; it found
+four things immediately, all fixed here: a cleanup that dropped the wrong keeper
+after any `move()`, a ref read during render inside a memo that did not list it,
+a GPU material cache written during render, and two cascading renders on the
+boot path.
+
+**A new instrument finding: the audit overwrote its own record, in this
+session.** `afterAll` writes `report.md` unconditionally, and Playwright runs it
+after a filtered run exactly as after a whole one — so
+`playwright test -g "one · test"`, run to debug a single screen, replaced the
+committed table with an empty one and said nothing. The header now states how
+many of the expected screen-visits actually happened, and a run that gathered
+nothing leaves the file alone.
+
+**The screen audit paid for itself the first time it ran.** The French pass —
+French is the shipping default, is ~20% longer through the catalogue, and had
+never been photographed — returned seven `clipped` findings, every one the stat
+row cutting a French label mid-glyph, up to 17px at 320. That is the evidence
+B7.11 was going to be argued from, and it arrived before the argument.
+
+**The compiler was the pass's own biggest surprise, twice.**
+
+`react-compiler-healthcheck` compiles **70 of 70** components: nothing opted
+out, nothing rejected. Months of `eslint-plugin-react-hooks@7` had already
+bought the constraint; only the compilation was missing. The bundle grew 16 KB
+gzipped, measured by building with and without it, and the vendor split more
+than pays for it — a returning player now re-downloads 115 KB rather than 449.
+
+Then, checking whether B6.3 and B6.6 were still worth doing, **a first grep of
+the minified bundle said the compiler was emitting nothing at all.** It was
+wrong: minification renames `$` and `_c`. The unminified build says 63
+components carry a cache holding 1,562 slots, the largest of them 112, which is
+`Game` — the component those two items existed to protect the board from. Both
+declined on that measurement. Worth writing down because the measurement nearly
+produced the opposite conclusion, and a wrong grep is a confident answer.
+
+**One item declined on taste rather than evidence, and it should be argued
+with.** B6.7 asked for ~1,100 lines of dated reasoning to move out of `App.tsx`
+into `LOG.md`. Declined: half of this pass's findings were made by READING
+those docblocks and checking whether they were still true — `destinationAt`'s
+comment, `cross.ts`'s "same number by construction", `.end-install`'s "`.quiet`
+already carries that voice", `Said.brief`'s named writer. A changelog in a
+separate file is a changelog nobody opens while editing the line it is about.
+
+**Two literals said torchlit while the game ships settlement**, including the
+one baked into the installed icon, which is the single place it is visible for
+good. Same shape as the `destinationAt` docblock: `index.html`'s pre-JS paint
+carried the wrong colour under a comment asserting it was the right one.
+
+`pnpm sim` is byte-identical throughout. The prose pins were re-recorded once,
+deliberately: the whole diff is eight full stops moving out of `signpost.ts`
+and into the catalogue, where D4 says punctuation belongs.
