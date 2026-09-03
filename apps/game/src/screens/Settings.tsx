@@ -214,7 +214,8 @@ export function Settings({
               >
                 {/* The label is part of the accessible name rather than a
                     sibling, so a screen reader says what is being switched. */}
-                {words.label} · {feature.wired ? (on ? 'ON' : 'OFF') : 'NOT BUILT'}
+                {words.label} ·{' '}
+                {feature.wired ? (on ? s.ui.flag.on : s.ui.flag.off) : s.ui.flag.notBuilt}
               </button>
               <p className="note">{words.note}</p>
             </div>
@@ -225,7 +226,7 @@ export function Settings({
       <section>
         <Confirming
           label={s.ui.resetTeaching}
-          armed={`${s.ui.resetTeaching}?`}
+          armed={s.ui.resetTeachingArmed}
           onConfirm={onResetTeaching}
         />
         <p className="note">{s.ui.privacy}</p>

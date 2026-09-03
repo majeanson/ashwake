@@ -678,7 +678,7 @@ function Rig({
   /** A thrown board, still travelling. Cleared by any deliberate move. */
   const glide = useRef<Glide | null>(null);
   const glidedAt = useRef(0);
-  /** The pending return of a , so a second claim replaces the first
+  /** The pending return of an EXCURSION, so a second claim replaces the first
    *  rather than racing it home. */
   const visiting = useRef<ReturnType<typeof setTimeout> | 0>(0);
   const frameRef = useRef(frame);

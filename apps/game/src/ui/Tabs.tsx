@@ -59,6 +59,9 @@ export type TabsProps<Id extends string> = {
   readonly tabs: readonly Tab<Id>[];
   readonly on: Id;
   readonly onPick: (id: Id) => void;
+  /** What a growing tab says out loud — `s.ui.tabGrows`. The catalogue's, so
+   *  the dot and the sentence cannot describe different things. */
+  readonly growsNote: string;
 };
 
 /** The id of one tab button. */
@@ -67,7 +70,14 @@ export const tabOf = (base: string, id: string): string => `${base}-tab-${id}`;
 /** The id of the region a tab controls — see `Panel`'s `tabbed`. */
 export const panelOf = (base: string, id: string): string => `${base}-tabpanel-${id}`;
 
-export function Tabs<Id extends string>({ base, label, tabs, on, onPick }: TabsProps<Id>) {
+export function Tabs<Id extends string>({
+  base,
+  label,
+  tabs,
+  on,
+  onPick,
+  growsNote,
+}: TabsProps<Id>) {
   // The buttons, so a key that moves the selection can move the focus with it.
   // Focus does not follow state on its own, and a tablist whose arrow keys
   // change the panel while leaving the focus behind is one a keyboard cannot
@@ -130,6 +140,11 @@ export function Tabs<Id extends string>({ base, label, tabs, on, onPick }: TabsP
             onClick={() => onPick(tab.id)}
           >
             {tab.label}
+            {/* The dot was a `::after`, which is a thing only an eye can see —
+                so the one piece of information the mark exists to carry was
+                the one a screen reader never got (2026-09-02). The pseudo
+                stays for the look; this is the same sentence in words. */}
+            {tab.grows === true && <span className="visually-hidden">{growsNote}</span>}
           </button>
         );
       })}

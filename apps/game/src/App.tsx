@@ -100,7 +100,14 @@ import { canInstall, inAppBrowser, isInstalled, promptInstall } from './shell/in
 import { renderShareCard } from './shell/shareCard';
 import { settle, settleDaily, type Standing } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
-import { campFor, createSession, useSession, type Said, type Session } from './shell/store';
+import {
+  campFor,
+  createSession,
+  paragraphs,
+  useSession,
+  type Said,
+  type Session,
+} from './shell/store';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, told } from './shell/teaching';
@@ -1209,6 +1216,17 @@ function Game() {
    */
   const leaveMenus = useDialogStack().closeAll;
 
+  /**
+   * WHICH OF THE THREE THIS RUN IS: a world, a shared seed, or the daily.
+   *
+   * Written out twice, ten lines apart, in the two places that print the
+   * sentence explaining it — the front door and the manual (2026-09-02). Two
+   * copies of one three-way decision is two chances for a screen to disagree
+   * with the screen beside it about what the player is even playing.
+   */
+  const mode: 'world' | 'shared' | 'daily' =
+    daily !== null ? 'daily' : session.detour ? 'shared' : 'world';
+
   // What the game wants to say, if anything: a priority list rather than a
   // queue, so the first unmet moment fires and the rest stay armed.
   const teach = useMemo(
@@ -1265,9 +1283,12 @@ function Game() {
   const act = useCallback(
     (action: Action) => {
       // Counted BEFORE, because "the first" is a fact about what had not
-      // happened yet.
-      const poppedBefore = session.get().state.log.popped;
-      const claimedBefore = session.get().state.claimed.length;
+      // happened yet. One read, not three: `session.get()` builds a whole
+      // snapshot — the board view and the HUD included — and this was calling
+      // it three times in six lines for three fields of one state.
+      const before = session.get().state;
+      const poppedBefore = before.log.popped;
+      const claimedBefore = before.claimed.length;
       /*
        * WHAT A FIND HOLDS, handed over a beat before the receipt asks for it
        * (2026-09-02).
@@ -1290,7 +1311,7 @@ function Game() {
        */
       aim({
         progress,
-        seed: session.get().state.rootSeed,
+        seed: before.rootSeed,
         // A perk lives on the world that found it, so a daily and a shared
         // seed grant none — and a receipt there must go on saying so. The
         // same condition the grant below keeps.
@@ -1470,12 +1491,14 @@ function Game() {
        * the ledger is already spent. First pop of the first run is: this run
        * has popped nothing, and no run before it banked a harvest.
        */
+      // One lookup: `records[ONLY_WORLD]` was indexed twice inside one
+      // expression, which is the same fact read two ways in a condition that
+      // has to be all-or-nothing.
+      const shelf = ledgers.records[ONLY_WORLD];
       const first =
         action.type === 'HARVEST' &&
         poppedBefore === 0 &&
-        (ledgers.records[ONLY_WORLD]?.tilesHarvests ?? 0) +
-          (ledgers.records[ONLY_WORLD]?.pointsHarvests ?? 0) ===
-          0;
+        (shelf?.tilesHarvests ?? 0) + (shelf?.pointsHarvests ?? 0) === 0;
       if (first) {
         /*
          * AFTER the pop, not over it (2026-08-29).
@@ -1494,11 +1517,10 @@ function Game() {
          */
         const shown = {
           ...said,
-          text: `${s.view.harvest.firstPop}
-
-${said.text}
-
-${s.view.harvest.firstPopWhen}`,
+          // Joined the way the store joins every other multi-part utterance —
+          // this had its own `\n\n`, which is one card's spacing decided in a
+          // second place (2026-09-02). See `paragraphs`.
+          text: paragraphs(s.view.harvest.firstPop, said.text, s.view.harvest.firstPopWhen),
           card: true,
         };
         const wait = reducedMotion
@@ -1609,11 +1631,25 @@ ${s.view.harvest.firstPopWhen}`,
   const describe = useCallback(
     (key: string): string => {
       const now = session.get();
-      const memory = ledgers.worlds[slot]?.revealed;
       // The LIVE world, not the disk's: a shrine woken earlier in this run has
       // to count, and the keeper's write may still be pending.
       const world = session.detour ? null : worldHeld(now.state.rootSeed);
       const woken = world?.shrines.length ?? 0;
+      /*
+       * AND THE FOG COMES FROM THE SAME COPY (2026-09-02).
+       *
+       * This read `ledgers.worlds[slot]?.revealed` — the ledgers snapshot,
+       * which only refreshes when a panel opens or a run ends — two lines under
+       * a comment explaining why the shrine count must NOT. So one call
+       * described a hex using a live world for what is woken and a stale one
+       * for what is remembered, and the tap answer for ground revealed earlier
+       * in the same run was "you have never been here".
+       *
+       * `worldHeld` guards by seed exactly as `memoryFor` does, which is the
+       * function `store.ts` builds the board's own fog from — so the tap and
+       * the board now draw the same memory from the same place.
+       */
+      const memory = world?.revealed;
       return describeHexOf(
         {
           state: now.state,
@@ -1643,7 +1679,9 @@ ${s.view.harvest.firstPopWhen}`,
         key,
       );
     },
-    [session, s, theme, ledgers, slot, worldHeld],
+    // `ledgers` and `slot` are gone from this list because the fog no longer
+    // comes from either — see the note above.
+    [session, s, theme, worldHeld],
   );
 
   /**
@@ -1865,6 +1903,17 @@ ${s.view.harvest.firstPopWhen}`,
    */
   const onShare = useCallback(async (): Promise<ShareResult> => {
     const arc = arcSparkline(snap.state.log.harvests);
+    /*
+     * The daily book, decoded ONCE (2026-09-02).
+     *
+     * It was read twice inside this one handler — for the tries the sentence
+     * confesses, and again for the badge on the card — which is two decodes of
+     * the same blob a few lines apart. Worse than the cost: they are two reads
+     * of a store that a settle could write between, so the sentence and the
+     * picture could in principle disagree about which try this was, on the one
+     * artefact whose whole job is being screenshotted.
+     */
+    const book = daily === null ? null : readDailyBook();
     const subject: ShareSubject =
       daily === null
         ? {
@@ -1882,7 +1931,7 @@ ${s.view.harvest.firstPopWhen}`,
             arc,
             // The try this was, confessed rather than hidden — the daily's own
             // honesty rule. Read after settling, so it counts this run.
-            tries: readDailyBook()[daily]?.tries ?? 1,
+            tries: book?.[daily]?.tries ?? 1,
           };
 
     /*
@@ -1909,7 +1958,7 @@ ${s.view.harvest.firstPopWhen}`,
         // A daily's ladder line already carries the number RUN/TRY would say.
         topLine:
           daily !== null
-            ? dailyBadge(readDailyBook(), daily, s)
+            ? dailyBadge(book ?? {}, daily, s)
             : standing !== null && standing.run > 0
               ? s.ui.ending.run(standing.run)
               : '',
@@ -2473,7 +2522,19 @@ ${s.view.harvest.firstPopWhen}`,
   ]);
 
   return (
-    <div className="shell" lang={s.locale}>
+    /*
+      ONE AUTHORITY ON THE LANGUAGE, and it is `<html>` (2026-09-02).
+
+      This carried `lang={s.locale}` as well, so two elements declared it — and
+      the one on the shell is the wrong one twice over. It does not cover the
+      failure panel, the `<noscript>` block or anything else `main.tsx` puts
+      outside the root; and it cannot reach the document, which is what a
+      browser's translate prompt, a screen reader's voice and a hyphenation
+      dictionary all read. `ui/theme.ts` writes `document.documentElement.lang`
+      when the locale resolves, which is the statement that actually does
+      anything.
+    */
+    <div className="shell">
       {playing && <Hud hud={snap.hud} s={s} onNote={say} />}
 
       {/*
@@ -2804,7 +2865,7 @@ ${s.view.harvest.firstPopWhen}`,
             onDaily={enterDaily}
             themeId={theme.id}
             dailyBadge={dailyBadge(readDailyBook(), today, s)}
-            mode={daily !== null ? 'daily' : session.detour ? 'shared' : 'world'}
+            mode={mode}
             day={daily === null ? undefined : dailyName(daily)}
             settle={settleThisWorld}
           />
@@ -2816,7 +2877,7 @@ ${s.view.harvest.firstPopWhen}`,
           theme={theme}
           s={s}
           keyboard={keyboard}
-          mode={daily !== null ? 'daily' : session.detour ? 'shared' : 'world'}
+          mode={mode}
           /* The manual grows with the world — see `Manual`'s `met`. The
              teaching ledger is the same one the drip writes, so a section
              appears on the run after the card that taught it. */
@@ -2837,7 +2898,7 @@ ${s.view.harvest.firstPopWhen}`,
               </button>
               <Confirming
                 label={s.ui.restart}
-                armed={`${s.ui.restart}?`}
+                armed={s.ui.restartArmed}
                 onConfirm={() => {
                   // The whole stack, not this panel: RESTART is on the manual's
                   // MENU tab, and MORE opens from that same tab and sits over

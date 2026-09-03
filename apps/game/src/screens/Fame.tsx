@@ -76,7 +76,7 @@ export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
   return (
     <Panel
       id="fame"
-      title={s.ui.tabs.after}
+      title={s.ui.fame.title}
       back={s.ui.back}
       closeAll={s.ui.closeAll}
       onBack={onBack}
@@ -84,11 +84,12 @@ export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
       head={
         <Tabs
           base="fame"
-          label={s.ui.tabs.after}
+          growsNote={s.ui.tabGrows}
+          label={s.ui.fame.title}
           tabs={[
-            { id: 'diary', label: s.ui.tabs.after },
+            { id: 'diary', label: s.ui.fame.diary },
             { id: 'daily', label: s.ui.daily },
-            { id: 'totals', label: s.ui.tabs.hand },
+            { id: 'totals', label: s.ui.fame.totals },
           ]}
           on={on}
           onPick={setOn}
@@ -114,7 +115,7 @@ export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
           <FactGrid
             facts={[
               { label: s.ui.newRun, value: runs.length },
-              { label: 'PTS', value: book?.bestPoints ?? 0 },
+              { label: s.ui.stats.points, value: book?.bestPoints ?? 0 },
               { label: s.ui.pop, value: (book?.tilesHarvests ?? 0) + (book?.pointsHarvests ?? 0) },
               { label: s.ui.daily, value: dailies.length },
             ]}
@@ -188,9 +189,26 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
   }
 
   const when = new Date(entry.at).toLocaleDateString(s.locale);
+  /*
+   * BOTH DATES IN THE SAME ROW, IN THE SAME FORM (2026-09-02).
+   *
+   * A daily row printed `entry.date` — the raw `2026-09-02` a daily is keyed
+   * by — directly beside `when`, which is the same kind of fact rendered
+   * through `toLocaleDateString`. Two date formats in one line, one of them a
+   * database key.
+   *
+   * `entry.date` is midnight UTC of that day; read back through the browser's
+   * own parser it can land on the day before in a western timezone, so the
+   * parts are handed to `Date` explicitly rather than parsed from the string.
+   */
+  const dayOf = (iso: string): string => {
+    const [y, m, d] = iso.split('-').map(Number);
+    if (y === undefined || m === undefined || d === undefined) return iso;
+    return new Date(y, m - 1, d).toLocaleDateString(s.locale);
+  };
   const title =
     entry.kind === 'daily'
-      ? `${s.ui.daily} · ${entry.date} · ${ordinal(entry.try, s.locale)}`
+      ? `${s.ui.daily} · ${dayOf(entry.date)} · ${ordinal(entry.try, s.locale)}`
       : `${entry.score} · ${entry.arc}`;
 
   return (
@@ -206,7 +224,7 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
           )}
           <FactGrid
             facts={[
-              { label: 'PTS', value: entry.score },
+              { label: s.ui.stats.points, value: entry.score },
               { label: s.ui.atlasFarthest, value: entry.reach },
               { label: s.ui.pop, value: entry.detail.harvests },
               { label: s.lesson.relic.name, icon: 'relic', value: entry.detail.relics },

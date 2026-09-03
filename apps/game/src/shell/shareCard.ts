@@ -121,6 +121,18 @@ export async function renderShareCard(theme: Theme, data: ShareCardData): Promis
 
   ctx.fillStyle = ink;
   ctx.font = `700 46px ${theme.type.display}`;
+  /*
+   * The game's NAME, and the one case where a bare `toUpperCase` is right.
+   *
+   * `toUpperCase()` is locale-insensitive: it applies the Unicode default
+   * mapping, which is wrong in Turkish (dotless ı) and in a handful of other
+   * places, and `toLocaleUpperCase` is the call that respects the reader. Here
+   * it does not matter and stating why is cheaper than leaving a reader to
+   * wonder: `NAME` is a proper noun with a fixed spelling — 'Ashwake' — that is
+   * the same in every language this game ships, by definition rather than by
+   * translation. It is `@meta/identity`'s, and it is not in `text/` precisely
+   * because it is not a word anybody translates.
+   */
   ctx.fillText(NAME.toUpperCase(), 330, 140);
 
   ctx.fillStyle = inkDim;

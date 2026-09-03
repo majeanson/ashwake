@@ -34,7 +34,7 @@ import type { Orientation } from '@theme/tokens';
  *  eye actually cares about. Ashwake 1's number. */
 export const HEX_PX_MAX = 34;
 /** The fewest, past which a board is dots. */
-export const HEX_PX_MIN = 6;
+const HEX_PX_MIN = 6;
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 4;
 /** Room between the structure and the edge of the viewport, in CSS pixels. */
@@ -58,7 +58,7 @@ export type Lean = {
 /** The board as a map, seen from straight above: what Stage 2 shipped. */
 export const FLAT: Lean = { tilt: 0, yaw: 0, tallest: 0 };
 
-export const isFlat = (lean: Lean): boolean => lean.tilt === 0 && lean.yaw === 0;
+const isFlat = (lean: Lean): boolean => lean.tilt === 0 && lean.yaw === 0;
 
 export type CameraState = {
   /** Multiplier over the fit; 1 is the fit. */
@@ -199,12 +199,11 @@ export function frameFor(
 }
 
 /** The world point the fit puts at the viewport centre. */
-export const fitCentre = (frame: Frame): { readonly cx: number; readonly cz: number } =>
-  frame.centre;
+const fitCentre = (frame: Frame): { readonly cx: number; readonly cz: number } => frame.centre;
 
 export const zoomMaxOf = (frame: Frame): number =>
   zoomCeiling(frame.fit.size, ZOOM_MAX, HEX_PX_MAX);
-export const zoomMinOf = (frame: Frame): number => zoomFloor(frame.fit.size, ZOOM_MIN, HEX_PX_MIN);
+const zoomMinOf = (frame: Frame): number => zoomFloor(frame.fit.size, ZOOM_MIN, HEX_PX_MIN);
 
 /** CSS pixels per world unit at this camera. */
 export const pxPerUnit = (frame: Frame, cam: CameraState): number => frame.fit.size * cam.zoom;
@@ -347,7 +346,7 @@ export function eyeOf(lean: Lean, distance: number): Eye {
 }
 
 /** Ease-out, for the flights the game makes on the player's behalf. */
-export const easeOut = (t: number): number => 1 - (1 - t) * (1 - t);
+const easeOut = (t: number): number => 1 - (1 - t) * (1 - t);
 
 export function lerpCamera(from: CameraState, to: CameraState, t: number): CameraState {
   const k = easeOut(clamp(t, 0, 1));

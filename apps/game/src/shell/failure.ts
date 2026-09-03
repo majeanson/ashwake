@@ -170,7 +170,10 @@ export function showFailure(s: Strings, error?: unknown, onContinue?: () => void
   panel.style.cssText =
     'position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;gap:12px;' +
     'align-items:center;justify-content:center;' +
-    'background:color-mix(in srgb, var(--bg, #0a0806) 94%, transparent);' +
+    // The fallback is the DEFAULT direction's ground, like `index.html`'s
+    // pre-JS paint and the manifest — this said torchlit's, which is the
+    // colour every literal in this project said before 2026-09-02.
+    'background:color-mix(in srgb, var(--bg, #14100c) 94%, transparent);' +
     'color:var(--ink, #e6e9f0);' +
     'font-family:var(--font-body, system-ui, sans-serif);padding:24px;text-align:center;';
 

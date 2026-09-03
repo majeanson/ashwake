@@ -46,5 +46,17 @@ export function signpostFor(now: Signpost): string | null {
   if (now.hint === null) return null;
   if (now.last === undefined) return null;
   if (!now.knowsRipe) return null;
-  return now.hint === now.last ? null : `${now.hint}.`;
+  /*
+   * The sentence arrives finished (2026-09-02).
+   *
+   * This used to return `` `${now.hint}.` `` — a full stop added in the shell,
+   * to a sentence written in `text/`. D4's rule is that a catalogue function
+   * takes numbers and names and returns WORDS, and punctuation is words: this
+   * one line meant French could not choose its own final mark, and it sat
+   * beside `view.glows.atEdge` and `view.glows.past`, which are the same
+   * sentence in a different tense and end themselves.
+   *
+   * `s.view.hint` ends itself now, like its two siblings.
+   */
+  return now.hint === now.last ? null : now.hint;
 }

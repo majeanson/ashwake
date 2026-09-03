@@ -23,7 +23,25 @@
  * still agree.
  */
 
-const BG = '#0a0806';
+/**
+ * The ground the mark is baked on — the DEFAULT direction's (2026-09-02).
+ *
+ * It was `#0a0806`, which is torchlit's, and the default moved to `settlement`
+ * without this following. That is visible in the one place it is hardest to
+ * fix afterwards: an installed icon sits on a home screen beside its own splash
+ * and its own `theme-color`, both of which say `#14100c`, and the icon square
+ * was a shade darker than the app it opens.
+ *
+ * `#14100c` is the same literal the manifest and `index.html` carry, and the
+ * same one the pre-JS paint carries since today. A colour written down four
+ * times is four chances to disagree, and three of them had.
+ *
+ * **Changing this changes shipped bytes.** `scripts/icons.ts` writes
+ * `icon.svg`, `icon-maskable.svg` and the PNG set from here, so `pnpm bake`
+ * has to run in the same commit or the source and the artefact drift — which
+ * is exactly the gap `.github/workflows/ci.yml` documents and cannot close.
+ */
+const BG = '#14100c';
 const RING = '#c79a4b';
 const SPARK = '#f7e6be';
 

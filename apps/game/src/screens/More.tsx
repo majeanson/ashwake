@@ -63,7 +63,7 @@ export function More({
         )}
         {!virgin && (
           <button type="button" data-go="fame" onClick={onFame}>
-            {s.ui.tabs.after}
+            {s.ui.fame.title}
           </button>
         )}
         <button type="button" data-go="settings" onClick={onSettings}>

@@ -49,7 +49,6 @@ export function MenuButton({
     <div className="board-menu">
       <button
         type="button"
-        className="menu"
         data-go="quick"
         aria-label={s.ui.menu}
         aria-haspopup="menu"
@@ -203,7 +202,13 @@ export function QuickMenu({
         menu; `aria-hidden` says what it is, which is nothing.
       */}
       <div className="quick-scrim" aria-hidden="true" onClick={onDismiss} />
-      <div className="quick" id={QUICK_ID} data-hud="quick" role="menu" aria-label={s.ui.menu}>
+      <div
+        className="drawer quick"
+        id={QUICK_ID}
+        data-hud="quick"
+        role="menu"
+        aria-label={s.ui.menu}
+      >
         {/*
           The label is what a tap would DO, not what the state is — the rule the
           board's own ♪ followed, kept whole. The icon carries the state too,

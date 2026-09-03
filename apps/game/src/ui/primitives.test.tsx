@@ -130,6 +130,7 @@ describe('tabs', () => {
       return (
         <Tabs
           base="manual"
+          growsNote="more to come"
           label="THE MANUAL"
           tabs={[
             { id: 'start', label: 'START' },
@@ -159,6 +160,7 @@ describe('tabs', () => {
       return (
         <Tabs
           base="manual"
+          growsNote="more to come"
           label="THE MANUAL"
           tabs={[
             { id: 'start', label: 'START' },
@@ -197,6 +199,7 @@ describe('tabs', () => {
     render(
       <Tabs
         base="fame"
+        growsNote="more to come"
         label="FAME"
         tabs={[
           { id: 'diary', label: 'DIARY' },

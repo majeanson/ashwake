@@ -576,12 +576,42 @@ export type Strings = {
      *  A SENTENCE rather than a component gluing an arrow between two facts:
      *  "becomes" is a word, and which word it is belongs to a language (D4). */
     readonly sacrificeLuckFor: (relics: number) => string;
+    /**
+     * The MANUAL's tabs, and only the manual's.
+     *
+     * `after` used to be one of them and stopped being one on 2026-08-29, when
+     * the three lessons it held moved beside the things they are about. It
+     * survived because the HALL OF FAME borrowed it — for its own panel title,
+     * for its tablist's name, and for the DIARY tab — and borrowed `hand` for
+     * TOTALS on top of that. So the diary was labelled AFTER and the totals
+     * were labelled HAND (2026-09-02).
+     *
+     * That is what a shared string bag does when two screens both need a word:
+     * the second one takes whichever entry is closest, and the label stops
+     * describing the thing under it. `fame` below is the hall of fame's own.
+     */
     readonly tabs: {
       readonly menu: string;
       readonly start: string;
       readonly play: string;
       readonly hand: string;
-      readonly after: string;
+    };
+    /**
+     * "There is more behind this tab", said out loud (2026-09-02).
+     *
+     * The manual grows with the world, and a tab holding sections back wears a
+     * dot so the drip reads as a game arriving in order rather than as a
+     * thinner one. The dot was a `::after` on `[data-grows]` — a pseudo-element,
+     * which is to say a thing only an eye can see. A screen reader was told the
+     * tab existed and never told it had more coming, which is exactly the
+     * information the mark was added to carry.
+     */
+    readonly tabGrows: string;
+    /** The hall of fame: what the room is called, and its two tabs. */
+    readonly fame: {
+      readonly title: string;
+      readonly diary: string;
+      readonly totals: string;
     };
     readonly language: string;
     readonly languages: Readonly<Record<Locale, string>>;
@@ -717,6 +747,27 @@ export type Strings = {
     readonly restoreArmed: string;
     readonly resetAll: string;
     readonly resetAllArmed: string;
+    /**
+     * THE OTHER THREE ARMED CONFIRMATIONS (2026-09-02).
+     *
+     * `restoreArmed`, `resetAllArmed` and `crossArmed` are spelled out in full
+     * — they name the consequence, which is the whole point of an armed
+     * control: the second tap has to say what it costs. Three more were built
+     * in the components instead, as `` `${s.ui.restart}?` `` and friends: a
+     * label with a question mark glued on, which asks "restart?" rather than
+     * saying what restarting throws away.
+     *
+     * It also put punctuation in a screen. French happens to take no narrow
+     * space before `?` (OQLF, unlike France), so it looked right — and it
+     * looked right by luck rather than by rule, which is exactly what D4
+     * exists to stop.
+     *
+     * `newWorldArmed` takes the world's number because the panel's own
+     * confirmation should name which of the three is about to go.
+     */
+    readonly restartArmed: string;
+    readonly resetTeachingArmed: string;
+    readonly newWorldArmed: (n: number) => string;
     /** The three, as a heading. Distinct from `newWorld`, which is the
      *  destructive action inside that panel rather than the panel itself. */
     readonly worlds: string;
@@ -886,6 +937,42 @@ export type Strings = {
      * this world and that panel is the list of those.
      */
     readonly camp: (ring: number) => string;
+    /**
+     * THE STAT ROW'S OWN WORDS (2026-09-02).
+     *
+     * They lived in `screens/Hud.tsx` behind `s.locale === 'fr-CA' ? … : …`,
+     * four times — grepped, the ONLY locale branch on player-visible words
+     * anywhere in this app. (`text/format.ts`'s three are formatting rules,
+     * which is what that file is for.)
+     *
+     * D4's whole point is that a missing sentence is a TYPE ERROR: every word a
+     * player reads is a field on this object, so a new language cannot compile
+     * until it has said everything. A ternary on the locale is the opposite —
+     * it makes a missing French label an `if` nobody wrote, and it is a shape
+     * that spreads, because the next screen with two words in it has a
+     * precedent to point at.
+     *
+     * `luck` is deliberately not here: it is one of the seven ideas the concept
+     * registry names, and the row draws `s.lesson.luck.name` so the board, the
+     * purse, the shop and the ending cannot call it four things.
+     *
+     * The words themselves do not move, so no English snapshot moves with them.
+     */
+    readonly stats: Readonly<Record<'tiles' | 'points' | 'map' | 'cost' | 'left', string>>;
+    /**
+     * THE FEATURE SWITCHES' OWN THREE WORDS (2026-09-02).
+     *
+     * `SETTINGS` rendered `'ON'`, `'OFF'` and `'NOT BUILT'` as English string
+     * literals — **on the panel whose top row is the language picker**. A
+     * player switching the game to French watched three English words stay put
+     * on the screen that just took the instruction.
+     *
+     * `notBuilt` is the honest word for a flag with nothing behind it, and it
+     * exists because `features.ts` argues that a registry of aspirational flags
+     * is a to-do list that lies: the row is SHOWN rather than hidden, so it has
+     * to say what it is.
+     */
+    readonly flag: Readonly<Record<'on' | 'off' | 'notBuilt', string>>;
     /** A perk being worn, and the button that puts one on. */
     readonly worn: string;
     readonly wear: string;
@@ -1027,6 +1114,20 @@ export type Strings = {
     readonly byRarity: string;
     readonly bySource: string;
     readonly rarity: Readonly<Record<Rarity, string>>;
+    /**
+     * A COUNT of rare tiles, as a phrase (2026-09-02).
+     *
+     * TAKE's value read `` `1 ${s.payout.rarity[…]}` `` — a number glued to a
+     * noun in a component, which is safe at one and is the exact shape that
+     * breaks the day a pocket can hand over two: English needs a plural, French
+     * needs a plural AND an agreement, and neither is a screen's decision (D4).
+     *
+     * The treasure is always one today. That is what makes this the right
+     * moment to move it: the sentence is a phrase now rather than a
+     * concatenation, so the day the number varies the catalogue is already the
+     * thing that decides how it reads.
+     */
+    readonly treasureCount: (n: number, rarity: string) => string;
     readonly source: Readonly<Record<PointSource, string>>;
     /** Points paid for claiming sites outright, which no pop split contains. */
     readonly sites: string;

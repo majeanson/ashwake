@@ -196,6 +196,7 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
       head={
         <Tabs
           base="manual"
+          growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
           tabs={tabs.map((id) => ({
             id,
@@ -229,9 +230,8 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
         something the teaching ledger should remember having said once.
       */}
       {on === 'start' && (
-        <section>
+        <section className="lesson">
           <h2 className="panel-title marked">
-            <span className="card-glyph" aria-hidden="true" />
             <span>{s.ui.expedition.title}</span>
           </h2>
           {s.ui.expedition.lines.map((line) => (
@@ -248,9 +248,8 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
         lesson and only one of them is about the run in front of you.
       */}
       {on === 'start' && mode !== undefined && (
-        <section>
+        <section className="lesson">
           <h2 className="panel-title marked">
-            <span className="card-glyph" aria-hidden="true" />
             <span>{s.ui.which.title}</span>
           </h2>
           <p>
@@ -282,9 +281,8 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
         be deciding half of what a player reads.
       */}
       {on === 'start' && keyboard === true && (
-        <section>
+        <section className="lesson">
           <h2 className="panel-title marked">
-            <span className="card-glyph" aria-hidden="true" />
             <span>{s.ui.board.keys.title}</span>
           </h2>
           <ul className="keys">
@@ -354,7 +352,7 @@ function Section({
   if (lines.length === 0) return null;
 
   return (
-    <section>
+    <section className="lesson">
       {/*
         The heading wears the lesson's own mark, where it has one: a rule about
         a thing you can SEE on the board should be findable by that thing. The

@@ -59,12 +59,95 @@
 
 :root {
   color-scheme: dark light;
+
+  /*
+   * SPACING, in three steps and no more (2026-09-02).
+   *
+   * `--gap` existed and was used in about twenty places, beside roughly thirty
+   * hand-typed values — `0.35rem` nine times, `0.3rem` five, `0.25rem` six,
+   * `0.4rem` six, `0.2rem` four — and the half-gap idea was written twice, once
+   * as `calc(var(--gap) / 2)` and once as `0.25rem`, which are the same number
+   * said two ways. A scale nobody can name is a scale nobody can retune.
+   *
+   * Three steps, because that is what the chrome actually uses: a hair, a
+   * half, and the gap.
+   */
+  --gap-xs: 0.25rem;
+  --gap-sm: 0.35rem;
   --gap: 0.5rem;
+
   --tap: 44px;
+
+  /*
+   * TWO RADII, and the second one is not a smaller version of the first.
+   *
+   * `--radius` was used eight times against `0.4rem` twice, `0.3rem`,
+   * `0.25rem` twice, `0.2rem` and `2px` — six competing values, so adjacent
+   * buttons rounded differently and nothing said which was the intention.
+   *
+   * The look decision (Marc's ruling for this pass: pick a defensible default
+   * and state it): **`--radius` for anything a finger presses**, which is what
+   * makes the chrome read as one set of controls, and **`--radius-sm` for
+   * things at swatch scale**, where 8px on a 16px square is not a rounded
+   * corner but a circle with ambitions. Nothing in between, because nothing in
+   * this chrome is in between.
+   */
   --radius: 8px;
+  --radius-sm: 4px;
+
   --fade: 140ms;
   /* The column a section's mark hangs in, and the legend's first column. */
   --mark-col: 1.6rem;
+  /* The space between a mark and the words beside it, and the hang that pulls
+     a marked heading back out of the gutter its section indents by. Derived,
+     so the three cannot drift apart. */
+  --mark-gap: 0.4rem;
+
+  /*
+   * THE TWO MEASURES a column of text is held to (2026-09-02).
+   *
+   * `34rem` was typed three times for the hand-width drawers and `26rem`
+   * eight times for the ending, with `24rem` twice in the middle of the same
+   * ending — so `.end .facts` sat visibly inset inside the 26rem section
+   * above it, for no reason anybody chose. Two names, and the ending is one
+   * width down its whole length.
+   */
+  --measure-wide: 34rem;
+  --measure: 26rem;
+  /* A line of PROSE wants to be narrower than a block of controls — the
+     epitaph and the door's one line. Kept distinct from `--measure` on
+     purpose: this one is a reading length, not a column width. */
+  --measure-prose: 24rem;
+  --mark-hang: calc((var(--mark-col) + var(--mark-gap)) * -1);
+
+  /*
+   * THE LAYER LADDER, named (2026-09-02).
+   *
+   * Nine implicit tiers were spread across 2,500 lines as bare numbers, and
+   * three different owners tied at 15 with source order breaking the tie —
+   * which is the exact failure mode that already cost this project a build:
+   * *"the test was measuring the STACK; the bug was in the PAINT."*
+   *
+   * The tiers are coherent and were never written down. Reading up:
+   *
+   *   BOARD    things floating over the map — the toast, the notices.
+   *   CHROME   the corners: the camera, the lens's way out, MENU.
+   *   DRAWER   the quick list and the scrim that catches the tap outside it.
+   *   SCENE    a whole screen: the front door, the ending, the walked map.
+   *            Three owners, and they are mutually exclusive by construction —
+   *            no two of these are ever on screen together.
+   *   PANEL    a dialog, plus its own depth in the stack (`--layer`), which is
+   *            what makes MORE → HOW TO PLAY paint in the order it opened.
+   *   CARD     a card holds everything, including a panel.
+   *
+   * A pure rename: every computed value is the one that was there.
+   */
+  --z-board: 5;
+  --z-chrome: 10;
+  --z-scene: 15;
+  --z-drawer: 18;
+  --z-panel: 20;
+  --z-card: 30;
 }
 
 * {
@@ -100,16 +183,60 @@ button {
   cursor: pointer;
   transition:
     background var(--fade) ease,
-    border-color var(--fade) ease;
+    border-color var(--fade) ease,
+    /* And the INK (2026-09-02). It was the one channel this chrome changes and
+       never eased, so a tab being selected, the sound toggle switching, a
+       `Confirming` arming and a met survey row all snapped their colour while
+       the border beside them faded — two halves of one change moving at
+       different speeds, which reads as a glitch rather than as a transition. */
+    color var(--fade) ease;
 }
 
+/*
+ * A PRESS IS ACKNOWLEDGED WITHOUT MOVING (2026-09-02).
+ *
+ * The press had two halves: a `scale(0.97)`, which is behind the no-preference
+ * guard below, and this background. Under reduced motion only the background
+ * is left — and **seven of the most-pressed controls in the chrome already
+ * declare `background: var(--panel)` themselves**: `.stat`, `.board-menu
+ * button`, `.camera button`, `.toast-open`, `.fold > summary`, `.update
+ * button`, `.directions button`. On all of them the acknowledgement was a
+ * no-op, so a player who has asked for less motion got NOTHING back from a
+ * tap, on the row of stats they tap most.
+ *
+ * The stylesheet's header claims one motion language; it was silently failing
+ * on its loudest chrome.
+ *
+ * The look decision (Marc's ruling for this pass): **lift the ground toward
+ * the ink** rather than replace it. A mix keeps whatever the control's own
+ * background is and moves it, so it works on the seven that declare `--panel`
+ * and on the ones that declare nothing, in one rule, in every direction —
+ * which is what a fixed second colour could not do. 12% is where it reads as
+ * pressed rather than as selected; the palette's own inks are what it is
+ * graded against, so nothing here can fall below a budget the theme tests
+ * already hold.
+ */
 button:active {
-  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 88%, var(--ink));
   border-color: var(--panel-edge-active);
 }
 
+/*
+ * A control that is shown and refused (2026-09-02).
+ *
+ * `opacity: 0.45` over a row whose ink is already graded is a row that can
+ * drop under the contrast budget the whole palette is held to — and the purse
+ * shows spends the player cannot afford ON PURPOSE, so they learn what luck
+ * buys. A row that exists to be read must stay readable.
+ *
+ * `--ink-faint` instead: the palette's own faintest voice, and one
+ * `contrast.test.ts` already pins at 4.5:1 against every ground. The border
+ * fades with it so the control still reads as refused rather than merely
+ * quiet.
+ */
 button[disabled] {
-  opacity: 0.45;
+  color: var(--ink-faint);
+  border-color: var(--panel-edge);
   cursor: default;
 }
 
@@ -138,6 +265,57 @@ button[disabled] {
 @media (prefers-reduced-motion: no-preference) {
   button:active {
     transform: scale(0.97);
+  }
+
+  /*
+   * EVERY ARRIVAL RISES — which this file has promised since it was written
+   * and never implemented (2026-09-02).
+   *
+   * The header says it in as many words. The only `@keyframes` in 2,500 lines
+   * was `rose`, on a stat's value. So a card, the quick drawer and the purse
+   * all appeared by simply BEING there on the next frame, which is the one
+   * thing a thing that covers the board should not do.
+   *
+   * The look decision (Marc's ruling for this pass): one shared 140ms rise —
+   * `--fade`, the duration everything else in this file already transitions
+   * over — on the three surfaces that arrive over something. Not on panels:
+   * a panel IS the screen and a screen that slides is a screen you wait for.
+   *
+   * Inside the guard, so a player who asked for less motion is simply handed
+   * the finished thing.
+   */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
+
+  .card,
+  .quick,
+  .spends {
+    animation: rise var(--fade) ease-out;
+  }
+}
+
+/*
+ * A MOUSE IS ACKNOWLEDGED (2026-09-02).
+ *
+ * There was no `:hover` anywhere in this file, on a project whose keyboard
+ * spec runs at 1280×800 and whose manual has a key list gated on a fine
+ * pointer. Desktop is a supported target and nothing on it responded to a
+ * cursor at all.
+ *
+ * The look decision: **the border, and only the border.** It is the quietest
+ * channel this chrome has, it is already what `:active` moves, and it says
+ * "this is a control" without saying "this is selected" — which is what a
+ * background change would have said, on a screen where `--panel` means
+ * exactly that. Behind `(hover: hover)`, so a phone that emulates hover on tap
+ * never leaves a button looking half-pressed.
+ */
+@media (hover: hover) {
+  button:hover:not([disabled]) {
+    border-color: var(--panel-edge-active);
   }
 }
 
@@ -252,7 +430,7 @@ button[disabled] {
    * on a manual they could not see. `Panel` sets `--layer` from the stack, and
    * six doors is the ceiling, so nothing here reaches `.card-scrim` at 30.
    */
-  z-index: calc(20 + var(--layer, 0));
+  z-index: calc(var(--z-panel) + var(--layer, 0));
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -363,10 +541,6 @@ button[disabled] {
   font-size: 1.05rem;
 }
 
-.panel-back {
-  margin-left: auto;
-}
-
 /*
  * The scrollport (2026-09-01) — see `.panel` for why it moved here.
  *
@@ -402,7 +576,7 @@ button[disabled] {
 }
 
 .panel-menu button {
-  text-align: left;
+  text-align: start;
   padding: 0.7rem;
 }
 
@@ -442,7 +616,7 @@ button[disabled] {
 .card-scrim {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-card);
   display: grid;
   justify-items: center;
   align-content: center;
@@ -462,7 +636,11 @@ button[disabled] {
   align-content: safe center;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 1rem;
+  /* The notch's own strip, like `.end` and `.front-door`. A card is the only
+     full-screen surface in this build that did not take the insets, so in
+     landscape its edge sat under the cutout (2026-09-02). */
+  padding: calc(1rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right))
+    calc(1rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
   background: color-mix(in srgb, var(--bg) 94%, transparent);
 }
 
@@ -568,11 +746,32 @@ button[disabled] {
   display: grid;
   grid-template-columns: var(--mark-col) minmax(0, 1fr);
   align-items: baseline;
-  gap: 0.4rem;
+  gap: var(--mark-gap);
   /* Hung into the gutter the section indents by, so the heading's TEXT starts
      where its prose starts. Without this the mark pushed the title right and
-     every heading was indented past its own paragraph. */
-  margin-left: calc((var(--mark-col) + 0.4rem) * -1);
+     every heading was indented past its own paragraph.
+     `--mark-hang` is the same distance the section indents, negated — one
+     value, so a wider mark column cannot leave the hang behind (2026-09-02:
+     it was two copies of the same `calc`, which is the shape a mismatch
+     hides in). */
+  margin-inline-start: var(--mark-hang);
+}
+
+/*
+ * THE WORDS ARE IN THE SECOND COLUMN WHETHER OR NOT THERE IS A MARK
+ * (2026-09-02).
+ *
+ * Three headings in the manual rendered an EMPTY `<span class="card-glyph"
+ * aria-hidden>` — a node whose only job was to be auto-placed into column one
+ * so the text would land in column two. It worked, and it made the markup a
+ * puzzle: an empty element that must not be deleted, with nothing saying so.
+ *
+ * Saying it here instead. The heading's words are always the last child and
+ * always the second column; a mark, where there is one, takes the first by
+ * auto-placement. Nothing has to be rendered to hold a place.
+ */
+.panel-title.marked > :last-child {
+  grid-column: 2;
 }
 
 /*
@@ -588,15 +787,43 @@ button[disabled] {
  * the page and every word in a section shares one left edge. It is the same
  * shape the legend rows below already have, which is why the two now scan as
  * one page rather than two.
+ *
+ * ## And it applied to EVERY panel (fixed 2026-09-02)
+ *
+ * The selector was `.panel-body > section`, which is any direct-child section
+ * of any panel body — so SETTINGS, SHOP, WORLDS, FAME and the ATLAS were all
+ * indented two rem for a mark none of them has. Every one of those screens sat
+ * visibly off-centre inside its own frame, and on a 320px phone the gutter ate
+ * 8% of the width out of the shop's price column.
+ *
+ * A hang is a property of the thing being hung, not of the box it is in.
+ * `.lesson` is the manual's four sections and the lesson body `Manual` renders
+ * for each rule, and they are the only sections in this build whose headings
+ * carry a mark to hang.
  */
-.panel-body > section {
-  padding-left: calc(var(--mark-col) + 0.4rem);
+.panel-body > section.lesson {
+  padding-inline-start: calc(var(--mark-col) + var(--mark-gap));
 }
 
-/* The legend is its own list and already indents; it must not indent twice. */
-.panel-body > section.legend {
-  padding-left: 0;
-}
+/*
+ * LOGICAL PROPERTIES THROUGHOUT (2026-09-02).
+ *
+ * The file mixed them: `text-align: left` three times against `start` six,
+ * `margin-left: auto` four times against `margin-inline-start` once. Both
+ * spellings mean the same thing in a left-to-right page and only one of them
+ * keeps meaning it in a page that is not — and this is a game that already
+ * ships two languages and treats the catalogue as the only authority on words.
+ * A mixed file is one where half the layout would follow a third language and
+ * half would not, which is a worse state than either.
+ *
+ * Converted, not because a right-to-left catalogue is planned, but because
+ * "start" is the thing every one of these rules actually meant.
+ */
+
+/* The legend used to need `padding-left: 0` here, because the rule above
+   matched every section in every panel and hit it too. It is scoped to
+   `.lesson` now and the legend is not one, so the override has nothing left to
+   undo (2026-09-02). */
 
 /* ---- tabs --------------------------------------------------------------- */
 
@@ -669,7 +896,7 @@ button[disabled] {
 .tip-swatch {
   width: 0.9rem;
   height: 0.9rem;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /*
@@ -710,7 +937,7 @@ button[disabled] {
 }
 
 .fold-caret {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 0.9em;
   display: inline-flex;
 }
@@ -858,7 +1085,7 @@ h3.fact-label {
    * interrupt whatever is showing. Found by the menus e2e, which is what a
    * browser test is for: nothing in the unit suite stacks anything.
    */
-  z-index: 15;
+  z-index: var(--z-scene);
   background: var(--bg);
   display: flex;
   flex-direction: column;
@@ -960,7 +1187,7 @@ h3.fact-label {
  * runs the width of a tablet, and the last line carries the space to BEGIN.
  */
 .door-story {
-  max-width: 24rem;
+  max-width: var(--measure-prose);
   margin: 0 0 1.75rem;
   display: flex;
   flex-direction: column;
@@ -974,11 +1201,25 @@ h3.fact-label {
 }
 
 /* The one loud way in. Everything else on this screen is quiet. */
+/*
+ * BEGIN, and the padding that had to give (2026-09-02).
+ *
+ * `2.5rem` either side is generous on a 390px phone and impossible on a 320px
+ * one in French: NOUVELLE PARTIE is fourteen characters against BEGIN's five,
+ * and the button survived only by wrapping to two lines — which breaks the
+ * rhythm with the column of single-line choices underneath it, on the screen
+ * a stranger sees first.
+ *
+ * A clamp rather than a media query: the padding is generous where there is
+ * room and gives where there is not, in one value, with no breakpoint for a
+ * later phone to fall the wrong side of. The floor is where the word still
+ * has air around it; the ceiling is what it has today.
+ */
 .door-begin {
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
   font-size: 1.15rem;
-  padding: 0.8rem 2.5rem;
+  padding: 0.8rem clamp(1rem, 6vw, 2.5rem);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -1068,7 +1309,26 @@ h3.fact-label {
   font-size: clamp(0.6rem, 1.9vw, 0.72rem);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: clip;
+  /*
+   * AN ELLIPSIS, NOT A CUT (2026-09-02).
+   *
+   * `clip` was deliberate — the label is the half that gives so the number
+   * survives — and the French pass added to the screen audit this same day is
+   * what argued it down. Seven findings, every one this element: `TUILES`
+   * losing 17px at 320, `PORTÉE` 15, `COÛT` 3. A label cut mid-stroke does not
+   * read as "there was more of this word"; it reads as a rendering bug, and it
+   * is the first row of chrome on every screen the game has.
+   *
+   * The look decision (Marc's ruling for this pass): `ellipsis`. It costs one
+   * character of the label — which was being lost anyway — and buys the one
+   * thing the cut could not say, which is that something was left out. The
+   * priority the old comment states is untouched: the label still gives and
+   * the number still survives.
+   *
+   * The evidence is in `audit-shots/fr-CA/` and `audit-shots/320/`, which is
+   * the whole reason those passes exist.
+   */
+  text-overflow: ellipsis;
   min-width: 0;
 }
 
@@ -1168,7 +1428,7 @@ h3.fact-label {
      and a tap target tall. They overlapped on the first build and the buttons
      punched holes through the sentence. */
   bottom: calc(var(--tap) + var(--gap) * 2);
-  z-index: 5;
+  z-index: var(--z-board);
   color: var(--ink);
   white-space: pre-line;
   text-align: center;
@@ -1243,7 +1503,9 @@ h3.fact-label {
   position: absolute;
   top: var(--gap);
   right: var(--gap);
-  z-index: 12;
+  /* Two above the cluster: `.directions` sits one above it and pins this same
+     corner, and MENU has to be the one you can press. */
+  z-index: calc(var(--z-chrome) + 2);
   display: flex;
   gap: 0.35rem;
 }
@@ -1268,7 +1530,7 @@ h3.fact-label {
   position: absolute;
   top: var(--gap);
   left: var(--gap);
-  z-index: 11;
+  z-index: calc(var(--z-chrome) + 1);
 }
 
 .lens-off button {
@@ -1289,7 +1551,7 @@ h3.fact-label {
   position: absolute;
   right: var(--gap);
   bottom: var(--gap);
-  z-index: 10;
+  z-index: var(--z-chrome);
   display: flex;
   gap: 0.35rem;
 }
@@ -1324,23 +1586,42 @@ h3.fact-label {
 .quick-scrim {
   position: fixed;
   inset: 0;
-  z-index: 18;
+  z-index: var(--z-drawer);
+}
+
+/*
+ * A DRAWER — the shape the quick menu and the luck purse are both made of
+ * (named 2026-09-02).
+ *
+ * They were two rules declaring the same eleven properties four hundred lines
+ * apart: the same measure, the same ground, the same edge, the same radius,
+ * the same inner gap. Two copies of one idea drift; these had not yet, and
+ * `--measure-wide` had just been introduced into both by hand, which is how
+ * they would have.
+ *
+ * A flex child of the shell is the only thing that knows where the board's
+ * edge actually is, because the board's height is the hand's height and the
+ * hand's height is a run's — so both open as drawers rather than as boxes
+ * hanging off whatever opened them. What differs is only WHICH edge they hang
+ * from, and that is all their own rules say now.
+ */
+.drawer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  width: calc(100% - var(--gap) * 2);
+  max-width: var(--measure-wide);
+  padding: var(--gap);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge-active);
+  border-radius: var(--radius);
 }
 
 .quick {
   position: relative;
-  z-index: 19;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  width: calc(100% - var(--gap) * 2);
-  max-width: 34rem;
+  z-index: calc(var(--z-drawer) + 1);
   /* Below the stat row rather than above the controls: it hangs off the top. */
-  margin: 0.35rem auto 0;
-  padding: 0.5rem;
-  background: var(--panel);
-  border: 1px solid var(--panel-edge-active);
-  border-radius: var(--radius);
+  margin: var(--gap-sm) auto 0;
 }
 
 /* A row, not a button in a row: the mark hangs in the same column down the
@@ -1350,7 +1631,7 @@ h3.fact-label {
   align-items: center;
   gap: 0.6rem;
   justify-content: flex-start;
-  text-align: left;
+  text-align: start;
   border-color: transparent;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
@@ -1393,6 +1674,27 @@ h3.fact-label {
   flex: 0 0 4.6rem;
   min-height: 3.4rem;
   padding: 0.3rem 0.2rem;
+}
+
+/*
+ * A MANUAL FIGURE, and its drawing (2026-09-02).
+ *
+ * Both were inline styles on the elements — a whole flex column and an SVG
+ * cap — which is the exact hazard `.tile` documents further down: a value in
+ * the markup is a value this file cannot retune and nobody finds when they
+ * grep for it. `ui/Figure.tsx` is the manual's pictures, so these are the
+ * rules that decide how a rule is illustrated.
+ */
+.figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.figure-art {
+  max-width: 100%;
+  height: auto;
 }
 
 /* ---- the hand and the bar ----------------------------------------------- */
@@ -1441,7 +1743,7 @@ h3.fact-label {
 
 .controls > * {
   width: 100%;
-  max-width: 34rem;
+  max-width: var(--measure-wide);
   margin-inline: auto;
 }
 
@@ -1599,16 +1901,6 @@ h3.fact-label {
   filter: drop-shadow(0 0 1px var(--ink-faint)) drop-shadow(0 0 1px var(--ink-faint));
 }
 
-/* The mark rides over the hex. Positioned rather than given a z-index alone:
-   an absolutely positioned drawing paints above static content whatever its
-   level, so the mark has to be positioned too or the art buries it. Scoped to
-   the mark rather than to every span: the card's remaining text is a clipped
-   `.visually-hidden` span, and giving that `position: relative` would put a
-   pixel of it back in the row. */
-.tile > .tile-mark {
-  position: relative;
-}
-
 /*
  * A card that is PUT AWAY (2026-09-01).
  *
@@ -1723,11 +2015,29 @@ h3.fact-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: var(--gap-sm);
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
   font-size: clamp(0.8rem, 2.4vw, 0.95rem);
+  /*
+   * NOWRAP WITH NOWHERE TO GO (2026-09-02).
+   *
+   * The label could neither wrap nor clip, so at 320px in French — RÉCOLTER,
+   * SACRIFIER, NOUVELLE PARTIE, against POP, BURN, NEW RUN — it simply
+   * overflowed its own button and the row ran into its neighbours. French is
+   * the shipping default and roughly a fifth longer through the catalogue, so
+   * this is the ordinary case rather than the edge one.
+   *
+   * `nowrap` stays: a verb broken across two lines inside a button that is
+   * already two rows tall is worse than a shortened one. What it needed was an
+   * end — the ellipsis says a word was cut, and `min-width: 0` is what lets a
+   * flex child be narrower than its contents at all, without which `overflow`
+   * has nothing to act on.
+   */
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
   color: var(--accent);
 }
 
@@ -1769,6 +2079,11 @@ h3.fact-label {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  /* The far end of the row: everything before it is priced in the pocket, and
+     this is priced in luck. Was an inline `marginLeft` on the element until
+     2026-09-02 — a value the stylesheet could not retune and nobody finds by
+     grepping this file. */
+  margin-inline-start: auto;
   font-family: var(--font-display);
   font-size: 0.85rem;
   border-color: var(--accent);
@@ -1805,27 +2120,18 @@ h3.fact-label {
  * ends, the head says what is in the purse, and the rows line their prices up
  * so the affordable one can be found without reading every word.
  */
+/*
+ * The purse hangs off the BOTTOM edge — everything else about it is `.drawer`.
+ *
+ * The measure is the shared one, and it has to be: the drawer opens ABOVE the
+ * bar rather than inside it, so it is a sibling of `.controls` and the
+ * `.controls > *` cap does not reach it. On a 1280px desktop it spanned the
+ * whole width while the hand it belongs to was 544px, and a price column a
+ * screen wide is a price nobody can pair with its row. Marc: *"make sure our
+ * new hand tiles match correctly on mobile and desktop, same with luck."*
+ */
 .spends {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  /*
-   * The same measure the hand and the action bar keep (2026-08-30).
-   *
-   * The drawer opens ABOVE the bar rather than inside it, so it is a sibling of
-   * `.controls` and the `.controls > *` cap does not reach it — on a 1280px
-   * desktop it spanned the whole width while the hand it belongs to was 544px,
-   * and a price column a screen wide is a price nobody can pair with its row.
-   * Marc: *"make sure our new hand tiles match correctly on mobile and desktop,
-   * same with luck."*
-   */
-  width: calc(100% - var(--gap) * 2);
-  max-width: 34rem;
-  margin: 0 auto 0.35rem;
-  padding: 0.5rem;
-  background: var(--panel);
-  border: 1px solid var(--panel-edge-active);
-  border-radius: var(--radius);
+  margin: 0 auto var(--gap-sm);
 }
 
 .spends-head {
@@ -1844,9 +2150,9 @@ h3.fact-label {
 /* The odds sit at the end of the head rather than on their own line: they
    describe what the number to their left is buying. */
 .spends-odds {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 0.75rem;
-  text-align: right;
+  text-align: end;
 }
 
 .spend-row {
@@ -1856,18 +2162,22 @@ h3.fact-label {
   width: 100%;
   padding: 0 0.6rem;
   font-size: 0.85rem;
-  text-align: left;
+  text-align: start;
 }
 
 .spend-name {
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
+  /* A flex child holding text refuses to be narrower than its longest word
+     unless it is told it may. Without this a long spend name pushes the price
+     column off the row instead of wrapping (2026-09-02). */
+  min-width: 0;
 }
 
 /* The price column. `auto` on the left pushes it to the edge, so every row's
    number lands on the same rule however long its word is. */
 .spend-cost {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-family: var(--font-display);
   font-size: 1rem;
 }
@@ -1879,7 +2189,7 @@ h3.fact-label {
   place-items: center;
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   line-height: 1;
   text-shadow:
@@ -1895,7 +2205,7 @@ h3.fact-label {
   position: fixed;
   inset: 0;
   /* A scene, at the scene layer — see `.front-door`. */
-  z-index: 15;
+  z-index: var(--z-scene);
   background: var(--bg);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1939,7 +2249,7 @@ h3.fact-label {
 .end .fold,
 .end section,
 .end .panel-menu {
-  width: min(26rem, 100%);
+  width: min(var(--measure), 100%);
   text-align: start;
 }
 
@@ -1960,7 +2270,7 @@ h3.fact-label {
  */
 .end-run {
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--label-tracking);
   color: var(--ink-dim);
   margin: 0;
 }
@@ -1968,7 +2278,7 @@ h3.fact-label {
 .end-best {
   font-family: var(--font-display);
   font-size: 1.1rem;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--label-tracking);
   color: var(--accent);
   margin: 0;
 }
@@ -1978,7 +2288,7 @@ h3.fact-label {
 }
 
 .end-epitaph {
-  max-width: 24rem;
+  max-width: var(--measure-prose);
   margin: 0;
   color: var(--ink-dim);
 }
@@ -2030,7 +2340,7 @@ h3.fact-label {
 }
 
 .end .facts {
-  width: min(24rem, 100%);
+  width: min(var(--measure), 100%);
 }
 
 /*
@@ -2042,14 +2352,14 @@ h3.fact-label {
  * from the block before it rather than from its own.
  */
 .end-world-head {
-  width: min(26rem, 100%);
+  width: min(var(--measure), 100%);
   text-align: start;
   margin: var(--gap) 0 0;
 }
 
 /* The atlas keeps the column's measure like every other section here. */
 .end .atlas {
-  width: min(26rem, 100%);
+  width: min(var(--measure), 100%);
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -2089,7 +2399,7 @@ h3.fact-label {
 .bar-track {
   display: block;
   height: 0.5rem;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
   background: var(--panel-edge);
 }
 
@@ -2104,7 +2414,7 @@ h3.fact-label {
 }
 
 .bar-value {
-  text-align: right;
+  text-align: end;
   font-size: 0.9rem;
 }
 
@@ -2152,7 +2462,7 @@ h3.fact-label {
 .shop-row button {
   flex: 0 0 auto;
   min-width: 5.5rem;
-  min-height: 44px;
+  min-height: var(--tap);
 }
 
 .shop-row .fold {
@@ -2171,9 +2481,9 @@ h3.fact-label {
  */
 .door-daily {
   width: min(20rem, 100%);
-  min-height: 44px;
+  min-height: var(--tap);
   border: 1px solid var(--panel-edge-active);
-  border-radius: 0.4rem;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--ink);
   font-family: var(--font-label);
@@ -2207,7 +2517,7 @@ h3.fact-label {
   left: 0;
   right: 0;
   bottom: calc(var(--tap) + var(--gap) * 2);
-  z-index: 5;
+  z-index: var(--z-board);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2241,10 +2551,10 @@ h3.fact-label {
 }
 
 .update button {
-  min-height: 44px;
+  min-height: var(--tap);
   padding: 0.5rem 1rem;
   border: 1px solid var(--accent);
-  border-radius: 0.4rem;
+  border-radius: var(--radius);
   background: var(--panel);
   color: var(--accent);
   font-family: var(--font-label);
@@ -2268,13 +2578,13 @@ h3.fact-label {
   font-size: 0.8rem;
   line-height: 1.4;
   text-align: start;
-  max-width: min(26rem, 92vw);
+  max-width: min(var(--measure), 92vw);
 }
 
 /* The install invitation: the quietest thing on the ending, after the actions
    and before the map. `.quiet` already carries that voice. */
 .end-install {
-  width: min(26rem, 100%);
+  width: min(var(--measure), 100%);
 }
 
 /*
@@ -2293,6 +2603,7 @@ h3.fact-label {
 .survey li {
   display: flex;
   align-items: baseline;
+  min-width: 0;
   gap: 0.5em;
   padding: 0.2rem 0;
   color: var(--ink-dim);
@@ -2347,7 +2658,7 @@ h3.fact-label {
   width: 4.5rem;
   height: 1.4rem;
   border: 1px solid;
-  border-radius: 0.2rem;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -2371,7 +2682,7 @@ h3.fact-label {
   top: var(--gap);
   left: 0;
   right: 0;
-  z-index: 11;
+  z-index: calc(var(--z-chrome) + 1);
   display: flex;
   gap: 0.35rem;
   padding: 0 var(--gap);
@@ -2386,10 +2697,10 @@ h3.fact-label {
 
 .directions button {
   flex: 0 0 auto;
-  min-height: 44px;
+  min-height: var(--tap);
   padding: 0.25rem;
   border: 1px solid var(--panel-edge);
-  border-radius: 0.3rem;
+  border-radius: var(--radius);
   background: var(--panel);
   color: var(--ink-dim);
   font-family: var(--font-label);
@@ -2413,11 +2724,14 @@ h3.fact-label {
  * language pushes neither control off its edge and the two never move — a back
  * button that shifts with the heading is a back button you have to look for.
  */
+/* `.panel-back` also had a `margin-left: auto` five hundred lines up, and it
+   was dead: `.panel-title`'s `flex: 1 1 auto` already takes every spare pixel
+   in the head, so there is nothing for an auto margin to absorb (2026-09-02). */
 .panel-back,
 .panel-close {
   flex: 0 0 auto;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--tap);
+  min-height: var(--tap);
   display: grid;
   place-items: center;
   font-size: 1.1rem;
@@ -2427,6 +2741,9 @@ h3.fact-label {
 
 .panel-head .panel-title {
   flex: 1 1 auto;
+  /* Same reason as `.spend-name`: a long title has to be allowed to be
+     narrower than itself, or it pushes BACK and ✕ off their own row. */
+  min-width: 0;
   text-align: center;
 }
 
@@ -2554,7 +2871,7 @@ h3.fact-label {
  */
 .end-hero {
   width: 100%;
-  max-width: 26rem;
+  max-width: var(--measure);
   height: auto;
   border-radius: var(--radius);
   margin-bottom: 0.25rem;
@@ -2596,6 +2913,16 @@ h3.fact-label {
   filter: drop-shadow(0 0 1px var(--halo)) drop-shadow(0 0 1px var(--halo));
 }
 
+/* The mark rides over the hex. Positioned rather than given a z-index alone:
+   an absolutely positioned drawing paints above static content whatever its
+   level, so the mark has to be positioned too or the art buries it. Scoped to
+   the mark rather than to every span: the card's remaining text is a clipped
+   `.visually-hidden` span, and giving that `position: relative` would put a
+   pixel of it back in the row. */
+.tile > .tile-mark {
+  position: relative;
+}
+
 /* A ground's power, said beside its name in the legend — the one row there
    with no section under it to explain it. Wrapped rather than truncated: it
    is a sentence, and a sentence cut off mid-word teaches nothing. */
@@ -2632,14 +2959,17 @@ h3.fact-label {
  * that goes somewhere you can move around.
  */
 .end-map {
-  width: min(26rem, 100%);
+  width: min(var(--measure), 100%);
   margin: var(--gap) 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--gap-xs);
   padding: 0.9rem;
   border: 1px solid var(--panel-edge-active);
+  /* The one bordered block on this screen with square corners, under a column
+     of buttons that all carry `--radius`. A frame is a frame. */
+  border-radius: var(--radius);
   background: var(--panel);
 }
 
@@ -2672,7 +3002,7 @@ h3.fact-label {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 15;
+  z-index: var(--z-scene);
   display: flex;
   justify-content: center;
   padding: var(--gap) var(--gap) calc(var(--gap) + env(safe-area-inset-bottom));

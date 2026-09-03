@@ -473,7 +473,7 @@ export function EndScreen({
         beside the button that acts on it. Ashwake 1 added it for the same
         reason and called it the cheapest growth in the game.
       */}
-      {fromLink === true && <p className="note end-onward">{s.ui.cameByLink}</p>}
+      {fromLink === true && <p className="note">{s.ui.cameByLink}</p>}
 
       {/*
         THE MAP, last: the run you just walked, and you can walk it again.

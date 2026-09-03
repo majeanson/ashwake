@@ -127,7 +127,7 @@ export function FrontDoor({
         afterwards that their run banked nothing.
       */}
       {mode !== 'world' && (
-        <p className="note door-mode" data-door="mode">
+        <p className="note" data-door="mode">
           {mode === 'shared' ? s.ui.which.shared : s.ui.which.daily}
         </p>
       )}
@@ -139,15 +139,10 @@ export function FrontDoor({
       */}
       {settle != null && (
         <>
-          <button
-            type="button"
-            className="quiet door-settle"
-            data-door="settle"
-            onClick={settle.onSettle}
-          >
+          <button type="button" className="quiet" data-door="settle" onClick={settle.onSettle}>
             {s.ui.settleWorld(settle.slot)}
           </button>
-          <p className="note door-settle-note">{s.ui.settleNote}</p>
+          <p className="note">{s.ui.settleNote}</p>
         </>
       )}
 

@@ -60,7 +60,7 @@ export function Figure({ id, theme, s, caption = false }: FigureProps) {
   const clip = useId();
 
   return (
-    <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+    <figure className="figure">
       {layout.cells.length > 0 && (
         <svg
           viewBox={`0 0 ${layout.width} ${layout.height}`}
@@ -68,7 +68,7 @@ export function Figure({ id, theme, s, caption = false }: FigureProps) {
           height={layout.height}
           role="img"
           aria-label={label}
-          style={{ maxWidth: '100%', height: 'auto' }}
+          className="figure-art"
         >
           {layout.cells.map((cell) => {
             const points = corners(cell.x, cell.y, SIZE * 0.94, theme.orientation);

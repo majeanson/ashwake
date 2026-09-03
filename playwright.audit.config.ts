@@ -16,6 +16,27 @@ import { defineConfig } from '@playwright/test';
  * ONE worker, deliberately, for two independent reasons: every test appends to
  * a shared report array in the file, and every test boots a WebGL context on
  * one GPU.
+ *
+ * ## Why CI does not run this, considered and declined (2026-09-02)
+ *
+ * The shots HAVE gone stale once, silently, and that is a real argument for
+ * automating them. Three things beat it:
+ *
+ *   - **It is a quarter of an hour**, 181 visits at one worker, against a
+ *     pipeline that currently costs a couple of minutes. Paid on every push,
+ *     for something that cannot fail.
+ *   - **It would not be the same pictures.** A runner draws through software
+ *     WebGL, so the board it photographs is not the board a phone does — and
+ *     the whole value of this instrument is that somebody LOOKS at the output.
+ *     `.github/workflows/ci.yml` already declines to diff the baked art for
+ *     the neighbouring reason (`sharp` is not byte-reproducible across
+ *     platforms), and says so at length.
+ *   - **Staleness is now visible instead.** `report.md`'s header says how many
+ *     of the expected screen-visits actually happened, so a partial run cannot
+ *     pass itself off as the record — which is what actually went wrong.
+ *
+ * So it stays a command somebody runs, and the rule is the one every ledger in
+ * this repo follows: **regenerate it in the same commit as a chrome change.**
  */
 export default defineConfig({
   testDir: 'e2e/audit',

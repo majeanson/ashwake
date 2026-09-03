@@ -27,10 +27,12 @@ describe('the signpost', () => {
     expect(signpostFor({ hint: 'a CACHE, 5 out', last: undefined, knowsRipe: true })).toBeNull();
   });
 
-  it('speaks when the nearest destination changes', () => {
-    expect(signpostFor({ hint: 'a SHRINE, 3 out', last: 'a CACHE, 5 out', knowsRipe: true })).toBe(
-      'a SHRINE, 3 out.',
-    );
+  it('speaks when the nearest destination changes, in the words it was given', () => {
+    // Handed through, not rewritten: the full stop belongs to the catalogue
+    // (2026-09-02), so this function is the DECISION and never the wording.
+    expect(
+      signpostFor({ hint: 'a SHRINE, 3 out.', last: 'a CACHE, 5 out.', knowsRipe: true }),
+    ).toBe('a SHRINE, 3 out.');
   });
 
   it('says nothing while the same thing is still nearest', () => {
@@ -53,6 +55,10 @@ describe('the signpost', () => {
     walk(sess, 12);
     const { hint } = sess.get().hud;
     expect(hint, 'the core computes a hint the shell never read').not.toBeNull();
-    expect(signpostFor({ hint, last: null, knowsRipe: true })).toBe(`${hint}.`);
+    // The sentence arrives FINISHED from the catalogue now — the shell used to
+    // glue a full stop onto it, which put punctuation in a screen and left
+    // French unable to choose its own (2026-09-02). Handed through unchanged.
+    expect(signpostFor({ hint, last: null, knowsRipe: true })).toBe(hint);
+    expect(hint?.endsWith('.'), 'the catalogue stopped ending its own sentence').toBe(true);
   });
 });

@@ -429,7 +429,16 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
   await begin(page);
 
   // ONE button, in the TOP corner, and the two it replaced are gone.
-  await expect(page.locator('.board-menu .menu'), 'the board has no MENU button').toBeVisible();
+  //
+  // By `data-go`, which is the rule `helpers.ts` states for this exact button:
+  // *"a selector that names a POSITION is a selector that breaks every time the
+  // layout is an opinion, and this one has been an opinion four times."* It was
+  // `.board-menu .menu` — and `.menu` was a class with no CSS rule at all, kept
+  // alive only by this line, which is the thing being fixed (2026-09-02).
+  await expect(
+    page.locator('.board-menu [data-go="quick"]'),
+    'the board has no MENU button',
+  ).toBeVisible();
   expect(await page.locator('.camera .help').count(), '? is still on the board').toBe(0);
   expect(
     await page.locator('[data-action="sound"]').count(),

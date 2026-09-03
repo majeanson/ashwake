@@ -43,7 +43,7 @@ export function Purse({ hud, theme, s, onSpend }: PurseProps) {
   const names = namesOf(theme, s.locale);
 
   return (
-    <div className="spends" id="spends" data-hud="purse">
+    <div className="drawer spends" id="spends" data-hud="purse">
       <div className="spends-head">
         <span className="fact-label">{s.lesson.luck.name}</span>
         <b className="spends-luck">{hud.luck}</b>

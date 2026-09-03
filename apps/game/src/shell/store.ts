@@ -71,6 +71,21 @@ export type Popped = {
   readonly id: number;
 };
 
+/**
+ * How two things said about one moment are joined.
+ *
+ * A blank line between them: a pop receipt and the claim it reached are two
+ * things about one moment, not one run-on sentence.
+ *
+ * Exported because `App` builds the first-pop card by hand — the lesson, the
+ * receipt, and the sentence about what happens next — and was gluing them with
+ * its own `\n\n` (2026-09-02). Two joiners for one idea is two places for the
+ * spacing of every card in the game to be decided, and the second one is
+ * always the one nobody finds.
+ */
+export const paragraphs = (...parts: readonly string[]): string =>
+  parts.filter((p) => p !== '').join('\n\n');
+
 /** Something the game says, and whether it holds the screen to say it. */
 export type Said = {
   readonly text: string;
@@ -404,9 +419,8 @@ export function createSession(opts: {
 
     if (lines.length === 0) return null;
     return {
-      // A blank line between them: a pop receipt and the claim it reached are
-      // two things about one moment, not one run-on sentence.
-      text: lines.join('\n\n'),
+      // See `paragraphs` above for why the join is a named thing.
+      text: paragraphs(...lines),
       card,
       ...(rows === undefined ? {} : { rows }),
       ...(offers === undefined ? {} : { offers }),

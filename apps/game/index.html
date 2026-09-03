@@ -19,6 +19,29 @@
     <meta name="theme-color" content="#14100c" />
 
     <!--
+      THE TWO FACES THE FRONT DOOR IS SET IN (2026-09-02).
+
+      Both are self-hosted and declared with `font-display: swap`, so a browser
+      cannot even ASK for them until it has fetched and parsed the stylesheet —
+      which is behind the bundle, on a phone, on a first visit. Swap then does
+      what it is for and paints the whole door in Georgia first, and re-lays it
+      out when the real faces land. A flash of the wrong typeface on the one
+      screen a stranger arrives on, and it is entirely a scheduling problem.
+
+      Two, not three: Cinzel is every heading, every label and BEGIN itself, and
+      EB Garamond is the prose under them. The italic is a third file that
+      almost nothing on the door uses, and a preload that is not used within a
+      few seconds is a warning in the console and a request taken from
+      something that was.
+
+      `crossorigin` is not optional on a font preload even from the same
+      origin: fonts are fetched in CORS mode, and a preload without it is a
+      SECOND download rather than a head start.
+    -->
+    <link rel="preload" href="/fonts/cinzel.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ebgaramond.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!--
       The launch surfaces (restored 2026-08-29, auditing this body against
       Ashwake 1, which shipped all of them).
 
@@ -97,7 +120,9 @@
         document.addEventListener('DOMContentLoaded', function () {
           document.body.innerHTML =
             '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;' +
-            'background:#0a0806;color:#e8d6ae;font-family:Georgia,serif;padding:24px;text-align:center;">' +
+            // The default direction's ground, like the pre-JS paint below —
+            // this said `#0a0806` (torchlit's) for the same reason it did.
+            'background:#14100c;color:#e8d6ae;font-family:Georgia,serif;padding:24px;text-align:center;">' +
             '<p style="max-width:26em;line-height:1.6">ASHWAKE a besoin d’un navigateur plus récent : ' +
             'iOS 16.4 ou plus, ou un Chrome ou Firefox à jour. ' +
             'Rien ne cloche avec ton appareil : ce jeu s’appuie sur les fonctions les plus récentes du moteur.<br><br>' +
@@ -114,6 +139,19 @@
        * first render, so it cannot come from the theme — the theme is in the
        * bundle. It is the default direction's background, and `ui/theme.ts`
        * writes the resolved one over it at boot.
+       *
+       * **AND IT WAS THE WRONG DIRECTION** (2026-09-02). It said `#0a0806`
+       * under exactly the sentence above, and `#0a0806` is TORCHLIT's ground —
+       * `DEFAULT_THEME_ID` moved to `settlement` and this did not follow. The
+       * manifest and the `theme-color` above both already say `#14100c`; these
+       * two literals were simply missed, so every cold load painted a darker
+       * ground than the game it was about to show and the bundle repainted it
+       * a shade lighter as it arrived. A flash on the first frame of the first
+       * minute, which is the frame the stranger test starts on.
+       *
+       * The same shape as the `destinationAt` docblock: a comment asserting an
+       * invariant is not the invariant, and it is the sentence that stops a
+       * reader checking.
        */
       html,
       body,
@@ -121,7 +159,7 @@
         margin: 0;
         height: 100%;
         overflow: hidden;
-        background: #0a0806;
+        background: #14100c;
       }
       body {
         overscroll-behavior: none;

@@ -135,7 +135,7 @@ export function ActionBar({
             label={s.ui.take}
             // `s.payout.rarity` already names all three, for the end
             // screen's breakdown. One word per rarity, in one place.
-            value={`1 ${s.payout.rarity[hud.harvestTreasure]}`}
+            value={s.payout.treasureCount(1, s.payout.rarity[hud.harvestTreasure])}
             onClick={() => onHarvest('treasure')}
           />
         )}
@@ -174,9 +174,6 @@ export function ActionBar({
             // nothing about what it opens.
             aria-label={s.ui.luckPurse(hud.luck)}
             onClick={onPurse}
-            // The far end of the row: everything to its left is priced in the
-            // pocket, and this is priced in luck.
-            style={{ marginLeft: 'auto' }}
           >
             {/*
               The REGISTRY's mark, not a lookalike (2026-08-30).

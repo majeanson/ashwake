@@ -23,18 +23,11 @@ export type ConfirmingProps = {
   readonly onConfirm: () => void;
   /** How long an armed control waits before going quiet again. */
   readonly holdMs?: number;
-  readonly className?: string | undefined;
 };
 
 const HOLD_MS = 4000;
 
-export function Confirming({
-  label,
-  armed,
-  onConfirm,
-  holdMs = HOLD_MS,
-  className,
-}: ConfirmingProps) {
+export function Confirming({ label, armed, onConfirm, holdMs = HOLD_MS }: ConfirmingProps) {
   const [ready, setReady] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
 
@@ -60,7 +53,10 @@ export function Confirming({
     <button
       ref={button}
       type="button"
-      className={[className, ready ? 'armed' : null].filter(Boolean).join(' ')}
+      // It also took a `className` nothing ever passed, joined into this list
+      // since the component was written (2026-09-02). A prop with no caller is
+      // a promise an API makes and nobody collects.
+      {...(ready ? { className: 'armed' } : {})}
       // The accessible name is whatever it currently SAYS, so a screen reader
       // hears the consequence at the moment the consequence is what is meant.
       onClick={() => {

@@ -247,8 +247,8 @@ compiler-safe, because those lint rules have been enforcing exactly that.
 
 | id   | status | statement                                                                                                                          | where                |
 | ---- | ------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| B6.1 | open   | install and configure the React Compiler; verify with the healthcheck, the e2e suite, and a before/after Profiler trace on a toast | `vite.config.ts:163` |
-| B6.2 | open   | fix whatever the healthcheck rejects; opt a file out explicitly, with the reason at the top, if it cannot compile                  | `board/`             |
+| B6.1 | done   | install and configure the React Compiler; verify with the healthcheck, the e2e suite, and a before/after Profiler trace on a toast | `vite.config.ts:163` |
+| B6.2 | done   | fix whatever the healthcheck rejects; opt a file out explicitly, with the reason at the top, if it cannot compile                  | `board/`             |
 | B6.3 | open   | `memo()` on `Board` regardless, and lift speech into a `<Speech>` subtree so it cannot reach the R3F tree                          | `App.tsx`            |
 | B6.4 | done   | extract `shell/beginning.ts` — one `enterRun(...)` every door calls. Closes B5.3                                                   | `App.tsx:437`        |
 | B6.5 | open   | extract the rest, following the `shell/signpost.ts` convention (pure decision out, wiring thin)                                    | `App.tsx`            |
@@ -261,85 +261,144 @@ compiler-safe, because those lint rules have been enforcing exactly that.
 
 | id   | status | statement                                                                                                                             | where                                 |
 | ---- | ------ | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| B7.1 | open   | name the z-index ladder — nine implicit tiers, three owners tied at 15 with source order breaking it                                  | `ui.css`                              |
-| B7.2 | open   | `44px` typed literally in five places instead of `var(--tap)`                                                                         | `ui.css:2015`, `2034`, `2057`, `2202` |
-| B7.3 | ruled  | five competing border radii. **Default: `--radius` for controls, `--radius-sm: 4px` for swatch-sized things**                         | `ui.css`                              |
-| B7.4 | open   | `.end-map` is the only bordered block with square corners                                                                             | `ui.css:2447`                         |
-| B7.5 | open   | `letter-spacing: 0.08em` typed instead of `--label-tracking`                                                                          | `ui.css:1823`, `1832`                 |
-| B7.6 | open   | two spacing scales — `--gap` alongside ~30 hand-typed values, and the half-gap idea expressed twice                                   | `ui.css`                              |
-| B7.7 | open   | one `--measure`: `34rem` typed three times, and the ending's fact grid visibly inset inside its own section                           | `ui.css:1205`, `1668`, `1304`         |
-| B7.8 | ruled  | six theme tokens emitted and read by nothing, under a comment saying they exist "for the manual's figures". **Default: make it true** | `theme/css.ts:90`, `Figure.tsx:86`    |
+| B7.1 | done   | name the z-index ladder — nine implicit tiers, three owners tied at 15 with source order breaking it                                  | `ui.css`                              |
+| B7.2 | done   | `44px` typed literally in five places instead of `var(--tap)`                                                                         | `ui.css:2015`, `2034`, `2057`, `2202` |
+| B7.3 | done   | five competing border radii. **Default: `--radius` for controls, `--radius-sm: 4px` for swatch-sized things**                         | `ui.css`                              |
+| B7.4 | done   | `.end-map` is the only bordered block with square corners                                                                             | `ui.css:2447`                         |
+| B7.5 | done   | `letter-spacing: 0.08em` typed instead of `--label-tracking`                                                                          | `ui.css:1823`, `1832`                 |
+| B7.6 | done   | two spacing scales — `--gap` alongside ~30 hand-typed values, and the half-gap idea expressed twice                                   | `ui.css`                              |
+| B7.7 | done   | one `--measure`: `34rem` typed three times, and the ending's fact grid visibly inset inside its own section                           | `ui.css:1205`, `1668`, `1304`         |
+| B7.8 | done   | six theme tokens emitted and read by nothing, under a comment saying they exist "for the manual's figures". **Default: make it true** | `theme/css.ts:90`, `Figure.tsx:86`    |
 
 ### Layout
 
 | id    | status | statement                                                                                                    | where                         |
 | ----- | ------ | ------------------------------------------------------------------------------------------------------------ | ----------------------------- |
-| B7.9  | open   | **every panel section is indented 2rem for a mark it doesn't have** — the single most visible layout finding | `ui.css:506`                  |
-| B7.10 | open   | `.act` labels can neither wrap nor clip, and French is the long language                                     | `ui.css:1582`                 |
-| B7.11 | ruled  | the stat row clips French mid-glyph; a half-drawn É reads as a rendering bug. **Default: ellipsis**          | `ui.css:948`                  |
-| B7.12 | open   | missing `min-width: 0` on flex children holding text                                                         | `ui.css:1722`, `2241`, `2106` |
-| B7.13 | open   | `.card-scrim` ignores the safe-area insets while six other containers handle them                            | `ui.css:396`                  |
-| B7.14 | open   | `.spends` and `.quick` are the same drawer declared twice                                                    | `ui.css:1205`, `1668`         |
-| B7.15 | open   | `.door-begin` at 320px in French survives only by wrapping to two lines                                      | `ui.css`                      |
+| B7.9  | done   | **every panel section is indented 2rem for a mark it doesn't have** — the single most visible layout finding | `ui.css:506`                  |
+| B7.10 | done   | `.act` labels can neither wrap nor clip, and French is the long language                                     | `ui.css:1582`                 |
+| B7.11 | done   | the stat row clips French mid-glyph; a half-drawn É reads as a rendering bug. **Default: ellipsis**          | `ui.css:948`                  |
+| B7.12 | done   | missing `min-width: 0` on flex children holding text                                                         | `ui.css:1722`, `2241`, `2106` |
+| B7.13 | done   | `.card-scrim` ignores the safe-area insets while six other containers handle them                            | `ui.css:396`                  |
+| B7.14 | done   | `.spends` and `.quick` are the same drawer declared twice                                                    | `ui.css:1205`, `1668`         |
+| B7.15 | done   | `.door-begin` at 320px in French survives only by wrapping to two lines                                      | `ui.css`                      |
 
 ### Motion
 
 | id    | status | statement                                                                                                                   | where       |
 | ----- | ------ | --------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| B7.16 | ruled  | **seven controls give no press feedback under reduced motion.** **Default: a `color-mix` lift, graded against the budgets** | `ui.css`    |
-| B7.17 | open   | `color` is never transitioned, so selection snaps while its border animates                                                 | `ui.css`    |
-| B7.18 | ruled  | no `:hover` anywhere in 2515 lines. **Default: one `(hover: hover)` border-colour acknowledgement**                         | `ui.css`    |
-| B7.19 | ruled  | the stylesheet promises an arrival it never implements. **Default: one shared 140 ms rise, inside the no-preference guard** | `ui.css:89` |
-| B7.20 | ruled  | disabled purse rows may fall under contrast. **Default: `--ink-faint`, already held at 4.5:1, instead of `opacity`**        | `ui.css`    |
+| B7.16 | done   | **seven controls give no press feedback under reduced motion.** **Default: a `color-mix` lift, graded against the budgets** | `ui.css`    |
+| B7.17 | done   | `color` is never transitioned, so selection snaps while its border animates                                                 | `ui.css`    |
+| B7.18 | done   | no `:hover` anywhere in 2515 lines. **Default: one `(hover: hover)` border-colour acknowledgement**                         | `ui.css`    |
+| B7.19 | done   | the stylesheet promises an arrival it never implements. **Default: one shared 140 ms rise, inside the no-preference guard** | `ui.css:89` |
+| B7.20 | done   | disabled purse rows may fall under contrast. **Default: `--ink-faint`, already held at 4.5:1, instead of `opacity`**        | `ui.css`    |
 
 ### Dead and duplicated
 
 | id    | status | statement                                                                                                      | where                                                  |
 | ----- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | B7.21 | done   | `.toast` declared twice; the orphaned `min-height` is why `.toast:empty` is needed at all                      | `ui.css:981`, `1032`                                   |
-| B7.22 | open   | `.panel-back` declared twice and the first is dead                                                             | `ui.css:320`, `2229`                                   |
-| B7.23 | open   | six classNames with no rule — plus `.quiet` from B1.1                                                          | `ui.css`                                               |
-| B7.24 | open   | two verbatim-duplicated comment blocks, both looking like a merge that kept both sides                         | `ui.css:1275`, `879`                                   |
-| B7.25 | open   | physical and logical properties for one idea, in a bilingual app                                               | `ui.css`                                               |
+| B7.22 | done   | `.panel-back` declared twice and the first is dead                                                             | `ui.css:320`, `2229`                                   |
+| B7.23 | done   | six classNames with no rule — plus `.quiet` from B1.1                                                          | `ui.css`                                               |
+| B7.24 | done   | two verbatim-duplicated comment blocks, both looking like a merge that kept both sides                         | `ui.css:1275`, `879`                                   |
+| B7.25 | done   | physical and logical properties for one idea, in a bilingual app                                               | `ui.css`                                               |
 | B7.26 | done   | `.tile-mark` rules live 900 lines apart                                                                        | `ui.css:1468`, `2390`                                  |
-| B7.27 | open   | inline styles that belong in the stylesheet — the exact hazard `ui.css:1354` documents                         | `ui/Card.tsx:142`, `ui/Figure.tsx:63`, `ActionBar.tsx` |
-| B7.28 | open   | empty spans occupying a grid column `.panel-title.marked` already reserves                                     | `Manual.tsx:232`, `252`, `273`                         |
-| B7.29 | open   | `Confirming`'s `className` prop is dead — joined but never passed                                              | `ui/Confirming.tsx`                                    |
-| B7.30 | open   | `--mark-hang` couples a negative margin to a padding via two copies of one calc                                | `ui.css:481`, `507`                                    |
+| B7.27 | done   | inline styles that belong in the stylesheet — the exact hazard `ui.css:1354` documents                         | `ui/Card.tsx:142`, `ui/Figure.tsx:63`, `ActionBar.tsx` |
+| B7.28 | done   | empty spans occupying a grid column `.panel-title.marked` already reserves                                     | `Manual.tsx:232`, `252`, `273`                         |
+| B7.29 | done   | `Confirming`'s `className` prop is dead — joined but never passed                                              | `ui/Confirming.tsx`                                    |
+| B7.30 | done   | `--mark-hang` couples a negative margin to a padding via two copies of one calc                                | `ui.css:481`, `507`                                    |
 | B7.31 | done   | `keeper.alive()` has no production consumer                                                                    | `shell/keeper.ts:45`                                   |
-| B7.32 | open   | unnecessary exports in `camera.ts`                                                                             | `board/camera.ts`                                      |
+| B7.32 | done   | unnecessary exports in `camera.ts`                                                                             | `board/camera.ts`                                      |
 | B7.33 | done   | `isTappable()` always returns true — a predicate with no predicate in it                                       | `HexField.tsx:356`                                     |
 | B7.34 | done   | repeated math worth one helper each — the tint unpack ×3, degree→radian ×3, the rotation reset ×4, `kindOf` ×3 | `board/`                                               |
-| B7.35 | open   | `App.tsx` duplications — the mode ternary twice, a book decoded twice in one handler, `session.get()` ×3       | `App.tsx`                                              |
-| B7.36 | open   | `lang` has two authorities; the `<html>` one is correct                                                        | `App.tsx:2343`, `ui/theme.ts:63`                       |
-| B7.37 | open   | a dropped word in a comment, and eight identical restated signatures                                           | `Board.tsx:590`, `Board.tsx:80`                        |
+| B7.35 | done   | `App.tsx` duplications — the mode ternary twice, a book decoded twice in one handler, `session.get()` ×3       | `App.tsx`                                              |
+| B7.36 | done   | `lang` has two authorities; the `<html>` one is correct                                                        | `App.tsx:2343`, `ui/theme.ts:63`                       |
+| B7.37 | done   | a dropped word in a comment, and eight identical restated signatures                                           | `Board.tsx:590`, `Board.tsx:80`                        |
 
 ### The catalogue (D4)
 
 | id    | status | statement                                                                                                        | where                                                |
 | ----- | ------ | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| B7.38 | open   | `statLabel` hard-codes four French labels behind a ternary — a missing French label is an `if`, not a type error | `Hud.tsx:121`                                        |
-| B7.39 | open   | a sentence completed outside the catalogue                                                                       | `signpost.ts:49`                                     |
-| B7.40 | open   | armed confirmations built in code while the catalogue spells out three others in full                            | `App.tsx:2689`, `Settings.tsx:197`, `Worlds.tsx:122` |
-| B7.41 | open   | three untranslated literals **on the language screen**, and a literal `PTS`                                      | `Settings.tsx:186`, `Fame.tsx:114`, `207`            |
-| B7.42 | open   | a raw `↗` against D10 — `Hud.tsx:112` documents removing exactly this character for this reason                  | `Worlds.tsx:94`                                      |
-| B7.43 | open   | a raw ISO date beside a localised one, in the same row                                                           | `Fame.tsx:188`                                       |
-| B7.44 | open   | the first-pop card is assembled with a joining rule `store.ts:365` already implements                            | `App.tsx:1400`                                       |
-| B7.45 | open   | locale-insensitive `toUpperCase()`                                                                               | `shareCard.ts:124`                                   |
-| B7.46 | open   | Fame's tabs borrow the manual's strings                                                                          | `Fame.tsx:87`                                        |
-| B7.47 | open   | a quantity joined to a noun in the component — safe at 1, the shape that breaks when the number varies           | `ActionBar.tsx:138`                                  |
-| B7.48 | open   | `data-grows` is a sighted-only affordance                                                                        | `Tabs.tsx:42`                                        |
+| B7.38 | done   | `statLabel` hard-codes four French labels behind a ternary — a missing French label is an `if`, not a type error | `Hud.tsx:121`                                        |
+| B7.39 | done   | a sentence completed outside the catalogue                                                                       | `signpost.ts:49`                                     |
+| B7.40 | done   | armed confirmations built in code while the catalogue spells out three others in full                            | `App.tsx:2689`, `Settings.tsx:197`, `Worlds.tsx:122` |
+| B7.41 | done   | three untranslated literals **on the language screen**, and a literal `PTS`                                      | `Settings.tsx:186`, `Fame.tsx:114`, `207`            |
+| B7.42 | done   | a raw `↗` against D10 — `Hud.tsx:112` documents removing exactly this character for this reason                  | `Worlds.tsx:94`                                      |
+| B7.43 | done   | a raw ISO date beside a localised one, in the same row                                                           | `Fame.tsx:188`                                       |
+| B7.44 | done   | the first-pop card is assembled with a joining rule `store.ts:365` already implements                            | `App.tsx:1400`                                       |
+| B7.45 | done   | locale-insensitive `toUpperCase()`                                                                               | `shareCard.ts:124`                                   |
+| B7.46 | done   | Fame's tabs borrow the manual's strings                                                                          | `Fame.tsx:87`                                        |
+| B7.47 | done   | a quantity joined to a noun in the component — safe at 1, the shape that breaks when the number varies           | `ActionBar.tsx:138`                                  |
+| B7.48 | done   | `data-grows` is a sighted-only affordance                                                                        | `Tabs.tsx:42`                                        |
+
+### What Batch 7 changed its mind about, and what it found
+
+**B7.28's empty spans were load-bearing, and the plan was wrong about why.**
+`.panel-title.marked` is a two-column grid, so the heading's words only land in
+column two if something is auto-placed into column one — which is what the
+empty `<span class="card-glyph">` was doing. Deleting it would have moved every
+marked heading a column left. Fixed at the cause instead:
+`.panel-title.marked > :last-child { grid-column: 2 }` says the rule out loud,
+and then nothing has to be rendered to hold a place.
+
+**B7.23's `.menu` was not noise — it was a test hook**, and dropping it broke
+`menus.spec.ts`. The suite's own helper file states the rule that settles it:
+_"a selector that names a POSITION is a selector that breaks every time the
+layout is an opinion, and this one has been an opinion four times."_ The test
+addresses the button by `data-go` now, which is what it should have done, and
+the ruleless class is gone.
+
+**And `describe` was reading the fog from a stale copy — two lines under a
+comment explaining why the shrine count must not.** `ledgers.worlds[slot]`
+refreshes when a panel opens or a run ends; `worldHeld` is the live world, and
+the same function said so about `world.shrines.length` immediately below.
+So a tap on ground revealed earlier in the same run answered "you have never
+been here". Both facts come from `worldHeld` now, which guards by seed exactly
+as `memoryFor` does — the function `store.ts` builds the board's own fog from,
+so the tap and the board finally draw the same memory from the same place.
 
 ## Batch 8 — delivery and the launch surfaces
 
 | id   | status | statement                                                                                                                    | where                    |
 | ---- | ------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| B8.1 | open   | split the vendor chunk — one 425 KB-gzipped chunk under immutable caching, so a one-line app change costs a player all of it | `vite.config.ts`         |
-| B8.2 | open   | preload the two body faces — a FOUT on the front door, the screen the stranger test starts on                                | `index.html`             |
-| B8.3 | open   | narrow the service worker's precache to the shipping direction — ~1.2 MB of PNGs never rendered                              | `vite.config.ts`         |
-| B8.4 | ruled  | **the pre-JS paint is the wrong direction.** **Default: `#14100c`; the manifest already made this call**                     | `index.html:124`, `:100` |
-| B8.5 | ruled  | the installed icon is baked on torchlit's background. **Default: `#14100c`.** Own commit — visible on a home screen          | `meta/mark.ts:26`        |
-| B8.6 | open   | consider CI running `audit:screens` — a report, not a gate; but the shots have gone stale once already                       | `.github/`               |
+| B8.1 | done   | split the vendor chunk — one 425 KB-gzipped chunk under immutable caching, so a one-line app change costs a player all of it | `vite.config.ts`         |
+| B8.2 | done   | preload the two body faces — a FOUT on the front door, the screen the stranger test starts on                                | `index.html`             |
+| B8.3 | done   | narrow the service worker's precache to the shipping direction — ~1.2 MB of PNGs never rendered                              | `vite.config.ts`         |
+| B8.4 | done   | **the pre-JS paint is the wrong direction.** **Default: `#14100c`; the manifest already made this call**                     | `index.html:124`, `:100` |
+| B8.5 | done   | the installed icon is baked on torchlit's background. **Default: `#14100c`.** Own commit — visible on a home screen          | `meta/mark.ts:26`        |
+| B8.6 | ruled  | consider CI running `audit:screens` — a report, not a gate; but the shots have gone stale once already                       | `.github/`               |
+
+### What Batch 8 measured, and the one it declined
+
+**The compiler compiles everything.** `react-compiler-healthcheck`: 70 of 70
+components, nothing opted out, nothing rejected. That is what months of
+`eslint-plugin-react-hooks@7` bought — the constraint was already being
+enforced; only the compilation was missing.
+
+**And it costs 16 KB gzipped**, measured by building with and without it
+(432.4 → 448.6 KB). Real, and stated rather than waved at: sixteen kilobytes
+once, against re-rendering the entire 3D board every time the game says a
+sentence.
+
+**The vendor split turns that cost into a saving.** One 1.5 MB chunk under
+immutable caching became app 114.9 KB gzipped + vendor 333.1 KB. A returning
+player after a one-line change now re-downloads 115 KB instead of 449 — 74%
+less — and the total is unchanged.
+
+**The service worker's precache went from ~2.7 MB to 1.8 MB.** It swept every
+theme folder, so a first visit downloaded 872 KB of art for three directions
+that device will never render. The default direction stays in (art fetched on
+visit one goes through an uncontrolled page and never reaches the worker's
+cache, so without it a second visit offline falls back to the procedural
+floor); the other three are cached by the fetch handler the moment anything
+asks. Asserted at build time, so a renamed direction fails loudly.
+
+**B8.6 — CI running `audit:screens` — considered and declined**, with the
+reasoning in `playwright.audit.config.ts`. Fifteen minutes on every push for
+something that cannot fail; a runner draws through software WebGL, so it would
+not be the same pictures a phone shows, which is the whole point of the
+instrument; and the actual failure — a stale report passing itself off as
+current — is fixed instead, by the header saying how many of the expected
+visits happened.
 
 ## Batch 9 — tests for what has none
 

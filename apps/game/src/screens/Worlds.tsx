@@ -89,9 +89,23 @@ export function Worlds({
             >
               {s.ui.worldN(slot)}
               {' · '}
+              {/*
+                A WORD, not an arrow (2026-09-02).
+
+                `↗` was the last raw glyph left in this build, and `screens/Hud`
+                documents removing exactly this character for exactly this
+                reason: marks are for cross-screen CONCEPTS and stats stay
+                words. Reach has no registry entry, should not gain one for a
+                list row's sake, and is not an icon — so the arrow was a symbol
+                invented in one place, which is what D10 rules against.
+
+                `s.ui.stats.map` is the same word the stat row prints over the
+                board, so a world's reach in the list and a run's reach on the
+                board are one term rather than two.
+              */}
               {world === null
                 ? s.ui.emptyWorld
-                : `${world.runs} · ${world.bestPoints} · ↗ ${world.farthestReach}`}
+                : `${world.runs} · ${world.bestPoints} · ${s.ui.stats.map} ${world.farthestReach}`}
             </button>
           );
         })}
@@ -119,7 +133,7 @@ export function Worlds({
         <section>
           <Confirming
             label={s.ui.newWorld}
-            armed={`${s.ui.newWorld} · ${s.ui.worldN(active)}?`}
+            armed={s.ui.newWorldArmed(active)}
             onConfirm={() => onAbandon(active)}
           />
           <p className="note">{s.lesson.relic.core}</p>

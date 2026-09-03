@@ -118,23 +118,22 @@ function valueOf(id: StatId, hud: HudView): number | null {
  * icons or assets") they were the two characters left standing on the busiest
  * row in the game. The row is a grid now and a word fits.
  */
+/*
+ * **The words come from the CATALOGUE** (2026-09-02).
+ *
+ * Four of these were `s.locale === 'fr-CA' ? 'TUILES' : 'TILES'`, written out
+ * here — and grepping for that shape found it nowhere else in the app, so this
+ * function was the single place a screen decided what a word is in a language.
+ * D4 exists so that a missing sentence is a type error rather than a branch
+ * nobody wrote; a ternary is exactly the branch nobody wrote. See `s.ui.stats`.
+ *
+ * LUCK stays different, and stays here: it is one of the concept registry's
+ * seven ideas, so the row asks the LESSON for its name rather than inventing a
+ * fifth word for a thing the board, the purse and the shop already agree on.
+ */
 export function statLabel(id: StatId, s: Strings): string {
-  switch (id) {
-    case 'tiles':
-      return s.locale === 'fr-CA' ? 'TUILES' : 'TILES';
-    case 'points':
-      return 'PTS';
-    case 'luck':
-      // The one stat that IS a concept the rest of the game already marks.
-      // Drawn as the icon; this is its accessible name and its fallback.
-      return s.lesson.luck.name;
-    case 'map':
-      return s.locale === 'fr-CA' ? 'PORTÉE' : 'REACH';
-    case 'cost':
-      return s.locale === 'fr-CA' ? 'COÛT' : 'COST';
-    case 'left':
-      return s.locale === 'fr-CA' ? 'RESTE' : 'LEFT';
-  }
+  // Drawn as the icon; this is its accessible name and its fallback.
+  return id === 'luck' ? s.lesson.luck.name : s.ui.stats[id];
 }
 
 /** The stat that is drawn as a mark rather than as a word. */
