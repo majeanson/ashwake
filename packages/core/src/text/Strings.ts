@@ -650,6 +650,9 @@ export type Strings = {
     readonly resetTeaching: string;
     /** The disclosure a manual section folds its finer print into. */
     readonly details: string;
+    /** The front door's own disclosure: the three-sentence hook, folded so a
+     *  stranger free to skip it is not made to scroll past it first. */
+    readonly theStory: string;
     /** The door into the manual, from MORE and from the board's `?`. */
     readonly howToPlay: string;
     /**
@@ -907,6 +910,14 @@ export type Strings = {
       readonly try: (n: number) => string;
       /** Replay today's board. The retry loop lives where the itch is. */
       readonly tryAgain: string;
+      /**
+       * On a daily's ending: leaves today's board for a fresh expedition into
+       * this device's own world, carrying forward its purse and perks. The
+       * same door as `ui.newRun` — see `App.tsx`'s `newRun` — worded for a
+       * daily specifically, since "NEW RUN" beside TRY AGAIN does not say
+       * which of the two boards it starts on.
+       */
+      readonly continueInWorld: string;
       readonly relicsBanked: (n: number) => string;
       /**
        * The run's own shape, as the six facts Ashwake 1 fixed the grid at.

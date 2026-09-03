@@ -65,9 +65,19 @@ const KEY_LINES = [
  *
  *   - SIZE BONUS is a rule about what a POP pays, so it reads right after POP.
  *   - BOUNTY is what a SITE opens, so it belongs with the destinations.
- *   - RELICS are what LUCK and SACRIFICE turn into, so they close the hand.
+ *   - RELICS are what LUCK turns into, so it closes the hand.
  *
  * AFTER is gone with them rather than left as an empty tab.
+ *
+ * **SACRIFICE left the START tab on 2026-09-03**, when the mechanic itself
+ * was cut (`burnRelics`/`burnLuck` both 0 in `TUNING` for good — see
+ * `LOG.md` Session 43). Its lesson stays in `lessons.ts` and its teach-card
+ * plumbing stays gated exactly as it always was; the difference is this list
+ * no longer forces it onto a `?taught=1` device or the no-ledger gallery
+ * fallback, both of which otherwise show every section unconditionally. A
+ * real player was already never going to meet it — the first-contact card
+ * that would mark it met can no longer fire — so this only closes the two
+ * synthetic paths that don't go through that gate.
  *
  * **The five destinations and STONE left the PLAY tab on 2026-08-30**, and
  * they did not lose a word doing it. Marc: *"in how to play, we have the
@@ -82,7 +92,7 @@ const KEY_LINES = [
  * so it has no row in an alphabet.
  */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
-  start: ['ripe', 'pop', 'sacrifice', 'sizeBonus', 'worth'],
+  start: ['ripe', 'pop', 'sizeBonus', 'worth'],
   play: ['pocket', 'bounty'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };

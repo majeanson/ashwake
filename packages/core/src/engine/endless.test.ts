@@ -96,9 +96,10 @@ describe('local harvest', () => {
   });
 
   it('pays the same pocket more the farther from home it sits', () => {
-    // Identical dominoes: worth 1 + 1, size bonus 2. Near home the multiplier
-    // is 1; at mean distance 8.5 with distanceStep 4 it is 3. Same work, three
-    // times the points — the whole reason to migrate outward.
+    // Identical dominoes: worth 1 + 1, size bonus 1.5 (harvestSizeBonus 0.5).
+    // Near home the multiplier is 1; at mean distance 8.5 with distanceStep 3
+    // it is 3, under distanceMultiplierCap's 3 so it still binds. Same work,
+    // three times the points — the whole reason to migrate outward.
     const near: Record<HexKey, Cell> = {};
     const far: Record<HexKey, Cell> = {};
     const [n1] = domino(near, 0, 0);
@@ -106,8 +107,8 @@ describe('local harvest', () => {
 
     const nearPay = harvestValue(stateWith(near), n1).points;
     const farPay = harvestValue(stateWith(far), f1).points;
-    expect(nearPay).toBe(2 * 2 * 1);
-    expect(farPay).toBe(2 * 2 * 3);
+    expect(nearPay).toBe(2 * 1.5 * 1);
+    expect(farPay).toBe(2 * 1.5 * 3);
   });
 
   it('does nothing without a target, and nothing on an unripe target', () => {

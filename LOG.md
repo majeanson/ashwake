@@ -3586,9 +3586,9 @@ pictures — not grepping exports again — to see it.
 ### Session 41 — the phone's own hex ceiling was never asked about a tablet (2026-09-03)
 
 **Question:** Marc, from a real device screenshot — a tablet-ish screen with
-the board tiny and adrift in a mostly-empty page: *"review for different
+the board tiny and adrift in a mostly-empty page: _"review for different
 sizes (phone, tablet, desktop) and improve ui/ux... font size ++ for all
-medias."* What does the picture say, and where does it come from?
+medias."_ What does the picture say, and where does it come from?
 
 **Answer: `HEX_PX_MAX` is Ashwake 1's phone number, and nothing had ever
 asked it whether it still meant anything on a screen ten times the width.**
@@ -3644,3 +3644,223 @@ to be conditional. `hexPxMaxFor`'s whole docstring is the argument for why
 34 was right on one screen and wrong to leave unquestioned on the others; the
 next constant like it should carry the same kind of sentence, not just the
 number.
+
+### Session 42 — the two multipliers that never learned to stop (2026-09-03)
+
+**Question:** Marc, from his own lifetime trophy screen — a 12,176-point blue
+bar against green/yellow/red all under 2,000, and a source breakdown where
+`distance` alone was 72% of every point ever scored and matching/power/rarity
+combined were 2%: is the scoring balanced?
+
+**Answer: two of the economy's multipliers had no ceiling, and one colour's
+own power was riding on the same unbounded axis as both of them.**
+`harvestMultiplier` (pockets pay more the farther the mean tile sits from
+home) and blue's tide power (`+1 worth per blueTideEvery hexes from home`)
+both grow forever with distance; only the pocket-size bonus had ever been
+capped, back when the hard clock first resurrected the mega-bank exploit
+(`harvestSizeCap`, `../tiles/LOG.md` Session 19). Confirmed with the harness
+before touching anything: `harvestSizeCap: 20` is still load-bearing today —
+`bank40`/`bank80` tie exactly, proving the greedy threshold binds — and a new
+`distanceMultiplierCap` at 5+ is a no-op (no scripted policy's typical
+harvest distance even reaches it) while 3 costs `rush` (built to chase
+distance) −13 to −29% and leaves near-home play within a few per cent, the
+same shape the size cap already has.
+
+**Shipped:** `distanceMultiplierCap: 3` and `harvestSizeBonus: 0.5` (was the
+full quadratic 1 — bank3 was scoring only 47.6% of bank15 on size alone;
+halving it narrows that to 58.5%). `blueTideCap: 1`, chosen to stop tide at
+the same real hex distance the harvest cap already stops at
+(`distanceMultiplierCap x distanceStep / blueTideEvery` = 3x3/6 = 1) rather
+than invent a second unrelated number. Colour totals were previously
+unmeasurable — the harness tracked no such column — so this pass added the
+instrumentation as a throwaway script rather than a committed one; it found
+`rush` banking 41-49% of its points in blue against 15-23% for the other
+three, which the cap only partly closes (41%→33%, still largest). Also
+found, and at first left open: `greenCrowdBonus` running 43-46% of every
+NEAR-HOME policy's points (farm, bank20, chooser — not just a green-focused
+line), a bigger and more universal share than blue's ever was — but Marc's
+own read, minutes later, was blunter than "open": _"green is obviously OP
+right now."_
+
+**So it got sized the same session.** Green double-dips where the other
+three don't: a green neighbour already scores as an ordinary match — every
+colour's same-colour neighbours do — and then scores AGAIN as one more
+crowd, which is why it ran twice anyone else's share despite being bounded
+by hex geometry (six neighbours) rather than by distance. Swept
+`greenCrowdBonus` from 1 down: 0.5 flattened the split best (farm/bank20
+within four points of an even 25/25/25/25) but dragged `sim.test.ts`'s
+"rewards patience" gate down with it — the 200-seed bank40/bank3 ratio holds
+at 1.6-1.7x at every value tried, but the gate's own fixed six-seed sample
+sits on a knife edge and read 1.47 at 0.5, under its 1.5 floor. **Shipped
+0.7** instead: keeps that gate at 1.57 and still lands farm/bank20/chooser
+within a couple of points of even (27/27/22/24, 29/27/21/24, 29/28/23/19).
+`rush` stays blue-heavy regardless of this dial, at any value tried — that's
+the colour's stated niche ("the colour you carry outward") doing its job
+under a strategy built to chase it, not a gap this dial should close.
+
+**The bounty was the same question's second half.** `Primes: 0` in that same
+screenshot is not `questNeed: 0` (an earlier wrong read of `BARE_TUNING`
+instead of the shipped `TUNING`, corrected here — quests are on,
+`questNeed: 8`) and not a dead wire: `state.quest` arms correctly on a
+site-kind claim and never expires. It is just rare under ordinary play —
+diagnosed by instrumenting individual runs rather than trusting the harness's
+median column, which reads as a flat 0 for any outcome under 50% of runs:
+farm/bank20 arm a quest in ~34-37% of 200 seeds and collect roughly half of
+those, versus `seeker`'s majority. `questRadius` doesn't move the arming rate
+at all (radius=999 changed nothing) but does rescue some already-armed runs
+that 6 was missing — 34/68 → 37/68 for farm, 40/75 → 46/75 for bank20 at
+radius=12 — so that shipped; `questNeed` and the cache/site/territory split
+were left alone, since those trade against the survival economy
+`cacheShareNear` was tuned for and this pass had no evidence to reweight it.
+
+**Verified:** `pnpm sim` moved and the golden file moved with it in this
+commit — every number in the table shifted (harvestSizeBonus alone touches
+every scored line), stalled/capped stayed 0, and `%tiles`/`relics` stayed
+exactly unchanged at every step of every sweep, confirming none of this
+touches Gate B or the meta-economy. 1031 tests green; four snapshots moved
+on purpose and are worth reading, not just trusting — the rule is never
+silently: `teaching.pin.test.ts`'s bounty glossary line ("within 12 hexes",
+was 6) and its green colour lesson, plus `prose.pin.test.ts`'s matching hex-
+tap line, now read "+0.7 worth per [colour] neighbour" (was +1). Two
+arithmetic pins updated to the new size bonus (`endless.test.ts`,
+`wake.test.ts`'s tide fixture pinned back to uncapped since that test's
+whole point is the raw wake-hex formula), and `quest.test.ts`'s pocket
+fixture moved from green to yellow tiles — green's now-fractional crowd
+bonus made an exact `points === plain * questBonus` assertion rounding-
+dependent for reasons that have nothing to do with quests; yellow in a
+same-colour-or-stone row never triggers its own company bonus either, so
+the arithmetic stays on whole numbers again.
+
+**The lesson worth keeping, twice over.** The size cap had a name and a
+cited exploit; the distance multiplier and blue's tide had neither, despite
+sharing the exact same shape — unbounded, multiplicative, and paid for
+nothing but walking. A cap that exists because an exploit was MEASURED gets
+remembered; an identical shape that nobody happened to sweep gets to run for
+a whole project's history looking like a feature. And the gate that caught
+`greenCrowdBonus: 0.5` was a six-seed canary, not a 200-seed one — the real
+economy was fine at 0.5, the FIXED SAMPLE the test happens to run on was not.
+Worth knowing which of those two a failing gate is telling you before
+reaching for the tuning number instead of the seed count.
+
+### Session 43 — red gets a dial, and two mechanics the harness never saw come out (2026-09-03)
+
+**Question:** Marc, still on the colour split — can red be bumped without
+becoming the new green? And separately: is BURN/TITHE worth keeping, or
+should relics just stay passive?
+
+**Red: yes, but the lever is touchier than it sounds.** Red never had a
+magnitude dial — `redAshMatches`/`redAshWalls` were booleans, the ash bonus
+hardcoded at 1 (2 for unique). Added `redAshBonus` (default 1, reproduces
+today exactly) and swept it: 1.5 lifts red from the worst colour (~21%) to
+parity with green/yellow (~27-31%) across every strategy, and the patience
+gate gets HEALTHIER (1.57→1.87) because a red-heavy pocket wants to sit and
+accumulate stone, which rewards waiting. Past 2.0 red overshoots into being
+the new imbalance (37-53%) and the same patience gate fails the other way
+(1.41 at 2.0). **Not shipped** — Marc: "keep 1 for now" — the dial exists,
+off by construction, for whenever the answer changes.
+
+**BURN and TITHE: cut.** Marc's call, after seeing the actual shape of the
+relics economy: scrap the mid-run sacrifice, lean on `claimRelics` and
+`luckToRelics` staying passive. `burnRelics: 1→0` and `titheRate: 0.15→0`
+/`titheMin: 20→0` in the shipped `TUNING`. One finding worth keeping from
+the process: **the harness has never modelled either mechanic** — no
+scripted policy in `sim/policy.ts` ever chose `HARVEST choice:'burn'` or
+`SPEND on:'tithe'`, so a 200-seed-per-policy before/after comparison came
+back byte-identical, and the golden sim file did not move at all. Every
+historical "median relics fell to X" number in `tuning.ts`'s own comments
+must have come from real play or a one-off script, never from `pnpm sim` —
+worth remembering next time a comment cites the harness for a mechanic that
+turns out to have no policy touching it.
+
+**Both mechanics were already correctly gated — this was a genuine
+zero-dead-button change.** `view.ts` only emits the SACRIFICE button
+(`harvestBurn`) and the TITHE purse row (`spendsFor`) when their tuning is
+above zero, and `reduce.ts` no-ops both actions independently at the engine
+level besides. Setting the two dials to 0 was the WHOLE UI change; nothing
+needed a separate conditional added. What still needed hands: three engine
+tests (`tilesonly.test.ts`) that priced the live mechanism against the
+default `TUNING` now price it against their own explicit `{ ...T,
+burnRelics: 1 }`/`{ ...T, titheRate: 0.15, titheMin: 20 }` fixtures instead,
+so the mechanism stays tested without describing reachable behaviour;
+`purse.test.tsx`'s TITHE round-trip test does the same; four pinned
+snapshots lost the sentences that only existed because the dial was on
+(the SACRIFICE lesson's "pays RELICS" clause, the purse card's whole TITHE
+row); and an e2e spec (`board.spec.ts`) that hard-asserted the SACRIFICE
+button and a matching manual section now checks the button is GONE and
+drops the manual half of the comparison — it turns out the manual's
+`start` tab statically lists 'sacrifice' regardless of tuning
+(`Manual.tsx` `SECTIONS`), so a `?taught=1` device still prints a (shorter)
+section for a mechanic that no real player's teaching ledger can ever mark
+"met" now that its card can never fire. Left as-is rather than edited
+speculatively — a real player never sees it; only the `taught=1` testing
+shortcut and the "device with no ledger" gallery fallback do, and whether
+that stale entry is worth trimming is a smaller, separate call.
+
+**Verified:** `pnpm sim` byte-identical (confirms the "harness never
+modelled it" finding above), 1031 vitest tests green, typecheck and lint
+clean across `packages/core` and `apps/game`. The e2e edit could not be run
+in this session (no browser) and is worth a spot-check before it ships.
+
+**Addendum, same day: the manual's stale mention, closed rather than left.**
+Marc asked for a pass over every screen and help surface to confirm neither
+mechanic is still mentioned. The gates on the button and the purse row were
+already airtight; the one live gap was `Manual.tsx`'s `SECTIONS.start`,
+which listed `'sacrifice'` unconditionally rather than through the
+teaching-ledger gate every other section goes through — invisible in
+ordinary play (the first-contact card can never fire now, so no real
+player's ledger ever marks it "met"), but still printed on a `?taught=1`
+device or the "no ledger" gallery fallback, both of which mark every lesson
+met regardless. Removed from the list; the lesson entry and its teach-card
+plumbing stay in `lessons.ts` untouched, gated exactly as they always were,
+in case the mechanic is ever reinstated. `board.spec.ts`'s icon-consistency
+test now asserts the manual section is gone, the same way it already
+asserted the bar button was.
+
+### Session 44 — a screen the story used to fill, and a catalogue already through this once (2026-09-03)
+
+**Question:** Marc, two more asks alongside confirming SACRIFICE/TITHE are
+gone everywhere (the addendum above): cut the whole catalogue's word count
+as far as it goes, and make the front door less text before BEGIN.
+
+**The catalogue already went through exactly this pass, five days ago, with
+three written rules.** `en.ts`'s own docblock: Marc, 2026-08-30 — _"review
+help and text content so it's not AI-like (no em dashes, etc.), be concise
+and simple in all content."_ No em dash a player can read, one idea per
+sentence, say the thing once. Checked today: zero em dashes remain in
+either catalogue outside developer comments — the rule held. Read the full
+779/785 lines of both files rather than trust that holding meant nothing
+else needed a look, and found the prose is already dense rather than
+padded: most lesson `core` strings are one or two sentences that each carry
+a fact the player needs, not filler. **Did not do a wholesale rewrite.**
+Cutting further against an already-edited, rule-compliant text risks two
+things a word-count number does not show: eroding the deliberate voice
+`en.ts`'s own docblock argues for, and forcing a review of every French
+line again (D4: French is Marc's own review surface, never re-recorded
+silently) for savings that are mostly gone already. Flagged rather than
+cut: `claim.shrineCrossing` is the one genuinely long instructional string
+left (five sentences describing the world-crossing choice) — worth a look
+if there is appetite for more, but it is one string, not a pass.
+
+**The real bloat wasn't the words, it was the screen.** Screenshotted the
+front door at 390×844 before touching anything: the tagline plus three
+story paragraphs ran the tagline's one line into roughly half the visible
+screen before BEGIN, and `.door-story`'s own CSS comment already knew this
+was tight — "at 375×667 the content is 691px," more than the viewport,
+before this session touched it. Folded the three paragraphs behind a
+`THE STORY` disclosure using `Fold`, the same `<details>`-based pattern the
+manual already uses for its own finer print — no new UI primitive, no new
+persisted state, and the story is exactly as available as it was, one tap
+away instead of the whole first screen. Verified at three sizes: 390×844
+(logo, name, one line of tagline, THE STORY, BEGIN, the daily badge and all
+three nav rows now fit with room left over), 320×568 (the audit's own
+tightest phone — everything still fits, BEGIN visible with no scroll), and
+the opened state (the three paragraphs read exactly as before, caret
+flipped, nothing lost). Two new catalogue strings, `ui.theStory` (`THE
+STORY` / `L’HISTOIRE`), the only text this needed.
+
+**Verified:** typecheck and 1031 vitest tests green across both packages,
+lint clean on every touched file. No snapshot moved — the fold changes
+markup, not any string's content, so nothing pinned had reason to. The
+front-door e2e audit screenshots (`screens.audit.ts`'s `front-door*`
+entries) will get new baselines next run, which is the correct outcome for
+a deliberate layout change, not a regression.

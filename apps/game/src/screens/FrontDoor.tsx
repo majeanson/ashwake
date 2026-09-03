@@ -2,6 +2,7 @@ import { ICON_DATA_URI, NAME } from '@meta/identity';
 import type { Strings } from '@text/Strings';
 import type { ThemeId } from '@theme/tokens';
 import { useArtSlot } from '../shell/art';
+import { Fold } from '../ui/Fold';
 
 /**
  * The front door (Stage 3, 2026-08-29).
@@ -92,7 +93,13 @@ export function FrontDoor({
 
       {/*
         The hook (Marc, 2026-08-29: "we need a little story, a small hook for
-        this game towards the settlement").
+        this game towards the settlement"), FOLDED (2026-09-03): three
+        paragraphs at reading size pushed BEGIN below the fold on a real phone
+        — 691px of content on a 375×667 screen, per the measurement `.door-story`
+        still carries. A story a stranger is free to skip should not be the
+        reason they have to scroll to find the button, so it is a tap away
+        instead of the whole screen: `THE STORY` opens the same three lines a
+        returning player has already read and never needs shown again unasked.
 
         Plain paragraphs rather than `Prose`, deliberately: every other piece of
         text in the game runs the glossary matcher so a term is tappable
@@ -101,11 +108,13 @@ export function FrontDoor({
         teach — they are what the four grounds ARE — and a term card opening
         over the front door would answer a question nobody has asked yet.
       */}
-      <div className="door-story">
-        {s.story.map((line) => (
-          <p key={line}>{line}</p>
-        ))}
-      </div>
+      <Fold summary={s.ui.theStory}>
+        <div className="door-story">
+          {s.story.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      </Fold>
 
       <button type="button" className="door-begin" data-door="begin" onClick={onBegin}>
         {resuming

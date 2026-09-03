@@ -232,6 +232,17 @@ honest while something else owns the moment.**
 
 ## 1. Needs Marc, and only Marc
 
+**TREASURE (pop for magic/unique) is a real button paying an unreal
+price (2026-09-03).** Diagnosed, not fixed. Popping a 10+ pocket as
+treasure forfeits BOTH tiles and points for one rare tile — a bank20
+harvest averages 1,467 points; the rare tile's whole lifetime payoff is the
++5 to +15 worth an ordinary wild match adds once. Off by roughly two orders
+of magnitude, which is presumably why it goes unused. Three directions raised
+with Marc, not yet written up or swept: keep the tiles and forfeit only
+points, richen what the rare tile itself does, or lower `treasureNeed` —
+which of the three is right is a feel question about what the trade should
+cost, not a number the harness settles alone.
+
 **The two corners, by reaching for them (2026-08-30).** MENU is top-right and
 the camera is alone bottom-right, on your call: _"this, but menu move top
 right."_ **The mute worry that stood here is answered twice over** — sound is a

@@ -15,10 +15,15 @@ import type { Cell, GameState } from './state';
 const QUEST: Tuning = { ...TUNING, worldWalls: 0, magicChance: 0, uniqueChance: 0 };
 
 /**
- * A ripe pocket of `size` green tiles in a row, walled in stone — built on a
+ * A ripe pocket of `size` yellow tiles in a row, walled in stone — built on a
  * BARE board rather than over the run's own, because the arrival clearing's
  * empty ground would leave the row unripe and the test would be measuring
- * the wrong thing.
+ * the wrong thing. Yellow rather than green: every neighbour here is either
+ * the same colour or stone, so `yellowCompanyBonus` (paid on DIFFERENT
+ * neighbours) never fires and worth stays whole numbers — green's crowd
+ * bonus is fractional at its tuned value and would make the exact
+ * `points * questBonus` arithmetic below rounding-dependent for reasons
+ * that have nothing to do with quests.
  */
 function pocketAt(
   state: GameState,
@@ -29,7 +34,7 @@ function pocketAt(
   const cells: Record<HexKey, Cell> = {};
   const members = new Set<HexKey>();
   for (let i = 0; i < size; i++) members.add(key(q + i, r));
-  for (const k of members) cells[k] = { kind: 'tile', colour: 'green' };
+  for (const k of members) cells[k] = { kind: 'tile', colour: 'yellow' };
   for (let i = 0; i < size; i++) {
     for (const n of neighbourKeys(q + i, r)) {
       if (!members.has(n)) cells[n] = { kind: 'stone' };

@@ -86,7 +86,7 @@ describe('the where-you-wake prototype', () => {
     // tide. From true origin the tide bonus would be floor(30 / blueTideEvery)
     // for free; from a wake hex AT (30, 0) it is zero. Both boards identical —
     // only home moves.
-    const tide = { ...T, blueTideEvery: 6 };
+    const tide = { ...T, blueTideEvery: 6, blueTideCap: 0 };
     const spot = key(30, 0);
     const cells: Record<HexKey, Cell> = {
       [spot]: { kind: 'tile', colour: 'blue' },

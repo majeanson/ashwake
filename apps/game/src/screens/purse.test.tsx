@@ -32,8 +32,8 @@ const s = stringsFor(pickLocale(['en']));
 const theme = resolveTheme(null);
 
 /** A run holding `luck`, which is what makes every row affordable. */
-function rich(luck: number): GameState {
-  return { ...newRun(11), luck };
+function rich(luck: number, tuning = TUNING): GameState {
+  return { ...newRun(11, tuning), luck };
 }
 
 const drawer = (state: GameState) => {
@@ -127,15 +127,21 @@ describe('a tapped row reaches the reducer', () => {
     expect(after.draft).not.toEqual(state.draft);
   });
 
+  // TITHE was cut from the shipped economy 2026-09-03 (`titheRate`/`titheMin`
+  // both 0 in `TUNING` now — see tuning.ts) in favour of relics staying
+  // passive. Priced against its own tuning here so the row's wiring — the
+  // thing this file exists to prove, per the docblock above — stays tested
+  // even though the shipped drawer never offers it.
   it('turns the whole purse into relics when TITHE is tapped', async () => {
-    const state = rich(500);
+    const priced = { ...TUNING, titheRate: 0.15, titheMin: 20 };
+    const state = rich(500, priced);
     const tithe = (await tapped(state)).find((x) => x.on === 'tithe');
     expect(tithe, 'the purse has no way out of itself').toBeDefined();
     expect(canSpend(state, 'tithe')).toBe(true);
 
     const after = reduce(state, actionFor(tithe!));
     expect(after.luck, 'a tithe left luck in the purse').toBe(0);
-    expect(after.relics).toBe(state.relics + Math.floor(state.luck * TUNING.titheRate));
+    expect(after.relics).toBe(state.relics + Math.floor(state.luck * priced.titheRate));
     // The row prints that number before it is spent, so the tap and the
     // receipt cannot disagree.
     expect(tithe!.relics).toBe(after.relics - state.relics);

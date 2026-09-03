@@ -69,19 +69,24 @@ describe('one payout', () => {
 
 describe('burning a pocket', () => {
   /**
-   * Repriced, twice. Burning paid LUCK until Marc played it and never once
-   * used it: a burn paid `burnLuck` a tile where popping the same pocket paid
-   * comparable luck AND the tiles AND the score, so it was strictly dominated
-   * the moment luck went flat-per-pop. It now pays RELICS — the between-runs
-   * currency — which is the version he asked for: give up the thing keeping
-   * you alive and the score, and buy the next run instead.
+   * Repriced, twice, and finally cut. Burning paid LUCK until Marc played it
+   * and never once used it: a burn paid `burnLuck` a tile where popping the
+   * same pocket paid comparable luck AND the tiles AND the score, so it was
+   * strictly dominated the moment luck went flat-per-pop. It then paid
+   * RELICS instead — give up the thing keeping you alive and the score, and
+   * buy the next run instead — until 2026-09-03, when Marc cut the sacrifice
+   * entirely in favour of relics staying passive (`claimRelics`,
+   * `luckToRelics`). `burnRelics`/`burnLuck` are both 0 in the shipped
+   * `TUNING` now; this test prices the mechanism against its own tuning so
+   * the option, and its test, can come back without being reinvented.
    */
   it('pays RELICS and nothing else — no tiles, no score, no luck', () => {
-    expect(T.burnLuck).toBe(0);
-    const state = pocket(newRun(5, T), 6);
+    const priced = { ...T, burnRelics: 1 };
+    expect(priced.burnLuck).toBe(0);
+    const state = pocket(newRun(5, priced), 6);
     const burned = reduce(state, { type: 'HARVEST', choice: 'burn', at: key(0, 0) });
 
-    expect(burned.relics).toBe(6 * T.burnRelics);
+    expect(burned.relics).toBe(6 * priced.burnRelics);
     expect(burned.tiles).toBe(state.tiles);
     expect(burned.points).toBe(state.points);
     expect(burned.luck).toBe(state.luck);
@@ -172,33 +177,41 @@ describe('luck as a purse', () => {
   });
 });
 
-// TITHE (2026-08-18): the fourth price, and the odd one out — it does not
-// touch the draft at all, only the purse.
+// TITHE existed 2026-08-18 through 2026-09-03 as the fourth price, and the
+// odd one out — it did not touch the draft at all, only the purse. Cut the
+// same session as `burnRelics`, same reason: an active mid-run relics
+// choice the harness never modelled, in favour of `luckToRelics` staying
+// the whole passive story. `T.titheRate`/`T.titheMin` are both 0 in the
+// shipped `TUNING` now, so these price the mechanism against its own
+// tuning rather than the live default.
 describe('TITHE', () => {
+  const priced = { ...T, titheRate: 0.15, titheMin: 20 };
+
   it('converts the whole purse to relics, at titheRate, and empties it', () => {
-    const rich: GameState = { ...newRun(5, T), luck: 100 };
+    const rich: GameState = { ...newRun(5, priced), luck: 100 };
     const tithed = reduce(rich, { type: 'SPEND', on: 'tithe' });
 
     expect(tithed.luck).toBe(0);
-    expect(tithed.relics).toBe(rich.relics + Math.floor(100 * T.titheRate));
+    expect(tithed.relics).toBe(rich.relics + Math.floor(100 * priced.titheRate));
     // Nothing about the hand moved — the other three spends all redraw or
     // reprice the draft; this one is purely the purse.
     expect(tithed.draft).toBe(rich.draft);
   });
 
   it('refuses below titheMin, and charges nothing', () => {
-    const poor: GameState = { ...newRun(5, T), luck: T.titheMin - 1 };
+    const poor: GameState = { ...newRun(5, priced), luck: priced.titheMin - 1 };
     expect(canSpend(poor, 'tithe')).toBe(false);
     expect(reduce(poor, { type: 'SPEND', on: 'tithe' })).toBe(poor);
   });
 
-  it('pays a better rate than dying with luck still in the purse', () => {
-    expect(T.titheRate).toBeGreaterThan(T.luckToRelics);
+  it('paid a better rate than dying with luck still in the purse', () => {
+    expect(priced.titheRate).toBeGreaterThan(priced.luckToRelics);
   });
 
-  it('does not exist where the dial is off', () => {
-    const off = without({ titheRate: 0, titheMin: 0 });
-    const state: GameState = { ...newRun(5, off), luck: 500 };
+  it('does not exist where the dial is off — the shipped economy, now', () => {
+    expect(T.titheRate).toBe(0);
+    expect(T.titheMin).toBe(0);
+    const state: GameState = { ...newRun(5, T), luck: 500 };
     expect(canSpend(state, 'tithe')).toBe(false);
     expect(reduce(state, { type: 'SPEND', on: 'tithe' })).toBe(state);
   });

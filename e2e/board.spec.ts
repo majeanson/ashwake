@@ -1132,9 +1132,7 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('POP and SACRIFICE wear one mark each, on the bar, in the manual and on the card', async ({
-  page,
-}) => {
+test('POP wears one mark, on the bar, in the manual and on the card', async ({ page }) => {
   /*
    * Marc, 2026-08-30: *"make em icons, associate in how to play and cards
    * too."*
@@ -1148,14 +1146,20 @@ test('POP and SACRIFICE wear one mark each, on the bar, in the manual and on the
    *
    *   - the ACTION BAR, where you press it;
    *   - HOW TO PLAY, where the section that explains it carries the mark in
-   *     its heading — and SACRIFICE had no section at all until this, in
-   *     either language, with the button on the board since Stage 3;
+   *     its heading;
    *   - the CARD a harvest leaves, which had no mark on the reasoning that
    *     "the board is the thing that popped" — true while POP was only a
    *     button and not while it is a concept in the registry.
    *
    * Compared by the PATH the SVG draws, not by a class name: two different
    * icons under one class would pass a name check and be the bug.
+   *
+   * SACRIFICE was the second half of this test until 2026-09-03, when Marc
+   * cut the mechanic entirely (`burnRelics`/`burnLuck` both 0 in `TUNING`
+   * now — see `LOG.md`). The bar button, card receipt and manual section
+   * (`Manual.tsx` SECTIONS) are all gone with it, so this only has POP left
+   * to check — a positive assertion that the bar button is gone stands in
+   * for what used to be a mark comparison.
    */
   const errors = watchErrors(page);
 
@@ -1165,17 +1169,15 @@ test('POP and SACRIFICE wear one mark each, on the bar, in the manual and on the
       .first()
       .evaluate((el) => el.querySelector('svg path')?.getAttribute('d') ?? null);
 
-  // 1. THE BAR. A device with relics known, so SACRIFICE is offered.
+  // 1. THE BAR.
   await page.goto('/?taught=1&runs=1&place=24');
   await begin(page);
   await page.waitForTimeout(700);
   await clearCards(page);
 
   const onPop = await pathOf('[data-action="pop"] .act-mark');
-  const onBurn = await pathOf('[data-action="pop-burn"] .act-mark');
   expect(onPop, 'POP wears no mark').not.toBeNull();
-  expect(onBurn, 'SACRIFICE wears no mark').not.toBeNull();
-  expect(onPop, 'POP and SACRIFICE draw the same shape').not.toBe(onBurn);
+  await expect(page.locator('[data-action="pop-burn"]'), 'SACRIFICE still renders').toHaveCount(0);
 
   // 2. THE CARD a harvest leaves.
   await page
@@ -1188,7 +1190,7 @@ test('POP and SACRIFICE wear one mark each, on the bar, in the manual and on the
     'the pop receipt does not lead with the mark its button wears',
   ).toBe(onPop);
 
-  // 3. HOW TO PLAY, where both are explained.
+  // 3. HOW TO PLAY, where it is explained.
   await page.goto('/?taught=1');
   await page.locator('[data-door="more"]').click();
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
@@ -1211,9 +1213,9 @@ test('POP and SACRIFICE wear one mark each, on the bar, in the manual and on the
     'the manual POP section does not wear the mark its button wears',
   ).toBe(onPop);
   expect(
-    headOf(/SACRIFICE|SACRIFIER/),
-    'the manual has no SACRIFICE section, or it wears a different mark',
-  ).toBe(onBurn);
+    heads.some(([name]) => /SACRIFICE|SACRIFIER/.test(String(name))),
+    'the manual still has a SACRIFICE section',
+  ).toBe(false);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

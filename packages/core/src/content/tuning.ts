@@ -25,6 +25,16 @@ export type Tuning = {
   readonly distanceStep: number;
 
   /**
+   * The distance multiplier's ceiling; 0 for no cap. Unlike the size bonus,
+   * distance compounds every future harvest for the rest of the run, so
+   * "go as far as the run allows, cash in once" is the same arithmetic that
+   * `harvestSizeCap` was added to kill on the pocket-size axis (see there —
+   * the mega-bank exploit the hard clock resurrected). Off by default until
+   * the harness sweeps a value.
+   */
+  readonly distanceMultiplierCap: number;
+
+  /**
    * Endless terrain (P2 of `ideas/endless-world.md`). All of it is a pure
    * function of the world seed, computed as ground is revealed — never stored,
    * never rolled. The bare skeleton zeroes all of these.
@@ -214,6 +224,26 @@ export type Tuning = {
   readonly yellowCompanyBonus: number;
   readonly redAshMatches: boolean;
   readonly blueTideEvery: number;
+
+  /**
+   * Worth per stone/wall neighbour under ash — the magnitude green, yellow
+   * and blue each already had a number for and red never did; `redAshMatches`
+   * was a toggle, not a dial. Doubled for a unique tile, same as an ordinary
+   * match. Default 1 reproduces every red behaviour before this field
+   * existed.
+   */
+  readonly redAshBonus: number;
+
+  /**
+   * Tide's ceiling, in tide-steps; 0 for no cap. Unique among the four
+   * personalities: green/yellow/red pay for local geometry, capped by how
+   * many neighbours a hex has — six, always. Tide pays for DISTANCE, which
+   * has no such ceiling, so a blue tile far from home outgrows every other
+   * colour's power by construction, then gets multiplied again by the SAME
+   * `distanceMultiplierCap` every colour in the harvest shares. Same fix as
+   * that dial, one level lower: cap the ingredient, not just the recipe.
+   */
+  readonly blueTideCap: number;
 
   /**
    * Power experiments from the first colour-balance report (LOG addendum 5):
@@ -580,6 +610,7 @@ export type Tuning = {
  */
 export const BARE_TUNING: Tuning = {
   distanceStep: 4,
+  distanceMultiplierCap: 0,
 
   worldWalls: 0.06,
   fieldSize: 4,
@@ -623,7 +654,9 @@ export const BARE_TUNING: Tuning = {
   greenCrowdBonus: 0,
   yellowCompanyBonus: 0,
   redAshMatches: false,
+  redAshBonus: 1,
   blueTideEvery: 0,
+  blueTideCap: 0,
   redAshWalls: false,
   yellowCompanyAll: false,
 
@@ -879,6 +912,68 @@ export const COLOUR_WEIGHTS: readonly (readonly [Colour, number])[] = COLOURS.ma
 export const TUNING: Tuning = {
   ...PLANE,
 
+  // Distance was paying 72% of a live player's lifetime points (a lifetime
+  // stats screen, Marc, 2026-09-03) against 2% for matches/power/rare/native
+  // combined — the same "one line beats everything" shape `harvestSizeCap`
+  // was built to kill, just on the other multiplier. Swept at 200 seeds:
+  // `distanceMultiplierCap` >= 5 is a no-op today (no policy's typical
+  // harvest distance even reaches it) and <= 2 flattens near-home play that
+  // never chased distance (farm/hoard -12%). 3 is the chosen middle: it
+  // costs `rush` (built to chase it) -13-29% while farm/bank stay within a
+  // few per cent, same shape as the cap-20 pocket bonus. `harvestSizeBonus`
+  // came down with it (0.5, was 1 — full quadratic): bank3 was scoring only
+  // 47.6% of bank15 on size alone; halving the exponent narrows that to
+  // 58.5% without an interior optimum moving. Neither changes %tiles or the
+  // relic economy — both measured unchanged across every sweep.
+  distanceMultiplierCap: 3,
+  harvestSizeBonus: 0.5,
+
+  // Blue's tide is the one personality with no geometric ceiling — green,
+  // yellow and red are all capped by a hex having six neighbours, tide pays
+  // per hex of distance forever. Measured: `rush` (a policy that chases
+  // depth, not blue specifically) already banks 41-49% of its points in
+  // blue against 15-23% for the other three; a player who actually optimises
+  // for it, per the screenshot above, can push that further with no ceiling
+  // in the way. Capped at the SAME real distance `distanceMultiplierCap`
+  // stops paying at (`distanceMultiplierCap x distanceStep` / `blueTideEvery`
+  // = 3x3/6 = 1) rather than picking a second, unrelated number: past that,
+  // tide stops climbing exactly where the harvest multiplier already does.
+  // Only closes part of the gap (rush's blue share 41% -> 33%, still the
+  // largest of the four) — the rest was `greenCrowdBonus`, below.
+  blueTideCap: 1,
+
+  // Green was earning 43-46% of every near-home policy's points against
+  // 15-23% each for the other three — not a runaway like tide (six
+  // neighbours caps it by construction) but plainly too strong at 1, the
+  // original quadratic-era value. It double-dips where the others don't:
+  // a green neighbour already scores as an ordinary match (every colour's
+  // do), and THEN scores again as one more crowd. 0.5 flattened it best
+  // (farm/bank20 within four points of an even split) but took `sim.test.ts`'s
+  // "rewards patience" gate with it — bank40/bank3's ratio holds at 1.6-1.7x
+  // over 200 seeds at every value tried, but the gate's fixed six-seed sample
+  // sits on a knife edge and reads 1.47 at 0.5, under its 1.5 floor. 0.7 keeps
+  // that gate at 1.57 and still lands farm/bank20/chooser within a couple of
+  // points of even (27/27/22/24, 29/27/21/24, 29/28/23/19). `rush` (a policy
+  // that chases distance, not crowding) stays blue-heavy regardless at any
+  // value — that's the colour's own niche ("the colour you carry outward")
+  // working as intended, not this dial's job to flatten.
+  greenCrowdBonus: 0.7,
+
+  // Bounties were 0 in the same lifetime screen, and the harness explains
+  // why without it being a bug: `state.quest` only arms on claiming a
+  // 'site'-kind landmark (36% of destinations) and never expires once armed,
+  // but only ~35% of ordinary (non-destination-seeking) runs ever see one
+  // arm at all, and of those only half land the required pocket in range —
+  // a ~17% chance per run under farm/bank20, versus `seeker`'s majority.
+  // Widening the radius doesn't touch the arming rate (unaffected by
+  // `questRadius` at all) but does convert some already-armed runs that
+  // radius 6 was missing: measured 34/68 -> 37/68 collected for farm,
+  // 40/75 -> 46/75 for bank20 at radius=12, with no further gain past it.
+  // Left `questNeed` and the site/cache/territory split alone — those trade
+  // against the survival economy `cacheShareNear` was tuned for, and this
+  // pass only had evidence for the geometry, not for reweighting that.
+  questRadius: 12,
+
   // Small and often is the LUCK line, big and late is the score line: a flat
   // 9 luck a pop against half a point per tile means three 4-pockets pay 33
   // luck where one 12-pocket pays 15. And every pop steers the next six draws
@@ -909,18 +1004,15 @@ export const TUNING: Tuning = {
   luckRerollCost: 12,
   luckSteerCost: 30,
   luckForgeCost: 75,
-  // TITHE (2026-08-18): a clean 3× what death pays on unspent luck, so
-  // cashing out mid-run stays a real alternative to hoarding. Both rates
-  // came down in the 2026-08-20 tightening (0.25/0.10 → 0.15/0.05, Marc:
-  // "make sure its harder overall to get relics") — the harness's new
-  // relics column showed the ending conversion was the meta-economy's
-  // widest faucet, ~25-45 relics a run against 20-50-relic shop rungs, a
-  // shop level a run with no decision made to earn it. `titheMin` 20
-  // keeps a token tithe (a handful of luck for one relic) off the row —
-  // 20 luck is roughly two pops' worth, below `luckSteerCost`, so the
-  // floor sits under the shop's own cheapest colour purchase.
-  titheRate: 0.15,
-  titheMin: 20,
+  // TITHE existed 2026-08-18 through 2026-09-03: a clean 3x what death pays
+  // on unspent luck, so cashing out mid-run was a real alternative to
+  // hoarding. Cut the same session and for the same reason as `burnRelics`
+  // above — an active mid-run relics choice nobody's scripted policy ever
+  // took, replaced by leaning on the passive `luckToRelics` conversion
+  // alone. 0/0 is also `tilesonly.test.ts`'s own "the dial is off" case,
+  // which is what the shipped economy now always is.
+  titheRate: 0,
+  titheMin: 0,
 
   singlePayout: true,
   shrinesReborn: false,
@@ -940,7 +1032,16 @@ export const TUNING: Tuning = {
   // shop rung is one-to-three runs of earning instead of one run of
   // existing. The survey and crossing (content/goals.ts) tightened the
   // same day, same ratio.
-  burnRelics: 1,
+  //
+  // Cut entirely, 2026-09-03 (Marc: "scrap sacrifice on pop, focus on
+  // passive + relics per game"): the harness has never modelled either —
+  // no scripted policy ever chose `burn` or `tithe`, so the sim table
+  // (and every relics number above) moved zero when this was measured.
+  // What is left is `claimRelics` and `luckToRelics`, both already
+  // passive — exploring and however much luck a run ends with, no
+  // mid-run sacrifice required. See `LOG.md` for the reachable-behaviour
+  // tests this took with it.
+  burnRelics: 0,
   claimRelics: 2,
   luckToRelics: 0.05,
   endReachBonus: 40,

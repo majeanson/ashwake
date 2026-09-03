@@ -237,7 +237,7 @@ function tallyWorth(
       // Ash: red reads the wake as kin — and, under `redAshWalls`, the walls
       // too, so red has soil before the first harvest exists. A heavy red
       // doubles it like any match.
-      worth += rarity === 'unique' ? 2 : 1;
+      worth += rarity === 'unique' ? t.redAshBonus * 2 : t.redAshBonus;
     }
   }
 
@@ -253,7 +253,8 @@ function tallyWorth(
     // six free tide-worth per blue tile just by standing where it woke —
     // the exact exploit that failed the prototype. Home IS the origin in
     // every shipped run, so nothing moves until a wake hex exists.
-    worth += Math.floor(distance({ q, r }, home) / t.blueTideEvery);
+    const steps = Math.floor(distance({ q, r }, home) / t.blueTideEvery);
+    worth += t.blueTideCap > 0 ? Math.min(steps, t.blueTideCap) : steps;
   }
 
   // Native ground counts as one match — the endless world's rule 4 addendum.
@@ -437,12 +438,18 @@ export const cachePaysAt = (
  * its whole body. Measured from `homeOf(state)` — the wake hex under the
  * prototype, true origin everywhere else — so a far spawn cannot inherit a
  * free multiplier just by starting there.
+ *
+ * Capped by `distanceMultiplierCap`, same reason `harvestSizeCap` caps the
+ * other multiplier: past it, going farther still opens more of the map, it
+ * just stops paying more for the harvest itself.
  */
 export function harvestMultiplier(state: GameState, pops: readonly HexKey[]): number {
   if (pops.length === 0) return 1;
   const home = homeOf(state);
   const sum = pops.reduce((n, k) => n + distance(parse(k), home), 0);
-  return 1 + Math.floor(sum / pops.length / state.tuning.distanceStep);
+  const mult = 1 + Math.floor(sum / pops.length / state.tuning.distanceStep);
+  const cap = state.tuning.distanceMultiplierCap;
+  return cap > 0 ? Math.min(mult, cap) : mult;
 }
 
 /**
