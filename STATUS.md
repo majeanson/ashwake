@@ -4,7 +4,23 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-02 — the wide improvement pass: 121 items, 116
+Last checkpoint: **2026-09-03 — the wide pass, reviewed: three of its own fixes
+were wrong.**
+
+The review found four defects, three introduced BY the pass, and the worst of
+them was its own headline lesson happening to it: `button:active` shipped a
+colour the contrast budget had never seen, under a comment claiming the budget
+held it. The accent read 4.21:1 in daylight on POP and BEGIN. Fixed, and
+`contrast.test.ts` grades the pressed ground now, so the number cannot drift
+again. The B4.7 material-cache fix had reintroduced the leak it removed, one
+layer down, via StrictMode double-invoking the memo. The audit's partial-run
+guard was too weak and destroyed the report once before being tightened. See
+`LOG.md` Session 39b.
+
+Also landed: a test for B1.8 (Tab, with a panel open, may not reach the hand)
+and the third and last copy of the flaky manual-tab click.
+
+Previous checkpoint: **2026-09-02 — the wide improvement pass: 121 items, 116
 landed, five ruled.**
 
 Marc asked for improvements to what already ships — UI/UX and beyond — with no

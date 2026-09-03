@@ -211,13 +211,28 @@ button {
  * the ink** rather than replace it. A mix keeps whatever the control's own
  * background is and moves it, so it works on the seven that declare `--panel`
  * and on the ones that declare nothing, in one rule, in every direction —
- * which is what a fixed second colour could not do. 12% is where it reads as
- * pressed rather than as selected; the palette's own inks are what it is
- * graded against, so nothing here can fall below a budget the theme tests
- * already hold.
+ * which is what a fixed second colour could not do.
+ *
+ * ## 8%, and it is 8% because a test says so (corrected 2026-09-03)
+ *
+ * This shipped at 12% under a comment claiming *"nothing here can fall below a
+ * budget the theme tests already hold."* **That was false**, and it is the
+ * exact failure this whole pass was about: a comment asserting an invariant,
+ * where no test held it. A pressed ground is a NEW colour, and
+ * `contrast.test.ts` grades tokens — it had never seen this one.
+ *
+ * Measured: at 12% the accent on a pressed button reads 4.21:1 in daylight,
+ * under the 4.5 floor, and every direction lost between 1.2 and 4.2 points.
+ * `.act`, `.door-begin` and `.purse-toggle` all draw their label in the
+ * accent, so POP and BEGIN were the controls it landed on.
+ *
+ * 8% is the largest mix that clears the floor in every direction (4.60:1 at
+ * the worst, which is daylight again), and `contrast.test.ts` grades the
+ * pressed ground now — so this number cannot drift, and a palette change that
+ * would break it fails the build instead of the player.
  */
 button:active {
-  background: color-mix(in srgb, var(--panel) 88%, var(--ink));
+  background: color-mix(in srgb, var(--panel) 92%, var(--ink));
   border-color: var(--panel-edge-active);
 }
 

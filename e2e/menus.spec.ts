@@ -1056,3 +1056,66 @@ test('a scrolled panel keeps its head, top and bottom', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('a panel takes the keyboard with it, and the hand behind it is unreachable', async ({
+  page,
+}) => {
+  /*
+   * B1.8, pinned (2026-09-03).
+   *
+   * `.board-host` has gone `inert` under an open dialog since the stack was
+   * built and the HAND never did — so a Tab out of the manual walked onto POP,
+   * SACRIFICE and four cards sitting under an opaque page: controls that are
+   * invisible, that spend a run's resources, and that a keyboard player reaches
+   * before they reach the panel's own BACK.
+   *
+   * The fix wraps the purse and the bar in a `display: contents` element that
+   * takes the attribute and gives the layout nothing, on the reasoning that
+   * `inert` is inherited down the FLAT tree and does not care about boxes. That
+   * reasoning is the part worth a test: it is a claim about what a browser
+   * does, and `e2e/targets.spec.ts` — which skips `[inert]` subtrees — checks
+   * the DOM rather than the behaviour, so it would agree with itself either
+   * way.
+   *
+   * So this asks the only question that matters: press Tab until it comes back
+   * around, and see where focus is ALLOWED to land.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&seed=7&place=12');
+  await begin(page);
+
+  // The hand is really there and really reachable first, or the assertion
+  // below would pass on a board that simply has no cards.
+  await expect(page.locator('.controls [data-action="purse"]')).toBeVisible();
+
+  // From the BOARD, which is the only place the hand exists to be reached
+  // behind: MENU, then HOW TO PLAY.
+  await page.locator('[data-go="quick"]').click();
+  await page.locator('[data-quick="manual"]').click();
+  await panel(page, 'manual').waitFor({ state: 'visible' });
+
+  const landed = new Set<string>();
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press('Tab');
+    landed.add(
+      await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!(el instanceof HTMLElement)) return 'none';
+        if (el.closest('[data-panel]') !== null) return 'panel';
+        if (el.closest('.controls') !== null) return 'THE HAND';
+        if (el.closest('.board-host') !== null) return 'THE BOARD';
+        return el === document.body ? 'body' : 'elsewhere';
+      }),
+    );
+  }
+
+  expect(
+    [...landed],
+    'Tab reached something behind the open panel — the hand or the board',
+  ).not.toContain('THE HAND');
+  expect([...landed]).not.toContain('THE BOARD');
+  // And it did reach the panel, so the walk was real rather than stuck.
+  expect([...landed], 'Tab never reached the panel at all').toContain('panel');
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

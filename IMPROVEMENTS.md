@@ -491,6 +491,69 @@ exists. Stated at the declaration; `useDevice.test.ts` is its second reader.
 5. **Batch 7 last of the code**, because it is the widest diff.
 6. Batch 8 independently — it touches only build config, `index.html` and `sw.js`.
 
+## The review, and the four things it found (2026-09-03)
+
+Marc asked for a review of the pass. It found four defects, three of them
+introduced BY the pass — which is the useful half, because the pass's own
+lesson is that a fix is a change and a change is a chance to be wrong.
+
+**1. `button:active` broke the contrast budget, under a comment saying it
+could not.** The mix shipped at 12% ink into the panel with the claim that
+_"the palette's own inks are what it is graded against, so nothing here can
+fall below a budget the theme tests already hold."_ False: a pressed ground is
+a colour no token names, and `contrast.test.ts` grades tokens. Measured, the
+accent read **4.21:1 in daylight** — under the 4.5 floor, on `.act`,
+`.door-begin` and `.purse-toggle`, which is POP and BEGIN. Every direction lost
+between 1.2 and 4.2 points.
+
+Fixed at 8%, which is the largest mix that clears the floor everywhere (4.60:1
+at worst, daylight again) — **and `contrast.test.ts` grades the pressed ground
+now.** Reverting the number to 12 fails the new test with exactly the
+measurement above, which is the proof it bites. This is the pass's own headline
+finding happening to the pass: a comment asserting an invariant is not the
+invariant.
+
+**2. The B4.7 fix reintroduced the leak it removed, one layer down.** Moving
+the material cache's write into the effect left the memo only READING it — and
+React double-invokes a memo factory under StrictMode, so both passes saw an
+empty cache, both built, and the first set was orphaned with nothing holding a
+reference to dispose it. The same window opens in production for any render
+React starts and throws away.
+
+The old ref version had this right by accident of ordering; what was actually
+wrong with it was the `dispose()` beside the write, freeing GPU handles during
+a render that might not commit. So: remember immediately, free only after the
+commit.
+
+**3. Localising the daily's date exposed a redundancy the two formats were
+hiding.** A daily row read `DAILY · <date> · <try> · <when>` — and a daily can
+only be played on its own day, so those are the same date. Printing one as
+`2026-09-02` and the other as `2 sept. 2026` was the only thing making them
+look like two facts. A daily's date is its identity: the title keeps it and the
+row drops the timestamp. An ordinary run has no date of its own and keeps it.
+
+**4. The partial-run guard was too weak, and proved it the next day.** It
+refused to write `report.md` only when NOTHING had been visited. A two-screen
+`-g` run — to measure finding 5 below — replaced 265 findings with a table of
+two under an honest `2 of 183` header. Honest and still destructive. A partial
+run now writes nothing and says what it found on stdout, which is what somebody
+debugging one screen wanted anyway.
+
+**And one suspicion cleared by measuring rather than guessing.** B7.42 replaced
+the reach arrow with a WORD, which makes the worlds row longer, in a game whose
+long language is the default — and nothing was measuring that screen at 320.
+`worlds` and `worlds-many` are in the narrow pass now: zero findings, in French,
+on a three-hundred-run world. The change is safe, and the instrument now
+watches it.
+
+**B1.8 gained the test it should have had.** The hand going `inert` behind a
+panel rested on a claim about what a browser does with `inert` on a
+`display: contents` element, and `targets.spec.ts` — which skips `[inert]`
+subtrees — checks the DOM rather than the behaviour, so it would have agreed
+with itself either way. The new test presses Tab twenty-five times with the
+manual open and asserts where focus is allowed to land; removing the attribute
+fails it with `THE HAND`.
+
 ## What the instrument said afterwards
 
 The audit was regenerated at the end of the pass, 181 of 181 screen-visits.

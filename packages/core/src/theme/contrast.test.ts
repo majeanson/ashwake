@@ -90,7 +90,44 @@ function remembered(theme: Theme, ground: Rgb): Rgb {
   return mix(bg, mix(ground, bg, theme.fog.veil), theme.fog.alpha);
 }
 
+/**
+ * A control being PRESSED — a third ground, and one nothing was grading
+ * (2026-09-03).
+ *
+ * `ui.css`'s `button:active` lifts the panel toward the ink so a press is
+ * acknowledged without moving, which is the only feedback a player who has
+ * asked for reduced motion gets. That produces a colour no token names, so no
+ * test saw it — and it shipped for a day at a mix that put the ACCENT at
+ * 4.21:1 in daylight, under the floor, on POP and BEGIN.
+ *
+ * The number lives here rather than only in the stylesheet because this is the
+ * thing that can hold it: a comment saying a mix is safe is the shape of
+ * mistake this whole budget exists to catch.
+ */
+const PRESS_INK = 0.08;
+const pressed = (theme: Theme): Rgb => mix(theme.ink.panel, theme.ink.ink, PRESS_INK);
+
 describe.each(THEMES.map((t) => [t.name.en, t] as const))('%s', (_name, theme: Theme) => {
+  /**
+   * Every ink a button can draw its own label in, on the ground a press makes.
+   *
+   * `inkFaint` is deliberately absent: it is what `button[disabled]` uses, and
+   * a disabled control cannot be `:active`. Adding it would be grading a
+   * combination the DOM cannot produce, which is how a budget starts describing
+   * a screen that does not exist.
+   */
+  it('keeps a pressed button readable, in every ink a button uses', () => {
+    for (const role of ['ink', 'inkDim', 'accent'] as const) {
+      const got = contrastRatio(theme.ink[role], pressed(theme));
+      expect(
+        got,
+        `${role} ${at(theme.ink[role])} on a PRESSED button ${at(pressed(theme))} is ` +
+          `${got.toFixed(2)}:1; ${TEXT} is the floor. Lower the ink in ` +
+          '`button:active` rather than this number.',
+      ).toBeGreaterThanOrEqual(TEXT);
+    }
+  });
+
   /**
    * The chrome, against the two things it is ever set on.
    *

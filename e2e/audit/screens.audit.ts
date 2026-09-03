@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { AUDIT_IN_PAGE, type Finding } from './audit';
 
 /**
@@ -114,10 +114,30 @@ const open = (selector: string) => async (page: Page) => {
   await page.locator(selector).click();
 };
 
-/** Open the manual and land on one of its tabs. */
+/**
+ * Open the manual and LAND on one of its tabs (2026-09-03).
+ *
+ * The click alone is flaky, and this is the third time it has bitten: the tab
+ * row scrolls horizontally at 390 and `data-grows` changes the tabs' widths
+ * between one device and another, so a click can be dispatched at a row that
+ * re-lays-out underneath it. It cost `menus.spec.ts` a red run roughly one time
+ * in three, and it failed one screen of a 183-screen audit — which, because a
+ * partial run no longer writes, cost the whole report.
+ *
+ * Polled rather than waited on: a click that landed on the wrong tab is not a
+ * click that will come good on its own. The tab's own `aria-selected` is the
+ * only honest statement that the screen being photographed is the screen this
+ * function asked for.
+ */
 const viaTab = (tab: string) => async (page: Page) => {
   await page.locator('[data-door="how"]').click();
-  await page.locator(`[data-tab="${tab}"]`).click();
+  const wanted = page.locator(`[data-tab="${tab}"]`);
+  await expect
+    .poll(async () => {
+      if ((await wanted.getAttribute('aria-selected')) !== 'true') await wanted.click();
+      return wanted.getAttribute('aria-selected');
+    })
+    .toBe('true');
 };
 
 /** Through MORE, which is where everything that is not the run lives. */
@@ -446,7 +466,23 @@ test.describe('fr-CA', () => {
  * arriving from two directions, and the cheapest way to find it is both at
  * once.
  */
-const NARROW = ['board', 'board-grown', 'purse', 'pop-line', 'quick', 'teaching-placed'] as const;
+/*
+ * The screens whose ROWS can overflow at 320. The board and the hand were the
+ * original six; `worlds` and `worlds-many` joined on 2026-09-03, because
+ * replacing the reach arrow with a word (B7.42) made that row longer and
+ * nothing was measuring it — a change argued from one rule that could break
+ * another, with no instrument pointed at it.
+ */
+const NARROW = [
+  'board',
+  'board-grown',
+  'purse',
+  'pop-line',
+  'quick',
+  'teaching-placed',
+  'worlds',
+  'worlds-many',
+] as const;
 
 test.describe('320', () => {
   test.use({ viewport: { width: 320, height: 568 }, locale: 'fr-CA' });
@@ -476,10 +512,25 @@ let visited = 0;
 
 test.afterAll(async () => {
   const expected = DIRECTIONS.length * SCREENS.length + SCREENS.length + NARROW.length;
-  // A run that visited nothing has nothing to say and must not say it over the
-  // top of a run that did.
-  if (visited === 0) {
-    console.log('\naudit: no screens visited, report.md left alone');
+  /*
+   * ONLY A WHOLE RUN WRITES THE RECORD (tightened 2026-09-03).
+   *
+   * The first version of this guard refused to write only when NOTHING had
+   * been visited, on the reasoning that an empty run must not erase a full
+   * one. Too weak, and it was proved too weak the next day: a two-screen
+   * `-g` run to measure one thing replaced 265 findings with a table of two,
+   * under a header honestly saying `2 of 183` — self-describing, and the good
+   * data gone anyway.
+   *
+   * A report is a RECORD, and a partial run is not one. It says what it found
+   * on stdout, which is what somebody debugging a single screen actually
+   * wanted, and leaves the file for the run that measured everything.
+   */
+  if (visited < expected) {
+    console.log(
+      `\naudit: ${visited} of ${expected} screens visited — ` +
+        `${report.length} findings, report.md left alone (a partial run is not the record)`,
+    );
     return;
   }
 

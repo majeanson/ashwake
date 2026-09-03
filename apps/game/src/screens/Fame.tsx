@@ -206,13 +206,26 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
     if (y === undefined || m === undefined || d === undefined) return iso;
     return new Date(y, m - 1, d).toLocaleDateString(s.locale);
   };
-  const title =
+  /*
+   * AND A DAILY SAYS ITS DATE ONCE (2026-09-03).
+   *
+   * Localising `entry.date` above was right and it exposed a redundancy the
+   * two formats had been hiding: a daily row was `DAILY · <date> · <try>` and
+   * then `· <when>`, and a daily can only be played on its own day — so those
+   * are the same date, and printing it as `2026-09-02` beside `2 sept. 2026`
+   * was the only thing making them look like two facts.
+   *
+   * A daily's date IS its identity, so the title keeps it and the row drops the
+   * timestamp. An ordinary run has no date of its own and keeps `when`, which
+   * is the only thing placing it in a device's history at all.
+   */
+  const summary =
     entry.kind === 'daily'
       ? `${s.ui.daily} · ${dayOf(entry.date)} · ${ordinal(entry.try, s.locale)}`
-      : `${entry.score} · ${entry.arc}`;
+      : `${entry.score} · ${entry.arc} · ${when}`;
 
   return (
-    <Fold summary={`${title} · ${when}`}>
+    <Fold summary={summary}>
       {entry.detail !== undefined && (
         <>
           {entry.detail.epitaph !== '' && <p className="note">{entry.detail.epitaph}</p>}

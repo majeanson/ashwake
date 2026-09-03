@@ -96,10 +96,33 @@ export function useBatchResources(
    */
   const cache = useOnce(() => new Map<string, readonly Material[]>());
 
+  /*
+   * The cache is written HERE, as each material is built, and read back on the
+   * very next pass (2026-09-03).
+   *
+   * The first version of this fix moved the write into the effect below, so
+   * the memo only read — and that reintroduced the leak it was meant to
+   * remove, one layer down. React double-invokes a memo factory under
+   * StrictMode, and with the cache not yet written **both passes see it empty
+   * and both build**, orphaning the first set with nothing holding a reference
+   * to dispose it. The same window opens in production for any render React
+   * starts and throws away.
+   *
+   * The old ref version got this right by accident of ordering. What was
+   * actually wrong with it was never the write — it was the `dispose()` beside
+   * the write, freeing GPU handles during a render that might not commit.
+   *
+   * So: remember immediately, free only after the commit. Mutating a plain Map
+   * this hook owns is the exemption `eslint.config.js` grants `board/` and
+   * states the reason for; it is not a ref, so nothing about it is invisible
+   * to React.
+   */
   const materials = useMemo(() => {
     const next = new Map<string, readonly Material[]>();
     for (const batch of batches) {
-      next.set(batch.key, cache.get(batch.key) ?? build(batch, textures, artFor(batch)));
+      const set = cache.get(batch.key) ?? build(batch, textures, artFor(batch));
+      cache.set(batch.key, set);
+      next.set(batch.key, set);
     }
     return next;
   }, [batches, textures, artFor, cache]);
@@ -108,10 +131,10 @@ export function useBatchResources(
   // no committed frame is drawing with any more.
   useEffect(() => {
     for (const [key, set] of cache) {
-      if (!materials.has(key)) for (const material of set) material.dispose();
+      if (materials.has(key)) continue;
+      for (const material of set) material.dispose();
+      cache.delete(key);
     }
-    cache.clear();
-    for (const [key, set] of materials) cache.set(key, set);
   }, [materials, cache]);
 
   useEffect(

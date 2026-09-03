@@ -3438,3 +3438,72 @@ carried the wrong colour under a comment asserting it was the right one.
 `pnpm sim` is byte-identical throughout. The prose pins were re-recorded once,
 deliberately: the whole diff is eight full stops moving out of `signpost.ts`
 and into the catalogue, where D4 says punctuation belongs.
+
+### Session 39b — reviewing the wide pass, and finding it broke the budget (2026-09-03)
+
+**Question:** the pass landed 116 items in a day. What did it break?
+
+**Answer: three things, and the worst of them is the pass's own headline
+lesson happening to the pass.**
+
+**`button:active` fell below the contrast budget, under a comment saying it
+could not.** B7.16 gave a press a `color-mix` lift so the seven controls whose
+`:active` was a no-op would acknowledge a tap under reduced motion. It shipped
+at 12% ink into the panel with this beside it: _"the palette's own inks are
+what it is graded against, so nothing here can fall below a budget the theme
+tests already hold."_
+
+That sentence is false, and it is false in the exact way this pass spent a day
+cataloguing. A pressed ground is a NEW colour; `contrast.test.ts` grades
+TOKENS, and it had never seen this one. Measured: the accent reads **4.21:1 in
+daylight**, under the 4.5 floor, on `.act`, `.door-begin` and `.purse-toggle` —
+which is POP and BEGIN. Every direction lost between 1.2 and 4.2 points.
+
+8% is the largest mix that clears the floor everywhere, and the fix that
+matters is not the number: **`contrast.test.ts` grades the pressed ground now.**
+Putting 12 back fails it with the measurement above. A comment asserting an
+invariant is not the invariant — I wrote that sentence about `destinationAt`
+yesterday and then did it.
+
+**The B4.7 fix reintroduced the leak it removed, one layer down.** Moving the
+material cache's write out of the memo and into an effect left the memo only
+READING — and React double-invokes a memo factory under StrictMode, so both
+passes saw an empty cache, both built, and the first set of GPU materials was
+orphaned with nothing holding a reference to dispose it. The old ref version had
+this right by accident of ordering; what was actually wrong with it was the
+`dispose()` beside the write, freeing handles during a render that might not
+commit. Remember immediately, free after the commit — which is neither of the
+two versions before it.
+
+**Localising the daily's date exposed a redundancy the two formats were
+hiding.** B7.43 was right that an ISO key does not belong beside a localised
+date. It also made visible that a daily row prints its date twice, because a
+daily can only be played on the day it is for. The title keeps the date; the row
+drops the timestamp.
+
+**And the partial-run guard was too weak, which it proved the next day.** It
+refused to write `report.md` only when NOTHING had been visited. A two-screen
+`-g` run replaced 265 findings with a table of two under an honest `2 of 183`
+header — honest and still destructive. A partial run writes nothing now, and
+that guard then earned itself immediately: the first full re-run lost one screen
+of 183 to a flaky tab click and correctly left the record alone.
+
+**That flake is the same one, for the third time.** The manual's tab row scrolls
+at 390 and `data-grows` changes the tabs' widths, so a click can be dispatched
+at a row that re-lays-out underneath it. It was fixed in `menus.spec.ts`
+yesterday and left in the audit's own `viaTab`, which is the shape of every
+duplicate in this repository: one of the two copies gets the fix.
+
+**Two suspicions cleared by measuring rather than arguing.** B7.42 replaced the
+reach arrow with a WORD, which lengthens a row in the long language — `worlds`
+and `worlds-many` are in the 320 pass now, and both are clean. And B1.8's fix
+rested on a claim about what a browser does with `inert` on a
+`display: contents` element; `targets.spec.ts` checks `closest('[inert]')`,
+which is the DOM agreeing with itself. The new test presses Tab twenty-five
+times with the manual open and asserts where focus is ALLOWED to land — removing
+the attribute fails it with `THE HAND`.
+
+**The lesson worth keeping.** Every one of the three regressions was in a fix,
+not in the original code, and two of them were in the _comment_ attached to the
+fix. A pass that lands 116 items needs a review pass at the same rigour, and the
+first thing to re-read is whatever the fix claimed about itself.

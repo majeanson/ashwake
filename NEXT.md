@@ -673,8 +673,10 @@ in.
 A brief card is a receipt the player does not have to dismiss: it takes no
 focus, any tap sends it away, and it goes on its own after 4200ms. All of it is
 built and none of it is reachable — `.card-scrim.brief` and its `.card` rule in
-`ui.css`, `BRIEF_MS` and the pointerdown dismissal in `ui/Card.tsx`, and
-`SaidCard`'s `brief` prop. **No caller anywhere writes `brief: true`.**
+`ui.css`, `BRIEF_MS` and the pointerdown dismissal in `ui/Card.tsx`,
+`SaidCard`'s `brief` prop, and the live region `App` renders for it (which
+therefore announces nothing, always). **No caller anywhere writes
+`brief: true`.**
 
 The docblock on `Said.brief` names `App`'s harvest branch as the writer, and
 that is the branch which STOPPED writing it on 2026-08-30, when Marc asked for
