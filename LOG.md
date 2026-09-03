@@ -3507,3 +3507,140 @@ the attribute fails it with `THE HAND`.
 not in the original code, and two of them were in the _comment_ attached to the
 fix. A pass that lands 116 items needs a review pass at the same rigour, and the
 first thing to re-read is whatever the fix claimed about itself.
+
+### Session 40 — the instrument stops losing the fold, and the registry stops carrying a decision already made (2026-09-03)
+
+**Question:** a broad UI/UX sweep, deliberately from angles the exports/fields/
+gestures passes never walked — what does opening `audit-shots/report.md`'s own
+pictures find that grepping the code cannot?
+
+**Answer: three things, and the largest of them was the audit measuring the
+top 844px of every screen and calling the rest untested.**
+
+**`IMPROVEMENTS.md` had a false explanation sitting in it.** B3.9's own line
+said `tap-target-allowed` rose 68→256 because `.term` "now declares itself".
+It does not: `.term` renders as a `<button>` only where `App.tsx`,
+`EndScreen.tsx`, `SaidCard.tsx`, `Shop.tsx` and `TipRows.tsx` pass it
+`onTerm` — never in `Manual.tsx`, correctly, since the manual already spells
+out full definitions inline. `grep -c "term" audit-shots/report.md` returns 0. All 256 rows are `button.stat`, the six-chip header's own exemption,
+present on nearly every screen since Stage 4; the count moved because this
+pass took the audit from 104 screen-visits to 183, not because a new element
+started being counted. Corrected in place.
+
+**The audit never measured below the fold, on any of 183 visits, in either
+language.** `shown()`'s filter required `box.top < innerHeight && box.bottom
+
+> 0` — a check against the WINDOW, on a game whose panels scroll internally
+(`.panel-body`, `.front-door`, the end screen all declare `overflow-y: auto`inside a shell that never itself scrolls). Playwright never scrolls a panel
+before the audit runs, so`getBoundingClientRect`reported every element past
+the fold — in the page or inside a scrolling panel, the check cannot tell
+them apart — as`top`past`innerHeight`, and it was walked straight past.
+24 of 35 screens reported zero findings for exactly this reason: every one of
+them was a panel or a scene, not because they were clean but because the
+instrument had only ever graded the top of them. Fixed by dropping the
+viewport bound entirely — `getBoundingClientRect` is still correct for an
+unscrolled page regardless of how far down an element sits, and this
+codebase hides content by collapsing it to a point (`.visually-hidden`),
+never by transforming it off-canvas, so nothing the display/visibility/
+opacity checks already exclude comes back. Measured after: still only
+`tap-target-allowed`and`clipped`, in the same proportion the direction cut
+> alone explains (164 ≈ 256 × 113/183) — the panels are genuinely clean, not
+> still unmeasured. That is itself the finding: an open question from the
+> first pass now has a verified answer instead of a guess.
+
+**No document landmarks existed anywhere** — no `<main>`, no `<header>`/
+`<footer>`, no `role="banner"/"contentinfo"/"navigation"`, only three bare
+`<nav className="panel-menu">`. `role="main"` is on `.board-host` and on
+`EndScreen`'s root now — the two views that are ever the PRIMARY content
+rather than a dialog stacked over one (every `<Panel>` screen and the front
+door already carry `role="dialog"`). Safe beside the existing `inert`
+choreography: `board-host` goes inert exactly when something else is the
+thing on screen, so the two `role="main"` elements never compete.
+
+**Marc, separately, closed the theme registry down (D12): "we can officialize
+the Settlement ui avenue and adapt the daylight skin for it, then keep only
+those two."** D7 had chosen settlement and left one line open — its own
+words, "the honest fix is a bright settlement that passes the same budgets,
+not a line in `pickForScheme`." `torchlit`, `torchlit-bright` and
+`placeholder` are deleted; `daylight` is reskinned onto settlement's own
+names (FARM · MARKET · QUARRY · ROADS, both languages, `powerNames` equal to
+`terrainNames` the way settlement's already are) and its motif, so the baked
+art matches (awning cloth and stacked goods, cut benches, not moss tufts and
+embers). Every colour number in `daylight.ts` is untouched — only two
+terrains needed their `pattern`/`overlay` objects reordered or reshaped to
+satisfy the settlement motif's own guardrail (D8), which threw at bake time
+exactly as designed rather than shipping a silently empty MARKET the way it
+once did for real. `pickForScheme`'s written-down gap closes with it: both
+`prefersLight` and `prefersContrast` answer `daylight` now, so the player who
+asks for more contrast gets the fiction the front door told them, not the
+plane's. Registry: five entries to two; `pnpm bake` reproducible; `pnpm sim`
+untouched.
+
+**The lesson worth keeping.** The two biggest findings this session were not
+in the game — one was in the report, and one was in the thing that writes the
+report. A screen nobody has photographed is a screen nobody has looked at,
+Session 37's own argument; a screen only ever photographed from the top of
+the fold is the same blindness one level down, and it took opening actual
+pictures — not grepping exports again — to see it.
+
+### Session 41 — the phone's own hex ceiling was never asked about a tablet (2026-09-03)
+
+**Question:** Marc, from a real device screenshot — a tablet-ish screen with
+the board tiny and adrift in a mostly-empty page: *"review for different
+sizes (phone, tablet, desktop) and improve ui/ux... font size ++ for all
+medias."* What does the picture say, and where does it come from?
+
+**Answer: `HEX_PX_MAX` is Ashwake 1's phone number, and nothing had ever
+asked it whether it still meant anything on a screen ten times the width.**
+
+`board/camera.ts` capped a hex at 34px regardless of how much room the
+viewport actually had — right on a 390px phone, where 34px already reads as
+generous, and silently wrong on a tablet or a desktop, where the fit stops
+growing the instant it hits that ceiling and everything past it is empty
+page. Reproduced independently before touching anything: phone screenshots
+matched the ledger's own picture, and a fresh build at several tablet/desktop
+sizes showed the same small, floating board — not a stale cache, a live
+gap. `hexPxMaxFor(width, height)` replaces the constant: unchanged at 34
+under ~420px of room (every pinned camera test and phone shot stays exact),
+rising to 52px past roughly a small tablet's worth, because the extra space
+is better spent showing more of the board than inflating the same seven
+hexes further. `zoomMaxOf` reads the same function from the frame's own
+width/height, so the pinch ceiling never disagrees with the fit that set it.
+
+**The font size moved too, and the first number tried broke a passing test.**
+Every size in `ui.css` is `rem` on one root that had never been set — 1rem
+was the browser's silent 16px since Stage 3. 18px (12.5%) read fine
+everywhere it was looked at and failed `menus.spec.ts`'s manual-alignment
+test: a heading's grid column and a paragraph's `calc()` padding, identical
+everywhere else, landed 0.0156px apart at that one multiple — enough to round
+to two different pixels and read as ragged where nothing had actually moved.
+Not a structural bug owed a fix; a coincidence of one specific number, avoided
+by landing on 110% (17.6px) instead.
+
+**Two labels were pinned rather than raised.** `.stat-label`
+(TUILES/PTS/PORTÉE/COÛT) and `.act-label` (RÉCOLTER/SACRIFIER) were already
+spending an ellipsis at 320px before this session — a documented trade-off
+from 2026-09-02, the label giving so the number survives. Letting the root
+carry them too would have spent a budget that was already spent: `TUILE…`
+losing further letters for no reason the player could see. Pinned to the
+exact px their `rem` clamps resolved to at the old 16px root, they hold
+their tuned size while every other word in the game gets bigger around them.
+
+**Verified beyond the usual gate**, because a look change on the board's own
+silhouette is the one category this project asks for extra proof of: fresh
+screenshots at phone (390×844, byte-for-byte the same composition), tablet
+(820×1180) and desktop (1600×1000, 1920×1080) — the desktop board visibly
+larger and the phone one untouched. `pnpm sim` stayed byte-identical, as it
+must for a change that touches no rule. The audit's `clipped` count rose from
+9 to 17, every one of them the same already-designed ellipsis fallback
+firing on the same two pinned labels at the tightest 320px/6-stat
+configuration — measured, not guessed, and unchanged in kind from before
+this session touched anything.
+
+**The lesson worth keeping.** A ceiling with no unit attached to WHY it is
+what it is — "Ashwake 1's number" — is a number nobody will ever think to
+question again, because there is nothing in it that says it was ever meant
+to be conditional. `hexPxMaxFor`'s whole docstring is the argument for why
+34 was right on one screen and wrong to leave unquestioned on the others; the
+next constant like it should carry the same kind of sentence, not just the
+number.

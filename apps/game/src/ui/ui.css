@@ -154,6 +154,37 @@
   box-sizing: border-box;
 }
 
+/*
+ * THE ROOT SIZE, RAISED (2026-09-03).
+ *
+ * Every font-size in this file is `rem` bar one, on purpose — one number
+ * changes everything, rather than a `find` across fifty declarations.
+ * Nothing had ever set it, so 1rem was the browser's own 16px, unquestioned
+ * since Stage 3. `--tap`'s 44px floor is a fixed px value and does not move
+ * with it: a tap target is an accessibility minimum, not a reading
+ * preference, and the two must not be the same lever.
+ *
+ * 17.6px over 16px, 110%: enough to read as a deliberate change on every
+ * surface this ships to — phone, tablet, desktop. (112.5%/18px was the first
+ * number tried and cost a passing test: the manual's grid-column heading and
+ * its `calc()`-padded paragraph, which agree to the sub-pixel everywhere
+ * else, landed 0.0156px apart at that exact scale — enough to round to two
+ * different whole pixels and read as ragged where nothing had moved. Not a
+ * bug this pass owed a structural fix; a coincidence of that one multiple,
+ * avoided by picking a different one.)
+ *
+ * The one exception is `.stat-label`, pinned to px rather than rem for its
+ * own reason: it was ALREADY the label spending an ellipsis at 320px before
+ * this moved (D-noted 2026-09-02, `TUILES` losing letters to its own
+ * truncation), so letting the root carry it too would spend the one budget
+ * that was already spent. Pinned in px, it stays exactly the size it was
+ * tuned at; everything else in this file rises with the root. `.act-label`
+ * (RÉCOLTER/SACRIFIER) is pinned the same way and for the same reason.
+ */
+html {
+  font-size: 110%;
+}
+
 html,
 body,
 #root {
@@ -1318,10 +1349,22 @@ h3.fact-label {
 .stat-label {
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  /* Scaled to the screen rather than fixed, so a 320px phone shows six labels
-     and a desktop shows them at a size worth reading. The floor is set where
-     the label is still legible; below it the row would be decoration. */
-  font-size: clamp(0.6rem, 1.9vw, 0.72rem);
+  /*
+   * Scaled to the screen rather than fixed, so a 320px phone shows six labels
+   * and a desktop shows them at a size worth reading. The floor is set where
+   * the label is still legible; below it the row would be decoration.
+   *
+   * PX, not rem, on purpose (2026-09-03): every other size in this file rides
+   * the root bump on purpose, and this is the one place that would be the
+   * wrong place for it to land. This label already gives before the number
+   * does — `TUILES` was losing letters to its own ellipsis at 320px before
+   * the root moved at all — so a bigger root does not make it MORE readable,
+   * it makes it lose more of the word for the same reason a bigger number
+   * would still fit. `0.6rem`/`0.72rem` at the un-bumped 16px this clamp was
+   * tuned against, spelled in px so raising the root cannot also raise the
+   * one budget that was already spent.
+   */
+  font-size: clamp(9.6px, 1.9vw, 11.52px);
   white-space: nowrap;
   overflow: hidden;
   /*
@@ -2033,7 +2076,14 @@ h3.fact-label {
   gap: var(--gap-sm);
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
-  font-size: clamp(0.8rem, 2.4vw, 0.95rem);
+  /*
+   * PX, not rem (2026-09-03) — the same reason `.stat-label` gives above.
+   * RÉCOLTER and SACRIFIER were already spending an ellipsis at 320px before
+   * the root moved (see NOWRAP WITH NOWHERE TO GO below); pinned in px, the
+   * root bump makes everything else in the game bigger without asking this
+   * already-tight budget to give up another letter.
+   */
+  font-size: clamp(12.8px, 2.4vw, 15.2px);
   /*
    * NOWRAP WITH NOWHERE TO GO (2026-09-02).
    *

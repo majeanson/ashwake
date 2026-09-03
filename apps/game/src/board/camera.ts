@@ -31,8 +31,43 @@ import type { Orientation } from '@theme/tokens';
  */
 
 /** The most pixels a hex may be drawn at — the zoom ceiling, in the unit the
- *  eye actually cares about. Ashwake 1's number. */
+ *  eye actually cares about. Ashwake 1's number, and the floor of
+ *  `hexPxMaxFor` below rather than a constant read anywhere else now. */
 export const HEX_PX_MAX = 34;
+
+/**
+ * How large FIT is allowed to draw a hex, as a function of the room there is
+ * to draw one in (2026-09-03).
+ *
+ * `HEX_PX_MAX` is Ashwake 1's number, tuned on a phone where 34px already
+ * reads as generous against a ~390px-wide board host. Read literally on a
+ * tablet or a desktop browser it is a floor that never rises: a board with a
+ * thousand spare pixels around it still draws a fingernail-sized hex, because
+ * the ceiling that made sense on the one screen this body was built for was
+ * never asked whether it made sense on the others. `justify-content: center`
+ * on the chrome rows and a camera that will not grow past 34px is the same
+ * bug from two different files — a phone number, unquestioned once a wider
+ * device existed to ask it.
+ *
+ * The floor stays exactly 34 for anything at or under phone width, so every
+ * pinned camera test and every phone screenshot is untouched. Past that it
+ * rises with the SMALLER of width and height — the dimension actually
+ * limiting how much board a viewport can show, in portrait or landscape
+ * alike — levelling off at 52px past roughly a small-tablet's worth of room,
+ * because a hex does not need to keep growing once it is already easy to
+ * read; the extra space is better spent showing more of the board than
+ * making the same seven hexes bigger.
+ */
+export function hexPxMaxFor(width: number, height: number): number {
+  const room = Math.min(width, height);
+  const RISE_FROM = 420;
+  const LEVEL_AT = 1000;
+  const CEILING = 52;
+  if (room <= RISE_FROM) return HEX_PX_MAX;
+  const t = clamp((room - RISE_FROM) / (LEVEL_AT - RISE_FROM), 0, 1);
+  return HEX_PX_MAX + (CEILING - HEX_PX_MAX) * t;
+}
+
 /** The fewest, past which a board is dots. */
 const HEX_PX_MIN = 6;
 export const ZOOM_MIN = 1;
@@ -146,7 +181,14 @@ export function frameFor(
   lean: Lean = FLAT,
 ): Frame {
   if (isFlat(lean)) {
-    const fit = fitLayout(cells, width, height, FIT_PADDING, orientation, HEX_PX_MAX);
+    const fit = fitLayout(
+      cells,
+      width,
+      height,
+      FIT_PADDING,
+      orientation,
+      hexPxMaxFor(width, height),
+    );
     const centre =
       fit.size <= 0
         ? { cx: 0, cz: 0 }
@@ -184,7 +226,7 @@ export function frameFor(
 
   const availW = Math.max(0, width - FIT_PADDING * 2);
   const availH = Math.max(0, height - FIT_PADDING * 2);
-  const size = Math.min(HEX_PX_MAX, availW / (maxX - minX), availH / (maxY - minY));
+  const size = Math.min(hexPxMaxFor(width, height), availW / (maxX - minX), availH / (maxY - minY));
   const centre = toBoard((minX + maxX) / 2, (minY + maxY) / 2, lean);
 
   return {
@@ -202,7 +244,7 @@ export function frameFor(
 const fitCentre = (frame: Frame): { readonly cx: number; readonly cz: number } => frame.centre;
 
 export const zoomMaxOf = (frame: Frame): number =>
-  zoomCeiling(frame.fit.size, ZOOM_MAX, HEX_PX_MAX);
+  zoomCeiling(frame.fit.size, ZOOM_MAX, hexPxMaxFor(frame.width, frame.height));
 const zoomMinOf = (frame: Frame): number => zoomFloor(frame.fit.size, ZOOM_MIN, HEX_PX_MIN);
 
 /** CSS pixels per world unit at this camera. */
