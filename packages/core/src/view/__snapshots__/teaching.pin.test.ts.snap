@@ -328,7 +328,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   {
     "id": "sense",
     "name": "KEEN NOSE",
-    "note": "Hidden finds shimmer when your ground grows near, +2 hexes farther each level.",
+    "note": "Hidden finds shimmer when your ground grows near, +1 hexes farther each level.",
   },
 ]
 `;
@@ -716,7 +716,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   {
     "id": "sense",
     "name": "BON FLAIR",
-    "note": "Les trouvailles cachées scintillent quand ton sol pousse près d’elles, +2 hex de plus loin par niveau.",
+    "note": "Les trouvailles cachées scintillent quand ton sol pousse près d’elles, +1 hex de plus loin par niveau.",
   },
 ]
 `;

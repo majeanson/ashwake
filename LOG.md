@@ -3864,3 +3864,78 @@ markup, not any string's content, so nothing pinned had reason to. The
 front-door e2e audit screenshots (`screens.audit.ts`'s `front-door*`
 entries) will get new baselines next run, which is the correct outcome for
 a deliberate layout change, not a regression.
+
+### Session 45 — a phone screenshot, a chased phantom, and the horizon that actually needed cutting (2026-09-03)
+
+**Question:** Marc, from a live phone screenshot after a hard reload —
+multiple shrines visible in a fresh daily's fog, make sure it resets right.
+
+**The shrine chase came up empty, and that was the right answer.**
+`destinationAt`, `destinationsWithin`, their shared `blockDestination` (which
+already routes every return through `reborn`), `revealCell`'s `rearmed`
+handling and `enterDaily`'s `memory: undefined` were all re-traced against
+the screenshot and all correctly exclude a real shrine from a daily. The
+CI/deploy backlog resolved separately this session (see below) is the more
+likely explanation for what he saw — a stale cached build predating
+`ef89d19`'s fix, which had been sitting on `origin/main` unable to deploy
+since CI went red on 2026-09-02.
+
+**What the screenshot actually showed, worked out together:** the "flower"
+of seven hexes was the home cluster and its six legal placements (each
+showing its preview worth) — completely ordinary board furniture, not a
+shrine or a beacon. The scattered dots were confirmed real: caches, glowing
+through fog, un-tappable until reached — also working as designed. Marc's
+real objection, once the pieces were named: _"[beacon horizon] should be
+much smaller in all cases, its just that in the world we get stuff that is
+remembered vs daily that is always all new."_ A world's felt richness at
+reach 0 comes from `remembered` ground layered over the live horizon, seen
+once, on a player's first-ever run; a daily has zero memory and replays
+that same "several lights already visible" moment fresh every single day,
+which is what made a horizon sized for a world read as too wide for both.
+
+**`beaconHorizon: 8 -> 4`, in `BARE_TUNING` so both world and daily inherit
+it — confirmed visually, not just by the arithmetic.** Screenshotted a
+fresh reach-0 shared run (no memory, same conditions a daily starts under)
+at 8, 4 and 2: at 8 one real beacon was already visible with nothing
+placed; at 4 and 2, nothing was, and a grown board at reach 5 still showed
+real landmarks at either value, so 4 was picked as the one that visibly
+clears reach 0 without being more aggressive than the evidence asked for.
+
+**One dependency the smaller horizon broke, and a second dial that moved
+with it.** `progress.test.ts` already pinned an invariant that had nothing
+to do with today's change: `findSense < beaconHorizon`, because "a shimmer
+that reaches the beacon horizon is a beacon with extra steps." KEEN NOSE's
+old max (6, three levels at +2) already cleared the new horizon of 4 on its
+own, so `UPGRADE_STEPS.sense` came down 2 -> 1 alongside it (new max 3),
+keeping the same margin the design always meant to have rather than leaving
+the upgrade to quietly become a second beacon system.
+
+**One test fixture stopped proving anything, and got a new seed rather than
+a patched assertion.** `store.test.ts`'s world-vs-daily shrine test names
+its own contract in its failure message — "the fixture never reached a
+shrine, so this proves nothing" — and at the smaller horizon, seed 11 (its
+original pick) stopped tripping that self-check even at 350 placements, up
+from the test's own 80. Swept ten seeds at three walk lengths; seed 23 still
+finds one at 80, the original length, so that's what shipped instead of a
+bigger number papering over a fixture that had quietly stopped testing what
+it claimed to.
+
+**This is a rules change, not a content one — `pnpm sim` moved and the
+golden file moved with it.** `seeker` is the one scripted policy that reads
+`beaconHorizon` at all (it steers toward the nearest beacon-visible
+destination), so its whole row shifted: points 1162 -> 1192, reach 16 -> 14,
+pops/placement 0.48 -> 0.53. Every other policy's row is untouched, which is
+the correct fingerprint for a dial that only one line ever reads.
+
+**Deploy, the other half of the ask.** Found CI on `origin/main` red since
+2026-09-02 (a `payout.test.tsx` typecheck error already fixed in an
+uncommitted-until-today local commit) — meaning nothing had deployed in two
+days regardless of what landed locally. Committed the day's remaining work
+in three pieces (a shrine-unlock-count fix already sitting in the working
+tree, a daily end-screen navigation fix likewise, and this session's balance
+and content work), ran the full CI-equivalent suite locally first (format,
+lint, typecheck, 1031 unit tests, build, the sim diff, and the full 88-test
+e2e suite — one flake reproduced as a resource-contention artifact and
+confirmed clean in isolation), pushed, and watched the real CI run go green
+end to end including the deploy and its `/version.json` verify. Confirmed
+live at `ashwake.marcportal.com`.

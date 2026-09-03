@@ -101,8 +101,15 @@ export const UPGRADE_STEPS = {
   cache: 3,
   /** STEADY PACE: placements added to the cost step, per level. */
   pace: 2,
-  /** KEEN NOSE: hexes of shimmer, per level. */
-  sense: 2,
+  /**
+   * KEEN NOSE: hexes of shimmer, per level.
+   *
+   * Halved 2 -> 1, 2026-09-03 with `beaconHorizon`'s own cut (8 -> 4): a
+   * shimmer that reaches the beacon horizon is a beacon with extra steps
+   * (`progress.test.ts` pins `findSense < beaconHorizon`), and the old step
+   * put a maxed KEEN NOSE at 6 — past the new horizon on its own.
+   */
+  sense: 1,
 };
 
 /** What a worn perk sets, for the shelf's prose and `applyProgress` alike. */

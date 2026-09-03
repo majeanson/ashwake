@@ -306,13 +306,20 @@ describe('a world and the daily, switched between', () => {
   /**
    * The same seed, the same walk, and only the economy different — so the
    * shrines the world shows and the daily does not are the rewrite and nothing
-   * else. Seed 11 walks into beacon range of one; a seed that never meets a
+   * else. Seed 23 walks into beacon range of one; a seed that never meets a
    * shrine would let both halves pass by saying nothing.
+   *
+   * Re-picked from seed 11 on 2026-09-03, when `beaconHorizon` came down from
+   * 8 to 3 (Marc: it should be much smaller everywhere — a world's own
+   * richness is `remembered` ground layered on top, not a wide live horizon,
+   * and a daily has no memory to layer). Seed 11 never brought a shrine
+   * within the smaller horizon even at 350 placements; seed 23 does at 80,
+   * the original walk length.
    */
   it('shows a world its shrines and a daily none, on the board or glowing off it', () => {
     const played = (tuning?: typeof TUNING) => {
       const s = createSession({
-        seed: 11,
+        seed: 23,
         theme: resolveTheme(null),
         strings: stringsFor(pickLocale(['en'])),
         ...(tuning === undefined ? {} : { tuning }),

@@ -86,7 +86,19 @@ export type Tuning = {
   readonly questNeed: number;
   readonly questRadius: number;
   readonly questBonus: number;
-  /** How far past the built frontier a destination shows as a beacon. */
+  /**
+   * How far past the built frontier a destination shows as a beacon.
+   *
+   * Halved 8 -> 4, 2026-09-03 (Marc, from a screenshot of a fresh run: "I
+   * shouldn't be able to see that far with no tile put"). A WORLD'S richness
+   * at a glance is mostly `remembered` ground from earlier runs layered on
+   * top of this — a returning player only ever sees this exact "several
+   * lights at reach 0" moment once, on their very first run. A DAILY has no
+   * memory at all, so it showed the same wide live horizon fresh every single
+   * day. The fix is here, not in the daily's own economy, because the
+   * horizon was too generous for both — a world was simply hiding it behind
+   * accumulated fog.
+   */
   readonly beaconHorizon: number;
 
   /**
@@ -623,7 +635,7 @@ export const BARE_TUNING: Tuning = {
   cachePays: 12,
   sitePays: 25,
   territoryRadius: 2,
-  beaconHorizon: 8,
+  beaconHorizon: 4,
 
   cachePaysPerRing: 0,
   popTilesPerRing: 0,

@@ -236,10 +236,10 @@ describe('what the upgrades do to a run', () => {
     expect(t.startingTiles).toBe(TUNING.startingTiles + 10);
   });
 
-  it('sharpens the nose two hexes a level, and never out to the beacons', () => {
+  it('sharpens the nose one hex a level, and never out to the beacons', () => {
     const maxed: Progress = { ...EMPTY_PROGRESS, bought: { sense: 3 } };
     const t = applyProgress(TUNING, maxed);
-    expect(t.findSense).toBe(6);
+    expect(t.findSense).toBe(3);
     // A shimmer that reaches the beacon horizon is a beacon with extra steps.
     expect(t.findSense).toBeLessThan(TUNING.beaconHorizon);
   });
