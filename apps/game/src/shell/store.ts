@@ -293,6 +293,10 @@ export function createSession(opts: {
   /** What crossing would carry, priced at the moment a fully-awake world's
    *  shrine is reached. Absent means there is nowhere onward. */
   readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
+  /** Shrines this world has claimed across every run it has held, read fresh
+   *  at the moment of a claim — see `ReceiptContext.shrinesClaimed`. Absent
+   *  is a world-less run (a detour, a test), which has no ledger to name. */
+  readonly shrinesClaimed?: () => number;
   /** BEGIN AT CAMP at boot — `?camp=1`. Ignored when a run is resumed, which
    *  carries its own wake hex. */
   readonly wakeAt?: HexKey | null;
@@ -403,6 +407,7 @@ export function createSession(opts: {
         ...(opts.perkAt === undefined ? {} : { perkAt: opts.perkAt }),
         ...(opts.wornPerk === undefined ? {} : { worn: opts.wornPerk }),
         ...(opts.crossingCarries === undefined ? {} : { crossingCarries: opts.crossingCarries }),
+        ...(opts.shrinesClaimed === undefined ? {} : { shrinesClaimed: opts.shrinesClaimed() }),
       }),
     );
     let offers: 'crossing' | undefined;

@@ -169,4 +169,17 @@ describe('a shrine', () => {
     expect(said[0]?.text).toBe(s.claim.shrineDetour);
     expect(said[0]?.icon).toBe(LANDMARK_ICON.shrine);
   });
+
+  it('names the unlock the WORLD is actually turning on, not this run alone (2026-09-03)', () => {
+    // A world already three shrines awake from earlier runs — this run has
+    // touched none of them, so `countShrines` of its own cells reads 0 and
+    // would announce the unlock this player already has.
+    const said = claimsBetween(
+      withLandmark('2,0', 'shrine', false),
+      withLandmark('2,0', 'shrine', true),
+      { ...ctx, shrinesClaimed: 3 },
+    );
+    expect(said[0]?.text).toContain(s.unlock.reach);
+    expect(said[0]?.text).not.toContain(s.unlock.draft);
+  });
 });

@@ -92,6 +92,19 @@ export type ReceiptContext = {
    */
   readonly detour: boolean;
   /**
+   * Shrines this WORLD has claimed across every run it has held, counted
+   * BEFORE this claim — the same fact `DescribeContext.shrinesClaimed` reads
+   * for the tap. Absent falls back to counting shrines claimed so far in
+   * THIS run's own cells (`countShrines`), which is what a world-less caller
+   * (a test rig; a detour never reads it at all) has to make do with — and
+   * which undercounts on a world with shrines already awake from an earlier
+   * run, naming an unlock the player already has (Marc, 2026-09-03: tapped a
+   * shrine that promised the fourth draft card he already owned, then it
+   * granted the fifth unlock instead when he reached it — the claim's own
+   * receipt was reading this run's count, not the world's).
+   */
+  readonly shrinesClaimed?: number;
+  /**
    * The perk a find granted at that hex, or null for "you carry everything
    * already" — which is also what a detour answers. The shell does the
    * granting; this only reports it.
@@ -131,7 +144,11 @@ export function claimsBetween(
   // Counted from BEFORE, so the first new shrine names the unlock it is
   // actually turning on. A running counter in the shell would be a second
   // place for this number to live and a first place for it to drift.
-  let shrinesSoFar = countShrines(before);
+  //
+  // The WORLD's count when the caller has one — `countShrines(before)` alone
+  // only knows THIS run's own cells, which is short by however many shrines
+  // an earlier run already woke.
+  let shrinesSoFar = ctx.shrinesClaimed ?? countShrines(before);
 
   for (const [hex, cell] of Object.entries(after.cells)) {
     if (cell.kind !== 'landmark' || !cell.claimed) continue;
