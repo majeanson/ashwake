@@ -31,8 +31,18 @@ import { summarise } from './report';
  */
 
 /** Long enough that only a genuine deadlock reaches it — which is the thing
- *  the first test in this file was written to catch. */
-const SIM_TIMEOUT = { timeout: 60000 };
+ *  the first test in this file was written to catch.
+ *
+ *  60s until 2026-09-04, and it went red on the first push after `SEEDS` went
+ *  6 -> 40: the paragraph above already measured this runner at about eleven
+ *  times slower than a desktop, and nearly seven times the work does not fit
+ *  under a cap sized for the old sample. 'Gives every policy a run that ends
+ *  by itself' plays every policy in `POLICIES`, so it is the heaviest test in
+ *  the file by a wide margin — it passed here in seconds and was cut off at
+ *  the cap up there with every assertion still true, which is precisely the
+ *  failure the paragraph above exists to prevent. Sized against the RUNNER
+ *  now rather than against this desktop. */
+const SIM_TIMEOUT = { timeout: 240_000 };
 
 // 6 until Session 51 (2026-09-04). Three balance sessions in a row tripped on
 // the same thing: a six-run median sits on a knife edge, so a dial that the

@@ -32,8 +32,15 @@ import { summarise } from './report';
  * nine commits. The number here exists so a genuine infinite loop still fails
  * the suite instead of hanging it; it is not a claim about speed, and it must
  * never be read as one.
+ *
+ * 60s -> 240s, 2026-09-04: `SEEDS` went 6 -> 40 the same day, and `sim.test.ts`
+ * — same change, same cap — timed out on the runner while passing here. Its
+ * heaviest test was cut off with every assertion still true, which is exactly
+ * the wall-clock-assertion failure the paragraph above forbids. Raised here
+ * too rather than waiting for the same red on a slower runner day: this file's
+ * tests were already reaching 25s up there against 60.
  */
-const SIM_TIMEOUT = 60_000;
+const SIM_TIMEOUT = 240_000;
 
 // 6 -> 40, Session 51 — see `sim.test.ts`'s `SEEDS` for why: a six-seed
 // median is what "the timid one is pinned at keeps up so six noisy seeds
