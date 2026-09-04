@@ -4320,3 +4320,58 @@ and `capped` flat. `quest.test.ts`'s bounty invariant and `endless.test.ts`'s
 near/far pin both updated with their reasons. Throwaway sweep scripts
 deleted, not committed. Nothing committed; the concurrent session's diff is
 still in the working tree beside this.
+
+### Session 52 — four sessions' work landed, and the cap that was sized for the old sample (2026-09-04)
+
+**Question:** the session before this one hit its limit and crashed with
+everything still in the working tree. Does a tree four sessions deep, written
+up but never committed, actually hold together as ONE state — and does it get
+through CI?
+
+**Answer: yes, on the second push, and the one thing that failed was not the
+economy.** The tree was intact: Sessions 48–51's core rebalance, Session 50's
+SHARPNESS slider, and a concurrent session's board/corner work, all uncommitted
+beside ledgers that already described them. Verified as one state before
+committing rather than trusting the write-ups — `format:check`, `lint`,
+`typecheck`, 1034/1034 unit, 89/89 Playwright, `pnpm sim` byte-identical to the
+golden it had moved to, and `pnpm bake` clean and producing no diff.
+
+**The completeness checks were run over the code, not over the log**, per this
+file's own rule. Every new export, field, optional input and catalogue string
+was grepped for a consumer: `quality.ts` → `App` → `Camera`/`Board` →
+`useDevice` → `storage` all connected, `fmt1`, `lesson.pop.when`,
+`bountyReadySingle`, `s.ui.sharpness`, `harvestValue.sizeBonus` and `rareWorth`
+each with a real reader. `pointsSplit`'s algebra was checked by hand rather
+than assumed: the seven source rows, the four colour rows and the three rarity
+rows each sum to `beforeBounty × bounty`, so the receipt still adds up to the
+number it prints. One flaw fixed — a lost paragraph break in `tuning.ts` had
+welded the `quest.test.ts` rounding note onto the end of the six-seed sentence.
+
+**CI went red on `84d5d9c`, and it was a wall clock rather than a rule.**
+`sim.test.ts`'s heaviest gate — "gives every policy a run that ends by itself",
+which plays every policy in `POLICIES` — timed out at 60s with all 1033 other
+tests green and every assertion in it still true. Session 51 had raised `SEEDS`
+6 → 40 for a good reason and left `SIM_TIMEOUT` at 60s: nearly seven times the
+work under a cap sized for the old sample. **The file's own docblock had
+already measured that runner at about eleven times a desktop and written down
+why this exact failure is the worst kind** — "a test that fails on the runner's
+mood rather than on the code is a test nobody can read" — and then the sample
+grew underneath the number that paragraph was defending. A docblock that names
+a hazard does not defend against it; the number does.
+
+**Fixed by the cap, not by the sample** (`23f38c3`): both gate files to 240s,
+sized against the runner. Lowering `SEEDS` back would have changed what the
+gates assert against, and Session 51 verified the economy at 40 — the timeout
+changes nothing about the rules. `profiles.test.ts` raised with it rather than
+left for a slower runner day: its tests were already reaching 25s against the
+same 60.
+
+**Verified:** CI green on `23f38c3`, both jobs — `ci` and `deploy`. `pnpm
+verify:deploy` confirms https://ashwake.marcportal.com serves `23f38c3`, with
+every bundle, font, chrome face, icon and the stamped service worker live.
+NEXT.md's "not yet committed" claim is corrected in the same commit as this
+entry.
+
+**Left for Marc, unchanged:** SHARPNESS wants a phone and an eye (§1), and so
+does the rebalance — a receipt with a placing row and a jackpot row on it is a
+number until somebody plays a run and reads it.

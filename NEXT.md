@@ -289,7 +289,11 @@ runs alike, so cutting it widens the patience ratio), and a new
 identity 12% -> ~22%, reach 34% -> 19%, claims 6% -> 10%, rarity 1.6% -> 7%
 of harvest points; a pocket carrying a rare pays ~2.6x a plain one per tile.
 The receipt names both new terms in both languages. The gate files' `SEEDS`
-went 6 -> 40 — the "cliff" was never the economy. **Not yet committed.**
+went 6 -> 40 — the "cliff" was never the economy. **Landed 2026-09-04 as
+`84d5d9c`, CI and deploy green on `23f38c3`, live and verified.** What is left
+for Marc here is a played run rather than a number: does a receipt with a
+placing row and a jackpot row on it read as the game rewarding where you put
+things?
 
 **~~Which story, if any~~ — DECIDED 2026-09-03** (`LOG.md` Session 47). The
 Inheritance direction, played subtle: `s.story` is rewritten in both
