@@ -66,7 +66,7 @@ test('every room off MORE opens and comes back', async ({ page }) => {
   await page.goto('/?taught=1');
   const before = await canvasId(page);
 
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
 
   // A virgin device is offered the rooms that mean something on one: the
@@ -166,23 +166,31 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('a menu three deep is navigable, and a scene change empties the stack', async ({ page }) => {
+test('a menu is navigable two deep, and a scene change empties the stack', async ({ page }) => {
   /*
    * Marc, 2026-08-30: *"make sure all menus and overlapped menus on top are all
    * navigable and backable and make sense (especially for More)."* Two faults,
-   * and both are only reachable three panels deep, which is why neither had
-   * been seen.
+   * both only reachable deep in the stack, which is why neither had been seen.
    *
    * **A door onto a panel already in the stack did nothing.** `push` returned
-   * early if the id was open, so the manual → MENU → MORE → HOW TO PLAY path
-   * left MORE on top and the button the player just pressed appeared dead. It
-   * RAISES now: "open X" means "X is on top".
+   * early if the id was open, so a door onto a buried panel left the thing on
+   * top standing and the button the player just pressed appeared dead. It
+   * RAISES now: "open X" means "X is on top" (`ui/dialog.tsx`). Reachable
+   * three deep before 2026-09-03, through the manual's own MENU tab (MORE →
+   * the manual → its own way back into MORE, asked for a second time); that
+   * tab is retired now — MORE is the one hub every other panel opens from and
+   * none of them link back into it except by `.panel-back` — so the stack
+   * this game can build no longer buries a panel under a control that could
+   * ask for it again. `ui/dialog.tsx`'s `push` still raises rather than
+   * no-ops, which is worth keeping; there is simply no UI path left to prove
+   * it wrong if it regressed.
    *
    * **A scene change closed panels by NAME.** Four call sites ran
    * `worlds.hide(); more.hide()`, which is Ashwake 1's `resetShell()` — a
    * hand-maintained list that `ui/dialog.tsx`'s docblock says "had already
    * missed three". This one had missed four: stepping into another world from
-   * three panels deep left the MANUAL open over the new world's board.
+   * two panels deep left the WORLDS panel's opener open over the new world's
+   * board. Still fully provable, and still what this test is for.
    */
   const errors = watchErrors(page);
   const openIds = (): Promise<(string | null)[]> =>
@@ -194,43 +202,18 @@ test('a menu three deep is navigable, and a scene change empties the stack', asy
   await begin(page);
   await page.waitForTimeout(500);
 
-  /*
-   * Three deep: MORE, the manual on it, and MORE asked for AGAIN.
-   *
-   * The board's one door is MENU since 2026-08-30 — it replaced a `?` that
-   * opened the manual and a music note that muted, both of which MORE already
-   * reaches. So the walk in is one step longer and the corner is two buttons
-   * lighter, and the shape being tested is the same: a door onto a panel
-   * already in the stack has to RAISE it, and BACK still leaves one at a time.
-   */
+  // Two deep: MORE, then the manual on top of it. BACK walks out one layer.
   await openMore(page);
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  await panel(page, 'manual').locator('[data-go="more"]').click();
-  await panel(page, 'more').waitFor({ state: 'visible' });
-  await panel(page, 'more').locator('[data-go="manual"]').click();
-
-  /*
-   * The manual is what the player SEES.
-   *
-   * This asked `elementFromPoint` and was answered 'manual' while the manual
-   * was buried under MORE — Chromium skips `inert` subtrees when hit-testing,
-   * so the one thing that made the bug invisible to a player was also the thing
-   * that made it invisible to this test. It reads the stacking order now.
-   */
   await expect
-    .poll(() => paintedOnTop(page), {
-      message: 'HOW TO PLAY did not raise the manual over MORE',
-    })
+    .poll(() => paintedOnTop(page), { message: 'MENU did not raise the manual over the board' })
     .toBe('manual');
 
-  // And BACK still walks out one layer at a time.
   await panel(page, 'manual').locator('.panel-back').click();
-  expect(await openIds(), 'BACK from a raised panel did not reveal the one under it').toEqual([
-    'more',
-  ]);
+  expect(await openIds(), 'BACK from the manual did not reveal MORE under it').toEqual(['more']);
 
-  // Now three deep again, and step into another WORLD from the bottom of it.
+  // Two deep again, and step into another WORLD from the bottom of it.
   await panel(page, 'more').locator('[data-go="worlds"]').click();
   await panel(page, 'worlds').waitFor({ state: 'visible' });
   await page.locator('[data-slot="2"]').click();
@@ -371,8 +354,6 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await page.locator('[data-action="purse"]').click();
 
   await page.locator('[data-go="quick"]').click();
-  await clean("the board's own MENU list");
-  await page.locator('[data-quick="more"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
   await clean('MORE, off the board');
   await panel(page, 'more').locator('[data-go="manual"]').click();
@@ -397,7 +378,7 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the board’s MENU is a short list, and SOUND on it is one wire', async ({ page }) => {
+test('the board’s MENU opens MORE directly, and SOUND on it is one wire', async ({ page }) => {
   /*
    * Marc, 2026-08-30, twice in one session. First: *"make sure sound on or off
    * and how to play stays in the menu, add a menu button instead."* The corner
@@ -408,14 +389,17 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
    * submenu for quick actions like sound in off etc and then an option that
    * goes to menu."*
    *
-   * So the corner is one button, and behind it a list of three. Four things
-   * have to be true and each is a way it goes wrong:
+   * That submenu — a short list of its own, separate from MORE — was retired
+   * 2026-09-03: it overlapped almost entirely with MORE's own row set, so the
+   * board's MENU button opens MORE directly now (`Menu.tsx`'s doc comment).
+   * Four things still have to be true and each is a way it goes wrong:
    *
-   *   - the list is REACHABLE, which the version of this that shipped inside
-   *     the board host was not — the host goes `inert` the moment anything is
-   *     on the stack, so every row drew and none of them could be tapped;
-   *   - SOUND switches IN PLACE and the list stays open, because a menu that
-   *     closes on a toggle is a menu you have to reopen to see whether the
+   *   - MORE is REACHABLE from the board, which the version of this that
+   *     shipped inside the board host was not — the host goes `inert` the
+   *     moment anything is on the stack, so every row drew and none of them
+   *     could be tapped;
+   *   - SOUND switches IN PLACE and MORE stays open, because a panel that
+   *     closes on a toggle is a panel you have to reopen to see whether the
    *     toggle took;
    *   - it is the SAME FLAG as the SETTINGS switch, because a muted game that
    *     says it is unmuted is worse than either state — the finding this test
@@ -451,13 +435,14 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
   ).toBe(1);
 
   /*
-   * The button is in the top half, and its list opens near it.
+   * The button is in the top half, and MORE opens near it.
    *
    * Marc, 2026-08-30: *"menu move top right"* — the door out of the game left
    * the corner a thumb sweeps fifty times a run. The thing that would silently
-   * regress is the LIST: it hung off the bottom of the screen while its button
-   * was up here, which is a menu a screen away from what opened it, and only a
-   * geometry check catches that. Everything else about it still passes.
+   * regress is the PANEL: it used to hang off the bottom of the screen while
+   * its button was up here, which is a menu a screen away from what opened it,
+   * and only a geometry check catches that. Everything else about it still
+   * passes.
    */
   const topHalf = (sel: string): Promise<number> =>
     page.locator(sel).evaluate((el) => el.getBoundingClientRect().top / window.innerHeight);
@@ -466,27 +451,25 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
   );
 
   await page.locator('[data-go="quick"]').click();
-  const sound = page.locator('[data-quick="sound"]');
-  await expect(sound, 'MENU opened no list').toBeVisible();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  const sound = panel(page, 'more').locator('[data-go="sound"]');
+  await expect(sound, 'MENU opened no panel').toBeVisible();
   expect(
-    await topHalf('.quick'),
-    'the list opened at the bottom, a screen away from the button that opened it',
+    await topHalf('[data-panel="more"]'),
+    'MORE opened at the bottom, a screen away from the button that opened it',
   ).toBeLessThan(0.5);
 
   // Off by default: Marc chose a silent 1.0, and a phone game that surprises a
   // quiet room is uninstalled.
-  await expect(sound).toHaveAttribute('aria-checked', 'false');
+  await expect(sound).toHaveAttribute('aria-pressed', 'false');
   await sound.click();
-  await expect(sound, 'the sound row did not switch').toHaveAttribute('aria-checked', 'true');
+  await expect(sound, 'the sound row did not switch').toHaveAttribute('aria-pressed', 'true');
   await expect(
     sound,
-    'the list closed on a toggle, so nothing showed whether it took',
+    'the panel closed on a toggle, so nothing showed whether it took',
   ).toBeVisible();
 
-  // SETTINGS agrees, because it is reading the same flag. Through the list’s
-  // last row, which is the whole of "an option that goes to menu".
-  await page.locator('[data-quick="more"]').click();
-  await panel(page, 'more').waitFor({ state: 'visible' });
+  // SETTINGS agrees, because it is reading the same flag.
   expect(await paintedOnTop(page)).toBe('more');
   await panel(page, 'more').locator('[data-go="settings"]').click();
   await panel(page, 'settings').waitFor({ state: 'visible' });
@@ -495,17 +478,16 @@ test('the board’s MENU is a short list, and SOUND on it is one wire', async ({
     'the board and SETTINGS disagree about the sound',
   ).toHaveAttribute('aria-pressed', 'true');
 
-  // And flipping it there flips the row, on the way back out. Three Escapes:
-  // SETTINGS, MORE, and the list they were opened from.
+  // And flipping it there flips the row, on the way back out. Two Escapes:
+  // SETTINGS, then MORE.
   await panel(page, 'settings').locator('[data-feature="ui.sound"]').click();
   await page.keyboard.press('Escape');
-  await page.keyboard.press('Escape');
-  await expect(sound, 'the list did not survive the rooms it opened').toBeVisible();
-  await expect(sound).toHaveAttribute('aria-checked', 'false');
+  await expect(sound, 'MORE did not survive the room it opened').toBeVisible();
+  await expect(sound).toHaveAttribute('aria-pressed', 'false');
 
-  // Escape closes the list itself, like any other door.
+  // Escape closes MORE itself, like any other door.
   await page.keyboard.press('Escape');
-  await expect(page.locator('.quick')).toHaveCount(0);
+  await expect(page.locator('[data-panel="more"]')).toHaveCount(0);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -530,7 +512,7 @@ test('the phone’s BACK button closes the top panel, one at a time', async ({ p
   const before = await canvasId(page);
 
   // Two deep: MORE, then WORLDS on top of it.
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
   await page.locator('[data-go="worlds"]').click();
   await panel(page, 'worlds').waitFor({ state: 'visible' });
@@ -556,7 +538,7 @@ test('the phone’s BACK button closes the top panel, one at a time', async ({ p
    * `history.state`: after opening and closing, the top of the stack must be
    * an entry with no panel count on it.
    */
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await panel(page, 'more').waitFor({ state: 'visible' });
   await panel(page, 'more').locator('.panel-back').click();
   await panel(page, 'more').waitFor({ state: 'detached' });
@@ -601,7 +583,7 @@ test('switching worlds is a state change, never a reload', async ({ page }) => {
   await page.goto('/?taught=1');
   const before = await canvasId(page);
 
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await page.locator('[data-go="worlds"]').click();
   await panel(page, 'worlds').waitFor({ state: 'visible' });
 
@@ -637,7 +619,9 @@ test('the appearance picker shows each direction, and switching one repaints', a
   const errors = watchErrors(page);
   await page.goto('/?taught=1');
 
-  await page.locator('[data-door="settings"]').click();
+  await page.locator('[data-door="menu"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await page.locator('[data-go="settings"]').click();
   await panel(page, 'settings').waitFor({ state: 'visible' });
 
   // Every direction is SHOWN, not just named: a swatch each, drawn from that
@@ -748,7 +732,9 @@ test('the manual grows with the world', async ({ page }) => {
   const errors = watchErrors(page);
   const read = async (url: string) => {
     await page.goto(url);
-    await page.locator('[data-door="how"]').click();
+    await page.locator('[data-door="menu"]').click();
+    await panel(page, 'more').waitFor({ state: 'visible' });
+    await page.locator('[data-go="manual"]').click();
     await panel(page, 'manual').waitFor({ state: 'visible' });
     /*
      * LAND ON THE TAB, and say so before reading it (2026-09-02).
@@ -798,7 +784,9 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   // which needed them to have walked there first.
   const errors = watchErrors(page);
   await page.goto('/?taught=1');
-  await page.locator('[data-door="how"]').click();
+  await page.locator('[data-door="menu"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await page.locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
 
   await page.locator('[data-tab="play"]').click();
@@ -923,10 +911,9 @@ test('the front door fits the smallest phone, and scrolls when it does not', asy
   // And when it does overflow, there has to be a way down.
   if (box?.overflows === true) expect(box.scrollable).toBe('auto');
 
-  // Every way off the door is still reachable.
-  await page.locator('[data-door="how"]').scrollIntoViewIfNeeded();
-  await page.locator('[data-door="more"]').scrollIntoViewIfNeeded();
-  await expect(page.locator('[data-door="more"]')).toBeVisible();
+  // The one way off the door is still reachable.
+  await page.locator('[data-door="menu"]').scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-door="menu"]')).toBeVisible();
 
   expect(errors).toEqual([]);
 });
@@ -1092,7 +1079,8 @@ test('a panel takes the keyboard with it, and the hand behind it is unreachable'
   // From the BOARD, which is the only place the hand exists to be reached
   // behind: MENU, then HOW TO PLAY.
   await page.locator('[data-go="quick"]').click();
-  await page.locator('[data-quick="manual"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await page.locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
 
   const landed = new Set<string>();

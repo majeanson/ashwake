@@ -1192,7 +1192,7 @@ test('POP wears one mark, on the bar, in the manual and on the card', async ({ p
 
   // 3. HOW TO PLAY, where it is explained.
   await page.goto('/?taught=1');
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
   await page.locator('[data-tab="start"]').click();
   await page.waitForTimeout(400);

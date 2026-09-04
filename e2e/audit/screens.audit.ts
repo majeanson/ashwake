@@ -132,7 +132,8 @@ const open = (selector: string) => async (page: Page) => {
  * function asked for.
  */
 const viaTab = (tab: string) => async (page: Page) => {
-  await page.locator('[data-door="how"]').click();
+  await page.locator('[data-door="menu"]').click();
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
   const wanted = page.locator(`[data-tab="${tab}"]`);
   await expect
     .poll(async () => {
@@ -142,16 +143,27 @@ const viaTab = (tab: string) => async (page: Page) => {
     .toBe('true');
 };
 
-/** Through MORE, which is where everything that is not the run lives. */
-const viaMore = (go: string) => async (page: Page) => {
-  await page.locator('[data-door="more"]').click();
-  await page.locator(`[data-go="${go}"]`).click();
-};
+/**
+ * Through MORE, which is where everything that is not the run lives.
+ *
+ * The button that opens it wears two names depending on where it stands: the
+ * front door's is `data-door="menu"`, the end screen's own is
+ * `data-door="more"` (`EndScreen.tsx`) — both open the same panel
+ * (`More.tsx`'s own doc comment), so the caller says which door it is
+ * standing at rather than this guessing from the query string.
+ */
+const viaMore =
+  (go: string, door: 'menu' | 'more' = 'menu') =>
+  async (page: Page) => {
+    await page.locator(`[data-door="${door}"]`).click();
+    await page.locator(`[data-go="${go}"]`).click();
+  };
 
-/** MENU, on the board, and the short list under it. */
+/** MENU, on the board, opening MORE directly (2026-09-03: the short list it
+ *  used to open first was retired — see `Menu.tsx`'s own doc comment). */
 const viaQuick = async (page: Page): Promise<void> => {
   await page.locator('[data-go="quick"]').click();
-  await page.locator('[data-hud="quick"]').waitFor({ state: 'visible' });
+  await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
 };
 
 /**
@@ -183,7 +195,7 @@ const SCREENS: readonly Screen[] = [
       await page.locator('[data-action="purse"]').click();
     },
   },
-  { name: 'manual', query: FRESH, reach: open('[data-door="how"]') },
+  { name: 'manual', query: FRESH, reach: viaMore('manual') },
   /*
    * The manual's CONTENT, not just its front tab (2026-08-30).
    *
@@ -196,12 +208,12 @@ const SCREENS: readonly Screen[] = [
   { name: 'manual-play', query: FRESH, reach: viaTab('play') },
   { name: 'manual-expedition', query: FRESH, reach: viaTab('start') },
   { name: 'manual-hand', query: FRESH, reach: viaTab('hand') },
-  { name: 'settings', query: FRESH, reach: open('[data-door="settings"]') },
-  { name: 'more', query: FRESH, reach: open('[data-door="more"]') },
-  { name: 'more-played', query: PLAYED, reach: viaMore('shop') },
+  { name: 'settings', query: FRESH, reach: viaMore('settings') },
+  { name: 'more', query: FRESH, reach: open('[data-door="menu"]') },
+  { name: 'more-played', query: PLAYED, reach: viaMore('shop', 'more') },
   { name: 'worlds', query: FRESH, reach: viaMore('worlds') },
-  { name: 'shop', query: PLAYED, reach: viaMore('shop') },
-  { name: 'fame', query: PLAYED, reach: viaMore('fame') },
+  { name: 'shop', query: PLAYED, reach: viaMore('shop', 'more') },
+  { name: 'fame', query: PLAYED, reach: viaMore('fame', 'more') },
   { name: 'end', query: PLAYED, reach: begin },
   {
     name: 'end-payout-open',
@@ -233,7 +245,7 @@ const SCREENS: readonly Screen[] = [
       await viaQuick(page);
     },
   },
-  { name: 'device', query: PLAYED, reach: viaMore('device') },
+  { name: 'device', query: PLAYED, reach: viaMore('device', 'more') },
   { name: 'daily', query: FRESH, reach: open('[data-door="daily"]') },
   /* The `?themes=1` picker, which is a debug surface that pins itself to the
      same corner MENU uses — the one overlap `ui.css` admits to and nothing has

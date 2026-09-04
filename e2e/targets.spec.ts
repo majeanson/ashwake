@@ -114,7 +114,7 @@ test('every control on the front door and its panels is thumbable', async ({ pag
   await page.locator('[data-door="begin"]').waitFor({ state: 'visible' });
   await assertAllThumbable(page, 'the front door');
 
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
   await assertAllThumbable(page, 'MORE');
 

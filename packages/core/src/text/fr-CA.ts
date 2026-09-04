@@ -183,7 +183,8 @@ export const STRINGS_FR: Strings = {
       name: 'LE COÛT',
       terms: [],
       core: 'Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine.',
-      rises: 'Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie.',
+      rises:
+        'Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie.',
       curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
       curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
     },

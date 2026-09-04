@@ -103,7 +103,8 @@ test('shoots the manual’s legend', async ({ page }) => {
   // visuals and assets and symbols in the how to play".
   const errors = watchErrors(page);
   await page.goto('/?theme=settlement&taught=1');
-  await page.locator('[data-door="how"]').click();
+  await page.locator('[data-door="menu"]').click();
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
   await page.locator('[data-tab="play"]').click();
   await page.locator('.legend').waitFor({ state: 'visible' });
   await page.waitForTimeout(300);
@@ -170,18 +171,17 @@ test('shoots the first minute', async ({ page }) => {
   await page.waitForTimeout(400);
   await writeFile(join(SHOTS, 's3-playing.png'), await page.screenshot());
 
-  // The board's one door: a short list, then MORE, then the manual.
+  // The board's one door: MENU straight into MORE, then the manual.
   await page.locator('[data-go="quick"]').click();
-  await page.waitForTimeout(200);
-  await writeFile(join(SHOTS, 's3-quick.png'), await page.screenshot());
-  await page.locator('[data-quick="more"]').click();
   await page.waitForTimeout(200);
   await writeFile(join(SHOTS, 's3-more.png'), await page.screenshot());
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
   await page.waitForTimeout(300);
   await writeFile(join(SHOTS, 's3-manual.png'), await page.screenshot());
 
-  await page.getByRole('button', { name: 'SETTINGS' }).first().click();
+  await page.locator('[data-panel="manual"] .panel-back').click();
+  await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
+  await page.locator('[data-panel="more"] [data-go="settings"]').click();
   await page.waitForTimeout(300);
   await writeFile(join(SHOTS, 's3-settings.png'), await page.screenshot());
 

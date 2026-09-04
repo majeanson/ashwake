@@ -63,7 +63,7 @@ test('a fully-awake world offers BEGIN AT CAMP, and camping wakes out there', as
   // woken and territories held, which is the only state that can offer this.
   await page.goto('/?taught=1&runs=300');
 
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await page.locator('[data-go="worlds"]').click();
 
   const camp = page.locator('[data-go="camp"]');
@@ -120,7 +120,7 @@ test('a run that gains nothing says it gained nothing', async ({ page }) => {
 test('a world three hundred runs deep does not look like a fresh one', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?taught=1&runs=300');
-  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-door="menu"]').click();
   await page.locator('[data-go="worlds"]').click();
 
   const panel = page.locator('[data-panel="worlds"]');
