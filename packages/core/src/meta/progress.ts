@@ -122,6 +122,13 @@ export const PERKS: readonly Perk[] = [
  * them, so every existing player sees nothing, with no flag to flip.
  */
 export const TEACH_IDS = [
+  // THE HOOK, before anything else (2026-09-03, Marc: a first card on entry
+  // explaining the story). Ahead of PLACE on purpose — a stranger's very
+  // first card says what this place IS, before the next one says how to
+  // touch it. Added after launch-week ledgers existed, so — like PURSE and
+  // LAST GASP before it — every device gets this card exactly once, on
+  // whichever run it next begins.
+  'story',
   // The very first lesson (2026-08-20, the launch audit's finding: nobody was
   // ever told how to place a tile outside the opt-in manual): one card, at
   // the start of a genuinely virgin device's first run — see
@@ -131,7 +138,10 @@ export const TEACH_IDS = [
   'ripe',
   'pop',
   'costRise',
-  'glow',
+  // GLOW is gone (2026-09-03, Marc's call): its toast duplicated the
+  // signpost's own pocket-ready line word for word, and a toast-class moment
+  // had no speaker anyway (see `shell/teaching.ts`). `decodeProgress` drops
+  // unknown ids by contract, so a stored ledger holding it costs nothing.
   'cache',
   'site',
   'territory',

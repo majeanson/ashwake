@@ -79,11 +79,22 @@ import type { TipRow } from './view';
  * Every concept the game can teach.
  *
  * A superset of `TeachId` — the drip's ledger — because some concepts are
- * words the manual prints without ever firing a card for them. The extra six
- * are the ones `glossary.ts` added on 2026-08-27 for exactly that reason.
+ * words the manual prints without ever firing a card for them. Most of the
+ * extras are the ones `glossary.ts` added on 2026-08-27 for exactly that
+ * reason; `reach` joined 2026-09-03, when the manual's audit found the
+ * distance multiplier stated only behind the HUD's stat tap.
  */
 export type LessonId =
-  TeachId | 'pocket' | 'worth' | 'bounty' | 'stash' | 'sizeBonus' | 'stone' | 'find' | 'sacrifice';
+  | TeachId
+  | 'pocket'
+  | 'worth'
+  | 'bounty'
+  | 'stash'
+  | 'sizeBonus'
+  | 'stone'
+  | 'find'
+  | 'sacrifice'
+  | 'reach';
 
 /** How heavy a sentence is. Absent means `more`. */
 export type Weight = 'core' | 'more' | 'card' | 'detail';
@@ -108,7 +119,7 @@ export type Beat = {
 
 export type Lesson = {
   /** One of the concepts the catalogue has words for — a subset of `LessonId`,
-   *  because some teach ids are moments (`place`, `glow`) rather than terms. */
+   *  because some teach ids are moments (`place`, `wall`) rather than terms. */
   readonly id: TaughtId;
   /** From one of the four mark registries only — never a literal shape. The
    *  registries name a Phosphor icon since 2026-08-30 (`@theme/icons`); before
@@ -140,10 +151,12 @@ export const lessonName = (lesson: Lesson, s: Strings): string => s.lesson[lesso
 
 /**
  * UPPERCASE, longest first — the spellings `tips.ts`'s matcher alternates
- * over. An EMPTY list is a lesson with no tappable word, which is how the nine
- * concepts `glossary.ts` deliberately left out (`costRise`, `glow`, `field`,
- * `lens`, `purse`, `colours`, `place`, `wall`, `lastGasp`) can hold their
- * prose without becoming a button nobody could ever reach.
+ * over. An EMPTY list is a lesson with no tappable word, which is how the
+ * concepts `glossary.ts` deliberately left out (`purse`, `colours`, `place`,
+ * `wall`, `lastGasp`) can hold their prose without becoming a button nobody
+ * could ever reach — and how the 2026-09-03 manual sections (`costRise`,
+ * `reach`, `field`, `lens`) explain a rule without minting a vocabulary word
+ * for it.
  */
 export const lessonTerms = (lesson: Lesson, s: Strings): readonly string[] =>
   s.lesson[lesson.id].terms;
@@ -276,7 +289,16 @@ export const LESSONS: readonly Lesson[] = [
     id: 'pop',
     icon: CONCEPT_ICON.pop,
     figure: 'pop',
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pop.core }],
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.pop.core },
+      // The draw lean, findable by a manual reader (2026-09-03). It was said
+      // only in `ripe.cardLean` — a first-contact sentence the manual never
+      // prints — under the same condition this beat keeps.
+      {
+        say: (t, _theme, s) =>
+          t.luckPerPop > 0 && t.colourBiasDraws > 0 ? s.lesson.pop.lean : null,
+      },
+    ],
   },
   {
     id: 'sacrifice',
@@ -436,6 +458,61 @@ export const LESSONS: readonly Lesson[] = [
             ? s.lesson.sizeBonus.coreCapped(t.harvestSizeCap)
             : s.lesson.sizeBonus.core,
       },
+    ],
+  },
+  /**
+   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four).
+   *
+   * Each is a rule the engine enforces that no manual surface stated — the
+   * words existed behind a tap (`statNote`, `describeHexOf`) and nowhere a
+   * reader could browse. `costRise`, `field` and `lens` are teach ids, so
+   * their sections grow into the manual when their toast speaks; `reach`
+   * prints for everyone.
+   */
+  {
+    id: 'costRise',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.costRise.core },
+      // The curve's direction can be flattened (`costRisesEvery: 0`), and
+      // then the clock sentence is not spoken: a run that never gets dearer
+      // is not told it does.
+      {
+        at: 'core',
+        say: (t, _theme, s) => (t.costRisesEvery > 0 ? s.lesson.costRise.rises : null),
+      },
+      {
+        at: 'detail',
+        say: (t, _theme, s) =>
+          t.costRisesEvery > 0
+            ? t.costGrace > 0
+              ? s.lesson.costRise.curveGrace(t.baseCost, t.costGrace, t.costRisesEvery)
+              : s.lesson.costRise.curvePlain(t.costRisesEvery)
+            : null,
+      },
+    ],
+  },
+  {
+    id: 'reach',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.reach.core },
+      {
+        at: 'core',
+        say: (t, _theme, s) =>
+          t.distanceStep > 0 ? s.lesson.reach.multiplier(t.distanceStep) : null,
+      },
+    ],
+  },
+  {
+    id: 'field',
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.field.core }],
+  },
+  {
+    id: 'lens',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.lens.core },
+      // The invitation is the toast's own sentence (`lensHint`), so the
+      // manual and the drip cannot describe the gesture two ways.
+      { say: (_t, _theme, s) => s.lensHint },
     ],
   },
 ];

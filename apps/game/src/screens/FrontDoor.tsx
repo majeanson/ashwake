@@ -2,14 +2,28 @@ import { ICON_DATA_URI, NAME } from '@meta/identity';
 import type { Strings } from '@text/Strings';
 import type { ThemeId } from '@theme/tokens';
 import { useArtSlot } from '../shell/art';
-import { Fold } from '../ui/Fold';
 
 /**
- * The front door (Stage 3, 2026-08-29).
+ * The front door (Stage 3, 2026-08-29; cleared down to three choices,
+ * 2026-09-03).
  *
  * The first screen anyone sees, and the one a stranger judges the whole game
- * by. Ashwake 1's shape: the mark, the name, the tagline, one loud way in, and
- * everything else quiet underneath.
+ * by. Ashwake 1's shape: the mark, the name, one loud way in, and everything
+ * else quiet underneath — except this body had grown a SECOND loud way in
+ * (DAILY, now uniform with BEGIN rather than deliberately quieter — Marc's
+ * direct ask) and a bottom row of three separate doors (HOW TO PLAY,
+ * SETTINGS, MORE) that all led into the same tangle of overlapping menus.
+ * The tagline and the three-paragraph story both came off this screen the
+ * same session: the tagline's mood folded into `s.story`'s opening line
+ * (`Strings.ts`), the story itself moved into the unified MENU as a row a
+ * player opens on purpose rather than scrolls past by default.
+ *
+ * Three choices now, always: BEGIN, DAILY, MENU. Everything this screen used
+ * to link to directly — how to play, settings, worlds, the shop, the story —
+ * is one tap behind MENU, which is the same panel the board's own MENU
+ * button and the end screen's own MENU button open. One menu, reached from
+ * everywhere the same way, instead of three different lists that each led
+ * to a different subset of the others.
  *
  * **Focus goes to the dialog rather than to BEGIN.** Ashwake 1's ruling, and
  * the reason is that landing on BEGIN puts a focus ring on the one control a
@@ -22,9 +36,10 @@ export type FrontDoorProps = {
   /** A run already in progress — BEGIN becomes RESUME. */
   readonly resuming: boolean;
   readonly onBegin: () => void;
-  readonly onHowToPlay: () => void;
-  readonly onSettings: () => void;
-  readonly onMore: () => void;
+  /** The one door to everything else — how to play, settings, worlds, the
+   *  shop, the story, this device. Same panel the board's own MENU button
+   *  and the end screen's own MENU button open. */
+  readonly onMenu: () => void;
   readonly onDaily: () => void;
   /** Today's standing, already worded by the catalogue — `dailyBadge`. */
   readonly dailyBadge: string;
@@ -59,9 +74,7 @@ export function FrontDoor({
   s,
   resuming,
   onBegin,
-  onHowToPlay,
-  onSettings,
-  onMore,
+  onMenu,
   onDaily,
   dailyBadge,
   themeId,
@@ -89,32 +102,6 @@ export function FrontDoor({
         <img className="door-lockup" src={lockup} alt="" width={876} height={450} />
       )}
       <h1 className={lockup === null ? 'door-name' : 'door-name visually-hidden'}>{NAME}</h1>
-      <p className="note door-tagline">{s.tagline}</p>
-
-      {/*
-        The hook (Marc, 2026-08-29: "we need a little story, a small hook for
-        this game towards the settlement"), FOLDED (2026-09-03): three
-        paragraphs at reading size pushed BEGIN below the fold on a real phone
-        — 691px of content on a 375×667 screen, per the measurement `.door-story`
-        still carries. A story a stranger is free to skip should not be the
-        reason they have to scroll to find the button, so it is a tap away
-        instead of the whole screen: `THE STORY` opens the same three lines a
-        returning player has already read and never needs shown again unasked.
-
-        Plain paragraphs rather than `Prose`, deliberately: every other piece of
-        text in the game runs the glossary matcher so a term is tappable
-        wherever it appears, and this is the one passage written to contain no
-        terms at all. A field and a road are not vocabulary a lesson has to
-        teach — they are what the four grounds ARE — and a term card opening
-        over the front door would answer a question nobody has asked yet.
-      */}
-      <Fold summary={s.ui.theStory}>
-        <div className="door-story">
-          {s.story.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </div>
-      </Fold>
 
       <button type="button" className="door-begin" data-door="begin" onClick={onBegin}>
         {resuming
@@ -155,28 +142,19 @@ export function FrontDoor({
         </>
       )}
 
-      {/* Today's board, under BEGIN and above the quiet choices: it is the
-          second thing a returning player wants and never the first thing a
-          stranger should meet. The badge is the catalogue's sentence — this
-          screen counts nothing. Absent on a door that is already a daily's. */}
+      {/* DAILY, uniform with BEGIN now — see the doc comment above and
+          `.door-begin, .door-daily` in ui.css. Absent on a door that is
+          already a daily's. */}
       {mode !== 'daily' && (
         <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
           {dailyBadge}
         </button>
       )}
 
-      <nav className="panel-menu door-more">
-        <button type="button" data-door="how" onClick={onHowToPlay}>
-          {s.ui.howToPlay}
-        </button>
-        <button type="button" data-door="settings" onClick={onSettings}>
-          {s.ui.settings}
-        </button>
-        {/* Everything that is not the first minute lives one tap deeper. The
-            door stays three choices wide for a stranger; MORE is where a
-            returning player's worlds, shop and hall of fame are. */}
-        <button type="button" data-door="more" onClick={onMore}>
-          {s.ui.more}
+      {/* The one door to everything else — see the doc comment above. */}
+      <nav className="panel-menu door-menu">
+        <button type="button" data-door="menu" onClick={onMenu}>
+          {s.ui.menu}
         </button>
       </nav>
     </div>

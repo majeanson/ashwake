@@ -230,7 +230,68 @@ the lesson TOLD without ever showing it. The drip's most expensive card spent
 its own ledger entry to say nothing. **A moment that is always false is only
 honest while something else owns the moment.**
 
+**A FIFTEENTH — and the first that was eating OTHER mechanics (found and
+half-fixed 2026-09-03, `LOG.md` Session 46).** The TOAST half of the teaching
+drip had no speaker: `App` consumes `nextLesson` only where `as === 'card'`,
+and `told` is written only from a card's dismiss (and the purse's own open).
+So the seven toast-class moments — `place`, `glow`, `costRise`, `wall`,
+`field`, `lens`, `lastGasp` — were never spoken and never marked told. Worse:
+`nextLesson` returns the FIRST unmet-and-true moment, so an unspeakable toast
+stood in front of every card behind it in `ORDER`. `wall` is true from the
+first frame of nearly every run, which means a fresh device could never be
+taught MAGIC, UNIQUE, LUCK, RELICS or THE COLOURS, and the manual — which
+grows with the same ledger — never grew its HAND tab past THE STASH. A
+stranger-test killer that fourteen findings of the same shape walked past,
+because the dead thing was one BRANCH of a consumed return value: `teach` had
+a reader, `teach.as === 'toast'` did not. **Grep the branches of a consumed
+value, not only the value.** Fixed as far as it goes without choosing words:
+`nextLesson` skips toast-class moments (armed, NOT told — the purse lesson
+already showed what burning a ledger entry on unshown words costs), so the
+card half runs and the manual grows again (`teaching.test.ts` pins both new
+rules). Speaking the toasts is §1's first entry.
+
 ## 1. Needs Marc, and only Marc
+
+**~~Which story, if any~~ — DECIDED 2026-09-03** (`LOG.md` Session 47). The
+Inheritance direction, played subtle: `s.story` is rewritten in both
+languages, the loop only implied, never stated. Nothing left open here.
+
+**The drip's toasts, by choosing their words (2026-09-03).** The moments and
+the ledger are built and armed; what is missing is a speaker in `App` (one
+toast per dispatch, through `act`, the same door the receipts use) and a
+sentence per moment. Five candidates already exist in the catalogue and
+would follow the house rule of one sentence in a second place: `place` →
+`s.figure.place` (the caption the EXPEDITION tab now draws), `wall` →
+`s.ui.legendWall`, `lastGasp` → `s.lastGaspRule`, `costRise` → the
+`statNote('cost')` prose, `field` → `s.view.describe.native(name)`.
+
+**Both open questions answered 2026-09-03** (`LOG.md` Session 47): `lens`'s
+words are "Tap remembered fog to light its ground" (goes into both
+languages, still to land); `glow` is deleted from `TEACH_IDS` outright
+rather than worded — done, in `progress.ts` and `teaching.ts`. What is left
+of this item is purely the build: the speaker in `App`, and `lens`'s
+sentence added to the catalogue alongside the other five.
+
+**What the manual still does not explain, by writing it (2026-09-03 audit,
+manual vs engine).** Everything below is a rule the engine enforces and no
+manual surface states; each has core prose behind a tap somewhere, so the
+words exist but the editorial call (a new section? which tab? shorter?) is
+yours: **the cost curve** — EXPEDITION says placements cost tiles, never
+that the cost RISES and never comes back down, the one clock that ends every
+run (`statNote('cost')` has the sentence, HUD-tap only); **REACH** — the
+distance multiplier is a scoring rule visible only behind the HUD stat tap;
+**the fog** — nothing in the manual says the world REMEMBERS across runs,
+that destinations glow through it, or that tapping remembered ground turns
+the lens (the drip's `glow` and `lens` toasts were its only planned mentions,
+and they never spoke); **native ground** — TERRITORY says ground becomes
+native and nothing says what native DOES (`describe.native`'s "+1 worth" is
+tap-only); **the draw lean** — popping leans your next draws toward that
+colour, said only in RIPE's first-contact card, which a manual reader never
+sees. Fixed already, no words needed: the `destinations` and `place` figures
+existed with pinned bilingual captions and NO lesson carried them, so
+nothing drew them — the legend now hangs `destinations` (whose caption is
+the manual's only statement of FAINT MEANS SPENT) and EXPEDITION draws
+`place`.
 
 **TREASURE (pop for magic/unique) is a real button paying an unreal
 price (2026-09-03).** Diagnosed, not fixed. Popping a 10+ pocket as

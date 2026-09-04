@@ -46,6 +46,14 @@ const LUCK_CORE = 'La CHANCE est une bourse, pas un score.';
 const RARE_STAR =
   'Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.';
 const LAST_GASP_RULE = `Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas${D}: seule une récolte te ramène au-dessus de zéro.`;
+/** The cost curve and the reach rule, shared between the stat note and the
+ *  manual's own sections (2026-09-03) — the `LUCK_CORE` pattern: one clause,
+ *  two doors, no second wording to drift. */
+const COST_CURVE_GRACE = (base: number, grace: number, every: number): string =>
+  `Il reste à ${base} pour les ${grace} premières poses, puis monte de +1 toutes les ${every} poses`;
+const COST_CURVE_PLAIN = (every: number): string => `Il monte de +1 toutes les ${every} poses`;
+const REACH_RULE = (step: number): string =>
+  `Chaque ${step} hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée.`;
 
 export const STRINGS_FR: Strings = {
   locale: 'fr-CA',
@@ -67,6 +75,7 @@ export const STRINGS_FR: Strings = {
       name: 'RÉCOLTER',
       terms: ['RÉCOLTER', 'RÉCOLTE'],
       core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.`,
+      lean: 'RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée.',
     },
     sacrifice: {
       name: 'SACRIFIER',
@@ -170,11 +179,36 @@ export const STRINGS_FR: Strings = {
         `Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à ${cap}. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur.`,
       core: 'Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée.',
     },
+    costRise: {
+      name: 'LE COÛT',
+      terms: [],
+      core: 'Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine.',
+      rises: 'Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie.',
+      curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
+      curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
+    },
+    reach: {
+      name: 'PORTÉE',
+      terms: [],
+      core: 'La PORTÉE, c’est jusqu’où tu as bâti depuis le départ.',
+      multiplier: (step) => REACH_RULE(step),
+    },
+    field: {
+      name: 'TERRE NATALE',
+      terms: [],
+      core: `Le sol qu’un TERRITOIRE tient est natal de sa couleur${D}: une tuile de cette couleur posée là vaut un de plus.`,
+    },
+    lens: {
+      name: 'LE BROUILLARD',
+      terms: [],
+      core: 'Le monde se souvient. Le sol que tu as parcouru reste sur la carte entre les parties, tamisé sous le brouillard, et les destinations non réclamées luisent au travers.',
+    },
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,
   rareCard: 'Dépense-la là où beaucoup de tuiles se touchent.',
   lastGaspRule: LAST_GASP_RULE,
+  lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
 
   view: {
     groundHead: (name, word) => `${name}${D}: ${word}.`,
@@ -301,11 +335,9 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         (rate === null
           ? '.'
           : `; ce qui reste à la fin de la partie revient en reliques, à ${pc(rate)}.`),
-      reach: (step) =>
-        `PORTÉE${D}: jusqu’où tu as bâti depuis le départ. Chaque ${step} hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée.`,
-      costCurveGrace: (base, grace, every) =>
-        `Il reste à ${base} pour les ${grace} premières poses, puis monte de +1 toutes les ${every} poses`,
-      costCurvePlain: (every) => `Il monte de +1 toutes les ${every} poses`,
+      reach: (step) => `PORTÉE${D}: jusqu’où tu as bâti depuis le départ. ${REACH_RULE(step)}`,
+      costCurveGrace: COST_CURVE_GRACE,
+      costCurvePlain: COST_CURVE_PLAIN,
       cost: (cost, curve) =>
         `COÛT${D}: le prix de la prochaine pose, ${cost}. ${curve}, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. ${LAST_GASP_RULE}`,
       left: `RESTE${D}: les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.`,
@@ -491,12 +523,11 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
-  tagline:
-    'Un établissement au bord d’une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.',
   story: [
-    'Quelqu’un est resté ici, autrefois. La plaine a tout repris.',
-    `Tu sors au crépuscule avec une lampe et un peu de terrain${D}: un champ, un étal, une entaille dans la pierre, un chemin. Tu le poses là où il rapporte.`,
-    'Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a quand même plus qu’hier.',
+    'Un établissement au bord d’une plaine noire. Le sol connaît déjà ton pas.',
+    'Personne ne se souvient qui est resté ici le premier. Certains soirs, on dirait que c’était toi.',
+    `Tu sors au crépuscule avec une lampe et un peu de terrain${D}: un champ, un étal, une entaille dans la pierre, un chemin. Tu le poses là où il rapporte, sur un sol qui semble déjà l’attendre.`,
+    'Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a plus qu’hier, certains soirs plus que ce que tu te souviens d’y avoir laissé.',
   ],
 
   share: {
@@ -582,7 +613,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     newWorld: 'NOUVEAU MONDE',
     back: 'RETOUR',
     closeAll: 'TOUT FERMER',
-    more: 'PLUS',
     daily: 'QUOTIDIEN',
     shop: 'LA BOUTIQUE',
     hold: 'GARDER',
@@ -599,7 +629,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     forge: 'FORGER',
     sacrificeLuck: 'SACRIFIER LA CHANCE',
     sacrificeLuckFor: (relics) => `SACRIFIER LA CHANCE POUR ${relics}`,
-    tabs: { menu: 'MENU', start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN' },
+    tabs: { start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN' },
     fame: { title: 'TEMPLE DE LA RENOMMÉE', diary: 'JOURNAL', totals: 'TOTAUX' },
     tabGrows: 'il y a plus à venir ici en jouant',
     language: 'LANGUE',

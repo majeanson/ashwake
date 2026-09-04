@@ -22,9 +22,11 @@ import { MARK_SVG } from './mark';
 
 export const NAME = 'Ashwake';
 
-// The tagline — one line for the page description, the share sheet and the
-// readme — is player-facing copy and lives in `text/` (`s.tagline`) since
-// 2026-08-28, one per language.
+// The one-line hook for the page description, the share sheet and the
+// readme was `s.tagline`, its own field 2026-08-28 through 2026-09-03, when
+// its mood folded into `s.story`'s opening line and its separate front-door
+// display retired. Whoever eventually wires an actual page description
+// should read `s.story[0]` rather than reintroduce a duplicate field.
 
 /**
  * Where the game lives, for the surfaces that leave the phone — the share

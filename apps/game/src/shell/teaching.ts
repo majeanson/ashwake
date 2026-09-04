@@ -1,6 +1,9 @@
+import { type Tuning } from '@content/tuning';
 import { hasMet, meet, type Progress, type TeachId } from '@meta/progress';
 import type { BoardView } from '@render/Renderer';
-import type { HudView } from '@view/view';
+import { namesOf, type Theme } from '@theme/tokens';
+import type { Strings } from '@text/Strings';
+import { statNote, type HudView } from '@view/view';
 
 /**
  * When the game says something, and what (Stage 3, 2026-08-29).
@@ -41,10 +44,10 @@ export type Teach = {
  * cannot use anything they are told about cost.
  */
 const ORDER: readonly TeachId[] = [
+  'story',
   'place',
   'ripe',
   'pop',
-  'glow',
   'costRise',
   'cache',
   'site',
@@ -64,6 +67,7 @@ const ORDER: readonly TeachId[] = [
 
 /** Which ones interrupt. A concept earns a card; a consequence gets a line. */
 const CARDS = new Set<TeachId>([
+  'story',
   'ripe',
   'pop',
   'cache',
@@ -90,6 +94,23 @@ export type Moment = {
  *
  * Returns null far more often than not — which is the point. A game that
  * teaches on every action is a game nobody is playing.
+ *
+ * ## Both halves fire (2026-09-03, later the same day)
+ *
+ * For one day this function skipped toast-class moments, because the drip's
+ * audit found the toast half had NO SPEAKER: `App` consumed `nextLesson`
+ * only where `as === 'card'`, so a returned toast was words nobody saw that
+ * stood in front of every card behind it in `ORDER` — `wall` alone blocked
+ * MAGIC, UNIQUE, LUCK, RELICS and COLOURS on every fresh device. The
+ * fifteenth mechanic of the unconsumed-consumer shape, and the first that
+ * was silently eating OTHER mechanics.
+ *
+ * The speaker exists now — `App`'s `speakLesson`, on the QUIET beats only: a
+ * dispatch no receipt claimed, a card's dismissal, a run's first breath — and
+ * `toastLine` below is its word table. A toast is marked told only when a
+ * line was actually spoken; one whose evidence has left the board returns
+ * null and stays armed, because the purse lesson already demonstrated what
+ * burning a ledger entry on unshown words costs.
  */
 export function nextLesson(now: Moment, progress: Progress): Teach | null {
   for (const id of ORDER) {
@@ -98,6 +119,49 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     return { id, as: CARDS.has(id) ? 'card' : 'toast' };
   }
   return null;
+}
+
+/**
+ * The toast's own words — one line per toast-class moment (2026-09-03).
+ *
+ * Every sentence but one is a sentence the catalogue already prints at a
+ * slower door, on the house rule of one wording in two places rather than
+ * two wordings: `place` is its own figure's caption, `costRise` is the HUD
+ * stat's tap answer, `wall` is the legend's row, `field` is the hex's own
+ * tap answer, `lastGasp` is the shared rule clause. Only `lens` needed a new
+ * sentence (`s.lensHint`, Marc's wording), because no invitation to the
+ * gesture existed anywhere in either language.
+ *
+ * Null means the moment's evidence is gone from the board (a `field` cell no
+ * longer in view): the caller says nothing and the ledger keeps the moment
+ * armed.
+ */
+export function toastLine(
+  id: TeachId,
+  now: Moment,
+  t: Tuning,
+  theme: Theme,
+  s: Strings,
+): string | null {
+  switch (id) {
+    case 'place':
+      return s.figure.place;
+    case 'costRise':
+      return statNote('cost', now.hud, t, s);
+    case 'wall':
+      return s.ui.legendWall;
+    case 'field': {
+      const cell = now.board.cells.find((c) => c.kind === 'empty' && c.native !== null);
+      return cell?.native == null ? null : s.view.hex.native(namesOf(theme, s.locale)[cell.native]);
+    }
+    case 'lens':
+      return s.lensHint;
+    case 'lastGasp':
+      return s.lastGaspRule;
+    default:
+      // A card-class id has no line: the card is its voice.
+      return null;
+  }
 }
 
 /** Mark one told. Idempotent, so a double-dismiss cannot double-write. */
@@ -114,6 +178,11 @@ export const told = (progress: Progress, id: TeachId): Progress => meet(progress
 function isTrue(id: TeachId, now: Moment): boolean {
   const { board, hud, placed } = now;
   switch (id) {
+    case 'story':
+      // Ahead of PLACE by construction (see `ORDER`): true from the first
+      // frame of any run, board geometry included, so it is the one card a
+      // stranger cannot fail to meet.
+      return true;
     case 'place':
       // The first thing anyone sees: there is somewhere to put a tile.
       return !placed && board.cells.some((c) => c.legal);
@@ -121,9 +190,6 @@ function isTrue(id: TeachId, now: Moment): boolean {
       return hud.ripeCount > 0;
     case 'pop':
       return hud.canHarvest;
-    case 'glow':
-      // A pocket is ready and worth more than the one tile that made it.
-      return hud.pocketsReady > 0 && hud.harvestTiles > 1;
     case 'costRise':
       return hud.cost > 1;
     case 'cache':

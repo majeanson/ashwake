@@ -3939,3 +3939,119 @@ e2e suite — one flake reproduced as a resource-contention artifact and
 confirmed clean in isolation), pushed, and watched the real CI run go green
 end to end including the deploy and its `/version.json` verify. Confirmed
 live at `ashwake.marcportal.com`.
+
+### Session 46 — the legend gets one left edge, the manual unfolds, and the drip's silent half stops blocking its loud one (2026-09-03)
+
+**Question:** Marc — in HOW TO PLAY's PLAY tab, "if we have the indent, we
+have a standard on all line, so for example the destinations would have a
+tile with yellow in left column"; inside EXPEDITION, "remove details and
+explain each"; then review the whole manual against the engine for what is
+missing or unexplained.
+
+**Every legend row leads with a swatch now.** The grounds led with a hex and
+the destinations led with a bare mark, so half the rows started a column
+early. Each destination row opens with the board's own picture of one — a
+hex on the wall's ground, ringed in `ink.lit`, the exact cell the
+`destinations` figure draws — and the rare-tile row opens with the `rare`
+figure's first cell (blue, ringed magic). The CSS escape hatch for
+swatchless rows (`.legend li > .legend-mark:first-child`) had nothing left
+to catch and is gone.
+
+**WHICH GAME unfolds.** The three definitions and the share line sat behind
+a DETAILS tap, on the argument that only one is about the run in front of
+you — but the section exists precisely for the reader in the WRONG run, and
+a definition behind a fold is one that reader never opens. Four short
+paragraphs print in the open now.
+
+**Two figures existed with pinned bilingual captions and nothing drew
+them.** Figures reach a page only through `Lesson.figure`, and no lesson
+carried `destinations` or `place` — so "Lit is unclaimed and still pays.
+Faint means you have already spent it." (the manual's only statement of
+FAINT MEANS SPENT) and "Glowing edges are where a tile may go. The faint
+number is what it would pay." were written, translated, tested and shown to
+nobody. The legend hangs `destinations` under THE DESTINATIONS; EXPEDITION
+draws `place` under its own first claim.
+
+**The audit's real find: the drip's toast half had no speaker, and it was
+BLOCKING the card half.** `App` consumes `nextLesson` only where
+`as === 'card'`; the seven toast-class moments were never spoken, never
+told — and, `nextLesson` returning the first unmet-and-true moment,
+`wall` (true from the first frame of nearly every run) stood permanently in
+front of MAGIC, UNIQUE, LUCK, RELICS and THE COLOURS. A fresh device could
+never be taught any of them, and the manual's HAND tab never grew past THE
+STASH. `nextLesson` now skips toast-class moments — armed, not told, so
+they fire the day the shell grows a speaker — and `teaching.test.ts` pins
+both new rules, including the wall-blocks-colours regression. The fifteenth
+unconsumed mechanic, and the lesson is new: **the dead thing was one BRANCH
+of a consumed value — grep the branches, not only the value.** What still
+needs Marc (toast wording, and the manual's remaining gaps: the cost curve,
+REACH, the fog, native ground, the draw lean) is written up in `NEXT.md` §1.
+
+**Coordinated live with two concurrent sessions** (ashwake-95, mid-flight on
+the STORY card in the same files; ashwake-f6, a RAM audit) — file claims
+exchanged before editing, no collisions; ashwake-95 confirmed the toast
+finding independently and handed it here.
+
+### Session 47 — the front door's own three choices, checked against what Marc actually asked for (2026-09-03)
+
+**Question:** Marc — remove the front door's subtitle entirely (put it in
+the story), give the story its own button in MORE, add a first-teaching card
+that explains the story on entry, propose ten story directions, and check
+BEGIN/DAILY parity plus the HOW TO PLAY / MORE / MENU / SETTINGS redundancy
+Marc had been living with.
+
+**Four of the five were already done, by whichever session left this
+morning's uncommitted diff.** Read against the working tree rather than
+trusted: the tagline is gone from `Strings.ts` entirely, folded into the
+story's own opening line; THE STORY is a `Fold` row in the unified MENU
+panel (`More.tsx`), closed by default; `.door-begin, .door-daily` in
+`ui.css` already share one rule, same size and weight; and the front door /
+board MENU button / end screen MENU button all open the same `More.tsx`
+panel now — no separate QuickMenu drawer, no direct HOW TO PLAY or SETTINGS
+doors on the front door. `CLAUDE.md`'s own rule paid off here: checked the
+ledger (the diff) against the code before building anything on top of it,
+rather than re-doing work that had already shipped.
+
+**The one real gap: nothing explained the story to a stranger.** The
+teaching drip (`shell/teaching.ts`) already had the shape for exactly this —
+a priority-ordered list of concepts a device is told once, each a card. Added
+`story` as a new `TeachId`, first in `TEACH_IDS`/`ORDER`/`CARDS` — ahead of
+`place` — with `isTrue` always true, so it is the first thing any device is
+ever shown. Rendered through `SaidCard` rather than `LessonCard`, on the
+`purse` lesson's own precedent: it arrives with its four sentences already
+written (`s.story`), so a `LESSONS` registry entry would be a second copy of
+words that already have one source.
+
+**Landed while `ashwake-f1` was mid-fix on the exact same file for the toast
+jam** (see above) — file claims exchanged before either of us edited
+`teaching.ts` again, and I independently hit the same toast-consumer gap
+while adding `story` and handed the finding over rather than duplicate the
+fix. Their rewrite of `nextLesson` (skip toast-class moments rather than let
+one block every card behind it) landed on top of my `story` entry cleanly;
+`teaching.test.ts` now carries both authors' pins. Re-ran the full suite
+after their edit rather than assuming: 1033 tests, typecheck, lint and
+`pnpm sim` against the golden file all green.
+
+**Ten story directions given to Marc, decided nowhere** — a look/fiction
+call, not a code one, so it stays a conversation rather than a NEXT.md wall
+of prose. Recorded there anyway, §1, as a pointer back to this session.
+
+**Marc answered, same session: the Inheritance direction, played subtle — a
+loop only implied, never stated.** Two four-line drafts went back to him
+(a quiet version and an overt "you have stood here before" version); he took
+the quiet one. `story` is rewritten in `en.ts` and `fr-CA.ts`, and
+`Strings.ts`'s doc comment says what changed and why it still promises
+nothing the game cannot do — the ambiguity describes a thing the game
+already does (a world remembers what you walked on it, across every run),
+so a player who never notices the hint loses nothing. Both drafts were
+written and checked against the house rule this file already carries scars
+from (`text.test.ts`'s no-em-dash test, Session "review help and text
+content" 2026-08-30) before either was offered, so nothing needed a second
+pass. Also, on the same round of answers: LENS's toast wording ("Tap
+remembered fog to light its ground") and dropping GLOW from `TEACH_IDS`
+entirely (its toast duplicated the signpost's own line word for word) — the
+GLOW deletion is done here (`progress.ts`, `teaching.ts`); the LENS wording
+and the actual toast-speaker build, plus the four manual-gap sections Marc
+also greenlit, went to `ashwake-f1`, already holding that context from
+Session 46. Full suite (1033), typecheck, lint and `pnpm sim` green
+throughout; nothing committed.

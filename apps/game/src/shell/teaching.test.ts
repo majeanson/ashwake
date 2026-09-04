@@ -4,7 +4,7 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { createSession, type Snapshot } from './store';
-import { nextLesson, told, type Moment } from './teaching';
+import { nextLesson, toastLine, told, type Moment } from './teaching';
 import { walk } from './walk';
 
 /**
@@ -54,12 +54,35 @@ const taughtExcept = (...keep: readonly string[]): Progress =>
   });
 
 describe('the teaching drip', () => {
-  it('opens on PLACE: the first thing a stranger is told is that there is somewhere to put a tile', () => {
+  it('opens on STORY: the first thing a stranger is told is what this place is', () => {
     const said = nextLesson(momentAt(0), EMPTY_PROGRESS);
-    expect(said?.id).toBe('place');
-    // A consequence, not a concept: it points at the board rather than holding
-    // the screen in front of it.
+    expect(said?.id).toBe('story');
+    // A concept, not a consequence: it holds the screen rather than pointing
+    // at the board.
+    expect(said?.as).toBe('card');
+  });
+
+  it('returns the first unmet-and-true moment, toast or card alike', () => {
+    // For one day (2026-09-03) toast-class moments were skipped, because the
+    // shell had no speaker and an unspeakable toast stood in front of every
+    // card behind it. The speaker exists now (`App`'s `speakLesson`), so the
+    // priority list is whole again: WALL, a toast, fires ahead of the cards
+    // behind it in `ORDER`.
+    const said = nextLesson(momentAt(8), taughtExcept('wall', 'colours'));
+    expect(said?.id).toBe('wall');
     expect(said?.as).toBe('toast');
+  });
+
+  it('a spoken toast unblocks the card standing behind it', () => {
+    // THE JAM the one-day skip existed to break, now broken the honest way:
+    // the toast SPEAKS and is told, and the card behind it fires on the next
+    // ask. COLOURS is true on any walked board with a hand.
+    const jammed = taughtExcept('wall', 'colours');
+    const first = nextLesson(momentAt(8), jammed);
+    expect(first?.as).toBe('toast');
+    const next = nextLesson(momentAt(8), told(jammed, 'wall'));
+    expect(next?.id).toBe('colours');
+    expect(next?.as).toBe('card');
   });
 
   it('says ONE thing, however many moments are true at once', () => {
@@ -77,15 +100,39 @@ describe('the teaching drip', () => {
     expect(next?.id).not.toBe(said?.id);
   });
 
-  it('gives a concept a card and a consequence a line', () => {
-    // RIPE is a concept: it is a rule about the board that has to be understood
-    // before anything else makes sense.
-    const ripe = nextLesson(momentAt(8), taughtExcept('ripe'));
-    if (ripe !== null) expect(ripe.as).toBe('card');
+  it('has a sentence for every toast-class moment its board can prove', () => {
+    // The speaker's word table (`toastLine`): every toast id must come back
+    // with a whole sentence, or the drip is back to returning words nobody
+    // hears. Whether the MOMENT is true is `nextLesson`'s job, not the
+    // table's — only FIELD (below) answers null, because its sentence needs
+    // a cell the board may not hold.
+    const s = stringsFor(pickLocale(['en']));
+    const theme = resolveTheme(null);
+    const sess = session();
+    const tuning = sess.get().state.tuning;
+    const fresh = momentAt(0);
+    const walked = momentAt(8);
+    for (const [id, at] of [
+      ['place', fresh],
+      ['costRise', walked],
+      ['wall', walked],
+      ['lens', walked],
+      ['lastGasp', walked],
+    ] as const) {
+      const line = toastLine(id, at, tuning, theme, s);
+      expect(line, `${id} has no sentence`).not.toBeNull();
+      expect(line).not.toBe('');
+    }
+  });
 
-    // COST RISING is a consequence of a rule already taught.
-    const cost = nextLesson(momentAt(8), taughtExcept('costRise'));
-    if (cost !== null) expect(cost.as).toBe('toast');
+  it('leaves FIELD armed when no native cell is in view, not spent', () => {
+    // A fresh world has no territory and so no native ground; `toastLine`
+    // answers null and the caller must not mark it told. The purse lesson is
+    // the standing proof of what a ledger entry spent on unshown words costs.
+    const s = stringsFor(pickLocale(['en']));
+    const theme = resolveTheme(null);
+    const sess = session();
+    expect(toastLine('field', momentAt(8), sess.get().state.tuning, theme, s)).toBeNull();
   });
 
   it('goes quiet once the device has been told everything', () => {
@@ -99,9 +146,9 @@ describe('the teaching drip', () => {
   it('says nothing twice, even while its moment is still true', () => {
     const now = momentAt(0);
     const first = nextLesson(now, EMPTY_PROGRESS);
-    expect(first?.id).toBe('place');
+    expect(first?.id).toBe('story');
     // The board has not changed at all; only the ledger has.
-    expect(nextLesson(now, told(EMPTY_PROGRESS, 'place'))?.id).not.toBe('place');
+    expect(nextLesson(now, told(EMPTY_PROGRESS, 'story'))?.id).not.toBe('story');
   });
 
   it('never fires PURSE from a moment, because the purse owns its own', () => {

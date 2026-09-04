@@ -218,21 +218,23 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
 
     /*
      * The tagline and the story were RE-RECORDED on 2026-08-29, deliberately
-     * and once — the only two entries here that have ever moved.
+     * and once, and the tagline is gone entirely as of 2026-09-03 — folded
+     * into the story's own opening line rather than kept as a second copy of
+     * the same sentence (see `Strings.ts`'s `story` doc comment).
      *
      * `CLAUDE.md`: "The English snapshots are never re-recorded silently; the
      * French ones are Marc's review surface." This is the not-silent version.
      * Marc chose the settlement as the direction (`DECISIONS.md` D7, closed),
      * so the game's frame moved from "an expedition into a dark plane" to a
-     * place somebody stayed in — and the tagline is the one sentence that
-     * states the frame, copied by hand into `index.html` and the manifest for
-     * the crawler that never runs the bundle.
+     * place somebody stayed in.
      *
-     * The VERBS did not move. "Place, ripen, pop, and push on" is the
-     * glossary's (D4.3) and is what the player actually does; only the clause
-     * in front of it changed. The story is new rather than moved.
+     * The VERBS did not move — "place, ripen, pop, and push on" is the
+     * glossary's (D4.3) and is what the player actually does — but the
+     * instructional half is not kept as its own sentence any more: a teaching
+     * card already covers those verbs, and the rule this passage holds to is
+     * that it teaches none.
      */
-    it('pins the small labels: goals, unlocks, the shed ladder, features, the tagline', () => {
+    it('pins the small labels: goals, unlocks, the shed ladder, features, the story', () => {
       expect({
         goals: GOALS.map((g) => [g.id, s.goal[g.id]]),
         unlocks: UNLOCKS.map((u) => [u.id, unlockLabel(u.id, s)]),
@@ -242,7 +244,6 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
           featureText(f.id, s).label,
           featureText(f.id, s).note,
         ]),
-        tagline: s.tagline,
         story: s.story,
       }).toMatchSnapshot();
     });

@@ -5,6 +5,7 @@ import { LESSON_FOR_REWARD, lessonDefine, lessonName, lessonOf } from '@view/les
 import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { useGroundArt } from '../shell/art';
+import { Figure } from '../ui/Figure';
 import { Hex } from '../ui/Hex';
 import { Icon } from '../ui/Icon';
 
@@ -48,6 +49,19 @@ import { Icon } from '../ui/Icon';
  * the hand's cards also ask for); the two edge rows draw a ring the way the
  * board rings a hex. The legend has always repainted with
  * the board when a direction changes, and now it does so in the board's hand.
+ *
+ * ## Every row leads with a SWATCH (2026-09-03)
+ *
+ * Marc: *"if we have the indent, we have a standard on all line, so for
+ * example the destinations would have a tile with yellow in left column."*
+ * The grounds led with a hex and the destinations led with a bare mark, so
+ * half the rows started a column early and the page read as two lists in one.
+ * A destination on the board IS a picture the legend can reuse: a hex on the
+ * wall's own ground, ringed in `ink.lit` — the exact cell the `destinations`
+ * figure draws — so each of the five rows now opens with it. The rare-tile
+ * row opens with the `rare` figure's own first cell (blue, ringed magic) for
+ * the same reason. `.legend li > .legend-mark:first-child` had nothing left
+ * to catch and is gone.
  */
 
 /** The five destinations, and the lesson that names and explains each. */
@@ -126,6 +140,17 @@ export function Legend({ theme, s }: LegendProps) {
           if (lesson === undefined) return null;
           return (
             <li key={reward} className="tall">
+              {/* The board's own picture of an unclaimed destination: a hex on
+                  the wall's ground, lit — the `destinations` figure's cell,
+                  one per row, so every legend row leads with a swatch. */}
+              <Hex
+                id={`legend-${reward}`}
+                className="legend-swatch"
+                theme={theme}
+                ground="wall"
+                art={art.wall}
+                ring={theme.ink.lit}
+              />
               <span className="legend-mark" aria-hidden="true">
                 <Icon name={LANDMARK_ICON[reward]} />
               </span>
@@ -148,9 +173,33 @@ export function Legend({ theme, s }: LegendProps) {
         })}
       </ul>
 
+      {/*
+        The `destinations` figure, drawn at last (2026-09-03).
+
+        It has existed since Stage 3 with a caption written, pinned and
+        translated — "Lit is unclaimed and still pays. Faint means you have
+        already spent it." — and NO lesson carried it, so nothing ever drew
+        it: the manual's figures reach a page only through `Lesson.figure`.
+        That caption is also the one place the manual states FAINT MEANS
+        SPENT (`render/labels.test.ts`'s rule), which a list of live marks
+        cannot show. It belongs to this list, so it hangs under it.
+      */}
+      <Figure id="destinations" theme={theme} s={s} caption />
+
       <h2 className="fact-label">{s.ui.legendMarks}</h2>
       <ul>
         <li>
+          {/* What the sentence beside it claims: a ground ringed in a rarity's
+              colour. The `rare` figure's own first cell (blue, ringed magic),
+              so this row's swatch and the HAND tab's picture agree. */}
+          <Hex
+            id="legend-rare"
+            className="legend-swatch"
+            theme={theme}
+            ground="blue"
+            art={art.blue}
+            ring={theme.ink.magic}
+          />
           <span className="legend-mark" aria-hidden="true">
             <Icon name={TILE_ICON} />
           </span>

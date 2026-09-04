@@ -1217,24 +1217,17 @@ h3.fact-label {
   margin: 0.25rem 0 0;
 }
 
-.door-tagline {
-  max-width: 22rem;
-  margin: 0 0 1.25rem;
-}
-
 /*
- * The hook (2026-08-29). Three sentences, and they are the only story the game
- * tells — so they get the body face at reading size rather than the tagline's
- * one-line treatment, and the faint ink, because a story a stranger is free to
- * skip must never compete with BEGIN.
+ * The story (2026-08-29; moved off the front door into the MENU panel's own
+ * row, 2026-09-03 — see `More.tsx`). Four sentences, and they are the only
+ * story the game tells: the body face at reading size and the faint ink,
+ * because it is prose a player opens on purpose, not a wall between them
+ * and BEGIN.
  *
- * The door had room for it: the shot set has always shown a wide empty band
- * above the mark and below the menu. It is capped at 24rem so a line never
- * runs the width of a tablet, and the last line carries the space to BEGIN.
+ * Capped at 24rem so a line never runs the width of a tablet.
  */
-.door-story {
+.story-lines {
   max-width: var(--measure-prose);
-  margin: 0 0 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
@@ -1242,13 +1235,19 @@ h3.fact-label {
   line-height: 1.5;
 }
 
-.door-story p {
+.story-lines p {
   margin: 0;
 }
 
-/* The one loud way in. Everything else on this screen is quiet. */
 /*
- * BEGIN, and the padding that had to give (2026-09-02).
+ * The two loud ways in, uniform (2026-09-03).
+ *
+ * BEGIN and DAILY were ranked 2026-08-29 — DAILY deliberately quieter, "the
+ * second thing a returning player wants and never the first thing a
+ * stranger should meet." Overturned on Marc's direct ask: they are the two
+ * things any visit to this screen is actually FOR, and a returning player
+ * reads for the daily exactly as often as for their own world. Everything
+ * else on this screen (the story, the menu) stays quiet under both.
  *
  * `2.5rem` either side is generous on a 390px phone and impossible on a 320px
  * one in French: NOUVELLE PARTIE is fourteen characters against BEGIN's five,
@@ -1261,7 +1260,9 @@ h3.fact-label {
  * later phone to fall the wrong side of. The floor is where the word still
  * has air around it; the ceiling is what it has today.
  */
-.door-begin {
+.door-begin,
+.door-daily {
+  width: min(20rem, 100%);
   font-family: var(--font-display);
   letter-spacing: var(--label-tracking);
   font-size: 1.15rem;
@@ -1270,7 +1271,7 @@ h3.fact-label {
   color: var(--accent);
 }
 
-.door-more {
+.door-menu {
   margin-top: 1.5rem;
   width: min(18rem, 100%);
 }
@@ -1622,46 +1623,16 @@ h3.fact-label {
 }
 
 /*
- * The short list behind MENU — a drawer, not a popover (2026-08-30).
- *
- * It opens where the purse opens, mirrored: a flex child of the shell, in
- * normal flow, at the same centred measure — the purse hangs UP off the
- * controls and this hangs DOWN off the stat row, because that is the edge its
- * button now sits in. That is not a stylistic echo, it is the only place that
- * edge actually exists. Where the board starts and stops depends on the stat
- * row above it and the hand below it, and the hand's height is a run's, so a
- * `position: fixed` box cannot find it — one guessed, for one build, and
- * half-covered the cluster that opened it. Being in the flow, this IS the edge.
- *
- * `z-index` over its own scrim, and `position: relative` so the layer takes.
- *
- * The scrim is transparent, and that is not laziness. This list hides nothing
- * worth dimming, and a darkened board would read as a modal for a thing that
- * is one tap of nothing. Its whole job is to be what a dismissing tap lands
- * on: the board behind it is `inert` and would eat the tap silently, and the
- * hand is a footer that would take it and place a tile.
- */
-.quick-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-drawer);
-}
-
-/*
- * A DRAWER — the shape the quick menu and the luck purse are both made of
- * (named 2026-09-02).
- *
- * They were two rules declaring the same eleven properties four hundred lines
- * apart: the same measure, the same ground, the same edge, the same radius,
- * the same inner gap. Two copies of one idea drift; these had not yet, and
- * `--measure-wide` had just been introduced into both by hand, which is how
- * they would have.
+ * A DRAWER (named 2026-09-02, when the quick menu and the luck purse were the
+ * two things sharing this shape — the quick menu retired 2026-09-03, leaving
+ * the purse as its one consumer, kept under the same name since a new drawer
+ * may want it again).
  *
  * A flex child of the shell is the only thing that knows where the board's
  * edge actually is, because the board's height is the hand's height and the
- * hand's height is a run's — so both open as drawers rather than as boxes
- * hanging off whatever opened them. What differs is only WHICH edge they hang
- * from, and that is all their own rules say now.
+ * hand's height is a run's — so a drawer opens in normal flow rather than as
+ * a box hanging off whatever opened it, which is what let the quick menu's
+ * `position: fixed` guess half-cover the cluster that opened it for one build.
  */
 .drawer {
   display: flex;
@@ -1673,40 +1644,6 @@ h3.fact-label {
   background: var(--panel);
   border: 1px solid var(--panel-edge-active);
   border-radius: var(--radius);
-}
-
-.quick {
-  position: relative;
-  z-index: calc(var(--z-drawer) + 1);
-  /* Below the stat row rather than above the controls: it hangs off the top. */
-  margin: var(--gap-sm) auto 0;
-}
-
-/* A row, not a button in a row: the mark hangs in the same column down the
-   list, which is what lets it be read as a list at all. */
-.quick-row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  justify-content: flex-start;
-  text-align: start;
-  border-color: transparent;
-  font-family: var(--font-label);
-  letter-spacing: var(--label-tracking);
-  font-size: 0.8rem;
-}
-
-.quick-row svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex: none;
-}
-
-/* A muted board says so by going quiet itself — the ♪ button's own rule, kept
-   whole when it became a row. `--ink-faint` is held at 4.5:1 against the panel
-   by `contrast.test.ts`, so "off" is legible rather than merely dimmer. */
-.quick-row[aria-pressed='false'] {
-  color: var(--ink-faint);
 }
 
 /*
@@ -2536,27 +2473,6 @@ h3.fact-label {
 }
 
 /*
- * Today's board, on the front door.
- *
- * Quieter than BEGIN and louder than the menu under it, because that is its
- * actual rank: the second thing a returning player wants and never the first
- * thing a stranger should meet. Full width so the badge — which grows a
- * streak rider and a best — has room to say what it says in either language
- * without the button changing size under the player's thumb.
- */
-.door-daily {
-  width: min(20rem, 100%);
-  min-height: var(--tap);
-  border: 1px solid var(--panel-edge-active);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--font-label);
-  letter-spacing: var(--label-tracking);
-  padding: 0.6rem 1rem;
-}
-
-/*
  * A new build is downloaded and waiting.
  *
  * A toast rather than a dialog, and a button rather than an automatic reload:
@@ -2880,10 +2796,11 @@ h3.fact-label {
   letter-spacing: var(--label-tracking);
 }
 
-/* A row with no swatch still holds its column, so the marks stay in line. */
-.legend li > .legend-mark:first-child {
-  grid-column: 2;
-}
+/* `.legend li > .legend-mark:first-child { grid-column: 2 }` stood here to
+   hold the column for a row with no swatch. Every row leads with a swatch
+   since 2026-09-03 (Marc: "if we have the indent, we have a standard on all
+   line"), so the rule had nothing left to catch — and a future swatchless row
+   should get a swatch, not the escape hatch back. */
 
 .legend-mark {
   font-size: 1.05rem;

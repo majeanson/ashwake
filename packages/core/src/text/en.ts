@@ -47,6 +47,14 @@ const RARE_STAR =
   'A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.';
 const LAST_GASP_RULE =
   'You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.';
+/** The cost curve and the reach rule, shared between the stat note and the
+ *  manual's own sections (2026-09-03) — the `LUCK_CORE` pattern: one clause,
+ *  two doors, no second wording to drift. */
+const COST_CURVE_GRACE = (base: number, grace: number, every: number): string =>
+  `It stays ${base} for the first ${grace} placements, then rises +1 every ${every} placed`;
+const COST_CURVE_PLAIN = (every: number): string => `It rises +1 every ${every} placed`;
+const REACH_RULE = (step: number): string =>
+  `Every ${step} hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops.`;
 
 export const STRINGS_EN: Strings = {
   locale: 'en',
@@ -69,6 +77,7 @@ export const STRINGS_EN: Strings = {
       name: 'POP',
       terms: ['POP'],
       core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
+      lean: 'POP also leans your next draws toward the colour you popped.',
     },
     sacrifice: {
       name: 'SACRIFICE',
@@ -169,11 +178,36 @@ export const STRINGS_EN: Strings = {
         `The SIZE BONUS is one point of multiplier per tile in a pocket, up to ${cap}. Past that a bigger pocket still pays more worth, but no more multiplier.`,
       core: 'The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied.',
     },
+    costRise: {
+      name: 'THE COST',
+      terms: [],
+      core: 'Every placement spends tiles; the COST stat is the next one’s price.',
+      rises: 'The price only rises; it never comes back down. It is the clock that ends every run.',
+      curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
+      curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
+    },
+    reach: {
+      name: 'REACH',
+      terms: [],
+      core: 'REACH is how far from home you have built.',
+      multiplier: (step) => REACH_RULE(step),
+    },
+    field: {
+      name: 'NATIVE GROUND',
+      terms: [],
+      core: 'Ground a TERRITORY holds is native to its colour: a tile of that colour placed there is worth one more.',
+    },
+    lens: {
+      name: 'THE FOG',
+      terms: [],
+      core: 'The world remembers. Ground you have walked stays on the map between runs, dimmed under the fog, and unclaimed destinations glow through it.',
+    },
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,
   rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
+  lensHint: 'Tap remembered fog to light its ground.',
 
   view: {
     groundHead: (name, word) => `${name}: ${word}.`,
@@ -301,11 +335,9 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         (rate === null
           ? '.'
           : `; whatever is left when the run ends comes home as relics, at ${rate}%.`),
-      reach: (step) =>
-        `REACH: how far from home you have built. Every ${step} hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops.`,
-      costCurveGrace: (base, grace, every) =>
-        `It stays ${base} for the first ${grace} placements, then rises +1 every ${every} placed`,
-      costCurvePlain: (every) => `It rises +1 every ${every} placed`,
+      reach: (step) => `REACH: how far from home you have built. ${REACH_RULE(step)}`,
+      costCurveGrace: COST_CURVE_GRACE,
+      costCurvePlain: COST_CURVE_PLAIN,
       cost: (cost, curve) =>
         `COST: the next placement’s price, ${cost}. ${curve}, and it never comes back down. It is the clock that ends every run. ${LAST_GASP_RULE}`,
       left: 'LEFT: placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.',
@@ -483,11 +515,11 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
-  tagline: 'A settlement at the edge of a dark plain. Place, ripen, pop, and push on.',
   story: [
-    'Somebody stayed here once. The plain took it back.',
-    'You go out at dusk with a lamp and a handful of ground: a field, a stall, a cut in the rock, a road. You lay it where it will pay.',
-    'What you carry home is never much. This place has more than it had yesterday.',
+    'A settlement at the edge of a dark plain. The ground already knows your step.',
+    'Nobody remembers who stayed here first. Some nights it feels like you did.',
+    'You go out at dusk with a lamp and a handful of ground: a field, a stall, a cut in the rock, a road. You lay it down where it will pay, on ground that seems to already expect it.',
+    'What you carry home is never much. This place has more than it had yesterday, some nights more than you remember leaving it.',
   ],
 
   share: {
@@ -571,7 +603,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     newWorld: 'NEW WORLD',
     back: 'BACK',
     closeAll: 'CLOSE ALL',
-    more: 'MORE',
     daily: 'DAILY',
     shop: 'THE SHOP',
     hold: 'HOLD',
@@ -588,7 +619,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
     sacrificeLuckFor: (relics) => `SACRIFICE LUCK FOR ${relics}`,
-    tabs: { menu: 'MENU', start: 'EXPEDITION', play: 'PLAY', hand: 'HAND' },
+    tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND' },
     fame: { title: 'HALL OF FAME', diary: 'DIARY', totals: 'TOTALS' },
     tabGrows: 'more to come here as you play',
     language: 'LANGUAGE',

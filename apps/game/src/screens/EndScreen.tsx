@@ -492,7 +492,7 @@ export function EndScreen({
           {s.ui.mainMenu}
         </button>
         <button type="button" data-door="more" onClick={onMore}>
-          {s.ui.more}
+          {s.ui.menu}
         </button>
       </nav>
 

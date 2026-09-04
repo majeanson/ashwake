@@ -256,6 +256,22 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "sizeBonus",
       "SIZE BONUS",
     ],
+    [
+      "costRise",
+      "THE COST",
+    ],
+    [
+      "reach",
+      "REACH",
+    ],
+    [
+      "field",
+      "NATIVE GROUND",
+    ],
+    [
+      "lens",
+      "THE FOG",
+    ],
   ],
   "shared": {
     "LAST_GASP_RULE": "You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
@@ -417,7 +433,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 ]
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today · en > pins the small labels: goals, unlocks, the shed ladder, features, the tagline 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the small labels: goals, unlocks, the shed ladder, features, the story 1`] = `
 {
   "features": [
     [
@@ -472,11 +488,11 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     ],
   ],
   "story": [
-    "Somebody stayed here once. The plain took it back.",
-    "You go out at dusk with a lamp and a handful of ground: a field, a stall, a cut in the rock, a road. You lay it where it will pay.",
-    "What you carry home is never much. This place has more than it had yesterday.",
+    "A settlement at the edge of a dark plain. The ground already knows your step.",
+    "Nobody remembers who stayed here first. Some nights it feels like you did.",
+    "You go out at dusk with a lamp and a handful of ground: a field, a stall, a cut in the rock, a road. You lay it down where it will pay, on ground that seems to already expect it.",
+    "What you carry home is never much. This place has more than it had yesterday, some nights more than you remember leaving it.",
   ],
-  "tagline": "A settlement at the edge of a dark plain. Place, ripen, pop, and push on.",
   "unlocks": [
     [
       "draft",
@@ -885,6 +901,22 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "sizeBonus",
       "BONUS DE TAILLE",
     ],
+    [
+      "costRise",
+      "LE COÛT",
+    ],
+    [
+      "reach",
+      "PORTÉE",
+    ],
+    [
+      "field",
+      "TERRE NATALE",
+    ],
+    [
+      "lens",
+      "LE BROUILLARD",
+    ],
   ],
   "shared": {
     "LAST_GASP_RULE": "Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
@@ -1046,7 +1078,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 ]
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the small labels: goals, unlocks, the shed ladder, features, the tagline 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the small labels: goals, unlocks, the shed ladder, features, the story 1`] = `
 {
   "features": [
     [
@@ -1101,11 +1133,11 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     ],
   ],
   "story": [
-    "Quelqu’un est resté ici, autrefois. La plaine a tout repris.",
-    "Tu sors au crépuscule avec une lampe et un peu de terrain : un champ, un étal, une entaille dans la pierre, un chemin. Tu le poses là où il rapporte.",
-    "Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a quand même plus qu’hier.",
+    "Un établissement au bord d’une plaine noire. Le sol connaît déjà ton pas.",
+    "Personne ne se souvient qui est resté ici le premier. Certains soirs, on dirait que c’était toi.",
+    "Tu sors au crépuscule avec une lampe et un peu de terrain : un champ, un étal, une entaille dans la pierre, un chemin. Tu le poses là où il rapporte, sur un sol qui semble déjà l’attendre.",
+    "Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a plus qu’hier, certains soirs plus que ce que tu te souviens d’y avoir laissé.",
   ],
-  "tagline": "Un établissement au bord d’une plaine noire. Pose, fais mûrir, récolte, et pousse plus loin.",
   "unlocks": [
     [
       "draft",

@@ -19,7 +19,14 @@ import {
   rememberedNativeAt,
 } from '@view/view';
 import { isEnabled } from '@meta/features';
-import { EMPTY_PROGRESS, grantFind, hasMet, perkText, withWorldPerks } from '@meta/progress';
+import {
+  EMPTY_PROGRESS,
+  grantFind,
+  hasMet,
+  perkText,
+  withWorldPerks,
+  type Progress,
+} from '@meta/progress';
 import { metGoalIds } from '@meta/goals';
 import { ONLY_WORLD } from '@meta/records';
 import {
@@ -41,7 +48,7 @@ import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/
 import { cascadeMs } from './board/leap';
 import { ActionBar } from './screens/ActionBar';
 import { Camera, useCameraCycle } from './screens/Camera';
-import { MenuButton, QuickMenu } from './screens/Menu';
+import { MenuButton } from './screens/Menu';
 import { Directions } from './screens/Directions';
 import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
@@ -107,15 +114,14 @@ import {
   useSession,
   type Said,
   type Session,
+  type Snapshot,
 } from './shell/store';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
-import { nextLesson, told } from './shell/teaching';
+import { nextLesson, toastLine, told } from './shell/teaching';
 import { walk, walkToEnd } from './shell/walk';
 import { Boundary } from './ui/Boundary';
-import { Confirming } from './ui/Confirming';
 import { DialogStack, useAnyDialogOpen, useDialogStack, useDoor } from './ui/dialog';
-import { PanelMenu } from './ui/Panel';
 import { useDocumentLocale, useThemeVars } from './ui/theme';
 import './ui/ui.css';
 
@@ -892,12 +898,57 @@ function Game() {
    * Silent where nothing was paid, by arithmetic rather than by a guard: a
    * detour and a daily hold no territories, and neither does a first run.
    */
+  /**
+   * THE TOAST HALF OF THE DRIP — the speaker it never had (2026-09-03).
+   *
+   * `nextLesson` returns toast-class moments again, and this is what says
+   * them: one line, through the same `say` every other quiet sentence uses,
+   * told through the same ledger the cards write. Called only on QUIET beats
+   * — a dispatch no receipt claimed (`act`), a card's dismissal, a run's
+   * first breath (`beginRun`) — so a lesson never talks over a receipt; a
+   * moment that stays true keeps until the next quiet beat, which is the
+   * priority-list contract restated.
+   *
+   * Told only when a line was actually SPOKEN. `toastLine` returning null
+   * (a `field` whose cell has left the view) leaves the ledger untouched —
+   * the purse lesson is the standing proof of what marking unshown words
+   * told costs.
+   *
+   * Takes the ledger to judge against rather than reading the render's copy:
+   * a card's dismissal calls this with the ledger that dismissal just wrote,
+   * a beat before React has it.
+   */
+  const speakLesson = useCallback(
+    (after: Progress, at: Snapshot): boolean => {
+      const moment = { board: at.board, hud: at.hud, placed: at.hud.placements > 0 };
+      const due = nextLesson(moment, after);
+      if (due === null || due.as !== 'toast') return false;
+      const line = toastLine(due.id, moment, at.state.tuning, theme, s);
+      if (line === null) return false;
+      setProgress((p) => told(p, due.id));
+      say(line);
+      return true;
+    },
+    [theme, s, say, setProgress],
+  );
+
   const beginRun = useCallback(() => {
     setStarted(true);
-    const now = session.get().state;
-    const from = startingPerk(now.tuning, now.claimed.length);
-    if (from > 0) say(s.ui.fromTerritories(from));
-  }, [session, s, say]);
+    const at = session.get();
+    const from = startingPerk(at.state.tuning, at.state.claimed.length);
+    if (from > 0) {
+      say(s.ui.fromTerritories(from));
+      return;
+    }
+    /*
+     * The run's first breath is a quiet beat too — and for PLACE it is the
+     * only one there is: its moment is true only before the first placement,
+     * and no dispatch happens in that window. The territory line above still
+     * outranks it; the lesson stays armed for the next quiet beat, which on
+     * the one board where both are true is the story card's dismissal.
+     */
+    speakLesson(progress, at);
+  }, [session, s, say, progress, speakLesson]);
   const board = useRef<BoardHandle>(null);
 
   // Every state the reducer produces is offered to the keeper, which decides
@@ -1177,20 +1228,6 @@ function Game() {
   // THIS DEVICE, a room off MORE since 2026-08-31 rather than a section at the
   // bottom of it — see `screens/Device`.
   const device = useDoor('device');
-  /**
-   * The short list behind the board's MENU (2026-08-30).
-   *
-   * A door rather than a `useState`, and the reason is Android. Marc:
-   * *"menu could add a submenu for quick actions like sound in off etc."* A
-   * floating box held in local state is one the phone's BACK button walks
-   * straight past — out of the game, off the site — and it is the exact fault
-   * `ui/dialog.tsx` was extended to fix on 2026-08-30 for the manual. Anything
-   * that covers the board and has to be dismissed belongs on the stack: it
-   * gets Escape, it gets BACK, it gets `✕` when the stack is deep, and it goes
-   * `inert` under a panel opened from it, all for the one line.
-   */
-  const quick = useDoor('quick');
-
   // A door that shows a ledger has just asked for it, and so has a run that
   // ended. Anything else leaves the disk alone.
   const ledgers = useLedgers(`${fame.open}${shop.open}${worlds.open}${snap.hud.ended}`);
@@ -1474,6 +1511,12 @@ function Game() {
           return;
         }
         /*
+         * The drip's toast half, on the beat nothing louder wanted (2026-09-03).
+         * Ahead of the signpost: a lesson speaks once per device, a signpost
+         * re-arrives on every change of nearest. See `speakLesson`.
+         */
+        if (speakLesson(progress, now)) return;
+        /*
          * THE SIGNPOST — the quietest thing the run says (2026-09-02).
          *
          * `hud.hint` is the core's answer to "where do I go?" on an endless
@@ -1612,7 +1655,19 @@ function Game() {
         }
       } else say(said.text);
     },
-    [session, ledgers, s, features, theme, progress, setProgress, reducedMotion, daily, say],
+    [
+      session,
+      ledgers,
+      s,
+      features,
+      theme,
+      progress,
+      setProgress,
+      reducedMotion,
+      daily,
+      say,
+      speakLesson,
+    ],
   );
 
   /**
@@ -2552,41 +2607,6 @@ function Game() {
       {playing && <Hud hud={snap.hud} s={s} onNote={say} />}
 
       {/*
-        The MENU list — a drawer under the stat row, near the button that opens
-        it (2026-08-30).
-
-        Two things decide where this is rendered and they pull the same way. It
-        may not be inside the board host: the host goes `inert` the moment
-        anything is on the stack, and this is on the stack, so every row would
-        draw and none of them could be tapped — the same shape as the MORE bug
-        the session opened with, and it shipped that way for one build. And it
-        wants to hang off its button, which is now the top-right corner of the
-        BOARD; a `position: fixed` box cannot find that edge, because where the
-        board starts and stops depends on the stat row above it and the hand
-        below it, and the hand's height is a run's.
-
-        A flex child of the shell IS that edge, and the purse drawer has been
-        one since it was built. So this is a drawer too, at the same measure,
-        opening from the top where the purse opens from the bottom.
-
-        Its two journeys RAISE a panel over the list rather than closing it
-        first, which is deliberate — see `QuickMenu`. Two history calls in one
-        handler is a `go(-1)` racing a `pushState`, and the panel's own entry
-        is what loses. BACK from the manual landing back on the list it was
-        opened from is also simply correct.
-      */}
-      {quick.open && (
-        <QuickMenu
-          s={s}
-          sound={isEnabled(features, 'ui.sound')}
-          onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
-          onHowToPlay={() => manual.show()}
-          onFullMenu={() => more.show()}
-          onDismiss={quick.hide}
-        />
-      )}
-
-      {/*
         Reachable only while it is the thing on screen.
 
         A panel covers it, the front door covers it, and — since 2026-08-30 —
@@ -2721,11 +2741,12 @@ function Game() {
         {(playing || walking) && (
           <MenuButton
             s={s}
-            open={quick.open}
-            // A toggle. A finger never reaches this while the list is open —
-            // the scrim is over it — but Enter on a focused button does, and a
-            // door that only opens is a door.
-            onToggle={() => (quick.open ? quick.hide() : quick.show())}
+            open={more.open}
+            // Opens the same MENU panel every other MENU button in the game
+            // opens (2026-09-03) — see `More.tsx`'s own doc comment. This used
+            // to open a separate drawer (`QuickMenu`) with its own row set;
+            // retired rather than kept as a second list of the same rooms.
+            onToggle={() => (more.open ? more.hide() : more.show())}
           />
         )}
         {(playing || walking) && <Camera s={s} next={nextView} onCycle={cycleView} />}
@@ -2883,9 +2904,7 @@ function Game() {
             s={s}
             resuming={snap.hud.placements > 0 && !snap.hud.ended}
             onBegin={beginRun}
-            onHowToPlay={() => manual.show()}
-            onSettings={() => settings.show()}
-            onMore={() => more.show()}
+            onMenu={() => more.show()}
             onDaily={enterDaily}
             themeId={theme.id}
             dailyBadge={dailyBadge(readDailyBook(), today, s)}
@@ -2907,33 +2926,6 @@ function Game() {
              appears on the run after the card that taught it. */
           met={progress.met}
           onBack={manual.hide}
-          menu={
-            <PanelMenu>
-              {/* Named the way every other way into a room is named. These two
-                  are the ONLY doors in the game that had no `data-go`, which
-                  is why nothing had ever walked from the board into SETTINGS:
-                  a control a test cannot address is a control no test
-                  addresses. */}
-              <button type="button" data-go="more" onClick={() => more.show()}>
-                {s.ui.more}
-              </button>
-              <button type="button" data-go="settings" onClick={() => settings.show()}>
-                {s.ui.settings}
-              </button>
-              <Confirming
-                label={s.ui.restart}
-                armed={s.ui.restartArmed}
-                onConfirm={() => {
-                  // The whole stack, not this panel: RESTART is on the manual's
-                  // MENU tab, and MORE opens from that same tab and sits over
-                  // it — so hiding only the manual left MORE standing on a run
-                  // that had just been thrown away.
-                  newRun();
-                  leaveMenus();
-                }}
-              />
-            </PanelMenu>
-          }
         />
       )}
 
@@ -2971,6 +2963,8 @@ function Game() {
         <More
           s={s}
           virgin={virgin}
+          sound={isEnabled(features, 'ui.sound')}
+          onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
           onBack={more.hide}
           onHowToPlay={() => manual.show()}
           onFame={() => fame.show()}
@@ -2979,6 +2973,14 @@ function Game() {
           onWorlds={() => worlds.show()}
           onDaily={enterDaily}
           onDevice={() => device.show()}
+          onRestart={() => {
+            // The whole stack, not this panel: MENU sits over whatever was
+            // open when RESTART was pressed (the manual, say), so hiding only
+            // this panel would leave that screen standing on a run that had
+            // just been thrown away.
+            newRun();
+            leaveMenus();
+          }}
         />
       )}
 
@@ -3196,15 +3198,45 @@ function Game() {
       )}
 
       {/*
+        THE STORY, as a card that arrives with its sentences already written
+        (2026-09-03) — the `SaidCard` shape, not `LessonCard`'s: there is no
+        `story` entry in `LESSONS` and there should not be one, for the same
+        reason `purse` has none — `s.story` is the one source these four
+        sentences have, and a registry entry would be a second place for them
+        to drift. Ahead of every other card by construction (`shell/teaching`'s
+        `ORDER`), so it is the first thing a stranger's first run says.
+      */}
+      {card === 'story' && saidCard === null && (
+        <SaidCard
+          text={`${s.ui.theStory}\n${s.story.join('\n')}`}
+          theme={theme}
+          s={s}
+          onTerm={setTerm}
+          onDismiss={() => {
+            /*
+             * A card's dismissal is a quiet beat, and for PLACE the decisive
+             * one: its moment is true only before the first placement, and
+             * the only thing between this card and that placement is this
+             * tap. Judged against the ledger this dismissal just wrote,
+             * which React does not hold yet — the write itself stays
+             * functional so it cannot clobber a concurrent grant.
+             */
+            setProgress((p) => told(p, 'story'));
+            speakLesson(told(progress, 'story'), session.get());
+          }}
+        />
+      )}
+
+      {/*
         One card at a time, and a RECEIPT outranks a lesson.
-        
+
         A receipt is about something the player just did; a lesson is about
         something they could do. Stacking both is two modal dialogs over one
         board — the "menus over menus" problem in card form — and the lesson
         is the one that can wait, because its moment stays true until it is
         told.
       */}
-      {card !== null && saidCard === null && (
+      {card !== null && card !== 'story' && saidCard === null && (
         <LessonCard
           id={card}
           theme={theme}
@@ -3214,7 +3246,11 @@ function Game() {
           // does not: that reader already met the concept.
           firstContact
           dismiss={s.ui.gotIt}
-          onDismiss={() => setProgress((p) => told(p, card))}
+          onDismiss={() => {
+            // The same quiet beat the story card spends — see above.
+            setProgress((p) => told(p, card));
+            speakLesson(told(progress, card), session.get());
+          }}
         />
       )}
 

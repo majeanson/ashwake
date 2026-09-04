@@ -38,7 +38,15 @@ export type LessonStrings = {
     readonly cardLean: string;
     readonly cardPlain: string;
   };
-  readonly pop: LessonHead & { readonly core: string };
+  readonly pop: LessonHead & {
+    readonly core: string;
+    /** The draw lean, where a manual reader can find it (2026-09-03). It was
+     *  said only in `ripe.cardLean`, a first-contact sentence the manual never
+     *  prints — so a rule that steers every draw after a pop was unfindable
+     *  once the RIPE card was dismissed. Spoken only while pops pay luck and
+     *  bias draws, the same condition `cardLean` keeps. */
+    readonly lean: string;
+  };
   /**
    * The other thing a ripe pocket can be spent on (2026-08-30).
    *
@@ -97,6 +105,40 @@ export type LessonStrings = {
     readonly coreCapped: (cap: number) => string;
     readonly core: string;
   };
+  /**
+   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four).
+   *
+   * An audit of the manual against the engine found four rules it enforces
+   * and no manual surface states — each had prose behind a tap somewhere
+   * (`statNote`, `describeHexOf`), so the words existed and a reader who did
+   * not know to tap could never meet them. `costRise`, `field` and `lens` are
+   * teach ids, so their sections grow into the manual the moment their toast
+   * speaks; `reach` is a word the manual prints for everyone.
+   */
+  readonly costRise: LessonHead & {
+    /** What a placement costs, and it holds under every dial. */
+    readonly core: string;
+    /** The direction of the curve, which a dial CAN flatten. */
+    readonly rises: string;
+    /** The arithmetic, for the DETAILS fold. The wording is the stat note's
+     *  own curve clause (one shared constant per language), with the full
+     *  stop a standalone beat requires. */
+    readonly curveGrace: (base: number, grace: number, every: number) => string;
+    readonly curvePlain: (every: number) => string;
+  };
+  readonly reach: LessonHead & {
+    readonly core: string;
+    /** The multiplier rule, silent where `distanceStep` is zeroed. Shares its
+     *  sentence with `view.stat.reach` (one constant per language). */
+    readonly multiplier: (step: number) => string;
+  };
+  readonly field: LessonHead & { readonly core: string };
+  readonly lens: LessonHead & {
+    /** The world's memory, which nothing in the manual stated: walked ground
+     *  persists under the fog and destinations glow through it. The section's
+     *  second sentence is `lensHint`, shared with the drip's toast. */
+    readonly core: string;
+  };
 };
 
 export type Strings = {
@@ -114,6 +156,10 @@ export type Strings = {
   readonly rareStar: string;
   readonly rareCard: string;
   readonly lastGaspRule: string;
+  /** The lens's invitation (Marc's wording, 2026-09-03). Two doors read it —
+   *  the drip's LENS toast and the manual's fog section — so the gesture is
+   *  never described two ways. */
+  readonly lensHint: string;
 
   readonly view: {
     /**
@@ -384,30 +430,42 @@ export type Strings = {
   readonly feature: Readonly<
     Record<'debug.overlay' | 'ui.sound', { readonly label: string; readonly note: string }>
   >;
-  readonly tagline: string;
 
   /**
    * The hook: what this place is, why you go out, and why you come back
    * (Marc, 2026-08-29 — *"we need a little story, a small hook for this game
    * towards the settlement"*, and *"i want to go this way"*).
    *
-   * Three sentences on the front door, under the tagline, and the ONLY story
-   * the game tells. It is the game's, not a direction's, which is what lets
-   * the four directions be one fiction rather than four: somebody stayed here
-   * and the plain took it back (settlement), you go out into that plain with a
-   * light (torchlit), and the survey is what you draw when you get home
-   * (daylight).
+   * Four sentences, and the ONLY story the game tells. It is the game's, not
+   * a direction's, which is what lets the four directions be one fiction
+   * rather than four: somebody stayed here and the plain took it back
+   * (settlement), you go out into that plain with a light (torchlit), and
+   * the survey is what you draw when you get home (daylight).
+   *
+   * **RETOLD 2026-09-03** (Marc: the Inheritance direction, played subtle —
+   * a loop only implied, never stated): it is no longer certain who stayed
+   * here, and some nights it is not certain it wasn't you. The ambiguity
+   * costs nothing new, because it describes a thing the game already does —
+   * this world's own ground remembers what you walked here before, across
+   * every run on it — and a player who never notices the hint loses nothing:
+   * the four lines still read as plain atmosphere if nobody points at them.
    *
    * **It promises nothing the game cannot do**, which is the rule this repo
    * keeps having to re-learn: a field, a stall, a cut in the rock and a road
    * are the four grounds a player is about to be dealt, and "more than it had
-   * yesterday" is the world's own memory of the ground you walked. No lore
-   * about who left, no vocabulary a lesson would then have to teach.
+   * yesterday" is the world's own memory of the ground you walked — as is
+   * the one new clause, "more than you remember leaving it". No lore about
+   * who left, no vocabulary a lesson would then have to teach.
    *
-   * A tuple rather than a paragraph so the door can space them as three lines
-   * and a missing one is a type error.
+   * The former standalone tagline's mood folded into the opening line
+   * 2026-09-03, its instructional half ("place, ripen, pop, and push on")
+   * dropped rather than kept — those are verbs a teaching card already
+   * covers, and the one rule this passage holds to is that it teaches none.
+   *
+   * A tuple rather than a paragraph so the door (or wherever it prints) can
+   * space them as separate lines and a missing one is a type error.
    */
-  readonly story: readonly [string, string, string];
+  readonly story: readonly [string, string, string, string];
 
   readonly share: {
     readonly run: (name: string, pts: number, placements: number, arc: string) => string;
@@ -537,7 +595,6 @@ export type Strings = {
     readonly back: string;
     /** Leave every open panel at once — the escape hatch out of a deep stack. */
     readonly closeAll: string;
-    readonly more: string;
     readonly daily: string;
     readonly shop: string;
     readonly hold: string;
@@ -591,7 +648,6 @@ export type Strings = {
      * describing the thing under it. `fame` below is the hall of fame's own.
      */
     readonly tabs: {
-      readonly menu: string;
       readonly start: string;
       readonly play: string;
       readonly hand: string;

@@ -90,10 +90,19 @@ const KEY_LINES = [
  *
  * BOUNTY stays a section: it is a rule a SITE opens, not a mark on the board,
  * so it has no row in an alphabet.
+ *
+ * **Four sections landed 2026-09-03, on Marc's pick of all four** (the manual
+ * vs engine audit, `NEXT.md` §1): THE COST closes START, because EXPEDITION
+ * says placements cost tiles and nothing said the price rises for good;
+ * REACH, NATIVE GROUND and THE FOG join PLAY, beside the board facts they
+ * are about. `costRise`, `field` and `lens` are teach ids, so those three
+ * grow in when their toast speaks — the same ledger as every gated section —
+ * while REACH is a scoring rule with no moment of its own and prints for
+ * everyone.
  */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
-  start: ['ripe', 'pop', 'sizeBonus', 'worth'],
-  play: ['pocket', 'bounty'],
+  start: ['ripe', 'pop', 'sizeBonus', 'worth', 'costRise'],
+  play: ['pocket', 'reach', 'bounty', 'field', 'lens'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
 
@@ -183,17 +192,11 @@ export type ManualProps = {
    */
   readonly met?: readonly TeachId[];
   readonly onBack: () => void;
-  /** The MENU tab's contents — settings, restart, the door home. Host-supplied
-   *  because they are the SHELL's business, not the manual's. */
-  readonly menu?: React.ReactNode;
 };
 
-export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualProps) {
+export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
   const known = met === undefined ? null : new Set(met);
-  const tabs = (menu === undefined ? TABS : (['menu', ...TABS] as const)) as readonly (
-    TabId | 'menu'
-  )[];
-  const [on, setOn] = useState<TabId | 'menu'>(tabs[0]!);
+  const [on, setOn] = useState<TabId>(TABS[0]);
 
   return (
     <Panel
@@ -208,11 +211,11 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
           base="manual"
           growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
-          tabs={tabs.map((id) => ({
+          tabs={TABS.map((id) => ({
             id,
             label: s.ui.tabs[id],
             // A tab with sections still to unlock says so — see `Tab.grows`.
-            grows: id !== 'menu' && grows(SECTIONS[id], known),
+            grows: grows(SECTIONS[id], known),
           }))}
           on={on}
           onPick={setOn}
@@ -236,8 +239,13 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
         running out of tiles is how a run ENDS rather than how it is failed.
         A roguelite that does not say so reads as a game you keep losing.
 
-        Not a lesson: it teaches no term, carries no figure and is not
-        something the teaching ledger should remember having said once.
+        Not a lesson: it teaches no term and is not something the teaching
+        ledger should remember having said once. The figure under it is the
+        `place` figure, drawn at last (2026-09-03): it existed since Stage 3
+        with its caption written, pinned and translated — "Glowing edges are
+        where a tile may go. The faint number is what it would pay." — and no
+        lesson carried it, so nothing ever drew it. "You place tiles" is this
+        section's own first claim, and this is the picture of doing it.
       */}
       {on === 'start' && (
         <section className="lesson">
@@ -247,15 +255,21 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
           {s.ui.expedition.lines.map((line) => (
             <p key={line}>{line}</p>
           ))}
+          <Figure id="place" theme={theme} s={s} caption />
         </section>
       )}
 
       {/*
         WHICH GAME — see `mode` (2026-09-02).
 
-        The line that says which of the three you are in is always visible; the
-        three definitions fold, because they are a reference rather than a
-        lesson and only one of them is about the run in front of you.
+        The line that says which of the three you are in comes first; the
+        three definitions follow IN THE OPEN since 2026-09-03 (Marc: "remove
+        details and explain each"). They folded for a day on the argument that
+        only one of them is about the run in front of you — but the section
+        exists precisely for the reader in the WRONG run (a `?seed=` link's
+        recipient), and a definition behind a DETAILS tap is a definition that
+        reader never opens. Four short paragraphs is what a fold saves; a
+        false mental model is what it costs.
       */}
       {on === 'start' && mode !== undefined && (
         <section className="lesson">
@@ -269,12 +283,10 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
                 ? s.ui.which.nowShared
                 : s.ui.which.nowDaily}
           </p>
-          <Fold summary={s.ui.details}>
-            <p>{s.ui.which.world}</p>
-            <p>{s.ui.which.shared}</p>
-            <p>{s.ui.which.daily}</p>
-            <p>{s.ui.which.howToShare}</p>
-          </Fold>
+          <p>{s.ui.which.world}</p>
+          <p>{s.ui.which.shared}</p>
+          <p>{s.ui.which.daily}</p>
+          <p>{s.ui.which.howToShare}</p>
         </section>
       )}
 
@@ -303,24 +315,22 @@ export function Manual({ theme, s, keyboard, mode, met, onBack, menu }: ManualPr
         </section>
       )}
 
-      {on === 'menu'
-        ? menu
-        : /*
-             One picture per tab, however many lessons share it (2026-08-30).
+      {/*
+        One picture per tab, however many lessons share it (2026-08-30).
 
-             MAGIC and UNIQUE carry the same figure BY DESIGN — `lessons.ts`
-             gives them the same shared sentence for the same reason — and its
-             caption says "magic, then unique", so it is one picture about a
-             pair. The HAND tab drew it twice, identical, a paragraph apart.
+        MAGIC and UNIQUE carry the same figure BY DESIGN — `lessons.ts`
+        gives them the same shared sentence for the same reason — and its
+        caption says "magic, then unique", so it is one picture about a
+        pair. The HAND tab drew it twice, identical, a paragraph apart.
 
-             The first lesson to want a figure gets it; the ones after read the
-             text with the picture already above them. Tracked here rather than
-             in the registry because it is a fact about a PAGE, not about a
-             lesson: a teaching card shows the same figure and should.
-           */
-          drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
-            <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
-          ))}
+        The first lesson to want a figure gets it; the ones after read the
+        text with the picture already above them. Tracked here rather than
+        in the registry because it is a fact about a PAGE, not about a
+        lesson: a teaching card shows the same figure and should.
+      */}
+      {drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
+        <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
+      ))}
     </Panel>
   );
 }
