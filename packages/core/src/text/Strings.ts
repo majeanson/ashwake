@@ -46,6 +46,12 @@ export type LessonStrings = {
      *  once the RIPE card was dismissed. Spoken only while pops pay luck and
      *  bias draws, the same condition `cardLean` keeps. */
     readonly lean: string;
+    /** The timing choice — small-and-often against big-and-late — moved here
+     *  from `view.harvest.firstPopWhen` (2026-09-04), which only the
+     *  first-ever-pop toast ever read. A reader who dismissed that toast once
+     *  had no way back to the one sentence that explains why waiting can be
+     *  worth it, since the RÉCOLTER door never repeated it. */
+    readonly when: string;
   };
   /**
    * The other thing a ripe pocket can be spent on (2026-08-30).
@@ -177,7 +183,14 @@ export type Strings = {
       readonly lowPopNow: string;
       readonly lowPopTiles: string;
       readonly lowRipen: string;
+      /** Under the old tiles/points fork: a bounty-collecting pop is a
+       *  DIFFERENT button from the ordinary one, so the guide has to name it. */
       readonly bountyReady: string;
+      /** Under `singlePayout` (the shipped tuning): POP FOR POINTS never
+       *  renders (`ActionBar.tsx`) — there is one POP button, and it always
+       *  collects an armed bounty, so telling the player to pop it "as pts"
+       *  points at a control that is not on the screen. */
+      readonly bountyReadySingle: string;
       readonly tilesSpare: string;
       readonly pockets: (n: number) => string;
       readonly readySingle: (pockets: string) => string;
@@ -204,11 +217,22 @@ export type Strings = {
     readonly pocket: {
       readonly head: (count: number, worth: number) => string;
       readonly pays: (tiles: number, pts: number) => string;
+      /**
+       * `placedRate` and `rare` (Session 51) are the two flat terms added
+       * beside the multiplied one — `worth × placedRate` for what was placed,
+       * `rare.worth × rare.rate` as the jackpot on magic/unique tiles —
+       * each `null` where its dial is off or its base is zero, so the old
+       * three-term sentence is printed unchanged in every economy that has
+       * neither. A bounty multiplies the whole sum, so a sentence with an
+       * added term AND a bounty has to bracket the sum before the `×`.
+       */
       readonly score: (
         worth: number,
-        pocket: number,
+        sizeBonus: number,
         multiplier: number,
         bounty: number | null,
+        placedRate: number | null,
+        rare: { readonly worth: number; readonly rate: number } | null,
       ) => string;
       readonly bar: (count: number, cap: number) => string;
       readonly treasure: (rarity: string) => string;
@@ -228,7 +252,6 @@ export type Strings = {
        * out. A toast is too quiet for a rule that reshapes the board.
        */
       readonly firstPop: string;
-      readonly firstPopWhen: string;
       readonly bountyCollected: (bonus: number) => string;
       readonly bountyMissed: (bonus: number, need: number, radius: number) => string;
       readonly tiles: (
@@ -259,21 +282,27 @@ export type Strings = {
       readonly scored: (
         pts: number,
         worth: number,
-        counted: number,
+        count: number,
+        sizeBonus: number,
         cap: number | null,
         multiplier: number,
         bounty: number | null,
         rate: number,
+        placedRate: number | null,
+        rare: { readonly worth: number; readonly rate: number } | null,
       ) => string;
       readonly luck: (gained: number, oddsRose: boolean) => string;
       readonly treasure: (rarity: string) => string;
       readonly points: (
         pts: number,
         worth: number,
-        counted: number,
+        count: number,
+        sizeBonus: number,
         cap: number | null,
         multiplier: number,
         bounty: number | null,
+        placedRate: number | null,
+        rare: { readonly worth: number; readonly rate: number } | null,
       ) => string;
     };
     readonly purse: {
@@ -751,6 +780,16 @@ export type Strings = {
       readonly here: string;
       readonly flat: string;
       readonly home: string;
+    };
+    /**
+     * The SHARPNESS slider, beside the camera button (2026-09-04, Marc, on a
+     * phone: *"bad quality pixels"*). `label` names the button that opens it
+     * and the popover it opens; `note` is the one sentence explaining what
+     * the number trades against what.
+     */
+    readonly sharpness: {
+      readonly label: string;
+      readonly note: string;
     };
     /**
      * The board, said out loud (2026-08-29).

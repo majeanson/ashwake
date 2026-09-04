@@ -456,12 +456,10 @@ export type Board = {
   /**
    * Gap between hexes, as a fraction of the hex radius.
    *
-   * **NOT READ BY THIS BODY** (audit, 2026-09-02). `board/ground.ts` hard-codes
-   * `SEAM = 0.06` and every direction but the placeholder authors 0.04 or 0.05,
-   * so four of the five ship with a wider gutter than they asked for. Wiring it
-   * is one line and a look change — every hex grows — which is why it is stated
-   * here rather than done. See `NEXT.md`, "the look the directions author and
-   * the board does not read".
+   * Read by `board/ground.ts`'s `hexRadiusOf` (wired 2026-09-04, Marc, on a
+   * phone: *"the contours are too thick"*). It had hard-coded `SEAM = 0.06`
+   * against every direction's authored 0.04 or 0.05, so every hex on every
+   * board shipped with a wider gutter than any direction asked for.
    */
   readonly seam: number;
   /** Outline every cell gets. */

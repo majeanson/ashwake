@@ -5,12 +5,14 @@ import { meet, TEACH_IDS, withWorldPerks, type Progress } from '@meta/progress';
 import { inheritShopLevels } from '@meta/shopLevels';
 import { AUTO_THEME_ID } from '@theme/index';
 import type { ThemeId } from '@theme/tokens';
+import { clampRenderScale, DEFAULT_RENDER_SCALE } from '../board/quality';
 import { isDaily, keeperFor, type Keeper, type Place } from './keeper';
 import {
   activeSlot,
   readFeatures,
   readLocale,
   readProgress,
+  readRenderScale,
   readTheme,
   setActiveSlot,
   writeFeatures,
@@ -18,6 +20,7 @@ import {
   readShopLevels,
   readWorld,
   writeProgress,
+  writeRenderScale,
   writeShopLevels,
   writeTheme,
   type Slot,
@@ -43,6 +46,9 @@ export type Device = {
   readonly setLocale: (locale: Locale) => void;
   readonly theme: ThemeId;
   readonly setTheme: (id: ThemeId) => void;
+  /** The SHARPNESS slider's own number, `board/quality.ts`'s scale. */
+  readonly renderScale: number;
+  readonly setRenderScale: (scale: number) => void;
   readonly features: FeatureSet;
   readonly setFeature: (id: FeatureId, on: boolean) => void;
   readonly progress: Progress;
@@ -87,6 +93,11 @@ export function useDevice(opts: {
   const [theme, setThemeState] = useState<ThemeId>(
     () => opts.theme ?? readTheme() ?? AUTO_THEME_ID,
   );
+
+  const [renderScale, setRenderScaleState] = useState<number>(() => {
+    const kept = readRenderScale();
+    return kept === null ? DEFAULT_RENDER_SCALE : clampRenderScale(kept);
+  });
   /**
    * The device's flags, with `?ff=` applied (2026-09-02).
    *
@@ -282,6 +293,12 @@ export function useDevice(opts: {
     setThemeState(next);
   }, []);
 
+  const setRenderScale = useCallback((next: number) => {
+    const clamped = clampRenderScale(next);
+    writeRenderScale(clamped);
+    setRenderScaleState(clamped);
+  }, []);
+
   const setFeature = useCallback((id: FeatureId, on: boolean) => {
     setFeatures((was) => {
       const next = { ...was, [id]: on };
@@ -319,6 +336,8 @@ export function useDevice(opts: {
       setLocale,
       theme,
       setTheme,
+      renderScale,
+      setRenderScale,
       features,
       setFeature,
       progress,
@@ -334,6 +353,8 @@ export function useDevice(opts: {
       setLocale,
       theme,
       setTheme,
+      renderScale,
+      setRenderScale,
       features,
       setFeature,
       progress,

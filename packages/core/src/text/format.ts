@@ -30,6 +30,20 @@ export function fmtInt(n: number, locale: Locale): string {
 }
 
 /**
+ * A quantity that can carry one decimal — a pocket's worth, a harvest's size
+ * bonus. Rounded to the nearest tenth so float drift (`9.100000000000001`,
+ * the sum of many tiles' worth) never reaches the screen, and trimmed to a
+ * bare integer wherever the tenth is exactly zero — which is most of the
+ * time, since most worths land on a whole number.
+ */
+export function fmt1(n: number, locale: Locale): string {
+  const rounded = Math.round(n * 10) / 10;
+  const whole = Math.trunc(rounded);
+  const tenths = Math.round(Math.abs(rounded - whole) * 10);
+  return tenths === 0 ? fmtInt(whole, locale) : `${fmtInt(whole, locale)}.${tenths}`;
+}
+
+/**
  * A percentage from a fraction. `decimals` is how many places to keep once
  * the number is under ten — the rarity odds print `1.2%` and `6%`, and the
  * rule for that rounding belongs to the caller, so it is passed in as the

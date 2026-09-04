@@ -423,6 +423,47 @@ export type Tuning = {
   readonly harvestSizeCap: number;
 
   /**
+   * A second, ADDITIVE reward on `sumWorth` — matches, colour power, rarity
+   * and native ground, together `PointSource`'s "identity" — paid straight,
+   * with none of `harvestSizeBonus`, `distanceMultiplierCap` or a bounty
+   * multiplying it. `points` becomes:
+   *
+   *   sumWorth * sizeBonus * distanceMult * bounty  +  sumWorth * identityBonusRate
+   *
+   * Session 48 (2026-09-04): identity's SHARE of the score used to be
+   * `1 / (sizeBonus * distanceMult * bounty)` by construction, because it was
+   * the only base and every multiplier applied to it — so shrinking that
+   * share needed shrinking the multipliers, the same axis `sim.test.ts`'s
+   * "rewards patience" gate needs LARGE (tried, broke the gate). Adding a
+   * second, flat term keyed to the SAME `sumWorth` raises identity's absolute
+   * and relative weight without touching the multiplied term at all: a
+   * harvest that already had good worth (matching well, on native ground,
+   * with a rarity) is paid for it twice — once amplified by how it was
+   * cashed, once not — while a harvest that leaned entirely on size or
+   * distance for a mediocre pocket gets nothing extra. 0 is a true no-op:
+   * the added term is exactly zero, so every pre-existing profile,
+   * `sim.golden.txt` row and test is unaffected until a direction sets it.
+   */
+  readonly identityBonusRate: number;
+
+  /**
+   * The jackpot: an extra flat reward on the worth of every MAGIC or UNIQUE
+   * tile in a cashed pocket — `rareWorth * rareBonusRate`, added beside
+   * `identityBonusRate`'s term, so neither `sizeBonus` nor `distanceMult`
+   * touch it (a bounty still multiplies the whole catch).
+   *
+   * Session 51 (2026-09-04), Marc: luck and magic/unique should read as
+   * "gambling-style odds". The odds themselves (`magicChance`,
+   * `uniqueChance`) stay rare on purpose — a jackpot is rare-and-big, not
+   * frequent-and-small — and the matching rule ("UNIQUE counts DOUBLE, both
+   * ways") is untouched, because it is written into both catalogues. What
+   * changes is the PAYOUT when one lands: a pocket carrying a rare spikes on
+   * the receipt in a way the doubling alone (+1 per match, on a 2.5%/0.5%
+   * draw) never did. 0 is a byte-for-byte no-op.
+   */
+  readonly rareBonusRate: number;
+
+  /**
    * The tiles-only run (Marc's pivot, 2026-08-15). One currency to live on,
    * and points as the SCORE rather than a payout you must trade your life
    * for: "start with 30 tiles, get tiles along the way if you're good or
@@ -705,6 +746,8 @@ export const BARE_TUNING: Tuning = {
 
   harvestSizeBonus: 1,
   harvestSizeCap: 0,
+  identityBonusRate: 0,
+  rareBonusRate: 0,
 
   luckPerPop: 0,
   luckPerTile: 1,
@@ -937,8 +980,92 @@ export const TUNING: Tuning = {
   // 47.6% of bank15 on size alone; halving the exponent narrows that to
   // 58.5% without an interior optimum moving. Neither changes %tiles or the
   // relic economy — both measured unchanged across every sweep.
-  distanceMultiplierCap: 3,
+  //
+  // Second pass, 2026-09-04 — a played run's own receipt still read distance
+  // 43% / pocket 27% / bounty 25% / identity (matches+power+rare+native) 5%,
+  // and Marc, asked directly: distance still too dominant, and identity too
+  // invisible. A pointsSplit sweep across farm/bank20/rush/hoard/chooser/
+  // seeker at 150 seeds confirms the algebra: `points = sumWorth * sizeBonus *
+  // distanceMult * bounty`, and identity's SHARE is `1 / (sizeBonus *
+  // distanceMult * bounty)` regardless of the worth numbers themselves — so
+  // no per-tile value (`matchValue`, `greenCrowdBonus`, rarity, native) can
+  // move this share even one point; only shrinking a multiplier can. Under
+  // the shipped 3/0.5 pair the sweep's aggregate is identity 14.3% / pocket
+  // 33.5% / distance 43.7% — worse than one player's screenshot only because
+  // Marc's run chased bounty harder than any scripted policy does (25% vs
+  // 8.4% average).
+  //
+  // Two candidates were tried and rejected on the same gate.
+  // `distanceMultiplierCap: 1` zeroes distance's share outright, but pocket
+  // absorbs every point of it (64%, identity only 27%) and it deletes
+  // DESIGN.md's "leave — deeper maps pay more per point" pillar along with
+  // it, rather than sizing it. `harvestSizeBonus: 0.25` (paired with cap 2)
+  // reads best on the sweep — identity 14.3% -> 25.0% — but fails
+  // `sim.test.ts`'s "rewards patience" gate (bank40 stops beating bank3x1.5)
+  // and `profiles.test.ts`'s "veteran beats naive" gate (`chooser` stops
+  // beating `tourist`/`timid`): identity's share and "a big patient pocket
+  // clearly outscores a small greedy one" are the SAME axis by construction
+  // (`sizeBonus`), so pushing the first any further starts spending the
+  // second, which is a load-bearing invariant, not a free knob.
+  //
+  // Shipped: `distanceMultiplierCap: 2` alone, `harvestSizeBonus` left at
+  // 0.5. Distance 43.7% -> 35.8%, no longer the run's single largest line
+  // (pocket's 39.2% edges it, by construction — patience still has to pay).
+  // Identity only moves 14.3% -> 16.3% from this dial alone — see
+  // `identityBonusRate` below for the rest of the ask.
+  distanceMultiplierCap: 2,
   harvestSizeBonus: 0.5,
+
+  // The rest of the same ask, same session: Marc, told identity had only
+  // moved 14.3% -> 16.3%, said find a way rather than leave it. Shrinking
+  // the multipliers further was tried and rejected above — `identityBonusRate`
+  // is the way: a SECOND, additive term on `sumWorth` (see the field's own
+  // doc), so identity is paid in full AND still gets its usual multiplied
+  // share, instead of the two fighting over one number. Swept 0 to 4 on the
+  // same 150-seed harness: identity share climbs smoothly (16.3% at 0, 22.7%
+  // at 0.5, 44.3% at 3) but the real gate is `sim.test.ts`'s six-per-policy
+  // 200-seed "rewards patience" test, not the sweep's own rough median check
+  // — which read PASS at every value tried and was simply wrong, caught only
+  // by running `pnpm vitest` for real rather than trusting the throwaway
+  // script (this file's own Session 42 lesson, paid again). The real gate
+  // holds a comfortable, roughly constant ~12% margin from 0 to 0.4 and then
+  // fails outright at 0.5 (1265 vs a 1266.75 floor). Session 51 found out
+  // why the two disagreed: the gate ran on SIX seeds and the sweep on 200,
+  // so the "cliff" was six dice rolls crossing a line, not the economy.
+  // 0.4 was the largest value the six-seed sample happened to pass; see
+  // below for where it went once the gate measured the economy instead.
+  //
+  // `quest.test.ts`'s bounty invariant needed a rounding tolerance once a
+  // non-integer term entered the floor (see its own comment) — the formula
+  // was corrected first (`harvestValue`: bounty multiplies the WHOLE catch,
+  // identity's bonus included) rather than loosened to hide a real mismatch.
+  //
+  // Session 51, same day: 0.4 -> 1.0. Marc's ordering, in his words —
+  // placement first, "where am I going" (landmarks, not raw distance)
+  // second, luck/rarity as jackpot odds third, patience intact. Measured
+  // against TOTAL run points for the first time (harvest split + site
+  // payouts + the end-of-run reach/claim bonuses, `scripts/` throwaway,
+  // 120 seeds x 6 policies): identity was 12% of a run, the end-of-run
+  // REACH bonus alone 34% — the largest single channel in the game, and a
+  // third distance reward on top of the harvest multiplier and site pay.
+  // Cutting `endReachBonus` (below) is what bought this headroom: ~400 pts
+  // of reach is a constant added to patient and greedy runs alike, so
+  // removing half of it WIDENS the patience ratio (x1.12 -> x1.20 at 200
+  // seeds) instead of spending it. At reach 20 / claim 100 / this at 1.0:
+  // identity 19.4%, pocket 22.8%, distance 20.7%, reach 18.6%, claim
+  // 10.0%, bounty 5.1%, site 3.4% — placement a top-tier channel, raw
+  // reach halved, landmarks reached doubled, patience x1.15.
+  identityBonusRate: 1.0,
+
+  // The jackpot (Session 51, see the field). Swept 0..8 at 120 seeds:
+  // `rare`'s share of harvest points 1.6% -> 3.6 / 5.5 / 7.3 / 10.6 /
+  // 15.3% at 1 / 2 / 3 / 5 / 8, and a pocket carrying a magic or unique
+  // pays x2.1 -> x2.3 / 2.5 / 2.6 / 3.0 / 3.6 a plain pocket per tile.
+  // Patience barely notices (x1.118 -> x1.103 at 3) because a rare is a
+  // 3% draw — that rarity is exactly what makes it a jackpot rather than
+  // a strategy. 3: a rare pocket pays two-and-a-half plain ones, and
+  // rarity reads as a real row on the receipt without deciding a run.
+  rareBonusRate: 3,
 
   // Blue's tide is the one personality with no geometric ceiling — green,
   // yellow and red are all capped by a hex having six neighbours, tide pays
@@ -948,8 +1075,9 @@ export const TUNING: Tuning = {
   // for it, per the screenshot above, can push that further with no ceiling
   // in the way. Capped at the SAME real distance `distanceMultiplierCap`
   // stops paying at (`distanceMultiplierCap x distanceStep` / `blueTideEvery`
-  // = 3x3/6 = 1) rather than picking a second, unrelated number: past that,
-  // tide stops climbing exactly where the harvest multiplier already does.
+  // = 2x3/6 = 1, unchanged by the 2026-09-04 cap drop from 3) rather than
+  // picking a second, unrelated number: past that, tide stops climbing
+  // exactly where the harvest multiplier already does.
   // Only closes part of the gap (rush's blue share 41% -> 33%, still the
   // largest of the four) — the rest was `greenCrowdBonus`, below.
   blueTideCap: 1,
@@ -1056,8 +1184,21 @@ export const TUNING: Tuning = {
   burnRelics: 0,
   claimRelics: 2,
   luckToRelics: 0.05,
-  endReachBonus: 40,
-  endClaimBonus: 60,
+  // Session 51 (2026-09-04): 40/60 -> 20/100. Measured for the first time
+  // against TOTAL run points, `endReachBonus` was 34% of everything a run
+  // scores — more than any harvest row — and it pays for the same walk the
+  // harvest multiplier and every site already pay for, while `endClaimBonus`
+  // (5.6%) was the only end-of-run number that cared WHAT you reached.
+  // Marc: "where am I going? shrines? biomes?" should matter, raw distance
+  // less so. Half the reach, nearly double the claim: reach 34% -> 19%,
+  // claims 6% -> 10%, and the wanderer profile still scores (reach 0 was
+  // swept and rejected — `tourist`, whose whole score is the horizon,
+  // scored 0 and the PORTÉE line on the ending would have gone blank).
+  // Side effect that paid for the rest of the session: reach is a near-
+  // constant added to every run, so halving it widened the patience ratio
+  // rather than spending it — see `identityBonusRate`.
+  endReachBonus: 20,
+  endClaimBonus: 100,
 
   runLength: 0,
   costGrace: 0,

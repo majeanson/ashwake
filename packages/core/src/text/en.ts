@@ -1,5 +1,5 @@
 import { PERK_DIALS, UPGRADE_STEPS } from '@content/goals';
-import { ordinal, plural } from './format';
+import { fmt1, ordinal, plural } from './format';
 import type { Strings } from './Strings';
 
 /**
@@ -41,6 +41,8 @@ import type { Strings } from './Strings';
  * language, not about a power (D4).
  */
 const pw = (word: string): string => (word === '' ? '' : `${word}: `);
+/** A value that can carry one decimal, rounded to the nearest tenth. */
+const d1 = (n: number): string => fmt1(n, 'en');
 
 const LUCK_CORE = 'LUCK is a purse, not a score.';
 const RARE_STAR =
@@ -78,6 +80,7 @@ export const STRINGS_EN: Strings = {
       terms: ['POP'],
       core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
       lean: 'POP also leans your next draws toward the colour you popped.',
+      when: 'Small and often buys LUCK and steers your draws. Big and late buys tiles and score.',
     },
     sacrifice: {
       name: 'SACRIFICE',
@@ -221,6 +224,7 @@ export const STRINGS_EN: Strings = {
       lowPopTiles: 'Low on tiles: POP a pocket for tiles',
       lowRipen: 'Low on tiles: ripen something to POP',
       bountyReady: 'BOUNTY READY: POP this pocket as pts',
+      bountyReadySingle: 'BOUNTY READY: POP this pocket',
       tilesSpare: 'More tiles than you can spend. POP for PTS from here on',
       pockets: (n) => (n > 1 ? `${n} pockets ready` : 'Pocket ready'),
       readySingle: (pockets) => `${pockets}. Tap one to price it, then POP or sacrifice it`,
@@ -278,10 +282,15 @@ export const STRINGS_EN: Strings = {
       unique: 'UNIQUE is wild and heavy: every match it is part of counts DOUBLE, for both sides.',
     },
     pocket: {
-      head: (count, worth) => `POCKET OF ${count}, total worth ${worth}.`,
+      head: (count, worth) => `POCKET OF ${count}, total worth ${d1(worth)}.`,
       pays: (tiles, pts) => `POP pays +${tiles} tiles and ${pts} pts.`,
-      score: (worth, pocket, multiplier, bounty) =>
-        `The score: worth ${worth} × pocket ${pocket} × distance ${multiplier}${bounty === null ? '' : ` × bounty ${bounty}`}.`,
+      score: (worth, sizeBonus, multiplier, bounty, placedRate, rare) => {
+        const added =
+          (placedRate === null ? '' : ` + worth ${d1(worth)} × ${d1(placedRate)} for the placing`) +
+          (rare === null ? '' : ` + rare worth ${d1(rare.worth)} × ${d1(rare.rate)} as jackpot`);
+        const product = `worth ${d1(worth)} × size bonus ${d1(sizeBonus)} × distance ${multiplier}${added}`;
+        return `The score: ${bounty === null ? product : added === '' ? `${product} × bounty ${bounty}` : `(${product}) × bounty ${bounty}`}.`;
+      },
       bar: (count, cap) => `POCKET ${count}/${cap}`,
       treasure: (rarity) => `POP for treasure: a ${rarity.toUpperCase()} tile.`,
       bounty: (bonus) => `This pocket collects the bounty: ×${bonus} on its score.`,
@@ -290,26 +299,37 @@ export const STRINGS_EN: Strings = {
     harvest: {
       firstPop: `YOUR FIRST POP
 The pocket turned to STONE. It still surrounds, but never matches. Ground you have cashed grows poorer; the world stays rich farther out.`,
-      firstPopWhen:
-        'Small-and-often buys LUCK and steers your draws. Big-and-late buys tiles and score.',
 
-      head: (count, worth) => `POPPED ${count}, total worth ${worth}`,
+      head: (count, worth) => `POPPED ${count}, total worth ${d1(worth)}`,
       bountyCollected: (bonus) => `Bounty ×${bonus}: COLLECTED.`,
       bountyMissed: (bonus, need, radius) =>
         `Bounty ×${bonus}: missed (+0). Pop ${need}+ tiles within ${radius} of the site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tiles: ${perTile} per tile, +1 more per ${worthPerExtra} worth${depthRings === null ? '' : `, +${depthRings} for the depth`}.`,
-      scored: (pts, worth, counted, cap, multiplier, bounty, rate) =>
-        `+${pts} pts = worth ${worth} × pocket ${counted}${cap === null ? '' : ` (the size bonus stops at ${cap})`} × distance ${multiplier}` +
-        (bounty === null ? '' : ` × BOUNTY ${bounty}`) +
-        `, at ${rate}% per pop.`,
+      scored: (pts, worth, count, sizeBonus, cap, multiplier, bounty, rate, placedRate, rare) => {
+        const added =
+          (placedRate === null ? '' : ` + worth ${d1(worth)} × ${d1(placedRate)} for the placing`) +
+          (rare === null ? '' : ` + rare worth ${d1(rare.worth)} × ${d1(rare.rate)} as jackpot`);
+        const product = `worth ${d1(worth)} × size bonus ${d1(sizeBonus)} for ${count} tile${plural(count, '', 's')}${cap === null ? '' : ` (capped at ${cap})`} × distance ${multiplier}${added}`;
+        const whole =
+          bounty === null
+            ? product
+            : added === ''
+              ? `${product} × BOUNTY ${bounty}`
+              : `(${product}) × BOUNTY ${bounty}`;
+        return `+${pts} pts = ${whole}, at ${rate}% per pop.`;
+      },
       luck: (gained, oddsRose) =>
         `Luck +${gained}.${oddsRose ? ' Your rare-tile odds just rose.' : ''}`,
       treasure: (rarity) =>
         `A ${rarity.toUpperCase()} tile goes to your stash. No tiles, no points.`,
-      points: (pts, worth, counted, cap, multiplier, bounty) =>
-        `+${pts} pts = worth ${worth} × pocket ${counted}${cap === null ? '' : ` (the size bonus stops at ${cap})`} × distance ${multiplier}` +
-        (bounty === null ? '' : ` × BOUNTY ${bounty}`),
+      points: (pts, worth, count, sizeBonus, cap, multiplier, bounty, placedRate, rare) => {
+        const added =
+          (placedRate === null ? '' : ` + worth ${d1(worth)} × ${d1(placedRate)} for the placing`) +
+          (rare === null ? '' : ` + rare worth ${d1(rare.worth)} × ${d1(rare.rate)} as jackpot`);
+        const product = `worth ${d1(worth)} × size bonus ${d1(sizeBonus)} for ${count} tile${plural(count, '', 's')}${cap === null ? '' : ` (capped at ${cap})`} × distance ${multiplier}${added}`;
+        return `+${pts} pts = ${bounty === null ? product : added === '' ? `${product} × BOUNTY ${bounty}` : `(${product}) × BOUNTY ${bounty}`}`;
+      },
     },
     purse: {
       redraw: (cost) => `REDRAW · ${cost}. Throw this hand away for a new one.`,
@@ -651,6 +671,10 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     /** The camera cluster. `home` is its third control, shown only once the
      *  board has been turned or leaned away from the angle it opens at. */
     camera: { fit: 'FIT', here: 'HERE', flat: 'FLAT', home: 'DEFAULT' },
+    sharpness: {
+      label: 'SHARPNESS',
+      note: 'How much of the screen the board actually draws. Higher looks crisper and uses more battery.',
+    },
     board: {
       label: 'The board',
       reach:

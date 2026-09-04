@@ -1111,7 +1111,11 @@ function guideFor(state: GameState, ctx: RenderContext, s: Strings): string | nu
     // The DEFAULT pocket, deliberately — this line's words must not change
     // because a different pocket happens to be tapped. See `defaultValue`.
     const value = ctx.defaultValue;
-    if (value.questPays) return g.bountyReady;
+    // `bountyReady`'s "as pts" names the OLD fork's second button. Under
+    // `singlePayout` (found 2026-09-04) that button is never rendered
+    // (`ActionBar.tsx`) — there is one POP, and it collects the bounty same
+    // as any other pop — so the line was pointing at a control off-screen.
+    if (value.questPays) return single ? g.bountyReadySingle : g.bountyReady;
     // More tiles than the clock can spend: the survival button is dead and
     // saying so is the whole job of this line.
     if (tilesSpareIn(state)) return g.tilesSpare;
@@ -1374,11 +1378,17 @@ export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
   // to choose between, and the points button has been hidden since the
   // payout became one thing. A pop pays both, so the note prices both.
   const p = s.view.pocket;
-  const pocketBonus = Math.min(value.count, t.harvestSizeCap > 0 ? t.harvestSizeCap : value.count);
   const lines = [
     p.head(value.count, worth),
     p.pays(value.tiles, scoreOf(value.points, t)),
-    p.score(worth, pocketBonus, multiplier, value.questPays ? t.questBonus : null),
+    p.score(
+      worth,
+      value.sizeBonus,
+      multiplier,
+      value.questPays ? t.questBonus : null,
+      placedRateOf(t),
+      rareTermOf(value.rareWorth, t),
+    ),
   ];
   // The pocket bar (2026-08-18): the priced pocket's count against the size
   // bonus's cap — "POCKET 14/20" — once it is within reach of mattering.
@@ -1471,10 +1481,13 @@ export function harvestNote(
             scoreOf(value.points, t),
             worth,
             countedOf(value.count, t),
+            value.sizeBonus,
             cappedAt(value.count, t),
             multiplier,
             value.questPays ? (before.quest?.bonus ?? null) : null,
             Math.round(t.pointsPerPop * 100),
+            placedRateOf(t),
+            rareTermOf(value.rareWorth, t),
           )}`
         : '';
     return `${head}\n${h.tiles(value.tiles, t.tilesPerPop, t.worthPerExtraTile, rings > 0 ? rings : null)}${scored}${luck}${bounty}`;
@@ -1484,7 +1497,7 @@ export function harvestNote(
   }
 
   return (
-    `${head}\n${h.points(value.points, worth, countedOf(value.count, t), cappedAt(value.count, t), multiplier, value.questPays ? t.questBonus : null)}` +
+    `${head}\n${h.points(value.points, worth, countedOf(value.count, t), value.sizeBonus, cappedAt(value.count, t), multiplier, value.questPays ? t.questBonus : null, placedRateOf(t), rareTermOf(value.rareWorth, t))}` +
     bounty
   );
 }
@@ -1492,6 +1505,23 @@ export function harvestNote(
 /** How many of a pocket's tiles the size bonus actually counts. */
 const countedOf = (count: number, t: Tuning): number =>
   t.harvestSizeCap > 0 ? Math.min(count, t.harvestSizeCap) : count;
+
+/**
+ * The two flat terms of the score (Session 51), each `null` where it would
+ * print a zero: `identityBonusRate` is a dial that is off in every economy
+ * but the shipped one, and a pocket with no magic or unique in it has no
+ * jackpot to name. The receipt's equation has to sum to the number on it —
+ * the reason it carries its whole recipe at all (2026-09-02) — so a term
+ * that changed the total and went unnamed would be the same lie in a new
+ * place.
+ */
+const placedRateOf = (t: Tuning): number | null =>
+  t.identityBonusRate > 0 ? t.identityBonusRate : null;
+const rareTermOf = (
+  rareWorth: number,
+  t: Tuning,
+): { readonly worth: number; readonly rate: number } | null =>
+  t.rareBonusRate > 0 && rareWorth > 0 ? { worth: rareWorth, rate: t.rareBonusRate } : null;
 
 /** The cap, but only where this pocket reached it — a limit nobody is near is
  *  a number in the way. */

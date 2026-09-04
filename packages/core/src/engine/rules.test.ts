@@ -273,6 +273,8 @@ describe('harvest value', () => {
       count: 0,
       tiles: 0,
       points: 0,
+      sizeBonus: 1,
+      rareWorth: 0,
       questPays: false,
       treasure: null,
     });

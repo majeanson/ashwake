@@ -24,11 +24,20 @@ import { HEIGHT, kindOf, liftOf, type Kind } from './relief';
  * next move is a texture array, and this boundary is where it would go.
  */
 
-/** The seam between hexes, as a shrink of the prism's radius. */
-export const SEAM = 0.06;
-
-/** The radius a prism is actually built at, once the seam is taken out. */
-export const HEX_RADIUS = 1 - SEAM;
+/**
+ * The radius a prism is actually built at, once its direction's seam
+ * (`theme.board.seam`) is taken out.
+ *
+ * Was a flat `1 - 0.06` (found 2026-09-04, Marc, on a phone: *"the contours
+ * are too thick"*) — every direction authors a narrower gutter, 0.04 or 0.05,
+ * and this ignored it, so the gap between every hex on every board was wider
+ * than any direction asked for. `tokens.ts`'s `Board.seam` docblock had this
+ * down as a known, deliberately unwired look decision; this is that decision
+ * landing.
+ */
+export function hexRadiusOf(theme: Theme): number {
+  return 1 - theme.board.seam;
+}
 
 export type GroundItem = {
   readonly cell: CellView;

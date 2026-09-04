@@ -34,7 +34,13 @@ import { summarise } from './report';
  *  the first test in this file was written to catch. */
 const SIM_TIMEOUT = { timeout: 60000 };
 
-const SEEDS = 6;
+// 6 until Session 51 (2026-09-04). Three balance sessions in a row tripped on
+// the same thing: a six-run median sits on a knife edge, so a dial that the
+// 200-seed harness shows is fine fails here (Session 42's `greenCrowdBonus`
+// 0.5, Session 49's `identityBonusRate` 0.5 — "a cliff, not a slope"), and
+// one that is not fine can pass. 40 keeps every test in this file well under
+// `SIM_TIMEOUT` and makes a failure mean the economy moved, not the sample.
+const SEEDS = 40;
 const stats = (policy: (typeof POLICIES)[number]) =>
   summarise(policy.name, playMany(policy, SEEDS, { tuning: TUNING }));
 

@@ -1,4 +1,4 @@
-import { Text } from '@react-three/drei';
+import { Billboard, Text } from '@react-three/drei';
 import { MeshBasicMaterial, PlaneGeometry, type Texture } from 'three';
 import { useMemo } from 'react';
 import type { HexKey } from '@engine/hex';
@@ -47,6 +47,8 @@ type PlacedLabel = {
   readonly faint: boolean;
   /** A destination that has been reached — see `inkFor`. */
   readonly spent: boolean;
+  /** A beacon's mark has no hex under it to belong to — see `Mark`. */
+  readonly beacon: boolean;
   readonly x: number;
   readonly z: number;
   readonly top: number;
@@ -75,6 +77,7 @@ export function Labels({ cells, theme, layout, relief, yaw }: LabelsProps) {
         icon: label.icon ?? null,
         faint: label.faint,
         spent: cell.kind === 'landmark' && cell.claimed,
+        beacon: cell.beacon,
         x: p.x,
         z: p.y,
         top: topOf(cell, relief) + LABEL_LIFT,
@@ -126,7 +129,7 @@ export function Labels({ cells, theme, layout, relief, yaw }: LabelsProps) {
 const MARK_SIZE = 0.78;
 
 /**
- * One mark, lying on its hex.
+ * One mark, lying on its hex — except a beacon's, which has no hex to lie on.
  *
  * A plane rather than a `Text`, and the same transform the numbers get: flat
  * on the top face, turned BACK by the yaw so a board turned 45 degrees does
@@ -134,6 +137,20 @@ const MARK_SIZE = 0.78;
  * canvas turns tone mapping off at all — the palette is graded to 4.5:1 in
  * display colours, and a curve between that grade and the screen would make
  * the whole budget a description of a board that does not exist.
+ *
+ * **A beacon's mark billboards instead** (2026-09-04). "Flat on the top face"
+ * means flat on the GROUND, and every other mark can afford that because the
+ * camera's fit frames the structure it stands on — `Board.tsx`'s fit excludes
+ * beacons on purpose ("the fit frames the STRUCTURE, never the beacon disc"),
+ * so a beacon can land anywhere in the frame, including low in it, where the
+ * viewing ray grazes the ground at a much shallower angle than anything the
+ * fit actually centred. A flat mark foreshortens with that angle same as the
+ * hex under it — Marc, on a screenshot: *"look at the star, it was dark just
+ * because of the 3d angle"* — and at a shallow enough angle the star that says
+ * ACTIVE compresses to a smudge no ring colour can rescue. There is no tile
+ * face here for the mark to "belong to" the way a number belongs to its hex
+ * (`relief.ts`: "a beacon is a glow through ground that does not exist yet"),
+ * so nothing is lost by having it face the camera instead.
  */
 function Mark({
   label,
@@ -169,14 +186,14 @@ function Mark({
    * grade and the screen would make the whole budget a description of a board
    * that does not exist.
    */
+  const mesh = <mesh geometry={MARK_PLANE} material={markMaterial(texture)} raycast={() => null} />;
+  if (label.beacon) {
+    return <Billboard position={[label.x, label.top, label.z]}>{mesh}</Billboard>;
+  }
   return (
-    <mesh
-      position={[label.x, label.top, label.z]}
-      rotation={[-Math.PI / 2, 0, rad(yaw)]}
-      geometry={MARK_PLANE}
-      material={markMaterial(texture)}
-      raycast={() => null}
-    />
+    <group position={[label.x, label.top, label.z]} rotation={[-Math.PI / 2, 0, rad(yaw)]}>
+      {mesh}
+    </group>
   );
 }
 

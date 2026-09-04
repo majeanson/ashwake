@@ -1,5 +1,5 @@
 import { PERK_DIALS, UPGRADE_STEPS } from '@content/goals';
-import { fmtInt, fmtPct, NNBSP, ordinal } from './format';
+import { fmt1, fmtInt, fmtPct, NNBSP, ordinal } from './format';
 import type { Strings } from './Strings';
 
 /**
@@ -35,6 +35,8 @@ const D = NNBSP;
 /** Pluriel français : 0 et 1 au singulier. */
 const pl = (n: number, one: string, many: string): string => (n > 1 ? many : one);
 const nb = (n: number): string => fmtInt(n, 'fr-CA');
+/** Une valeur qui peut porter une décimale, arrondie à un dixième. */
+const d1 = (n: number): string => fmt1(n, 'fr-CA');
 /** Le mot de pouvoir et son deux-points — avec l’espace fine, ou rien du tout.
  *  Voir `view#powerHead` : une direction dont le nom du sol dit déjà son
  *  pouvoir n’a rien à ajouter. */
@@ -76,6 +78,7 @@ export const STRINGS_FR: Strings = {
       terms: ['RÉCOLTER', 'RÉCOLTE'],
       core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.`,
       lean: 'RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée.',
+      when: 'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
     },
     sacrifice: {
       name: 'SACRIFIER',
@@ -223,6 +226,7 @@ export const STRINGS_FR: Strings = {
       lowPopTiles: `Peu de tuiles${D}: RÉCOLTE une poche pour des tuiles`,
       lowRipen: `Peu de tuiles${D}: fais mûrir quelque chose à RÉCOLTER`,
       bountyReady: `PRIME PRÊTE${D}: RÉCOLTE cette poche en pts`,
+      bountyReadySingle: `PRIME PRÊTE${D}: RÉCOLTE cette poche`,
       tilesSpare: 'Plus de tuiles que tu peux en dépenser. RÉCOLTE pour des PTS dorénavant',
       pockets: (n) => (n > 1 ? `${n} poches prêtes` : 'Poche prête'),
       readySingle: (pockets) =>
@@ -279,10 +283,15 @@ export const STRINGS_FR: Strings = {
       unique: `UNIQUE est passe-partout et pèse lourd${D}: chaque ressemblance dont elle fait partie compte DOUBLE, des deux côtés.`,
     },
     pocket: {
-      head: (count, worth) => `POCHE DE ${count}, valeur totale ${worth}.`,
+      head: (count, worth) => `POCHE DE ${count}, valeur totale ${d1(worth)}.`,
       pays: (tiles, pts) => `RÉCOLTER paie +${tiles} tuiles et ${nb(pts)} pts.`,
-      score: (worth, pocket, multiplier, bounty) =>
-        `Le score${D}: valeur ${worth} × poche ${pocket} × distance ${multiplier}${bounty === null ? '' : ` × prime ${bounty}`}.`,
+      score: (worth, sizeBonus, multiplier, bounty, placedRate, rare) => {
+        const added =
+          (placedRate === null ? '' : ` + valeur ${d1(worth)} × ${d1(placedRate)} pour la pose`) +
+          (rare === null ? '' : ` + valeur rare ${d1(rare.worth)} × ${d1(rare.rate)} en gros lot`);
+        const product = `valeur ${d1(worth)} × bonus de taille ${d1(sizeBonus)} × distance ${multiplier}${added}`;
+        return `Le score${D}: ${bounty === null ? product : added === '' ? `${product} × prime ${bounty}` : `(${product}) × prime ${bounty}`}.`;
+      },
       bar: (count, cap) => `POCHE ${count}/${cap}`,
       treasure: (rarity) =>
         `RÉCOLTER pour le trésor${D}: une tuile ${rarity.toLocaleUpperCase('fr-CA')}.`,
@@ -293,26 +302,37 @@ export const STRINGS_FR: Strings = {
     harvest: {
       firstPop: `TA PREMIÈRE RÉCOLTE
 La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie jamais. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
-      firstPopWhen:
-        'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
 
-      head: (count, worth) => `RÉCOLTÉ ${count}, valeur totale ${worth}`,
+      head: (count, worth) => `RÉCOLTÉ ${count}, valeur totale ${d1(worth)}`,
       bountyCollected: (bonus) => `Prime ×${bonus}${D}: ENCAISSÉE.`,
       bountyMissed: (bonus, need, radius) =>
         `Prime ×${bonus}${D}: manquée (+0). Récolte ${need} tuiles ou plus à ${radius} du site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tuiles${D}: ${perTile} par tuile, +1 de plus par ${worthPerExtra} de valeur${depthRings === null ? '' : `, +${depthRings} pour la profondeur`}.`,
-      scored: (pts, worth, counted, cap, multiplier, bounty, rate) =>
-        `+${nb(pts)} pts = valeur ${nb(worth)} × poche ${counted}${cap === null ? '' : ` (le bonus de taille s’arrête à ${cap})`} × distance ${multiplier}` +
-        (bounty === null ? '' : ` × PRIME ${bounty}`) +
-        `, à ${pc(rate)} par récolte.`,
+      scored: (pts, worth, count, sizeBonus, cap, multiplier, bounty, rate, placedRate, rare) => {
+        const added =
+          (placedRate === null ? '' : ` + valeur ${d1(worth)} × ${d1(placedRate)} pour la pose`) +
+          (rare === null ? '' : ` + valeur rare ${d1(rare.worth)} × ${d1(rare.rate)} en gros lot`);
+        const product = `valeur ${d1(worth)} × bonus de taille ${d1(sizeBonus)} pour ${count} tuile${pl(count, '', 's')}${cap === null ? '' : ` (arrêté à ${cap})`} × distance ${multiplier}${added}`;
+        const whole =
+          bounty === null
+            ? product
+            : added === ''
+              ? `${product} × PRIME ${bounty}`
+              : `(${product}) × PRIME ${bounty}`;
+        return `+${nb(pts)} pts = ${whole}, à ${pc(rate)} par récolte.`;
+      },
       luck: (gained, oddsRose) =>
         `Chance +${gained}.${oddsRose ? ' Tes chances de tuile rare viennent de monter.' : ''}`,
       treasure: (rarity) =>
         `Une tuile ${rarity.toLocaleUpperCase('fr-CA')} va dans ta réserve. Pas de tuiles, pas de points.`,
-      points: (pts, worth, counted, cap, multiplier, bounty) =>
-        `+${nb(pts)} pts = valeur ${worth} × poche ${counted}${cap === null ? '' : ` (le bonus de taille s’arrête à ${cap})`} × distance ${multiplier}` +
-        (bounty === null ? '' : ` × PRIME ${bounty}`),
+      points: (pts, worth, count, sizeBonus, cap, multiplier, bounty, placedRate, rare) => {
+        const added =
+          (placedRate === null ? '' : ` + valeur ${d1(worth)} × ${d1(placedRate)} pour la pose`) +
+          (rare === null ? '' : ` + valeur rare ${d1(rare.worth)} × ${d1(rare.rate)} en gros lot`);
+        const product = `valeur ${d1(worth)} × bonus de taille ${d1(sizeBonus)} pour ${count} tuile${pl(count, '', 's')}${cap === null ? '' : ` (arrêté à ${cap})`} × distance ${multiplier}${added}`;
+        return `+${nb(pts)} pts = ${bounty === null ? product : added === '' ? `${product} × PRIME ${bounty}` : `(${product}) × PRIME ${bounty}`}`;
+      },
     },
     purse: {
       redraw: (cost) => `REPIOCHER · ${cost}. Jette cette main pour une nouvelle.`,
@@ -660,6 +680,10 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       ],
     },
     camera: { fit: 'CADRER', here: 'ICI', flat: 'À PLAT', home: 'DÉFAUT' },
+    sharpness: {
+      label: 'NETTETÉ',
+      note: 'Combien de l’écran le plateau dessine vraiment. Plus net, mais plus énergivore.',
+    },
     board: {
       label: 'Le plateau',
       reach:

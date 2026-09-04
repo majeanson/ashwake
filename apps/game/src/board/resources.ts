@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from 'react';
 import { MeshLambertMaterial, type BufferGeometry, type Material, type Texture } from 'three';
 import { sideColour } from '@render/materials';
-import type { Orientation } from '@theme/tokens';
+import type { Orientation, Theme } from '@theme/tokens';
 import type { GroundBatch } from './ground';
-import { HEX_RADIUS } from './ground';
+import { hexRadiusOf } from './ground';
 import { hexPrism, PRISM_BOTTOM, PRISM_SIDE, PRISM_TOP } from './prism';
 import { HEIGHT, KINDS, type Kind } from './relief';
 import type { SurfaceTextures } from './surfaces';
@@ -47,17 +47,23 @@ export type BatchResources = {
  *
  * Module scope, built on first ask, and not disposed — because "dispose" here
  * would mean freeing something that is about to be asked for again. Twelve
- * small geometries is the whole of what this cache can ever hold, and a lost
- * WebGL context does not invalidate them: `three` re-uploads from the arrays
- * the geometry still holds (see `board/gl.ts`).
+ * small geometries is the whole of what this cache can ever hold PER RADIUS,
+ * and a lost WebGL context does not invalidate them: `three` re-uploads from
+ * the arrays the geometry still holds (see `board/gl.ts`).
+ *
+ * Keyed by radius as well as orientation (2026-09-04): a prism's radius comes
+ * from its direction's `theme.board.seam` now, not a fixed constant, so a
+ * session that ever sees two directions needs a set per radius they actually
+ * ask for — never more than the number of directions this game ships.
  */
-const PRISMS = new Map<Orientation, Map<Kind, BufferGeometry>>();
+const PRISMS = new Map<string, Map<Kind, BufferGeometry>>();
 
-function prismsFor(orientation: Orientation): Map<Kind, BufferGeometry> {
-  let set = PRISMS.get(orientation);
+function prismsFor(orientation: Orientation, radius: number): Map<Kind, BufferGeometry> {
+  const key = `${orientation}|${radius}`;
+  let set = PRISMS.get(key);
   if (set === undefined) {
-    set = new Map(KINDS.map((kind) => [kind, hexPrism(HEX_RADIUS, HEIGHT[kind], orientation)]));
-    PRISMS.set(orientation, set);
+    set = new Map(KINDS.map((kind) => [kind, hexPrism(radius, HEIGHT[kind], orientation)]));
+    PRISMS.set(key, set);
   }
   return set;
 }
@@ -65,10 +71,11 @@ function prismsFor(orientation: Orientation): Map<Kind, BufferGeometry> {
 export function useBatchResources(
   batches: readonly GroundBatch[],
   orientation: Orientation,
+  theme: Theme,
   textures: SurfaceTextures,
   artFor: (batch: GroundBatch) => CanvasImageSource | null,
 ): BatchResources {
-  const prisms = prismsFor(orientation);
+  const prisms = prismsFor(orientation, hexRadiusOf(theme));
 
   /*
    * MATERIALS OUTLIVE A RENDER, AND DISPOSING ONE IS NOT A COMPUTATION

@@ -4055,3 +4055,268 @@ and the actual toast-speaker build, plus the four manual-gap sections Marc
 also greenlit, went to `ashwake-f1`, already holding that context from
 Session 46. Full suite (1033), typecheck, lint and `pnpm sim` green
 throughout; nothing committed.
+
+### Session 48 — a played run's own receipt, checked against Session 42's own fix (2026-09-04)
+
+**Question:** Marc, from a fresh stats screen — DISTANCE 43%, TAILLE DE LA
+POCHE 27%, PRIMES 25%, and matching/power/rarity/native ground combined 5% —
+does this still make sense, after Session 42's pass at exactly this question?
+
+**Answer: the runaway-single-axis problem stayed fixed, and the ask
+underneath it — make identity read as more than background — ran into the
+formula's own algebra rather than a missed dial.** `points = sumWorth *
+sizeBonus * distanceMult * bounty`, and `pointsSplit` peels the same product
+back apart, so identity's SHARE of the total is exactly `1 / (sizeBonus *
+distanceMult * bounty)` — a ratio that does not depend on the worth numbers
+themselves at all. No `matchValue`, `greenCrowdBonus`, rarity or native bonus
+can move it a single point; only the three multiplier dials can.
+
+A `pointsSplit` sweep (throwaway script, same technique as Session 42's
+colour-share one, discarded after) across farm/bank20/rush/hoard/chooser/
+seeker at 150 seeds put today's aggregate at identity 16%/distance 44%/
+pocket 33%/bounty 8% under the Session 42 tuning — worse in Marc's own run
+only because he chased the bounty harder than any scripted policy does (25%
+against an 8% average).
+
+**Two candidates, one shipped, one rejected on a gate.**
+`distanceMultiplierCap: 1` zeroes distance's share outright but hands every
+point of it to pocket (64%, identity still only 27%) and deletes DESIGN.md's
+"leave — deeper maps pay more per point" pillar rather than sizing it — not
+shipped. `harvestSizeBonus: 0.25` (half of Session 42's already-halved 0.5)
+reads best on the sweep, identity 16% -> 25%, but broke `sim.test.ts`'s
+"rewards patience" gate (bank40 stops beating bank3×1.5) and
+`profiles.test.ts`'s "veteran beats naive" gate (`chooser` stops beating
+`tourist`/`timid`) — caught by running the full suite before trusting the
+sweep number, the same discipline Session 42's own lesson names. Identity's
+share and "a big patient pocket clearly outscores a small greedy one" are the
+same axis (`sizeBonus`) by construction, so pushing one further spends the
+other, and the patience gate is load-bearing rather than a free knob.
+
+**Shipped:** `distanceMultiplierCap: 2` (was 3) alone. Sweep: distance 44% ->
+36%, no longer alone above pocket (39%, unmoved, by construction — patience
+still has to pay); identity only moves 16% -> 16% (rounds the same at one
+decimal, though every seed's own split does shift a little). `blueTideCap`
+needed no change — `distanceMultiplierCap x distanceStep / blueTideEvery`
+still floors to 1 at 2x3/6.
+
+**The identity-share ask was left open here, not closed — see Session 49,
+same session's continuation.** Raising it further than the small move above
+with the EXISTING dials means weakening the patience/veteran gates, a real
+invariant rather than a stale one. What actually closed it was a second,
+additive term rather than a bigger cut of the existing ones.
+
+**A mechanical near-miss on the way, worth naming.** The first edit
+accidentally deleted `harvestSizeBonus: 0.5` from the `TUNING` override
+entirely rather than leaving it — which silently fell back to `PLANE`'s
+`harvestSizeBonus: 1` (the pre-Session-42 full quadratic) two lines away from
+a comment describing 0.5 as shipped. Caught by `endless.test.ts`'s pinned
+arithmetic failing with the wrong number (4, not the expected 3-then-2), not
+by reading the diff — the harness earned its keep here.
+
+**Verified:** full suite 722/722 (`packages/core`, this repo's count — the
+1033 figure above is `apps/game`'s, a different session's number in a
+concurrent worktree). `pnpm sim`'s golden moved with the tuning, every
+points/relics-bearing column shifting a few points downward, `%tiles`
+essentially flat (rush 81->83, trickle 81->79, others within a point),
+`stalled`/`capped` at 0 throughout. `endless.test.ts`'s distance-pin updated
+from ×3 to ×2 deliberately, with the reason written beside it. Nothing
+committed; a large, unrelated uncommitted diff already sat in the working
+tree (`apps/game/src/board/*`, `text/*`, a `sizeBonus` field on
+`harvestValue`) from a concurrent session and was left untouched.
+
+### Session 49 — identity gets a second, unmultiplied row instead of a bigger cut of the first (2026-09-04)
+
+**Question, same session as 48, put back after the "left for Marc" answer:**
+Marc — told the identity-share ask couldn't move further without weakening
+the patience/veteran gates — said find a way rather than accept that.
+
+**Answer: identity was competing with patience for the same number
+(`sizeBonus`) because it was riding the same multiplied term. Giving it a
+second, additive term that nothing multiplies stops the fight.** `points`
+was `sumWorth * sizeBonus * distanceMult * bounty`; it is now `sumWorth *
+(sizeBonus * distanceMult + identityBonusRate) * bounty` — a new dial,
+`identityBonusRate`, defaulting to 0 (a byte-for-byte no-op, verified: the
+full suite passes unchanged with it left at 0 before any other edit).
+Matches/power/rarity/native are paid their normal multiplied share AND an
+extra flat `sumWorth * identityBonusRate` on top; nothing about `pocket`,
+`distance` or `bounty`'s own arithmetic changes. `bounty` still multiplies
+the WHOLE catch including the new term — a collected bounty is "this pocket
+is worth more," not "the size/distance part of this pocket is worth more" —
+which keeps `quest.test.ts`'s `priced === plain * questBonus` invariant
+intact in spirit (see below for the one rounding wrinkle it did cost).
+
+**Swept 0 to 4 on the same 150-seed harness Session 48 built, and the sweep
+LIED about the gate.** Identity share climbed smoothly and looked completely
+safe at every value (16.3% at 0 up to 44.3% at 3), with a quick median-based
+gate approximation reading PASS the whole way. **Running the actual
+`pnpm vitest` suite — the real gate, not a stand-in for it — failed at
+`identityBonusRate: 1` and still failed at `0.5`**, off by less than 0.2% at
+0.5 (1265 vs a 1266.75 floor). This is the exact lesson Session 42 already
+paid for once ("verify the tree, not a guess") and it had to be paid again
+in the same session that wrote it down, because a NEW throwaway script is a
+new place for the same mistake to hide. A finer real-suite sweep (0 to 0.4 in
+steps of 0.05) found what looked like the true shape: a roughly flat ~12%
+patience margin from 0 to 0.4, then a cliff to failure at 0.5. **That reading
+was wrong too, and Session 51 found why:** the gate runs on `SEEDS = 6`, the
+sweeps on 120–200. The cliff was six dice rolls crossing a threshold. Session
+42 had written this down ("the gate's own fixed six-seed sample sits on a
+knife edge") and this session read past it twice.
+
+**Shipped `identityBonusRate: 0.4`** — the largest value swept before the
+cliff, with a margin against the real gate close to the untouched baseline's
+own. Combined with Session 48's `distanceMultiplierCap: 2`: identity's share
+on the 150-seed sweep goes 16.3% -> 20.8%, distance and pocket both still
+comfortably ahead of it (33.7%/37.0%) but no longer at Marc's original 95%-
+of-everything. Full suite green, 722/722 (`packages/core`) and 1034/1034
+across the workspace.
+
+**One test needed a genuine fix, not a repin.** `quest.test.ts` asserted
+`priced.points === plain.points * questBonus` — true only because, under the
+old formula, `sumWorth * sizeBonus * mult` happened to be exact for this
+fixture. Adding a non-integer `identityBonusRate` broke that coincidence (392
+vs 390), which is `Math.floor(x) * b` disagreeing with `Math.floor(x * b)` by
+the floor's own rounding, not a wrong formula. Loosened to a tolerance of
+`questBonus` itself — enough to still catch a real multiplication bug, not
+enough to complain about a floor doing what floors do — with the reasoning
+written beside it rather than a bare number change.
+
+**Verified:** `pnpm sim`'s golden moved again (a second `identityBonusRate`
+term touches every scored line, same as `harvestSizeBonus` did in Session
+42); full workspace suite 1034/1034; nothing committed yet, and the same
+unrelated concurrent-session diff from Session 48 is still sitting untouched
+in the working tree.
+
+### Session 50 — "bad quality pixels" turned into a slider, not a guess (2026-09-04)
+
+**Question:** Marc's third screenshot pass named two board complaints — "too
+thick contours" and "bad quality pixels" — and only the first had been
+touched. Marc, once you have looked: does letting SHARPNESS go higher than
+the old guess actually read as crisper on your phone, and where should the
+default sit?
+
+**"Too thick contours" turned out to be already fixed**, by whichever
+concurrent session left this morning's uncommitted diff: `board/ground.ts`'s
+`hexRadiusOf` now reads `theme.board.seam` per direction instead of a
+hard-coded `SEAM = 0.06`, and `tokens.ts`'s own docblock says so. Checked
+against the code rather than assumed, per this file's own rule — nothing
+built here duplicates it.
+
+**"Bad quality pixels" was a real finding, and it was a documented guess,
+not a bug.** `board/Board.tsx`'s `DENSE` check (landed 2026-09-02, "a
+defensible default... nobody has looked") caps a phone with
+`devicePixelRatio > 2` — most current phones — at 1.5 device pixels per CSS
+pixel with antialiasing off, instead of its native ~3. That combination is
+exactly what "bad quality pixels" describes, and per `CLAUDE.md`'s own scar
+(a look change guessed at from a session that cannot see the phone cost a
+bug report within the hour), it was not blindly flipped.
+
+**Put to Marc as a scoped choice rather than fixed guesses:** where the
+control lives, and what shape it takes. He asked for a slider by the camera
+button, both explicitly (his own phrase: "put it in a scaler button on the
+minimap itself... so users can choose their right settings") and by
+overriding the corner's own "one button" history once it was surfaced
+(`screens/Camera.tsx`'s own docblock names four earlier additions stripped
+back out for exactly that reason).
+
+**Built:** `board/quality.ts` holds the number and its bounds
+(`DEFAULT_RENDER_SCALE` reproduces the old guess exactly, so an untouched
+device renders unchanged; `MAX_RENDER_SCALE` is the phone's own
+`devicePixelRatio`, capped at 3). `Board.tsx`'s `dpr` is now
+`props.renderScale`-driven rather than a module constant; antialiasing stays
+where it was, deliberately — it is a WebGL context flag fixed at canvas
+creation, and the canvas may never remount (`CLAUDE.md`) to pick up a new
+one, so the slider is honestly a resolution dial, not a full quality dial.
+Persisted through `useDevice.ts` beside `theme`, same read-once/write-on-
+change shape (`shell/storage.ts`'s `readRenderScale`/`writeRenderScale`). A
+second small button in `.camera` (`SHARPNESS`) opens a popover with the
+slider, closed by default so the corner still reads as one control at rest;
+hidden outright on a phone whose own pixel ratio is already 1, where there
+is nothing a slider could raise. New catalogue entry `s.ui.sharpness` in
+both languages.
+
+**Coordinated live with `ashwake-c8`**, mid-flight on moving LUCK/purse into
+the same corner (`Camera.tsx`, the `<Camera .../>` call site in `App.tsx`,
+and `ui.css`'s `.camera` rules) — claims exchanged over each file before
+either of us touched it again, sequenced rather than merged blind. No
+collisions; their `.purse-toggle` and my `.sharpness-popover` sit as
+separate new rules beside the untouched shared ones.
+
+**Verified:** full suite green both packages (`packages/core` 722/722,
+`apps/game` 312/312), typecheck and lint clean, `pnpm sim` unchanged by this
+work (it touches board/text only). Nothing committed — the same
+unrelated concurrent diff from Sessions 48-49 is still sitting untouched in
+the working tree, now joined by this session's own board/text/shell files.
+
+### Session 51 — a run's whole score, measured for the first time, and the gate that was six dice rolls (2026-09-04)
+
+**Question:** Marc, after Sessions 48–49 — _"tile placement (which color)
+should remain the core thing, as well as 'where am i going? shrines?
+biomes? etc.' then I like factoring luck and uniques/magic in for
+'gambling-style' odds. Hoarding a big pocket should still feel good. anything
+we should change towards these goals? be thorough"_ — then, offered four
+builds: _"more rebalance towards what gives points is more what I meant"_,
+and on TREASURE, _"dont reintroduce it"_. So: numbers, not mechanics.
+
+**Answer: the biggest single channel in the game had never been on a
+breakdown.** Every share quoted in Sessions 42, 48 and 49 was a share of
+HARVEST points — `pointsSplit`'s seven rows. A run also banks site payouts
+on the spot and, at the end, `reach × endReachBonus + claims ×
+endClaimBonus` (Marc's own screenshot: PORTÉE 18 × 40 = +720, RÉCLAMÉS
+5 × 60 = +300). Measured against a run's TOTAL for the first time (120 seeds
+× 6 policies): identity 12%, pocket 21%, harvest-distance 19%, bounty 4%,
+site 3%, claims 6%, and **the reach bonus 34%** — a third reward for the
+same walk the harvest multiplier and every site already pay for, and larger
+than any harvest row. Against Marc's ordering it was upside down: placement
+12%, going far 56% in three coats.
+
+**Shipped, all `content/tuning.ts`, no mechanic added or removed:**
+
+- `endReachBonus 40 -> 20`, `endClaimBonus 60 -> 100`. Reach 34% -> 19%,
+  claims 6% -> 10%. Reach 0 was swept and rejected: `tourist` — the profile
+  whose whole score is the horizon — scored 0, and the ending's PORTÉE line
+  would have gone blank.
+- `identityBonusRate 0.4 -> 1.0`. Halving reach is what paid for it: ~400
+  points of reach was a constant added to patient and greedy runs alike, so
+  removing half WIDENED the patience ratio (x1.12 -> x1.20 at 200 seeds)
+  instead of spending it. Identity 12% -> ~22% of a run, the top-tier
+  channel beside pocket (23%) and harvest-distance (21%).
+- `rareBonusRate: 3`, a new dial — a flat jackpot on the worth of a pocket's
+  magic/unique tiles, neither size nor distance touching it, a bounty still
+  multiplying the whole catch. The odds stay rare on purpose and "UNIQUE
+  counts DOUBLE" stays as written in both catalogues; what changes is the
+  payout when one lands. `rare` 1.6% -> 7.3% of harvest points; a pocket
+  carrying a rare pays x2.6 a plain one per tile (was x2.1). Patience barely
+  notices (x1.118 -> x1.103) — a 3% draw is a jackpot, not a strategy.
+
+**The receipt had to learn two words, fr-CA first.** The pop line prints its
+whole recipe so the arithmetic on screen sums to the number on screen
+(2026-09-02), and `+2 pts = worth 1 × size bonus 1 × distance 1` had stopped
+summing the moment `identityBonusRate` was non-zero — hidden at 0.4 only
+because `Math.floor` ate the fraction in the pin's fixture. `harvestValue`
+exposes `rareWorth`, the three catalogue functions take `placedRate` and
+`rare`, and the sentence brackets the sum when a bounty multiplies it:
+`(valeur 3 × bonus de taille 2 × distance 1 + valeur 3 × 1 pour la pose +
+valeur rare 2 × 3 en gros lot) × PRIME 3`. Both `prose.pin` snapshots were
+re-recorded deliberately; the diff is exactly the `TUNING` lines gaining
+`+ worth 1 × 1 for the placing`, and the bare-economy lines are untouched.
+
+**And the gate was six dice rolls.** Sessions 42, 48 and 49 all hit the same
+wall — a 200-seed sweep says a dial is fine, the real test fails; a 6-seed
+"cliff" at `identityBonusRate: 0.5` was written up here yesterday as median
+discreteness. `sim.test.ts` and `profiles.test.ts` run their gates on
+`SEEDS = 6`. Session 42 had said so in words ("the gate's own fixed six-seed
+sample sits on a knife edge"), and this session read past it twice before
+grepping the constant. Both files are `SEEDS = 40` now, still well under
+their 60 s timeouts, with the reason beside them: a failure should mean the
+economy moved, not the sample. Every gate passes at 40 with the values above
+— and the 200-seed sweep already said it would.
+
+**Verified:** `packages/core` 722/722, workspace 1034/1034, typecheck and
+lint clean, format clean on every file of this session's (the one Prettier
+complaint left is the concurrent session's `shell/storage.ts`). `pnpm sim`
+golden moved with the tuning — every scored line down a little with half
+the reach bonus gone, `tourist` 880 -> 440, `%tiles`, `relics`, `stalled`
+and `capped` flat. `quest.test.ts`'s bounty invariant and `endless.test.ts`'s
+near/far pin both updated with their reasons. Throwaway sweep scripts
+deleted, not committed. Nothing committed; the concurrent session's diff is
+still in the working tree beside this.

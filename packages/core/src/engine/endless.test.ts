@@ -98,8 +98,11 @@ describe('local harvest', () => {
   it('pays the same pocket more the farther from home it sits', () => {
     // Identical dominoes: worth 1 + 1, size bonus 1.5 (harvestSizeBonus 0.5).
     // Near home the multiplier is 1; at mean distance 8.5 with distanceStep 3
-    // it is 3, under distanceMultiplierCap's 3 so it still binds. Same work,
-    // three times the points — the whole reason to migrate outward.
+    // the unbound multiplier is 3, but distanceMultiplierCap (2 since
+    // 2026-09-04, was 3) caps it at 2. Since Session 51 the same worth is
+    // ALSO paid flat once more (`identityBonusRate` 1.0), which distance
+    // does not touch — so far pays 8 to near's 5 rather than double: the
+    // walk still pays, and what you placed pays wherever you cash it.
     const near: Record<HexKey, Cell> = {};
     const far: Record<HexKey, Cell> = {};
     const [n1] = domino(near, 0, 0);
@@ -107,8 +110,10 @@ describe('local harvest', () => {
 
     const nearPay = harvestValue(stateWith(near), n1).points;
     const farPay = harvestValue(stateWith(far), f1).points;
-    expect(nearPay).toBe(2 * 1.5 * 1);
-    expect(farPay).toBe(2 * 1.5 * 3);
+    const { identityBonusRate: idb } = ENDLESS;
+    expect(nearPay).toBe(2 * (1.5 * 1 + idb));
+    expect(farPay).toBe(2 * (1.5 * 2 + idb));
+    expect(farPay).toBeGreaterThan(nearPay);
   });
 
   it('does nothing without a target, and nothing on an unripe target', () => {

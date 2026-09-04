@@ -1606,11 +1606,26 @@ h3.fact-label {
 
 /* ---- the camera cluster ------------------------------------------------- */
 
+/*
+ * ABOVE the drawer, not just above the board (found 2026-09-04, the same day
+ * LUCK moved back in here).
+ *
+ * `.camera` is pinned to the same corner the purse drawer opens FROM — the
+ * drawer sits right above `.controls`, and this cluster sits `var(--gap)`
+ * above THAT same edge, on the board side of it. At `--z-chrome` (10) against
+ * the drawer's `--z-drawer` (18), an open drawer painted straight over this
+ * cluster: `[data-action="purse"]` stayed in the DOM and stayed "visible",
+ * but a `spend-row` sat on top of it and ate the tap, caught by a Playwright
+ * click that could not close the very drawer its own button had opened.
+ * Above `--z-drawer` rather than a bump to `--z-chrome` itself: MENU and the
+ * lens's own close button, in other corners, have never needed to out-rank a
+ * drawer that cannot reach them.
+ */
 .camera {
   position: absolute;
   right: var(--gap);
   bottom: var(--gap);
-  z-index: var(--z-chrome);
+  z-index: calc(var(--z-drawer) + 1);
   display: flex;
   gap: 0.35rem;
 }
@@ -1623,16 +1638,57 @@ h3.fact-label {
 }
 
 /*
+ * The SHARPNESS popover (2026-09-04, Marc, on a phone: "bad quality
+ * pixels" -> "put it in a scaler button ... so users can choose their right
+ * settings").
+ *
+ * Anchored to `.camera`, which is already `position: absolute` and therefore
+ * already the containing block a popover needs — no wrapper required. Opens
+ * UPWARD (`bottom: 100%`) because the corner it hangs off sits at the bottom
+ * of the screen; opening down would draw it under the hand or off-screen.
+ */
+.sharpness-popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--gap-xs));
+  z-index: var(--z-chrome);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  width: min(15rem, 70vw);
+  padding: var(--gap);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge-active);
+  border-radius: var(--radius);
+}
+
+.sharpness-popover input[type='range'] {
+  width: 100%;
+}
+
+.sharpness-value {
+  align-self: flex-end;
+  font-family: var(--font-label);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+/*
  * A DRAWER (named 2026-09-02, when the quick menu and the luck purse were the
  * two things sharing this shape — the quick menu retired 2026-09-03, leaving
  * the purse as its one consumer, kept under the same name since a new drawer
  * may want it again).
  *
- * A flex child of the shell is the only thing that knows where the board's
- * edge actually is, because the board's height is the hand's height and the
- * hand's height is a run's — so a drawer opens in normal flow rather than as
- * a box hanging off whatever opened it, which is what let the quick menu's
- * `position: fixed` guess half-cover the cluster that opened it for one build.
+ * It was a flex child of the shell, on the theory that only a flex child
+ * knows where the board's edge is — the quick menu's `position: fixed` had
+ * guessed at that same edge and half-covered the cluster that opened it for
+ * one build. True, but it proved the wrong fix: a flex child ADDS its height
+ * to the shell's column, so the board itself — `.board-host`, `flex: 1` —
+ * shrank by a whole drawer every time one opened. A popup resizing the map is
+ * worse than a popup guessing wrong once. `position: absolute` since
+ * 2026-09-04 (see `.hand-host` and `.spends`) anchors a drawer to its own
+ * caller's box instead of guessing OR flexing — same edge, and the board
+ * never moves.
  */
 .drawer {
   display: flex;
@@ -1695,18 +1751,32 @@ h3.fact-label {
 /* ---- the hand and the bar ----------------------------------------------- */
 
 /*
- * A box for `inert` and for nothing else (2026-09-02).
+ * A box for `inert`, and now for the drawer's anchor too (2026-09-02;
+ * revised 2026-09-04).
  *
- * The purse drawer and the action bar go unreachable together under an open
- * panel, and one attribute has to sit over both. `display: contents` is what
- * lets that wrapper exist without existing: its children stay direct flex
- * children of `.shell`, which is the only thing that knows where the board's
- * edge actually is — see `screens/Menu` for why that matters — while `inert`
- * still reaches them, because `inert` is inherited down the flat tree and does
- * not care about boxes.
+ * It was `display: contents` and nothing else: the purse drawer and the
+ * action bar go unreachable together under an open panel, one attribute has
+ * to sit over both, and `display: contents` let the wrapper take `inert`
+ * while giving the layout nothing — its children stayed direct flex children
+ * of `.shell`, which is what let the board's height be `.controls`' height
+ * without a line of JS measuring anything.
+ *
+ * That relied on the drawer being a REAL flex child, which turned out to be
+ * the bug a stranger would have hit first: opening the purse added a whole
+ * `.drawer`'s height to `.shell`'s flex column, and `.board-host` — `flex: 1;
+ * min-height: 0` — shrank by exactly that much. The map resized every time
+ * LUCK was tapped, which is the one thing a popup opening over the board must
+ * never do.
+ *
+ * So the drawer comes OUT of flow instead (`.spends` below: `position:
+ * absolute`), and this box goes back to being a real one so it has something
+ * to anchor to: `position: relative`, sized by `.controls` alone, same as a
+ * bare `display: contents` gave it before the drawer existed. `inert` does
+ * not care either way — it is inherited down the flat tree regardless of
+ * whether the ancestor between it and its target is a box or not.
  */
 .hand-host {
-  display: contents;
+  position: relative;
 }
 
 /*
@@ -2077,22 +2147,30 @@ h3.fact-label {
  * The mark and the number are one line, so the icon is sized to the number's
  * own em rather than to a button's.
  */
-.purse-toggle {
+/*
+ * LUCK rides in the CAMERA CLUSTER again (2026-09-04, Marc: "make it live
+ * outside the hand next to camera button"). `.camera .purse-toggle` beats
+ * `.camera button`'s font-family/font-size on specificity, which is the
+ * whole reason it is scoped rather than a bare `.purse-toggle` — a lone class
+ * lost that fight the last time this button sat in this cluster (found
+ * 2026-08-30, fixed the same way it is fixed here).
+ *
+ * No `margin-inline-start: auto` this time: that was the action bar pushing
+ * the button to the row's far end, priced in a different currency than
+ * everything to its left. The cluster is a handful of unrelated controls
+ * already, not a priced row, so the button just takes its place beside VIEW.
+ */
+.camera .purse-toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  /* The far end of the row: everything before it is priced in the pocket, and
-     this is priced in luck. Was an inline `marginLeft` on the element until
-     2026-09-02 — a value the stylesheet could not retune and nobody finds by
-     grepping this file. */
-  margin-inline-start: auto;
   font-family: var(--font-display);
   font-size: 0.85rem;
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.purse-toggle svg {
+.camera .purse-toggle svg {
   width: 1em;
   height: 1em;
 }
@@ -2106,24 +2184,25 @@ h3.fact-label {
  * the threshold — but the thing to change here was the idea. A ground is what
  * the label is read against; an outline is a mark, answers to the 3:1 bar, and
  * changes nothing about what the number is standing on.
+ *
+ * Inside the border rather than outside it: this button is pinned in a
+ * cluster `var(--gap)` from the edge of the screen, and a positive offset
+ * would draw the ring off it.
  */
-.purse-toggle[aria-expanded='true'] {
+.camera .purse-toggle[aria-expanded='true'] {
   outline: 2px solid var(--ink);
   outline-offset: -4px;
 }
 
-/* Opens ABOVE the bar, so the bar never moves under a reaching thumb. */
 /*
- * The luck purse — a drawer, and it has to look like one.
+ * Opens ABOVE the bar, OVER the board, and moves neither (2026-08-29;
+ * overlaid 2026-09-04).
  *
  * It was a wrapped row of small buttons reading `WORD · 5` with no ground of
  * its own, so it read as more action bar rather than as a thing that opened
  * over it. A column with an edge and a head: the edge says where the drawer
  * ends, the head says what is in the purse, and the rows line their prices up
  * so the affordable one can be found without reading every word.
- */
-/*
- * The purse hangs off the BOTTOM edge — everything else about it is `.drawer`.
  *
  * The measure is the shared one, and it has to be: the drawer opens ABOVE the
  * bar rather than inside it, so it is a sibling of `.controls` and the
@@ -2131,9 +2210,24 @@ h3.fact-label {
  * whole width while the hand it belongs to was 544px, and a price column a
  * screen wide is a price nobody can pair with its row. Marc: *"make sure our
  * new hand tiles match correctly on mobile and desktop, same with luck."*
+ *
+ * **`position: absolute` since 2026-09-04** — see `.hand-host`'s own comment
+ * for the bug this fixes. `bottom: 100%` against `.hand-host` (its containing
+ * block, sized to `.controls` alone) lands the drawer's own bottom edge at
+ * `.controls`' top edge, which is the exact spot the old in-flow sibling
+ * occupied — same picture, but the board no longer pays for it. Centred with
+ * `left: 50%; transform: translateX(-50%)` rather than `margin-inline: auto`
+ * on `left: 0; right: 0`: an absolutely positioned box with `width` already
+ * set (from `.drawer`) and both inset edges pinned is over-constrained, and a
+ * browser resolves that by dropping one of them rather than centring.
  */
 .spends {
-  margin: 0 auto var(--gap-sm);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-drawer);
+  margin: 0 0 var(--gap-sm);
 }
 
 .spends-head {

@@ -46,6 +46,7 @@ import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { Board, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
+import { MAX_RENDER_SCALE } from './board/quality';
 import { ActionBar } from './screens/ActionBar';
 import { Camera, useCameraCycle } from './screens/Camera';
 import { MenuButton } from './screens/Menu';
@@ -246,6 +247,8 @@ function Game() {
     setLocale,
     theme: storedTheme,
     setTheme: setStoredTheme,
+    renderScale,
+    setRenderScale,
     features,
     setFeature,
     progress,
@@ -1577,7 +1580,7 @@ function Game() {
           // Joined the way the store joins every other multi-part utterance —
           // this had its own `\n\n`, which is one card's spacing decided in a
           // second place (2026-09-02). See `paragraphs`.
-          text: paragraphs(s.view.harvest.firstPop, said.text, s.view.harvest.firstPopWhen),
+          text: paragraphs(s.view.harvest.firstPop, said.text, s.lesson.pop.when),
           card: true,
         };
         const wait = reducedMotion
@@ -2351,13 +2354,13 @@ function Game() {
   }, [session.detour, daily, snap.state.rootSeed, enterWorld]);
 
   /**
-   * The LUCK button, which is on the BOARD now (2026-08-30).
+   * The purse's own handler, kept OUT of whichever component draws the
+   * button (2026-08-30; the button itself has moved between `ActionBar` and
+   * `Camera` twice since, most recently 2026-09-04 — see `screens/Camera`).
    *
-   * Lifted out of `ActionBar`'s call because the button moved to `Camera` and
-   * this is the half that has nothing to do with either — it is the drip's most
-   * expensive card, and it belongs with the other things a board tap can set
-   * off rather than inlined into whichever component happens to own the button
-   * this week.
+   * It is the drip's most expensive card, and it belongs with the other
+   * things a board tap can set off rather than inlined into whichever
+   * component happens to own the button this week.
    */
   const onPurse = useCallback(() => {
     const opening = !purseOpen;
@@ -2640,6 +2643,7 @@ function Game() {
           light={look.light}
           materials={look.materials}
           art={look.art}
+          renderScale={renderScale}
           reducedMotion={reducedMotion}
           onTap={onTap}
           handle={board}
@@ -2725,15 +2729,18 @@ function Game() {
           </p>
         )}
         {/*
-          The two corners, and the rule that split them (2026-08-30).
+          The two corners, and the rule that split them (2026-08-30, revised
+          2026-09-04).
 
           **Chrome floats over the board, actions sit in the footer.** MENU is
           the way OUT of the game rather than a move in it, so it is top-right,
           clear of the arc a thumb sweeps fifty times a run; the camera keeps
-          the bottom corner it is named for; and LUCK went down to the action
-          row with POP and SACRIFICE, which is where the things that spend
-          something live. Marc: *"the accented button should be with the luck
-          buttons... this, but menu move top right."*
+          the bottom corner it is named for. LUCK went down to the action row
+          with POP and SACRIFICE for a while (Marc: *"the accented button
+          should be with the luck buttons... this, but menu move top right"*)
+          and came back out — Marc: *"make it live outside the hand next to
+          camera button."* It spends a run's currency rather than a pocket's,
+          so it rides in `Camera`'s own corner now — see `screens/Camera`.
 
           Both survive the run, because the ending's board is walked with the
           same two controls — see `walking`.
@@ -2749,7 +2756,23 @@ function Game() {
             onToggle={() => (more.open ? more.hide() : more.show())}
           />
         )}
-        {(playing || walking) && <Camera s={s} next={nextView} onCycle={cycleView} />}
+        {(playing || walking) && (
+          <Camera
+            s={s}
+            next={nextView}
+            onCycle={cycleView}
+            renderScale={renderScale}
+            maxRenderScale={MAX_RENDER_SCALE}
+            onRenderScale={setRenderScale}
+            // The purse is a run action, not a walked-ending one — `playing`
+            // gates it the same way `hand-host` used to gate the button that
+            // opened it, back when the button lived there.
+            luck={snap.hud.luck}
+            canSpend={playing && snap.hud.spends.length > 0}
+            onPurse={onPurse}
+            purseOpen={purseOpen}
+          />
+        )}
         {/*
           The lens's own way out, present exactly while a lens is lit
           (2026-09-01) — see `screens/Lens`. Top-left, the one corner of the
@@ -2775,11 +2798,16 @@ function Game() {
           drawer is the loudest case — it is a menu whose scrim blocks the taps
           and does nothing about the tab order — but it is every panel.
 
-          `display: contents`, so the wrapper takes the `inert` and gives the
-          layout nothing: the purse and the bar stay direct flex children of
-          the shell, which is the whole reason the drawer knows where the
-          board's edge is (see `screens/Menu`). Inert crosses it either way —
-          it is inherited down the flat tree, not down the box tree.
+          It was `display: contents`, so the wrapper took `inert` and gave the
+          layout nothing — inert crosses a `display: contents` box either way,
+          since it is inherited down the flat tree rather than the box tree.
+          It is `position: relative` since 2026-09-04 instead (see `.hand-host`
+          in `ui.css`): the drawer opening used to add its own height to this
+          box, which was ALSO the box the board's flex sizing read, so the map
+          shrank every time LUCK was tapped. Now the drawer is `position:
+          absolute` against this box rather than a real flex sibling of it, so
+          it opens on top instead of pushing anything — `inert` still reaches
+          both children fine, a real box or not.
         */
         <div className="hand-host" {...(anyOpen ? { inert: true } : {})}>
           {/*
@@ -2824,8 +2852,6 @@ function Game() {
             // SACRIFICE in `ActionBar`.
             knowsRelics={hasMet(progress, 'relic')}
             onHarvest={onHarvest}
-            onPurse={onPurse}
-            purseOpen={purseOpen}
             onNewRun={newRun}
           />
         </div>

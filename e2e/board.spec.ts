@@ -742,6 +742,37 @@ test('the first time the purse opens, it says what luck buys', async ({ page }) 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('opening the purse does not resize the board', async ({ page }) => {
+  /*
+   * `.spends` was a real flex child of `.shell` beside `.board-host` —
+   * `flex: 1; min-height: 0` — until 2026-09-04, on the reasoning that only a
+   * flex child of the shell knows where the board's edge is. True, but it
+   * meant every open drawer added its own height to that flex column, and
+   * `.board-host` shrank by exactly that much: the map resized every time
+   * LUCK was tapped, which is the one thing a popup opening over the board
+   * must never do. `.spends` is `position: absolute` now, anchored to
+   * `.hand-host` instead of flexing beside `.board-host` — this is the check
+   * that the anchor actually holds and the board's own box stays put.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&seed=7&place=24');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  const board = page.locator('.board-host');
+  const before = await board.boundingBox();
+  if (before === null) throw new Error('no board');
+
+  await page.locator('[data-action="purse"]').click();
+  await expect(page.locator('[data-hud="purse"]')).toBeVisible();
+
+  const after = await board.boundingBox();
+  expect(after, "opening the purse changed the board's box").toEqual(before);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('the stat row is one line on a phone, and never two', async ({ page }) => {
   /*
    * Marc, 2026-08-30: *"review header for points, tiles, etc. so it is mobile

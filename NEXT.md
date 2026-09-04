@@ -252,6 +252,45 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**SHARPNESS, by looking (2026-09-04, `LOG.md` Session 50).** "Bad quality
+pixels" was a documented guess (`Board.tsx`'s dense-phone cap at 1.5 device
+pixels per CSS pixel, MSAA off, landed 2026-09-02 as "a defensible default"
+with nobody having looked), not a bug — so rather than move the guess, it is
+now a slider: a SHARPNESS button beside the camera control opens a popover
+that sets the render scale directly, from 1 up to the phone's own pixel
+ratio. `DEFAULT_RENDER_SCALE` reproduces the old guess exactly, so nothing
+looks different until the slider is touched. **The question a phone answers:**
+does raising it actually read as crisper, and if so, should the default move
+up too, or stay conservative and leave the choice to whoever notices? MSAA
+itself could not become part of the same dial — it is a WebGL context flag
+fixed at canvas creation, and the board may never remount to pick up a new
+one — so this is a resolution dial only, not a full quality toggle.
+
+**~~The identity-share ceiling~~ — CLOSED 2026-09-04** (`LOG.md` Sessions
+48–49). A played run's receipt read matching/power/rarity/native ground — the
+four things a player actually PLACED well — at 5% of harvest points against
+distance/pocket-size/bounty's 95%. Session 48's `distanceMultiplierCap: 3 -> 2`
+trimmed distance alone (44% -> 36% on a 150-seed sweep) but left identity
+untouched (16%), because that dial and every other existing one multiply
+identity, so shrinking them enough to matter broke `sim.test.ts`'s "rewards
+patience" gate. Marc, told this, said find a way rather than accept it.
+**`identityBonusRate` (0.4) is a second, ADDITIVE term on the same worth —
+paid in full, not multiplied by size, distance or the existing gates — so
+identity's share can rise without spending patience's margin at all.**
+Then Session 51, on Marc's ordering — placement first, "where am I going"
+(landmarks, not raw distance) second, luck/rarity as jackpot odds third,
+patience intact, and "don't reintroduce" TREASURE — measured a run's TOTAL
+points for the first time and found the end-of-run REACH bonus was 34% of
+everything, the largest channel in the game. Shipped: `endReachBonus 40 ->
+20`, `endClaimBonus 60 -> 100`, `identityBonusRate 0.4 -> 1.0` (halving reach
+is what bought the headroom: it is a constant added to patient and greedy
+runs alike, so cutting it widens the patience ratio), and a new
+`rareBonusRate: 3` jackpot on magic/unique tiles. Share of a run's points:
+identity 12% -> ~22%, reach 34% -> 19%, claims 6% -> 10%, rarity 1.6% -> 7%
+of harvest points; a pocket carrying a rare pays ~2.6x a plain one per tile.
+The receipt names both new terms in both languages. The gate files' `SEEDS`
+went 6 -> 40 — the "cliff" was never the economy. **Not yet committed.**
+
 **~~Which story, if any~~ — DECIDED 2026-09-03** (`LOG.md` Session 47). The
 Inheritance direction, played subtle: `s.story` is rewritten in both
 languages, the loop only implied, never stated. Nothing left open here.

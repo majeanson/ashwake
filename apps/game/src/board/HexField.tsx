@@ -10,7 +10,7 @@ import type { AssetBook } from './assets';
 import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
-import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
+import { capacityFor, groundBatches, hexRadiusOf, standOf, type GroundBatch } from './ground';
 import { commitInstances, tintInto } from './instances';
 import { Labels } from './Labels';
 import { thetaStartFor } from './prism';
@@ -88,6 +88,7 @@ export function HexField({
   onTap,
 }: HexFieldProps) {
   const layout = useMemo<Layout>(() => ({ ...UNIT, orientation }), [orientation]);
+  const hexRadius = hexRadiusOf(theme);
   const invalidate = useThree((s) => s.invalidate);
   const gl = useThree((s) => s.gl);
 
@@ -114,7 +115,13 @@ export function HexField({
     (batch: GroundBatch) => (batch.asset === null ? null : assets.image(batch.asset)),
     [assets],
   );
-  const { geometryFor, materialsFor } = useBatchResources(batches, orientation, textures, artFor);
+  const { geometryFor, materialsFor } = useBatchResources(
+    batches,
+    orientation,
+    theme,
+    textures,
+    artFor,
+  );
 
   const rings = useMemo(
     () => ringsOf(view.cells, theme, layout, relief),
@@ -182,6 +189,14 @@ export function HexField({
     const out = new Map<string, Float32Array>();
     for (const batch of batches) {
       if (batch.kind !== 'beacon' || batch.items.length === 0) continue;
+      // A claimed beacon is DEACTIVATED, not merely quieter (`materials.ts`'s
+      // landmark branch, Marc: "the same as when they are highlighted and
+      // active, just grey and look deactivated instead") — and a thing that
+      // still pulses with the live beacon's breath reads as alive regardless
+      // of what its ring says. `surfaceFor` gives a claimed cell a different
+      // pattern ink than an unclaimed one, so the two never share a batch;
+      // checking the first item is checking all of them.
+      if (batch.items[0]!.cell.claimed) continue;
       const rgb = new Float32Array(batch.items.length * 3);
       batch.items.forEach((item, i) => {
         const tint = cellTint(theme, item.cell);
@@ -363,7 +378,7 @@ export function HexField({
         frustumCulled={false}
         raycast={() => null}
       >
-        <ringGeometry args={[HEX_RADIUS - 0.16, HEX_RADIUS, 6, 1, thetaStart + Math.PI / 2]} />
+        <ringGeometry args={[hexRadius - 0.16, hexRadius, 6, 1, thetaStart + Math.PI / 2]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
       {/*
@@ -401,7 +416,7 @@ export function HexField({
           raycast={() => null}
         >
           <ringGeometry
-            args={[HEX_RADIUS + 0.06, HEX_RADIUS + 0.24, 6, 1, thetaStart + Math.PI / 2]}
+            args={[hexRadius + 0.06, hexRadius + 0.24, 6, 1, thetaStart + Math.PI / 2]}
           />
           <meshBasicMaterial color={theme.ink.accent} toneMapped={false} depthTest={false} />
         </mesh>

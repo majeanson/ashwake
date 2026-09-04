@@ -67,9 +67,20 @@ export function labelFor(cell: CellView): Label | null {
   if (cell.kind === 'wall') {
     return cell.remembered ? null : { icon: CONCEPT_ICON.wall, faint: false };
   }
-  if (cell.ripe && cell.worth > 0) return { text: String(cell.worth), faint: false };
+  /*
+   * ROUNDED (found 2026-09-04, Marc, on a phone: "i dont like that we have
+   * numbers with dot (before it was always integer)"). `cell.worth` and
+   * `cell.preview` went fractional the day `greenCrowdBonus` did (0.7, the
+   * colour balance sweep, 2026-09-03) and stay that way in `rules.ts` on
+   * purpose — see `tallyWorth`'s own comment: a pocket's points are floored
+   * once, from the exact sum across every tile in it, and rounding earlier
+   * shifted `sim.test.ts`'s patience gate. This is the one place that sum is
+   * ever shown per-tile rather than banked, so it is the one place that
+   * rounds.
+   */
+  if (cell.ripe && cell.worth > 0) return { text: String(Math.round(cell.worth)), faint: false };
   if (cell.legal && cell.preview !== null && cell.preview > 0) {
-    return { text: String(cell.preview), faint: true };
+    return { text: String(Math.round(cell.preview)), faint: true };
   }
   return null;
 }

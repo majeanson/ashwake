@@ -88,7 +88,15 @@ describe('the bounty', () => {
     expect(priced.questPays).toBe(true);
 
     const plain = harvestValue({ ...state, quest: null }, at);
-    expect(priced.points).toBe(plain.points * QUEST.questBonus);
+    // `bounty` multiplies the whole catch behind ONE floor at the very end
+    // (`harvestValue`), so comparing against `plain.points * questBonus` —
+    // itself already floored once, at bounty 1 — can miss by the floor's own
+    // rounding once a non-integer term (`identityBonusRate`, Session 48) is
+    // in the mix. Within 1 of `questBonus`'s own floors either side is the
+    // multiplication happening, not a formula regressing.
+    expect(Math.abs(priced.points - plain.points * QUEST.questBonus)).toBeLessThanOrEqual(
+      QUEST.questBonus,
+    );
 
     const after = reduce(state, { type: 'HARVEST', choice: 'points', at });
     expect(after.points).toBe(Math.floor(priced.points * QUEST.pointsPerPop));

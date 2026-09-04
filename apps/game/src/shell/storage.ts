@@ -60,6 +60,9 @@ const DEVICE = {
    */
   dailyRun: `${NS}.daily.run.v1`,
   slot: `${NS}.slot.v1`,
+  /** The SHARPNESS slider's own number — device pixels per CSS pixel the
+   *  canvas draws at. Unset means "the per-phone guess", not zero. */
+  renderScale: `${NS}.renderScale.v1`,
   /** The teaching ledger is a DEVICE fact: you learn what RIPE means once. */
   progress: `${NS}.progress.v1`,
   /**
@@ -370,6 +373,17 @@ export const writeTheme = (id: string): void => write(DEVICE.theme, id);
 
 export const readLocale = (): string | null => read(DEVICE.locale);
 export const writeLocale = (locale: string): void => write(DEVICE.locale, locale);
+
+/** `null` means "never touched the slider" — the caller's own default guess,
+ *  not zero. Clamping the number that comes back is the caller's job
+ *  (`board/quality.ts`), which this file has no reason to import. */
+export const readRenderScale = (): number | null => {
+  const raw = read(DEVICE.renderScale);
+  if (raw === null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+};
+export const writeRenderScale = (scale: number): void => write(DEVICE.renderScale, String(scale));
 
 export const readProgress = (): Progress => decodeProgress(read(DEVICE.progress));
 export const writeProgress = (p: Progress): void => write(DEVICE.progress, encodeProgress(p));

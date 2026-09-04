@@ -272,6 +272,13 @@ function tallyWorth(
     return Math.round(onNative ? (worth + native) * grip.native : worth * grip.stray);
   }
 
+  // Fractional here on purpose since `greenCrowdBonus` went to 0.7 (colour
+  // balance sweep, 2026-09-03): a pocket's points are `Math.floor`ed once,
+  // from the SUM across every tile in it, so keeping each tile's own worth
+  // exact until then is what sim.test.ts's patience gate is tuned against —
+  // rounding per tile here shifted a bank40 run's score enough to fail it.
+  // What a player reads on a hex is rounded at the LABEL, not here — see
+  // `render/labels.ts`.
   return worth + native;
 }
 
@@ -488,6 +495,15 @@ export function harvestValue(
   count: number;
   tiles: number;
   points: number;
+  /** What the pocket's size multiplied `points` by — `1 + harvestSizeBonus
+   *  × (counted - 1)`, the actual factor `points` was scaled by. Exposed so a
+   *  receipt can print the number that was really used rather than the raw
+   *  pocket count, which only coincides with it when `harvestSizeBonus` is 1. */
+  sizeBonus: number;
+  /** The worth carried by the pocket's MAGIC/UNIQUE tiles — what
+   *  `rareBonusRate` multiplies. Exposed so the receipt can name the jackpot
+   *  term with the number it was really computed from. */
+  rareWorth: number;
   /** True when taking THIS pocket as points collects the bounty. */
   questPays: boolean;
   /** The rare tile this pocket would yield as treasure, if big enough. */
@@ -501,9 +517,13 @@ export function harvestValue(
   const home = homeOf(state);
   let tiles = 0;
   let sumWorth = 0;
+  // The worth carried by MAGIC/UNIQUE tiles alone — `rareBonusRate`'s base.
+  let rareWorth = 0;
   for (const k of pops) {
     const worth = worthOf(state.cells, k, t, home, state.luck);
     sumWorth += worth;
+    const cell = state.cells[k];
+    if (cell?.kind === 'tile' && isWild(cell.rarity)) rareWorth += worth;
     tiles += t.tilesPerPop + Math.floor(worth / t.worthPerExtraTile);
   }
 
@@ -522,7 +542,21 @@ export function harvestValue(
     keys: pops,
     count: pops.length,
     tiles,
-    points: Math.floor(sumWorth * sizeBonus * mult * bounty),
+    // `identityBonusRate` (Session 48): a second, additive reward on the same
+    // `sumWorth` — matches, power, rarity, native — paid flat, with neither
+    // `sizeBonus` nor `mult` touching it. `rareBonusRate` (Session 51) is a
+    // third, on the worth of the pocket's magic/unique tiles only — the
+    // jackpot. `bounty` still multiplies the whole catch, both included — a
+    // collected bounty is "this pocket is worth more", not "the size/distance
+    // part of this pocket is worth more" — so `priced.points ===
+    // plain.points * questBonus` keeps holding (to a floor, `quest.test.ts`).
+    // Both rates zero at every prior tuning, where this is exactly the
+    // original formula.
+    points: Math.floor(
+      (sumWorth * (sizeBonus * mult + t.identityBonusRate) + rareWorth * t.rareBonusRate) * bounty,
+    ),
+    sizeBonus,
+    rareWorth,
     questPays,
     treasure: treasureFor(pops.length, t),
   };
@@ -632,7 +666,17 @@ export function pointsSplit(
     bounty: 0,
   };
 
+  // The jackpot's base, per row: the worth carried by magic/unique tiles,
+  // kept by colour and by rarity so `rareBonusRate`'s extra lands on the
+  // right row of every axis (a unique GREEN tile's jackpot is green's).
+  const rareByColour: Record<Colour, number> = { green: 0, yellow: 0, red: 0, blue: 0 };
+  const rareByRarity: Record<'common' | 'magic' | 'unique', number> = {
+    common: 0,
+    magic: 0,
+    unique: 0,
+  };
   let sumWorth = 0;
+  let rareWorth = 0;
   for (const k of keys) {
     const cell = state.cells[k];
     if (cell?.kind !== 'tile') continue;
@@ -640,6 +684,11 @@ export function pointsSplit(
     sumWorth += parts.total;
     colours[cell.colour] += parts.total;
     rarities[cell.rarity ?? 'common'] += parts.total;
+    if (isWild(cell.rarity)) {
+      rareWorth += parts.total;
+      rareByColour[cell.colour] += parts.total;
+      rareByRarity[cell.rarity ?? 'common'] += parts.total;
+    }
     sources.matches += parts.matches;
     sources.power += parts.power;
     sources.rare += parts.rare;
@@ -655,25 +704,47 @@ export function pointsSplit(
   const mult = harvestMultiplier(state, keys);
   const bounty = questMet(state, keys) ? (state.quest?.bonus ?? 1) : 1;
 
+  // `identityBonusRate` (Session 48) is a SECOND, flat reward on the same
+  // four rows — neither `sizeBonus` nor `mult` touch it, so it is folded in
+  // here rather than into `pocket`/`distance`, which stay exactly the
+  // original telescoped bonuses off `sumWorth` alone. `rareBonusRate`
+  // (Session 51) is a THIRD, on the magic/unique tiles' worth only, and it
+  // is what rarity ADDED, so it lands on the `rare` row. `bounty` still
+  // multiplies the WHOLE catch (see `harvestValue`), both bonuses included,
+  // so it is folded into `beforeBounty` below instead.
+  const bonusRate = t.identityBonusRate;
+  const rareRate = t.rareBonusRate;
+  sources.matches *= 1 + bonusRate;
+  sources.power *= 1 + bonusRate;
+  sources.rare = sources.rare * (1 + bonusRate) + rareWorth * rareRate;
+  sources.native *= 1 + bonusRate;
+
   sources.pocket = sumWorth * (sizeBonus - 1);
   sources.distance = sumWorth * sizeBonus * (mult - 1);
-  sources.bounty = sumWorth * sizeBonus * mult * (bounty - 1);
+  const beforeBounty = sumWorth * (sizeBonus * mult + bonusRate) + rareWorth * rareRate;
+  sources.bounty = beforeBounty * (bounty - 1);
 
   // Everything above is in WORTH; the run banks POINTS. One scale factor
   // carries both floors, and it is the same factor for all three axes, which
   // is what keeps them agreeing with each other and with the run's total.
-  const raw = sumWorth * sizeBonus * mult * bounty;
+  const raw = beforeBounty * bounty;
   const scale = scored / raw;
-  const amplified = (n: number): number => n * sizeBonus * mult * bounty * scale;
+  // A colour or rarity row is its tiles' worth through every factor those
+  // tiles earned, plus the jackpot on whichever of them were rare.
+  const amplified = (n: number, rare: number): number =>
+    (n * (sizeBonus * mult + bonusRate) + rare * rareRate) * bounty * scale;
 
   return {
     total: scored,
     byColour: settle(
-      COLOURS.map((c) => [c, amplified(colours[c])]),
+      COLOURS.map((c) => [c, amplified(colours[c], rareByColour[c])]),
       scored,
     ),
     byRarity: settle(
-      (['common', 'magic', 'unique'] as const).map((r) => [r, amplified(rarities[r])]),
+      (['common', 'magic', 'unique'] as const).map((r) => [
+        r,
+        amplified(rarities[r], rareByRarity[r]),
+      ]),
       scored,
     ),
     // Every source row is already in the same WORTH units, including the

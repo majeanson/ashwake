@@ -323,19 +323,19 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 exports[`the prose pins — every other word, exactly as it reads today · en > pins the pocket note and every harvest receipt on a ripe board 1`] = `
 {
   "harvest · burn · BARE_TUNING": "POPPED 1, total worth 1
-+1 pts = worth 1 × pocket 1 × distance 1",
++1 pts = worth 1 × size bonus 1 for 1 tile × distance 1",
   "harvest · burn · TUNING": "POPPED 1, total worth 1
-+1 pts = worth 1 × pocket 1 × distance 1",
++2 pts = worth 1 × size bonus 1 for 1 tile × distance 1 + worth 1 × 1 for the placing",
   "harvest · points · BARE_TUNING": "POPPED 1, total worth 1
-+1 pts = worth 1 × pocket 1 × distance 1",
++1 pts = worth 1 × size bonus 1 for 1 tile × distance 1",
   "harvest · points · TUNING": "POPPED 1, total worth 1
-+1 pts = worth 1 × pocket 1 × distance 1",
++2 pts = worth 1 × size bonus 1 for 1 tile × distance 1 + worth 1 × 1 for the placing",
   "harvest · tiles · BARE_TUNING": "POPPED 1, total worth 1
 +1 tiles: 1 per tile, +1 more per 2 worth.
 Luck +1.",
   "harvest · tiles · TUNING": "POPPED 1, total worth 1
 +1 tiles: 1 per tile, +1 more per 2 worth.
-+1 pts = worth 1 × pocket 1 × distance 1, at 35% per pop.
++1 pts = worth 1 × size bonus 1 for 1 tile × distance 1 + worth 1 × 1 for the placing, at 35% per pop.
 Luck +10.",
   "harvest · treasure · BARE_TUNING": "POPPED 1, total worth 1
 A NULL tile goes to your stash. No tiles, no points.",
@@ -343,10 +343,10 @@ A NULL tile goes to your stash. No tiles, no points.",
 A NULL tile goes to your stash. No tiles, no points.",
   "pocket · BARE_TUNING": "POCKET OF 1, total worth 1.
 POP pays +1 tiles and 1 pts.
-The score: worth 1 × pocket 1 × distance 1.",
+The score: worth 1 × size bonus 1 × distance 1.",
   "pocket · TUNING": "POCKET OF 1, total worth 1.
 POP pays +1 tiles and 1 pts.
-The score: worth 1 × pocket 1 × distance 1.",
+The score: worth 1 × size bonus 1 × distance 1 + worth 1 × 1 for the placing.",
 }
 `;
 
@@ -968,19 +968,19 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the pocket note and every harvest receipt on a ripe board 1`] = `
 {
   "harvest · burn · BARE_TUNING": "RÉCOLTÉ 1, valeur totale 1
-+1 pts = valeur 1 × poche 1 × distance 1",
++1 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1",
   "harvest · burn · TUNING": "RÉCOLTÉ 1, valeur totale 1
-+1 pts = valeur 1 × poche 1 × distance 1",
++2 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1 + valeur 1 × 1 pour la pose",
   "harvest · points · BARE_TUNING": "RÉCOLTÉ 1, valeur totale 1
-+1 pts = valeur 1 × poche 1 × distance 1",
++1 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1",
   "harvest · points · TUNING": "RÉCOLTÉ 1, valeur totale 1
-+1 pts = valeur 1 × poche 1 × distance 1",
++2 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1 + valeur 1 × 1 pour la pose",
   "harvest · tiles · BARE_TUNING": "RÉCOLTÉ 1, valeur totale 1
 +1 tuiles : 1 par tuile, +1 de plus par 2 de valeur.
 Chance +1.",
   "harvest · tiles · TUNING": "RÉCOLTÉ 1, valeur totale 1
 +1 tuiles : 1 par tuile, +1 de plus par 2 de valeur.
-+1 pts = valeur 1 × poche 1 × distance 1, à 35 % par récolte.
++1 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1 + valeur 1 × 1 pour la pose, à 35 % par récolte.
 Chance +10.",
   "harvest · treasure · BARE_TUNING": "RÉCOLTÉ 1, valeur totale 1
 Une tuile NULL va dans ta réserve. Pas de tuiles, pas de points.",
@@ -988,10 +988,10 @@ Une tuile NULL va dans ta réserve. Pas de tuiles, pas de points.",
 Une tuile NULL va dans ta réserve. Pas de tuiles, pas de points.",
   "pocket · BARE_TUNING": "POCHE DE 1, valeur totale 1.
 RÉCOLTER paie +1 tuiles et 1 pts.
-Le score : valeur 1 × poche 1 × distance 1.",
+Le score : valeur 1 × bonus de taille 1 × distance 1.",
   "pocket · TUNING": "POCHE DE 1, valeur totale 1.
 RÉCOLTER paie +1 tuiles et 1 pts.
-Le score : valeur 1 × poche 1 × distance 1.",
+Le score : valeur 1 × bonus de taille 1 × distance 1 + valeur 1 × 1 pour la pose.",
 }
 `;
 

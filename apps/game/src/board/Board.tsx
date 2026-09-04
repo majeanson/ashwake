@@ -47,6 +47,7 @@ import {
 } from './camera';
 import { cellAt, firstCursor, refreshed, stepCursor, type Cursor, type Direction } from './cursor';
 import { GL_PROPS, watchContext } from './gl';
+import { DEFAULT_RENDER_SCALE } from './quality';
 import { useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
 import { Pop } from './Pop';
@@ -155,6 +156,9 @@ export type BoardProps = {
   readonly materials?: number;
   /** Whether to load the direction own art. */
   readonly art?: boolean;
+  /** Device pixels per CSS pixel the canvas actually draws at — the SHARPNESS
+   *  slider's own number. Defaults to `board/quality.ts`'s per-phone guess. */
+  readonly renderScale?: number;
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
@@ -182,16 +186,28 @@ const CURSOR_MARGIN = 72;
 const round2 = (deg: number): number => Math.round(deg * 2) / 2;
 
 /**
- * The pixel budget, and the antialiasing that goes with it — see the `<Canvas>`
- * below for the argument. Read once: a phone's `devicePixelRatio` is fixed for
- * the life of the page, and this decides how the renderer is BUILT.
+ * The antialiasing half of the pixel budget — see the `<Canvas>` below for the
+ * argument. Read once: a phone's `devicePixelRatio` is fixed for the life of
+ * the page, and this decides how the renderer is BUILT. Unlike the resolution
+ * half (`props.renderScale`, `board/quality.ts`), this cannot become a player
+ * dial — it is a WebGL context flag, fixed at creation, and the canvas may
+ * never remount to pick up a new one.
  */
 const DENSE = typeof devicePixelRatio === 'number' && devicePixelRatio > 2;
-const DPR: [number, number] = DENSE ? [1, 1.5] : [1, 2];
 const GL = DENSE ? { ...GL_PROPS, antialias: false } : GL_PROPS;
 
 export function Board(props: BoardProps) {
-  const { theme, tilt = 0, yaw = 0, relief = 0, light = 0, materials = 0, art = false } = props;
+  const {
+    theme,
+    tilt = 0,
+    yaw = 0,
+    relief = 0,
+    light = 0,
+    materials = 0,
+    art = false,
+    renderScale = DEFAULT_RENDER_SCALE,
+  } = props;
+  const dpr: [number, number] = [1, renderScale];
 
   /*
    * The angle the player is holding the board at (2026-08-29, Marc: "anyway we
@@ -462,28 +478,27 @@ export function Board(props: BoardProps) {
           frameloop="demand"
           orthographic
           /*
-            HOW MANY PIXELS THIS PHONE ACTUALLY HAS TO DRAW (2026-09-02).
-
-            `[1, 2]` on every device, with MSAA always on, while `gl.ts` asks
-            for `low-power` — the configuration wanting the least of the GPU and
-            the one asking the most of it, on the same canvas.
+            HOW MANY PIXELS THIS PHONE ACTUALLY HAS TO DRAW (2026-09-02, made a
+            player dial 2026-09-04 — see `board/quality.ts`).
 
             A dpr-3 phone renders 9× the fragments of a dpr-1 one, and a hex at
             34 CSS pixels is already carrying a 256px texture: past about 1.5
             device pixels per CSS pixel there is nothing left in the source for
-            the extra samples to resolve. **The look decision** (Marc's ruling
-            for this pass: pick a defensible default and state it): cap at 1.5
-            where the device asks for more than 2, and let 2 stand where it is
-            2 — which is most phones and every one this game has been looked at
-            on.
+            the extra samples to resolve — which was the whole argument for
+            guessing 1.5 as the default on a dense phone. It was still a guess,
+            landed with nobody having looked, and looking is what found it
+            soft. `props.renderScale` is that same number with the guess made
+            undoable: the SHARPNESS slider by the camera button writes it, and
+            `DEFAULT_RENDER_SCALE` reproduces the untouched guess exactly so a
+            player who never opens the slider sees no change.
 
-            MSAA goes with it above dpr 2, and that is the same argument from
-            the other side: antialiasing is a cure for a stair-step a pixel
+            MSAA is a separate axis and stays where `GL` puts it, fixed for the
+            canvas's life — antialiasing is a cure for a stair-step a pixel
             wide, and at three device pixels per CSS pixel the stair-step is
-            already a third of one. It is the most expensive thing in
-            `GL_PROPS` and it buys least exactly where the pixels are smallest.
+            already a third of one, but it is a WebGL context flag rather than
+            a sampler setting and cannot be re-picked without a new canvas.
           */
-          dpr={DPR}
+          dpr={dpr}
           // `flat` turns OFF tone mapping. R3F applies ACES otherwise, which
           // would sit between the graded palette and the screen — see `gl.ts`
           // for why that made the contrast budget describe a board that did

@@ -428,11 +428,14 @@ test('the board’s MENU opens MORE directly, and SOUND on it is one wire', asyn
     await page.locator('[data-action="sound"]').count(),
     'the sound button is still on the board',
   ).toBe(0);
-  // And the camera is alone in the bottom corner again.
+  // And MENU has not drifted back down into the corner it left — the cluster
+  // may legitimately hold VIEW, LUCK and SHARPNESS now (2026-09-04), which is
+  // a different claim than the one this test makes: that the DOOR out of the
+  // game stays out of it, checked by `data-go` rather than a raw count.
   expect(
-    await page.locator('.camera button').count(),
-    'the camera corner grew a second control back',
-  ).toBe(1);
+    await page.locator('.camera [data-go]').count(),
+    'a menu door drifted back into the camera corner',
+  ).toBe(0);
 
   /*
    * The button is in the top half, and MORE opens near it.
@@ -1073,8 +1076,10 @@ test('a panel takes the keyboard with it, and the hand behind it is unreachable'
   await begin(page);
 
   // The hand is really there and really reachable first, or the assertion
-  // below would pass on a board that simply has no cards.
-  await expect(page.locator('.controls [data-action="purse"]')).toBeVisible();
+  // below would pass on a board that simply has no cards. LUCK is not this
+  // check any more (2026-09-04): the button moved to the camera cluster,
+  // over the board rather than in the hand — see `screens/Camera`.
+  await expect(page.locator('.controls .tile').first()).toBeVisible();
 
   // From the BOARD, which is the only place the hand exists to be reached
   // behind: MENU, then HOW TO PLAY.

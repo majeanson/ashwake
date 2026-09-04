@@ -9,7 +9,7 @@ import { cellTint } from '@theme/torch';
 import type { AssetBook } from './assets';
 import { embersFor, emberPhase, type Ember } from './ambient';
 import { glowTexture } from './glow';
-import { capacityFor, groundBatches, HEX_RADIUS, standOf, type GroundBatch } from './ground';
+import { capacityFor, groundBatches, hexRadiusOf, standOf, type GroundBatch } from './ground';
 import { commitInstances, tintInto } from './instances';
 import { cascadeDelays, cascadeMs, glowPhase, leapPhase, REDUCED_MS } from './leap';
 import { useBatchResources } from './resources';
@@ -91,6 +91,7 @@ export function Pop({
   onDone,
 }: PopProps) {
   const invalidate = useThree((s) => s.invalidate);
+  const hexRadius = hexRadiusOf(theme);
   // Seeded to zero and set when the pop mounts: reading a clock during render
   // is a value that changes for no reason the component can see.
   const startedAt = useRef(0);
@@ -128,6 +129,7 @@ export function Pop({
   const { geometryFor, materialsFor } = useBatchResources(
     batches,
     layout.orientation,
+    theme,
     textures,
     artFor,
   );
@@ -240,7 +242,7 @@ export function Pop({
             }
           : glowPhase(theme.motion, elapsed, delay);
         if (!phase.gone) alive = true;
-        const spread = HEX_RADIUS * GLOW_SPREAD * phase.scale * theme.motion.popGlowScale * 0.5;
+        const spread = hexRadius * GLOW_SPREAD * phase.scale * theme.motion.popGlowScale * 0.5;
         const spot = spots.get(cell.key);
         dummy.position.set(spot?.x ?? 0, (spot?.top ?? 0) + 0.02, spot?.z ?? 0);
         dummy.rotation.set(-Math.PI / 2, 0, 0);

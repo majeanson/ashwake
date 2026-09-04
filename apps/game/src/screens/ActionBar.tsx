@@ -21,23 +21,15 @@ import { Tile } from '../ui/Tile';
  * — until each button was given a deterministic accessible name of its own.
  * That is what `aria-label` is doing here, and it is not decoration.
  *
- * **The bar is where SPENDING lives, and that is why LUCK is on it**
- * (2026-08-30). It sat at the right end of this row, went up to the board's
- * corner beside the view button for a day — *"put the luck button next to the
- * FIT button ... luck button is another colour more like an action one, but not
- * in hand"* — and came back down when the accent turned out to be in two places
- * that read as two systems. Marc: *"the accented button should be with the luck
- * buttons."*
- *
- * The rule the round trip produced is the one worth keeping: **chrome floats
- * over the board, actions sit in the footer.** POP, TAKE, SACRIFICE and the
- * purse are the four ways to spend something, they wear the one accent between
- * them, and they are in the row a thumb reaches — with MENU moved to the
- * opposite corner and the camera left alone in this one.
- *
- * The purse rides at the far end (`marginLeft: auto`) rather than beside
- * SACRIFICE, because it spends a DIFFERENT currency: everything to its left is
- * priced in the pocket you are looking at, and it is priced in luck.
+ * **The bar is where SPENDING A POCKET lives.** POP, TAKE and SACRIFICE wear
+ * the one accent between them and sit in the row a thumb reaches. LUCK spent
+ * a day at the right end of this row (2026-08-30, Marc: *"the accented button
+ * should be with the luck buttons"*) and moved out again to the board's own
+ * corner, beside the camera (2026-09-04, Marc: *"make it live outside the
+ * hand next to camera button"*) — see `screens/Camera`. It is a run's
+ * currency rather than a pocket's, which reads closer to VIEW and SHARPNESS
+ * than to POP and SACRIFICE, and a thumb does not reach for it fifty times a
+ * run the way it reaches for the hand.
  *
  * **The row is two buttons, not four.** `singlePayout` is true in the shipped
  * tuning, so POP FOR POINTS never renders; the ordinary late run is POP and
@@ -58,9 +50,6 @@ export type ActionBarProps = {
   readonly onHarvest: (choice: HarvestChoice) => void;
   /** Whether the device has met relics — the gate on offering a burn. */
   readonly knowsRelics: boolean;
-  /** The purse drawer, which opens above this bar and never moves it. */
-  readonly onPurse: () => void;
-  readonly purseOpen: boolean;
   readonly onNewRun: () => void;
 };
 
@@ -73,8 +62,6 @@ export function ActionBar({
   onHold,
   onHarvest,
   knowsRelics,
-  onPurse,
-  purseOpen,
   onNewRun,
 }: ActionBarProps) {
   // The baked hex per ground, so a card in the hand is the tile it will
@@ -159,34 +146,6 @@ export function ActionBar({
         )}
         {hud.ended && (
           <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
-        )}
-        {hud.spends.length > 0 && (
-          <button
-            type="button"
-            className="purse-toggle"
-            data-action="purse"
-            // The drawer opens ABOVE this bar, so it is earlier in the document
-            // than its own control — which is exactly the case `aria-controls`
-            // exists for.
-            aria-expanded={purseOpen}
-            aria-controls="spends"
-            // A mark and a number reads as "12" to a screen reader and says
-            // nothing about what it opens.
-            aria-label={s.ui.luckPurse(hud.luck)}
-            onClick={onPurse}
-          >
-            {/*
-              The REGISTRY's mark, not a lookalike (2026-08-30).
-
-              Luck is one of the two currencies that follow a player between the
-              board, the purse, the shop and the end screen, so the concept
-              registry names it and every one of those surfaces draws the same
-              thing. This button — the door to the purse, and the most-seen luck
-              on the screen — was drawing `♦`, a second symbol for the idea the
-              registry already had.
-            */}
-            <Icon name="luck" /> {hud.luck}
-          </button>
         )}
       </div>
 

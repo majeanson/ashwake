@@ -35,7 +35,10 @@ import { summarise } from './report';
  */
 const SIM_TIMEOUT = 60_000;
 
-const SEEDS = 6;
+// 6 -> 40, Session 51 — see `sim.test.ts`'s `SEEDS` for why: a six-seed
+// median is what "the timid one is pinned at keeps up so six noisy seeds
+// cannot cry wolf" below was already working around.
+const SEEDS = 40;
 const stats = (policy: typeof timid, tuning: Tuning = TUNING): ReturnType<typeof summarise> =>
   summarise(policy.name, playMany(policy, SEEDS, { tuning }));
 

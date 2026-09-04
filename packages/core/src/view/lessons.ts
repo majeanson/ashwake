@@ -298,6 +298,12 @@ export const LESSONS: readonly Lesson[] = [
         say: (t, _theme, s) =>
           t.luckPerPop > 0 && t.colourBiasDraws > 0 ? s.lesson.pop.lean : null,
       },
+      // The timing choice, findable from the RÉCOLTER door itself
+      // (2026-09-04). It was said only in `s.view.harvest.firstPopWhen`, the
+      // first-ever-pop toast — a sentence a player who dismissed that toast
+      // once could never see again, on the one door that exists to explain
+      // POP.
+      { say: (_t, _theme, s) => s.lesson.pop.when },
     ],
   },
   {
