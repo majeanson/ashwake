@@ -4375,3 +4375,83 @@ entry.
 **Left for Marc, unchanged:** SHARPNESS wants a phone and an eye (§1), and so
 does the rebalance — a receipt with a placing row and a jackpot row on it is a
 number until somebody plays a run and reads it.
+
+### Session 53 — a grey shrine that was never grey, and two look questions a phone finally answered (2026-09-05)
+
+**Question:** Marc, back from a phone with three things — the SHARPNESS popup
+drawn behind its own buttons, "the 3d vs 2d grey'd shrine problems" still
+there with a flat shot and a tilted shot to prove it, and "Crisper (3 or more)
+was good". Two of those are looks and one is a bug. Which is which, and can
+the bug be found by MEASURING a screenshot rather than by reasoning about it?
+
+**Answer: yes, and reasoning about it got the wrong cause twice first.** The
+grey shrine was reproduced in the first pass — the same cache mark, cream at
+`tilt=0` and grey at `tilt=35`, on the same hex of the same seeded board — and
+then three hypotheses were tried and killed by experiment rather than by
+argument:
+
+1. **Anisotropy.** `surfaces.ts` gives the ground the renderer's cap and says
+   in its own opening why a texture on a prism needs it; `marks.ts`, written
+   beside it, never took the same line. Plausible, and the ring (a
+   `surfaces.ts` texture) staying bright while the mark inside it went to mud
+   looked like proof. Added it — the mark got no brighter.
+2. **Z-fighting** with the cap the mark lies on. `LABEL_LIFT` raised from 0.02
+   to 0.25, twelve times the clearance: no change at all.
+3. **Mipmaps** eating a thin bright glyph into its own dark halo. Disabled
+   them outright on marks: no change, and the same grey to the byte.
+
+**What found it was arithmetic on the pixels.** The tilted mark's brightest
+pixel is `(83, 78, 69)` and the flat one's is `(242, 230, 207)` — which is
+`0xf2e6cf`, `theme.ink.ink`, exactly. `inkDim`, the SPENT ink this looked like,
+is `0xbfae92` and is nothing like either. So the ink never changed; the mark
+was being blended. Solving `a x 242 + (1 - a) x 20 = 83` gives `a = 0.28`, and
+`settlement`'s `beaconFade` is **0.72**. `render/materials.ts` gives a beacon's
+disc `alpha: theme.board.beaconFade` and gives an alpha to nothing else on the
+plane — so the one see-through ground on the board was painting itself over
+the mark standing on it, at exactly the strength the palette says.
+
+**Why the camera changed it, and why per-instance depth could not save it.** A
+translucent disc and the mark above it are both in three's transparent pass,
+sorted by distance — and the ground is an INSTANCED mesh, one object sorted
+once by its own origin, so which of a hundred beacons is nearer counts for
+nothing. Flat on, the mark won that sort; tilted, the disc did. That is also
+why the symptom was a STEP and not a slope: `tilt=10` and `tilt=35` measured
+identically, because an order either flips or it does not. **Fixed with
+`MARK_ORDER = 1`** — `renderOrder`, not `depthTest: false`, because a mark
+should still be hidden by a wall standing in front of it. All three tilts now
+sample `0xf2e6cf`.
+
+**The 2026-09-04 billboard was aimed at this same symptom and missed it.**
+`Labels.tsx` already carried a note about a beacon's star "compressing to a
+smudge no ring colour can rescue" at a shallow angle, and billboarded beacon
+marks to fix it. The geometry was never the problem; the sort was. A symptom
+seen on a phone and explained from a desk gets a plausible cause, and a
+plausible cause ships.
+
+**The anisotropy was kept and its docblock rewritten to say so.** It is right
+on its own terms — marks lie flat exactly as the ground does, this renderer
+reports a cap of 16, and the parity with `surfaces.ts` was a genuine gap — but
+the paragraph written for it while it was still the hypothesis claimed it
+explained the grey, and that is false. It now says what it is and what it is
+not. **A comment that asserts an invariant is not the invariant**, and one
+written mid-hypothesis is the easiest kind to leave behind lying.
+
+**SHARPNESS answered by looking**, which is the whole reason the slider was
+built rather than the guess moved: `DEFAULT_RENDER_SCALE` is `MAX_RENDER_SCALE`
+now, the phone's own ratio capped at 3. It is a four-times pixel cost on every
+dense phone, and the slider is the way back down.
+
+**The popup was NOT reproducible, and is shipped as a theory rather than a
+fix.** Chromium at 3x, portrait, draws it correctly above the row; Marc's
+phone draws the buttons on top. The one construct that can do that is
+`z-index: calc(var(--z-drawer) + 1)` — `z-index` takes an <integer>, `calc()`
+yields a <number>, and a browser that declines the pair drops the declaration,
+leaving `.camera` with no stacking context at all. It is a real rung on the
+ladder now (`--z-camera`), and the popover carries the same rung so it is right
+whether or not that context exists. **Three more `z-index: calc()` rules are
+still in the file and were deliberately left alone** (`NEXT.md` §1): changing
+four rules on an unconfirmed theory is how a guess becomes four guesses.
+
+**Verified:** format, lint, typecheck, full unit suite and the Playwright
+suite green; `pnpm sim` untouched (no core file moved); the fix measured rather
+than eyeballed, three tilts sampling the same ink to the byte.

@@ -44,6 +44,47 @@ const HALO = PX * 0.055;
 const cache = new Map<string, Texture>();
 
 /**
+ * The renderer's anisotropy, shared by every mark (2026-09-05).
+ *
+ * A mark is a texture on a plane lying flat on the ground, so tilting the board
+ * squashes its footprint in one screen axis and leaves the other alone — the
+ * same shape of sampling problem the GROUND has, and `surfaces.ts` says so in
+ * its own opening ("a texture on a prism ... which is also why mipmaps and
+ * anisotropy matter and did not before"). It has carried the renderer's cap
+ * since 2026-09-02; this file was written beside it and never took the same
+ * line, so every mark on the board sampled at anisotropy 1.
+ *
+ * **This is sharpness, and it is NOT what made a tilted shrine look grey.**
+ * That was a transparent sort — see `MARK_ORDER` in `Labels.tsx`, which is the
+ * fix — and this was written first, while that was still the hypothesis. It is
+ * kept because it is right on its own terms and measured live (this renderer
+ * reports 16), not because it fixed the bug: with it in and the sort still
+ * wrong, the mark was exactly as grey as before.
+ */
+let anisotropy = 1;
+
+/**
+ * The renderer's cap, once known — called from `HexField` beside the same call
+ * for the ground, because `gl.capabilities` is only knowable inside the canvas.
+ *
+ * Capped at 4 for the reason `surfaces.ts` caps it: a mark is about a hundred
+ * device pixels across at the zoom ceiling and higher buys nothing. And
+ * `needsUpdate` for the reason `surfaces.ts` learned the hard way — anisotropy
+ * is a sampler parameter, three only re-applies those when a texture's version
+ * moves, so setting it on an already-uploaded texture without saying so does
+ * nothing at all.
+ */
+export function setMarkAnisotropy(max: number): void {
+  const wanted = Math.min(4, Math.max(1, Math.floor(max)));
+  if (wanted === anisotropy) return;
+  anisotropy = wanted;
+  for (const texture of cache.values()) {
+    texture.anisotropy = wanted;
+    texture.needsUpdate = true;
+  }
+}
+
+/**
  * One mark, inked and haloed, or null where this browser gives no 2D context
  * or no `Path2D`.
  *
@@ -81,6 +122,7 @@ export function markTexture(icon: IconName, ink: string, halo: string): Texture 
 
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
+  texture.anisotropy = anisotropy;
   texture.needsUpdate = true;
   cache.set(key, texture);
   return texture;

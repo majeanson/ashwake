@@ -146,6 +146,19 @@
   --z-chrome: 10;
   --z-scene: 15;
   --z-drawer: 18;
+  /*
+   * The board's own corner, one rung above a drawer and still under a panel
+   * (2026-09-05). It was written at the use site as
+   * `z-index: calc(var(--z-drawer) + 1)`, which is the same number and not the
+   * same thing: `z-index` takes an <integer>, `calc()` yields a <number>, and a
+   * browser that declines that pair drops the declaration — leaving `.camera`
+   * with `z-index: auto`, no stacking context, and its popover loose in the
+   * root layer. Marc, on a phone, 2026-09-05: the SHARPNESS popup with the
+   * buttons drawn on top of it, which is not reproducible in Chromium at any
+   * pixel ratio. A rung on the ladder cannot fail that way, and the ladder is
+   * where this number belonged in the first place.
+   */
+  --z-camera: 19;
   --z-panel: 20;
   --z-card: 30;
 }
@@ -1625,7 +1638,7 @@ h3.fact-label {
   position: absolute;
   right: var(--gap);
   bottom: var(--gap);
-  z-index: calc(var(--z-drawer) + 1);
+  z-index: var(--z-camera);
   display: flex;
   gap: 0.35rem;
 }
@@ -1650,8 +1663,21 @@ h3.fact-label {
 .sharpness-popover {
   position: absolute;
   right: 0;
-  bottom: calc(100% + var(--gap-xs));
-  z-index: var(--z-chrome);
+  /* A whole gap rather than `--gap-xs`: four pixels of clearance reads as a box
+     wedged into the row rather than a layer over it, and it left no daylight to
+     see a mispositioned popover BY. */
+  bottom: calc(100% + var(--gap));
+  /*
+   * The cluster's own rung, not `--z-chrome` (2026-09-05).
+   *
+   * Inside `.camera`'s stacking context the old 10 was already above its static
+   * siblings, and in Chromium it draws correctly. It is written this way for
+   * the browser where `.camera` does NOT get a context — see `--z-camera` — in
+   * which case this popover lands in the ROOT layer, where 10 is under the
+   * purse drawer's 18 and level with every other piece of chrome. At the
+   * cluster's own rung it is right in both worlds, which is the point.
+   */
+  z-index: var(--z-camera);
   display: flex;
   flex-direction: column;
   gap: var(--gap-xs);

@@ -186,7 +186,14 @@ function Mark({
    * grade and the screen would make the whole budget a description of a board
    * that does not exist.
    */
-  const mesh = <mesh geometry={MARK_PLANE} material={markMaterial(texture)} raycast={() => null} />;
+  const mesh = (
+    <mesh
+      geometry={MARK_PLANE}
+      material={markMaterial(texture)}
+      renderOrder={MARK_ORDER}
+      raycast={() => null}
+    />
+  );
   if (label.beacon) {
     return <Billboard position={[label.x, label.top, label.z]}>{mesh}</Billboard>;
   }
@@ -199,6 +206,35 @@ function Mark({
 
 /** The square every mark is drawn on. One, for all of them. */
 const MARK_PLANE = new PlaneGeometry(MARK_SIZE, MARK_SIZE);
+
+/**
+ * A mark draws AFTER the ground it stands on (2026-09-05, Marc, on a phone:
+ * *"i still have the 3d vs 2d grey'd shrine problems"*, with the same hex shot
+ * flat and tilted).
+ *
+ * A beacon's disc is the one ground this board draws see-through —
+ * `render/materials.ts` gives it `alpha: theme.board.beaconFade` and nothing
+ * else on the plane gets an alpha at all. So a beacon's disc and the mark on
+ * it are both in three's TRANSPARENT pass, where the order is by distance, and
+ * the ground is an INSTANCED mesh — one object, sorted once by its own origin,
+ * with per-instance depth counting for nothing. Flat on, the mark happened to
+ * win that sort; tilted, the disc won it and was painted straight over the
+ * mark at 0.72 opacity.
+ *
+ * Which is exactly what the screenshots showed, and why it looked like a
+ * palette bug rather than a sorting one: 0.72 of a near-black disc over the
+ * cream ink lands on (83, 78, 69) — a grey close enough to `inkDim` to read as
+ * the SPENT ink (`inkFor`, below) on a shrine that was not spent. Measured
+ * rather than guessed: the flat shot samples `0xf2e6cf` exactly, the tilted one
+ * that grey, and `inkDim` is `0xbfae92`, neither of them.
+ *
+ * `renderOrder` rather than `depthTest: false` on purpose: a mark should still
+ * be hidden by a wall standing in front of it. This only takes it out of the
+ * distance sort with its own ground, which is the only thing it was ever
+ * losing to. The keyboard's marker uses the same number a rung higher up
+ * (`HexField`), where being drawn over solid ground IS the point.
+ */
+const MARK_ORDER = 1;
 
 /**
  * A mark's material, cached by its texture.

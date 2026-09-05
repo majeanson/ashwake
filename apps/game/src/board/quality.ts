@@ -25,8 +25,23 @@ export const MIN_RENDER_SCALE = 1;
  *  there is nothing left worth the fragments on any phone. */
 export const MAX_RENDER_SCALE = Math.min(3, Math.max(MIN_RENDER_SCALE, DEVICE_DPR));
 
-export const DEFAULT_RENDER_SCALE =
-  DEVICE_DPR > 2 ? 1.5 : Math.min(MAX_RENDER_SCALE, Math.min(2, DEVICE_DPR));
+/**
+ * The phone's own pixel ratio, since 2026-09-05 — Marc, having looked:
+ * *"Crisper (3 or more) was good."*
+ *
+ * It was `DEVICE_DPR > 2 ? 1.5 : min(2, DEVICE_DPR)`, the 2026-09-02 guess
+ * this file was built to stop guessing: a dense phone drew at half its own
+ * resolution and nobody had looked at the result. Now somebody has, on the
+ * device, with the slider that exists to make the question answerable — so the
+ * default is what he picked rather than what the guess picked, and the slider
+ * stays for the phone that would rather spend the battery elsewhere.
+ *
+ * The docblock above still holds: this is a resolution dial, not a quality
+ * one. Antialiasing is a context flag fixed at canvas creation and the canvas
+ * may never remount, so what a higher number buys is real pixels, which at a
+ * phone's ratio is most of what MSAA would have bought anyway.
+ */
+export const DEFAULT_RENDER_SCALE = MAX_RENDER_SCALE;
 
 export function clampRenderScale(value: number): number {
   if (!Number.isFinite(value)) return DEFAULT_RENDER_SCALE;

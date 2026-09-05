@@ -252,19 +252,32 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
-**SHARPNESS, by looking (2026-09-04, `LOG.md` Session 50).** "Bad quality
-pixels" was a documented guess (`Board.tsx`'s dense-phone cap at 1.5 device
-pixels per CSS pixel, MSAA off, landed 2026-09-02 as "a defensible default"
-with nobody having looked), not a bug — so rather than move the guess, it is
-now a slider: a SHARPNESS button beside the camera control opens a popover
-that sets the render scale directly, from 1 up to the phone's own pixel
-ratio. `DEFAULT_RENDER_SCALE` reproduces the old guess exactly, so nothing
-looks different until the slider is touched. **The question a phone answers:**
-does raising it actually read as crisper, and if so, should the default move
-up too, or stay conservative and leave the choice to whoever notices? MSAA
-itself could not become part of the same dial — it is a WebGL context flag
-fixed at canvas creation, and the board may never remount to pick up a new
-one — so this is a resolution dial only, not a full quality toggle.
+**~~SHARPNESS, by looking~~ — ANSWERED 2026-09-05** (`LOG.md` Sessions 50 and
+53). The slider went out to a phone with its default reproducing the old
+2026-09-02 guess exactly (a dense phone drawing at 1.5 device pixels per CSS
+pixel, MSAA off, "a defensible default" nobody had looked at). Marc looked:
+_"Crisper (3 or more) was good."_ `DEFAULT_RENDER_SCALE` is
+`MAX_RENDER_SCALE` now — the phone's own ratio, capped at 3 — and the slider
+stays for the device that would rather spend the battery elsewhere. **Worth
+saying plainly: this is a four-times pixel cost on every dense phone, not only
+on the one that asked**, which is the trade the note under the slider names and
+the slider itself exists to undo. MSAA still could not join the dial: it is a
+WebGL context flag fixed at canvas creation and the board may never remount.
+
+**`z-index: calc(...)` in three more places, unverified (2026-09-05, `LOG.md`
+Session 53).** The SHARPNESS popup came back from Marc's phone with the camera
+buttons drawn ON TOP of it — not reproducible in Chromium at any pixel ratio,
+portrait or landscape. The one construct that can fail that way is
+`z-index: calc(var(--z-drawer) + 1)`: `z-index` takes an <integer> and
+`calc()` yields a <number>, so a browser that declines the pair drops the
+declaration and `.camera` never becomes a stacking context. That one is now a
+real rung on the ladder (`--z-camera`), which cannot fail that way — **but the
+same construct is still in `.board-menu`, `.lens-off` and `.directions`, and
+whether it was ever the cause is a thing only Marc's phone can say.** If the
+popup is fixed, those three are latent and worth the same treatment; if it is
+not, the theory was wrong and the real cause is still out there. Do not
+"fix" the other three on the strength of this paragraph alone — check the
+popup first.
 
 **~~The identity-share ceiling~~ — CLOSED 2026-09-04** (`LOG.md` Sessions
 48–49). A played run's receipt read matching/power/rarity/native ground — the

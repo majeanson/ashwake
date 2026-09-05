@@ -10,6 +10,7 @@ import type { AssetBook } from './assets';
 import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
+import { setMarkAnisotropy } from './marks';
 import { capacityFor, groundBatches, hexRadiusOf, standOf, type GroundBatch } from './ground';
 import { commitInstances, tintInto } from './instances';
 import { Labels } from './Labels';
@@ -94,6 +95,12 @@ export function HexField({
 
   useLayoutEffect(() => {
     textures.setAnisotropy(gl.capabilities.getMaxAnisotropy());
+    // And the marks, from the same capability in the same breath (2026-09-05).
+    // `marks.ts` keeps its own texture cache and had never been told this
+    // number, so every mark on the board sampled at anisotropy 1 while the
+    // ground under it sampled at the renderer's cap. Two caches, one renderer:
+    // whoever learns the number tells both.
+    setMarkAnisotropy(gl.capabilities.getMaxAnisotropy());
   }, [textures, gl]);
 
   const hasArt = useCallback((asset: AssetId) => assets.has(asset), [assets]);
