@@ -487,6 +487,26 @@ export function questMet(state: GameState, pops: readonly HexKey[]): boolean {
   return mean <= quest.radius;
 }
 
+/**
+ * A tuning dial that a saved run may predate (2026-09-05, Marc, on the live
+ * site: *"i guet +NaN points on pops"*).
+ *
+ * `meta/save.ts` states the rule this broke, in its own words: a resumed run
+ * plays under its OWN saved tuning, `parsed['tuning']` is kept whole by the
+ * spread, so a dial added to `Tuning` after a save was written decodes as
+ * `undefined` — and "every consumer of a new tuning key must guard with `> 0`",
+ * so `undefined` reads as OFF rather than slipping through. `identityBonusRate`
+ * and `rareBonusRate` (2026-09-04) went straight into the arithmetic instead,
+ * and `x * (a + undefined)` is `NaN` — so every pop of every run in progress at
+ * the moment those dials shipped scored `+NaN pts`.
+ *
+ * The types cannot catch this: `Tuning` says these are numbers and at runtime a
+ * decoded save says otherwise, which is exactly what a decoder boundary is.
+ * `view.ts`'s `placedRateOf` and `rareTermOf` already guarded this way, so the
+ * receipt SENTENCE was right while the number above it was NaN.
+ */
+const dial = (n: number): number => (n > 0 ? n : 0);
+
 export function harvestValue(
   state: GameState,
   at?: HexKey,
@@ -553,7 +573,9 @@ export function harvestValue(
     // Both rates zero at every prior tuning, where this is exactly the
     // original formula.
     points: Math.floor(
-      (sumWorth * (sizeBonus * mult + t.identityBonusRate) + rareWorth * t.rareBonusRate) * bounty,
+      (sumWorth * (sizeBonus * mult + dial(t.identityBonusRate)) +
+        rareWorth * dial(t.rareBonusRate)) *
+        bounty,
     ),
     sizeBonus,
     rareWorth,
@@ -712,8 +734,8 @@ export function pointsSplit(
   // is what rarity ADDED, so it lands on the `rare` row. `bounty` still
   // multiplies the WHOLE catch (see `harvestValue`), both bonuses included,
   // so it is folded into `beforeBounty` below instead.
-  const bonusRate = t.identityBonusRate;
-  const rareRate = t.rareBonusRate;
+  const bonusRate = dial(t.identityBonusRate);
+  const rareRate = dial(t.rareBonusRate);
   sources.matches *= 1 + bonusRate;
   sources.power *= 1 + bonusRate;
   sources.rare = sources.rare * (1 + bonusRate) + rareWorth * rareRate;

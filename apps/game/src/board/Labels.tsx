@@ -195,7 +195,26 @@ function Mark({
     />
   );
   if (label.beacon) {
-    return <Billboard position={[label.x, label.top, label.z]}>{mesh}</Billboard>;
+    /*
+     * STANDING ON the ground rather than THROUGH it (2026-09-05, Marc:
+     * *"some angles of 3d cut the icons in half (bottom half hidden) if i turn
+     * around 360 degree it appears and hides again"*).
+     *
+     * A flat mark lies at its hex's top and has no thickness to bury. A
+     * BILLBOARD stands up to face the camera, and it is centred on the point it
+     * is given — so half the square was always below the ground it stands on,
+     * and the terrain's own depth clipped whatever half the orbit put under the
+     * surface. Turning the board swapped which half, which is exactly the
+     * appear-and-hide Marc describes.
+     *
+     * It has been true since beacons started billboarding (2026-09-04) and was
+     * invisible until yesterday, because the mark was being painted over by its
+     * own disc anyway (`MARK_ORDER`) — one bug hiding inside another.
+     *
+     * Half a mark up puts the square's bottom edge on `label.top`, which is
+     * where a thing standing on the ground has its feet.
+     */
+    return <Billboard position={[label.x, label.top + MARK_SIZE / 2, label.z]}>{mesh}</Billboard>;
   }
   return (
     <group position={[label.x, label.top, label.z]} rotation={[-Math.PI / 2, 0, rad(yaw)]}>

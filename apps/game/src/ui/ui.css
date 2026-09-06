@@ -1638,7 +1638,7 @@ h3.fact-label {
   position: absolute;
   right: var(--gap);
   bottom: var(--gap);
-  z-index: var(--z-camera);
+  z-index: var(--z-camera, 19);
   display: flex;
   gap: 0.35rem;
 }
@@ -1695,7 +1695,12 @@ h3.fact-label {
    * purse drawer's 18 and level with every other piece of chrome. At the
    * cluster's own rung it is right in both worlds, which is the point.
    */
-  z-index: var(--z-camera);
+  /* The literal fallback is the belt to the ladder's braces (2026-09-05, Marc:
+     *"make sure z index of whole popup is bigger than buttons"*). The row is a
+     bare `1`; if `--z-camera` ever failed to resolve here, this declaration would be
+     dropped, the popover would fall to `auto`, and the row would win — the exact
+     symptom being chased. A fallback cannot be dropped. */
+  z-index: var(--z-camera, 19);
   display: flex;
   flex-direction: column;
   gap: var(--gap-xs);

@@ -228,6 +228,43 @@ describe('harvest value', () => {
   /** No rim at all, so all seven cells ripen: centre worth 6, each rim tile 3. */
   const SEVEN = ring(tile('green'), SIX(tile('green')));
 
+  /*
+   * A RUN OLDER THAN THE DIALS IT IS SCORED BY (2026-09-05, Marc, on the live
+   * site: *"i guet +NaN points on pops"*).
+   *
+   * `meta/save.ts` spells out the rule and the reason: a resumed run plays
+   * under its OWN saved tuning, that object is kept whole by the decoder, and
+   * a dial added after the save was written decodes as `undefined` — so "every
+   * consumer of a new tuning key must guard with `> 0`". `identityBonusRate` and
+   * `rareBonusRate` shipped on 2026-09-04 straight into the arithmetic, and
+   * `x * (a + undefined)` is NaN: every pop of every run in flight at that
+   * moment scored `+NaN pts`.
+   *
+   * The tuning is cast because the TYPE is not where this goes wrong — `Tuning`
+   * says these are numbers and a decoded save says otherwise, which is the
+   * whole nature of a decoder boundary. Pinned as a run from BEFORE rather
+   * than as a unit test of `dial`, so it keeps failing if a future dial repeats
+   * the mistake.
+   */
+  it('scores a finite number under a tuning that predates the newest dials', () => {
+    const older = { ...T } as Record<string, unknown>;
+    delete older['identityBonusRate'];
+    delete older['rareBonusRate'];
+    const state = { ...stateWith(SEVEN), tuning: older as unknown as Tuning };
+
+    const value = harvestValue(state, key(0, 0));
+    expect(Number.isFinite(value.points), 'a run older than a dial scored NaN').toBe(true);
+    expect(value.points).toBeGreaterThan(0);
+
+    // And the breakdown the receipt reads, on the same tuning.
+    const split = pointsSplit(state, value.keys, value.points);
+    expect(split, 'the breakdown vanished').toBeDefined();
+    if (split === undefined) return;
+    for (const [row, n] of Object.entries(split.bySource)) {
+      expect(Number.isFinite(n), `${row} scored NaN`).toBe(true);
+    }
+  });
+
   it('pays one pop what the rules say', () => {
     const one = harvestValue(stateWith(ONE), key(0, 0));
     expect(one.count).toBe(1);

@@ -4523,3 +4523,67 @@ job on a French sentence written minutes earlier.
 
 **Verified:** format, lint, typecheck, 1036/1036 unit, 91/91 Playwright,
 `pnpm sim` byte-identical to its golden (no engine or tuning file moved).
+
+### Session 55 — a NaN the save format had already warned about, and one bug hiding inside another (2026-09-05)
+
+**Question:** Marc, on the live site: _"i guet +NaN points on pops"_, and
+separately _"some angles of 3d cut the icons in half (bottom half hidden) if i
+turn around 360 degree it appears and hides again"_. Both arrived hours after
+the work that caused them. What did yesterday's two commits actually break,
+and had either failure been written down in advance?
+
+**Answer: both were, and one of them in this repository's own words.**
+
+**The NaN was a rule broken, not a rule missing.** `meta/save.ts` carries a
+paragraph explaining that a resumed run plays under its OWN saved tuning, that
+`parsed['tuning']` is kept whole by the decoder's spread, and therefore that a
+dial added to `Tuning` after a save was written decodes as `undefined` — and it
+ends: _"every consumer of a new tuning key must guard with `> 0` ... so
+`undefined` reads as off instead of slipping through."_ It even names the bug
+this cost once before (`findEvery`, 2026-08-18). `identityBonusRate` and
+`rareBonusRate` shipped 2026-09-04 straight into the arithmetic, and
+`x * (a + undefined)` is NaN. **Every run in flight at the moment those dials
+shipped scored `+NaN pts` on every pop.**
+
+The types could not have caught it and it is not their job to: `Tuning` says
+these are numbers and a decoded save says otherwise, which is the whole nature
+of a decoder boundary. `view.ts` had guarded correctly — `placedRateOf` and
+`rareTermOf` both test `> 0` — so the receipt SENTENCE was right while the
+number above it was NaN, which is a good illustration of why guarding at one
+consumer is not guarding.
+
+**Fixed with `dial()` in `rules.ts`**, one helper for both reads, and pinned by
+a test that constructs a tuning with the two keys deleted and asserts a finite
+score. **The test was checked in both directions** — reverted the fix, watched
+it fail with "a run older than a dial scored NaN", restored it — because a
+regression test that cannot fail is a comment with a runtime cost.
+
+**A consequence worth stating rather than hiding:** a run that already banked
+NaN into `state.points` is discarded by `decodeRun` on the next load, which is
+that decoder doing exactly what it should ("a lost run is an annoyance, a
+half-corrupt run resurrected into the reducer is a haunting"). The fix stops
+the next one; it cannot rescue the last one.
+
+**And the cut icons were one bug hiding inside another.** Beacon marks have
+billboarded since 2026-09-04, and a billboard is centred on the point it is
+given — so half of every beacon's square has always been below the ground it
+stands on, and the terrain's depth clipped whichever half the orbit put under
+the surface. Turning the board swapped which half: exactly the appear-and-hide
+described. **It was invisible until yesterday** because Session 53's
+`MARK_ORDER` fix was what finally let the mark paint on top of its own disc —
+until then it was grey mush and nobody could see where it was clipped. Half a
+mark up (`label.top + MARK_SIZE / 2`) puts the square's feet on the ground.
+
+Reproduced first, at six yaws, and confirmed after: the stars and caches are
+whole at every angle now, where before they were a lid, a cup, or half a box
+depending on where the camera stood.
+
+**The popup got a fallback rather than another theory.** Marc: _"make sure z
+index of whole popup is bigger than buttons."_ It already was — 19 against the
+row's 1 — so what shipped is the one remaining way that could stop being true:
+`z-index: var(--z-camera, 19)`. A missing token drops the declaration and the
+popover falls to `auto`, where a row at `1` beats it; a fallback cannot be
+dropped.
+
+**Verified:** format, lint, typecheck, full suite, `pnpm sim` byte-identical
+(the guard is a no-op wherever the dials exist, which is every shipped tuning).
