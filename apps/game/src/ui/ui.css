@@ -1639,26 +1639,19 @@ h3.fact-label {
   right: var(--gap);
   bottom: var(--gap);
   z-index: var(--z-camera, 19);
+  /* A COLUMN since 2026-09-05: the sharpness slider is a block above the row
+     rather than a layer over it (see `screens/Camera`). `align-items: flex-end`
+     keeps the row pinned to the corner it has always been pinned to, so nothing
+     at rest looks any different. */
   display: flex;
-  gap: 0.35rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--gap-xs);
 }
 
-/*
- * The buttons take an explicit rung UNDER the popover (2026-09-05, Marc, a
- * second time: *"make sure the popup goes above other buttons"*).
- *
- * They were static, and by the spec a static sibling cannot paint over a
- * positioned one carrying a z-index. Marc's phone did it anyway, twice, and a
- * rule that is true by the spec and false on the device is worth nothing. So
- * the order is written as two integers a browser has to COMPARE rather than as
- * a paint-order rule it has to honour: 1 here, the cluster's own rung on the
- * popover, and no reading of the cascade left in which the row wins.
- *
- * `position: relative` only so `z-index` applies at all; nothing moves.
- */
-.camera > button {
-  position: relative;
-  z-index: 1;
+.camera-row {
+  display: flex;
+  gap: 0.35rem;
 }
 
 .camera button {
@@ -1679,28 +1672,6 @@ h3.fact-label {
  * of the screen; opening down would draw it under the hand or off-screen.
  */
 .sharpness-popover {
-  position: absolute;
-  right: 0;
-  /* A whole gap rather than `--gap-xs`: four pixels of clearance reads as a box
-     wedged into the row rather than a layer over it, and it left no daylight to
-     see a mispositioned popover BY. */
-  bottom: calc(100% + var(--gap));
-  /*
-   * The cluster's own rung, not `--z-chrome` (2026-09-05).
-   *
-   * Inside `.camera`'s stacking context the old 10 was already above its static
-   * siblings, and in Chromium it draws correctly. It is written this way for
-   * the browser where `.camera` does NOT get a context — see `--z-camera` — in
-   * which case this popover lands in the ROOT layer, where 10 is under the
-   * purse drawer's 18 and level with every other piece of chrome. At the
-   * cluster's own rung it is right in both worlds, which is the point.
-   */
-  /* The literal fallback is the belt to the ladder's braces (2026-09-05, Marc:
-     *"make sure z index of whole popup is bigger than buttons"*). The row is a
-     bare `1`; if `--z-camera` ever failed to resolve here, this declaration would be
-     dropped, the popover would fall to `auto`, and the row would win — the exact
-     symptom being chased. A fallback cannot be dropped. */
-  z-index: var(--z-camera, 19);
   display: flex;
   flex-direction: column;
   gap: var(--gap-xs);

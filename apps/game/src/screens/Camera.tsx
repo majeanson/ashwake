@@ -150,63 +150,81 @@ export function Camera({
   const [open, setOpen] = useState(false);
   return (
     <div className="camera">
-      {canSpend && (
-        <button
-          type="button"
-          className="purse-toggle"
-          data-action="purse"
-          // The drawer opens ABOVE the hand, at the other end of the screen
-          // from this button, so it is nowhere near it in the document —
-          // which is exactly the case `aria-controls` exists for.
-          aria-expanded={purseOpen}
-          aria-controls="spends"
-          // A mark and a number reads as "12" to a screen reader and says
-          // nothing about what it opens.
-          aria-label={s.ui.luckPurse(luck)}
-          onClick={onPurse}
+      {/*
+        THE SLIDER IS IN FLOW, ABOVE THE ROW (2026-09-05).
+
+        It was a popover — `position: absolute`, `bottom: 100%`, a z-index — and it
+        came back from Marc's phone THREE times as "behind the buttons", never
+        once reproducible in Chromium at any pixel ratio, portrait or landscape.
+        Each fix was a better guess about stacking: a real rung on the ladder, an
+        explicit rung under it for the row, a literal fallback so the declaration
+        could not be dropped. The fourth guess would have been a guess too.
+
+        So there is no overlay left to be behind anything. `.camera` is a COLUMN:
+        the slider is a block, the buttons are a row under it, and they no longer
+        occupy the same space at all. A box that does not overlap cannot be
+        painted over, whatever a browser thinks of z-index — which is the only
+        property of this fix that does not depend on being right about the cause.
+      */}
+      {maxRenderScale > MIN_RENDER_SCALE && open && (
+        <div
+          className="sharpness-popover"
+          id="sharpness-popover"
+          role="group"
+          aria-label={s.ui.sharpness.label}
         >
-          <Icon name="luck" /> {luck}
-        </button>
+          <input
+            type="range"
+            data-action="sharpness-slider"
+            aria-label={s.ui.sharpness.label}
+            min={MIN_RENDER_SCALE}
+            max={maxRenderScale}
+            step={0.25}
+            value={renderScale}
+            onChange={(e) => onRenderScale(Number(e.target.value))}
+          />
+          <span className="sharpness-value">{renderScale.toFixed(2)}×</span>
+          <p className="note">{s.ui.sharpness.note}</p>
+        </div>
       )}
-      <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
-        {s.ui.camera[next]}
-      </button>
-      {/* Only worth showing where there is a real choice — a phone whose own
-          pixel ratio is already 1 has nothing a slider could raise. */}
-      {maxRenderScale > MIN_RENDER_SCALE && (
-        <>
+      <div className="camera-row">
+        {canSpend && (
           <button
             type="button"
-            data-action="sharpness"
-            aria-expanded={open}
-            aria-controls="sharpness-popover"
-            onClick={() => setOpen((was) => !was)}
+            className="purse-toggle"
+            data-action="purse"
+            // The drawer opens ABOVE the hand, at the other end of the screen
+            // from this button, so it is nowhere near it in the document —
+            // which is exactly the case `aria-controls` exists for.
+            aria-expanded={purseOpen}
+            aria-controls="spends"
+            // A mark and a number reads as "12" to a screen reader and says
+            // nothing about what it opens.
+            aria-label={s.ui.luckPurse(luck)}
+            onClick={onPurse}
           >
-            {s.ui.sharpness.label}
+            <Icon name="luck" /> {luck}
           </button>
-          {open && (
-            <div
-              className="sharpness-popover"
-              id="sharpness-popover"
-              role="group"
-              aria-label={s.ui.sharpness.label}
+        )}
+        <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
+          {s.ui.camera[next]}
+        </button>
+        {/* Only worth showing where there is a real choice — a phone whose own
+          pixel ratio is already 1 has nothing a slider could raise. */}
+        {maxRenderScale > MIN_RENDER_SCALE && (
+          <>
+            <button
+              type="button"
+              data-action="sharpness"
+              aria-expanded={open}
+              aria-controls="sharpness-popover"
+              onClick={() => setOpen((was) => !was)}
             >
-              <input
-                type="range"
-                data-action="sharpness-slider"
-                aria-label={s.ui.sharpness.label}
-                min={MIN_RENDER_SCALE}
-                max={maxRenderScale}
-                step={0.25}
-                value={renderScale}
-                onChange={(e) => onRenderScale(Number(e.target.value))}
-              />
-              <span className="sharpness-value">{renderScale.toFixed(2)}×</span>
-              <p className="note">{s.ui.sharpness.note}</p>
-            </div>
-          )}
-        </>
-      )}
+              {s.ui.sharpness.label}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

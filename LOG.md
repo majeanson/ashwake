@@ -4587,3 +4587,64 @@ dropped.
 
 **Verified:** format, lint, typecheck, full suite, `pnpm sim` byte-identical
 (the guard is a no-op wherever the dials exist, which is every shipped tuning).
+
+### Session 56 — the flash measured to its cause, and a fourth guess declined (2026-09-05)
+
+**Question:** Marc: _"the second tile we put the whole screen flashes
+(recurrent bug never fixed)"_ and _"popup still behind luck, camera, slider
+buttons"_. One is a bug nobody has ever located; the other has now survived
+three fixes. Can the first be MEASURED rather than theorised, and should the
+second get a fourth theory?
+
+**Answer: yes, and no.**
+
+**The flash was found by instrumenting rather than by reasoning, and it took
+three wrong turns first.** The canvas never remounts (`canvasSame=true` across
+every placement), there is no context loss, no CSS animation and no transition
+fires, and the captured frames are all within a percent of each other. Two of
+those checks were run against `?taught=1`, which suppresses the teaching cards
+— a repro that quietly differs from how the game is played, and worth naming
+because it looked like evidence of absence.
+
+**What found it was watching the boxes.** `.controls` is 85.45px for five
+placements and 145.28px at the sixth — POP appears the first time a pocket
+ripens — and `.board-host` is `flex: 1`, so it goes 711.92 to 652.09 and the
+canvas's backing store with it, 780x1424 to 780x1304. **A reallocated WebGL
+buffer is a cleared one**, and under `frameloop="demand"` nothing repaints it
+until something demands a frame. The whole board composites blank for a frame,
+and the board is the whole screen. "The second tile" is simply where the first
+pocket ripens on Marc's boards; on seed 7 it is the sixth.
+
+**Fixed at the paint, not at the layout.** A layout effect on `size` renders
+the scene before the browser composites, so the resized buffer is never shown
+empty. `invalidate()` alone would not do it — it schedules a frame, and a
+scheduled frame is one composite too late.
+
+**And the resize itself is left to Marc, on purpose** (`NEXT.md` §1). It is the
+third instance of one disease — `ui.css` records the stat row and the purse
+drawer as the first two, both cured by stopping the resize rather than
+absorbing it — but curing it here means reserving POP's row for a whole run,
+which costs 60px of board on every phone whether or not anything is ripe. That
+is a screen decision and a real trade, not a derivation.
+
+**The popup got its mechanism removed instead of a fourth theory.** Three fixes
+shipped on three escalating guesses about stacking — a real rung on the ladder,
+an explicit rung under it for the row, a literal fallback so the declaration
+could not be dropped — and all three were reasoning about a symptom that has
+never once reproduced here, at any pixel ratio, in either orientation. The
+fourth would have been the same kind of thing.
+
+So `.camera` is a COLUMN now: the slider is a block, the buttons are a row
+under it, and they do not occupy the same space at all. **A box that does not
+overlap cannot be painted over, whatever a browser believes about z-index** —
+which is the only property of this fix that does not depend on being right
+about the cause. The `--z-camera` rung stays (it is what lifts the cluster over
+the drawer, which was a real measured bug); the row's own rung is gone with the
+overlay it existed to beat.
+
+**The lesson worth keeping:** three fixes for one report is the signal to stop
+fixing and start removing. A guess that cannot be checked should buy a
+structural change, not another guess.
+
+**Verified:** format, lint, typecheck, full suite, Playwright, `pnpm sim`
+byte-identical.

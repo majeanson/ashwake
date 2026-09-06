@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -616,6 +617,59 @@ function Rig({
   const invalidate = useThree((s) => s.invalidate);
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
+  const size = useThree((s) => s.size);
+
+  /**
+   * PAINT THE NEW BUFFER IN THE SAME TASK IT WAS RESIZED IN (2026-09-05, Marc:
+   * *"the second tile we put the whole screen flashes (recurrent bug never
+   * fixed)"*).
+   *
+   * Measured rather than guessed. The action bar GROWS the first time a pocket
+   * ripens — POP appears, `.controls` goes 85px to 145px — and `.board-host`
+   * is `flex: 1`, so the canvas's backing store is reallocated with it (780x1424
+   * to 780x1304 on a 390pt phone). **A reallocated WebGL buffer is a CLEARED
+   * one**, and with `frameloop="demand"` nothing repaints it until something
+   * asks — so the whole board composites blank for a frame. That is the flash,
+   * and it is the whole screen because the board IS the whole screen.
+   *
+   * A layout effect rather than `invalidate()` alone: invalidate schedules a
+   * frame, and a scheduled frame is one composite too late. This renders
+   * before the browser paints, so the resized buffer is never shown empty.
+   * `invalidate()` still follows, because the demand loop should also know the
+   * view changed.
+   *
+   * **This fixes the FLASH, not the RESIZE.** The board changing size because a
+   * button appeared under it is the third instance of one disease in this file's
+   * neighbourhood — `ui.css` already records the stat row ("the board resizes
+   * because the score went from 99 to 100") and the purse drawer ("the map
+   * resized every time LUCK was tapped"), both fixed by stopping the resize
+   * rather than by absorbing it. Doing that here means reserving POP's row for
+   * a whole run, which costs 60px of board on every phone whether or not
+   * anything is ripe — a screen decision, so it is stated in `NEXT.md` and left
+   * to Marc rather than guessed at here.
+   */
+  const sized = useRef(false);
+  useLayoutEffect(() => {
+    /*
+     * Not on the first layout, only on a RESIZE.
+     *
+     * Rendering at mount draws a scene whose instanced meshes have not been
+     * given their colour attributes yet, so three compiles a program without
+     * `USE_INSTANCING_COLOR` while the injected chunk still reads `vColor` —
+     * "'vColor' : undeclared identifier", the whole board's shaders failing to
+     * validate. Caught by `watchErrors` in the Playwright suite on the first
+     * run of this fix, which is exactly the renderer-crash class that suite
+     * exists to catch.
+     *
+     * The first size is not a resize anyway: the demand loop already draws it.
+     */
+    if (!sized.current) {
+      sized.current = true;
+      return;
+    }
+    gl.render(scene, camera);
+    invalidate();
+  }, [size.width, size.height, gl, scene, camera, invalidate]);
 
   /**
    * WHAT THE FIT MEASURES, AND HOW TALL IT IS — separately from the ANGLE

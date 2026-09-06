@@ -252,6 +252,25 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**The board still RESIZES when POP appears (2026-09-05, `LOG.md` Session 56).**
+Marc's _"the whole screen flashes"_ was measured to its cause: the action bar
+grows the first time a pocket ripens — `.controls` 85px to 145px — and
+`.board-host` is `flex: 1`, so the WebGL canvas's backing store is reallocated
+under it (780x1424 to 780x1304 on a 390pt phone). A reallocated buffer is a
+CLEARED one, and under `frameloop="demand"` nothing repainted it until the next
+demanded frame, so the whole board composited blank for a frame. **The flash is
+fixed** — the board now paints the new buffer in the same task it was resized
+in — **but the RESIZE is not.**
+
+That resize is the third instance of one disease: `ui.css` already records the
+stat row ("the board resizes because the score went from 99 to 100") and the
+purse drawer ("the map resized every time LUCK was tapped"), both fixed by
+stopping the resize rather than absorbing it. Stopping it here means reserving
+POP's row for the whole run. **The question only Marc can answer: is 60px of
+board, on every phone, for every run, worth a map that never moves?** The
+alternative is what ships today — the board resizes once when the first pocket
+ripens, silently now instead of with a flash.
+
 **~~SHARPNESS, by looking~~ — ANSWERED 2026-09-05** (`LOG.md` Sessions 50 and
 53). The slider went out to a phone with its default reproducing the old
 2026-09-02 guess exactly (a dense phone drawing at 1.5 device pixels per CSS
