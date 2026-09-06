@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { begin, clearCards, watchErrors } from './helpers';
+import { begin, clearCards, openMore, watchErrors } from './helpers';
 
 /**
  * The world memory, in a real browser (2026-08-30).
@@ -320,4 +320,56 @@ test('keeping a daily over a PLAYED world asks first', async ({ page }) => {
   await expect(page.locator('[data-hud="stats"]')).toBeVisible();
 
   expect(errors, errors.join('\n')).toEqual([]);
+});
+
+/*
+ * SWITCHING WORLDS MUST NOT SPEND ONE (2026-09-05, Marc: *"by switching worlds
+ * i lost all"*).
+ *
+ * Measured on disk before it was understood: opening world 2 rewrote
+ * `ashwake.world.1.v1` and `ashwake.run.1.v1` with world 2's seed and world 2's
+ * ground, while `ashwake.world.2.v1` was never written at all. Three hundred
+ * runs of territory replaced by an empty world, in one menu tap.
+ *
+ * `move()` swaps the keeper and the place together — that pair has been one
+ * piece of state since 2026-09-02 for exactly this reason — but the RUN lives
+ * in a different store (`wiring`), and the keeper reaches `App` through React
+ * state. A render that lands with the new run and the still-old keeper hands
+ * world 2's state to a keeper bound to slot 1, and the keeper writes where it
+ * was built to write.
+ *
+ * The seed is the assertion because the seed is the world's identity: every
+ * hex of ground is a pure function of it (`meta/world.ts`), so a slot whose
+ * seed changed is a slot whose whole history is unreachable.
+ */
+test('opening another world does not overwrite the one you left', async ({ page }) => {
+  const errors = watchErrors(page);
+  const worldOf = async (slot: number): Promise<{ worldSeed: number } | null> =>
+    page.evaluate((n) => {
+      const raw = localStorage.getItem(`ashwake.world.${n}.v1`);
+      return raw === null ? null : (JSON.parse(raw) as { worldSeed: number });
+    }, slot);
+
+  await page.goto('/?runs=300&taught=1');
+  await begin(page);
+  await clearCards(page);
+  await page.waitForTimeout(400);
+
+  const before = await worldOf(1);
+  expect(before, 'the fixture wrote no world to lose').not.toBeNull();
+
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="worlds"]').click();
+  await page.locator('[data-slot="2"]').click();
+  await page.waitForTimeout(900);
+  await clearCards(page);
+
+  const after = await worldOf(1);
+  expect(after?.worldSeed, 'world 1 was overwritten by the world you opened').toBe(
+    before?.worldSeed,
+  );
+  // And the world actually entered is the one that got written.
+  expect(await worldOf(2), 'world 2 was never written at all').not.toBeNull();
+
+  expect(errors, errors.join(String.fromCharCode(10))).toEqual([]);
 });

@@ -260,11 +260,33 @@ export function useDevice(opts: {
   );
 
   /** Step into today's daily, or back out to the world the player came from. */
+  /**
+   * Step into today's daily, or back out to the world the player came from.
+   *
+   * `activeSlot()` and not the `slot` state (2026-09-05, Marc: *"by switching
+   * worlds i lost all"*). This is called on EVERY run that begins, not only
+   * when a daily is left — `shell/beginning.ts` ends with `w.setDaily(door.daily)`
+   * — so a world switch runs it with `null` a beat after `setSlot`. React state
+   * has not committed by then, so `slot` still read the world being LEFT, and
+   * `move()` dutifully threw away the keeper it had just built for the world
+   * being ENTERED and built another one pointing at the old slot. The run that
+   * followed was world 2's and the keeper wrote where it was told: slot 1.
+   * Three hundred runs of ground replaced by an empty world, in one menu tap.
+   *
+   * The trace, kept because the shape is the lesson — KEEPER born #2 place=2,
+   * KEEPER #2 DROP, KEEPER born #3 place=1, then #3 writing seed 1060841 into
+   * slot 1.
+   *
+   * `setSlot` writes the active slot to storage synchronously, before any of
+   * this, so the persisted answer is the CURRENT one where the closure's is a
+   * render behind. It is also the same answer every other boot path already
+   * trusts, which is what makes it the honest source rather than a second one.
+   */
   const setDaily = useCallback(
     (date: string | null) => {
-      move(date === null ? slot : { daily: date });
+      move(date === null ? activeSlot() : { daily: date });
     },
-    [move, slot],
+    [move],
   );
 
   // A phone can be closed between two taps and never come back, so whatever is

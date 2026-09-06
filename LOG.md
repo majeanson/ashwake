@@ -4648,3 +4648,59 @@ structural change, not another guess.
 
 **Verified:** format, lint, typecheck, full suite, Playwright, `pnpm sim`
 byte-identical.
+
+### Session 57 — a world switch was eating the world you left, and two fixes for it that were not the bug (2026-09-05)
+
+**Question:** Marc, five words: _"by switching worlds i lost all"_. A data-loss
+report with no detail, on a mechanic with three interlocking ledgers. Can it be
+located by MEASURING rather than by reading, and how many plausible causes will
+be wrong first?
+
+**Answer: yes, and two.**
+
+**What it actually was.** `shell/beginning.ts` ends every run that begins with
+`w.setDaily(door.daily)` — every run, not only a daily's. So a world switch
+calls `setDaily(null)` a beat after `setSlot(2)`, and `setDaily` read the
+`slot` REACT STATE, which has not committed yet and still says 1. `move()` then
+threw away the keeper it had just built for world 2 and built another pointing
+at slot 1. The run that followed was world 2's, and a keeper writes where it
+was built to write.
+
+The trace is the whole story, and is kept in the code because the shape is the
+lesson: `KEEPER born #2 place=2`, `KEEPER #2 DROP`, `KEEPER born #3 place=1`,
+then `#3` writing seed 1060841 into slot 1. **Three hundred runs of ground
+replaced by an empty world, in one menu tap.** Fixed by reading `activeSlot()`
+— which `setSlot` writes synchronously, a render ahead of the closure — instead
+of the state.
+
+**Two fixes that were not the bug, both reverted.**
+
+1. **The stale perk shelf.** `progress` is seeded from the world inside
+   `useState`'s initialiser, which runs once a tab, and `setSlot` does not
+   touch it — so on the face of it a switch leaves the old world's shelf in
+   state for the keeper effect to write onto the new world. Real-looking,
+   wrong: `move()` has re-seeded perks and build since it was written. The
+   "fix" was a duplicate, AND it quietly changed shop-level inheritance. Two
+   tests written for it passed identically with and without it, which is what
+   said so.
+2. **A stale keeper.** A stable façade delegating to whichever keeper is held
+   now — defensible on its own terms and it did not fix anything, because the
+   keeper was not stale: it was CORRECT and then deliberately replaced with a
+   wrong one. Reverted rather than kept, because it makes `keeper` a stable
+   identity and effects depend on that identity changing.
+
+**The discipline that found it, after the guessing did not.** Dump every
+`ashwake.*` key before and after a switch and diff them. That took one run and
+said, flatly, that `world.1` had acquired world 2's seed and ground while
+`world.2` was written correctly and then orphaned. Instrumenting `writeWorld`
+and `writeRun` with their slot and seed named the keeper; tagging each keeper
+with a birth, a drop and a place named the moment.
+
+**Every test here was checked in BOTH directions.** The first two passed
+without their fix, which is how they were known to be worthless; the third
+fails with `Expected: 1049720 / Received: 1060841` and passes with the one-line
+change. A regression test for data loss that cannot fail is worse than none,
+because it certifies the thing it never checked.
+
+**Verified:** format, lint, typecheck, full suite, Playwright, `pnpm sim`
+byte-identical.
