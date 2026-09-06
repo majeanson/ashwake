@@ -21,10 +21,12 @@ import {
 import { isEnabled } from '@meta/features';
 import {
   EMPTY_PROGRESS,
+  equip,
   grantFind,
   hasMet,
   perkText,
   withWorldPerks,
+  type PerkId,
   type Progress,
 } from '@meta/progress';
 import { metGoalIds } from '@meta/goals';
@@ -437,6 +439,16 @@ function Game() {
    * has moved on by then.
    */
   const [saidCard, setSaidCard] = useState<Said | null>(null);
+  /**
+   * The perk the card on screen is about, so its WEAR button knows what it
+   * would put on (2026-09-05).
+   *
+   * Beside `saidCard` rather than inside it: `Said` is the CORE's type and a
+   * receipt is a sentence, not a shelf. The find branch below is the only
+   * writer, and it is cleared on the same dismissal that clears the card, so
+   * the two cannot come apart.
+   */
+  const [cardPerk, setCardPerk] = useState<PerkId | null>(null);
   /**
    * The id for an utterance the SHELL raises rather than the session.
    *
@@ -1467,6 +1479,9 @@ function Game() {
           if (got !== null) {
             setProgress(() => got.progress);
             say(s.ui.perkFound(perkText(got.perk.id, s).name));
+            // The card that is about to be shown gets a WEAR button for THIS
+            // perk — see `cardPerk`.
+            setCardPerk(got.perk.id);
           }
         }
       }
@@ -3254,9 +3269,20 @@ function Game() {
           theme={theme}
           s={s}
           onTerm={setTerm}
-          onDismiss={() => setSaidCard(null)}
+          onDismiss={() => {
+            setSaidCard(null);
+            setCardPerk(null);
+          }}
           brief={saidCard.brief === true}
           icon={saidCard.icon}
+          {...(cardPerk === null
+            ? {}
+            : {
+                wear: {
+                  label: progress.equipped.includes(cardPerk) ? s.ui.takeOff : s.ui.wear,
+                  onWear: () => setProgress((was) => equip(was, cardPerk)),
+                },
+              })}
           {...(saidCard.offers === 'crossing'
             ? {
                 offer: {

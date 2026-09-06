@@ -1107,6 +1107,17 @@ export type Strings = {
     /** A perk being worn, and the button that puts one on. */
     readonly worn: string;
     readonly wear: string;
+    /**
+     * Take a perk OFF (2026-09-05, Marc: *"a way to equip/unequip"*).
+     *
+     * `worn` is a STATE — what the shop prints on the row you are wearing —
+     * and it was doing duty as the label of a button that could not be
+     * pressed, because the shop disabled the only worn row while one slot was
+     * filled. So there was no way to wear NOTHING, which matters for the two
+     * perks that take something as well as give it (ROOTBOUND punishes strayed
+     * ground; the note on each says so). A verb, because it is now a verb.
+     */
+    readonly takeOff: string;
     /** An upgrade at the top of its ladder — a rung you can see the end of. */
     readonly maxed: string;
     /**

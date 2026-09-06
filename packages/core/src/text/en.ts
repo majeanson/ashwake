@@ -583,7 +583,7 @@ This world is fully awake. Every unlock is yours.`,
 On your own world a shrine switches a system on, for good. A shared run keeps nothing, but it still counts the claim.`,
     found: (perk, worn) =>
       `FOUND: ${perk}
-${worn ? 'Already worn, so it works from here on.' : 'Yours for good, in THIS world. WEAR it in THE SHOP, on the end screen.'}`,
+${worn ? 'Already worn, so it works from here on.' : 'Yours for good, in THIS world. WEAR it here to run under it from this placement on.'}`,
     findNothing: `A HIDDEN FIND
 Nothing new inside. A find grants only what you do not already carry, and only on your own world.`,
   },
@@ -766,6 +766,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     flag: { on: 'ON', off: 'OFF', notBuilt: 'NOT BUILT' },
     worn: 'WORN',
     wear: 'WEAR',
+    takeOff: 'TAKE OFF',
     maxed: 'MAXED',
     buy: (name, price) => `Buy ${name} for ${price} relics`,
     relicsHeld: (n) => `${n} relics`,

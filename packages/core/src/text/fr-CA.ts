@@ -593,7 +593,7 @@ Ce monde est entièrement éveillé. Chaque déblocage est à toi.`,
 Sur ton propre monde, un sanctuaire allume un système pour de bon. Une partie partagée ne garde rien, mais elle compte quand même la prise.`,
     found: (perk, worn) =>
       `TROUVÉ${D}: ${perk}
-${worn ? 'Déjà porté, ça fonctionne à partir d’ici.' : 'À toi pour de bon, dans CE monde. PORTE-le dans LA BOUTIQUE, à l’écran de fin.'}`,
+${worn ? 'Déjà porté, ça fonctionne à partir d’ici.' : 'À toi pour de bon, dans CE monde. PORTE-le ici pour jouer sous son effet dès cette pose.'}`,
     findNothing: `UNE TROUVAILLE CACHÉE
 Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà, et seulement sur ton propre monde.`,
   },
@@ -774,6 +774,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     flag: { on: 'ACTIVÉ', off: 'DÉSACTIVÉ', notBuilt: 'PAS ENCORE FAIT' },
     worn: 'PORTÉ',
     wear: 'PORTER',
+    takeOff: 'RETIRER',
     maxed: 'AU MAX',
     buy: (name, price) => `Acheter ${name} pour ${nb(price)} reliques`,
     relicsHeld: (n) => `${nb(n)} relique${pl(n, '', 's')}`,

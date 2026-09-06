@@ -6,7 +6,6 @@ import {
   perkText,
   PERKS,
   priceOf,
-  slotsOf,
   upgradeText,
   UPGRADES,
   type Progress,
@@ -128,12 +127,23 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
                 type="button"
                 data-wear={perk.id}
                 aria-pressed={worn}
-                // One slot today (`slotsOf`), so wearing one takes the other
-                // off. The number is the core's, not this screen's opinion.
-                disabled={worn && progress.equipped.length <= slotsOf()}
+                /*
+                 * One slot today (`slotsOf`), so wearing one takes the other
+                 * off — the number is the core's, not this screen's opinion.
+                 *
+                 * It ALSO used to disable the row you were wearing, which with
+                 * one slot meant the only worn perk could never come off: there
+                 * was no way to wear nothing, on any screen, ever (2026-09-05,
+                 * Marc: *"a way to equip/unequip"*). That matters for the perks
+                 * that take something as well as give it — ROOTBOUND pays less
+                 * on strayed ground and nothing at all at full luck — so "none"
+                 * is a real choice and was an unreachable one. `equip` in the
+                 * core has always been a toggle; this screen was the half that
+                 * refused.
+                 */
                 onClick={() => onProgress((was) => equip(was, perk.id))}
               >
-                {worn ? s.ui.worn : s.ui.wear}
+                {worn ? s.ui.takeOff : s.ui.wear}
               </button>
             </div>
           );

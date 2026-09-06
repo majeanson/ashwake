@@ -51,6 +51,24 @@ export type SaidCardProps = {
   readonly offer?:
     { readonly label: string; readonly armed: string; readonly onTake: () => void } | undefined;
   /**
+   * WEAR IT, FROM THE CARD THAT SAYS YOU FOUND IT (2026-09-05, Marc: *"i
+   * should see a card popping explaining, a way to equip/unequip"*).
+   *
+   * The find card already named the perk and printed its three rows — what it
+   * gives, what it takes, how to play it — and then ended with directions:
+   * *"WEAR it in THE SHOP, on the end screen."* Only the FIRST perk a world
+   * finds is worn automatically (`grantFind`), so every find after it was a
+   * thing you had been handed, explained, and could not use until the run was
+   * over and you had gone looking through two menus for it.
+   *
+   * A single tap, not `Confirming`'s two: an `offer` arms because it forgets a
+   * world, and wearing a perk is reversible by pressing the same button again.
+   * An offer still wins the slot where both exist — a placement can reach a
+   * find and the last shrine at once — because the crossing is the one that
+   * cannot be undone.
+   */
+  readonly wear?: { readonly label: string; readonly onWear: () => void } | undefined;
+  /**
    * A receipt for something the player has already seen the card for once —
    * a pop after their first. Goes on its own, and any tap sends it away.
    */
@@ -68,6 +86,7 @@ export function SaidCard({
   onDismiss,
   onTerm,
   offer,
+  wear,
   brief,
   icon,
 }: SaidCardProps) {
@@ -86,12 +105,20 @@ export function SaidCard({
       onDismiss={onDismiss}
       // An offer has to be chosen, never waited out — so a receipt that makes
       // one is never brief, whatever the caller asked for.
-      brief={brief === true && offer === undefined}
-      {...(offer === undefined
-        ? {}
-        : {
+      brief={brief === true && offer === undefined && wear === undefined}
+      {...(offer !== undefined
+        ? {
             action: <Confirming label={offer.label} armed={offer.armed} onConfirm={offer.onTake} />,
-          })}
+          }
+        : wear === undefined
+          ? {}
+          : {
+              action: (
+                <button type="button" data-action="wear-found" onClick={wear.onWear}>
+                  {wear.label}
+                </button>
+              ),
+            })}
     >
       <ProseLines text={rest.join('\n')} s={s} onTerm={onTerm} />
       {rows !== undefined && <TipRows rows={rows} theme={theme} s={s} onTerm={onTerm} />}
