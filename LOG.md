@@ -4455,3 +4455,71 @@ four rules on an unconfirmed theory is how a guess becomes four guesses.
 **Verified:** format, lint, typecheck, full unit suite and the Playwright
 suite green; `pnpm sim` untouched (no core file moved); the fix measured rather
 than eyeballed, three tilts sampling the same ink to the byte.
+
+### Session 54 — three asks, and the one that needed a question before a line of code (2026-09-05)
+
+**Question:** Marc, back from the phone with three things — the SHARPNESS
+popup still behind its buttons, a small way out of the purse, and a sentence
+about what CONTINUER DANS MON MONDE has always meant to him. Two are UI. The
+third is a rule. Which of the three could be built from what he wrote, and
+which needed asking?
+
+**Answer: only one could, and asking about the other two took three questions
+and saved building the wrong thing twice.**
+
+**The popup, confirmed by asking rather than by guessing.** Session 53 shipped
+a theory — `z-index: calc(...)` dropped by his browser — and could not
+reproduce the symptom. Offered three shapes it might take, Marc picked
+_"buttons drawn on top of it"_, which is a true z-order failure and, by the
+spec, impossible: a static sibling cannot paint over a positioned one carrying
+a z-index. **A rule that is true by the spec and false on the device is worth
+nothing**, so the row now carries an explicit `z-index: 1` under the popover's
+own rung. The order is two integers a browser has to COMPARE rather than a
+paint-order rule it has to honour. The three other `z-index: calc()` rules are
+still deliberately untouched (`NEXT.md`).
+
+**The purse got its own door.** _"add a small luck button bottom right corner
+to exit back"_ — which could have been the popup's close, the drawer's, or a
+way out of a daily; asked, and it was the drawer's. The drawer has had exactly
+one door since it was built: the LUCK button that opens it, which moved to the
+board's far corner on 2026-09-04, so closing a drawer became a reach
+diagonally across the screen to a control labelled OPEN. The mark and a WORD
+rather than a cross, per D10 and the two rulings `screens/Hud` and
+`screens/Worlds` already record.
+
+**And the daily import, which was two rulings wearing one sentence.** _"i want
+to import this seed in one of my 3 worlds as a new world that i'd like to
+explore further, with this first run in mind."_ Creating a world can destroy
+one and there are only three, so the slot could not be guessed: Marc chose the
+picker over first-free-slot and over overwriting the active one. And "with
+this first run in mind" is genuinely ambiguous — it reads equally as "the run
+counts as run 1" and as "I know this board now". Offered all three, he chose
+the middle one: **the MAP travels and the spoils do not** (`worldFromRun`).
+
+That is a balance ruling, not a preference, and it is written where it can be
+read: a daily may be replayed all day, so banking its relics or its score
+would make "retry until the run is good, then import it" the best way to open
+a world — a strategy about the MENU rather than about the game.
+
+**What the picker had to show, and why.** A row is `WORLD 1 · 300 · 16900 ·
+REACH 48` — runs, best, reach — because picking it would abandon exactly that,
+and a player deciding deserves to see the cost before the confirmation asks.
+A played slot ARMS with `newWorldArmed`'s existing words; an empty one does
+not, because asking to abandon nothing is how a player learns to press through
+dialogs.
+
+**Proved in a browser, not only in the core**, which is this file's oldest
+lesson: a picker that renders three rows and imports nothing passes every unit
+test in the repository. Two tests in `e2e/world.spec.ts` — one that a kept
+daily writes a world with the ground and `runs: 0`, one that a played world
+takes two presses and the first does not take it.
+
+**Two tests failed on the way and both were right.** `purse.test.tsx` walks
+every button in the drawer and asserts each is disabled when broke — and the
+new way out is not a purchase and is never priced, so it is filtered to
+`[data-spend]` rather than the assertion loosened. And `text.test.ts` caught a
+typewriter apostrophe in `L'UN`: the Québec typography gate doing exactly its
+job on a French sentence written minutes earlier.
+
+**Verified:** format, lint, typecheck, 1036/1036 unit, 91/91 Playwright,
+`pnpm sim` byte-identical to its golden (no engine or tuning file moved).

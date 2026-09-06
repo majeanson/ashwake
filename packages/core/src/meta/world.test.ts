@@ -15,6 +15,7 @@ import {
   rememberRun,
   unlockedBy,
   UNLOCKS,
+  worldFromRun,
 } from './world.js';
 
 /**
@@ -495,5 +496,57 @@ describe('the world remembers the longest expedition, not the map’s extent', (
     // stored value means the change cannot take anybody's record away.
     const held = { ...newWorld(5), farthestReach: 31 };
     expect(mergeRun(held, newRun(5, TUNING, [], [], CAMP)).farthestReach).toBe(31);
+  });
+});
+
+describe('worldFromRun — a daily kept as a world (2026-09-05)', () => {
+  /*
+   * Marc's choice when asked, over both "the run counts as run 1" and "seed
+   * only": the MAP travels and the spoils do not. Pinned because the middle
+   * option is the one a later reader is most likely to "fix" in either
+   * direction, and because the reason it is the middle one is a balance
+   * ruling rather than a taste — a daily may be replayed all day, so banking
+   * its relics or its score would make retry-until-good the best way to open
+   * a world.
+   */
+  it('carries the ground the run saw, and none of its spoils', () => {
+    const played = mergeRun(newWorld(9), newRun(9, TUNING));
+    const state = newRun(9, TUNING);
+    const kept = worldFromRun(9, state);
+
+    expect(kept.worldSeed).toBe(9);
+    expect(new Set(kept.revealed), 'the map did not come with it').toEqual(
+      new Set(Object.keys(state.cells)),
+    );
+    expect(kept.revealed.length, 'a kept board arrived blank').toBeGreaterThan(0);
+
+    // Everything a run earns starts where a fresh world starts it.
+    const blank = newWorld(9);
+    expect({
+      runs: kept.runs,
+      bestPoints: kept.bestPoints,
+      farthestReach: kept.farthestReach,
+      shrines: kept.shrines,
+      territories: kept.territories,
+      finds: kept.finds,
+      perks: kept.perks,
+      worn: kept.worn,
+      goalsMet: kept.goalsMet,
+    }).toEqual({
+      runs: blank.runs,
+      bestPoints: blank.bestPoints,
+      farthestReach: blank.farthestReach,
+      shrines: blank.shrines,
+      territories: blank.territories,
+      finds: blank.finds,
+      perks: blank.perks,
+      worn: blank.worn,
+      goalsMet: blank.goalsMet,
+    });
+
+    // And it is NOT `rememberRun`: that one counts the run.
+    expect(played.revealed.length, 'the two disagree about what “seen” means').toBe(
+      kept.revealed.length,
+    );
   });
 });

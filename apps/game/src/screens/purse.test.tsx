@@ -36,10 +36,16 @@ function rich(luck: number, tuning = TUNING): GameState {
   return { ...newRun(11, tuning), luck };
 }
 
-const drawer = (state: GameState) => {
+const drawer = (state: GameState, onClose: () => void = () => {}) => {
   const spent: SpendView[] = [];
   render(
-    <Purse hud={toHudView(state, s)} theme={theme} s={s} onSpend={(spend) => spent.push(spend)} />,
+    <Purse
+      hud={toHudView(state, s)}
+      theme={theme}
+      s={s}
+      onSpend={(spend) => spent.push(spend)}
+      onClose={onClose}
+    />,
   );
   return spent;
 };
@@ -54,7 +60,10 @@ const drawer = (state: GameState) => {
  */
 const tapped = async (state: GameState): Promise<readonly SpendView[]> => {
   const spent = drawer(state);
-  for (const row of screen.getAllByRole('button')) await userEvent.click(row);
+  // The SPEND rows only: the drawer grew a way out of itself on 2026-09-05,
+  // and a close button is not a purchase.
+  const rows = screen.getAllByRole('button').filter((row) => row.hasAttribute('data-spend'));
+  for (const row of rows) await userEvent.click(row);
   return spent;
 };
 
@@ -70,7 +79,9 @@ describe('the purse offers what the run can pay for', () => {
     // Shown and DISABLED rather than hidden: what luck is for is half the
     // reason to collect it, and a menu that appears only once you can afford
     // it teaches nobody what they were saving toward.
-    const rows = screen.getAllByRole('button');
+    // The SPEND rows: the way OUT of the drawer is not a purchase and is never
+    // priced, so it is never disabled either (added 2026-09-05).
+    const rows = screen.getAllByRole('button').filter((row) => row.hasAttribute('data-spend'));
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) expect(row).toBeDisabled();
   });
@@ -145,5 +156,23 @@ describe('a tapped row reaches the reducer', () => {
     // The row prints that number before it is spent, so the tap and the
     // receipt cannot disagree.
     expect(tithe!.relics).toBe(after.relics - state.relics);
+  });
+
+  /*
+   * The way out, and whether it is wired to anything — which is the whole
+   * reason this file exists. LUCK opened this drawer from the board's far
+   * corner since 2026-09-04, so the drawer having its own door is not a
+   * convenience; without it the only way to shut the thing is a round trip
+   * across the screen to a button labelled OPEN.
+   */
+  it('shuts from inside itself', async () => {
+    let closed = 0;
+    drawer(rich(50), () => {
+      closed += 1;
+    });
+    const out = document.querySelector('[data-action="purse-close"]');
+    expect(out, 'the purse has no way out of itself').not.toBeNull();
+    await userEvent.click(out as HTMLElement);
+    expect(closed, 'the purse’s own door is drawn and wired to nothing').toBe(1);
   });
 });

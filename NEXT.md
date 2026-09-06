@@ -273,7 +273,15 @@ portrait or landscape. The one construct that can fail that way is
 declaration and `.camera` never becomes a stacking context. That one is now a
 real rung on the ladder (`--z-camera`), which cannot fail that way — **but the
 same construct is still in `.board-menu`, `.lens-off` and `.directions`, and
-whether it was ever the cause is a thing only Marc's phone can say.** If the
+whether it was ever the cause is a thing only Marc's phone can say.**
+
+**Confirmed 2026-09-05, and hardened a second time.** Marc, shown the three
+shapes it could take, picked _"buttons drawn on top of it"_ — a true z-order
+failure, still not reproducible in Chromium at any pixel ratio. So the row now
+carries an explicit `z-index: 1` against the popover's own rung: the order is two
+integers a browser has to COMPARE rather than a paint-order rule it has to
+honour, since the rule ("a static sibling cannot paint over a positioned one
+with a z-index") is true by the spec and was false on the device. If the
 popup is fixed, those three are latent and worth the same treatment; if it is
 not, the theory was wrong and the real cause is still out there. Do not
 "fix" the other three on the strength of this paragraph alone — check the

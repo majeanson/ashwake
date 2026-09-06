@@ -243,3 +243,81 @@ test('the ending says what this world has become, not only what the run scored',
 
   expect(errors).toEqual([]);
 });
+
+/*
+ * KEEPING A DAILY AS A WORLD (2026-09-05).
+ *
+ * Marc, of what CONTINUE IN MY WORLD had always meant to him: *"i want to
+ * import this seed in one of my 3 worlds as a new world that i'd like to
+ * explore further, with this first run in mind."* The button used to leave the
+ * daily for a fresh expedition into whichever world you came from, which is a
+ * different sentence entirely.
+ *
+ * Two tests because there are two paths and only one of them is safe. The
+ * contract is `meta/world.ts`'s `worldFromRun` — the MAP travels, the spoils do
+ * not — and the whole point of testing it here rather than only in the core is
+ * `CLAUDE.md`'s standing warning: a picker that renders three rows and imports
+ * nothing would pass every unit test in the repository.
+ */
+test('a daily can be kept as a world, with its ground and none of its spoils', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?daily=2026-08-26&taught=1&end=1');
+  await begin(page);
+  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+
+  await page.locator('[data-action="import-daily"]').click();
+  // World 1 on a fresh device is virgin, so it needs no arming: there is
+  // nothing there to lose, and asking to abandon nothing is a dialog that
+  // teaches a player to press through dialogs.
+  await page.locator('[data-slot="1"]').click();
+
+  // Straight onto a live board in the world just taken.
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+
+  const kept = await page.evaluate(() => {
+    const raw = localStorage.getItem('ashwake.world.1.v1');
+    return raw === null
+      ? null
+      : (JSON.parse(raw) as { worldSeed: number; revealed: string[]; runs: number });
+  });
+  expect(kept, 'keeping a daily wrote down no world').not.toBeNull();
+  expect(kept!.revealed.length, 'the ground the daily showed did not come with it').toBeGreaterThan(
+    0,
+  );
+  // The half that is a balance ruling rather than a convenience: a daily may be
+  // replayed all day, so banking its score would make retry-until-good the best
+  // way to open a world.
+  expect(kept!.runs, "the daily's spoils came with it after all").toBe(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('keeping a daily over a PLAYED world asks first', async ({ page }) => {
+  const errors = watchErrors(page);
+  // A device whose world 1 is three hundred runs deep — the one case where
+  // picking a row costs something.
+  await page.goto('/?runs=300&taught=1&place=12');
+  await begin(page);
+  await clearCards(page);
+
+  await page.goto('/?daily=2026-08-26&taught=1&end=1');
+  await begin(page);
+  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+  await page.locator('[data-action="import-daily"]').click();
+
+  const row = page.locator('[data-slot="1"]');
+  // The row says what picking it would cost, before it is picked.
+  await expect(row, 'the row did not say what the world holds').toContainText(/300/);
+
+  const before = (await row.textContent()) ?? '';
+  await row.click();
+  // ONE press must not take the world.
+  await expect(page.locator('[data-hud="end"]'), 'one press abandoned a world').toBeVisible();
+  expect((await row.textContent()) ?? '', 'the row did not arm').not.toBe(before);
+
+  // And the second one does.
+  await row.click();
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

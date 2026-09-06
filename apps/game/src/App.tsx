@@ -30,6 +30,7 @@ import {
 import { metGoalIds } from '@meta/goals';
 import { ONLY_WORLD } from '@meta/records';
 import {
+  worldFromRun,
   mergeRun,
   newWorld,
   UNLOCKS,
@@ -87,6 +88,7 @@ import {
   markSaid,
   isFreeSlot,
   settleSlot,
+  settleWorldInto,
   setActiveSlot,
   SLOTS,
   writeRecords,
@@ -2354,6 +2356,52 @@ function Game() {
   }, [session.detour, daily, snap.state.rootSeed, enterWorld]);
 
   /**
+   * KEEP THIS BOARD — a daily, turned into one of this device's three worlds
+   * (2026-09-05, Marc, of what CONTINUE IN MY WORLD had always meant to him:
+   * *"i want to import this seed in one of my 3 worlds as a new world that
+   * i'd like to explore further, with this first run in mind"*).
+   *
+   * The sibling of `settleThisWorld` above, and deliberately not the same
+   * function: that one keeps a SHARED seed and is refused on a daily, offers
+   * only the first free slot, and carries nothing but the number. This one is
+   * a daily specifically, picks the slot the player names — a world with runs
+   * on it is one this would abandon, so the choosing belongs to them — and
+   * carries the ground the run walked. What it does NOT carry is the run:
+   * `worldFromRun`'s own docblock has the reasoning, and it is Marc's answer
+   * when asked, over both "the run counts as run 1" and "seed only".
+   *
+   * `settleWorldInto` rather than a write here, for `settleSlot`'s reason: the
+   * slot's saved run and shop have to go with it, and one place should know
+   * that. And in through `enterWorld` rather than by setting state, for that
+   * function's reason: everything a run starts from is put down in one order
+   * or two doors disagree about what a run starts from.
+   */
+  const importDaily = useMemo(() => {
+    if (daily === null) return undefined;
+    const seed = snap.state.rootSeed;
+    const state = snap.state;
+    return {
+      worlds: ledgers.worlds,
+      onImport: (into: Slot) => {
+        settleWorldInto(into, worldFromRun(seed, state));
+        // The diary's arrival entry, before the navigation — a world taken is
+        // a world-scale moment, and no run-end hook sees this door.
+        writeTimeline(
+          appendEntry(readTimeline(), {
+            at: Date.now(),
+            kind: 'world',
+            event: 'settled',
+            slot: into,
+            worldSeed: seed,
+          }),
+        );
+        setActiveSlot(into);
+        enterWorld(into);
+      },
+    };
+  }, [daily, snap.state, ledgers.worlds, enterWorld]);
+
+  /**
    * The purse's own handler, kept OUT of whichever component draws the
    * button (2026-08-30; the button itself has moved between `ActionBar` and
    * `Camera` twice since, most recently 2026-09-04 — see `screens/Camera`).
@@ -2839,6 +2887,7 @@ function Game() {
                     : { type: 'SPEND', on: spend.on },
                 )
               }
+              onClose={() => setPurseOpen(false)}
             />
           )}
           <ActionBar
@@ -2918,6 +2967,7 @@ function Game() {
                starting today's board over. Two doors would be two places for
                "what a retry resets" to drift apart. */
             daily={dailyTry === null ? null : { try: dailyTry, onRetry: enterDaily }}
+            importDaily={importDaily}
             onInstall={offerInstall}
             fromLink={session.detour}
           />

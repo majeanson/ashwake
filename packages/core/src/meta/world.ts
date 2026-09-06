@@ -111,6 +111,29 @@ export const newWorld = (
 });
 
 /**
+ * A world minted from a run that has already been played: its MAP, and none
+ * of its spoils (2026-09-05, Marc, of a daily's ending — *"i want to import
+ * this seed in one of my 3 worlds as a new world that i'd like to explore
+ * further, with this first run in mind"*).
+ *
+ * The daily is the case, and it is why this is not `rememberRun`. A daily is a
+ * board everyone plays and anyone may replay: banking its relics, its shrines
+ * or its score into a world would make "retry until the run is good, then
+ * import it" the best way to open a world, which is a strategy about the
+ * MENU rather than about the game. So the run's ground travels — the point is
+ * to carry on exploring a place you have seen rather than to meet it twice —
+ * and `runs`, `bestPoints`, `farthestReach`, the shrines, the territories and the
+ * finds all start where `newWorld` starts them. Marc chose exactly this shape
+ * when asked, over both "the run counts as run 1" and "seed only".
+ *
+ * `revealed` is every key on the finished board, which is what `mergeRun` unions
+ * for a live run — the same definition of "seen", stated once here rather than
+ * a second one that could drift from it.
+ */
+export function worldFromRun(worldSeed: number, state: GameState): WorldMemory {
+  return { ...newWorld(worldSeed), revealed: Object.keys(state.cells) };
+}
+/**
  * What the Nth shrine you reach switches on, in order (M4).
  *
  * The unlock ledger `DESIGN.md` has carried since the first design pass, now

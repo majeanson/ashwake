@@ -1643,6 +1643,24 @@ h3.fact-label {
   gap: 0.35rem;
 }
 
+/*
+ * The buttons take an explicit rung UNDER the popover (2026-09-05, Marc, a
+ * second time: *"make sure the popup goes above other buttons"*).
+ *
+ * They were static, and by the spec a static sibling cannot paint over a
+ * positioned one carrying a z-index. Marc's phone did it anyway, twice, and a
+ * rule that is true by the spec and false on the device is worth nothing. So
+ * the order is written as two integers a browser has to COMPARE rather than as
+ * a paint-order rule it has to honour: 1 here, the cluster's own rung on the
+ * popover, and no reading of the cascade left in which the row wins.
+ *
+ * `position: relative` only so `z-index` applies at all; nothing moves.
+ */
+.camera > button {
+  position: relative;
+  z-index: 1;
+}
+
 .camera button {
   background: var(--panel);
   font-family: var(--font-label);
@@ -2261,6 +2279,32 @@ h3.fact-label {
   align-items: baseline;
   gap: 0.4rem;
   padding: 0 0.2rem 0.15rem;
+}
+
+/*
+ * The purse's own way out, at its foot and to the right (2026-09-05).
+ *
+ * Quiet on purpose: `--ink-dim` and the smallest label on the drawer, because it
+ * is a way BACK rather than a thing to buy, and every row above it is priced.
+ * Right-aligned because that is the corner the thumb that opened this drawer
+ * is already nearest — LUCK lives in the board's bottom-right cluster.
+ */
+.spends-close {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: var(--gap-xs);
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: var(--label-tracking);
+  color: var(--ink-dim);
+}
+
+.spends-close svg {
+  width: 1em;
+  height: 1em;
 }
 
 .spends-luck {

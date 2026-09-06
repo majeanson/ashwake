@@ -732,6 +732,15 @@ export type Strings = {
      * next to anything that explains it.
      */
     readonly luckPurse: (luck: number) => string;
+    /**
+     * The purse's own way out (2026-09-05, Marc: *"add a small luck button
+     * bottom right corner to exit back"*).
+     *
+     * The drawer's only door was the LUCK button that opened it, which moved to
+     * the board's far corner on 2026-09-04 — so the thing you close a drawer
+     * with ended up diagonally across the screen from the drawer.
+     */
+    readonly closePurse: string;
     readonly resetTeaching: string;
     /** The disclosure a manual section folds its finer print into. */
     readonly details: string;
@@ -1006,13 +1015,29 @@ export type Strings = {
       /** Replay today's board. The retry loop lives where the itch is. */
       readonly tryAgain: string;
       /**
-       * On a daily's ending: leaves today's board for a fresh expedition into
-       * this device's own world, carrying forward its purse and perks. The
-       * same door as `ui.newRun` — see `App.tsx`'s `newRun` — worded for a
-       * daily specifically, since "NEW RUN" beside TRY AGAIN does not say
-       * which of the two boards it starts on.
+       * On a daily's ending: KEEP today's board as one of this device's three
+       * worlds and carry on exploring it.
+       *
+       * It used to open a fresh expedition into whichever world you came from,
+       * which is what the words say only if you already know a daily is not one
+       * of your worlds. Marc, 2026-09-05, on what the sentence had always meant
+       * to him: *"i want to import this seed in one of my 3 worlds as a new
+       * world that i'd like to explore further, with this first run in mind."*
+       * So it opens the picker below instead, and the plain way back to a world
+       * you already have is the main menu, which is where every other door home
+       * lives.
        */
       readonly continueInWorld: string;
+      /**
+       * The picker's own heading: which of the three this daily becomes.
+       *
+       * Only the ground travels (`meta/world.ts`'s `worldFromRun`), and the
+       * heading says so, because the one thing a player must not be surprised
+       * by here is what they are about to spend: picking a world that has been
+       * played asks to ABANDON it, in the words `newWorldArmed` already uses.
+       */
+      readonly importInto: string;
+      readonly importKeeps: string;
       readonly relicsBanked: (n: number) => string;
       /**
        * The run's own shape, as the six facts Ashwake 1 fixed the grid at.

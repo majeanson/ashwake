@@ -10,6 +10,7 @@ import { Icon } from '../ui/Icon';
 import { Prose } from '../ui/Prose';
 import { useEffect, useRef, useState } from 'react';
 import type { Standing } from '../shell/settle';
+import { SLOTS, type Slot } from '../shell/storage';
 import { Atlas } from './Atlas';
 import { Payout } from './Payout';
 import { Shop } from './Shop';
@@ -121,6 +122,21 @@ export type EndScreenProps = {
    */
   readonly daily?: { readonly try: number; readonly onRetry: () => void } | null;
   /**
+   * KEEP THIS BOARD: turn the daily just played into one of the three worlds
+   * (2026-09-05). Absent off a daily, where there is nothing to import.
+   *
+   * The worlds come in whole rather than as a count, because the row has to
+   * say what picking it would COST — a world with runs on it is one this
+   * would abandon, and a player deciding that deserves to see the runs, the
+   * best and the reach before the confirmation asks.
+   */
+  readonly importDaily?:
+    | {
+        readonly worlds: Readonly<Record<Slot, WorldMemory | null>>;
+        readonly onImport: (slot: Slot) => void;
+      }
+    | undefined;
+  /**
    * Put Ashwake on the home screen, where the browser has offered us a dialog
    * to do it with. Absent everywhere else, which is most places: iOS never
    * offers one, an already-installed app has nothing to offer, and a device
@@ -144,6 +160,7 @@ export function EndScreen({
   onMainMenu,
   standing,
   daily,
+  importDaily,
   onInstall,
   fromLink,
   hud,
@@ -158,6 +175,12 @@ export function EndScreen({
   onShare,
   goals,
 }: EndScreenProps) {
+  /* The daily's KEEP THIS BOARD picker: shut until asked for, and `armed` is
+     the slot whose second press would abandon it. Both reset with the screen,
+     which is the whole of their lifetime — there is no way back to this
+     ending once a world has been taken. */
+  const [picking, setPicking] = useState(false);
+  const [armed, setArmed] = useState<Slot | null>(null);
   /*
    * WHAT THE SHARE BUTTON SAYS AFTER IT HAS BEEN TAPPED.
    *
@@ -467,14 +490,59 @@ export function EndScreen({
       )}
 
       <nav className="panel-menu">
-        {/* The way back onto this device's OWN world, off a daily's ending —
-            see the doc comment on the top button above. `onNewRun` is the
-            same door NEW RUN opens everywhere else; only the label and the
-            place it sits change here. */}
-        {daily != null && (
-          <button type="button" data-action="new-run" onClick={onNewRun}>
+        {/*
+          KEEP THIS BOARD, off a daily's ending (2026-09-05).
+
+          It was `onNewRun` — the same door NEW RUN opens everywhere else,
+          relabelled — which left the daily for a fresh expedition into
+          whichever world you came from. Marc, on what the words had always
+          meant to him: *"i want to import this seed in one of my 3 worlds as a
+          new world that i'd like to explore further, with this first run in
+          mind."* So it opens a picker instead.
+
+          Two taps to destroy a world and not one: a slot that has been played
+          ARMS with `newWorldArmed`'s own words — the same two-step NEW WORLD
+          already uses — and only a second press on the armed row goes through.
+          An empty slot needs no arming, because there is nothing to lose.
+        */}
+        {daily != null && importDaily !== undefined && !picking && (
+          <button type="button" data-action="import-daily" onClick={() => setPicking(true)}>
             {s.ui.ending.continueInWorld}
           </button>
+        )}
+        {daily != null && importDaily !== undefined && picking && (
+          <>
+            <p className="fact-label">{s.ui.ending.importInto}</p>
+            <p className="note">{s.ui.ending.importKeeps}</p>
+            {SLOTS.map((slot) => {
+              const world = importDaily.worlds[slot];
+              const played = world !== null && (world.runs > 0 || world.revealed.length > 0);
+              const isArmed = armed === slot;
+              return (
+                <button
+                  key={slot}
+                  type="button"
+                  data-slot={slot}
+                  className={isArmed ? 'armed' : undefined}
+                  onClick={() => {
+                    if (played && !isArmed) {
+                      setArmed(slot);
+                      return;
+                    }
+                    importDaily.onImport(slot);
+                  }}
+                >
+                  {isArmed
+                    ? s.ui.newWorldArmed(slot)
+                    : `${s.ui.worldN(slot)} · ${
+                        played
+                          ? `${world.runs} · ${world.bestPoints} · ${s.ui.stats.map} ${world.farthestReach}`
+                          : s.ui.emptyWorld
+                      }`}
+                </button>
+              );
+            })}
+          </>
         )}
         {/* SHARE is the game's entire distribution mechanism: it has no store
             listing and no account, so a run reaches another person because

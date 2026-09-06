@@ -651,6 +651,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     soundOff: 'Sound is off. Tap for sound.',
     menu: 'MENU',
     luckPurse: (luck) => `LUCK: ${luck}. Open the purse.`,
+    closePurse: 'CLOSE',
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     theStory: 'THE STORY',
@@ -748,6 +749,9 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       try: (n) => `TRY ${n}`,
       tryAgain: 'TRY AGAIN',
       continueInWorld: 'CONTINUE IN MY WORLD',
+      importInto: 'KEEP THIS BOARD AS ONE OF YOUR WORLDS:',
+      importKeeps:
+        'The ground you walked comes with it. Relics, shrines and the score stay with the daily.',
       relicsBanked: (n) => `${n} relics banked`,
       placements: 'PLACEMENTS',
       popped: 'POPPED',

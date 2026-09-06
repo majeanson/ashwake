@@ -37,9 +37,11 @@ export type PurseProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly onSpend: (spend: SpendView) => void;
+  /** Shut the drawer from inside it — see the button at the foot. */
+  readonly onClose: () => void;
 };
 
-export function Purse({ hud, theme, s, onSpend }: PurseProps) {
+export function Purse({ hud, theme, s, onSpend, onClose }: PurseProps) {
   const names = namesOf(theme, s.locale);
 
   return (
@@ -77,6 +79,26 @@ export function Purse({ hud, theme, s, onSpend }: PurseProps) {
           </button>
         );
       })}
+
+      {/*
+        THE WAY OUT, at the foot of the thing it closes (2026-09-05, Marc:
+        *"add a small luck button bottom right corner to exit back"*).
+
+        The drawer had exactly one door and it was the button that opened it —
+        fine while LUCK sat in the action bar directly under this box, and not
+        fine since 2026-09-04, when it moved to the board's far corner
+        (`screens/Camera`). Closing a drawer should not be a reach diagonally
+        across the screen to a control whose label says OPEN.
+
+        The luck mark and a WORD rather than a cross: `screens/Hud` and
+        `screens/Worlds` both record the ruling this follows — marks are for
+        cross-screen CONCEPTS, and an invented glyph in one place is what D10
+        rules against. The mark is the registry's, the same one the toggle that
+        opened this drawer draws.
+      */}
+      <button type="button" className="spends-close" data-action="purse-close" onClick={onClose}>
+        <Icon name="luck" /> {s.ui.closePurse}
+      </button>
     </div>
   );
 }

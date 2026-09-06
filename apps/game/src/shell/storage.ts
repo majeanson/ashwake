@@ -654,8 +654,23 @@ export function clearSlot(slot: Slot): void {
  * hand-typed seed was negative.
  */
 export function settleSlot(slot: Slot, worldSeed: number): void {
+  settleWorldInto(slot, newWorld(worldSeed));
+}
+
+/**
+ * The same seam, for a world that is not blank (2026-09-05).
+ *
+ * A daily kept as one of the three arrives carrying the ground the run just
+ * walked (`meta/world.ts`'s `worldFromRun`), so `newWorld` is not the world being
+ * written — but the footprint still has to go, and for exactly the reason the
+ * paragraph above gives: a saved run and a shop surviving into a world whose
+ * seed no longer matches them is the corruption the seed guard refuses.
+ * Written once, here, so the two ways of taking a slot cannot come to disagree
+ * about what taking one means.
+ */
+export function settleWorldInto(slot: Slot, world: WorldMemory): void {
   clearSlot(slot);
-  writeWorld(slot, newWorld(worldSeed));
+  writeWorld(slot, world);
 }
 
 /**
