@@ -4704,3 +4704,15 @@ because it certifies the thing it never checked.
 
 **Verified:** format, lint, typecheck, full suite, Playwright, `pnpm sim`
 byte-identical.
+
+**Addendum, same session: CI went red on four tests nobody had touched.**
+`settle`, `store` and `text`, all timing out at vitest's default 5000ms, all
+passing here in under a second. They were not slow, they were CLOSE: this
+repository measured a GitHub runner at about eleven times a desktop two days
+ago and gave `sim.test.ts` its own 240s for exactly that reason, and
+`text.test.ts`'s catalogue sweep takes 390ms here — 4.3s there, against a 5s
+cap. This session's own new catalogue entries were plausibly the last straw,
+which is the least interesting part: **a cap a passing test clears by 14% is a
+cap that fails on the runner's mood.** The workspace default is 30s now, with
+the measurement written beside it, and the sim gates keep their larger number.
+The same lesson, in the same week, in the file that had not been told it.
