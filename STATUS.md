@@ -4,7 +4,85 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-03 — the wide pass, reviewed: three of its own fixes
+Last checkpoint: **2026-09-08 — the nine-domain review, and the bug under the
+bug.**
+
+Marc asked for a thorough review and picked nine of the ten domains it
+produced. It opened GREEN — typecheck, lint, 1046 tests, `pnpm sim`
+byte-identical, zero `TODO`, zero `as any` — and every real finding came out
+of BUILDING a domain rather than out of reading one. `LOG.md` Session 61 is
+the reasoning; this is what is now true and verified.
+
+**Verified, and each of these was broken or missing before:**
+
+- **The committed art is graded.** `ci.yml` had admitted since 2026-08-29 that
+  "the art is current" was checked by nothing. `pnpm artcheck` is the portable
+  closure it had already specified: `assets/ladder.json`, two columns, `token`
+  compared exactly (pure theme arithmetic, no rasteriser) and `measured`
+  re-decoded from the committed bytes. Both proven against a deliberately
+  broken tree — a darkened token reports "the THEME moved and the art did
+  not", a swapped PNG reports "the ART moved and its record did not". CI runs
+  it BEFORE `pnpm bake`, because bake overwrites what it grades.
+- **The audit builds what it photographs.** `playwright.audit.config.ts`
+  served `dist` without building it — the identical fault the gate config was
+  fixed for on 2026-09-02, still live next door, and worse: an audit cannot
+  fail, so a stale run yields a plausible report and 320 pictures of a build
+  nobody made.
+- **WebKit runs the suite's DOM half.** 41 tests on the engine the game is
+  actually played in, chosen by measurement (the whole suite ran there first;
+  64/93 passed and all 29 failures were read and none was a bug in the game).
+  One process per engine, because two engines back-to-back exhaust the
+  driver's WebGL contexts — the same symptom `workers: 1` has recorded since
+  2026-08-29, given the same treatment rather than a filtered assertion.
+- **The `z-index: calc()` theory is dead.** Three sessions rested on it.
+  WebKit computes `calc(var(--z-chrome) + 2)` as `12` and honours it. The
+  three "latent" sites need nothing; `e2e/stacking.spec.ts` asks the engine
+  with `elementFromPoint` rather than asking the stylesheet, on both engines.
+- **The board's gestures were bound by a race.** `Rig`'s gesture effect and
+  the ResizeObserver both read `wrapper.current` with the ref OBJECT as their
+  dependency, so a null at first-effect time was permanent. Latent since it
+  was written; lazy-mounting the board is what made it lose. **The board drew
+  perfectly and answered nothing a finger did.** Both take the element as
+  state now, proven by reverting only that fix and watching two specs fail.
+- **The front door no longer waits on a renderer.** Blocking JS 451KB → 165KB
+  gzipped. `Board` behind `lazy()`, fetched on the beat after first paint;
+  `tourMs` moved to `board/flight.ts` because one arithmetic helper was
+  holding three in the entry chunk. The `<Canvas>` still mounts exactly once
+  and never remounts.
+- **`STAT_ICON` has a consumer** — the seventh instance of this body's
+  signature miss, and the sweep that found it returned fifteen more exports
+  that were merely file-internal. Those are `const` and `function` now in
+  `apps/game/src`, deliberately untouched in `packages/core/src/engine`.
+
+**New, and both off by default:**
+
+- **Haptics** (`ui.haptics`): a tick on place, a two-beat on pop, one on a
+  claim, on the `act` seam. `ui.sound`'s class and its inverse argument — a
+  buzz does not leave the phone, so it is the feedback a player in a quiet
+  room can still have. A no-op on iOS, where SETTINGS hides the row rather
+  than offering a switch that would lie.
+- **S6 opens: the stranger console** behind `?playtest=1`. Three of Session
+  C's four facts record themselves off `act` with the elapsed time the paper
+  form has always left blank; the fourth is the gate and its "not the first
+  run" rule lives in the model. COPY SHEET in `PLAYTEST.md`'s own layout.
+  Rehearsed with 19 unit tests and four in a browser, one of which places a
+  tile with a TAP because `?place=n` walks the reducer and never travels
+  `act`.
+
+**Two `NEXT.md` items came off by being READ**: the drip's toasts and the
+Android BACK gesture were both fully landed and never struck. The file that
+exists because _a stale open-list is worse than none_ was the stale one.
+
+**What is left for Marc** is `NEXT.md` §1 and §5b–§5d — domain 7 of the
+review, excluded by him and untouched: the five unread theme channels,
+`Said.brief`, the POP row reserve, WALL/FIELD's camera trip, and now the
+French stat row, where a mark instead of a word would end the clipping and is
+a look decision rather than a fix.
+
+**Counts:** 1077 tests / 86 files, 100 e2e on Chromium + 41 on WebKit, `pnpm
+sim` byte-identical, `pnpm artcheck` green.
+
+Previous checkpoint: **2026-09-03 — the wide pass, reviewed: three of its own fixes
 were wrong.**
 
 The review found four defects, three introduced BY the pass, and the worst of

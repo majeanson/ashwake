@@ -307,6 +307,22 @@ on the one that asked**, which is the trade the note under the slider names and
 the slider itself exists to undo. MSAA still could not join the dial: it is a
 WebGL context flag fixed at canvas creation and the board may never remount.
 
+**~~`z-index: calc(...)` is dropped by some browser~~ — THE THEORY IS WRONG,
+settled 2026-09-08** (`LOG.md` Session 61). Everything below rested on one
+untested premise: that `z-index` takes an `<integer>` while `calc()` yields a
+`<number>`, so an engine might decline the pair and never make a stacking
+context. WebKit was installed and asked directly. It computes
+`calc(var(--z-chrome) + 2)` as `12` and honours the order, exactly as Chromium
+does. **The construct is fine.** The three latent sites in `.board-menu`,
+`.lens-off` and `.directions` need no treatment, the hardening done on this
+theory's strength cost nothing but was not the fix it was believed to be, and
+whatever Marc saw on his phone is still out there with its best lead gone.
+`e2e/stacking.spec.ts` now asks the ENGINE what is on top — `elementFromPoint`
+rather than a computed style, which is the very distinction the theory turned
+on — on both engines, so the next report has an instrument waiting for it.
+The original argument is kept below, unedited, because a retired theory that
+is deleted is one somebody re-derives.
+
 **`z-index: calc(...)` in three more places, unverified (2026-09-05, `LOG.md`
 Session 53).** The SHARPNESS popup came back from Marc's phone with the camera
 buttons drawn ON TOP of it — not reproducible in Chromium at any pixel ratio,
@@ -379,7 +395,15 @@ things?
 Inheritance direction, played subtle: `s.story` is rewritten in both
 languages, the loop only implied, never stated. Nothing left open here.
 
-**The drip's toasts, by choosing their words (2026-09-03).** The moments and
+**~~The drip’s toasts~~ — LANDED, and this paragraph was stale (struck
+2026-09-08).** Verified against the code rather than trusted: `App`’s
+`speakLesson` is the speaker, `shell/teaching.ts#toastLine` is the word table,
+and `s.lensHint` is in both languages. Nothing is owed. Kept struck rather
+than deleted because the shape of the miss is the point — this file exists
+because _a stale open-list is worse than none_, and it was the stale one. The
+original text follows.
+
+**The drip’s toasts, by choosing their words (2026-09-03).** The moments and
 the ledger are built and armed; what is missing is a speaker in `App` (one
 toast per dispatch, through `act`, the same door the receipts use) and a
 sentence per moment. Five candidates already exist in the catalogue and
@@ -704,12 +728,16 @@ checks the install surface instead of owing it.
   run (§0, item 4).
 - **~~The purse's spend actions.~~ DONE** — `screens/purse.test.tsx`, each row
   clicked and then its action put through `reduce` with a number checked.
-- **The BACK GESTURE on an open panel.** The one thing D9 says a router would
-  genuinely have bought, split off from it: on Android the system back gesture
-  leaves the site from on top of an open manual. It wants one history entry per
-  open dialog, owned by `ui/dialog.tsx` — the file that already knows the panel
-  stack — and no URL→scene table anywhere. Small, and worth its own question.
-  **Not before Session A:** it is a new global gesture.
+- **~~The BACK GESTURE on an open panel.~~ SHIPPED 2026-08-30, and this bullet
+  was stale for nine days** (struck 2026-09-08). `ui/dialog.tsx` has owned it
+  since the day this was written: one history entry per open panel, every
+  `pushState` in an event handler, a panel closed from the UI gives its entry
+  back, and the stack owns nothing while nothing is open — exactly the design
+  this bullet asked for, including "no URL→scene table anywhere". It is pinned
+  by `menus.spec.ts` (two `goBack()`s, one panel each, and `history.state`
+  checked for an entry the stack no longer owns), and since 2026-09-08 that
+  test runs on WebKit as well. The "not before Session A" caution is moot: it
+  landed long before.
 - **The atlas**, if it earns its place: it is on the "review rather than port"
   list and no stranger has ever seen one. It is at least no longer photographed
   empty — `worlds-thirty` and `worlds-many` in `audit-shots/` are what it looks

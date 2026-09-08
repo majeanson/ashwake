@@ -4980,3 +4980,101 @@ deploy and its verifier, `/version.json` on the live site reports `32c0f90`, and
 `pnpm verify:deploy` from a desk passes all seven checks — bundles, the board's
 font, the three chrome faces, the install surface and the stamped service
 worker.
+
+### Session 61 — a review of nine domains, and the one that found a bug under a bug (2026-09-08)
+
+**Question:** Marc asked for a thorough review — where the project stands,
+what could be improved, easy features, UI/UX — then picked nine of the ten
+domains it produced and said _"in the order youd like, no cut corners."_ So
+the question is not one this session chose: **does a wide review of a repo
+this disciplined find anything real, or does it find tidiness?**
+
+**Answer: it found four real defects and retired one theory, and none of them
+was where the review said to look.** The review opened green — typecheck,
+lint, 1046 tests, `pnpm sim` byte-identical, zero `TODO`, zero `as any` — and
+every genuine finding came out of BUILDING one of the domains rather than out
+of reading. That is the session's lesson and it is a caution about its own
+method: a survey ranks places to dig; it does not find anything.
+
+**1. The gates, which were grading the wrong things.** `ci.yml` had said since
+2026-08-29 that "the committed art is current" is checked by nothing, and had
+written down the portable closure it wanted. `scripts/artcheck.ts` is that
+closure: a measured ladder in `assets/ladder.json`, two columns catching
+opposite failures — `token` is pure arithmetic over the theme and so compares
+EXACTLY on any platform, `measured` re-decodes the committed bytes, which is
+deterministic where rasterising an SVG is not. Both proven against a
+deliberately broken tree before landing. And `playwright.audit.config.ts`
+served `dist` without building it — the identical fault the gate config was
+fixed for on 2026-09-02, still live in the file next door, and worse there:
+a gate goes red, but an audit cannot fail, so a stale run produces a plausible
+report and 320 pictures of a build that was never made.
+
+**2. The engine the game is played in had never run a test.** All 93 specs
+were Chromium. WebKit now runs the six whose subject is the DOM, and the
+subset was MEASURED rather than guessed — the whole suite ran there first,
+64 of 93 passed, and every one of the 29 failures was read and none was a bug
+in the game (22 board pictures downstream of troika failing to load the TTF
+"due to access control checks" on a same-origin request, 3 two-finger
+gestures, 1 Chromium-only clipboard fixture).
+
+**And it killed the `z-index: calc()` theory.** Three sessions rested on the
+idea that `calc()` yields a `<number>` where the property wants an `<integer>`,
+so an engine might drop the declaration; a hardening change was made on its
+strength. Asked directly, WebKit computes `calc(var(--z-chrome) + 2)` as `12`
+and honours it. The construct is fine, the three "latent" sites need nothing,
+and `e2e/stacking.spec.ts` is what should have existed first — it asks the
+ENGINE what is on top with `elementFromPoint` rather than asking the
+stylesheet what it declared, which is exactly the distinction the theory
+turned on.
+
+**3. The bug under the bug, and the best finding of the session.** Splitting
+three out of the first load (451KB gzipped of blocking JS to 165KB) broke two
+gesture specs. The cause was not the split: `Rig`'s gesture effect took the
+board wrapper as a REF, read `.current`, gave up if it was null, and depended
+on the ref OBJECT — which never changes, so the early return was permanent.
+The ResizeObserver deciding whether the board is ever MEASURED had the same
+shape. `Rig` lives inside the R3F `<Canvas>`, which renders through a second
+reconciler after measuring, and on the lazily-mounted path that render won the
+race against the div's ref being attached. **The board drew perfectly and
+answered nothing a finger did.** Latent since it was written; a performance
+change is what made it lose the race. Proven by reverting only the ref fix and
+watching the two specs fail again.
+
+**Two hours of that were spent chasing a ghost of my own making**, and it is
+worth writing down: an orphaned `vite preview` from a debugging probe sat on
+port 4174, and `reuseExistingServer` served every subsequent run a stale
+bundle. Three "reproductions" of a fixed bug and one bogus baseline came from
+that. The repository already warns about stale bundles in two config
+docblocks; what it does not warn about is the person who starts a server by
+hand beside them.
+
+**4. `STAT_ICON` — the seventh instance of this body's signature miss.** The
+table naming which stats are drawn as marks, exported, read by nothing, while
+the render hard-coded `id === 'luck'`. It renders through the table now,
+identically. The sweep that found it returned sixteen exports and fifteen were
+merely file-internal, which is how a ritual stops getting run — those are
+`const` and `function` now in `apps/game/src`, and deliberately left alone in
+`packages/core/src/engine`, whose surface is Ashwake 1's.
+
+**Two `NEXT.md` items came off by being READ rather than built** — the drip's
+toasts and the Android BACK gesture were both fully landed and their
+paragraphs never struck. Cheaper to grep than to trust, exactly as the rule
+says, and the rule caught this file being the one that was stale.
+
+**What shipped that is new:** haptics (`ui.haptics`, off by default; the
+inverse of sound's argument — a buzz does not leave the phone, so it is the
+feedback a player in a quiet room can still have), and **S6's stranger
+console** behind `?playtest=1`, where three of Session C's four facts record
+themselves off the `act` seam with the elapsed time the paper form has always
+left blank.
+
+**What was ruled rather than done.** Domain 7 — the five unread theme
+channels, `Said.brief`, the POP row reserve, WALL/FIELD's camera trip — was
+excluded by Marc and is untouched. The French stat row's ellipsis is stated at
+`STAT_ICON`'s declaration and in `NEXT.md` §5d rather than fixed: a mark
+instead of a word is a look decision, and §5b records what happens when one is
+guessed at from a session that cannot see the phone. And `App.tsx` was NOT
+broken up beyond the three device facts that cannot see the game: the reason
+is written at the top of the file, and it is that `act` being the one place
+that knows what an action did is what makes the receipts, the voice, the buzz
+and now the sheet agree with each other.

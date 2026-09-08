@@ -95,9 +95,22 @@ sessions; S2 and S3 are the fat ones.
   without relaxing one? **Yes** — all 152 palette assertions, with three
   colours moved and no threshold._ **What is left is the choosing**, which
   is Marc's and only happens on a phone.
-- [ ] **S6 — the console, Session A on v2, then the stranger.** `/playtest`
-      route with COPY SHEET; Session A re-run against the deployed v2; fixes;
-      Session C.
+- [~] **S6 — the console, Session A on v2, then the stranger.** **The console
+  is BUILT** (2026-09-08, `LOG.md` Session 61): `?playtest=1` rather than a
+  `/playtest` route, because D9 ruled out a router and this is the `?ff=`
+  class of surface — no row on anybody's screen, which matters most here,
+  since the one person who must never find it is the stranger holding the
+  phone. Three of Session C's four facts record themselves off the `act`
+  seam with the elapsed time the paper form leaves blank; the fourth is the
+  gate, and its "a first run does not count" rule lives in the model where
+  it is tested. COPY SHEET puts the sheet on the clipboard in
+  `PLAYTEST.md`'s own layout. Rehearsed rather than trusted — 19 unit tests
+  and four in a browser, one placing a tile by TAP because `?place=n` walks
+  the reducer and never travels `act`. _Question: can the sheet be a
+  transcript rather than a memory? Yes for three facts of four, and the
+  fourth needed a rule rather than an observation._ **What is left is the
+  part no code can do:** Session A re-run against the deployed v2, the
+  fixes it names, then Session C.
 
 ## Deploy
 
