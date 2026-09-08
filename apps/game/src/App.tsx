@@ -76,7 +76,6 @@ import {
   clearEverything,
   clearRun,
   clearSlot,
-  localToday,
   readDailyBook,
   readDailyRun,
   writeDailyBook,
@@ -88,8 +87,6 @@ import {
   memoryFor,
   worldSeedFor,
   onShed,
-  wasSaid,
-  markSaid,
   isFreeSlot,
   settleSlot,
   settleWorldInto,
@@ -112,7 +109,7 @@ import * as voice from './shell/voice';
 import { buzz, stopBuzz } from './shell/touch';
 import { registerWorker } from './shell/worker';
 import { carriedBy, cross, dowryOf } from './shell/cross';
-import { canInstall, inAppBrowser, isInstalled, promptInstall } from './shell/install';
+import { useInstallOffer, useToday } from './shell/platform';
 import { renderShareCard } from './shell/shareCard';
 import { settle, settleDaily, type Standing } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
@@ -155,6 +152,38 @@ import './ui/ui.css';
  * **A run is remembered.** `shell/useDevice` reads what this device kept and
  * `shell/keeper` writes it back — through a keeper that refuses once its
  * session is over, which is what makes the crossing safe.
+ *
+ * ## WHY THIS FILE IS STILL THIS LONG (2026-09-08)
+ *
+ * `Game()` is one component with sixty-odd hooks, and it was read with an eye
+ * to breaking it up. Two things were taken out and the rest was deliberately
+ * left, so the next reader does not have to re-decide it.
+ *
+ * **What left:** `shell/platform.ts` — whether the browser has offered an
+ * install dialog, whether this is somebody's in-app webview, and what today's
+ * date is. The test for taking something out of here is not size, it is
+ * whether **it can see the game**: those three cannot. They have no dependency
+ * on a run, none on each other, and no reason to sit in the path of somebody
+ * following a placement. Out of the component they also became testable, which
+ * they were not before — "the install note is offered once ever" is a claim
+ * about two mounts of a hook, not about a screen, and `platform.test.ts`
+ * makes it.
+ *
+ * **What stayed, and why it is not cowardice:** a run's state, the board
+ * handle, `act`'s receipt/voice/haptics/camera seam, the teaching drip, the
+ * settle and the ledgers are ONE machine, and they are ordered. `act` is the
+ * single place that knows what an action did, which is the whole reason the
+ * receipts, the voice, the buzz and the camera trip agree with each other;
+ * splitting it into four hooks would replace one readable sequence with four
+ * files that each watch for a change they did not cause — and this
+ * repository's own scar tissue is full of exactly that failure. The size here
+ * is mostly the DESIGN RECORD: of 3.5k lines, roughly half are comments
+ * carrying the arguments, and the code left after that is about seventeen
+ * hundred lines doing seventeen hundred lines of work.
+ *
+ * So the honest statement of the problem is not "this file is too long", it is
+ * "a new mechanic has no obvious home" — and the answer to that is the seam
+ * `act` already is, not a directory of hooks.
  */
 
 /**
@@ -628,63 +657,13 @@ function Game() {
   useEffect(preloadBoard, []);
 
   /*
-   * WHERE THIS GAME IS LIVING — two notes, each said once ever (2026-09-02).
-   *
-   * `install` is offered only where all three are true: the browser actually
-   * handed us a dialog, the app is not already installed, and this device has
-   * not been asked before. Sampled into state rather than read during render
-   * because `canInstall()` changes when the browser fires its event, and a
-   * render that reads a moving global is a render that disagrees with itself.
-   *
-   * `inApp` is raised at boot rather than on the ending: the whole point is to
-   * be read BEFORE a world is built inside storage that will not keep it.
+   * WHERE THIS GAME IS LIVING, and WHAT DAY IT IS — both in `shell/platform`
+   * (2026-09-08). Facts about the phone rather than about the game, with no
+   * dependency on a run and none on each other, so they are hooks with their
+   * own tests instead of forty lines a reader following a placement has to
+   * walk past. The arguments moved with them.
    */
-  /*
-   * Both are LAZY INITIALISERS rather than effects that set state.
-   *
-   * Whether this is an in-app browser, and whether the app is already
-   * installed, are true or false before the first paint — nothing about them
-   * arrives later. Deciding in an effect would render once with the answer
-   * missing and once with it, which is the cascading render `react-hooks`
-   * refuses and which would flash the note in and out. The one thing that DOES
-   * arrive later is `beforeinstallprompt`, and that has a listener below.
-   *
-   * The mark is written during initialisation, which is a side effect in a
-   * render — deliberately, and it is the same shape `startedFrom` uses: it runs
-   * exactly once for the life of the component, and the alternative is showing
-   * the note twice on a device that reloads.
-   */
-  const [installable, setInstallable] = useState(() => canInstall() && !isInstalled());
-  const [inApp, setInApp] = useState(() => {
-    if (!inAppBrowser() || wasSaid('inAppNote')) return false;
-    markSaid('inAppNote');
-    return true;
-  });
-  useEffect(() => {
-    // The event can arrive after mount. `beforeinstallprompt` is captured at
-    // module scope (see `shell/install.ts`); this is only the shell noticing.
-    const look = (): void => setInstallable(canInstall() && !isInstalled());
-    window.addEventListener('beforeinstallprompt', look);
-    return () => window.removeEventListener('beforeinstallprompt', look);
-  }, []);
-
-  /**
-   * The end screen's install offer, or nothing at all.
-   *
-   * Marked as said at the moment it is OFFERED rather than accepted: a player
-   * who read the invitation and did not take it has been invited, and asking
-   * again next run is how an invitation becomes nagging.
-   */
-  const offerInstall = useMemo(() => {
-    if (!installable || wasSaid('installNudge')) return undefined;
-    return () => {
-      markSaid('installNudge');
-      // False means the browser withdrew the offer between render and tap. The
-      // button simply goes, which is honest: there is nothing to open.
-      promptInstall();
-      setInstallable(false);
-    };
-  }, [installable]);
+  const { inApp, dismissInApp, offerInstall } = useInstallOffer();
 
   const s = useMemo(() => stringsFor(locale), [locale]);
   /*
@@ -2443,31 +2422,8 @@ function Game() {
    * Leaving it steps back into the world the player came from — `slot` was
    * never given up, so there is nothing to choose on the way back.
    */
-  /*
-   * TODAY, RE-READ WHEN THE PAGE COMES BACK (2026-09-02).
-   *
-   * It was `useMemo(localToday, [])` — sampled once, on a page that never
-   * reloads. "One page, many sessions" is a house rule, and the installed PWA's
-   * NORMAL state is being left open: a phone put down before midnight and
-   * picked up after it went on offering YESTERDAY's daily from the front door,
-   * and BEGIN would have opened a board whose date the ladder no longer counts.
-   * Ashwake 1 hit this in its launch audit and answered it exactly here.
-   *
-   * Only on `visible`, and only when the date has actually turned, so a phone
-   * that is merely unlocked re-renders nothing. A run in PROGRESS is never
-   * touched: it banks under the date it started, which is the Wordle rule, and
-   * `daily` holds that date independently of this.
-   */
-  const [today, setToday] = useState(localToday);
-  useEffect(() => {
-    const onWake = (): void => {
-      if (document.visibilityState !== 'visible') return;
-      const now = localToday();
-      setToday((was) => (was === now ? was : now));
-    };
-    document.addEventListener('visibilitychange', onWake);
-    return () => document.removeEventListener('visibilitychange', onWake);
-  }, []);
+  /* TODAY, re-read when the page comes back — `shell/platform#useToday`. */
+  const today = useToday();
   const enterDaily = useCallback(() => {
     enterRun(wiring, {
       daily: today,
@@ -3442,7 +3398,7 @@ function Game() {
       */}
         <p className="notice-line update in-app" role="status">
           {inApp && (
-            <button type="button" data-action="in-app" onClick={() => setInApp(false)}>
+            <button type="button" data-action="in-app" onClick={() => dismissInApp()}>
               {s.ui.inApp}
             </button>
           )}
