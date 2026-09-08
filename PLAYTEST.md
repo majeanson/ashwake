@@ -106,6 +106,25 @@ Written before the run rather than during it, because the one thing that
 cannot be recovered is what a person did in their first minute. Four facts and
 a list; nothing here needs a verdict at the time.
 
+**Since 2026-09-08 the sheet is BUILT, and three of the four facts fill
+themselves in.** Open the game with `?playtest=1` before they arrive — a
+WATCHING button appears in the board's bottom-left corner, and nowhere else,
+so the person holding the phone never sees it. `App` marks PLACED, POPPED and
+FINISHED off the same seam the receipts ride, each with the elapsed time this
+form has always left as `after how long? ____`, and STARTED ANOTHER — the
+gate — is marked when a second run begins after one has ended. What is left
+for you is the only part a person can do: the three lists. Tap a list, type
+what they said, press ENTER.
+
+COPY SHEET puts the whole thing on the clipboard in exactly the layout below,
+at any moment, half-finished included. **Copy early and often: nothing is
+saved to the device, on purpose** — a playtest scratchpad in a player's
+storage is a key that backup, restore and the shed ladder would each need an
+opinion about.
+
+The paper version stays below. It is the fallback if the phone is not the one
+running the console, and it is what the console prints.
+
 ```
 DATE / DEVICE            ______________  (iOS or Android, and roughly which)
 SKIN IT OPENED IN        ______________  (auto picks: light phone → daylight)

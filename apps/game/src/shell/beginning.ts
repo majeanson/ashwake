@@ -121,6 +121,16 @@ export type Wiring = {
   readonly frameTheRun: () => void;
   /** Step onto the board, and say what the world is paying for it. */
   readonly begin: () => void;
+  /**
+   * Session C's gate: they went again (Stage 6, 2026-09-08).
+   *
+   * Here rather than at the five call sites because this is the ONE place
+   * every door into a run passes through — including the first one, which is
+   * why the rule that a first run does not count lives in
+   * `shell/playtest#startedAnother` rather than in a condition here.
+   * A no-op unless `?playtest=1`.
+   */
+  readonly wentAgain: () => void;
 };
 
 /**
@@ -154,4 +164,7 @@ export function enterRun(w: Wiring, door: Door): void {
   // 5. AND THE ARRIVAL, which reads the board that now exists.
   w.begin();
   w.frameTheRun();
+
+  // 6. AND, IF ANYBODY IS WATCHING, that they chose to do this at all.
+  w.wentAgain();
 }

@@ -179,3 +179,48 @@ export async function openMore(page: Page): Promise<void> {
   await page.locator('[data-go="quick"]').click();
   await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
 }
+
+/** Tiles left in the purse, off the HUD — the cheapest witness that a
+ *  placement was actually taken by the rules. */
+export const tilesLeft = async (page: Page): Promise<number> =>
+  Number(await page.locator('[data-stat="tiles"] .stat-value').textContent());
+
+/**
+ * Place one tile the way a PLAYER does — a tap on the board.
+ *
+ * Moved here from `board.spec.ts` on 2026-09-08, when `playtest.spec.ts`
+ * became the second spec that needs it. The distinction it protects is the
+ * reason it could not just be `?place=1`: the fixed opening walks the REDUCER
+ * (`shell/walk.ts` dispatches straight at the session), so it never travels
+ * the `act` seam a finger does — and `act` is where the receipts, the voice,
+ * the buzz and Session C's sheet all hang. A test that wants to know what a
+ * player's placement sets in motion has to tap.
+ *
+ * The board is not tappable the instant it appears: the camera eases into its
+ * fit, and a ray cast while it is still travelling lands somewhere the board
+ * has not arrived at yet. Measured 2026-08-29 — taps miss at 300ms and land at
+ * 400ms — after `remembers a run across a reload` failed for months as the one
+ * test that taps without waiting first. The wait belongs HERE, once, rather
+ * than in each caller, because every caller needs it and only some of them
+ * happened to have it.
+ */
+export async function placeOneTile(page: Page): Promise<void> {
+  await page.waitForTimeout(600);
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const before = await tilesLeft(page);
+  for (const radius of [40, 60, 80, 30, 100, 20, 120, 140]) {
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI / 6) * i;
+      await clearCards(page);
+      await page.mouse.click(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+      if ((await tilesLeft(page)) < before) {
+        await clearCards(page);
+        return;
+      }
+    }
+  }
+  throw new Error('placeOneTile: no legal hex found in the search rings');
+}

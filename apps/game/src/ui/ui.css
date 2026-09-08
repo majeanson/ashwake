@@ -3220,3 +3220,134 @@ h3.fact-label {
 .shell:has(.end-walk) .camera {
   bottom: calc(var(--tap) + var(--gap) * 3 + env(safe-area-inset-bottom));
 }
+
+/* ---- the stranger console, behind `?playtest=1` -------------------------- */
+
+/*
+ * SESSION C's instrument (Stage 6, 2026-09-08) — `screens/Playtest`.
+ *
+ * Styled deliberately UNLIKE the game: monospace, flat, no direction colours
+ * beyond the two inks. It is not a screen a player ever reaches, and the one
+ * thing it must never do is look enough like the game to be mistaken for it in
+ * a screenshot taken during a session. The debug line above is the same
+ * argument in one row.
+ *
+ * None of it answers to the contrast budget's *marks* rule for the same reason
+ * — but it does use the palette's own inks rather than hard-coded greys, so it
+ * stays legible in every direction, which is a floor rather than a budget.
+ */
+.playtest-open {
+  position: absolute;
+  left: var(--gap);
+  bottom: var(--gap);
+  /* Above the board and under a panel: it is a door, and a door that could
+     paint over an open dialog is the bug `stacking.spec.ts` exists for. */
+  z-index: var(--z-chrome);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0.6rem;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.playtest-facts,
+.playtest-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.playtest-facts li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid var(--panel-edge);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+}
+
+/* A fact that has happened wears the accent — the one colour on this screen,
+   so a glance across four rows says how far the run has got. */
+.playtest-facts li[data-met='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.playtest-facts b {
+  font-variant-numeric: tabular-nums;
+}
+
+.playtest-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.5rem 0;
+}
+
+.playtest-entry textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.4rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  color: var(--ink);
+  /* A quote is a quote: never autocapitalised, never autocorrected, never
+     spell-checked into something the stranger did not say. */
+  resize: vertical;
+}
+
+.playtest-notes li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.5rem;
+  padding: 0.3rem 0.45rem;
+  border-left: 2px solid var(--panel-edge);
+  font-size: 0.85rem;
+}
+
+.playtest-notes li .fact-label {
+  grid-column: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
+  color: var(--ink-dim);
+}
+
+.playtest-notes li span:nth-of-type(2) {
+  grid-column: 1;
+}
+
+/* The removal, and the only destructive control here. Full tap height, in the
+   corner, so it is never the thing a thumb hits while typing. */
+.playtest-notes li button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: 0;
+  color: var(--ink-dim);
+}
+
+.playtest-preview {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  color: var(--ink-dim);
+  /* The sheet is fixed-width text and must not be re-wrapped into a lie about
+     its own layout — it scrolls in its own box instead, which is the rule
+     every wide thing in this file follows. */
+  overflow-x: auto;
+  white-space: pre;
+}

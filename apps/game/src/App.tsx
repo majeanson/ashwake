@@ -110,6 +110,18 @@ import { buzz, stopBuzz } from './shell/touch';
 import { registerWorker } from './shell/worker';
 import { carriedBy, cross, dowryOf } from './shell/cross';
 import { useInstallOffer, useToday } from './shell/platform';
+import {
+  deviceName,
+  emptySheet,
+  mark,
+  note as noteOnSheet,
+  startClock,
+  startedAnother,
+  unnote,
+  type Mark,
+  type NoteKind,
+} from './shell/playtest';
+import { Playtest } from './screens/Playtest';
 import { renderShareCard } from './shell/shareCard';
 import { settle, settleDaily, type Standing } from './shell/settle';
 import { share, type ShareResult } from './shell/share';
@@ -792,6 +804,84 @@ function Game() {
    */
   const session = useOnce(buildSession);
 
+  const look = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return {
+      tilt: dial(params, 'tilt', TILT),
+      yaw: dial(params, 'yaw', YAW),
+      relief: dial(params, 'relief', RELIEF),
+      light: dial(params, 'light', LIGHT),
+      materials: dial(params, 'materials', MATERIALS),
+      art: dial(params, 'art', ART) > 0,
+      // `?themes=1` puts a direction strip over the board — the workbench for
+      // the one look question that is not a number. Off by default like every
+      // other dial here.
+      directions: dial(params, 'themes', 0) > 0,
+      /*
+       * `?playtest=1` — the stranger console (Stage 6, 2026-09-08).
+       *
+       * A query flag rather than a route, and rather than a row anywhere:
+       * `DECISIONS.md` D9 ruled out a router, and this is the `?ff=` class of
+       * surface — an instrument with no place on a player's screen. It is also
+       * the class where that matters most, because the one person who must
+       * never find it is the stranger holding the phone.
+       *
+       * Off by default like every other dial here, so a shared `?seed=` link
+       * cannot carry it.
+       */
+      playtest: dial(params, 'playtest', 0) > 0,
+    };
+  }, []);
+
+  /*
+   * THE STRANGER'S SHEET, and the door onto it (Stage 6, 2026-09-08).
+   *
+   * `screens/Playtest` is the console and `shell/playtest` is its model; both
+   * carry the argument. What lives here is the two halves that only `App` has:
+   * the sheet itself, and the marks — because the facts Session C asks for are
+   * facts this component already watches go by.
+   *
+   * The sheet exists whether or not the console is open, and that is
+   * deliberate: `?playtest=1` is set before the stranger arrives, and the
+   * whole value is that the clock and the four facts are running while Marc's
+   * eyes are on a person rather than on this screen. Opening and closing the
+   * console reads a record that has been keeping itself.
+   */
+  const playtest = useDoor('playtest');
+  const [sheet, setSheet] = useState(() => emptySheet(deviceName(navigator.userAgent), theme.id));
+  const watching = look.playtest;
+  const noteSheet = useCallback(
+    (kind: NoteKind, text: string) => setSheet((was) => noteOnSheet(was, kind, text, Date.now())),
+    [],
+  );
+  const unnoteSheet = useCallback((at: number) => setSheet((was) => unnote(was, at)), []);
+  /**
+   * Mark one of Session C's four facts, from wherever it actually happens.
+   *
+   * A no-op unless `?playtest=1`, so the ordinary game pays one boolean per
+   * dispatch for it. `mark` is once-only and refuses a mark before the clock
+   * starts, so every caller can be unconditional — see `shell/playtest`.
+   */
+  const witness = useCallback(
+    (which: Mark) => {
+      if (!watching) return;
+      setSheet((was) => mark(was, which, Date.now()));
+    },
+    [watching],
+  );
+  /** The clock starts on the first PLACEMENT, not at BEGIN: every elapsed time
+   *  on the sheet is measured from the moment the run became a run. */
+  const startWatching = useCallback(() => {
+    if (!watching) return;
+    setSheet((was) => startClock(was, Date.now()));
+  }, [watching]);
+  /** The gate, from `enterRun` — the one door every run comes through. The
+   *  rule that a FIRST run does not count is `startedAnother`'s. */
+  const wentAgain = useCallback(() => {
+    if (!watching) return;
+    setSheet((was) => startedAnother(was, Date.now()));
+  }, [watching]);
+
   function buildSession(): Session {
     const params = new URLSearchParams(location.search);
     // A run this device left behind is resumed as the very object the reducer
@@ -1103,6 +1193,10 @@ function Game() {
     if (!snap.hud.ended || banked.current === snap.state) return;
     banked.current = snap.state;
 
+    /* Session C's third fact, on the one line that runs exactly once per
+     * ending. A no-op without `?playtest=1` — see `witness`. */
+    witness('finished');
+
     /*
      * The board as it ended, taken ONCE — for the diary row and for the share
      * card, which must be the same frame or the picture in the chat is not the
@@ -1228,6 +1322,7 @@ function Game() {
      */
     setGoals(after.goals);
   }, [
+    witness,
     snap.hud.ended,
     snap.state,
     snap.hud,
@@ -1307,23 +1402,6 @@ function Game() {
     worldHeld,
     keepWorld,
   ]);
-
-  const look = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return {
-      tilt: dial(params, 'tilt', TILT),
-      yaw: dial(params, 'yaw', YAW),
-      relief: dial(params, 'relief', RELIEF),
-      light: dial(params, 'light', LIGHT),
-      materials: dial(params, 'materials', MATERIALS),
-      art: dial(params, 'art', ART) > 0,
-      // `?themes=1` puts a direction strip over the board — the workbench for
-      // the one look question that is not a number. Off by default like every
-      // other dial here.
-      directions: dial(params, 'themes', 0) > 0,
-    };
-  }, []);
-
   /**
    * Sound, from either surface (2026-08-30).
    *
@@ -1567,6 +1645,26 @@ function Game() {
           buzz(feel, 'place');
         }
       }
+
+      /*
+       * SESSION C's FIRST TWO FACTS, from the one place that knows (Stage 6).
+       *
+       * *"Did they place without help? pop?"* — asked of the same `act` seam
+       * the receipts, the voice and the buzz ride, and for the same reason: it
+       * is the only place that knows what an action actually DID. A test of
+       * `action.type` alone would credit a placement the rules refused, which
+       * on this sheet would be a lie about a stranger's first minute.
+       *
+       * The clock starts on the first placement rather than at BEGIN, so the
+       * elapsed times answer *"after how long?"* from the moment the run
+       * became a run. Unconditional: `witness` is a no-op without
+       * `?playtest=1` and `mark` is once-only.
+       */
+      if (action.type === 'PLACE' && now.state.placements > placementsBefore) {
+        startWatching();
+        witness('placed');
+      }
+      if (action.type === 'HARVEST' && now.state.log.popped > poppedBefore) witness('popped');
 
       /*
        * A claim is SHOWN where it happened, then the camera comes back.
@@ -1822,6 +1920,8 @@ function Game() {
       } else say(said.text);
     },
     [
+      witness,
+      startWatching,
       session,
       ledgers,
       s,
@@ -2256,8 +2356,9 @@ function Game() {
       leaveMenus,
       frameTheRun,
       begin: beginRun,
+      wentAgain,
     }),
-    [session, setDaily, forgetEnding, forgetWorld, leaveMenus, frameTheRun, beginRun],
+    [session, setDaily, forgetEnding, forgetWorld, leaveMenus, frameTheRun, beginRun, wentAgain],
   );
 
   /**
@@ -3241,6 +3342,41 @@ function Game() {
         />
       )}
 
+      {/*
+        THE STRANGER CONSOLE, and the button that opens it — both only under
+        `?playtest=1` (Stage 6, 2026-09-08).
+
+        The button sits with the board's own corner controls rather than in a
+        menu, because during Session C it has to be reachable in one tap from
+        wherever the game is, and Marc is looking at a person rather than at
+        this screen. It says WATCHING with a count, so a glance confirms the
+        sheet is recording without opening it — the failure this instrument
+        most has to avoid is being off while a stranger plays.
+
+        It cannot appear for a player: `look.playtest` is read once from the
+        query string and every dial there defaults off, so a shared `?seed=`
+        link carries nothing.
+      */}
+      {watching && !playtest.open && (
+        <button
+          type="button"
+          className="playtest-open"
+          data-playtest="open"
+          onClick={() => playtest.show()}
+          aria-haspopup="dialog"
+        >
+          WATCHING · {sheet.notes.length}
+        </button>
+      )}
+      {watching && playtest.open && (
+        <Playtest
+          sheet={sheet}
+          today={today}
+          onNote={noteSheet}
+          onUnnote={unnoteSheet}
+          onBack={playtest.hide}
+        />
+      )}
       {device.open && (
         <Device
           s={s}

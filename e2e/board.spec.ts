@@ -1,6 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import sharp from 'sharp';
-import { assertLooksLikeAPicture, begin, clearCards, openMore, watchErrors } from './helpers';
+import {
+  assertLooksLikeAPicture,
+  begin,
+  clearCards,
+  openMore,
+  placeOneTile,
+  tilesLeft,
+  watchErrors,
+} from './helpers';
 
 /**
  * The real-browser smoke (Stage 2, 2026-08-28): nothing in the unit suite
@@ -14,8 +22,7 @@ import { assertLooksLikeAPicture, begin, clearCards, openMore, watchErrors } fro
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const tiles = async (page: Page): Promise<number> =>
-  Number(await page.locator('[data-stat="tiles"] .stat-value').textContent());
+const tiles = tilesLeft;
 
 /**
  * The board as a 48×48 greyscale thumbnail, and how far two of them are apart.
@@ -68,34 +75,6 @@ const settleUntil = async (
 /** Tap around the centre in widening rings until a placement lands. The
  *  opening board is one tile at the origin with six legal neighbours around
  *  it, so a ring at the hex pitch finds one. */
-async function placeOneTile(page: Page): Promise<void> {
-  // The board is not tappable the instant it appears: the camera eases into
-  // its fit, and a ray cast while it is still travelling lands somewhere the
-  // board has not arrived at yet. Measured 2026-08-29 — taps miss at 300ms and
-  // land at 400ms — after `remembers a run across a reload` failed for months
-  // as the one test that taps without waiting first. The wait belongs HERE,
-  // once, rather than in each caller, because every caller of this needs it
-  // and only some of them happened to have it.
-  await page.waitForTimeout(600);
-  const box = await page.locator('canvas').boundingBox();
-  if (box === null) throw new Error('no canvas');
-  const cx = box.x + box.width / 2;
-  const cy = box.y + box.height / 2;
-  const before = await tiles(page);
-  for (const radius of [40, 60, 80, 30, 100, 20, 120, 140]) {
-    for (let i = 0; i < 12; i++) {
-      const angle = (Math.PI / 6) * i;
-      await clearCards(page);
-      await page.mouse.click(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
-      if ((await tiles(page)) < before) {
-        await clearCards(page);
-        return;
-      }
-    }
-  }
-  throw new Error('placeOneTile: no legal hex found in the search rings');
-}
-
 test('boots, draws a board with WebGL, and takes a placement', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?seed=7');
