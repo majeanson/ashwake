@@ -90,6 +90,8 @@ type RigHandle = {
   visit(hex: HexKey, holdMs: number): void;
   /** Out to the whole board, in on a hex, then back to where the camera was. */
   tour(hex: HexKey, holdMs: number): void;
+  /** End a tour early and come home — see the implementation. */
+  endTour(): void;
   /** A small picture of the board as it stands, or null. */
   snapshot(): string | null;
   zoomLevel(): number;
@@ -119,6 +121,9 @@ export type BoardHandle = {
    * Marc, 2026-09-06: *"when a shrine is first described, zoom on it then zoom
    * back where the user was (same view) so its clearer"* — and, asked whether
    * that meant closer or merely centred, *"zoom out then zoom in then back"*.
+   * Widened 2026-09-08 to every concept the drip teaches that stands on the
+   * map: *"yes do the same for caches, sites and territories"*. Which hexes
+   * those are is `shell/tourTarget.ts`; this only knows how to go and look.
    *
    * A `visit` shows where something HAPPENED and keeps the player's zoom on
    * purpose. This one answers a different question — "which of these is the
@@ -127,8 +132,23 @@ export type BoardHandle = {
    * it. So it is three legs, not one, and it is its own method rather than a
    * flag on `visit`: a claim's trip has an argued shape and nothing here
    * should change it.
+   *
+   * It takes exactly `tourMs(holdMs)` and never reports back. The caller that
+   * needs to know when the board is its own again runs that clock itself — see
+   * `App`'s `touring`, and see below for why a callback would be the worse
+   * shape here.
    */
   tour(hex: HexKey, holdMs: number): void;
+  /**
+   * End a tour early and put the board back where the player left it.
+   *
+   * What a TAP on a touring board means. The board stays live through a trip on
+   * purpose — a finger outranks a journey — and a tap that placed a tile on
+   * whatever hex the camera was passing over would be the one mistake this
+   * board cannot undo. Safe to call when nothing is touring, and silent if the
+   * player has already steered somewhere themselves.
+   */
+  endTour(): void;
   /** A small picture of the board as it stands — the end screen and the diary. */
   snapshot(): string | null;
   /** Back to the direction's own angle — the cycle's DEFAULT. */
@@ -193,6 +213,21 @@ const FLIGHT_MS = 320;
 /** How long the tour sits at the wide shot before it dives, in ms. Shorter
  *  than the hold at the hex: the wide shot is context, not the subject. */
 const TOUR_WIDE_HOLD_MS = 320;
+
+/**
+ * How long a `tour` takes end to end, for a caller that has to wait it out.
+ *
+ * Three flights and two holds, stated once here rather than reassembled by
+ * whoever needs the number. **A clock rather than a callback, deliberately.**
+ * `tour` has four exits — reduced motion, either leg abandoned by a finger, and
+ * the ordinary end — and a `done` that any one of them forgot to call would
+ * leave `App`'s `touring` latched true, which is the teaching drip silently
+ * stopping for the rest of the run. A duration cannot be forgotten: the worst a
+ * trip cut short by a drag costs is that the next card waits out a journey
+ * nobody is on any more, and every path converges within this many ms whatever
+ * happened.
+ */
+export const tourMs = (holdMs: number): number => FLIGHT_MS * 3 + TOUR_WIDE_HOLD_MS + holdMs;
 
 /**
  * The camera is still where an excursion's last leg put it.
@@ -448,6 +483,7 @@ export function Board(props: BoardProps) {
       flyToFit: () => rig.current?.flyToFit(),
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
       tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
+      endTour: () => rig.current?.endTour(),
       snapshot: () => rig.current?.snapshot() ?? null,
       zoomLevel: () => rig.current?.zoomLevel() ?? 1,
       zoomMax: () => rig.current?.zoomMax() ?? 1,
@@ -787,6 +823,13 @@ function Rig({
   /** The pending return of an EXCURSION, so a second claim replaces the first
    *  rather than racing it home. */
   const visiting = useRef<ReturnType<typeof setTimeout> | 0>(0);
+  /** A `tour` in the air: where it began, and which leg it is on — so a tap can
+   *  end it and put the board back. Null while nothing is touring. */
+  const trip = useRef<{
+    readonly back: CameraState;
+    readonly fitBefore: boolean;
+    readonly leg: CameraState;
+  } | null>(null);
   const frameRef = useRef(frame);
   const focusRef = useRef(focus);
   const wasFit = useRef(true);
@@ -1058,21 +1101,74 @@ function Rig({
         const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
         const wide = fitCamera(frameRef.current, focusRef.current);
         const near = cameraAt(frameRef.current, NEAR_ZOOM, p.x, p.y);
+        trip.current = { back, fitBefore, leg: wide };
         fly(wide);
         if (visiting.current !== 0) clearTimeout(visiting.current);
         visiting.current = setTimeout(() => {
           if (!stillAt(cam.current, wide)) {
             visiting.current = 0;
+            trip.current = null;
             return;
           }
+          if (trip.current !== null) trip.current = { ...trip.current, leg: near };
           fly(near);
           visiting.current = setTimeout(() => {
             visiting.current = 0;
-            if (!stillAt(cam.current, near)) return;
+            const t = trip.current;
+            trip.current = null;
+            if (t === null || !stillAt(cam.current, near)) return;
             fly(back);
             wasFit.current = fitBefore;
           }, FLIGHT_MS + holdMs);
         }, FLIGHT_MS + TOUR_WIDE_HOLD_MS);
+      },
+      /*
+       * CUT THE TRIP SHORT AND COME HOME — a tap is a finger, and a finger
+       * outranks a journey (2026-09-08).
+       *
+       * The rule was already written for a DRAG: the timers check that the
+       * camera is still where the last leg put it, and abandon the rest if it
+       * is not, because a journey that yanks the board out from under a hand is
+       * worse than one that never returns. A TAP was the hole in it. The board
+       * stays live all through a tour, so a thumb that has just pressed GOT IT
+       * and wants to place a tile was raycasting into a board two seconds into
+       * a flight — landing on whatever hex the camera happened to be over.
+       * Playwright found it the first run: `no legal hex found in the search
+       * rings`, in the spec that taps the frontier as the board grows.
+       *
+       * Swallowing the tap would be worse and this repository has already ruled
+       * on it — *"a tap that cannot build used to be a silent no-op, which is
+       * the worst answer a game can give a deliberate action"*. So the tap has
+       * an ANSWER: the trip ends and the board comes back to where the player
+       * left it, which is a visible reply needing no words, and the next tap
+       * lands on the board they were looking at.
+       *
+       * It comes home only if the trip is still the one steering. A player who
+       * has dragged during a tour has already chosen a view, and flying them
+       * off it would be the exact fault the drag rule exists to prevent,
+       * arrived at through the other door.
+       *
+       * **"Still steering" is two conditions, and the second one is the bug the
+       * first version shipped.** The timers can ask `stillAt(cam, leg)` because
+       * they only ever fire once a leg has LANDED. This can be called at any
+       * moment, and a tap 100ms into a 320ms flight finds the camera between
+       * two places and at neither — so a lone `stillAt` read a trip in perfect
+       * health as one the player had taken over, declined to come home, and
+       * left the board parked at the wide shot with the flight still finishing
+       * underneath it. Playwright caught it as ninety-six ring taps missing a
+       * board that had stopped being where they were aiming. A flight already
+       * bound for the leg is the trip, so it counts.
+       */
+      endTour() {
+        if (visiting.current !== 0) clearTimeout(visiting.current);
+        visiting.current = 0;
+        const t = trip.current;
+        trip.current = null;
+        if (t === null) return;
+        const inFlight = flight.current !== null && stillAt(flight.current.to, t.leg);
+        if (!inFlight && !stillAt(cam.current, t.leg)) return;
+        fly(t.back);
+        wasFit.current = t.fitBefore;
       },
       /*
        * A small picture of the board as it stands.

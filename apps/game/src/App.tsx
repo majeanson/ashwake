@@ -28,6 +28,7 @@ import {
   withWorldPerks,
   type PerkId,
   type Progress,
+  type TeachId,
 } from '@meta/progress';
 import { metGoalIds } from '@meta/goals';
 import { ONLY_WORLD } from '@meta/records';
@@ -46,7 +47,7 @@ import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
-import { Board, type BoardHandle } from './board/Board';
+import { Board, tourMs, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { MAX_RENDER_SCALE } from './board/quality';
@@ -97,6 +98,7 @@ import {
   writeTimeline,
   type Slot,
 } from './shell/storage';
+import { tourTarget } from './shell/tourTarget';
 import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
@@ -962,47 +964,56 @@ function Game() {
   );
 
   /**
-   * THE SHRINE THE CARD JUST DESCRIBED, SHOWN ON THE BOARD IT STANDS ON.
+   * READ IT, THEN LOOK AT IT — and the next card waits its turn.
    *
-   * Marc, 2026-09-06: *"make sure when a shrine is first described, to zoom on
-   * it then zoom back where the user was (same view) so its clearer"*, and the
-   * shape of the trip is his: *"zoom out then zoom in then back"*.
+   * Marc, 2026-09-06, of the shrine: *"make sure when a shrine is first
+   * described, to zoom on it then zoom back where the user was (same view) so
+   * its clearer"*, with the shape of the trip his too: *"zoom out then zoom in
+   * then back"*. Widened 2026-09-08: *"yes do the same for caches, sites and
+   * territories and other concepts on the map"*.
    *
-   * **Which shrine**: the same one the moment fired on. `teaching.ts` decides
-   * the SHRINE card is due with `cells.some(c => c.kind === 'landmark' &&
-   * !c.claimed && c.landmark === 'shrine')`, and `some` stops at its first
-   * match — so `find` with the identical predicate returns that exact cell and
-   * not merely a shrine like it. The predicate is copied rather than shared
-   * because the two live on opposite sides of the drip: one decides whether to
-   * speak, this one decides where to point, and a helper spanning both would
-   * be a rule about teaching kept in a file about the camera.
+   * Which hex each lesson means is `shell/tourTarget.ts`, and which lessons
+   * mean one at all — POP, RARE and the run's own numbers do not, WALL and
+   * FIELD do and are declined there with the reason.
    *
-   * **And it waits for the screen.** Dismissing one card can raise the next —
-   * `ORDER` runs cache, site, shrine, territory back to back, and the beacons
-   * on the horizon mean several kinds can be visible at once — so a trip fired
-   * on the dismissal would fly the board around behind a fresh 94% scrim,
-   * which is a camera move nobody sees. It is held instead until a dismissal
-   * leaves no card due, and it is stamped with the placement count it was
-   * armed at: a tour is about the board as it stood when the card fired, and a
-   * player who has since built has answered the question themselves.
+   * **`touring` is the whole mechanism, and it is a gate rather than a queue.**
+   * The drip fires one card per moment and a dismissal can raise the next
+   * immediately — `ORDER` runs cache, site, shrine, territory back to back, and
+   * the beacons on the horizon mean several kinds can be visible at once. Three
+   * shapes were possible and only this one gives every concept its own look:
+   *
+   *   - Fire on the dismissal and let the next card come: the board flies
+   *     around behind a fresh 94% scrim, which is a camera move nobody sees.
+   *   - Hold the trip until no card is due: one trip for a run of three cards,
+   *     so two concepts are taught and never shown.
+   *   - **Hold the CARD until the trip lands**, which is this. Read, look,
+   *     read, look — and each leg of it is a thing the player was already
+   *     stopped for.
+   *
+   * The clock is `tourMs`, run here rather than reported by the board: see
+   * `tourMs` for why a duration cannot be forgotten and a callback can. The
+   * timer is cleared on unmount, so a trip in the air when the page goes does
+   * not set state on a screen that has left.
    */
-  const tourPending = useRef<{ readonly at: HexKey; readonly placements: number } | null>(null);
-  const takeTour = useCallback(
-    (after: Progress): void => {
-      const pending = tourPending.current;
-      if (pending === null) return;
-      const at = session.get();
-      if (pending.placements !== at.hud.placements) {
-        tourPending.current = null;
-        return;
-      }
-      const due = nextLesson(
-        { board: at.board, hud: at.hud, placed: at.hud.placements > 0 },
-        after,
-      );
-      if (due !== null && due.as === 'card') return;
-      tourPending.current = null;
-      board.current?.tour(pending.at, TOUR_HOLD_MS);
+  const [touring, setTouring] = useState(false);
+  const touringTimer = useRef<ReturnType<typeof setTimeout> | 0>(0);
+  useEffect(
+    () => () => {
+      if (touringTimer.current !== 0) clearTimeout(touringTimer.current);
+    },
+    [],
+  );
+  const showOnBoard = useCallback(
+    (id: TeachId): void => {
+      const at = tourTarget(id, session.get().board);
+      if (at === null || board.current === null) return;
+      board.current.tour(at, TOUR_HOLD_MS);
+      setTouring(true);
+      if (touringTimer.current !== 0) clearTimeout(touringTimer.current);
+      touringTimer.current = setTimeout(() => {
+        touringTimer.current = 0;
+        setTouring(false);
+      }, tourMs(TOUR_HOLD_MS));
     },
     [session],
   );
@@ -1852,6 +1863,31 @@ function Game() {
     (key: string, cell: CellView): void => {
       const now = session.get();
 
+      /*
+       * A TAP ON A TOURING BOARD MEANS "come back", and nothing else.
+       *
+       * The board stays live through a trip — a finger outranks a journey — so
+       * a thumb that has just pressed GOT IT and wants to place a tile was
+       * raycasting into a board mid-flight and landing on whatever hex the
+       * camera was over. **The one thing on this board that cannot be undone is
+       * a tile placed on the wrong hex**, which is the same sentence
+       * `moveCursor` is built around.
+       *
+       * So the tap ends the trip and the board comes home. Not a silent
+       * swallow, which this repository has already ruled the worst answer to a
+       * deliberate action: the camera flying back IS the reply, and it needs no
+       * sentence to say it. The next tap lands on the board they were looking
+       * at. `touring` is dropped here rather than left to its clock, so the
+       * card that was waiting arrives as soon as the board is theirs again.
+       */
+      if (touring) {
+        board.current?.endTour();
+        if (touringTimer.current !== 0) clearTimeout(touringTimer.current);
+        touringTimer.current = 0;
+        setTouring(false);
+        return;
+      }
+
       if (cell.ripe) {
         session.target(key);
         say(pocketNote(now.state, key, s));
@@ -1918,7 +1954,7 @@ function Game() {
       }
       say(describe(key));
     },
-    [act, session, s, theme, lens, describe, say],
+    [act, session, s, theme, lens, describe, say, touring],
   );
 
   /**
@@ -3396,7 +3432,14 @@ function Game() {
         is the one that can wait, because its moment stays true until it is
         told.
       */}
-      {card !== null && card !== 'story' && saidCard === null && (
+      {/*
+        `!touring` is the second half of the tour — see `showOnBoard`. A card
+        raised while the board is away showing the LAST card's subject would be
+        a lesson read over a moving map, and the trip behind its scrim would be
+        a camera move nobody sees. The moment stays true and stays armed; this
+        only decides when it is allowed to interrupt.
+      */}
+      {card !== null && card !== 'story' && saidCard === null && !touring && (
         <LessonCard
           id={card}
           theme={theme}
@@ -3412,21 +3455,15 @@ function Game() {
             setProgress((p) => told(p, card));
             speakLesson(after, session.get());
             /*
-             * ARM THE TOUR HERE, where the card that raised it is being put
-             * down — see `takeTour` for why it may not leave yet. The hex is
-             * read now rather than when the trip starts: this is the board the
-             * card was fired about, and it is the board still on screen behind
-             * the scrim.
+             * AND GO AND LOOK AT IT, where the lesson was about a place.
+             *
+             * Here, on the dismissal, rather than on the card's arrival: the
+             * board this reads is the board the card was fired about and is
+             * still the one behind the scrim, and the player has just said they
+             * are done reading. `showOnBoard` is silent for a lesson with no
+             * hex, so most cards pass straight through it.
              */
-            if (card === 'shrine') {
-              const at = session.get();
-              const cell = at.board.cells.find(
-                (c) => c.kind === 'landmark' && !c.claimed && c.landmark === 'shrine',
-              );
-              if (cell !== undefined)
-                tourPending.current = { at: key(cell.q, cell.r), placements: at.hud.placements };
-            }
-            takeTour(after);
+            showOnBoard(card);
           }}
         />
       )}

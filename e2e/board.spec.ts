@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import sharp from 'sharp';
 import { assertLooksLikeAPicture, begin, clearCards, openMore, watchErrors } from './helpers';
 
 /**
@@ -1247,6 +1248,108 @@ test('POP wears one mark, on the bar, in the manual and on the card', async ({ p
     heads.some(([name]) => /SACRIFICE|SACRIFIER/.test(String(name))),
     'the manual still has a SACRIFICE section',
   ).toBe(false);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a tap on a touring board brings it home instead of placing a tile', async ({ page }) => {
+  /*
+   * Marc, 2026-09-08: *"yes do the same for caches, sites and territories and
+   * other concepts on the map"* — so a card that names a place now flies the
+   * board out, in on the hex and back (`BoardHandle.tour`). The board stays
+   * LIVE through that trip on purpose, because a finger has always outranked a
+   * journey here, and that left a hole this suite found on the first run:
+   *
+   * **a thumb that had just pressed GOT IT and wanted to place a tile was
+   * raycasting into a board mid-flight**, landing on whatever hex the camera
+   * happened to be over. `keeps taking taps on the frontier as the board grows`
+   * failed with `no legal hex found in the search rings` — ninety-six ring taps
+   * aimed at a board that had stopped being where they were pointing. The one
+   * thing on this board that cannot be undone is a tile placed on the wrong
+   * hex.
+   *
+   * So a tap on a touring board means "come back" and nothing else.
+   *
+   * **The first fix for it shipped a second bug, and this test does NOT hold
+   * that one** — said plainly, because a comment claiming coverage it does not
+   * have is the thing that stops the next reader checking. `endTour` came home
+   * only if the camera was AT the leg, which is false for the 320ms a leg
+   * spends flying, so a tap early in a trip declined to return and parked the
+   * board at the wide shot for the rest of the run. This test taps during the
+   * HOLD, where a naive check passes; it was the frontier spec above that
+   * failed, because tapping in a tight loop is how you land mid-flight. Both
+   * were checked by breaking `endTour` and watching which went red.
+   *
+   * Seed 122 because a shrine is rare: eight seeds in four hundred put one
+   * within four rings, and this one puts it on the opening board, so the card
+   * fires before a tile has been placed.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=122');
+  await page.locator('[data-door="begin"]').click();
+  await page.waitForTimeout(700);
+
+  const scrim = page.locator('.card-scrim');
+  const shrine = page.locator('#lesson-shrine-name');
+  for (let i = 0; i < 8 && (await shrine.count()) === 0; i++) {
+    if ((await scrim.count()) === 0) throw new Error('the shrine card never came');
+    await scrim.locator('button').last().click({ force: true });
+    await page.waitForTimeout(120);
+  }
+  expect(await shrine.count(), 'the shrine card never came').toBe(1);
+
+  const canvas = page.locator('canvas');
+  /* A coarse witness, and coarse is the point: 48×48 greyscale averages out the
+     embers and the beacons' breath, which is what `data-lean` was added to dodge
+     for the ANGLE. Where the camera stands has no such attribute, and a board at
+     2.4× on one hex is not a subtle difference. */
+  const frame = async (): Promise<Buffer> =>
+    sharp(await canvas.screenshot())
+      .greyscale()
+      .resize(48, 48, { fit: 'fill' })
+      .raw()
+      .toBuffer();
+  const apart = (a: Buffer, b: Buffer): number => {
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += Math.abs((a[i] ?? 0) - (b[i] ?? 0));
+    return sum / a.length;
+  };
+
+  const held = await tiles(page);
+  await scrim.locator('button').last().click({ force: true });
+
+  // The opening board already fits, so the trip's first leg moves nothing: this
+  // is home, taken while the scrim is gone and the dive has not begun.
+  await page.waitForTimeout(150);
+  const home = await frame();
+
+  // ...and this is the dive, which is the half that makes the rest meaningful.
+  await page.waitForTimeout(700);
+  const away = await frame();
+  expect(apart(home, away), 'the board never toured, so the tap proves nothing').toBeGreaterThan(3);
+
+  const box = await canvas.boundingBox();
+  if (box === null) throw new Error('no canvas');
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(800);
+
+  expect(await tiles(page), 'a tap during the tour placed a tile').toBe(held);
+
+  /*
+   * And then the screen has to be cleared before the board can be photographed
+   * again, which cost this test one wrong reading: ending a tour drops the gate,
+   * so the lesson that was waiting behind it arrives at once — and a card's
+   * scrim is over the canvas, in an element screenshot, at 94% of the ground.
+   * The first version read that as a board 14 apart from home. The wait after
+   * is a whole `tourMs`, so a dismissal that starts a trip of its OWN has been
+   * and come back by the time the frame is taken.
+   */
+  for (let i = 0; i < 6 && (await scrim.count()) > 0; i++) {
+    await scrim.locator('button').last().click({ force: true });
+    await page.waitForTimeout(120);
+  }
+  await page.waitForTimeout(2700);
+  expect(apart(home, await frame()), 'the tap did not bring the board home').toBeLessThan(3);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

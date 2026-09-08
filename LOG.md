@@ -4776,3 +4776,73 @@ repository's usual, never grew a shrine in a whole run.
 
 **Verified:** format, lint, typecheck, 1041/1041 unit, 92/92 Playwright,
 `pnpm sim` byte-identical.
+
+### Session 59 — every concept on the map gets its own look, and the board stops moving under a thumb (2026-09-08)
+
+**Question:** Marc, of the shrine tour: _"yes do the same for caches, sites and
+territories and other concepts on the map"_. Which concepts have a place on the
+map, and what happens when three cards fire in a row?
+
+**Answer: five, and the CARD waits rather than the trip.**
+
+`shell/tourTarget.ts` is the table — RIPE, CACHE, SITE, SHRINE, TERRITORY —
+each predicate copied out of `teaching.ts` so `find` returns the very cell
+`some` stopped at. POP is declined at the declaration: its card explains a
+BUTTON, and the pocket it would fly to is the pocket RIPE's card flew to a beat
+earlier. RARE and UNIQUE are in the hand; LUCK, THE PURSE, RELICS, THE COLOURS
+and the cost line are about the run.
+
+**WALL and FIELD are places and are still declined**, which is the one judgement
+here worth arguing with. Both are toast-class: a line beside a game still in
+motion, spoken on the quiet beat after a placement. Flying the board there
+breaks the oldest camera ruling this repository has — Marc, 2026-08-29: _"when
+we place a tile, make sure the map doesnt move and stays stationary, it always
+zoom in or zoom out a bit and its annoying"_ — where every entry that IS wired
+fires off a card just read and dismissed, with nothing else happening. One line
+each if that trade is wrong; it is in `NEXT.md` §1 rather than guessed at.
+
+**The chain was the real design question.** The drip fires one card per moment
+and a dismissal can raise the next at once; `ORDER` runs cache, site, shrine,
+territory back to back and the beacons mean several kinds can be visible
+together. Three shapes were possible: fire on the dismissal and let the next
+card come (the board flies behind a fresh 94% scrim — a camera move nobody
+sees); hold the trip until no card is due (one trip for three cards, so two
+concepts are taught and never shown); or **hold the CARD until the trip lands**.
+The third is what shipped, and it is the only one where every concept gets its
+own look: read, look, read, look. `App`'s `touring` is the gate, and it runs on
+`tourMs` — **a clock rather than a callback, deliberately**: `tour` has four
+exits and a `done` any one of them forgot would latch the gate shut and stop the
+teaching drip for the rest of the run, where a duration cannot be forgotten.
+
+**And the suite found a bug the same hour, which is why it exists.** `keeps
+taking taps on the frontier as the board grows` failed with `no legal hex found
+in the search rings` — ninety-six ring taps aimed at a board that had stopped
+being where they pointed. The board stays live through a trip (a finger
+outranks a journey), so a thumb that had just pressed GOT IT was raycasting into
+a board mid-flight and **placing a tile on whatever hex the camera was passing
+over** — the one action this board cannot undo. A tap on a touring board now
+means "come back" and nothing else; swallowing it would be the silent no-op this
+repository has already ruled the worst answer to a deliberate action, and the
+camera flying home is a reply that needs no words.
+
+**The first fix for that shipped a second bug, and the same spec caught it.**
+`endTour` came home only if the camera was AT the leg — which the timers may ask
+because they fire once a leg has landed, and which is false for the 320ms a leg
+spends flying. A tap early in a trip therefore read a trip in perfect health as
+one the player had taken over, declined to return, and left the board parked at
+the wide shot. A flight already bound for the leg is the trip, so it counts now.
+
+**Every test here was checked in both directions**, and one claim was withdrawn
+because of it: the new spec taps during the HOLD, where the naive check passes,
+so it does NOT hold the mid-flight bug — the frontier spec does, because tapping
+in a tight loop is how you land mid-flight. The comment says so rather than
+claiming coverage it has not got. `tourTarget.test.ts` was checked the same way
+and its FIXTURE was wrong on the first pass: seed 3 grew nothing but caches in
+twenty placements, so SHRINE and TERRITORY were pinned against boards that could
+never have shown one and deleting the `!claimed` guard left every test green.
+Six seeds at five depths now, chosen by looking at what is on them — all four
+destinations unclaimed on one board, and each of them already reached with none
+of its kind beside it on another.
+
+**Verified:** format, lint, typecheck, 1046/1046 unit, 93/93 Playwright,
+`pnpm sim` byte-identical.

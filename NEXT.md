@@ -282,6 +282,19 @@ report covered both, and the second was found only by screencasting every
 composited frame and grading it for flatness rather than by reading the code
 that had just been changed.
 
+**Does WALL and FIELD earn a camera trip? (2026-09-08, `LOG.md` Session 59.)**
+Marc: _"yes do the same for caches, sites and territories and other concepts on
+the map"_. Five are wired — RIPE, CACHE, SITE, SHRINE, TERRITORY — and all five
+are CARD-class: the trip leaves off a card the player has just read and pressed
+GOT IT on, with nothing else happening. WALL and FIELD are places too and are
+the two left out, because they are TOAST-class: a line beside a game still in
+motion, spoken on the quiet beat after a placement. Flying the board there
+breaks the oldest camera ruling in this repository — _"when we place a tile,
+make sure the map doesnt move and stays stationary, it always zoom in or zoom
+out a bit and its annoying"_ (2026-08-29) — and each one would fire once per
+device, ever. **One line each in `shell/tourTarget.ts` if the trade is wrong.**
+The declaration there carries the same argument.
+
 **~~SHARPNESS, by looking~~ — ANSWERED 2026-09-05** (`LOG.md` Sessions 50 and
 53). The slider went out to a phone with its default reproducing the old
 2026-09-02 guess exactly (a dense phone drawing at 1.5 device pixels per CSS
