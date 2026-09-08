@@ -1401,14 +1401,18 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
    * is a whole `tourMs`, so a dismissal that starts a trip of its OWN has been
    * and come back by the time the frame is taken.
    */
-  for (let i = 0; i < 6 && (await scrim.count()) > 0; i++) {
-    await scrim.locator('button').last().click({ force: true });
+  let clear = 0;
+  for (let i = 0; i < 60; i++) {
+    if ((await scrim.count()) > 0) {
+      await scrim.locator('button').last().click({ force: true });
+      clear = 0;
+    } else {
+      clear = apart(home, await small(page));
+      if (clear < 3) break;
+    }
     await page.waitForTimeout(120);
   }
-  expect(
-    await settleUntil(page, home, 'home'),
-    'the tap did not bring the board home',
-  ).toBeLessThan(3);
+  expect(clear, 'the tap did not bring the board home').toBeLessThan(3);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

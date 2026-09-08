@@ -18,24 +18,13 @@ export default defineConfig({
      */
     maxWorkers: 8,
     /*
-     * The default is 5000ms and it was sized for a desktop (2026-09-06).
+     * NO `testTimeout` HERE, and that is the point (2026-09-08).
      *
-     * CI went red on four tests at once — `settle`, `store`, `text` — none of
-     * which had changed and all of which pass here in well under a second.
-     * They were not slow, they were CLOSE: this repository has already
-     * measured a GitHub runner at about eleven times a desktop
-     * (`sim.test.ts`), and "never spells a mark into a sentence" takes 390ms
-     * here, which is 4.3s there against a 5s cap. A cap that a passing test
-     * clears by 14% is a cap that fails on the runner's mood, and a suite that
-     * does that is one nobody can read — the exact lesson `sim.test.ts` was
-     * given its own 240s for, two days earlier, and the same lesson this file
-     * had not been told.
-     *
-     * 30s is six times the slowest of them at the measured ratio. It is not a
-     * claim about speed and must never be read as one: it exists so a genuine
-     * HANG still fails the suite rather than hanging it. The two sim gates
-     * keep their own, larger number for the same reason.
+     * One lived here from 2026-09-06 and governed nothing: a project with a
+     * config file of its own does not inherit this block, and both of ours have
+     * one. The number, the argument for it and the story of how it was found
+     * twice are in `vitest.timeouts.ts`, which the two project configs import —
+     * so there is one value, in the two places that read it.
      */
-    testTimeout: 30_000,
   },
 });

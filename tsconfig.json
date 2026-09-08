@@ -2,6 +2,7 @@
   "extends": "./tsconfig.base.json",
   "include": [
     "vitest.config.ts",
+    "vitest.timeouts.ts",
     "playwright.config.ts",
     "playwright.audit.config.ts",
     "e2e",

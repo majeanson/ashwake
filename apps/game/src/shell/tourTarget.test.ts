@@ -28,7 +28,21 @@ import { walk } from './walk';
  * question are exactly the ones that would drift.
  */
 
+/**
+ * A walked board, built ONCE per (seed, depth).
+ *
+ * Five tests over thirty boards is a hundred and fifty runs walked up to forty
+ * placements each, and it cost this file its place in CI: green here in 1.7s,
+ * timed out on a runner measured at eleven times slower. The boards are
+ * immutable and every test asks the same questions of them, so building each
+ * one again per test was work nobody wanted done twice — and the fix is the
+ * honest one either way, not a bigger timeout on a wasteful test.
+ */
+const boards = new Map<string, Moment>();
 const momentAt = (seed: number, n: number): Moment => {
+  const key = `${String(seed)}:${String(n)}`;
+  const had = boards.get(key);
+  if (had !== undefined) return had;
   const s = createSession({
     seed,
     theme: resolveTheme(null),
@@ -36,7 +50,9 @@ const momentAt = (seed: number, n: number): Moment => {
   });
   if (n > 0) walk(s, n);
   const snap: Snapshot = s.get();
-  return { board: snap.board, hud: snap.hud, placed: n > 0 };
+  const made: Moment = { board: snap.board, hud: snap.hud, placed: n > 0 };
+  boards.set(key, made);
+  return made;
 };
 
 /** A device that has met everything but one id, so `nextLesson` answers a
