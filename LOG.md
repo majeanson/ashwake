@@ -4943,3 +4943,40 @@ report standing — which reads exactly the same from the outside. This is the
 second time these same four screens have gone quiet (`NEXT.md` §0 records the
 first, 2026-08-30, when `PLAYED` stopped being played) and both times the header
 said the run was complete. One line fixes it; the shots come back in 1.5s each.
+
+**Addendum, same session: the first push went RED, and the reason was a number
+this repository had already fixed and never verified.** `tourTarget.test.ts`
+timed out on the runner at **5000ms** — a cap replaced on 2026-09-06 with 30s,
+argued for in nine lines, and believed replaced ever since. It was not.
+`vitest.config.ts` declares `projects: ['packages/*', 'apps/*']`, and a project
+with a config file of its own does not inherit the root's `test` block; both of
+ours have one. So every test in this repository ran under vitest's own default
+for two days while the root config carried the argument for something else.
+
+**The same class of miss `CLAUDE.md` opens with — a value written down and read
+by nothing — arrived at through a config file rather than through a module.**
+Worth saying plainly: the sweeps this repository runs look for exports, fields
+and optional inputs with no consumer, and none of them would look in a build
+config. `vitest.timeouts.ts` holds the number and the argument now and both
+project configs import it. Checked in both directions with a 6.5s probe: red at
+5000ms with the line removed, green with it there, in each project.
+
+The test deserved the cap anyway — five questions of thirty boards, every board
+rebuilt for every question, a hundred and fifty walked runs. Built once now,
+1.7s to 0.57s.
+
+**And a flake found by running the suite rather than by reading it.** The
+touring spec was green alone and red in a full run: ending a tour drops the gate
+that holds the teaching drip, a dismissal can start a trip of its own, and that
+trip holds the NEXT card until it lands — so a card could arrive after the
+clearing had finished, and a 94% scrim over the canvas reads as a board that
+never came home. Both conditions are waited on together now. Six consecutive
+green local suites since; **one earlier failure in a full run was never named,
+because the command that would have printed it was over-trimmed.** Recorded
+rather than smoothed over: if it returns, it has been seen twice.
+
+**Green, and deployed.** CI `34263760489` passed every step including the
+deploy and its verifier, `/version.json` on the live site reports `32c0f90`, and
+`pnpm verify:deploy` from a desk passes all seven checks — bundles, the board's
+font, the three chrome faces, the install surface and the stamped service
+worker.
