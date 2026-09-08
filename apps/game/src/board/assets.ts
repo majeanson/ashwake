@@ -30,7 +30,7 @@ export type AssetBook = {
 };
 
 /** What a direction with no art loaded looks like — and the dial's zero. */
-export const NO_ASSETS: AssetBook = { has: () => false, image: () => null };
+const NO_ASSETS: AssetBook = { has: () => false, image: () => null };
 
 /**
  * Load a direction's art, once, after the first frame.

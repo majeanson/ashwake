@@ -31,6 +31,16 @@ computed every render and read by nothing, `?ff=` tested with no caller so
 A gesture matrix cannot see a sentence the core writes that no screen prints.
 Run the check over `packages/core`, not only over a screen.
 
+**And keep that sweep's signal clean: do not export what one file uses.** The
+sweep was run again on 2026-09-08 and found one genuinely dead export
+(`STAT_ICON` — the table saying which stats are marks, while the render
+hard-coded `id === 'luck'`) sitting in a list of sixteen that were merely
+file-internal. Each of those is a false positive the NEXT sweep has to
+re-adjudicate from scratch, which is how a ritual stops being run. The twelve
+in `apps/game/src` are `const` and `function` now; the four in
+`packages/core/src/engine` and `content` were left exported on purpose,
+because that code is Ashwake 1's lift and its surface is Ashwake 1's.
+
 **And once more over the FIELDS.** A module sweep cannot see a property:
 `CellView` has twenty-two, the board is the only thing that could read one, and
 "nothing imports it" is never true of a field. Walking them found five more the

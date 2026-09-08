@@ -69,7 +69,7 @@ export function cascadeDelays(
  * the direction's opinion of how energetic a pop is; this is the conversion
  * from a flat board's units into a leaning one's.
  */
-export const ARCADE_LIFT = 3.2;
+const ARCADE_LIFT = 3.2;
 
 /** Turns a leaping tile makes on its way up. Under one, so it reads as a
  *  thing tumbling out of the board rather than a coin in a slot machine. */

@@ -23,7 +23,7 @@ import type { Strings } from '@text/Strings';
 export type ShareResult = 'shared' | 'copied' | 'failed';
 
 /** The link a shared run travels as: this origin, and nothing of this session. */
-export function shareUrl(params: Readonly<Record<string, string>>): string {
+function shareUrl(params: Readonly<Record<string, string>>): string {
   const url = new URL(location.origin);
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   return url.toString();

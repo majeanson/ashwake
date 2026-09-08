@@ -889,6 +889,52 @@ its own content, and it held a focusable button that the timer removed out from
 under the focus — so whichever way this goes, it goes from a correct starting
 point.
 
+## 5d. The French stat row does not fit, and a mark is the lever — needs Marc
+
+Found 2026-09-08 by re-running the export sweep, which turned up `STAT_ICON` in
+`screens/Hud.tsx` — the table naming which stats are drawn as marks — declared,
+exported and read by nothing, while the render hard-coded `id === 'luck'`. It
+has its consumer now and it draws exactly what it drew before, because it says
+exactly what that branch said. **The interesting half is why it only has one
+entry.**
+
+`DEFAULT_LOCALE` is `fr-CA`, so the French stat row is the row a player sees
+unless they go and change it, and it is the one that does not fit. All fifteen
+`clipped` findings in `audit-shots/report.md` are this one element in French:
+
+| width | label    | lost |
+| ----- | -------- | ---- |
+| 320   | `TUILES` | 20px |
+| 320   | `PORTÉE` | 18px |
+| 390   | `PORTÉE` | 4px  |
+| 390   | `TUILES` | 6px  |
+
+English clips at neither width. 390 is an ordinary phone.
+
+**This is argued, not overlooked.** `IMPROVEMENTS.md` B7.11 ruled the ellipsis
+in deliberately — a measured 3px behind a `…` beats an unmeasured word running
+into its neighbour — and `.stat-label` in `ui.css` carries the rest: the label
+is the half that gives so the number survives, pinned in px so a bigger root
+cannot spend the one budget already spent. Every one of those arguments is
+about how to LOSE gracefully.
+
+**A mark does not lose.** `luck` has never clipped, in any language, at any
+width, because it is not a word. Five more entries in `STAT_ICON` would end
+this finding rather than dress it — and the icons already exist, so it is
+genuinely a five-line change.
+
+It is not taken, because it is a look decision and this file's own §5b records
+what happens when one is guessed at from a session that cannot see the phone.
+Six glyphs where six labels are is a different HUD, and a stat is the one
+control on the board that EXPLAINS rather than acts, so making it wordless
+costs the thing it is for — a player who does not yet know the mark has lost
+the row entirely, where a truncated `TUIL…` at least starts with the word.
+
+**The question is one look at a phone, in French:** does the stat row read
+better as six marks, as it is, or as some mix — `luck` and `cost` as marks,
+say, and the three that fit as words? The table in `Hud.tsx` is where any
+answer lands.
+
 ## 5. The art pipeline — DONE 2026-08-29, and now it needs an eye
 
 Found auditing this body against Ashwake 1 (`LOG.md` Session 13) and built the

@@ -67,7 +67,21 @@ export function Hud({ hud, s, onNote }: HudProps) {
             }}
           >
             <span className="stat-label">
-              {id === 'luck' ? <Icon name="luck" title={s.lesson.luck.name} /> : statLabel(id, s)}
+              {/*
+                The TABLE decides which stats are marks, not this line
+                (2026-09-08). It read `id === 'luck' ? <Icon name="luck"/>`,
+                with `STAT_ICON` — the table written to answer exactly that
+                question — declared below and read by nothing: this body's
+                signature miss, one export wide. The render is identical; what
+                changes is that a direction wanting a second mark now has one
+                place to say so, the way `LANDMARK_GLYPH` is the authority on
+                what a destination MEANS rather than each drawing site being.
+              */}
+              {STAT_ICON[id] === undefined ? (
+                statLabel(id, s)
+              ) : (
+                <Icon name={STAT_ICON[id]} title={statLabel(id, s)} />
+              )}
             </span>{' '}
             <b className={`stat-value${rose === id ? ' rose' : ''}`}>{shown}</b>
           </button>
@@ -136,5 +150,40 @@ export function statLabel(id: StatId, s: Strings): string {
   return id === 'luck' ? s.lesson.luck.name : s.ui.stats[id];
 }
 
-/** The stat that is drawn as a mark rather than as a word. */
+/**
+ * The stats that are drawn as a mark rather than as a word.
+ *
+ * **This table shipped inert from the day it was written until 2026-09-08** —
+ * declared, exported, and read by nothing, while the render hard-coded `id ===
+ * 'luck'`. It has a consumer now, and it renders exactly what it rendered
+ * before, because it says exactly what that branch said.
+ *
+ * ## A SECOND ENTRY IS MARC'S, AND HERE IS THE EVIDENCE FOR IT
+ *
+ * `DEFAULT_LOCALE` is `fr-CA`, so the French stat row is the row a player sees
+ * unless they change it — and it is the one that does not fit. Every one of
+ * the fifteen `clipped` findings in `audit-shots/report.md` is this element in
+ * French: `TUILES` losing 20px and `PORTÉE` 18px at 320, and 3–6px at **390,
+ * which is an ordinary phone**. English never clips at either width.
+ *
+ * That is a known, ARGUED state and not an oversight: `IMPROVEMENTS.md` B7.11
+ * ruled the ellipsis in deliberately, on the reasoning that a measured 3px
+ * behind a `…` beats an unmeasured word running into its neighbour, and
+ * `.stat-label` in `ui.css` carries the rest of the argument — the label is
+ * the half that gives so the number survives, and it is pinned in px so a
+ * bigger root cannot spend the one budget already spent.
+ *
+ * The ellipsis is what you do when the word must be a word. **A mark is the
+ * other lever, and it is the one that dissolves the problem rather than
+ * dressing it**: `luck` has not clipped in any language at any width, because
+ * it is not a word. Five entries here would end the finding outright.
+ *
+ * It is not taken, and the reason is `CLAUDE.md`'s: a mark instead of a word
+ * is a LOOK decision — six glyphs where six labels are is a different HUD, and
+ * a stat is the one control on the board that explains rather than acts, so
+ * making it wordless costs the thing it is for. The ring repaint of
+ * 2026-09-02 is why this is stated rather than guessed at. **The finding is
+ * the deliverable; the choice is Marc's, and it is one look at a phone in
+ * French.** See `NEXT.md` §5d.
+ */
 export const STAT_ICON: Partial<Record<StatId, IconName>> = { luck: 'luck' };

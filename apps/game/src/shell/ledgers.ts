@@ -34,7 +34,7 @@ export type Ledgers = {
   readonly worlds: Readonly<Record<Slot, WorldMemory | null>>;
 };
 
-export function readLedgers(): Ledgers {
+function readLedgers(): Ledgers {
   return {
     records: readRecords(),
     timeline: readTimeline(),

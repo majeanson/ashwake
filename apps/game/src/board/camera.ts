@@ -58,7 +58,7 @@ export const HEX_PX_MAX = 34;
  * read; the extra space is better spent showing more of the board than
  * making the same seven hexes bigger.
  */
-export function hexPxMaxFor(width: number, height: number): number {
+function hexPxMaxFor(width: number, height: number): number {
   const room = Math.min(width, height);
   const RISE_FROM = 420;
   const LEVEL_AT = 1000;
@@ -70,8 +70,8 @@ export function hexPxMaxFor(width: number, height: number): number {
 
 /** The fewest, past which a board is dots. */
 const HEX_PX_MIN = 6;
-export const ZOOM_MIN = 1;
-export const ZOOM_MAX = 4;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 4;
 /**
  * Ashwake 1's number: close enough to read a hex, far enough to see a pocket.
  *
@@ -82,7 +82,7 @@ export const ZOOM_MAX = 4;
  */
 export const NEAR_ZOOM = 2.4;
 /** Room between the structure and the edge of the viewport, in CSS pixels. */
-export const FIT_PADDING = 16;
+const FIT_PADDING = 16;
 
 /** Where the eye stands, and which way the board is turned under it. */
 export type Lean = {
@@ -424,13 +424,13 @@ export function lerpCamera(from: CameraState, to: CameraState, t: number): Camer
  */
 
 /** How fast a flick decays. Per millisecond, so it is frame-rate independent. */
-export const GLIDE_DECAY = 0.0042;
+const GLIDE_DECAY = 0.0042;
 
 /** Below this the glide is over — a pixel a second is a board that looks stuck. */
 export const GLIDE_FLOOR = 0.0004;
 
 /** A flick slower than this was a tap or a stop, not a throw. */
-export const GLIDE_MIN = 0.0015;
+const GLIDE_MIN = 0.0015;
 
 export type Glide = {
   /** World units per millisecond. */

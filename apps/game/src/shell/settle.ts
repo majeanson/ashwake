@@ -32,7 +32,7 @@ import type { Slot } from './storage';
  */
 
 /** How many end-of-run board pictures the diary keeps. */
-export const SHOTS_KEPT = 20;
+const SHOTS_KEPT = 20;
 
 export type Settled = {
   readonly world: WorldMemory;

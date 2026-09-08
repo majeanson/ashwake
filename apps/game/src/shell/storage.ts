@@ -458,7 +458,7 @@ export function readLastError(): LastError | null {
 export const writeLastError = (error: LastError): void =>
   write(DEVICE.lastError, JSON.stringify(error));
 
-export const clearLastError = (): void => drop(DEVICE.lastError);
+const clearLastError = (): void => drop(DEVICE.lastError);
 
 /* ---- said once, ever ------------------------------------------------------ */
 
