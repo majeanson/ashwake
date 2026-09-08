@@ -179,6 +179,18 @@ const ART = 1;
  */
 const CLAIM_HOLD_MS = 900;
 
+/**
+ * How long the shrine tour stands at the shrine, in ms.
+ *
+ * Longer than a claim's hold, and for the opposite reason. A claim's trip
+ * confirms something the player just did and they already know what they are
+ * looking at; this one arrives straight off a card that has just named a thing
+ * they had never heard of, so the still part in the middle is the first look
+ * anyone gets at it. Two flights of 320ms and a wide shot's 320ms hold sit
+ * around it — see `BoardHandle.tour`.
+ */
+const TOUR_HOLD_MS = 1200;
+
 /** A number off the query string, where zero is a real answer and `?x=` alone
  *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
 /**
@@ -947,6 +959,52 @@ function Game() {
       return true;
     },
     [theme, s, say, setProgress],
+  );
+
+  /**
+   * THE SHRINE THE CARD JUST DESCRIBED, SHOWN ON THE BOARD IT STANDS ON.
+   *
+   * Marc, 2026-09-06: *"make sure when a shrine is first described, to zoom on
+   * it then zoom back where the user was (same view) so its clearer"*, and the
+   * shape of the trip is his: *"zoom out then zoom in then back"*.
+   *
+   * **Which shrine**: the same one the moment fired on. `teaching.ts` decides
+   * the SHRINE card is due with `cells.some(c => c.kind === 'landmark' &&
+   * !c.claimed && c.landmark === 'shrine')`, and `some` stops at its first
+   * match — so `find` with the identical predicate returns that exact cell and
+   * not merely a shrine like it. The predicate is copied rather than shared
+   * because the two live on opposite sides of the drip: one decides whether to
+   * speak, this one decides where to point, and a helper spanning both would
+   * be a rule about teaching kept in a file about the camera.
+   *
+   * **And it waits for the screen.** Dismissing one card can raise the next —
+   * `ORDER` runs cache, site, shrine, territory back to back, and the beacons
+   * on the horizon mean several kinds can be visible at once — so a trip fired
+   * on the dismissal would fly the board around behind a fresh 94% scrim,
+   * which is a camera move nobody sees. It is held instead until a dismissal
+   * leaves no card due, and it is stamped with the placement count it was
+   * armed at: a tour is about the board as it stood when the card fired, and a
+   * player who has since built has answered the question themselves.
+   */
+  const tourPending = useRef<{ readonly at: HexKey; readonly placements: number } | null>(null);
+  const takeTour = useCallback(
+    (after: Progress): void => {
+      const pending = tourPending.current;
+      if (pending === null) return;
+      const at = session.get();
+      if (pending.placements !== at.hud.placements) {
+        tourPending.current = null;
+        return;
+      }
+      const due = nextLesson(
+        { board: at.board, hud: at.hud, placed: at.hud.placements > 0 },
+        after,
+      );
+      if (due !== null && due.as === 'card') return;
+      tourPending.current = null;
+      board.current?.tour(pending.at, TOUR_HOLD_MS);
+    },
+    [session],
   );
 
   const beginRun = useCallback(() => {
@@ -3350,8 +3408,25 @@ function Game() {
           dismiss={s.ui.gotIt}
           onDismiss={() => {
             // The same quiet beat the story card spends — see above.
+            const after = told(progress, card);
             setProgress((p) => told(p, card));
-            speakLesson(told(progress, card), session.get());
+            speakLesson(after, session.get());
+            /*
+             * ARM THE TOUR HERE, where the card that raised it is being put
+             * down — see `takeTour` for why it may not leave yet. The hex is
+             * read now rather than when the trip starts: this is the board the
+             * card was fired about, and it is the board still on screen behind
+             * the scrim.
+             */
+            if (card === 'shrine') {
+              const at = session.get();
+              const cell = at.board.cells.find(
+                (c) => c.kind === 'landmark' && !c.claimed && c.landmark === 'shrine',
+              );
+              if (cell !== undefined)
+                tourPending.current = { at: key(cell.q, cell.r), placements: at.hud.placements };
+            }
+            takeTour(after);
           }}
         />
       )}

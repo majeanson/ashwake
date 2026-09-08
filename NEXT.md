@@ -271,6 +271,17 @@ board, on every phone, for every run, worth a map that never moves?** The
 alternative is what ships today — the board resizes once when the first pocket
 ripens, silently now instead of with a flash.
 
+**And the flash Marc was reporting was a DIFFERENT one, found 2026-09-06**
+(`LOG.md` Session 58). He said so by repeating the report against the fix:
+_"first/second tile still flashes the screen"_. `.card` had the `rise`
+keyframe and `.card-scrim` had none, so every teaching card put a 94% wall over
+the whole screen one frame before the card on it became visible — the screen
+washing to one flat colour with nothing on it, for the first third of a 140ms
+ease-out. Fixed: the scrim fades up with its card. Both flashes were real, one
+report covered both, and the second was found only by screencasting every
+composited frame and grading it for flatness rather than by reading the code
+that had just been changed.
+
 **~~SHARPNESS, by looking~~ — ANSWERED 2026-09-05** (`LOG.md` Sessions 50 and
 53). The slider went out to a phone with its default reproducing the old
 2026-09-02 guess exactly (a dense phone drawing at 1.5 device pixels per CSS

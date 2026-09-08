@@ -355,6 +355,47 @@ button[disabled] {
   .spends {
     animation: rise var(--fade) ease-out;
   }
+
+  /*
+   * AND THE SCRIM RISES WITH ITS CARD — which is the flash (2026-09-06, Marc:
+   * *"first/second tile still flashes the screen"*).
+   *
+   * MEASURED, by screencasting every composited frame through CDP and grading
+   * each one for flatness: three frames out of thirty-nine came back at a
+   * standard deviation of 2.4 over a board that reads 38. Looking at them
+   * settled it — the whole screen washed to `--bg` with **nothing on it**, one
+   * frame after the board and two frames before any card.
+   *
+   * `.card` got `rise` above and `.card-scrim` got nothing, so a card arriving
+   * put a 94%-of-the-ground wall over the entire screen on the very next
+   * frame — HUD, board, hand and bar all gone — while the card it is a wall
+   * FOR spent the whole 140ms fading up from `opacity: 0`. The blank interval
+   * is not a rounding error either: it is the first third of the rise, because
+   * `ease-out` is slow to leave zero.
+   *
+   * The scrim is the thing that covers the board, so the scrim is the thing
+   * that has to arrive gradually. Its own keyframe rather than `rise`: a
+   * `translateY` on a box pinned to `inset: 0` slides the ground out from
+   * under its own bottom edge. The card still rises INSIDE it, so the wash
+   * coming up and the card climbing out of it are one motion at one duration.
+   *
+   * Reduced motion needs no equivalent and must not have one: outside this
+   * guard the scrim and its card both simply exist on the same frame, which is
+   * the finished thing with no interval to be blank in.
+   *
+   * The previous flash — the WebGL buffer reallocated by the board resizing
+   * under POP — was real, is fixed in `board/Board.tsx`, and was a different
+   * event at a different placement. This one is why the report survived it.
+   */
+  @keyframes wash {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .card-scrim {
+    animation: wash var(--fade) ease-out;
+  }
 }
 
 /*

@@ -72,6 +72,15 @@ export function hexPxMaxFor(width: number, height: number): number {
 const HEX_PX_MIN = 6;
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 4;
+/**
+ * Ashwake 1's number: close enough to read a hex, far enough to see a pocket.
+ *
+ * Lived in `screens/Camera.tsx` as HERE's own constant until 2026-09-06, when
+ * the shrine tour needed the same answer to the same question — "how close do
+ * you stand to look at one hex" — and two copies of that would have been two
+ * numbers to keep level. It sits with the other zooms instead.
+ */
+export const NEAR_ZOOM = 2.4;
 /** Room between the structure and the edge of the viewport, in CSS pixels. */
 export const FIT_PADDING = 16;
 

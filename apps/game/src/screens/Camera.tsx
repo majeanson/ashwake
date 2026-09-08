@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Strings } from '@text/Strings';
 import type { BoardHandle } from '../board/Board';
+import { NEAR_ZOOM } from '../board/camera';
 import { MIN_RENDER_SCALE } from '../board/quality';
 import { Icon } from '../ui/Icon';
 
@@ -87,9 +88,6 @@ export type CameraProps = {
   readonly purseOpen: boolean;
 };
 
-/** Ashwake 1's number: close enough to read a hex, far enough to see a pocket. */
-const HERE_ZOOM = 2.4;
-
 /**
  * The cycle itself, as a hook (2026-08-29).
  *
@@ -125,7 +123,7 @@ export function useCameraCycle(
     const b = board.current;
     if (b !== null) {
       if (next === 'fit') b.flyToFit();
-      else if (next === 'here' && here !== null) b.flyToHex(here, HERE_ZOOM);
+      else if (next === 'here' && here !== null) b.flyToHex(here, NEAR_ZOOM);
       else if (next === 'flat') b.flatten();
       else if (next === 'home') b.resetLean();
     }

@@ -4716,3 +4716,63 @@ which is the least interesting part: **a cap a passing test clears by 14% is a
 cap that fails on the runner's mood.** The workspace default is 30s now, with
 the measurement written beside it, and the sim gates keep their larger number.
 The same lesson, in the same week, in the file that had not been told it.
+
+### Session 58 — the flash was never the canvas, and a card that arrives without arriving (2026-09-06)
+
+**Question:** Marc, again, of a bug two sessions closed: _"first/second tile
+still flashes the screen as a rerender check to correct the bug"_. Session 56
+measured a flash to its cause — the WebGL backing store reallocated under a
+demand-driven renderer when the action bar grew — fixed it, and verified it. If
+the report survives a fix that was right about what it fixed, what was it about?
+
+**Answer: a second flash, in a different layer, at the placement Marc actually
+named.** `.card` was given the `rise` keyframe on 2026-09-02 (`from { opacity:
+0 }`) and `.card-scrim` was given nothing. So a teaching card arriving put a
+94%-of-the-ground wall over the ENTIRE screen on the very next frame — HUD,
+board, hand and bar all gone — while the card it is a wall for spent the whole
+140ms fading up from invisible. **The whole screen washes to one flat colour
+with nothing on it, and then a card grows out of it.** That is the flash, it
+happens on the first placements because that is when the drip fires, and it has
+been in the build since the day the animation was added.
+
+**The instrument, because reading the CSS would not have found it.** A CDP
+screencast at `everyNthFrame: 1` captures every frame the compositor actually
+showed; `sharp` grades the board band of each one for standard deviation. Three
+of thirty-nine came back at 2.4 against a board that reads 38, and LOOKING at
+them settled it in one glance — the flat frame is not a blank canvas, it is a
+scrim with no card on it. The same instrument re-run after the fix: zero flat
+frames, a dip that bottoms at 18.5 and climbs back, which is a wash coming up
+under a card climbing out of it.
+
+**Session 56's fix is not undone and was not wrong** — the buffer reallocation
+is real, the layout-effect repaint holds, and the screencast finds no flat
+frame at the sixth placement where POP appears. Two flashes, one report. The
+lesson is the one this repository keeps relearning from the other end: a
+measured cause is not the same as THE cause, and the report surviving the fix
+is the only thing that says so.
+
+**And the tour.** Marc, same message: _"make sure when a shrine is first
+described, to zoom on it then zoom back where the user was (same view) so its
+clearer"_. Asked which of three readings of "first described" he meant, and
+whether "zoom" meant closer or merely centred, he picked the SHRINE teaching
+card, after GOT IT, and _"zoom out then zoom in then back"_. So `BoardHandle`
+has a `tour` beside `visit`: out to the fit, hold, in to `NEAR_ZOOM` on the
+hex, hold, back to the centre AND zoom the player was at. It waits for a clear
+screen — a dismissal can raise the next card, and a camera move behind a scrim
+is a camera move nobody sees — and it is stamped with the placement count it
+was armed at, so a trip whose board has moved on is dropped rather than flown.
+`HERE_ZOOM` moved out of `screens/Camera.tsx` into `board/camera.ts` as
+`NEAR_ZOOM`: two copies of "how close do you stand to look at one hex" is two
+numbers to keep level.
+
+Measured the same way. Screenshot-diffed at 60ms against the view the card was
+dismissed on: flat to ~400ms (the wide leg, invisible because a young board is
+already at its fit), a rise to the dive by 700ms, a 1.2s plateau at the shrine,
+and back to a pixel-identical frame by 2.4s.
+
+**A shrine is rare on purpose, and it shows here.** Of 400 seeds, eight put one
+within four rings. Seed 122 is the one this was measured on; `?seed=7`, the
+repository's usual, never grew a shrine in a whole run.
+
+**Verified:** format, lint, typecheck, 1041/1041 unit, 92/92 Playwright,
+`pnpm sim` byte-identical.

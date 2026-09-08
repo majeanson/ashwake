@@ -30,6 +30,7 @@ import {
   isFlick,
   isResting,
   LEAN_DEADZONE,
+  NEAR_ZOOM,
   TAP_SLOP,
   lerpCamera,
   nudgeInto,
@@ -87,6 +88,8 @@ type RigHandle = {
   flyToFit(): void;
   /** Look at a hex, hold, then return to where the camera was. */
   visit(hex: HexKey, holdMs: number): void;
+  /** Out to the whole board, in on a hex, then back to where the camera was. */
+  tour(hex: HexKey, holdMs: number): void;
   /** A small picture of the board as it stands, or null. */
   snapshot(): string | null;
   zoomLevel(): number;
@@ -110,6 +113,22 @@ export type BoardHandle = {
    * hexes away, and the place it happened was staying off screen.
    */
   visit(hex: HexKey, holdMs: number): void;
+  /**
+   * Show a hex the player has never been told about: out, in, back.
+   *
+   * Marc, 2026-09-06: *"when a shrine is first described, zoom on it then zoom
+   * back where the user was (same view) so its clearer"* — and, asked whether
+   * that meant closer or merely centred, *"zoom out then zoom in then back"*.
+   *
+   * A `visit` shows where something HAPPENED and keeps the player's zoom on
+   * purpose. This one answers a different question — "which of these is the
+   * thing the card just named" — and the answer needs the board whole before
+   * it needs the hex close, or the dive lands somewhere with no context around
+   * it. So it is three legs, not one, and it is its own method rather than a
+   * flag on `visit`: a claim's trip has an argued shape and nothing here
+   * should change it.
+   */
+  tour(hex: HexKey, holdMs: number): void;
   /** A small picture of the board as it stands — the end screen and the diary. */
   snapshot(): string | null;
   /** Back to the direction's own angle — the cycle's DEFAULT. */
@@ -170,6 +189,23 @@ export type BoardProps = {
 };
 
 const FLIGHT_MS = 320;
+
+/** How long the tour sits at the wide shot before it dives, in ms. Shorter
+ *  than the hold at the hex: the wide shot is context, not the subject. */
+const TOUR_WIDE_HOLD_MS = 320;
+
+/**
+ * The camera is still where an excursion's last leg put it.
+ *
+ * Which is how a journey knows it may carry on: a drag, a pinch or a flick all
+ * move the camera, and any of them means the player would rather be here than
+ * wherever the trip was going next. One copy for both `visit` and `tour`,
+ * because a tolerance written twice is a tolerance that drifts.
+ */
+const stillAt = (c: CameraState, to: CameraState): boolean =>
+  Math.abs(c.cx - to.cx) < 0.02 &&
+  Math.abs(c.cz - to.cz) < 0.02 &&
+  Math.abs(c.zoom - to.zoom) < 0.001;
 
 /** How much of each screen edge refuses a touch outright, so iOS Safari's
  *  back/forward swipe cannot take the page mid-drag. Ashwake 1's number. */
@@ -411,6 +447,7 @@ export function Board(props: BoardProps) {
       flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
       flyToFit: () => rig.current?.flyToFit(),
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
+      tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
       snapshot: () => rig.current?.snapshot() ?? null,
       zoomLevel: () => rig.current?.zoomLevel() ?? 1,
       zoomMax: () => rig.current?.zoomMax() ?? 1,
@@ -983,15 +1020,59 @@ function Rig({
         if (visiting.current !== 0) clearTimeout(visiting.current);
         visiting.current = setTimeout(() => {
           visiting.current = 0;
-          const c = cam.current;
-          const held =
-            Math.abs(c.cx - there.cx) < 0.02 &&
-            Math.abs(c.cz - there.cz) < 0.02 &&
-            Math.abs(c.zoom - there.zoom) < 0.001;
-          if (!held) return;
+          if (!stillAt(cam.current, there)) return;
           fly(back);
           wasFit.current = fitBefore;
         }, FLIGHT_MS + holdMs);
+      },
+      /*
+       * OUT, IN, BACK — the three legs, and why each one is there.
+       *
+       * See `BoardHandle.tour` for the ask. The wide shot first because the
+       * question this answers is "which one of those is a shrine", and a dive
+       * onto a hex from a board you were already reading close-up shows you a
+       * hex with nothing around it. `fitCamera` with the frontier focus is the
+       * same wide shot FIT gives, so the trip's first leg is a view the player
+       * already has a button for and recognises.
+       *
+       * `NEAR_ZOOM` for the dive: the same "close enough to read a hex, far
+       * enough to see a pocket" that HERE stands at, rather than a second
+       * number meaning the same thing. `cameraAt` clamps it, so a board whose
+       * ceiling is lower simply goes as close as it can.
+       *
+       * Then back to the camera the player had — centre AND zoom, which is what
+       * "same view" means — with `wasFit` restored, because the excursion's
+       * three flights would otherwise leave the camera cycle believing the
+       * player had chosen the fit themselves.
+       *
+       * Every leg checks the board did not move under it and abandons the rest
+       * of the trip if it did, which is `visit`'s rule applied twice. Reduced
+       * motion skips the whole thing for `visit`'s reason, and more so: three
+       * hard cuts is worse than two.
+       */
+      tour(hex, holdMs) {
+        if (reducedMotion) return;
+        const back = cam.current;
+        const fitBefore = wasFit.current;
+        const { q, r } = parse(hex);
+        const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+        const wide = fitCamera(frameRef.current, focusRef.current);
+        const near = cameraAt(frameRef.current, NEAR_ZOOM, p.x, p.y);
+        fly(wide);
+        if (visiting.current !== 0) clearTimeout(visiting.current);
+        visiting.current = setTimeout(() => {
+          if (!stillAt(cam.current, wide)) {
+            visiting.current = 0;
+            return;
+          }
+          fly(near);
+          visiting.current = setTimeout(() => {
+            visiting.current = 0;
+            if (!stillAt(cam.current, near)) return;
+            fly(back);
+            wasFit.current = fitBefore;
+          }, FLIGHT_MS + holdMs);
+        }, FLIGHT_MS + TOUR_WIDE_HOLD_MS);
       },
       /*
        * A small picture of the board as it stands.
