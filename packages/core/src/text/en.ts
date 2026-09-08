@@ -650,8 +650,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     soundOn: 'Sound is on. Tap to mute.',
     soundOff: 'Sound is off. Tap for sound.',
     menu: 'MENU',
+    menuGroups: { play: 'PLAY', record: 'YOUR RECORD', device: 'THIS DEVICE' },
     luckPurse: (luck) => `LUCK: ${luck}. Open the purse.`,
-    closePurse: 'CLOSE',
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     theStory: 'THE STORY',
@@ -671,7 +671,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     /** The camera cluster. `home` is its third control, shown only once the
      *  board has been turned or leaned away from the angle it opens at. */
-    camera: { fit: 'FIT', here: 'HERE', flat: 'FLAT', home: 'DEFAULT' },
+    camera: { flat: 'FLAT', home: 'DEFAULT', mine: 'MY VIEW' },
     sharpness: {
       label: 'SHARPNESS',
       note: 'How much of the screen the board actually draws. Higher looks crisper and uses more battery.',

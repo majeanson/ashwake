@@ -36,16 +36,10 @@ function rich(luck: number, tuning = TUNING): GameState {
   return { ...newRun(11, tuning), luck };
 }
 
-const drawer = (state: GameState, onClose: () => void = () => {}) => {
+const drawer = (state: GameState) => {
   const spent: SpendView[] = [];
   render(
-    <Purse
-      hud={toHudView(state, s)}
-      theme={theme}
-      s={s}
-      onSpend={(spend) => spent.push(spend)}
-      onClose={onClose}
-    />,
+    <Purse hud={toHudView(state, s)} theme={theme} s={s} onSpend={(spend) => spent.push(spend)} />,
   );
   return spent;
 };
@@ -159,20 +153,27 @@ describe('a tapped row reaches the reducer', () => {
   });
 
   /*
-   * The way out, and whether it is wired to anything — which is the whole
-   * reason this file exists. LUCK opened this drawer from the board's far
-   * corner since 2026-09-04, so the drawer having its own door is not a
-   * convenience; without it the only way to shut the thing is a round trip
-   * across the screen to a button labelled OPEN.
+   * ONE DOOR, and it is the LUCK button (2026-09-08).
+   *
+   * This asserted the opposite between 2026-09-05 and today, and the reason it
+   * flipped is worth keeping: the drawer's own close button was added because
+   * LUCK had moved to the board's far corner, and it was drawn right-aligned at
+   * the foot — which is precisely the corner the camera cluster is pinned to,
+   * at a higher rung on the z ladder. **It was under the two buttons from the
+   * day it was added.** Marc, finding it: *"remove the go back button ... or
+   * make it pop above the buttons of luck and camera so we dont get locked
+   * out"*, and, asked which, both. So the drawer clears the cluster (`.spends`)
+   * and closes by the toggle that opened it.
+   *
+   * Kept as a test rather than deleted: a drawer growing its own door again is
+   * how it ends up back under the cluster, and the e2e suite holds the other
+   * half — that LUCK actually shuts it.
    */
-  it('shuts from inside itself', async () => {
-    let closed = 0;
-    drawer(rich(50), () => {
-      closed += 1;
-    });
-    const out = document.querySelector('[data-action="purse-close"]');
-    expect(out, 'the purse has no way out of itself').not.toBeNull();
-    await userEvent.click(out as HTMLElement);
-    expect(closed, 'the purse’s own door is drawn and wired to nothing').toBe(1);
+  it('has no door of its own: LUCK is the toggle', () => {
+    drawer(rich(50));
+    expect(
+      document.querySelector('[data-action="purse-close"]'),
+      'the purse grew a second door, which is how it got under the camera cluster',
+    ).toBeNull();
   });
 });

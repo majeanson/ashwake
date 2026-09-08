@@ -675,7 +675,26 @@ button[disabled] {
   gap: var(--gap);
 }
 
+/*
+ * A ROW, so a mark on one is not touching its own word (2026-09-08, Marc:
+ * *"audio on off icon too close to text"*).
+ *
+ * SOUND is the only row here that carries one, and it was `<Icon/><span>` with
+ * nothing between them — JSX drops the whitespace between two elements on
+ * separate lines, so the mark and the word were flush against each other in
+ * every language. A `margin` on the icon would fix that one row and leave the
+ * next one to be found the same way; a flex row with a gap makes it the rule.
+ *
+ * `justify-content: flex-start` keeps what `text-align: start` was doing for
+ * the rows that have no mark — a flex container ignores `text-align` for its
+ * children's boxes, and every row in here is meant to read from the same left
+ * edge whether or not it has an icon.
+ */
 .panel-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
   text-align: start;
   padding: 0.7rem;
 }
@@ -1703,32 +1722,26 @@ h3.fact-label {
 }
 
 /*
- * The SHARPNESS popover (2026-09-04, Marc, on a phone: "bad quality
- * pixels" -> "put it in a scaler button ... so users can choose their right
- * settings").
+ * The SHARPNESS dial, now a row in SETTINGS (2026-09-08).
  *
- * Anchored to `.camera`, which is already `position: absolute` and therefore
- * already the containing block a popover needs — no wrapper required. Opens
- * UPWARD (`bottom: 100%`) because the corner it hangs off sits at the bottom
- * of the screen; opening down would draw it under the hand or off-screen.
+ * It was a popover anchored to the camera cluster — and before that an overlay
+ * that came back from Marc's phone three times as "behind the buttons", which
+ * is why `.camera` is a column today. None of that is needed any more: it is
+ * a section on a panel, so the slider and its number are one row and the note
+ * sits under them like every other note on that screen.
  */
-.sharpness-popover {
+.sharpness-row {
   display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-  width: min(15rem, 70vw);
-  padding: var(--gap);
-  background: var(--panel);
-  border: 1px solid var(--panel-edge-active);
-  border-radius: var(--radius);
+  align-items: center;
+  gap: var(--gap);
 }
 
-.sharpness-popover input[type='range'] {
-  width: 100%;
+.sharpness-row input[type='range'] {
+  flex: 1;
+  min-width: 0;
 }
 
 .sharpness-value {
-  align-self: flex-end;
   font-family: var(--font-label);
   font-size: 0.85rem;
   color: var(--ink-dim);
@@ -2221,13 +2234,32 @@ h3.fact-label {
  * everything to its left. The cluster is a handful of unrelated controls
  * already, not a priced row, so the button just takes its place beside VIEW.
  */
+/*
+ * ...and it is the BIGGEST thing in the cluster (2026-09-08, Marc: *"make sure
+ * we make the luck button a bit more accessible too"*).
+ *
+ * Everything in `.camera` was set at `0.75rem` in the label face — chrome
+ * sized to stay out of the way of a board. That is right for VIEW, which is a
+ * thing you press twice a run, and wrong for this one: LUCK is the door to
+ * every spend in the game, it is now the ONLY door (the drawer's own close
+ * button went the same day), and it is a toggle a thumb hits mid-run with the
+ * other hand holding the phone. `--tap`'s 44px floor was always met and a
+ * floor is not the same as a target.
+ *
+ * So it keeps the display face at a full `1rem`, takes real padding, and the
+ * mark grows with it. It stays outlined-accent rather than filled: a filled
+ * accent block in the corner of the board would out-shout POP, which is the
+ * one control that should be loudest.
+ */
 .camera .purse-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 1rem;
+  padding-inline: 0.9rem;
   border-color: var(--accent);
+  border-width: 2px;
   color: var(--accent);
 }
 
@@ -2282,13 +2314,34 @@ h3.fact-label {
  * set (from `.drawer`) and both inset edges pinned is over-constrained, and a
  * browser resolves that by dropping one of them rather than centring.
  */
+/*
+ * AND IT CLEARS THE CAMERA CLUSTER (2026-09-08, Marc: *"make it pop above
+ * (y-axis wise) the buttons of luck and camera so we dont get locked out"*).
+ *
+ * The lockout, and it was structural rather than a stacking accident. This box
+ * sat with its bottom edge on `.controls`' top edge; `.camera` is pinned
+ * `var(--gap)` above that SAME edge, on the board's side of it, at a higher
+ * rung on the z ladder — deliberately, since 2026-09-04, so that an open drawer
+ * cannot paint over the LUCK button that closes it. Which means the cluster was
+ * painted over the drawer's own bottom-right corner: the last spend rows, and
+ * the close button that used to be right-aligned at the foot. **The way out was
+ * under the two buttons the whole time.**
+ *
+ * The margin is the cluster's own height plus the gap it stands on, so the two
+ * boxes do not overlap at all — the same argument `.camera` itself was rebuilt
+ * on three days earlier: a box that does not overlap cannot be painted over,
+ * whatever a browser believes about z-index. `--tap` rather than a measured
+ * height because that IS the cluster's height: every button in it takes the
+ * 44px floor, and a drawer that has to be told the pixel height of a sibling is
+ * a drawer that breaks when the sibling grows a word.
+ */
 .spends {
   position: absolute;
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-drawer);
-  margin: 0 0 var(--gap-sm);
+  margin: 0 0 calc(var(--tap) + var(--gap) + var(--gap-sm));
 }
 
 .spends-head {
@@ -2296,32 +2349,6 @@ h3.fact-label {
   align-items: baseline;
   gap: 0.4rem;
   padding: 0 0.2rem 0.15rem;
-}
-
-/*
- * The purse's own way out, at its foot and to the right (2026-09-05).
- *
- * Quiet on purpose: `--ink-dim` and the smallest label on the drawer, because it
- * is a way BACK rather than a thing to buy, and every row above it is priced.
- * Right-aligned because that is the corner the thumb that opened this drawer
- * is already nearest — LUCK lives in the board's bottom-right cluster.
- */
-.spends-close {
-  align-self: flex-end;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-top: var(--gap-xs);
-  padding: 0.2rem 0.55rem;
-  font-family: var(--font-label);
-  font-size: 0.7rem;
-  letter-spacing: var(--label-tracking);
-  color: var(--ink-dim);
-}
-
-.spends-close svg {
-  width: 1em;
-  height: 1em;
 }
 
 .spends-luck {

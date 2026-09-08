@@ -15,6 +15,25 @@ import type { Strings } from '@text/Strings';
  * is half the reason to collect it, and a menu that only appears once you can
  * afford it teaches nobody what they were saving toward.
  *
+ * ## Its own CLOSE button is gone, and the drawer moved (2026-09-08)
+ *
+ * Marc: *"remove the go back button but keep the footer, or make it pop above
+ * (y-axis wise) the buttons of luck and camera so we dont get locked out"* —
+ * and, asked which, both.
+ *
+ * The lockout was real and structural. This drawer's bottom edge sat at the
+ * action bar's top edge, and the camera cluster is pinned to that same corner
+ * of the board — at a HIGHER rung on the z ladder, deliberately, so the LUCK
+ * button that opens the drawer cannot be painted over by it. Which means the
+ * cluster was painted over THIS: over the bottom-right of the drawer, which is
+ * exactly where a right-aligned close button and the last spend rows sit. The
+ * way out was under the two buttons the whole time.
+ *
+ * So the drawer clears the cluster now (`.spends` in `ui.css`) and closes by
+ * the button that opened it, which is where it started before 2026-09-05 and is
+ * one fewer control on a screen Marc had just said has too many. The scrimless
+ * drawer keeps no door of its own; LUCK is a toggle and reads as one.
+ *
  * **The layout is 2026-08-29** (Marc: "improve ui/ux for when [luck] popup is
  * up, its ugly"), and the ugliness was structural rather than decorative. It
  * was a wrapped row of small buttons each reading `WORD · 5`, which asks a
@@ -37,11 +56,9 @@ export type PurseProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly onSpend: (spend: SpendView) => void;
-  /** Shut the drawer from inside it — see the button at the foot. */
-  readonly onClose: () => void;
 };
 
-export function Purse({ hud, theme, s, onSpend, onClose }: PurseProps) {
+export function Purse({ hud, theme, s, onSpend }: PurseProps) {
   const names = namesOf(theme, s.locale);
 
   return (
@@ -79,26 +96,6 @@ export function Purse({ hud, theme, s, onSpend, onClose }: PurseProps) {
           </button>
         );
       })}
-
-      {/*
-        THE WAY OUT, at the foot of the thing it closes (2026-09-05, Marc:
-        *"add a small luck button bottom right corner to exit back"*).
-
-        The drawer had exactly one door and it was the button that opened it —
-        fine while LUCK sat in the action bar directly under this box, and not
-        fine since 2026-09-04, when it moved to the board's far corner
-        (`screens/Camera`). Closing a drawer should not be a reach diagonally
-        across the screen to a control whose label says OPEN.
-
-        The luck mark and a WORD rather than a cross: `screens/Hud` and
-        `screens/Worlds` both record the ruling this follows — marks are for
-        cross-screen CONCEPTS, and an invented glyph in one place is what D10
-        rules against. The mark is the registry's, the same one the toggle that
-        opened this drawer draws.
-      */}
-      <button type="button" className="spends-close" data-action="purse-close" onClick={onClose}>
-        <Icon name="luck" /> {s.ui.closePurse}
-      </button>
     </div>
   );
 }

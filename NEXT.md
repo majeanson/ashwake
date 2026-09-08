@@ -330,6 +330,22 @@ not, the theory was wrong and the real cause is still out there. Do not
 "fix" the other three on the strength of this paragraph alone — check the
 popup first.
 
+**~~The SHARPNESS popup~~ — the question is MOOT as of 2026-09-08** (`LOG.md`
+Session 60). Marc asked for the dial itself to move — _"put netteté button into
+settings"_ — so there is no popover on the board any more for anything to be
+drawn on top of. **That does not answer the question**, it retires the one
+surface that could have answered it: the three latent `z-index: calc(...)` in
+`.board-menu`, `.lens-off` and `.directions` are exactly as unverified as they
+were, and the next report of a control drawn over another one is still the first
+real evidence. Left here rather than deleted for that reason.
+
+**What DID get confirmed the same day, and it was not a stacking bug at all**:
+the purse drawer's lockout. `.camera` outranks `.spends` on the ladder by
+design, and the drawer's bottom-right corner — its close button and its last
+spend rows — sat underneath the cluster. Measured at 44px of overlap and fixed
+by moving the box, not the rung, which is the fix that does not depend on being
+right about a browser.
+
 **~~The identity-share ceiling~~ — CLOSED 2026-09-04** (`LOG.md` Sessions
 48–49). A played run's receipt read matching/power/rarity/native ground — the
 four things a player actually PLACED well — at 5% of harvest points against

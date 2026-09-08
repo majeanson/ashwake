@@ -151,10 +151,26 @@ const viaTab = (tab: string) => async (page: Page) => {
  * `data-door="more"` (`EndScreen.tsx`) — both open the same panel
  * (`More.tsx`'s own doc comment), so the caller says which door it is
  * standing at rather than this guessing from the query string.
+ *
+ * **And the end screen's door needs BEGIN pressed first** (2026-09-08). Every
+ * visit starts at the front door, so `more` was waiting a hundred and eighty
+ * seconds for a button that does not exist yet, and four screens — MORE on a
+ * played device, THE SHOP, HALL OF FAME and THIS DEVICE — had been timing out
+ * in all three passes. **`report.md` said `113 of 113` throughout**, because a
+ * failed run never reaches the write and the file on disk was the last
+ * COMPLETE run's: the guard added on 2026-09-03 stops a partial run from
+ * overwriting the report, and cannot stop a partial run from leaving the old
+ * one standing. This is the second time these exact four have gone quiet (the
+ * first is at `PLAYED` above), and both times the report looked complete.
+ *
+ * Found 2026-09-08 while regenerating the shots for a chrome change, and
+ * checked against a stash of that change to be sure it was not the cause. It
+ * was not: it breaks on `main` too.
  */
 const viaMore =
   (go: string, door: 'menu' | 'more' = 'menu') =>
   async (page: Page) => {
+    if (door === 'more') await begin(page);
     await page.locator(`[data-door="${door}"]`).click();
     await page.locator(`[data-go="${go}"]`).click();
   };
@@ -245,7 +261,18 @@ const SCREENS: readonly Screen[] = [
       await viaQuick(page);
     },
   },
-  { name: 'device', query: PLAYED, reach: viaMore('device', 'more') },
+  /* THIS DEVICE moved one level down on 2026-09-08 — MENU's rows were layered
+     into three groups and the read-once things went inside SETTINGS, so the
+     room where a tap can destroy something is now two doors from the board
+     rather than one. See `More.tsx`. */
+  {
+    name: 'device',
+    query: PLAYED,
+    reach: async (page: Page) => {
+      await viaMore('settings', 'more')(page);
+      await page.locator('[data-go="device"]').click();
+    },
+  },
   { name: 'daily', query: FRESH, reach: open('[data-door="daily"]') },
   /* The `?themes=1` picker, which is a debug surface that pins itself to the
      same corner MENU uses — the one overlap `ui.css` admits to and nothing has

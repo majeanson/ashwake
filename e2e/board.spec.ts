@@ -17,6 +17,29 @@ test.use({ viewport: { width: 390, height: 844 } });
 const tiles = async (page: Page): Promise<number> =>
   Number(await page.locator('[data-stat="tiles"] .stat-value').textContent());
 
+/**
+ * The board as a 48×48 greyscale thumbnail, and how far two of them are apart.
+ *
+ * A coarse witness, and coarse is the point: at this size the embers and the
+ * beacons' breath average out, which is the noise `data-lean` was added to
+ * dodge for the ANGLE. Where the camera STANDS has no such attribute — a
+ * `data-` string carrying a float pan and zoom would be a test affordance
+ * pretending to be state — and neither a tour's dive nor a dragged board is a
+ * subtle difference. Two tests read it: the tour's, and the view cycle's.
+ */
+const small = async (page: Page): Promise<Buffer> =>
+  sharp(await page.locator('canvas').screenshot())
+    .greyscale()
+    .resize(48, 48, { fit: 'fill' })
+    .raw()
+    .toBuffer();
+
+const apart = (a: Buffer, b: Buffer): number => {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += Math.abs((a[i] ?? 0) - (b[i] ?? 0));
+  return sum / a.length;
+};
+
 /** Tap around the centre in widening rings until a placement lands. The
  *  opening board is one tile at the origin with six legal neighbours around
  *  it, so a ring at the hex pitch finds one. */
@@ -615,18 +638,26 @@ test('a card in the hand is the tile it will become, and only the chosen one has
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('every view button brings the board back, not just FIT', async ({ page }) => {
+test('the view cycle hands the board back, and never loses the board you made', async ({
+  page,
+}) => {
   /*
    * Marc, 2026-08-30: *"when pressing FLAT, FIT, etc. make sure we recenter the
-   * map not too zoomed out."*
+   * map not too zoomed out."* Marc, 2026-09-08: *"Revise all 3 camera modes so
+   * the third one is always 'my own custom view' so that if we toggle with this
+   * button we never lose the camera."*
    *
-   * Two separate bugs behind one sentence. FIT flew to zoom 1, which is by
-   * definition whatever it takes to show every hex, so on a grown board the
-   * button that hands the board back was the button that made it unreadable —
-   * that half is arithmetic and `camera.test.ts` holds it. FLAT and DEFAULT
-   * only set an ANGLE, and changing the angle changes where every hex lands on
-   * screen, so a camera left exactly where it was was looking at a place that
-   * had moved. Neither had any way to ask for a re-frame.
+   * The second ask rewrote what this test can claim, so it says the two things
+   * that are true now instead of the two that were:
+   *
+   *   - **DEFAULT hands a lost board back.** It always did; it is the only stop
+   *     that does now, and that is the change. FLAT used to re-frame as well and
+   *     stopped, because FLAT became *"2d of our own custom view"* — a stop that
+   *     re-framed would throw away the pan and the zoom it exists to keep. FIT
+   *     is gone entirely: it was the button's own opinion and DEFAULT frames the
+   *     board whole anyway.
+   *   - **MY VIEW gives back the board your hands made.** Which is the whole
+   *     ask, and the thing no stop on the old four-view cycle could do.
    *
    * Measured by how much PICTURE there is. A board dragged off the viewport
    * leaves the ground and almost nothing else, and an almost-flat frame
@@ -658,39 +689,51 @@ test('every view button brings the board back, not just FIT', async ({ page }) =
   };
 
   const weight = async (): Promise<number> => (await canvas.screenshot()).byteLength;
+  const view = page.locator('[data-action="camera"]');
+  /** Walk the cycle until the button's label says it will go where we want.
+   *  The label IS the destination, which is what makes this readable. */
+  const aimAt = async (where: string): Promise<void> => {
+    for (let i = 0; i < 4 && (await view.getAttribute('data-view')) !== where; i++) {
+      await view.click();
+      await page.waitForTimeout(500);
+    }
+    expect(await view.getAttribute('data-view'), `the cycle has no ${where} stop`).toBe(where);
+  };
 
   const full = await weight();
   await panAway();
   const empty = await weight();
   expect(empty, 'dragging the board away did not empty the frame').toBeLessThan(full / 2);
 
-  const view = page.locator('[data-action="camera"]');
-
-  // FIT, which is the first stop on the cycle.
-  while ((await view.getAttribute('data-view')) !== 'fit') await view.click();
+  // DEFAULT, the one stop that re-frames.
+  await aimAt('home');
   await view.click();
   await page.waitForTimeout(700);
-  expect(await weight(), 'FIT did not bring the board back').toBeGreaterThan(empty * 2);
+  expect(await weight(), 'DEFAULT did not bring the board back').toBeGreaterThan(empty * 2);
 
   /*
-   * And FLAT, which is the half that had no re-frame at all.
-   *
-   * The cycle is walked to FLAT first — every stop before it also re-centres,
-   * so the board is dragged away only once the NEXT press is the one under
-   * test. The button's label is its destination, which is what makes this
-   * readable at all.
+   * And MY VIEW, which is the ask. The board is dragged somewhere deliberate —
+   * off-centre but still on screen, the way a player arranges one — then the
+   * cycle is walked all the way round. The picture that comes back has to be
+   * the one the hands made, not the one the button prefers.
    */
-  while ((await view.getAttribute('data-view')) !== 'flat') {
-    await view.click();
-    await page.waitForTimeout(500);
-  }
-  await panAway();
-  const goneAgain = await weight();
+  await page.mouse.move(cx + 90, cy + 90);
+  await page.mouse.down();
+  await page.mouse.move(cx - 30, cy - 10, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(900);
+  const own = await small(page);
+
+  await aimAt('home');
   await view.click();
   await page.waitForTimeout(700);
-  expect(await weight(), 'FLAT changed the angle and left the board off screen').toBeGreaterThan(
-    goneAgain * 2,
-  );
+  const moved = await small(page);
+  expect(apart(own, moved), 'DEFAULT did not move off the view the drag made').toBeGreaterThan(3);
+
+  await aimAt('mine');
+  await view.click();
+  await page.waitForTimeout(900);
+  expect(apart(own, await small(page)), 'MY VIEW did not give the board back').toBeLessThan(3);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -1298,37 +1341,20 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   }
   expect(await shrine.count(), 'the shrine card never came').toBe(1);
 
-  const canvas = page.locator('canvas');
-  /* A coarse witness, and coarse is the point: 48×48 greyscale averages out the
-     embers and the beacons' breath, which is what `data-lean` was added to dodge
-     for the ANGLE. Where the camera stands has no such attribute, and a board at
-     2.4× on one hex is not a subtle difference. */
-  const frame = async (): Promise<Buffer> =>
-    sharp(await canvas.screenshot())
-      .greyscale()
-      .resize(48, 48, { fit: 'fill' })
-      .raw()
-      .toBuffer();
-  const apart = (a: Buffer, b: Buffer): number => {
-    let sum = 0;
-    for (let i = 0; i < a.length; i++) sum += Math.abs((a[i] ?? 0) - (b[i] ?? 0));
-    return sum / a.length;
-  };
-
   const held = await tiles(page);
   await scrim.locator('button').last().click({ force: true });
 
   // The opening board already fits, so the trip's first leg moves nothing: this
   // is home, taken while the scrim is gone and the dive has not begun.
   await page.waitForTimeout(150);
-  const home = await frame();
+  const home = await small(page);
 
   // ...and this is the dive, which is the half that makes the rest meaningful.
   await page.waitForTimeout(700);
-  const away = await frame();
+  const away = await small(page);
   expect(apart(home, away), 'the board never toured, so the tap proves nothing').toBeGreaterThan(3);
 
-  const box = await canvas.boundingBox();
+  const box = await page.locator('canvas').boundingBox();
   if (box === null) throw new Error('no canvas');
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await page.waitForTimeout(800);
@@ -1349,7 +1375,7 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
     await page.waitForTimeout(120);
   }
   await page.waitForTimeout(2700);
-  expect(apart(home, await frame()), 'the tap did not bring the board home').toBeLessThan(3);
+  expect(apart(home, await small(page)), 'the tap did not bring the board home').toBeLessThan(3);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

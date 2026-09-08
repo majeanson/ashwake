@@ -1,8 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Strings } from '@text/Strings';
 import type { BoardHandle } from '../board/Board';
-import { NEAR_ZOOM } from '../board/camera';
-import { MIN_RENDER_SCALE } from '../board/quality';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -21,8 +19,7 @@ import { Icon } from '../ui/Icon';
  *
  * **The label is the DESTINATION, not the state.** A button that says where it
  * will go never needs to be read twice, and it is the rule the FIT⇄HERE toggle
- * already followed. HERE drops out of the cycle when nothing has been placed
- * yet, so the button never offers a journey to nowhere.
+ * already followed.
  *
  * Every word is the catalogue's. They were `'FIT'` and `'HERE'`, typed into
  * this file in English, which D4 does not allow and which a French phone read
@@ -45,16 +42,6 @@ import { Icon } from '../ui/Icon';
  * times. What is left here steers the camera, which is what `.camera` has
  * always meant.
  *
- * ## And then a second button, on purpose (2026-09-04)
- *
- * SHARPNESS breaks the "one button" rule above, deliberately: every other
- * addition this file has stripped back out was a duplicate door onto
- * something with a door elsewhere (MENU, LUCK, the manual's `?`). This one is
- * not: nothing else on screen sets `board/quality.ts`'s render scale, and it
- * answers "bad quality pixels" (Marc, on a phone, same day), a look complaint
- * with no other home. It stays a popover rather than a permanent third
- * control: closed, the corner still reads as one button at rest.
- *
  * ## And LUCK comes back (2026-09-04)
  *
  * Round-tripped once already (see "ONE button again" above: out of this
@@ -62,24 +49,30 @@ import { Icon } from '../ui/Icon';
  * the luck buttons"*), and asked back out: *"make it live outside the hand
  * next to camera button."* The bar is where SPENDING a pocket lives — POP,
  * TAKE, SACRIFICE — and the purse spends a different currency entirely, the
- * one that follows a run rather than a pocket, which is closer to VIEW and
- * SHARPNESS than to the hand it used to sit beside. `onPurse` and
- * `purseOpen` still live in `App`, unchanged — only where the button that
- * calls them is drawn moved.
+ * one that follows a run rather than a pocket, which is closer to VIEW than to
+ * the hand it used to sit beside. `onPurse` and `purseOpen` still live in
+ * `App`, unchanged — only where the button that calls them is drawn moved.
+ *
+ * ## And SHARPNESS goes to SETTINGS (2026-09-08)
+ *
+ * Marc: *"put netteté button into settings"*, in the same breath as *"overall
+ * there is too much buttons"*. It was the third control in this corner and the
+ * only one that is not a thing you do WHILE playing — a dial you set once for a
+ * phone and never touch again, sitting on the board for the whole of every run.
+ * `screens/Settings` is where the other set-once dials live (the language, the
+ * direction), and it costs this corner a third of its width.
+ *
+ * Two buttons here now, which is what this file's own docblock has argued for
+ * three times and drifted away from three times.
  */
 
-export type View = 'fit' | 'here' | 'flat' | 'home';
+export type View = 'flat' | 'home' | 'mine';
 
 export type CameraProps = {
   readonly s: Strings;
   /** Where the button will go NEXT — its own label, and the whole rule above. */
   readonly next: View;
   readonly onCycle: () => void;
-  /** The SHARPNESS slider's current value and its ceiling — `1` and
-   *  `board/quality.ts`'s `MAX_RENDER_SCALE`, this phone's own. */
-  readonly renderScale: number;
-  readonly maxRenderScale: number;
-  readonly onRenderScale: (scale: number) => void;
   /** Luck in hand, and the drawer it opens — see the LUCK note above.
    *  Absent (`0`, gated by `canSpend`) where nothing spends it yet. */
   readonly luck: number;
@@ -93,98 +86,56 @@ export type CameraProps = {
  *
  * Lifted out of the component because the button is no longer the only thing
  * that presses it: `0` on a keyboard walks the same list, and two copies of a
- * four-state cycle is how the key and the button come to disagree about which
- * view is next. The hook owns the state and the doing; the component owns the
- * label — which, since the label IS the next state, is all it needs.
+ * cycle is how the key and the button come to disagree about which view is
+ * next. The hook owns the state and the doing; the component owns the label —
+ * which, since the label IS the next state, is all it needs.
+ *
+ * ## Three stops, and one of them is the player's (2026-09-08)
+ *
+ * Marc: *"Revise all 3 camera modes so the third one is always 'my own custom
+ * view' so that if we toggle with this button we never lose the camera. Other
+ * two would be 2d of 'our own custom view' and our default one."*
+ *
+ * FIT and HERE are gone, and the reason is the ask: **every stop this button
+ * offered was a view the button itself invented.** Arrange the board, press
+ * VIEW once to check something, and the arrangement was gone with nothing that
+ * could bring it back. So the list is DEFAULT (the direction's angle, the board
+ * framed whole), FLAT (that same board straight down and squared up, at the pan
+ * and zoom the player chose), and MY VIEW (the board exactly as their hands last
+ * left it — see `BoardHandle.myView`).
+ *
+ * Nothing was lost with FIT: DEFAULT frames the board whole and is the stop
+ * that brings a dragged-away one back. HERE — lean in on the last tile — was a
+ * view of the button's own, and it is the kind of thing MY VIEW replaces: a
+ * player who wants to stand over their last placement can, and now the button
+ * remembers that they did.
  */
-export function useCameraCycle(
-  board: React.RefObject<BoardHandle | null>,
-  here: string | null,
-): { readonly next: View; readonly step: () => void } {
-  /*
-   * The cycle, and what is in it.
-   *
-   * FIT and HERE move the camera over the board; FLAT and DEFAULT change the
-   * ANGLE it watches from — the flat map straight down, and the direction's
-   * own lean. Keeping all four on one button is what lets the angle be
-   * undone by somebody who leaned the board by accident with two fingers and
-   * cannot put it back by feel.
-   */
-  const views = useMemo<readonly View[]>(
-    () => (here === null ? ['fit', 'flat', 'home'] : ['fit', 'here', 'flat', 'home']),
-    [here],
-  );
+export function useCameraCycle(board: React.RefObject<BoardHandle | null>): {
+  readonly next: View;
+  readonly step: () => void;
+} {
+  const views = useMemo<readonly View[]>(() => ['home', 'flat', 'mine'], []);
   const [at, setAt] = useState(0);
   // Clamped rather than reset: the list shortens the moment a run restarts and
   // an index left pointing past its end would blank the button's label.
-  const next = views[(at + 1) % views.length] ?? 'fit';
+  const next = views[(at + 1) % views.length] ?? 'home';
 
   const step = useCallback(() => {
     const b = board.current;
     if (b !== null) {
-      if (next === 'fit') b.flyToFit();
-      else if (next === 'here' && here !== null) b.flyToHex(here, NEAR_ZOOM);
+      if (next === 'home') b.resetLean();
       else if (next === 'flat') b.flatten();
-      else if (next === 'home') b.resetLean();
+      else b.myView();
     }
     setAt((was) => (was + 1) % views.length);
-  }, [board, here, next, views.length]);
+  }, [board, next, views.length]);
 
   return { next, step };
 }
 
-export function Camera({
-  s,
-  next,
-  onCycle,
-  renderScale,
-  maxRenderScale,
-  onRenderScale,
-  luck,
-  canSpend,
-  onPurse,
-  purseOpen,
-}: CameraProps) {
-  const [open, setOpen] = useState(false);
+export function Camera({ s, next, onCycle, luck, canSpend, onPurse, purseOpen }: CameraProps) {
   return (
     <div className="camera">
-      {/*
-        THE SLIDER IS IN FLOW, ABOVE THE ROW (2026-09-05).
-
-        It was a popover — `position: absolute`, `bottom: 100%`, a z-index — and it
-        came back from Marc's phone THREE times as "behind the buttons", never
-        once reproducible in Chromium at any pixel ratio, portrait or landscape.
-        Each fix was a better guess about stacking: a real rung on the ladder, an
-        explicit rung under it for the row, a literal fallback so the declaration
-        could not be dropped. The fourth guess would have been a guess too.
-
-        So there is no overlay left to be behind anything. `.camera` is a COLUMN:
-        the slider is a block, the buttons are a row under it, and they no longer
-        occupy the same space at all. A box that does not overlap cannot be
-        painted over, whatever a browser thinks of z-index — which is the only
-        property of this fix that does not depend on being right about the cause.
-      */}
-      {maxRenderScale > MIN_RENDER_SCALE && open && (
-        <div
-          className="sharpness-popover"
-          id="sharpness-popover"
-          role="group"
-          aria-label={s.ui.sharpness.label}
-        >
-          <input
-            type="range"
-            data-action="sharpness-slider"
-            aria-label={s.ui.sharpness.label}
-            min={MIN_RENDER_SCALE}
-            max={maxRenderScale}
-            step={0.25}
-            value={renderScale}
-            onChange={(e) => onRenderScale(Number(e.target.value))}
-          />
-          <span className="sharpness-value">{renderScale.toFixed(2)}×</span>
-          <p className="note">{s.ui.sharpness.note}</p>
-        </div>
-      )}
       <div className="camera-row">
         {canSpend && (
           <button
@@ -207,21 +158,6 @@ export function Camera({
         <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
           {s.ui.camera[next]}
         </button>
-        {/* Only worth showing where there is a real choice — a phone whose own
-          pixel ratio is already 1 has nothing a slider could raise. */}
-        {maxRenderScale > MIN_RENDER_SCALE && (
-          <>
-            <button
-              type="button"
-              data-action="sharpness"
-              aria-expanded={open}
-              aria-controls="sharpness-popover"
-              onClick={() => setOpen((was) => !was)}
-            >
-              {s.ui.sharpness.label}
-            </button>
-          </>
-        )}
       </div>
     </div>
   );

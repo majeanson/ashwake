@@ -2602,7 +2602,7 @@ function Game() {
   const keyboard = useMediaQuery('(pointer: fine)');
 
   /** The camera cluster's cycle, held here because `0` presses it too. */
-  const { next: nextView, step: cycleView } = useCameraCycle(board, snap.state.lastPlaced ?? null);
+  const { next: nextView, step: cycleView } = useCameraCycle(board);
 
   /*
    * The board answers a keyboard (2026-08-29).
@@ -2918,9 +2918,6 @@ function Game() {
             s={s}
             next={nextView}
             onCycle={cycleView}
-            renderScale={renderScale}
-            maxRenderScale={MAX_RENDER_SCALE}
-            onRenderScale={setRenderScale}
             // The purse is a run action, not a walked-ending one — `playing`
             // gates it the same way `hand-host` used to gate the button that
             // opened it, back when the button lived there.
@@ -2996,7 +2993,6 @@ function Game() {
                     : { type: 'SPEND', on: spend.on },
                 )
               }
-              onClose={() => setPurseOpen(false)}
             />
           )}
           <ActionBar
@@ -3129,6 +3125,10 @@ function Game() {
             if (id === 'ui.sound') setSound(on);
             else setFeature(id, on);
           }}
+          renderScale={renderScale}
+          maxRenderScale={MAX_RENDER_SCALE}
+          onRenderScale={setRenderScale}
+          onDevice={() => device.show()}
           /*
            * RESET TEACHING resets the TEACHING (2026-08-30).
            *
@@ -3157,7 +3157,6 @@ function Game() {
           onShop={() => shop.show()}
           onWorlds={() => worlds.show()}
           onDaily={enterDaily}
-          onDevice={() => device.show()}
           onRestart={() => {
             // The whole stack, not this panel: MENU sits over whatever was
             // open when RESTART was pressed (the manual, say), so hiding only

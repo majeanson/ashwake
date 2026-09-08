@@ -4846,3 +4846,100 @@ of its kind beside it on another.
 
 **Verified:** format, lint, typecheck, 1046/1046 unit, 93/93 Playwright,
 `pnpm sim` byte-identical.
+
+### Session 60 — five asks about the same complaint: too many buttons, in the way of the board (2026-09-08)
+
+**Question:** Marc, in two messages: _"put netteté button into settings"_,
+_"revise luck button and luck popup ... so we dont get locked out"_, _"Revise
+all 3 camera modes so the third one is always 'my own custom view' so that if we
+toggle with this button we never lose the camera"_, and _"revise in game
+hamburger menu (audio on off icon too close to text) and overall there is too
+much buttons, need to layerize things properly"_. Five asks, or one?
+
+**One.** Every screen in this build had grown by accretion — each control
+landed where the last one ended, and the panel a player met was this
+repository's own history in order. Four of the five are the same fix at
+different scales.
+
+**Three of them were screen decisions and were put to Marc rather than guessed
+at**, which is the standing rule for a look question. He answered: fix the luck
+drawer BOTH ways and make the button itself easier to hit; FLAT is _"true
+north"_ (the turn goes too, not only the lean); and MENU gets headings AND the
+read-once rows one level down. The camera semantics and the icon gap were not
+questions and were simply built.
+
+**THE LOCKOUT WAS REAL AND STRUCTURAL.** The purse drawer's bottom edge sat on
+the action bar's top edge; `.camera` is pinned `--gap` above that same edge at a
+HIGHER rung on the z ladder — deliberately, since 2026-09-04, so an open drawer
+cannot paint over the LUCK button that closes it. Which means the cluster was
+painted over the DRAWER: over its bottom-right corner, which is exactly where a
+right-aligned close button and the last spend rows sit. **The way out was under
+the two buttons from the day it was added.** Measured, not argued: the cluster's
+top was 646px and the drawer's bottom 690px. It is 0px of overlap now, and the
+drawer closes by the toggle that opened it.
+
+**THE CAMERA CYCLE'S OLD FAULT, stated plainly:** every stop it offered was a
+view the button invented. Arrange the board, press VIEW once to check
+something, and the arrangement was gone with nothing that could bring it back.
+FIT and HERE are retired; DEFAULT frames the board whole and is the stop that
+hands a dragged-away one back, FLAT is that same board straight down and squared
+up at the player's own pan and zoom, and MY VIEW is the board their hands last
+left. `mine` is written by the HANDS and never by the button, which is what
+makes the loop closed.
+
+**Two bugs found by building it, both by tests rather than by reading.**
+
+1. **A flick kept moving the board after `mine` was stamped.** The drag stamps
+   on every pointermove and the throw carries on after the finger has gone, so
+   MY VIEW gave back a view the flick had already left. The e2e caught it on its
+   first run; the glide step stamps too now.
+2. **FLAT re-framed, and had to stop.** It bumped the refit tick since
+   2026-08-30 for a good reason — a flattened board is a differently shaped
+   board — and that reason expired the moment FLAT became _2d of your own view_:
+   a stop that re-frames throws away the pan and zoom it exists to keep. It
+   cannot walk off the edge from here either, because the centre is a world
+   point and stays the centre whatever the angle.
+
+**The menu is six rows under three headings** instead of ten in a column, and
+the three headings are the three questions somebody opens it with: where do I
+go, what have I done, what is this phone set to. THE STORY and THIS DEVICE went
+inside SETTINGS with the sharpness dial — and the Stage 4 argument that put THIS
+DEVICE last and alone (_"a player looking for the manual should never be one
+mis-tap from erasing three worlds"_) is better served two doors down than by a
+row at the bottom of a list everybody scrolls past.
+
+**The audio icon was touching its own word** because JSX drops the whitespace
+between two elements on separate lines, so `<Icon/><span>SOUND</span>` rendered
+flush in both languages. Fixed at `.panel-menu button` rather than on the icon:
+a margin would have fixed that one row and left the next to be found the same
+way. Measured at 9px after.
+
+**LOOKED AT, not only tested.** Screenshots of the four changed screens, because
+this whole session is a look change and the suite cannot see a cramped row —
+which is how the one defect the tests missed was found: RESET TEACHING and THIS
+DEVICE came out side by side on one line, because a bare `<section>` lays its
+children inline and the row that arrived beside the confirm had never had a
+column to join.
+
+**Verified:** format, lint, typecheck, 1046/1046 unit, 93/93 Playwright,
+`pnpm sim` byte-identical, and the screen audit regenerated in the same commit
+as the chrome change, which is the rule `playwright.audit.config.ts` states.
+
+**Addendum, same session: four audit screens had been timing out on `main`,
+and `report.md` said `113 of 113` throughout.** Regenerating the shots for this
+chrome change — the rule `playwright.audit.config.ts` states — turned up twelve
+failures: MORE on a played device, THE SHOP, HALL OF FAME and THIS DEVICE, in
+all three passes. **Checked against a stash of this session's own work before
+believing it**, because the obvious suspect was the panel layering, and it
+reproduced on a clean tree: `viaMore(go, 'more')` clicks the END SCREEN's menu,
+every visit starts at the front door, and nothing pressed BEGIN — so each one
+waited out a 180-second timeout.
+
+The reason it was invisible is the interesting half. **A failed audit run never
+reaches the write**, so `report.md` on disk stayed the last COMPLETE run's, and
+that run said 113 of 113. The partial-run guard added on 2026-09-03 stops a
+partial run from overwriting the report and cannot stop one from leaving the old
+report standing — which reads exactly the same from the outside. This is the
+second time these same four screens have gone quiet (`NEXT.md` §0 records the
+first, 2026-08-30, when `PLAYED` stopped being played) and both times the header
+said the run was complete. One line fixes it; the shots come back in 1.5s each.

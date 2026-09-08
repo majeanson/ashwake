@@ -92,6 +92,8 @@ type RigHandle = {
   tour(hex: HexKey, holdMs: number): void;
   /** End a tour early and come home — see the implementation. */
   endTour(): void;
+  /** Back to the board the player's own hands last left. */
+  myView(): void;
   /** A small picture of the board as it stands, or null. */
   snapshot(): string | null;
   zoomLevel(): number;
@@ -151,10 +153,27 @@ export type BoardHandle = {
   endTour(): void;
   /** A small picture of the board as it stands — the end screen and the diary. */
   snapshot(): string | null;
-  /** Back to the direction's own angle — the cycle's DEFAULT. */
+  /**
+   * THE CYCLE'S THREE STOPS (2026-09-08, Marc: *"Revise all 3 camera modes so
+   * the third one is always 'my own custom view' so that if we toggle with this
+   * button we never lose the camera. Other two would be 2d of 'our own custom
+   * view' and our default one."*).
+   *
+   * FIT and HERE are gone. Both were views the button INVENTED, and a cycle
+   * made only of the button's own opinions is one a player cannot get out of:
+   * arrange the board, press VIEW once to check something, and the arrangement
+   * is gone with nothing to bring it back. Three stops now, and one of them is
+   * theirs.
+   */
+  /** The direction's own angle with the board framed whole — DEFAULT, and the
+   *  stop that brings a dragged-away board back. */
   resetLean(): void;
-  /** Straight down at the map, however the board was leaned — the cycle's FLAT. */
+  /** Straight down and squared up, at the player's own pan and zoom — FLAT,
+   *  which is their view as a MAP rather than a view of its own. It re-frames
+   *  nothing, on purpose: see the refit tick. */
   flatten(): void;
+  /** Back to the board as the player's own hands last left it — MY VIEW. */
+  myView(): void;
   /** Degrees to ADD to the turn and the lean — the keyboard's half of the
    *  two-finger gesture. */
   turnBy(deg: number): void;
@@ -237,6 +256,24 @@ export const tourMs = (holdMs: number): number => FLIGHT_MS * 3 + TOUR_WIDE_HOLD
  * wherever the trip was going next. One copy for both `visit` and `tour`,
  * because a tolerance written twice is a tolerance that drifts.
  */
+/**
+ * An angle the board can be held at: the two the fingers turn, and the relief.
+ *
+ * Named because the view cycle now passes one around whole — MY VIEW restores
+ * an angle rather than nudging one, and `onLeanBy`'s deltas cannot say
+ * "exactly here".
+ */
+export type LeanSet = { readonly tilt: number; readonly yaw: number; readonly relief: number };
+
+/** The FLAT stop: straight down, squared up, and no relief. Marc's ruling,
+ *  2026-09-08 — *"drop both, true north, flat"* — so it is a MAP, not a 3D
+ *  board photographed from above. The pan and the zoom are the player's and
+ *  are not touched. */
+const FLAT_LEAN: LeanSet = { tilt: 0, yaw: 0, relief: 0 };
+
+const sameLean = (a: LeanSet, b: LeanSet): boolean =>
+  a.tilt === b.tilt && a.yaw === b.yaw && a.relief === b.relief;
+
 const stillAt = (c: CameraState, to: CameraState): boolean =>
   Math.abs(c.cx - to.cx) < 0.02 &&
   Math.abs(c.cz - to.cz) < 0.02 &&
@@ -335,11 +372,19 @@ export function Board(props: BoardProps) {
    *
    * None of the three has ever been a rule (they are look, and the golden sim
    * cannot see them), so this is a change of picture and never of game.
+   *
+   * **And it no longer re-frames** (2026-09-08). It did, because a flattened
+   * board is a differently shaped board and a camera left where it was could
+   * end up looking off the edge of it. That was right while FLAT was a view of
+   * its own; it is wrong now that FLAT is *"2d of our own custom view"* — a
+   * re-frame throws away the pan and the zoom this stop exists to keep. The
+   * board cannot walk off the edge from here either: the centre is a world
+   * point and stays the centre whatever the angle. DEFAULT is the stop that
+   * brings a lost board back, and it is one press away.
    */
   const flatten = useCallback(() => {
-    setLean({ tilt: 0, yaw: 0, relief: 0 });
-    reframe();
-  }, [reframe]);
+    setLean(FLAT_LEAN);
+  }, []);
   const leanBy = useCallback(
     (turn: number, back: number) =>
       setLean((was) => ({
@@ -484,6 +529,7 @@ export function Board(props: BoardProps) {
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
       tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
       endTour: () => rig.current?.endTour(),
+      myView: () => rig.current?.myView(),
       snapshot: () => rig.current?.snapshot() ?? null,
       zoomLevel: () => rig.current?.zoomLevel() ?? 1,
       zoomMax: () => rig.current?.zoomMax() ?? 1,
@@ -610,6 +656,7 @@ export function Board(props: BoardProps) {
             refit={refit}
             reducedMotion={props.reducedMotion === true}
             handle={rig}
+            onLeanTo={setLean}
             wrapper={wrapper}
             cursor={cursor?.key ?? null}
             onLeanBy={leanBy}
@@ -665,6 +712,9 @@ type RigProps = {
   readonly cursor: HexKey | null;
   /** Two fingers turning and leaning: degrees to ADD, not absolutes. */
   readonly onLeanBy: (turn: number, back: number) => void;
+  /** Put the board at an ABSOLUTE angle — how MY VIEW restores the lean it
+   *  was remembered with, which a delta cannot express. */
+  readonly onLeanTo: (lean: LeanSet) => void;
 };
 
 /**
@@ -685,6 +735,7 @@ function Rig({
   wrapper,
   cursor,
   onLeanBy,
+  onLeanTo,
 }: RigProps) {
   const camera = useThree((s) => s.camera) as OrthographicCamera;
   const invalidate = useThree((s) => s.invalidate);
@@ -823,6 +874,51 @@ function Rig({
   /** The pending return of an EXCURSION, so a second claim replaces the first
    *  rather than racing it home. */
   const visiting = useRef<ReturnType<typeof setTimeout> | 0>(0);
+  /**
+   * MY VIEW — the board as the player's own hands last left it (2026-09-08).
+   *
+   * Marc: *"Revise all 3 camera modes so the third one is always 'my own custom
+   * view' so that if we toggle with this button we never lose the camera."*
+   * FIT and HERE were both views the button INVENTED, so a player who had
+   * arranged the board and then pressed VIEW had no way back to it — the cycle
+   * could only offer four of its own opinions. This is the one stop that is
+   * theirs, and the whole point of it is that pressing round the loop returns
+   * the board exactly as they left it: pan, zoom, turn, lean and relief.
+   *
+   * **Written by the HANDS, never by the button.** Every gesture that moves the
+   * camera stamps it — a drag, a wheel, a pinch — and the lean half is stamped
+   * by the effect below rather than in the orbit gesture itself, because a turn
+   * goes out to React and is a render behind at the moment the finger moves.
+   * Null until the player has touched the board, which is why the cycle simply
+   * skips the stop rather than inventing something to put in it.
+   */
+  const mine = useRef<{ readonly cam: CameraState; readonly lean: LeanSet } | null>(null);
+  const leanNow = useRef<LeanSet>({ tilt, yaw, relief });
+  /** A turn or a lean the FINGERS asked for, waiting for the render that lands
+   *  it — see `mine`. Cleared by the effect that stamps it. */
+  const orbited = useRef(false);
+  useEffect(() => {
+    leanNow.current = { tilt, yaw, relief };
+    if (!orbited.current) return;
+    orbited.current = false;
+    mine.current = { cam: cam.current, lean: { tilt, yaw, relief } };
+  }, [tilt, yaw, relief]);
+  /**
+   * The board is now where the player's own hands put it.
+   *
+   * Called from every gesture that moves the CAMERA — a drag, a pinch, a
+   * wheel, and the keyboard's own pan and zoom, which are hands too. Not from
+   * the marker's nudge (`cursor` below): that is the camera following a walk
+   * rather than a view anybody chose, and stamping it would quietly replace a
+   * view the player arranged with wherever an arrow key happened to leave it.
+   */
+  const keepMine = (): void => {
+    mine.current = { cam: cam.current, lean: leanNow.current };
+  };
+  /** MY VIEW, waiting for the angle it was remembered at to land — the frame a
+   *  lean makes does not exist until the render after `onLeanTo`. */
+  const toMine = useRef<CameraState | null>(null);
+
   /** A `tour` in the air: where it began, and which leg it is on — so a tap can
    *  end it and put the board back. Null while nothing is touring. */
   const trip = useRef<{
@@ -866,6 +962,10 @@ function Rig({
     if (!framedOnce.current) {
       framedOnce.current = true;
       cam.current = fitCamera(frame);
+      // MY VIEW starts as the view the player was GIVEN, so the third stop is
+      // never a press that does nothing — see `mine`. The first gesture
+      // replaces it with one of their own.
+      mine.current = { cam: cam.current, lean: leanNow.current };
     } else {
       cam.current = { ...cam.current, zoom: Math.min(cam.current.zoom, zoomMaxOf(frame)) };
     }
@@ -937,6 +1037,12 @@ function Rig({
       const step = glided(g, Math.min(64, Math.max(1, now - glidedAt.current)));
       glidedAt.current = now;
       cam.current = glidedBy(cam.current, step.dx, step.dz);
+      // A thrown board is still the player's own — see `mine`. Stamped here as
+      // well as in the drag because the throw keeps travelling after the finger
+      // has gone: MY VIEW remembered the board as it was at the moment of
+      // RELEASE and gave back a view a flick had already left, which the view
+      // cycle's e2e caught on its first run.
+      keepMine();
       glide.current = isResting(step.next) ? null : step.next;
       if (glide.current !== null) invalidate();
     }
@@ -976,7 +1082,12 @@ function Rig({
    *
    * A gesture that leans the board does NOT come through here — a camera that
    * re-centred itself under a thumb mid-drag would be the board fighting the
-   * hand. Only FLAT and DEFAULT bump the tick.
+   * hand. **Only DEFAULT bumps the tick now** (2026-09-08): FLAT used to, and
+   * stopped when it became *"2d of our own custom view"* rather than a view of
+   * its own — a stop that re-framed would throw away the pan and zoom it is
+   * supposed to be preserving. Nothing is lost by that: DEFAULT is the stop
+   * that brings a board back from wherever it was dragged, and it is one press
+   * away from everywhere in a three-stop cycle.
    */
   const refitted = useRef(refit);
   useEffect(() => {
@@ -984,6 +1095,24 @@ function Rig({
     refitted.current = refit;
     fly(fitCamera(frameRef.current, focusRef.current));
   }, [refit, fly]);
+
+  /**
+   * MY VIEW's flight, once the angle it was remembered at has landed.
+   *
+   * The same ordering problem the tick above solves, and for the same reason:
+   * `onLeanTo` is React state, so the frame that angle makes does not exist
+   * until the next render — and a flight launched before it would tween a zoom
+   * against one `fit.size` and land it against another, which the eye reads as
+   * the board jumping at the end of the journey. `toMine` is set by the handle
+   * and spent here. It fires even when the angle did not change, because this
+   * runs on every commit and the ref is the whole condition.
+   */
+  useEffect(() => {
+    const to = toMine.current;
+    if (to === null) return;
+    toMine.current = null;
+    fly(to);
+  });
 
   /* An excursion's return is a timer, and a timer outlives the thing that set
      it. It writes `cam` and calls `invalidate` on a rig that may be gone. */
@@ -1001,6 +1130,7 @@ function Rig({
         wasFit.current = false;
         cam.current = zoomedBy(frameRef.current, cam.current, factor);
         flight.current = null;
+        keepMine();
         invalidate();
       },
       panBy(dx, dy) {
@@ -1008,6 +1138,7 @@ function Rig({
         flight.current = null;
         glide.current = null;
         cam.current = pannedBy(frameRef.current, cam.current, dx, dy);
+        keepMine();
         invalidate();
       },
       flyToHex(hex, zoom) {
@@ -1159,6 +1290,27 @@ function Rig({
        * board that had stopped being where they were aiming. A flight already
        * bound for the leg is the trip, so it counts.
        */
+      /**
+       * Back to the board as the player's own hands last left it.
+       *
+       * Silent where they never have — a fresh run has no view of theirs to go
+       * back to, and inventing one (the fit, say) would make the third stop a
+       * second DEFAULT wearing a name that promises otherwise.
+       *
+       * The angle goes out to React and the flight waits for it (see the effect
+       * above); where the angle is already right there is nothing to wait for
+       * and no render coming, so it flies here instead.
+       */
+      myView() {
+        const m = mine.current;
+        if (m === null) return;
+        if (sameLean(leanNow.current, m.lean)) {
+          fly(m.cam);
+          return;
+        }
+        toMine.current = m.cam;
+        onLeanTo(m.lean);
+      },
       endTour() {
         if (visiting.current !== 0) clearTimeout(visiting.current);
         visiting.current = 0;
@@ -1217,7 +1369,7 @@ function Rig({
       zoomLevel: () => flight.current?.to.zoom ?? cam.current.zoom,
       zoomMax: () => zoomMaxOf(frameRef.current),
     }),
-    [invalidate, fly, theme.orientation, gl, scene, camera, reducedMotion],
+    [invalidate, fly, theme.orientation, gl, scene, camera, reducedMotion, onLeanTo],
   );
 
   /*
@@ -1346,13 +1498,17 @@ function Rig({
       if (on.zoom) {
         wasFit.current = false;
         cam.current = zoomedBy(frameRef.current, cam.current, g.scale);
+        keepMine();
         invalidate();
       }
       // The turn and the lean go OUT to React — three things read the angle and
       // only one of them is the camera. A board that was fitted stays fitted
       // through it: the frame effect re-fits on every lean, which is what keeps
       // a tilting board from walking off its own edge.
-      if (on.turn || on.lean) onLeanBy(on.turn ? g.turn : 0, on.lean ? g.lean : 0);
+      if (on.turn || on.lean) {
+        orbited.current = true;
+        onLeanBy(on.turn ? g.turn : 0, on.lean ? g.lean : 0);
+      }
       pair = now;
     };
     // The last few moves, so a flick is measured over a gesture rather than
@@ -1435,6 +1591,7 @@ function Rig({
         // Out to React, like the two fingers': the angle is read by the fit,
         // the light rig and the labels, and only one of them is this camera.
         const spun = dragOrbit(dx, dy);
+        orbited.current = true;
         onLeanBy(spun.turn, spun.lean);
         last = { x: e.clientX, y: e.clientY };
         return;
@@ -1442,6 +1599,7 @@ function Rig({
       wasFit.current = false;
       const before = cam.current;
       cam.current = pannedBy(frameRef.current, cam.current, dx, dy);
+      keepMine();
       recent.push({
         at: e.timeStamp,
         cx: cam.current.cx - before.cx,
@@ -1523,6 +1681,7 @@ function Rig({
       flight.current = null;
       glide.current = null;
       cam.current = zoomedBy(frameRef.current, cam.current, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+      keepMine();
       invalidate();
     };
     el.addEventListener('pointerdown', down);

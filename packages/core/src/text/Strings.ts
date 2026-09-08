@@ -724,6 +724,21 @@ export type Strings = {
      */
     readonly menu: string;
     /**
+     * THE MENU'S OWN HEADINGS (2026-09-08, Marc: *"overall there is too much
+     * buttons, need to layerize things properly"*).
+     *
+     * Ten rows in one column, in the order they were added over three weeks —
+     * a pile rather than a screen. Three groups now, and they are the three
+     * questions somebody opens this panel with: where do I go, what have I
+     * done, and what is this phone set to. `device` is the same word
+     * `thisDevice` uses, because it names the same idea one level down.
+     */
+    readonly menuGroups: {
+      readonly play: string;
+      readonly record: string;
+      readonly device: string;
+    };
+    /**
      * The board's LUCK button, said out loud.
      *
      * The button is a mark and a number, which reads as "12" to a screen
@@ -732,15 +747,6 @@ export type Strings = {
      * next to anything that explains it.
      */
     readonly luckPurse: (luck: number) => string;
-    /**
-     * The purse's own way out (2026-09-05, Marc: *"add a small luck button
-     * bottom right corner to exit back"*).
-     *
-     * The drawer's only door was the LUCK button that opened it, which moved to
-     * the board's far corner on 2026-09-04 — so the thing you close a drawer
-     * with ended up diagonally across the screen from the drawer.
-     */
-    readonly closePurse: string;
     readonly resetTeaching: string;
     /** The disclosure a manual section folds its finer print into. */
     readonly details: string;
@@ -784,17 +790,32 @@ export type Strings = {
     /** And the way back out of it, to the numbers. */
     readonly backToEnding: string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
+    /**
+     * THE VIEW BUTTON'S THREE STOPS (2026-09-08, Marc: *"Revise all 3 camera
+     * modes so the third one is always 'my own custom view' ... Other two would
+     * be 2d of 'our own custom view' and our default one"*).
+     *
+     * FIT and HERE are gone with the views they named: both were the button's
+     * own opinions, and a cycle made only of those is one an arranged board
+     * cannot be got back from. Each word is a DESTINATION, which is the rule
+     * this button has followed since it was one button.
+     */
     readonly camera: {
-      readonly fit: string;
-      readonly here: string;
+      /** Straight down and squared up, at the player's own pan and zoom. */
       readonly flat: string;
+      /** The direction's own angle, board framed whole. */
       readonly home: string;
+      /** The board as their own hands last left it. */
+      readonly mine: string;
     };
     /**
-     * The SHARPNESS slider, beside the camera button (2026-09-04, Marc, on a
-     * phone: *"bad quality pixels"*). `label` names the button that opens it
-     * and the popover it opens; `note` is the one sentence explaining what
-     * the number trades against what.
+     * The SHARPNESS dial (2026-09-04, Marc, on a phone: *"bad quality
+     * pixels"*). `label` names it and `note` is the one sentence explaining
+     * what the number trades against what.
+     *
+     * It lived on the board beside the camera button until 2026-09-08 — *"put
+     * netteté button into settings"* — because it is a dial you set once for a
+     * phone, not a thing you do while playing.
      */
     readonly sharpness: {
       readonly label: string;

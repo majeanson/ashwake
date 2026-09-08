@@ -70,15 +70,17 @@ test('every room off MORE opens and comes back', async ({ page }) => {
   await panel(page, 'more').waitFor({ state: 'visible' });
 
   // A virgin device is offered the rooms that mean something on one: the
-  // manual, its worlds, settings, and the device itself. The shop and the hall
-  // of fame arrive with a run to show in them.
+  // manual, its worlds, and settings. The shop and the hall of fame arrive with
+  // a run to show in them.
   //
-  // THIS DEVICE joined the list on 2026-08-31, when it stopped being a section
-  // at the bottom of MORE and became a room like the others (Marc: *"the whole
-  // Cet appareil subsection is transformed into a new menu (similar to My
-  // worlds)"*) — which is exactly the thing this loop checks: it opens, it is
-  // the panel on top, and BACK comes home.
-  for (const room of ['manual', 'worlds', 'settings', 'device']) {
+  // THIS DEVICE is NOT in this loop any more (2026-09-08). It joined it on
+  // 2026-08-31 when it stopped being a section at the bottom of MORE and became
+  // a room like the others; it is now a room off SETTINGS, because MENU's ten
+  // rows were layered into three groups and the read-once things went one level
+  // down (Marc: *"overall there is too much buttons, need to layerize things
+  // properly"*). It is walked below instead, two doors deep, which is the same
+  // check with one more door in it.
+  for (const room of ['manual', 'worlds', 'settings']) {
     await page.locator(`[data-go="${room}"]`).click();
     await panel(page, room).waitFor({ state: 'visible' });
     /*
@@ -97,6 +99,29 @@ test('every room off MORE opens and comes back', async ({ page }) => {
     await panel(page, room).waitFor({ state: 'detached' });
     await panel(page, 'more').waitFor({ state: 'visible' });
   }
+
+  /*
+   * And THIS DEVICE, two doors deep — the room where a tap can destroy
+   * something (2026-09-08).
+   *
+   * The same three claims as the loop above and one more that only a nested
+   * room can break: BACK from here lands on SETTINGS rather than on the board.
+   * A stack that forgets its middle is how a player ends up on the map with a
+   * panel still believing it is open.
+   */
+  await page.locator('[data-go="settings"]').click();
+  await panel(page, 'settings').waitFor({ state: 'visible' });
+  await page.locator('[data-go="device"]').click();
+  await panel(page, 'device').waitFor({ state: 'visible' });
+  expect(await paintedOnTop(page), 'THIS DEVICE opened under the panel that opened it').toBe(
+    'device',
+  );
+  await panel(page, 'device').locator('.panel-back').click();
+  await panel(page, 'device').waitFor({ state: 'detached' });
+  await panel(page, 'settings').waitFor({ state: 'visible' });
+  await panel(page, 'settings').locator('.panel-back').click();
+  await panel(page, 'settings').waitFor({ state: 'detached' });
+  await panel(page, 'more').waitFor({ state: 'visible' });
 
   await panel(page, 'more').locator('.panel-back').click();
   await panel(page, 'more').waitFor({ state: 'detached' });
