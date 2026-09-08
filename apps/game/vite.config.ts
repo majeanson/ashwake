@@ -127,6 +127,30 @@ const SHIPPING_DIRECTION = 'settlement';
 /** Anything under a per-direction art folder — `/assets/<direction>/...`. */
 const THEME_ART = /^\/assets\/[^/]+\//;
 
+/**
+ * The renderer's packages, for the chunking rule at the bottom of this file.
+ *
+ * Anchored at `^`, and fed the path AFTER the last `node_modules/` — which is
+ * the whole subtlety and it cost a wrong build to find. pnpm's store puts a
+ * package's peers inside a directory named for every one of them, so
+ * react-dom's real path under fiber is
+ * `.pnpm/@react-three+fiber@9.5.0_..._three@0.183.2/node_modules/react-dom/`.
+ * An unanchored `three` matches that directory name twice over, so the first
+ * version of this rule quietly moved REACT into the renderer's chunk — which
+ * is exactly why the entry chunk still had a static import of it and Vite
+ * still preloaded the megabyte. The bug looked like "the lazy boundary does
+ * not work"; it was a regex reading a lockfile's filename.
+ */
+const RENDERER = /^(three|@react-three\/|troika|bidi-js|webgl-sdf-generator)/;
+
+/** The package a module belongs to: everything after the LAST `node_modules/`,
+ *  which is the real package path rather than pnpm's peer-stamped directory. */
+function packagePath(id: string): string | null {
+  const path = id.replace(/\\/g, '/');
+  const at = path.lastIndexOf('node_modules/');
+  return at === -1 ? null : path.slice(at + 'node_modules/'.length);
+}
+
 function serviceWorkerStamp(sha: string): Plugin {
   const out = (name: string): string => fileURLToPath(new URL(`./dist/${name}`, import.meta.url));
 
@@ -288,15 +312,68 @@ export default defineConfig({
    * three lives under `node_modules` too, and a list of names is a list that
    * goes stale the first time one of them grows a peer.
    *
-   * It is deliberately NOT split further. Per-package chunks would mean more
-   * requests on a phone's first visit — the visit that decides whether anybody
-   * comes back — to save bytes on a rebuild that only happens on a version
-   * bump. Two files is the whole of the win.
+   * It is deliberately NOT split by PACKAGE. Per-package chunks would mean
+   * more requests on a phone's first visit — the visit that decides whether
+   * anybody comes back — to save bytes on a rebuild that only happens on a
+   * version bump.
+   *
+   * ## AND SPLIT AGAIN ON WHAT THE FRONT DOOR NEEDS (2026-09-08)
+   *
+   * The two-chunk split above is about a RETURNING player, and it is still
+   * right about them. It did nothing for the first visit, where all 333KB
+   * gzipped arrived and was parsed before the door drew a pixel — and roughly
+   * 260KB of that is three, `@react-three/fiber`, drei and troika, which the
+   * door, the manual, settings and the hall of fame do not use at all.
+   *
+   * `App` imports `Board` through `lazy()` now, so the renderer is reachable
+   * only across a dynamic boundary. The rule below is what lets that boundary
+   * survive bundling: a blanket `node_modules -> 'vendor'` would have hauled
+   * three back into the chunk react is in, and the lazy import would have been
+   * a lazy import of something already downloaded.
+   *
+   * The renderer's packages are NAMED and then deliberately left UNASSIGNED,
+   * which is the opposite of what it looks like. **The list says "do not
+   * staple these to the door", not "put these together"**, and the difference
+   * is the whole of what makes the lazy boundary real.
+   *
+   * Giving them a chunk of their own was tried, twice, and it does not work.
+   * `@react-three/fiber` depends on `react-reconciler`, which the bundler will
+   * place in whichever chunk it is assigned to — and the entry chunk then
+   * carries a static `import {...} from "./three-*.js"`, so Vite emits a
+   * `modulepreload` for the megabyte and the browser fetches and compiles it
+   * before the door draws. A lazy import of a file the browser has already
+   * been told to go and get is not a lazy import. No preload-filtering hook
+   * helps, because the static edge is real and would be honoured anyway.
+   *
+   * `undefined` hands the decision to the only thing that can get it right,
+   * which is REACHABILITY: three is reachable from `Board` and from nothing
+   * else, so it follows `Board`'s dynamic boundary without being told to.
+   *
+   * **The cost, stated plainly:** three now rides in the `Board` chunk, so a
+   * change to board code re-downloads the renderer for a returning player —
+   * 289KB gzipped instead of 18KB. That is a real loss and it is the right way
+   * round. The first visit is the one the stranger test measures and the one
+   * that decides whether there is a second; a returning player has the whole
+   * thing in a service-worker cache and pays this only on a deploy that
+   * touched `board/`.
+   *
+   * A name going stale fails SAFE — a renderer package this misses joins
+   * `vendor` and costs first-load bytes rather than breaking anything — and it
+   * shows up immediately as the entry chunk's byte count jumping on the next
+   * build. `troika` and `webgl-sdf-generator` are drei's `<Text>`; `bidi-js`
+   * is troika's.
    */
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id: string) => (id.includes('node_modules') ? 'vendor' : undefined),
+        manualChunks: (id: string) => {
+          const pkg = packagePath(id);
+          if (pkg === null) return undefined;
+          // UNASSIGNED, not "grouped" — see the argument above. Naming a
+          // `three` chunk puts a static edge from the entry to it, and a
+          // `modulepreload` for the megabyte follows.
+          return RENDERER.test(pkg) ? undefined : 'vendor';
+        },
       },
     },
   },

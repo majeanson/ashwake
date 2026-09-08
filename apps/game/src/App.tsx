@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
 import { arcSparkline, dailyBadge, dailyName, dailySeed } from '@meta/daily';
@@ -47,7 +47,8 @@ import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
-import { Board, tourMs, type BoardHandle } from './board/Board';
+import { tourMs } from './board/flight';
+import type { BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { MAX_RENDER_SCALE } from './board/quality';
@@ -172,6 +173,47 @@ const RELIEF = 0.35;
 const LIGHT = 1;
 const MATERIALS = 1;
 const ART = 1;
+
+/**
+ * THE RENDERER ARRIVES AFTER THE DOOR (2026-09-08).
+ *
+ * three, `@react-three/fiber`, `drei` and troika are 1.18MB of the 1.51MB
+ * bundle — 333KB of the 450KB a phone actually downloads — and every byte of
+ * it was being parsed before the front door drew a pixel. Nothing on that
+ * door, in the manual, in settings or in the hall of fame needs a renderer.
+ * The first minute is the minute the stranger test measures, and the largest
+ * thing in it was a dependency of a screen the stranger has not reached.
+ *
+ * **This does not weaken `CLAUDE.md`'s rule that the board host never
+ * remounts.** That rule is about REMOUNTING — losing the WebGL context of a
+ * canvas that already exists — and nothing here remounts anything. The
+ * `<Canvas>` still mounts exactly once, at the same place in the tree, and
+ * lives for the rest of the session. All that moved is the moment of its
+ * FIRST mount, from "before the door paints" to "a few hundred milliseconds
+ * after, while somebody is reading it".
+ *
+ * `preloadBoard` below is what keeps that from being a trade. The chunk is
+ * asked for as soon as the shell has painted, so it is downloading during the
+ * seconds the door is being read, and BEGIN is not waiting on a network. The
+ * `Suspense` fallback is `null` rather than a spinner on purpose: the board
+ * host is behind the door at that moment, and a loading state for something
+ * nobody can see is a loading state that can only ever flash.
+ *
+ * `tourMs` used to come from `Board.tsx` too, which is what made this
+ * impossible before — one arithmetic helper holding the whole renderer in the
+ * entry chunk. It lives in `board/flight.ts` now, which imports nothing.
+ */
+const Board = lazy(() => import('./board/Board').then((m) => ({ default: m.Board })));
+
+/**
+ * Start fetching the renderer, without waiting for it.
+ *
+ * The same module specifier as the `lazy` above, so the two resolve to one
+ * chunk and this is a head start rather than a second download.
+ */
+const preloadBoard = (): void => {
+  void import('./board/Board');
+};
 
 /**
  * How long the camera lingers on a claimed destination before coming home.
@@ -566,6 +608,24 @@ function Game() {
   useEffect(() => {
     return registerWorker(() => setUpdated(true));
   }, []);
+
+  /**
+   * Fetch the renderer while the door is being read (2026-09-08).
+   *
+   * `Board` is lazy so the front door does not wait on 333KB of three — see
+   * its declaration. This is the other half of that trade, and without it the
+   * trade would be a bad one: BEGIN would be the first thing to ask for the
+   * chunk, and a player on a slow connection would press it and watch nothing
+   * happen.
+   *
+   * In an effect, so it runs after the first paint and never before it: the
+   * whole point is that the door draws first. Deliberately NOT inside
+   * `whenIdle` the way the service worker's registration is — the worker makes
+   * the SECOND visit better and can afford to wait its turn, while this is
+   * needed the moment somebody presses a button on the screen they are
+   * looking at.
+   */
+  useEffect(preloadBoard, []);
 
   /*
    * WHERE THIS GAME IS LIVING — two notes, each said once ever (2026-09-02).
@@ -2828,23 +2888,34 @@ function Game() {
         role="main"
         {...(anyOpen || !started || (snap.hud.ended && !walking) ? { inert: true } : {})}
       >
-        <Board
-          view={snap.board}
-          theme={theme}
-          popped={snap.popped}
-          tilt={look.tilt}
-          yaw={look.yaw}
-          relief={look.relief}
-          light={look.light}
-          materials={look.materials}
-          art={look.art}
-          renderScale={renderScale}
-          reducedMotion={reducedMotion}
-          onTap={onTap}
-          handle={board}
-          label={s.ui.board.label}
-          keyHelp={s.ui.board.reach}
-        />
+        {/*
+          The one `Suspense` in the app, and it wraps the one thing that is
+          worth waiting for. `null` rather than a spinner: for the few hundred
+          milliseconds this is pending the board host is behind the front door,
+          so a loading state here could only ever flash at somebody who was
+          reading something else. See `Board`'s declaration for why the
+          renderer arrives after the door and why that leaves the never-remount
+          rule intact.
+        */}
+        <Suspense fallback={null}>
+          <Board
+            view={snap.board}
+            theme={theme}
+            popped={snap.popped}
+            tilt={look.tilt}
+            yaw={look.yaw}
+            relief={look.relief}
+            light={look.light}
+            materials={look.materials}
+            art={look.art}
+            renderScale={renderScale}
+            reducedMotion={reducedMotion}
+            onTap={onTap}
+            handle={board}
+            label={s.ui.board.label}
+            keyHelp={s.ui.board.reach}
+          />
+        </Suspense>
         {/*
           What just happened, over the board rather than beside it (2026-08-30).
 

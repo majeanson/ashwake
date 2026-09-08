@@ -93,6 +93,42 @@ export async function begin(page: Page): Promise<void> {
   // screen, and a helper that insisted on the stat row would only ever be
   // testing one of the two.
   await door.waitFor({ state: 'detached' });
+  /*
+   * AND WAIT FOR THE RENDERER, which is a new fact about this app (2026-09-08).
+   *
+   * `Board` is behind `lazy()` so the front door does not wait on three — see
+   * its declaration in `App.tsx`. The chunk is asked for as soon as the shell
+   * paints, and over localhost it lands in a few milliseconds, but "a few
+   * milliseconds" is not "before the next line of this helper runs". Two
+   * gesture tests found that immediately: they took a `boundingBox()` of a
+   * canvas that did not exist yet, then dragged nothing.
+   *
+   * Here rather than in each spec, because it is true of every test that walks
+   * through the door and then touches the board — and a timing assumption
+   * patched per-test is one the next test written will not know about.
+   *
+   * `attached` rather than `visible`: an `?end=1` boot lands on the end screen
+   * with the board host behind it, where the canvas is real, mounted, and
+   * covered. Insisting on visible would hang on exactly the case the comment
+   * above exists to allow.
+   */
+  await page.locator('canvas').waitFor({ state: 'attached' });
+  /*
+   * And then let the teaching SPEAK before clearing it.
+   *
+   * `clearCards` returns the instant no scrim is on screen, which is right for
+   * the ninety-odd times `placeOneTile` calls it and wrong exactly once: here.
+   * The board's own first card is raised on the quiet beat after the board
+   * renders, so with a lazily-mounted renderer it now arrives a frame or two
+   * AFTER this helper used to conclude there was nothing to clear — and the
+   * card then sat over the board eating the first gesture of whatever test
+   * followed. Two of them failed that way and neither failure named a card.
+   *
+   * One short settle, in `begin` and not in `clearCards`, because that is the
+   * one call where a card is expected and the only one that can afford to
+   * wait.
+   */
+  await page.waitForTimeout(160);
   await clearCards(page);
 }
 

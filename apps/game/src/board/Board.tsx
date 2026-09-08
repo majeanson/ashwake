@@ -1,5 +1,6 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { markBoardAlive } from '../shell/failure';
+import { FLIGHT_MS, TOUR_WIDE_HOLD_MS } from './flight';
 import {
   useCallback,
   useEffect,
@@ -227,26 +228,14 @@ export type BoardProps = {
   readonly keyHelp?: string;
 };
 
-const FLIGHT_MS = 320;
-
-/** How long the tour sits at the wide shot before it dives, in ms. Shorter
- *  than the hold at the hex: the wide shot is context, not the subject. */
-const TOUR_WIDE_HOLD_MS = 320;
-
-/**
- * How long a `tour` takes end to end, for a caller that has to wait it out.
- *
- * Three flights and two holds, stated once here rather than reassembled by
- * whoever needs the number. **A clock rather than a callback, deliberately.**
- * `tour` has four exits — reduced motion, either leg abandoned by a finger, and
- * the ordinary end — and a `done` that any one of them forgot to call would
- * leave `App`'s `touring` latched true, which is the teaching drip silently
- * stopping for the rest of the run. A duration cannot be forgotten: the worst a
- * trip cut short by a drag costs is that the next card waits out a journey
- * nobody is on any more, and every path converges within this many ms whatever
- * happened.
+/*
+ * The flight numbers live in `./flight`, which imports no renderer, so that
+ * `App` can wait out a tour without pulling three into the entry chunk. See
+ * that file. Re-exported here because `tourMs` has read as part of the board's
+ * own surface since it was written, and a caller should not have to know which
+ * side of a bundling seam a constant landed on.
  */
-export const tourMs = (holdMs: number): number => FLIGHT_MS * 3 + TOUR_WIDE_HOLD_MS + holdMs;
+export { tourMs } from './flight';
 
 /**
  * The camera is still where an excursion's last leg put it.
@@ -420,9 +409,39 @@ export function Board(props: BoardProps) {
   useEffect(() => () => textures.dispose(), [textures]);
   const layout = useMemo(() => ({ ...UNIT, orientation: theme.orientation }), [theme.orientation]);
   const wrapper = useRef<HTMLDivElement>(null);
+  /**
+   * The same element as `wrapper`, as STATE — because an effect that binds
+   * listeners to `wrapper.current` cannot depend on a ref (2026-09-08).
+   *
+   * `Rig`'s gesture effect takes the wrapper ref, reads `.current`, and gives
+   * up if it is null; its dependency is the ref OBJECT, which never changes,
+   * so that early return is permanent. Every pan, pinch, twist and lean on the
+   * board hangs off that one binding.
+   *
+   * It has always been a latent bug and it stopped being latent the moment
+   * `Board` went behind `lazy()`: `Rig` lives inside the R3F `<Canvas>`, which
+   * renders its children through a second reconciler once it has measured its
+   * container, and on the lazily-mounted path that render could win the race
+   * against this div's ref being attached. The board drew perfectly and
+   * answered nothing a finger did — the two-finger and pan specs failed while
+   * every screenshot looked right.
+   *
+   * A ref for the imperative uses that need one (`focus`, the ResizeObserver
+   * on first mount) and state for the one thing that has to re-run when the
+   * element arrives. `useState` from a callback ref, so it is set during
+   * commit and the effect below re-runs with a real element in hand.
+   */
+  const [wrapperEl, setWrapperEl] = useState<HTMLDivElement | null>(null);
+  const attachWrapper = useCallback((el: HTMLDivElement | null) => {
+    wrapper.current = el;
+    setWrapperEl(el);
+  }, []);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
-    const el = wrapper.current;
+    // `wrapperEl`, not `wrapper.current` with `[]` — the same fix and the same
+    // reason as the gesture effect below, and this one decides whether the
+    // board is ever MEASURED. See `wrapperEl`'s declaration.
+    const el = wrapperEl;
     if (el === null) return;
     const ro = new ResizeObserver(([entry]) => {
       if (entry === undefined) return;
@@ -459,7 +478,7 @@ export function Board(props: BoardProps) {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [wrapperEl]);
 
   // The pop plays in its own layer, over a board that has already turned the
   // popped cells to stone.
@@ -546,7 +565,7 @@ export function Board(props: BoardProps) {
 
   return (
     <div
-      ref={wrapper}
+      ref={attachWrapper}
       /*
        * The board is a CONTROL, not a picture (2026-08-29).
        *
@@ -657,7 +676,7 @@ export function Board(props: BoardProps) {
             reducedMotion={props.reducedMotion === true}
             handle={rig}
             onLeanTo={setLean}
-            wrapper={wrapper}
+            wrapper={wrapperEl}
             cursor={cursor?.key ?? null}
             onLeanBy={leanBy}
           />
@@ -707,7 +726,7 @@ type RigProps = {
   readonly refit: number;
   readonly reducedMotion: boolean;
   readonly handle: Ref<RigHandle>;
-  readonly wrapper: React.RefObject<HTMLDivElement | null>;
+  readonly wrapper: HTMLDivElement | null;
   /** Where the keyboard's marker is, so the camera can keep it on screen. */
   readonly cursor: HexKey | null;
   /** Two fingers turning and leaning: degrees to ADD, not absolutes. */
@@ -1398,7 +1417,7 @@ function Rig({
   // Gestures, on the wrapper: one finger drags past the slop, two pinch, a
   // wheel zooms. Taps are the meshes' business (R3F reports the delta).
   useEffect(() => {
-    const el = wrapper.current;
+    const el = wrapper;
     if (el === null) return;
     const pointers = new Map<number, { x: number; y: number }>();
     let last: { x: number; y: number } | null = null;
