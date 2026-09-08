@@ -1,14 +1,64 @@
 import type { Page } from '@playwright/test';
 
-/** Every uncaught error and console.error the page reports, gathered so a
- *  test can assert there were none — the renderer-crash canary. */
+/**
+ * THE ONE THING PLAYWRIGHT'S WEBKIT SAYS THAT IS NOT ABOUT THE GAME
+ * (2026-09-08, when the suite gained a second engine).
+ *
+ * `troika-three-text` — the board's label renderer — does two things this
+ * build refuses. It starts its glyph worker from a `blob:` URL, and when that
+ * is declined it falls back to fetching the TTF on the main thread. Both come
+ * back as *"due to access control checks"*, on a SAME-ORIGIN request, which is
+ * the tell: same-origin loads do not have an access-control story, so this is
+ * the harness's WebKit and not a rule any browser enforces. Real Safari runs
+ * blob workers, and `type.spec.ts` proves the DOM's own `@font-face` faces
+ * load here perfectly well.
+ *
+ * The consequence in this build is that board LABELS do not draw — which is
+ * why no spec that photographs the board runs on WebKit (see
+ * `playwright.config.ts`), and why swallowing these lines costs nothing: the
+ * tests that would have cared are not here.
+ *
+ * **This list is deliberately WebKit-only, and "access control checks" is the
+ * one entry broad enough to want its argument written down.** This game makes
+ * no cross-origin request of any kind — it has no backend, its fonts are
+ * self-hosted, and every `fetch` in `apps/game/src` is a root-relative path —
+ * so on any engine there is no legitimate access-control failure for this
+ * filter to swallow. What it hides is one artifact with two faces: the same
+ * refusal arrives as a `console.error` naming the blob, and as a `pageerror`
+ * whose text is the bare URL and the reason.
+ *
+ * A blanket filter on "network error" would have hidden the renderer crash
+ * this watcher exists to catch, which is why the rest are narrow. If a line
+ * joins these, it is a new fact and wants reading before it is added.
+ */
+const WEBKIT_TROIKA_NOISE: readonly RegExp[] = [
+  /due to access control checks\./,
+  /Failure loading font .*\.ttf/,
+  /worker module init function failed to rehydrate/,
+  /NetworkError: Load failed/,
+];
+
+/**
+ * Every uncaught error and console.error the page reports, gathered so a test
+ * can assert there were none — the renderer-crash canary.
+ *
+ * The engine is read off the page rather than taken as an argument, so that
+ * adding a second browser did not mean editing eighty call sites to thread a
+ * fixture through — and so a spec cannot forget to pass it and quietly get the
+ * wrong filter.
+ */
 export function watchErrors(page: Page): string[] {
+  const engine = page.context().browser()?.browserType().name();
   const errors: string[] = [];
+  const ignorable = (text: string): boolean =>
+    engine === 'webkit' && WEBKIT_TROIKA_NOISE.some((re) => re.test(text));
   page.on('pageerror', (error) => {
-    errors.push(`pageerror: ${error.message}`);
+    if (!ignorable(error.message)) errors.push(`pageerror: ${error.message}`);
   });
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`console.error: ${message.text()}`);
+    if (message.type() === 'error' && !ignorable(message.text())) {
+      errors.push(`console.error: ${message.text()}`);
+    }
   });
   return errors;
 }

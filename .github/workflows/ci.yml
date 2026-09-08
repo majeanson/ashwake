@@ -23,7 +23,11 @@ jobs:
       # The real-browser smoke: headless Chromium over the BUILT bundle, WebGL
       # rendering for real — the canary for the renderer-crash class the unit
       # suite cannot see.
-      - run: pnpm exec playwright install --with-deps chromium
+      # TWO engines since 2026-09-08. WebKit is the one the game is actually
+      # played in — `CLAUDE.md`'s testing rule is a phone, in portrait — and
+      # every spec in this repository had run in Chromium alone. The split of
+      # which specs run where, and why, is argued in `playwright.config.ts`.
+      - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm test:e2e
       # The rules did not move: the harness in this repo must print exactly what
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from

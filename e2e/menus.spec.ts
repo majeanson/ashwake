@@ -677,7 +677,16 @@ test('the appearance picker shows each direction, and switching one repaints', a
   expect(errors).toEqual([]);
 });
 
-test('a run can be handed to somebody', async ({ page }) => {
+test('a run can be handed to somebody', async ({ page, browserName }) => {
+  /*
+   * CHROMIUM ONLY, and it is the HARNESS that is the limit rather than the
+   * game (2026-09-08). `grantPermissions(['clipboard-write'])` throws
+   * "Unknown permission" on WebKit — Playwright implements that permission for
+   * Chromium alone — so this test cannot reach its own subject there. The
+   * clipboard path itself is engine-neutral code in `shell/share.ts`, and
+   * every OTHER menus test runs on both.
+   */
+  test.skip(browserName !== 'chromium', 'clipboard permissions are a Chromium-only fixture');
   const errors = watchErrors(page);
   // No share sheet in headless Chromium, so this walks the clipboard path —
   // which is the desktop path anyway, and the one that can silently do
