@@ -29,6 +29,28 @@ jobs:
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from
       # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
       - run: pnpm --filter @ashwake/core --silent sim > sim.out.txt && diff -u packages/core/sim.golden.txt sim.out.txt
+      # THE COMMITTED ART IS CURRENT — and this must run BEFORE the bake,
+      # because the bake overwrites the very files it grades.
+      #
+      # This step is the closure of a hole this file admitted at length from
+      # 2026-08-29 until 2026-09-08. The argument for the hole was sound —
+      # `sharp` does not rasterise SVG byte-identically across platforms, so a
+      # Linux runner can never diff its bake against a Windows one, and the
+      # first version of the step below did exactly that and failed for that
+      # reason alone. The consequence was not sound: nothing checked the PNGs
+      # actually in the repository, and Ashwake 1 proved that is not
+      # hypothetical — it darkened daylight's terrain ladder on 2026-08-28,
+      # never re-baked, and shipped art rendering the OLD ladder, which this
+      # body then inherited.
+      #
+      # `scripts/artcheck.ts` is the portable version this file asked for: a
+      # measured ladder derived from the THEME, committed as
+      # `apps/game/public/assets/ladder.json`, graded against the committed
+      # PNGs. It rasterises nothing. It compares the theme's own arithmetic
+      # exactly, and re-DECODES the committed bytes — deterministic where
+      # rasterising is not — so it is as true on this runner as on the machine
+      # that baked. See that file for what each column catches.
+      - run: pnpm artcheck
       # The art can still be BAKED, and the baking still agrees with the L* test.
       #
       # `scripts/terrain.ts` throws if the baked greyscale ordering contradicts
@@ -37,20 +59,9 @@ jobs:
       # alone — and it keeps the pipeline itself from rotting unnoticed, which
       # is how it came to be missing from this body in the first place.
       #
-      # It deliberately does NOT diff the result against the committed PNGs,
-      # and the reason is worth keeping: `sharp` does not rasterise SVG
-      # byte-identically across platforms, so a fresh bake on this Linux runner
-      # never equals one made on a Windows machine. The first version of this
-      # step did diff, and failed for that reason alone (2026-08-29).
-      #
-      # **So "the committed art is current" is not checked here, and that gap
-      # is real.** Ashwake 1 proved it is not hypothetical: it darkened
-      # daylight's terrain ladder on 2026-08-28, never re-baked, and shipped
-      # art rendering the OLD ladder, which this body then inherited. What
-      # stands against it today is that `pnpm bake` is one command and every
-      # palette change should end with it. Closing it properly means committing
-      # a measured ladder derived from the THEME and grading the committed PNGs
-      # against that — measurable portably, unlike bytes.
+      # It still deliberately does NOT diff the result against the committed
+      # PNGs, for the cross-platform reason above. That is no longer a gap;
+      # it is a division of labour with the step before it.
       - run: pnpm bake
 
   # No PR gate: land on main, and CI gates the prod deploy. Set the

@@ -46,10 +46,31 @@ export default defineConfig({
   retries: 0,
   reporter: [['list']],
   use: { baseURL: 'http://localhost:4175' },
+  /**
+   * THE SERVER BUILDS FIRST (2026-09-08), for the reason the gate config
+   * already gives at length — and this config is where that lesson had not
+   * landed.
+   *
+   * `vite preview` serves `dist` and never builds it. `playwright.config.ts`
+   * was fixed for exactly this on 2026-09-02, after an eighty-six-test suite
+   * came back green against a bundle that had not been compiled; the fault
+   * named there was that *the safe way and the obvious way were different
+   * commands*. That fault was still live here. `pnpm audit:screens` chains
+   * `pnpm build` itself and is right, but `playwright test --config
+   * playwright.audit.config.ts` — the obvious way to re-shoot one screen — ran
+   * against whatever happened to be on disk and produced 320 pictures of it.
+   *
+   * A stale bundle is worse in this instrument than in the gate. The gate at
+   * least goes red; an audit cannot fail, so a stale run produces a plausible
+   * report and a set of screenshots that go straight into `audit-shots/` as
+   * the record of a build that was never made. Both ways in are the same
+   * command now.
+   */
   webServer: {
-    command: 'pnpm --filter @ashwake/game exec vite preview --port 4175 --strictPort',
+    command:
+      'pnpm --filter @ashwake/game build && pnpm --filter @ashwake/game exec vite preview --port 4175 --strictPort',
     url: 'http://localhost:4175',
     reuseExistingServer: process.env['CI'] === undefined,
-    timeout: 30_000,
+    timeout: 120_000,
   },
 });

@@ -2,12 +2,12 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import sharp from 'sharp';
 import { rngNext, stream, type RngStream } from '../packages/core/src/engine/rng';
+import { LADDER_FILE, measuredLuma, TERRAINS, tokenLuma, type Rung } from './ladder';
 import { DAYLIGHT } from '../packages/core/src/theme/themes/daylight';
 import { SETTLEMENT } from '../packages/core/src/theme/themes/settlement';
 import {
   hex,
   isLight,
-  luma,
   type Motif,
   type Pattern,
   type Rgb,
@@ -1025,6 +1025,9 @@ const MOTIFS: Record<Motif, Record<SlotId, Draw>> = {
 
 type Slot = { readonly id: string; readonly svg: string; readonly terrain: boolean };
 
+/** Filled per direction below and written once at the end. */
+const ladder: Record<string, Record<string, Rung>> = {};
+
 for (const theme of THEMES_TO_BAKE) {
   T = theme;
   outDir = fileURLToPath(new URL(`../apps/game/public/assets/${theme.id}/`, import.meta.url));
@@ -1074,20 +1077,12 @@ for (const theme of THEMES_TO_BAKE) {
     console.log(`${slot.id}.png written`);
 
     if (slot.terrain) {
-      // Composited over the board's own background, the same near-black every
-      // in-play tile actually sits on — a mean over the transparent corners
-      // outside the hex clip would understate every colour by the same
-      // amount and could still mislead the ordering check below.
-      const bg = {
-        r: (T.board.background >> 16) & 0xff,
-        g: (T.board.background >> 8) & 0xff,
-        b: T.board.background & 0xff,
-      };
-      const stats = await sharp(png).flatten({ background: bg }).stats();
-      const [r, g, b] = stats.channels;
-      const mean: Rgb =
-        (Math.round(r!.mean) << 16) | (Math.round(g!.mean) << 8) | Math.round(b!.mean);
-      terrainLuma[slot.id] = luma(mean);
+      // Composited over the board's own background — the reason, and the
+      // measurement itself, live in `scripts/ladder.ts` now, because
+      // `artcheck` grades the COMMITTED bytes with the same function and two
+      // copies of "what a terrain's luma is" is exactly how a guardrail comes
+      // to be measuring something its checker is not.
+      terrainLuma[slot.id] = await measuredLuma(T, png);
     }
   }
 
@@ -1095,12 +1090,7 @@ for (const theme of THEMES_TO_BAKE) {
   // enforces on the raw tokens (theme.test.ts, "separates its four terrains
   // by value, not by hue"). Derived from the theme's own fills rather than
   // hard-coded, so a future palette change re-checks itself.
-  const tokenOrder = (['green', 'yellow', 'red', 'blue'] as const)
-    .map((c) => {
-      const s = T.terrain[c];
-      const v = s.fillTo === null ? luma(s.fill) : (luma(s.fill) + luma(s.fillTo)) / 2;
-      return [`terrain.${c}`, v] as const;
-    })
+  const tokenOrder = TERRAINS.map((c) => [`terrain.${c}`, tokenLuma(T, c)] as const)
     .sort((a, b) => a[1] - b[1])
     .map(([id]) => id);
 
@@ -1115,4 +1105,21 @@ for (const theme of THEMES_TO_BAKE) {
     );
   }
   console.log(`greyscale ordering holds: ${bakedOrder.join(' < ')}`);
+
+  // The record this direction's art will be graded against from now on. See
+  // `scripts/ladder.ts` for what each column catches; the short version is
+  // that `token` is what the THEME said at this moment and `measured` is what
+  // the PNG renders, so a theme edited without a re-bake moves the first and
+  // a PNG edited without a re-bake moves the second.
+  ladder[T.id] = Object.fromEntries(
+    TERRAINS.map((c) => [c, { token: tokenLuma(T, c), measured: terrainLuma[`terrain.${c}`]! }]),
+  );
 }
+
+/*
+ * Written once, after every direction, rather than per theme — the file is the
+ * ladder for ALL of them, and a bake interrupted halfway would otherwise
+ * commit a record for the direction it got to and leave the other's behind.
+ */
+writeFileSync(LADDER_FILE, `${JSON.stringify(ladder, null, 2)}\n`);
+console.log(`\nladder.json written: ${Object.keys(ladder).join(', ')}`);
