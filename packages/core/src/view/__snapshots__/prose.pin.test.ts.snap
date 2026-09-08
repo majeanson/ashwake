@@ -446,6 +446,11 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "Sound",
       "A few quiet notes as you pop and claim.",
     ],
+    [
+      "ui.haptics",
+      "Vibration",
+      "A short buzz as you place, pop and claim.",
+    ],
   ],
   "goals": [
     [
@@ -1090,6 +1095,11 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "ui.sound",
       "Son",
       "Quelques notes discrètes quand tu récoltes et réclames.",
+    ],
+    [
+      "ui.haptics",
+      "Vibrations",
+      "Une brève vibration quand tu poses, récoltes et réclames.",
     ],
   ],
   "goals": [

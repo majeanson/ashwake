@@ -457,7 +457,10 @@ export type Strings = {
     Record<'lastError' | 'otherReceipts' | 'timeline' | 'otherWorlds' | 'lost', string>
   >;
   readonly feature: Readonly<
-    Record<'debug.overlay' | 'ui.sound', { readonly label: string; readonly note: string }>
+    Record<
+      'debug.overlay' | 'ui.sound' | 'ui.haptics',
+      { readonly label: string; readonly note: string }
+    >
   >;
 
   /**

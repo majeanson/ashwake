@@ -533,6 +533,10 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       label: 'Sound',
       note: 'A few quiet notes as you pop and claim.',
     },
+    'ui.haptics': {
+      label: 'Vibration',
+      note: 'A short buzz as you place, pop and claim.',
+    },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
   story: [

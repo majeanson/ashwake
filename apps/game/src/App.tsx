@@ -108,6 +108,7 @@ import { useOnce } from './shell/useOnce';
 import { useLedgers } from './shell/ledgers';
 import { shedNote } from '@meta/shedLadder';
 import * as voice from './shell/voice';
+import { buzz, stopBuzz } from './shell/touch';
 import { registerWorker } from './shell/worker';
 import { carriedBy, cross, dowryOf } from './shell/cross';
 import { canInstall, inAppBrowser, isInstalled, promptInstall } from './shell/install';
@@ -1426,6 +1427,7 @@ function Game() {
       const before = session.get().state;
       const poppedBefore = before.log.popped;
       const claimedBefore = before.claimed.length;
+      const placementsBefore = before.placements;
       /*
        * WHAT A FIND HOLDS, handed over a beat before the receipt asks for it
        * (2026-09-02).
@@ -1489,6 +1491,42 @@ function Game() {
         const wasDry = dry.current;
         dry.current = runningDry({ tiles: now.hud.tiles, cost: now.hud.cost, warned: wasDry });
         if (dry.current && !wasDry) voice.dry(theme.voice);
+      }
+
+      /*
+       * The board, FELT (2026-09-08) — its own branch beside the voice, on the
+       * same seam and for the same reason: one place knows what an action did.
+       *
+       * Separate from `ui.sound` rather than folded into it, because the two
+       * answer opposite questions. Sound leaves the phone, so it is off by
+       * default lest it surprise a quiet room; a buzz does not leave the
+       * phone, which is precisely why it is the feedback a player in that
+       * quiet room can still have. Somebody who wants one and not the other is
+       * the ordinary case, not an edge one.
+       *
+       * Three moments, and PLACE is the one sound does not mark. A tile
+       * landing is the game's most frequent action and its least eventful,
+       * which makes it wrong for a note and right for the shortest tick there
+       * is — the confirmation that the finger was where it thought it was, on
+       * a board where a tap can land on the hex next door. `shell/touch.ts`
+       * owns what each moment feels like; this decides only when.
+       *
+       * A no-op on any device without `navigator.vibrate`, which today means
+       * every iPhone. SETTINGS hides the row there rather than offering a
+       * switch that would lie.
+       */
+      {
+        const feel = isEnabled(features, 'ui.haptics');
+        // A claim rides ON a placement, so the two would fire together and
+        // read as one long buzz. The claim wins: it is the rarer event and the
+        // one worth telling apart. `state.placements` rather than the action's
+        // arrival, because a PLACE the rules refuse must not confirm anything.
+        if (now.state.claimed.length > claimedBefore) buzz(feel, 'claim');
+        else if (action.type === 'HARVEST' && now.state.log.popped > poppedBefore) {
+          buzz(feel, 'pop');
+        } else if (action.type === 'PLACE' && now.state.placements > placementsBefore) {
+          buzz(feel, 'place');
+        }
       }
 
       /*
@@ -3123,7 +3161,15 @@ function Game() {
             // SOUND goes through the one wire the board's own button uses; every
             // other flag is just a flag.
             if (id === 'ui.sound') setSound(on);
-            else setFeature(id, on);
+            else {
+              // Turning haptics off stops whatever is in flight, the way
+              // `voice.silence()` does for sound. A pop's pattern is 84ms, so
+              // this is rarely visible and is exactly the sort of thing that
+              // is unpleasant on the one occasion it is: the switch that is
+              // meant to stop the buzzing, buzzing after it is pressed.
+              if (id === 'ui.haptics' && !on) stopBuzz();
+              setFeature(id, on);
+            }
           }}
           renderScale={renderScale}
           maxRenderScale={MAX_RENDER_SCALE}

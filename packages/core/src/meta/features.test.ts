@@ -40,8 +40,13 @@ describe('the registry', () => {
     // ON for everybody — record-keeping the engine never sees, and launch
     // day is the only clean epoch the record would ever get. A flag that
     // changes the GAME still does not belong here.
+    //
+    // ui.haptics joined 2026-09-08, and it is squarely ui.sound's class: a
+    // buzz on place/pop/claim, carrying no information any receipt does not
+    // already carry, changing nothing a shared seed would replay differently.
+    // The engine cannot see it; `navigator.vibrate` cannot reach the engine.
     const ids = FEATURES.map((f) => f.id);
-    expect(ids).toEqual(['debug.overlay', 'ui.sound']);
+    expect(ids).toEqual(['debug.overlay', 'ui.sound', 'ui.haptics']);
   });
 
   it('describes every flag, so the registry never becomes a list of mystery ids', () => {
@@ -59,7 +64,12 @@ describe('the registry', () => {
    * note that reads like a maintainer's notebook cannot reach a player.
    */
   it('offers a player only the public switches, in a voice written for them', () => {
-    expect(PLAYER_FEATURES.map((f) => f.id)).toEqual(['ui.sound']);
+    // ui.haptics is public for the same reason ui.sound is: it is a sense the
+    // player turns on, and a switch a player cannot find is a system nobody
+    // has. SETTINGS still hides its ROW on a device with no `navigator.vibrate`
+    // — a distinction this registry cannot make, because it is about the
+    // device rather than the build. See `shell/touch.ts#canBuzz`.
+    expect(PLAYER_FEATURES.map((f) => f.id)).toEqual(['ui.sound', 'ui.haptics']);
     for (const f of PLAYER_FEATURES) {
       expect(f.wired).toBe(true);
       // Short enough to read at a glance, and free of the dates and names

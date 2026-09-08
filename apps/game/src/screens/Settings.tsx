@@ -1,5 +1,6 @@
 import { LOCALES, type Locale } from '@content/locale';
 import { featureText, PLAYER_FEATURES, type FeatureId, type FeatureSet } from '@meta/features';
+import { canBuzz } from '../shell/touch';
 import { useState } from 'react';
 import { AUTO_THEME_ID, THEMES } from '@theme/index';
 import { Fold } from '../ui/Fold';
@@ -29,6 +30,29 @@ import { Panel, PanelMenu } from '../ui/Panel';
  * The privacy sentence is last and is not a boast: it is the claim the crash
  * reporter's one exception has to stay true against.
  */
+
+/**
+ * A switch this DEVICE could actually do something with (2026-09-08).
+ *
+ * The registry's `wired` says whether the BUILD has anything behind a flag,
+ * which is the right question asked one level too high for haptics: the code
+ * is there, it is tested, and on an iPhone `navigator.vibrate` does not exist
+ * and never has — so the row would be a switch that flips, remembers, says ON,
+ * and does nothing. That is the exact promise `wired: false` was invented to
+ * avoid making, one layer down.
+ *
+ * Hidden rather than shown as NOT BUILT, and the difference is honesty about
+ * WHOSE limit it is: NOT BUILT is a note to a player that this game has not
+ * finished a feature, and that would be a lie here. Their phone simply does
+ * not have the sense. There is nothing for them to do about it and nothing
+ * for them to wait for.
+ *
+ * Every other flag answers `true` and is unaffected, so this is one named
+ * exception rather than a filter the screen has to keep in step with the
+ * registry.
+ */
+const offerable = (feature: { readonly id: FeatureId }): boolean =>
+  feature.id !== 'ui.haptics' || canBuzz();
 
 export type SettingsProps = {
   readonly theme: Theme;
@@ -257,7 +281,7 @@ export function Settings({
       </section>
 
       <section>
-        {PLAYER_FEATURES.map((feature) => {
+        {PLAYER_FEATURES.filter(offerable).map((feature) => {
           const words = featureText(feature.id, s);
           const on = features[feature.id];
           return (

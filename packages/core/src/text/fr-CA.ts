@@ -542,6 +542,10 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       label: 'Son',
       note: 'Quelques notes discrètes quand tu récoltes et réclames.',
     },
+    'ui.haptics': {
+      label: 'Vibrations',
+      note: 'Une brève vibration quand tu poses, récoltes et réclames.',
+    },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
   story: [

@@ -73,6 +73,28 @@ export const FEATURES = [
     wired: true,
     player: true,
   },
+  // Haptics (2026-09-08): a tick when a tile lands, a two-beat when a pocket
+  // pops, one when a destination is claimed. The one sense this game has
+  // never used and the only one a phone has that a desktop does not — and
+  // the one whose case is the INVERSE of sound's. Sound is off because it
+  // leaves the phone and can surprise a quiet room; a buzz does not leave the
+  // phone, so it is the feedback a silent player can still have.
+  //
+  // Off by default all the same, because `CLAUDE.md` says every system ships
+  // that way and because an unrequested buzz is the same intrusion an
+  // unrequested noise is, one room quieter.
+  //
+  // `navigator.vibrate` does not exist in Safari on iOS and never has, so
+  // this is a no-op on an iPhone. SETTINGS hides the row on a device that
+  // cannot do it rather than offering a switch that would lie — the same
+  // rule `wired` applies to the build, applied to the device. See
+  // `shell/touch.ts`.
+  {
+    id: 'ui.haptics',
+    defaultOn: false,
+    wired: true,
+    player: true,
+  },
 ] as const satisfies readonly FeatureDef[];
 
 /** The switches a player's SETTINGS screen offers. */
