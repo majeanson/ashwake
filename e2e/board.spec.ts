@@ -40,6 +40,31 @@ const apart = (a: Buffer, b: Buffer): number => {
   return sum / a.length;
 };
 
+/**
+ * Wait until the board is (or stops being) the picture it was, and say so.
+ *
+ * A stopwatch cannot time a 2.5s animation on a runner this repository has
+ * MEASURED at about eleven times slower than a desktop (`vitest.config.ts`
+ * carries the number and `LOG.md` Session 57 the story). A screenshot that
+ * costs 40ms here can cost most of a second there, so "sleep 700ms, now we are
+ * mid-dive" is a claim about a machine rather than about the board. This polls
+ * instead: it is the same assertion, made whenever the runner gets round to it.
+ */
+const settleUntil = async (
+  page: Page,
+  was: Buffer,
+  want: 'moved' | 'home',
+  ms = 8000,
+): Promise<number> => {
+  const until = Date.now() + ms;
+  let d = apart(was, await small(page));
+  while (Date.now() < until && (want === 'moved' ? d <= 3 : d >= 3)) {
+    await page.waitForTimeout(80);
+    d = apart(was, await small(page));
+  }
+  return d;
+};
+
 /** Tap around the centre in widening rings until a placement lands. The
  *  opening board is one tile at the origin with six legal neighbours around
  *  it, so a ring at the hex pitch finds one. */
@@ -726,14 +751,16 @@ test('the view cycle hands the board back, and never loses the board you made', 
 
   await aimAt('home');
   await view.click();
-  await page.waitForTimeout(700);
-  const moved = await small(page);
-  expect(apart(own, moved), 'DEFAULT did not move off the view the drag made').toBeGreaterThan(3);
+  expect(
+    await settleUntil(page, own, 'moved'),
+    'DEFAULT did not move off the view the drag made',
+  ).toBeGreaterThan(3);
 
   await aimAt('mine');
   await view.click();
-  await page.waitForTimeout(900);
-  expect(apart(own, await small(page)), 'MY VIEW did not give the board back').toBeLessThan(3);
+  expect(await settleUntil(page, own, 'home'), 'MY VIEW did not give the board back').toBeLessThan(
+    3,
+  );
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -1350,9 +1377,13 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   const home = await small(page);
 
   // ...and this is the dive, which is the half that makes the rest meaningful.
-  await page.waitForTimeout(700);
-  const away = await small(page);
-  expect(apart(home, away), 'the board never toured, so the tap proves nothing').toBeGreaterThan(3);
+  // Polled rather than slept for: see `settleUntil`. The hold at the hex is
+  // 1200ms, so there is a wide window to arrive in even on a slow runner, and
+  // the poll takes the first frame of it rather than a guessed one.
+  expect(
+    await settleUntil(page, home, 'moved'),
+    'the board never toured, so the tap proves nothing',
+  ).toBeGreaterThan(3);
 
   const box = await page.locator('canvas').boundingBox();
   if (box === null) throw new Error('no canvas');
@@ -1374,8 +1405,10 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
     await scrim.locator('button').last().click({ force: true });
     await page.waitForTimeout(120);
   }
-  await page.waitForTimeout(2700);
-  expect(apart(home, await small(page)), 'the tap did not bring the board home').toBeLessThan(3);
+  expect(
+    await settleUntil(page, home, 'home'),
+    'the tap did not bring the board home',
+  ).toBeLessThan(3);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
