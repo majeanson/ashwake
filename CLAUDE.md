@@ -21,7 +21,9 @@ produce.** Four whole mechanics shipped inert in this body — the colour lens,
 the stash, the board's tap-to-describe, and unselecting a card — each a rule
 the core implements and tested, reachable from nothing. A rendered control is
 not a wired one. `INTERACTIONS.md` is the gesture-by-gesture matrix against
-Ashwake 1, and it is the answer to "did we get back what we had".
+Ashwake 1, and it is the answer to "did we get back what we had";
+`MODES.md` is the same kind of matrix for the three KINDS of run and the doors
+between them.
 
 **And before calling a MODULE done, grep for a consumer of every export it
 has.** The matrix above was right about every gesture and twelve surfaces were
@@ -64,6 +66,29 @@ generator directly and never came through it. A daily advertised shrines it
 would hand over as caches, for four stages, and Ashwake 1 has the same hole.
 **A comment that asserts an invariant is not the invariant, and it is the
 sentence that stops a reader checking.**
+
+**And a MODE is a set of flags, set by DOORS — sweep the doors.** Three
+sessions in a row landed on the same shape: `Session.detour` was fixed for the
+life of the PAGE, so a `?seed=` visitor who kept the board as one of their
+worlds went on playing it with fourteen readers still answering for the shared
+one (a find paid nothing, a perk was lost on reload, the manual said "nothing
+about buying applies here" over their own shop). RESET ALL cleared the world,
+the ending and the purse, and not `daily` — so the next run was played on a
+private board and banked as today's shared score. And the end screen gated an
+offer on `daily` when the shell had already decided. None of it is visible from
+inside one file: **list the doors, list the flags, and check the matrix.**
+`MODES.md` is that matrix, and the doors state their whole `Door` so the
+compiler asks every one of them when a flag is added.
+
+**And where a world is MINTED holding facts it did not earn, seal the survey.**
+There are four places a world comes from and three of them hand it a history:
+a crossing carries the perk shelf, a kept board carries the ground and the
+territories, the audit fixture carries three hundred runs. `goalsMet` starts
+empty and the survey pays at the END of the next run, so one placement
+collected 40 relics a lap after a crossing and 90 on a kept board. Each of the
+three sites learned this separately — the fixture wrote the seal inline before
+`sealGoals` existed. A rule discovered three times is a rule that wants one
+name.
 
 **But the grep finds gaps, not answers.** A third pass over the theme found
 five more unread channels and **none of them was fixed**, because what a

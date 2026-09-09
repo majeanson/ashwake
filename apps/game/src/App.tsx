@@ -2506,6 +2506,8 @@ function Game() {
       economy: economyAt(slot, seed),
       wakeAt: null,
       from: { reach: 0, perks: after.progress.found, unlocks: unlockedBy(after.world) },
+      // A crossing goes to a world this device just minted, on its own seed.
+      detour: false,
       keepsWorld: true,
       fromMenus: false,
     });
@@ -2546,6 +2548,9 @@ function Game() {
         economy: economyAt(at, seed),
         wakeAt,
         from: startsFrom(at, progress.found),
+        // `worldSeedFor` above: a new expedition is always into this device's
+        // own world, which is what makes a shared link's flag stop here.
+        detour: false,
         keepsWorld: false,
         // NEW RUN is pressed on the ending or the board; BEGIN AT CAMP is
         // pressed inside WORLDS and closes it on the way through.
@@ -2630,6 +2635,9 @@ function Game() {
       // GROUND to be new against — which is different from a world whose reach
       // is zero, and the distinction is why `reachAtStart` is `number | null`.
       from: null,
+      // A daily is not a detour: it is a place the keeper knows, walled off by
+      // construction, and `daily` is the flag that says so.
+      detour: false,
       keepsWorld: false,
       fromMenus: true,
     });
@@ -2653,6 +2661,11 @@ function Game() {
         economy: economyAt(next, seed),
         wakeAt: null,
         from: startsFrom(next, progress.found),
+        // On the world's own seed (`worldSeedFor(next)` above), so this is
+        // never a detour — and this is the door a kept board and the front
+        // door's SETTLE both come through, which is where a shared link's flag
+        // used to survive into a world.
+        detour: false,
         // Another world entirely: the held copy is the one being left.
         keepsWorld: false,
         fromMenus: true,
@@ -3529,6 +3542,22 @@ function Game() {
             // Everything erased is everything this shell was showing, so the
             // shell goes back to what a phone that has never played looks like.
             setProgress(() => EMPTY_PROGRESS);
+            /*
+             * AND IT LEAVES THE DAILY (2026-09-09).
+             *
+             * RESET ALL is reachable from MORE, which is reachable during a
+             * daily, and this handler cleared the world, the ending, the purse
+             * and the board — and not the one piece of state that says WHERE
+             * the run is being played. So the session restarted on a fresh
+             * world's seed while the keeper still pointed at the daily and the
+             * banking effect still took the daily branch: the next run was
+             * played on a private board and banked as today's shared score.
+             *
+             * The same shape as `Session.detour` an hour earlier — a mode flag
+             * a door forgot to clear — and `settleDaily` has the seed guard
+             * that catches it either way now.
+             */
+            setDaily(null);
             // Every world is gone, so this mints one — the same door a phone
             // that has never played comes through.
             {
@@ -3553,7 +3582,12 @@ function Game() {
           /* The world the run is ON, or null on a daily and at the front door
              — see `WorldsProps.here`. `started` matters because a player who
              has not begun is not standing in a world either. */
-          here={daily === null && started ? slot : null}
+          /* Not on a daily AND not on somebody else's seed: `Worlds` says
+             this prop means "the world the run in progress is actually ON",
+             and a shared run is in none of the three. The daily half was
+             fixed on 2026-09-09 and the detour half was missed the same day —
+             one condition, two ways to not be in a world. */
+          here={daily === null && !session.detour && started ? slot : null}
           worlds={ledgers.worlds}
           onBack={worlds.hide}
           onOpen={enterWorld}

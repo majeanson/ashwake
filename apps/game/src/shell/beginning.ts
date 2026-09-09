@@ -87,6 +87,20 @@ export type Door = {
    * is not, and holding on would merge this run's ground into the last world.
    */
   readonly keepsWorld: boolean;
+  /**
+   * Whether this run is on a seed that is not this device's world (2026-09-09).
+   *
+   * Stated by every door rather than inherited, because inheriting is what was
+   * wrong: `App` builds its session once and the flag was set from how the
+   * PAGE was opened, so a `?seed=` visitor who kept the board as one of their
+   * worlds kept the flag too — see `Session.detour` for the fourteen things
+   * that then answered for the wrong run.
+   *
+   * Every door here is `false`, and that is not a redundancy worth collapsing:
+   * a detour can only be ENTERED at boot, from the URL, and the compiler asking
+   * each door to say so is the check that a sixth door cannot forget.
+   */
+  readonly detour: boolean;
   /** Pressed from inside a panel, so the panels have to close behind it. */
   readonly fromMenus: boolean;
 };
@@ -154,7 +168,7 @@ export function enterRun(w: Wiring, door: Door): void {
   w.banked.current = null;
 
   // 3. THE BOARD.
-  w.session.restart(door.seed, door.resume, door.memory, door.economy, door.wakeAt);
+  w.session.restart(door.seed, door.resume, door.memory, door.economy, door.wakeAt, door.detour);
 
   // 4. WHAT THE SCREEN CARRIED OVER AND MUST NOT.
   w.setLens(null);

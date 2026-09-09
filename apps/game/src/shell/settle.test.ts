@@ -4,7 +4,8 @@ import { EMPTY_PROGRESS } from '@meta/progress';
 import { GOALS } from '@content/goals';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
-import { dailiesOf, runsOf } from '@meta/timeline';
+import { dailiesOf, runsOf, type Timeline } from '@meta/timeline';
+import { dailySeed } from '@meta/daily';
 import { newWorld, type WorldMemory } from '@meta/world';
 import { endingPayout } from '@engine/reduce';
 import { settle, settleDaily } from './settle';
@@ -22,15 +23,29 @@ import { walkToEnd } from './walk';
  * would just be showing a lie.
  */
 
-const finished = () => {
+const finished = (seed = 7) => {
   const session = createSession({
-    seed: 7,
+    seed,
     theme: resolveTheme(null),
     strings: stringsFor(pickLocale(['en'])),
   });
   walkToEnd(session);
   return session.get();
 };
+
+/**
+ * The date these tests bank under, and a run actually played on ITS board.
+ *
+ * The fixture used to hand `settleDaily` a run on seed 7 under a date whose
+ * own seed is something else entirely, and it passed, because `settleDaily`
+ * took the date on trust (`settle` has refused a foreign seed since
+ * 2026-08-29; its other half never did). So every daily test here was banking
+ * a score from a board that was never that date's — the exact thing the guard
+ * added on 2026-09-09 refuses. A test fixture that could not have happened in
+ * the game is a test that pins the wrong game.
+ */
+const DAY = '2026-08-29';
+const onTheDaily = () => finished(dailySeed(DAY));
 
 describe('banking a run', () => {
   it('folds the ground walked into the world and keeps the best', () => {
@@ -136,16 +151,16 @@ describe('where a run stands', () => {
 
 describe('banking a daily', () => {
   it('touches the ladder and the diary, and nothing else', () => {
-    const snap = finished();
+    const snap = onTheDaily();
     const after = settleDaily({
-      date: '2026-08-29',
+      date: DAY,
       state: snap.state,
       hud: snap.hud,
       book: {},
       timeline: [],
       at: 1_756_000_000_000,
     });
-    expect(after.book['2026-08-29']?.tries).toBe(1);
+    expect(after.book[DAY]?.tries).toBe(1);
     expect(dailiesOf(after.timeline)).toHaveLength(1);
     // The diary's RUN tab is untouched: a daily is not one of this device's
     // own runs, and counting it as one would inflate every total.
@@ -153,9 +168,9 @@ describe('banking a daily', () => {
   });
 
   it('counts a second try without losing the first best', () => {
-    const snap = finished();
+    const snap = onTheDaily();
     const one = settleDaily({
-      date: '2026-08-29',
+      date: DAY,
       state: snap.state,
       hud: snap.hud,
       book: {},
@@ -163,15 +178,15 @@ describe('banking a daily', () => {
       at: 1,
     });
     const two = settleDaily({
-      date: '2026-08-29',
+      date: DAY,
       state: snap.state,
       hud: { ...snap.hud, points: 0 },
       book: one.book,
       timeline: one.timeline,
       at: 2,
     });
-    expect(two.book['2026-08-29']?.tries).toBe(2);
-    expect(two.book['2026-08-29']?.best).toBe(one.book['2026-08-29']?.best);
+    expect(two.book[DAY]?.tries).toBe(2);
+    expect(two.book[DAY]?.best).toBe(one.book[DAY]?.best);
     expect(two.isNewBest).toBe(false);
   });
 });
@@ -187,11 +202,60 @@ describe('banking a daily', () => {
  * the daily, that run is banked as a try on today's shared ladder — a score
  * from a seed nobody else can play, standing on the board everybody shares.
  */
+describe('a daily banked from a board that is not that date’s', () => {
+  /**
+   * THE OTHER HALF OF THE SEED GUARD (2026-09-09).
+   *
+   * `settle` has refused a run played on a foreign seed since 2026-08-29 —
+   * "a run may only ever be merged into the world it was PLAYED on" — and
+   * `settleDaily` took the date on trust. The daily ladder is the one ledger
+   * in this game compared BETWEEN people, so a score on it from a private
+   * board is the only kind of wrong nobody can notice from outside.
+   *
+   * Reachable: RESET ALL, from inside a daily, minted a fresh world and
+   * restarted the session on the world's seed while never clearing `daily`,
+   * so the next run was played on that world and banked here as today's
+   * score. `App` clears it now; this is what holds if a sixth door forgets.
+   */
+  it('refuses it, and leaves the ladder and the diary exactly as they were', () => {
+    const foreign = finished(7);
+    const book = { [DAY]: { best: 400, tries: 2 } };
+    const timeline: Timeline = [];
+    const after = settleDaily({
+      date: DAY,
+      state: foreign.state,
+      hud: { ...foreign.hud, points: 999_999 },
+      book,
+      timeline,
+      at: 1,
+    });
+    expect(after.book, 'the ladder took a score from another board').toBe(book);
+    expect(after.timeline, 'the diary took a run from another board').toBe(timeline);
+    expect(after.isNewBest).toBe(false);
+    // The try count is what the date already stood at: this attempt did not
+    // happen on this board.
+    expect(after.try).toBe(2);
+  });
+
+  it('banks the same run once it is played on that date’s own board', () => {
+    const proper = onTheDaily();
+    const after = settleDaily({
+      date: DAY,
+      state: proper.state,
+      hud: proper.hud,
+      book: {},
+      timeline: [],
+      at: 1,
+    });
+    expect(after.book[DAY]?.tries).toBe(1);
+  });
+});
+
 describe('the line between a daily and a world', () => {
   it('records a daily under its date and a run under its slot', () => {
-    const snap = finished();
+    const snap = onTheDaily();
     const asDaily = settleDaily({
-      date: '2026-08-29',
+      date: DAY,
       state: snap.state,
       hud: snap.hud,
       book: {},
@@ -209,7 +273,7 @@ describe('the line between a daily and a world', () => {
       at: 1,
     });
 
-    expect(dailiesOf(asDaily.timeline)[0]?.date).toBe('2026-08-29');
+    expect(dailiesOf(asDaily.timeline)[0]?.date).toBe(DAY);
     expect(runsOf(asRun.timeline, 2)).toHaveLength(1);
     // The same finished run, banked two ways, lands in two different places
     // and never in both.

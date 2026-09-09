@@ -2,7 +2,7 @@ import { GOALS } from '@content/goals';
 import { TUNING } from '@content/tuning';
 import { key, type HexKey } from '@engine/hex';
 import { destinationsWithin, findsWithin } from '@engine/world';
-import { metGoalIds } from '@meta/goals';
+import { metGoalIds, sealGoals } from '@meta/goals';
 import { ONLY_WORLD, type RecordBook } from '@meta/records';
 import type { RunEntry, Timeline } from '@meta/timeline';
 import { newWorld, UNLOCKS, type WorldMemory } from '@meta/world';
@@ -195,10 +195,13 @@ export function worldAged(seed: number, runs: number): WorldMemory {
    * moment. `metGoalIds` is the same detection `settle` runs, so the ledger
    * cannot claim a goal the world has not reached.
    */
-  return {
-    ...built,
-    goalsMet: [...metGoalIds(built, withWorldPerks(EMPTY_PROGRESS, built.perks, built.worn))],
-  };
+  /*
+   * `sealGoals` says exactly this, in one place, since 2026-09-09 — the fixture
+   * reached the same need first and stated it inline. It is the same question a
+   * kept board and a crossing ask: this world was HANDED facts it did not earn
+   * here, so its survey owes nothing for them.
+   */
+  return sealGoals(built, withWorldPerks(EMPTY_PROGRESS, built.perks, built.worn));
 }
 
 /**

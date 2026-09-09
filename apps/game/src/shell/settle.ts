@@ -1,6 +1,6 @@
 import { endingPayout } from '@engine/reduce';
 import type { GameState } from '@engine/state';
-import { arcSparkline, recordDaily, type DailyBook } from '@meta/daily';
+import { arcSparkline, dailySeed, recordDaily, type DailyBook } from '@meta/daily';
 import { ONLY_WORLD, recordRun, type RecordBook } from '@meta/records';
 import { appendEntry, capShots, runHighlights, type Timeline } from '@meta/timeline';
 import { GOALS, type GoalId } from '@content/goals';
@@ -300,6 +300,37 @@ export type SettlingDaily = {
  * allowed and the ladder simply says which attempt this was.
  */
 export function settleDaily(now: SettlingDaily): SettledDaily {
+  /*
+   * THE SEED GUARD, WHICH THIS HALF NEVER HAD (2026-09-09).
+   *
+   * `settle` has refused a run played on a foreign seed since 2026-08-29 —
+   * "a run may only ever be merged into the world it was PLAYED on" — and this
+   * function, the other half of the same fork, took the date on trust. A
+   * daily's seed is a pure function of its date, so the same guard is one line
+   * here, and without it a run on ANY board could be banked as today's score.
+   *
+   * It is reachable. RESET ALL, from inside a daily, mints a fresh world and
+   * restarts the session on the world's seed — and never cleared `daily`, so
+   * the next run was played on that world and banked here as today's daily.
+   * The ladder is the one ledger in this game that is compared between people;
+   * a score on it from a private board is the only kind of wrong that cannot be
+   * noticed from the outside. `App` clears `daily` on reset now, and this is
+   * the guard that holds if a sixth door forgets.
+   *
+   * Refused the way `settle` refuses: everything back untouched, the very
+   * objects, so a caller comparing by identity can see that nothing happened.
+   * `try` is what the date already stood at rather than a fresh count, because
+   * this attempt did not happen on this board.
+   */
+  if (now.state.rootSeed !== dailySeed(now.date)) {
+    return {
+      book: now.book,
+      timeline: now.timeline,
+      isNewBest: false,
+      try: now.book[now.date]?.tries ?? 0,
+    };
+  }
+
   const { book, record, isNewBest } = recordDaily(now.book, now.date, now.hud.points);
   const summary = now.hud.summary;
 

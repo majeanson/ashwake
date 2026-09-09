@@ -170,6 +170,25 @@ export type Session = {
    * board's tap and the session's own receipts cannot disagree about whether
    * a player is standing in their own world.
    */
+  /**
+   * Whether the run IN PROGRESS is on a seed that is not this device's world.
+   *
+   * **It used to be fixed for the life of the page, and that was a bug**
+   * (2026-09-09). `App` builds its session once, on purpose (`useOnce`), and
+   * this was a plain boolean set from how the page was OPENED — so a `?seed=`
+   * visitor who then kept the board as one of their worlds, or took the front
+   * door's SETTLE, went on playing their own world with fourteen readers of
+   * this flag all still saying "somebody else's". Among them: the perk grant
+   * (a find paid nothing), the live world merge (claims provisional until the
+   * run ended), the perk-shelf write (a perk lost on reload), the manual's
+   * WHICH GAME ("nothing about buying applies here", on their own shop) and
+   * the crossing offer.
+   *
+   * A getter now, and `restart` sets it — so it is a property of the RUN, the
+   * way `daily` already is, and every door states it (`shell/beginning.ts`'s
+   * `Door`). Only the boot session can be true: every door out of a shared
+   * link goes to a world or the daily.
+   */
   readonly detour: boolean;
   readonly get: () => Snapshot;
   readonly subscribe: (listener: () => void) => () => void;
@@ -209,6 +228,15 @@ export type Session = {
     /** BEGIN AT CAMP: wake at this hex instead of origin. Only a FRESH run
      *  may camp — a resumed one carries its own wake hex in its state. */
     wakeAt?: HexKey | null,
+    /**
+     * Whether THIS run is on a foreign seed — see `detour`.
+     *
+     * Defaults to FALSE rather than to the session's current value, and the
+     * difference is the whole fix: "keep what it was" is what let a shared
+     * link's flag survive into a world. A test that omits it gets a run on its
+     * own board, which is what every test means.
+     */
+    detour?: boolean,
   ) => void;
 };
 
@@ -403,7 +431,7 @@ export function createSession(opts: {
         // narrate, so a shrine says what shrines ARE rather than what the
         // home world would have unlocked, and `settle` refuses to fold it in
         // at all (the seed guard).
-        detour: opts.detour === true,
+        detour,
         ...(opts.perkAt === undefined ? {} : { perkAt: opts.perkAt }),
         ...(opts.wornPerk === undefined ? {} : { worn: opts.wornPerk }),
         ...(opts.crossingCarries === undefined ? {} : { crossingCarries: opts.crossingCarries }),
@@ -444,12 +472,14 @@ export function createSession(opts: {
     for (const listener of listeners) listener();
   }
 
-  const detour = opts.detour === true;
+  let detour = opts.detour === true;
 
   return {
     theme: opts.theme,
     strings: opts.strings,
-    detour,
+    get detour() {
+      return detour;
+    },
     get: () => snapshot,
     subscribe(listener) {
       listeners.add(listener);
@@ -495,8 +525,11 @@ export function createSession(opts: {
       spotlight = colour;
       commit();
     },
-    restart(seed, from, next, tune, wakeAt) {
+    restart(seed, from, next, tune, wakeAt, onADetour) {
       if (tune !== undefined) tuning = tune;
+      // Not `??=` and not left alone: a run that does not say it is a detour
+      // is not one. See `Session.detour`.
+      detour = onADetour === true;
       // The world the new run is played in, fog and all. A door that hands over
       // no memory is a run that remembers nothing, which is what a daily, a
       // crossing into a fresh world and a reset all are.

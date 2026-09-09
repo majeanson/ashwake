@@ -5346,3 +5346,76 @@ next sweep does not re-run it from scratch.
 shape that hid `reborn`'s broken flip — and its own roll is `pick <
 REARM.cacheShare`, correct. Pinned with a face count anyway, so the next sweep
 over that shape does not have to re-derive the answer.
+
+### Session 66 — a mode is a set of flags, and every bug was a door that forgot one (2026-09-09)
+
+**Question:** Marc asked for a summary of how each mode works, then a revision
+pass. So: **does writing the modes down as a matrix find what reading them file
+by file did not?**
+
+**Answer: yes, and the first thing it found had been shipping since 2026-09-02.**
+`App` builds its session once, deliberately (`useOnce`), and `Session.detour`
+was a plain boolean set from how the PAGE was opened. Every door out of a shared
+link — the front door's SETTLE since 2026-09-02, and this morning's KEEP THIS
+BOARD — goes to a world, and **none of them could clear it.** Fourteen readers
+then answered for the wrong run:
+
+- the perk grant refused, so **a find on the player's own world paid nothing**
+  (the exact bug `shell/economy.ts` was written to kill, in a new place);
+- the live `mergeRun` skipped, so every claim was provisional until the run
+  ended and a closed tab lost the territory just taken;
+- the perk-shelf write skipped, so a perk was **lost on reload**;
+- the manual's WHICH GAME said _"nothing below about buying applies here"_ over
+  the player's own shop, and `mode` read `shared`;
+- the crossing would not be offered on a fully-awake world;
+- the ending showed no atlas, and NEW GROUND was never reported;
+- and the run **banked anyway**, because `settle`'s guard is about the seed and
+  the seed was right. So the ledgers were correct and every screen disagreed
+  with them.
+
+**The fix is where the doors are stated.** `Session.detour` is a getter,
+`restart` sets it, `Door.detour` is required, and it defaults to FALSE rather
+than to the session's current value — "keep what it was" is precisely what let
+a flag outlive its run. Every door is `false` and that is not a redundancy: a
+detour can only be ENTERED at boot, and making each door say so is the check a
+sixth door cannot forget.
+
+**The same shape, one flag over: RESET ALL never cleared `daily`.** It clears
+the world, the ending, the purse and the board, and it is reachable from MORE
+during a daily — so the session restarted on a fresh world's seed while the
+keeper still pointed at the daily and the banking effect still took the daily
+branch. **The next run was played on a private board and banked as today's
+shared score.**
+
+**And that exposed the real hole under it: `settleDaily` had no seed guard.**
+`settle` has refused a foreign seed since 2026-08-29 — "a run may only ever be
+merged into the world it was PLAYED on" — and the other half of the same fork
+took the date on trust for the whole of Stage 4. The daily ladder is the one
+ledger in this game compared BETWEEN people, which makes a score on it from a
+private board the only kind of wrong nobody can notice from outside. Guarded
+now, and `App` clears the flag as well, because a guard and a door are two
+different promises.
+
+**The test fixture had been banking dailies that could not have happened.**
+`settle.test.ts`'s `finished()` plays seed 7 and every daily test handed it to
+`settleDaily` under a date whose own seed is something else — green, because
+the guard did not exist. A fixture that could not occur in the game is a test
+that pins the wrong game; it plays `dailySeed(DAY)` now.
+
+**`sealGoals` turned out to be a rule discovered three times.** The audit
+fixture (`fixture.ts`) wrote it inline in 2026-09-02's words — "a world three
+hundred runs deep ... has been paid for both, long ago" — and this morning's
+kept board and this afternoon's crossing each needed it again. Three sites, one
+name now, and `MODES.md` says the rule where all four world-minting paths can
+be read at once: **wherever a world is minted holding facts it did not earn,
+seal the survey.**
+
+**And one cosmetic miss from yesterday, in the same family.** The worlds list's
+"you are here" was fixed on 2026-09-09 to not point at a world during a daily,
+and the detour half of the identical condition was missed the same day — one
+question, two ways to not be in a world.
+
+**`MODES.md` is the deliverable.** The three kinds by twelve axes, the six
+doors by five flags, the four ways a world is minted and which three must seal,
+and the two seed guards. Everything in it was checked against the code as it was
+written, which is how three of these were found.

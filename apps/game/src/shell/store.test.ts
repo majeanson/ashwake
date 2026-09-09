@@ -259,6 +259,55 @@ describe('the session narrates', () => {
  * board mid-run into another, with no reload between. Ashwake 2 has no reload
  * to hide a leak behind.
  */
+describe('a detour is a property of the RUN, not of the page', () => {
+  /**
+   * The bug this pins (2026-09-09).
+   *
+   * `App` builds its session once, deliberately (`useOnce`), and `detour` was
+   * a plain boolean fixed from how the PAGE was opened. So a `?seed=` visitor
+   * who kept the board as one of their worlds — or took the front door's
+   * SETTLE — went on playing their own world with fourteen readers of the flag
+   * still answering for the shared one. The loudest: the perk grant refused,
+   * so a find on their own world paid nothing; the live world merge skipped,
+   * so every claim was provisional until the run ended; the perk-shelf write
+   * skipped, so a perk was lost on reload; and the manual's WHICH GAME said
+   * "nothing below about buying applies here" over their own shop.
+   *
+   * `restart` sets it, every `Door` states it, and it defaults to FALSE rather
+   * than to the session's current value — because "keep what it was" is
+   * precisely what let a flag outlive its run.
+   */
+  const opened = (detour: boolean) =>
+    createSession({
+      seed: 4242,
+      detour,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+    });
+
+  it('clears on the next run, which is the door out of a shared link', () => {
+    const s = opened(true);
+    expect(s.detour, 'a shared link did not open as a detour').toBe(true);
+    // Exactly what `enterWorld` does once a shared board is kept: the world's
+    // own seed, and a door that says it is not a detour.
+    s.restart(7, null, undefined, TUNING, null, false);
+    expect(s.detour, 'the flag outlived the run it was about').toBe(false);
+  });
+
+  it('defaults to false rather than keeping what it was', () => {
+    const s = opened(true);
+    // A door that does not mention it is not one — the shape that broke.
+    s.restart(7);
+    expect(s.detour).toBe(false);
+  });
+
+  it('can be set again, for a page that opens on a shared link', () => {
+    const s = opened(false);
+    s.restart(4242, null, undefined, TUNING, null, true);
+    expect(s.detour).toBe(true);
+  });
+});
+
 describe('a world and the daily, switched between', () => {
   const DAILY_LIKE = { ...TUNING, shrinesReborn: true, findEvery: 0, findSense: 0 };
 

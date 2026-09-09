@@ -4,7 +4,49 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — the crossing was paying 40 relics a lap, and
+Last checkpoint: **2026-09-09 — a mode is a set of flags, and every bug was a
+door that forgot one.**
+
+Marc asked for a summary of how each mode works and a revision pass over it.
+Writing it down as a matrix found four things reading file by file had not.
+`MODES.md` is the matrix; `LOG.md` Session 66 is the reasoning.
+
+**Verified:**
+
+- **`Session.detour` outlived its run, and had since 2026-09-02.** `App`
+  builds its session once (`useOnce`) and the flag was set from how the PAGE
+  was opened, so every door out of a shared link — the front door's SETTLE, and
+  this morning's KEEP THIS BOARD — left it set. Fourteen readers then answered
+  for the wrong run: **a find on the player's own world paid nothing**, a perk
+  was **lost on reload**, mid-run claims were provisional, the crossing would
+  not be offered, and the manual said "nothing about buying applies here" over
+  their own shop — while the ledgers banked correctly, so every screen
+  disagreed with the disk. It is a getter set by `restart` now, `Door.detour`
+  is required so the compiler asks all four doors, and it defaults to FALSE
+  rather than to the session's current value.
+- **RESET ALL never cleared `daily`** — reachable from MORE during a daily — so
+  the next run was played on a fresh world and banked as **today's shared
+  score**.
+- **`settleDaily` had no seed guard at all**, the other half of a fork whose
+  `settle` side has refused a foreign seed since 2026-08-29. The ladder is the
+  one ledger compared between people. Guarded; and `settle.test.ts`'s own
+  fixture had been banking dailies on seed 7 under a date whose seed is
+  something else, green the whole time.
+- **`sealGoals` was a rule discovered three times** — the audit fixture wrote
+  it inline in 2026-09-02, the kept board needed it this morning, the crossing
+  this afternoon. One name now, and `MODES.md` states it where all four
+  world-minting paths can be read together.
+- **The worlds list's "you are here"** pointed at a world during a shared run —
+  the detour half of a condition whose daily half was fixed yesterday.
+
+**`MODES.md` is new:** three kinds of run by twelve axes, six doors by five
+flags, the four ways a world is minted and which three must seal, and the two
+seed guards. `CLAUDE.md` carries both lessons.
+
+**Counts:** 1105 tests / 86 files, `pnpm sim` byte-identical, typecheck and
+lint clean.
+
+Previous checkpoint: **2026-09-09 — the crossing was paying 40 relics a lap, and
 `newWorld`'s `carry` had never once been passed.**
 
 Marc asked what else there was of the same kind. `LOG.md` Session 65 is the
