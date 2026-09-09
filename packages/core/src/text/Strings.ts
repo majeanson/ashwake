@@ -942,6 +942,9 @@ export type Strings = {
     readonly thisWorld: string;
     /** A slot nobody has played yet. */
     readonly emptyWorld: string;
+    /** Marks the world the run in progress is on. Empty on a daily, where
+     *  the player is not in a world at all. */
+    readonly hereNow: string;
     /**
      * WHICH GAME YOU ARE IN (2026-09-02).
      *

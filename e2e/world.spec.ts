@@ -373,3 +373,53 @@ test('opening another world does not overwrite the one you left', async ({ page 
 
   expect(errors, errors.join(String.fromCharCode(10))).toEqual([]);
 });
+
+test('the worlds list marks the world you are standing in, and only then', async ({ page }) => {
+  /*
+   * Marc, 2026-09-09: *"highlight the current world were in when were in a
+   * world playing with the menu opened."*
+   *
+   * The row has carried `aria-current` since the panel was built and nothing
+   * ever drew it — a screen reader knew and an eye did not. The second half is
+   * the one worth a test: it read `slot === active`, and `active` is a world
+   * even while the player is on a DAILY, so a daily marked a world the player
+   * had left as the one they were standing in.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&runs=3');
+  await begin(page);
+  await clearCards(page);
+
+  await openMore(page);
+  await page.locator('[data-go="worlds"]').click();
+  await page.locator('[data-panel="worlds"]').waitFor({ state: 'visible' });
+
+  // Exactly one row is marked, it is the active slot, and it says so in words
+  // rather than only in colour.
+  const marked = page.locator('[data-slot][data-here]');
+  await expect(marked, 'no world was marked as the one being played').toHaveCount(1);
+  await expect(marked).toHaveAttribute('aria-current', 'true');
+  await expect(marked.locator('.world-here')).toBeVisible();
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a daily marks no world at all, because you are not in one', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?daily=2026-08-26&taught=1&runs=3');
+  await begin(page);
+  await clearCards(page);
+
+  await openMore(page);
+  await page.locator('[data-go="worlds"]').click();
+  await page.locator('[data-panel="worlds"]').waitFor({ state: 'visible' });
+
+  // The atlas and the abandon control still speak for the world you would
+  // return to — `active` — but nothing claims you are standing in it.
+  await expect(
+    page.locator('[data-slot][data-here]'),
+    'a daily marked a world the player had left as the one they are in',
+  ).toHaveCount(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

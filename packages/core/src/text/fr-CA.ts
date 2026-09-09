@@ -736,6 +736,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     survey: 'L’ARPENTAGE',
     thisWorld: 'CE MONDE',
     emptyWorld: 'nouvelle partie',
+    hereNow: 'tu es ici',
     which: {
       title: 'QUELLE PARTIE',
       nowWorld: `EN CE MOMENT${D}: TON PROPRE MONDE. Tout ce manuel s’applique.`,

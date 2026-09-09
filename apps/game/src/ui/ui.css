@@ -3389,3 +3389,35 @@ h3.fact-label {
      `visibility` applies. */
   pointer-events: none;
 }
+
+/*
+ * THE WORLD YOU ARE STANDING IN (2026-09-09) — `screens/Worlds`.
+ *
+ * Marc: *"highlight the current world were in when were in a world playing
+ * with the menu opened."* The row has carried `aria-current` since the panel
+ * was built and nothing ever drew it, so a screen reader knew and an eye did
+ * not.
+ *
+ * The accent border is the house's own mark for "this is the selected one" —
+ * `.directions button[aria-pressed='true']` is the same rule for the theme
+ * picker. The WORD beside it is the part that rule does not have, and it is
+ * there because this is a state a player arrives to rather than one they just
+ * set: colour alone is a signal a colour-blind eye, a dim phone in daylight
+ * and a screenshot all lose.
+ */
+.panel-menu button[data-here] {
+  border-color: var(--accent);
+}
+
+.world-here {
+  /* Pushed to the far end of the row, so the three worlds' facts stay in one
+     column and the mark never shifts them. */
+  margin-inline-start: auto;
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.65rem;
+  color: var(--accent);
+  /* It is a label, not a heading: it must never wrap the row onto a second
+     line on the narrowest phone this game supports. */
+  white-space: nowrap;
+}

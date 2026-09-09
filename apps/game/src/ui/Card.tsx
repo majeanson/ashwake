@@ -123,6 +123,12 @@ export function Card({
       <div
         ref={panel}
         className="card"
+        /* WHICH card this is, for a test that has to tell one from another
+           (2026-09-09). The id was reachable only as `#${id}-name` on the lead
+           paragraph, which a card without a name does not render — so "is a
+           lesson on screen right now" had no answer. Same `data-` convention
+           as `data-action`, `data-door` and `data-stat`. */
+        data-card={id}
         /*
          * A BRIEF CARD IS NOT A LIVE REGION (2026-09-02).
          *

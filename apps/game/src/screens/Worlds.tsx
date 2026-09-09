@@ -26,7 +26,23 @@ import { SLOTS, type Slot } from '../shell/storage';
 
 export type WorldsProps = {
   readonly s: Strings;
+  /**
+   * The slot this panel is ABOUT — whose atlas it draws and whose ground the
+   * abandon control would clear. Always a world, even on a daily, because
+   * that is the world the player will step back into.
+   */
   readonly active: Slot;
+  /**
+   * The world the run in progress is actually ON, or null (2026-09-09).
+   *
+   * Marc: *"highlight the current world were in when were in a world
+   * playing with the menu opened."* Separate from `active`, and the
+   * separation IS the feature: `active` is a world even while the player is
+   * on a daily or standing at the front door, so marking `active` as "you
+   * are here" would point at a world nobody is in. Null says nobody is in
+   * one, and the list marks nothing.
+   */
+  readonly here: Slot | null;
   /** What each slot holds; `null` where nobody has played yet. */
   readonly worlds: Readonly<Record<Slot, WorldMemory | null>>;
   readonly onBack: () => void;
@@ -60,6 +76,7 @@ export type WorldsProps = {
 export function Worlds({
   s,
   active,
+  here,
   worlds,
   onBack,
   onOpen,
@@ -78,13 +95,31 @@ export function Worlds({
       <PanelMenu>
         {SLOTS.map((slot) => {
           const world = worlds[slot];
-          const here = slot === active;
+          /*
+           * THE WORLD YOU ARE STANDING IN (2026-09-09).
+           *
+           * `aria-current` has been on this row since the panel was built and
+           * **nothing has ever drawn it** — the same shape as the other misses
+           * this week: the fact was computed and no pixel read it. A screen
+           * reader has always said "current"; an eye got nothing.
+           *
+           * It was also pointed at the wrong thing. It read `slot === active`,
+           * and `active` is a world even on a daily, so a player mid-daily was
+           * told they were standing in a world they had left. `here` is null
+           * there, and the list marks nothing.
+           */
+          const isHere = slot === here;
           return (
             <button
               key={slot}
               type="button"
               data-slot={slot}
-              aria-current={here}
+              /* The style hook is its own attribute rather than
+                 `[aria-current='true']`: an ARIA attribute is a promise to a
+                 screen reader, and hanging a look off it makes the two
+                 impossible to change apart. */
+              {...(isHere ? { 'data-here': '' } : {})}
+              aria-current={isHere}
               onClick={() => onOpen(slot)}
             >
               {s.ui.worldN(slot)}
@@ -106,6 +141,16 @@ export function Worlds({
               {world === null
                 ? s.ui.emptyWorld
                 : `${world.runs} · ${world.bestPoints} · ${s.ui.stats.map} ${world.farthestReach}`}
+              {/*
+                And SAID, not only coloured. An accent border is the house's
+                mark for "this is the selected one" (`.directions`), and it is
+                the whole signal there — fine for a preference a player just
+                set, thin for a STATE they arrive to and have to read off the
+                screen. A word cannot be missed by a colour-blind eye, a dim
+                phone or a screenshot, and the catalogue owns it in both
+                languages like every other sentence (D4).
+              */}
+              {isHere && <span className="world-here">{s.ui.hereNow}</span>}
             </button>
           );
         })}

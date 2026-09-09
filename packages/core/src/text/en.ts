@@ -726,6 +726,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     survey: 'THE SURVEY',
     thisWorld: 'THIS WORLD',
     emptyWorld: 'begin new',
+    /** The world this run is being played on — see `screens/Worlds`. */
+    hereNow: 'you are here',
     which: {
       title: 'WHICH GAME',
       nowWorld: 'RIGHT NOW: YOUR OWN WORLD. Everything in this manual applies.',

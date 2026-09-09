@@ -604,9 +604,34 @@ function Game() {
    * Declared above `forgetEnding` for the reason `signpost` gives.
    */
   const saying = useRef<Set<number>>(new Set());
+  /**
+   * HOW MANY RECEIPTS ARE STILL IN THE AIR (2026-09-09).
+   *
+   * Marc, of his first pop: *"make sure no cards can pop while the first pop
+   * is happening (i think i had luck explained and coudnt see)."* He is
+   * describing a card that was raised and then taken away before he could read
+   * it, and the window it happened in is one this file made on purpose.
+   *
+   * A pop's receipt WAITS for the cascade — `cascadeMs`, so the accounting
+   * arrives after the thing it accounts for, which is Marc's own ask from
+   * 2026-08-29. For the whole of that wait `saidCard` is still `null`, and the
+   * teaching card's gate is `saidCard === null`. So a lesson that came due on
+   * the same dispatch — and popping tiles is exactly what raises LUCK — opened
+   * over the cascade, and was then UNMOUNTED the moment the pop's own card
+   * arrived. The card was not covered. It was shown and withdrawn.
+   *
+   * A count rather than a boolean because two receipts can be in the air at
+   * once, and STATE rather than reading `saying` because a ref cannot gate a
+   * render. It is `saying`'s size by construction: both are written only by
+   * `speakAfter` and cleared only by `forgetEnding`, which is what keeps two
+   * things that must agree from coming apart — the same hazard `note`'s own
+   * docblock names about `more`.
+   */
+  const [speaking, setSpeaking] = useState(0);
   const forgetEnding = useCallback(() => {
     for (const id of saying.current) window.clearTimeout(id);
     saying.current.clear();
+    setSpeaking(0);
     setGained({ perks: [], unlocks: [] });
     setEndWorld(null);
     setGoals([]);
@@ -630,6 +655,31 @@ function Game() {
       for (const id of held) window.clearTimeout(id);
       held.clear();
     };
+  }, []);
+
+  /**
+   * Say this once the board has finished doing the thing it is about.
+   *
+   * The one door for a receipt that waits — see `speaking` for what Marc
+   * reported and why the wait needed a flag as well as a timer. `wait` of zero
+   * speaks now and arms nothing, so the caller never has to branch.
+   *
+   * The id is held in `saying` so a door out of the run can put it down, and
+   * removed there before the flag drops, so the two are never briefly
+   * disagreeing about whether anything is owed.
+   */
+  const speakAfter = useCallback((wait: number, show: () => void): void => {
+    if (wait <= 0) {
+      show();
+      return;
+    }
+    setSpeaking((n) => n + 1);
+    const id = window.setTimeout(() => {
+      saying.current.delete(id);
+      setSpeaking((n) => Math.max(0, n - 1));
+      show();
+    }, wait);
+    saying.current.add(id);
   }, []);
 
   /** What this run has already said once. See `startedFrom` for the reach. */
@@ -1894,12 +1944,10 @@ function Game() {
         const wait = reducedMotion
           ? 0
           : cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1);
-        // Held, so a door out of this run can put it down — see `saying`.
-        const id = window.setTimeout(() => {
-          saying.current.delete(id);
-          setSaidCard(shown);
-        }, wait);
-        saying.current.add(id);
+        // Through `speakAfter`, so the teaching is held for the whole wait as
+        // well — this is the exact card Marc watched LUCK get shown over and
+        // then taken away from. See `speaking`.
+        speakAfter(wait, () => setSaidCard(shown));
         return;
       }
 
@@ -1955,18 +2003,11 @@ function Game() {
         } else setSaidCard(said);
       };
 
-      if (said.card || isPop) {
-        if (wait === 0) show();
-        else {
-          const id = window.setTimeout(() => {
-            saying.current.delete(id);
-            show();
-          }, wait);
-          saying.current.add(id);
-        }
-      } else say(said.text);
+      if (said.card || isPop) speakAfter(wait, show);
+      else say(said.text);
     },
     [
+      speakAfter,
       witness,
       startWatching,
       session,
@@ -3489,6 +3530,10 @@ function Game() {
         <Worlds
           s={s}
           active={slot}
+          /* The world the run is ON, or null on a daily and at the front door
+             — see `WorldsProps.here`. `started` matters because a player who
+             has not begun is not standing in a world either. */
+          here={daily === null && started ? slot : null}
           worlds={ledgers.worlds}
           onBack={worlds.hide}
           onOpen={enterWorld}
@@ -3722,8 +3767,18 @@ function Game() {
         a lesson read over a moving map, and the trip behind its scrim would be
         a camera move nobody sees. The moment stays true and stays armed; this
         only decides when it is allowed to interrupt.
+
+        `speaking === 0` is the same rule for a receipt that has not landed yet
+        (2026-09-09, Marc: *"make sure no cards can pop while the first pop is
+        happening (i think i had luck explained and coudnt see)"*). A pop's
+        card waits out the cascade, and for the whole of that wait `saidCard`
+        is null — so a lesson that came due on the same dispatch, which is
+        exactly what LUCK does when tiles are popped, opened over the animation
+        and was then unmounted the instant the receipt arrived. Shown, and
+        withdrawn before it could be read. Held now until the board has
+        finished saying what it is already saying.
       */}
-      {card !== null && card !== 'story' && saidCard === null && !touring && (
+      {card !== null && card !== 'story' && saidCard === null && !touring && speaking === 0 && (
         <LessonCard
           id={card}
           theme={theme}
