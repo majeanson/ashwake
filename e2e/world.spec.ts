@@ -278,16 +278,107 @@ test('a daily can be kept as a world, with its ground and none of its spoils', a
     const raw = localStorage.getItem('ashwake.world.1.v1');
     return raw === null
       ? null
-      : (JSON.parse(raw) as { worldSeed: number; revealed: string[]; runs: number });
+      : (JSON.parse(raw) as {
+          worldSeed: number;
+          revealed: string[];
+          territories: string[];
+          runs: number;
+          bestPoints: number;
+          farthestReach: number;
+          goalsMet: string[];
+        });
   });
   expect(kept, 'keeping a daily wrote down no world').not.toBeNull();
   expect(kept!.revealed.length, 'the ground the daily showed did not come with it').toBeGreaterThan(
     0,
   );
+  /*
+   * And the CLAIMS, since 2026-09-09 (Marc: *"make sure territories follow up
+   * in a new world if we go from daily to world, otherwise territories in
+   * daily are underpowered"*).
+   *
+   * Asserted as a FIELD that exists rather than as a non-empty list: whether
+   * this particular daily's twelve placements reach a territory is a fact about
+   * one seed, and a test that depends on it is a test that breaks when a
+   * balance dial moves. What is pinned here is that the world was written with
+   * the shape `memoryFor` reads back — `meta/world.test.ts` and
+   * `shell/homeworld.test.ts` pin the carrying itself, on a board built to
+   * hold one.
+   */
+  expect(Array.isArray(kept!.territories), 'the kept world has no claims list').toBe(true);
+  // The reach travels with the ground, because `knownFraction` divides by it —
+  // a world holding a few hundred remembered hexes with a reach of zero reports
+  // itself 100% known of a ten-hex disc.
+  expect(kept!.farthestReach, 'the reach did not come with the ground').toBeGreaterThan(0);
   // The half that is a balance ruling rather than a convenience: a daily may be
   // replayed all day, so banking its score would make retry-until-good the best
   // way to open a world.
   expect(kept!.runs, "the daily's spoils came with it after all").toBe(0);
+  expect(kept!.bestPoints, "the daily's score came with it after all").toBe(0);
+  /*
+   * AND THE SURVEY IS SEALED (2026-09-09).
+   *
+   * The ground, the claims and the reach a kept board arrives with are three of
+   * the five goals' own inputs, and `goalsMet` started empty — so one placement
+   * in the new world collected `known40` + `reach20` + `territories4` for a
+   * survey nothing there had done, every day, on a board that can be retried
+   * until it is good. `known40` alone was live from the day the import shipped.
+   *
+   * Whatever this seed happens to satisfy is what must be sealed, so the
+   * assertion is the INVARIANT rather than a list: nothing already true may be
+   * left unpaid. `meta/goals.test.ts` pins the arithmetic.
+   */
+  const owed = await page.evaluate(() => {
+    const raw = localStorage.getItem('ashwake.world.1.v1');
+    if (raw === null) return null;
+    const w = JSON.parse(raw) as {
+      revealed: string[];
+      territories: string[];
+      farthestReach: number;
+      goalsMet: string[];
+    };
+    const disc = 3 * Math.max(10, w.farthestReach) * (Math.max(10, w.farthestReach) + 1) + 1;
+    const met = [
+      ...(w.farthestReach >= 20 ? ['reach20'] : []),
+      ...(w.territories.length >= 4 ? ['territories4'] : []),
+      ...(Math.min(1, w.revealed.length / disc) >= 0.4 ? ['known40'] : []),
+    ];
+    return met.filter((id) => !w.goalsMet.includes(id));
+  });
+  expect(owed, 'a kept board owed survey relics for a survey it did not do').toEqual([]);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a SHARED board can be kept too, and its ending says so (2026-09-09)', async ({ page }) => {
+  /*
+   * Marc: *"For a shared world, it should be able to be played like a daily for
+   * a first run, then the same question goes: do we continue in a world? if
+   * yes, we keep the same."*
+   *
+   * It was a daily-only offer, and the end screen gated it on `daily` as well
+   * as on the shell having handed one over — so a shared board was shown nothing
+   * even once `App` was willing. One condition, in the shell, and this is the
+   * wiring check: a rendered control is not a wired one.
+   */
+  const errors = watchErrors(page);
+  // A seed that is not this device's world, played to its end.
+  await page.goto('/?seed=515151&taught=1&end=1');
+  await begin(page);
+  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+
+  const keep = page.locator('[data-action="import-daily"]');
+  await expect(keep, 'a shared board was offered no way to be kept').toBeVisible();
+  await keep.click();
+  await page.locator('[data-slot="1"]').click();
+
+  // Straight onto a live board, in a world that is now this seed's.
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+  const seed = await page.evaluate(() => {
+    const raw = localStorage.getItem('ashwake.world.1.v1');
+    return raw === null ? null : (JSON.parse(raw) as { worldSeed: number }).worldSeed;
+  });
+  expect(seed, 'the shared board was not written down as a world').toBe(515151);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -386,7 +477,17 @@ test('the worlds list marks the world you are standing in, and only then', async
    * had left as the one they were standing in.
    */
   const errors = watchErrors(page);
-  await page.goto('/?seed=7&taught=1&runs=3');
+  /*
+   * NO `?seed=` — and this test asked for one until 2026-09-09, which is why it
+   * was green against a bug.
+   *
+   * `?runs=3` writes world 1 on `FIXTURE_SEED`, so `?seed=7` beside it is a
+   * run on a seed that is NOT this device's world: a DETOUR, in which the
+   * player is standing in none of the three. The row was marked anyway, because
+   * `here` asked only whether this was a daily. Dropping the parameter is what
+   * makes the URL mean what the test's name says.
+   */
+  await page.goto('/?taught=1&runs=3');
   await begin(page);
   await clearCards(page);
 
@@ -400,6 +501,35 @@ test('the worlds list marks the world you are standing in, and only then', async
   await expect(marked, 'no world was marked as the one being played').toHaveCount(1);
   await expect(marked).toHaveAttribute('aria-current', 'true');
   await expect(marked.locator('.world-here')).toBeVisible();
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a SHARED run marks no world either, for the same reason (2026-09-09)', async ({ page }) => {
+  /*
+   * The other half of the same condition, missed the day the daily half was
+   * fixed: `here` means "the world the run in progress is actually ON", and a
+   * shared board is none of the three.
+   *
+   * It is also the shape of the bug underneath it. `session.detour` was fixed
+   * for the life of the PAGE, so this question could not be asked correctly at
+   * all until the flag became a property of the RUN — see `store.ts`'s
+   * `detour` and `shell/beginning.test.ts`.
+   */
+  const errors = watchErrors(page);
+  // World 1 is three runs deep on `FIXTURE_SEED`; the run is on seed 7.
+  await page.goto('/?seed=7&taught=1&runs=3');
+  await begin(page);
+  await clearCards(page);
+
+  await openMore(page);
+  await page.locator('[data-go="worlds"]').click();
+  await page.locator('[data-panel="worlds"]').waitFor({ state: 'visible' });
+
+  await expect(
+    page.locator('[data-slot][data-here]'),
+    'a shared board marked one of the three worlds as the one being played',
+  ).toHaveCount(0);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

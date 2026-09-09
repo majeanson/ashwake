@@ -1147,3 +1147,45 @@ test('a panel takes the keyboard with it, and the hand behind it is unreachable'
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+/**
+ * WHICH GAME, and the sentence a change to the game made false (2026-09-09).
+ *
+ * The manual's first section tells a player which of the three kinds of run
+ * they are in and what does not apply to it. It said *"Nothing below about
+ * KEEPING or buying applies here"* on a daily and on a shared board — and as of
+ * 2026-09-09 keeping DOES apply: the ending offers to continue the board as one
+ * of the three worlds. Buying is still the honest half.
+ *
+ * This is the surface nothing else can check. The catalogue's own tests prove
+ * the sentences exist and are typeset for their language; `view.test.ts` proves
+ * the facts under them. Whether the RIGHT one reaches the screen for the run
+ * being played is a question only a browser can answer, and copy that has gone
+ * stale is the failure mode with no stack trace.
+ */
+test('the manual tells a shared run what applies to it, and keeping now does', async ({ page }) => {
+  const errors = watchErrors(page);
+  // A seed that is not this device's world: a shared board.
+  await page.goto('/?seed=515151&taught=1&place=6');
+  await begin(page);
+
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+  const which = page.locator('[data-panel="manual"] section', { hasText: 'WHICH GAME' }).first();
+  await expect(which).toBeVisible();
+
+  // It knows which game this is.
+  await expect(which).toContainText('A SHARED RUN');
+  // And it no longer says keeping does not apply here, because it does.
+  await expect(
+    which,
+    'the manual still tells a shared run that keeping does not apply',
+  ).toContainText('Nothing below about buying applies here');
+  await expect(which).not.toContainText('keeping or buying');
+  // The offer itself, named where a player reads about the mode.
+  await expect(which, 'the manual never mentions keeping the board').toContainText(
+    'keep the board as one of your worlds',
+  );
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

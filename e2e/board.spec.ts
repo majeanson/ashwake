@@ -1383,9 +1383,22 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
    * failed, because tapping in a tight loop is how you land mid-flight. Both
    * were checked by breaking `endTour` and watching which went red.
    *
-   * Seed 122 because a shrine is rare: eight seeds in four hundred put one
-   * within four rings, and this one puts it on the opening board, so the card
+   * Seed 122 because a landmark on the OPENING board is rare: eight seeds in
+   * four hundred put one within four rings, and this one puts it where the card
    * fires before a tile has been placed.
+   *
+   * **It was a shrine until 2026-09-09 and this test named it one.** A `?seed=`
+   * link is a shared board, and a shared board plays a daily's economy now
+   * (`shell/economy.ts`'s `NO_LEDGER`): every shrine is rewritten into a cache
+   * or a site, because a door that unlocks nothing is worse than no door. So
+   * the shrine card never came and this test failed — correctly, and on the
+   * first full run after the change.
+   *
+   * What it is ABOUT is the tour, not which landmark starts one: Marc's own ask
+   * was *"yes do the same for caches, sites and territories and other concepts
+   * on the map"*, so any of the four is the trigger this test needs. Naming the
+   * whole family is also the more honest test — it stops depending on a
+   * geography dial that has now moved under it twice.
    */
   const errors = watchErrors(page);
   await page.goto('/?seed=122');
@@ -1393,13 +1406,15 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   await page.waitForTimeout(700);
 
   const scrim = page.locator('.card-scrim');
-  const shrine = page.locator('#lesson-shrine-name');
-  for (let i = 0; i < 8 && (await shrine.count()) === 0; i++) {
-    if ((await scrim.count()) === 0) throw new Error('the shrine card never came');
+  const place = page.locator(
+    '#lesson-shrine-name, #lesson-cache-name, #lesson-site-name, #lesson-territory-name',
+  );
+  for (let i = 0; i < 8 && (await place.count()) === 0; i++) {
+    if ((await scrim.count()) === 0) throw new Error('no card for a place ever came');
     await scrim.locator('button').last().click({ force: true });
     await page.waitForTimeout(120);
   }
-  expect(await shrine.count(), 'the shrine card never came').toBe(1);
+  expect(await place.count(), 'no card for a place ever came').toBe(1);
 
   const held = await tiles(page);
   await scrim.locator('button').last().click({ force: true });

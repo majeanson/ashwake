@@ -5486,3 +5486,70 @@ takes a wiring of spies and asserts the sequence: the keeper is pointed at the
 place before the board exists, the screen's carry-over is cleared before the
 arrival speaks, the world is let go except by the crossing that just minted one,
 and `detour` reaches `restart`. **A door is not testable by reading it.**
+
+### Session 68 — pushed, and an e2e test that was green because of the bug (2026-09-09)
+
+**Question:** Marc: _"push all, make sure you can test some of those
+automatically too"_, after a checklist of eighteen things to look at on a
+phone. So: **which of eighteen visual checks can a machine actually make, and
+what does writing them find?**
+
+**Answer: four of the eighteen, and writing the first one found a passing test
+that was passing for the wrong reason.**
+
+**`world.spec.ts`'s "the worlds list marks the world you are standing in" asked
+for `?seed=7&taught=1&runs=3`.** `?runs=3` writes world 1 on `FIXTURE_SEED`,
+so `?seed=7` beside it is a run on a seed that is NOT this device's world — a
+DETOUR, in which the player is standing in none of the three. The row was
+marked anyway, because `here` asked only whether this was a daily, and the test
+asserted exactly the bug. **Fourth fixture in two days pinning a state the game
+should not be able to produce**, after `settle.test.ts`'s daily on seed 7 and
+the keeper's on seed 1. The URL is `/?taught=1&runs=3` now, and the shared case
+is its own test beside it.
+
+**What was worth automating, and why those four.** The split is not arbitrary:
+a unit test can reach a rule, a sentence and a ledger, and there are 1122 of
+them over every one of today's changes. What only a browser can prove is that
+the right thing REACHES THE SCREEN for the run being played — this
+repository's oldest lesson, "a rendered control is not a wired one". So:
+
+- **a shared board's ending offers to keep it** (`[data-action="import-daily"]`
+  visible on a `?seed=` ending, and the world written down afterwards carries
+  that seed). The end screen gated this on `daily` as well as on the shell
+  handing an offer over, so it was invisible even once `App` was willing;
+- **a shared run marks no world** in the WORLDS list;
+- **the manual's WHICH GAME** says "Nothing below about buying applies here",
+  no longer "keeping or buying", and names the offer. Stale copy is the failure
+  mode with no stack trace;
+- **a kept board's world is written with its claims, its reach and a SEALED
+  survey** — asserted as the invariant (nothing already true is left unpaid)
+  rather than as a list, because which goals one seed's twelve placements
+  satisfy is a fact about that seed and a test that depends on it breaks when a
+  dial moves.
+
+**And the full e2e run found a REAL regression of mine, which is the point of
+running it.** `board.spec.ts`'s _"a tap on a touring board brings it home
+instead of placing a tile"_ opens `/?seed=122` — a shared link — and waited for
+a SHRINE card, on the argument that "eight seeds in four hundred put one within
+four rings, and this one puts it on the opening board". A shared board plays a
+daily's economy now, so every shrine there is a cache or a site, and the card
+never came.
+
+The test is about the TOUR, not about which landmark starts one — Marc's own ask
+was _"yes do the same for caches, sites and territories and other concepts on
+the map"_ — so it names the whole family of place cards now. That is also the
+more honest test: it had been depending on a geography dial that has moved under
+it twice. **Two green e2e tests today for two opposite reasons**: one was
+asserting a bug and had to be corrected, one was asserting a real thing through
+a fixture the change invalidated. Only a full run tells them apart, and only
+after the change.
+
+**And what was left to the eye on purpose.** The double glyph, the daily's two
+coin faces and the territory receipt are all WebGL or a sentence inside a card
+— the first cannot be seen from the DOM at all, and the other two are pinned
+where they are decided (`world.test.ts`, `receipts.test.ts`,
+`lessons.test.ts`). **A redundant e2e for the stale NOTE was declined for the
+same reason it would have been worthless**: the scripted `?end=1` path does not
+speak through `App`'s `act`, so the toast is absent with or without the fix,
+and a test that cannot fail is what this week has spent itself on.
+`beginning.test.ts` fails without it, which is the test that counts.

@@ -4,7 +4,35 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — the vein sweeps: five more, and the door
+Last checkpoint: **2026-09-09 — pushed, and an e2e test that was green because
+of the bug.**
+
+Marc asked for the work pushed and for some of his eighteen-item visual
+checklist automated. Four of the eighteen can be made by a machine, and writing
+the first one found a fifth fixture pinning a state the game should not be able
+to produce. `LOG.md` Session 68.
+
+**Verified:**
+
+- **`world.spec.ts`'s you-are-here test asserted the bug.** It asked for
+  `?seed=7&taught=1&runs=3`, and `?runs=3` writes world 1 on `FIXTURE_SEED` —
+  so `?seed=7` beside it is a DETOUR, in which the player is standing in none
+  of the three. The row was marked anyway. URL fixed; the shared case is its
+  own test now.
+- **Four checks automated**, chosen because they are the ones only a browser
+  can make — that the right thing REACHES THE SCREEN for the run being played:
+  a shared ending offers KEEP THIS BOARD and writes that seed down as a world;
+  a shared run marks no world in the list; the manual's WHICH GAME no longer
+  says keeping does not apply; and a kept board's world carries its claims, its
+  reach and a SEALED survey (asserted as the invariant, not as a goal list).
+- **A redundant e2e was declined and the reason recorded**: the scripted
+  `?end=1` path does not speak through `App`'s `act`, so a stale-note test
+  would pass with or without the fix. `beginning.test.ts` fails without it.
+
+**Counts:** 1122 unit tests / 87 files; e2e 105 on Chromium + 41 on WebKit;
+`pnpm sim` byte-identical; typecheck and lint clean.
+
+Previous checkpoint: **2026-09-09 — the vein sweeps: five more, and the door
 finally has a test.**
 
 Asked what else was of the same kind, all three shapes swept mechanically —
