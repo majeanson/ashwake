@@ -353,9 +353,29 @@ export const LESSONS: readonly Lesson[] = [
     icon: LANDMARK_ICON.territory,
     beats: [
       {
+        /*
+         * THE DIAL PICKS THE SENTENCE (2026-09-09).
+         *
+         * `core` quotes `territoryTiles` and `territoryTilesCap` — the bonus
+         * a HELD territory pays into every later run's purse — and ends the
+         * first clause with "for good". On a daily or a shared board both
+         * numbers are dead (there is no later run in this world to pay) and
+         * "for good" is false unless the player keeps the board, while the one
+         * number that IS paid, `territoryPays`, went unmentioned. So the card
+         * explaining the mark under the thumb described a territory the player
+         * could not have.
+         *
+         * Forked on the dial rather than on a run kind, which is this file's
+         * hard boundary: a beat sees `(Tuning, Theme, Strings)` and nothing
+         * else. It is also the stronger statement — `territoryPays` being
+         * raised is exactly the condition under which the engine pays, so the
+         * lesson and the payment cannot come apart.
+         */
         at: 'core',
         say: (t, _theme, s) =>
-          s.lesson.territory.core(t.territoryRadius, t.territoryTiles, t.territoryTilesCap),
+          t.territoryPays > 0
+            ? s.lesson.territory.pays(t.territoryRadius, t.territoryPays)
+            : s.lesson.territory.core(t.territoryRadius, t.territoryTiles, t.territoryTilesCap),
       },
     ],
   },

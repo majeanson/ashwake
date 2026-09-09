@@ -4,6 +4,7 @@ import type { GameState } from '@engine/state';
 import type { Progress } from '@meta/progress';
 import { appendEntry, type Timeline } from '@meta/timeline';
 import { newWorld, type WorldMemory } from '@meta/world';
+import { sealGoals } from '@meta/goals';
 
 /**
  * Leaving a world for a fresh one (Stage 4, 2026-08-29).
@@ -19,8 +20,19 @@ import { newWorld, type WorldMemory } from '@meta/world';
  * and pays another is the worst kind of bug, since the player only finds out
  * after the world is gone.
  *
- * **What carries, and what does not.** Relics carry, and so do the perks the
- * player has found — those live on `Progress`, which is a device fact.
+ * **What carries, and what does not.** Relics carry, and so does the perk
+ * shelf — threaded into the new world through `newWorld`'s `carry` argument,
+ * which until 2026-09-09 had no caller anywhere (see below).
+ *
+ * **And the SURVEY does not.** `perksAll` reads the shelf, so carrying it made
+ * a world-scale goal true on a world where nothing had been found: 40 relics on
+ * the crossed-into world's first settle, every crossing, forever, once the
+ * player owned all five perks. `sealGoals` marks what a minted world was
+ * HANDED as already paid — the same guard a board kept from a daily needs, at
+ * the other place a world is minted holding facts it did not earn. On a fresh
+ * world it seals exactly `perksAll` and nothing else, because nothing else is
+ * true of empty ground.
+ *
  * Everything that is the PLACE stays behind: the ground, the territories, the
  * shrines woken here, and everything bought with this world's shop levels.
  * That split was rewritten on Marc's own evidence (2026-08-28): losing hard-
@@ -79,9 +91,39 @@ export function cross(now: Crossing): Crossed {
   const carried = carriedBy(now.state, now.world);
 
   return {
-    // A fresh world in the same slot. Nothing of the old one comes with it —
-    // that is what "leaving" means, and it is why the offer is a two-tap arm.
-    world: newWorld(now.seed),
+    /*
+     * A fresh world in the same slot. Nothing of the PLACE comes with it —
+     * that is what "leaving" means, and it is why the offer is a two-tap arm.
+     *
+     * **THE PERK SHELF COMES WITH IT, and now it comes with it HERE**
+     * (2026-09-09). Marc walked out of a fully-awake world without the two
+     * perks he had found in it and called the trade *"not worth it"*; the
+     * answer (2026-08-28) was `newWorld`'s `carry` argument, and
+     * `meta/world.ts` has said ever since that a crossing carries both fields
+     * whole "seeded at `shell/keeper.ts`'s `cross`". That is Ashwake 1's file.
+     * In this body `carry` had **no caller at all**: this line minted an empty
+     * shelf, and the perks survived only because `App`'s perk-shelf effect
+     * notices the disagreement on a later render and writes them back.
+     *
+     * So the behaviour was right by a second mechanism, and the window between
+     * them is the bug: `keepWorld` and `keeper.flush()` put a world with an
+     * EMPTY shelf on disk, and a tab closed before that effect runs loses every
+     * perk found in the world just left — permanently, because the departed
+     * world's own copy has already been replaced and the device blob refuses to
+     * carry perks by contract (`encodeProgress`). The same argument the order
+     * of writes in `App`'s `takeCrossing` is already built on: a crash between
+     * any two steps must not cost the player what they paid for.
+     *
+     * An optional input nothing passes is the pattern `CLAUDE.md` names — a
+     * hook a test can inject is a hook a test cannot prove is connected — and
+     * `cross.test.ts` was green throughout, because it asserted
+     * `progress.found`, the device-side field, which this function copies
+     * through whatever happens to the world.
+     */
+    world: sealGoals(
+      newWorld(now.seed, { perks: now.progress.found, worn: now.progress.equipped[0] ?? null }),
+      now.progress,
+    ),
     /*
      * Relics and perks carry; the BUILD does not.
      *

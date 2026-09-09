@@ -5276,3 +5276,73 @@ is native to X. Continue this board in a world to keep it" instead of the
 world's "it stays yours between runs" — which was a promise a daily could not
 keep, and is now the offer the ending is about to make, said at the moment the
 player earns the reason to take it.
+
+### Session 65 — the same sweep one seam further out, and the crossing was paying 40 relics a lap (2026-09-09)
+
+**Question:** Marc, after two sessions of the same kind of finding: _"what else
+could we improve towards the same kind of goals?"_ So: **is "a board with no
+ledger" a category with more in it, or was it three bugs?**
+
+**Answer: it is a category, and the biggest one was not on a daily at all.** The
+crossing mints a world holding a fact it did not earn, exactly as a kept daily
+does — and `perksAll` reads the perk shelf, which a crossing CARRIES. So once a
+player owned all five perks, every crossing handed **40 relics on the new
+world's first settle, forever**. `sealGoals`, written this morning for the
+adoption path, is the whole fix at the second site. That is the reusable shape:
+**wherever a world is minted holding facts it did not earn, seal the survey.**
+There are exactly two such places and both are sealed now.
+
+**And under it, an optional input with no caller.** `newWorld` has taken a
+`carry` argument since 2026-08-28 — the answer to Marc walking out of a
+fully-awake world without his perks and calling the trade _"not worth it"_ — and
+**nothing in this repository passed it.** `cross` minted an empty shelf and the
+perks survived only because `App`'s perk-shelf effect notices the disagreement
+on a later render and writes them back. Right by a second mechanism, with a real
+window in between: `keepWorld` plus `keeper.flush()` put an empty shelf ON DISK,
+and a tab closed there loses every perk found in the world just left,
+permanently, because the departed world's copy is already replaced and the
+device blob refuses to carry perks by contract.
+
+**`meta/world.ts` said it was fixed and named the wrong file.** "Seeded at
+`shell/keeper.ts`'s `cross`" — that is Ashwake 1's file. Both patterns
+`CLAUDE.md` names, in one place: an optional input nothing passes, and a comment
+asserting an invariant that stops a reader checking.
+
+**`cross.test.ts` was green throughout, and its own title said why.** It
+asserted `cross(...).progress.found` — "because those are the DEVICE and not
+the place" — which is the model perks were moved OUT of on 2026-08-26. The
+function copies `progress` through whatever happens to the world, so the
+assertion could not fail. Third can't-fail check in three sessions, and the
+third of a different shape: not a membership assertion this time but an
+assertion aimed at the field that no longer holds the answer.
+
+**Two sentences my own morning's work had made false.** `s.ui.which.nowShared`
+and `nowDaily` said "nothing below about KEEPING or buying applies here", and
+`which.shared` ended "no upgrades, no perk, nothing kept" — while the ending now
+offers to keep the board. Buying is still the honest half and stays. Worth
+noting as a process point: the change that broke them was four hours old, and
+what found them was sweeping the copy rather than the code.
+
+**And the territory lesson described a territory the player could not have.**
+`lesson.territory.core` quotes `territoryTiles` and `territoryTilesCap` — the
+bonus a HELD territory pays into every later run — and ends its first clause
+"for good". On a daily both numbers are dead and "for good" is false, and
+`territoryPays`, the one number a territory there actually hands over, went
+unmentioned. Forked on the DIAL rather than on a run kind, which is that file's
+own hard boundary and also the stronger statement: the dial being raised is
+exactly the condition under which the engine pays.
+
+**Two sweeps came back CLEAN, and that is worth writing down too.** Every
+optional hook input in `view/` — `perkAt`, `worn`, `crossingCarries`,
+`unlockLabel`, `crossingDowry`, `rows` — has a real caller in `App`;
+`newWorld`'s `carry` was the only one that did not. And all **88 fields of
+`Tuning`** have at least one consumer outside `content/tuning.ts`; sixteen have
+exactly one, and all sixteen were checked by hand to be the single place the
+dial applies rather than a print of itself. A negative result recorded so the
+next sweep does not re-run it from scratch.
+
+**`rearmedSpent`'s coin was the one that was fine.** Two more
+`expect(['cache', 'site']).toContain(face)` assertions sat over it — the exact
+shape that hid `reborn`'s broken flip — and its own roll is `pick <
+REARM.cacheShare`, correct. Pinned with a face count anyway, so the next sweep
+over that shape does not have to re-derive the answer.

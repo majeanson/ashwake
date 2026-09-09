@@ -416,6 +416,31 @@ describe('rearmedSpent — spent landmarks reborn per run (2026-08-20)', () => {
     for (const face of Object.values(a)) expect(['cache', 'site']).toContain(face);
   });
 
+  /**
+   * BOTH FACES, because a two-element `toContain` is as true of a coin with
+   * one (2026-09-09).
+   *
+   * The line above is the shape that hid `reborn`'s broken flip for a week —
+   * `hashAt(...) % 2 === 0` on a hash uniform in [0, 1), 585 sites and zero
+   * caches, passing a membership assertion the whole time. `rearmedSpent`'s
+   * own coin is `pick < REARM.cacheShare` and is correct; this is the pin that
+   * says so, so the next sweep over that shape does not have to re-derive it.
+   */
+  it('gives a veteran world both faces, not one', () => {
+    const faces = { cache: 0, site: 0 };
+    for (let seed = 1; seed <= 40; seed++) {
+      const spent = Array.from({ length: 12 }, (_, i) => key(i + 1, -2));
+      for (const face of Object.values(
+        rearmedSpent({ ...newWorld(seed), finds: spent, runs: 3 }),
+      )) {
+        faces[face] += 1;
+      }
+    }
+    expect(faces.cache + faces.site).toBeGreaterThan(100);
+    expect(faces.cache, 'every reborn landmark became a site').toBeGreaterThan(0);
+    expect(faces.site, 'every reborn landmark became a cache').toBeGreaterThan(0);
+  });
+
   it('rerolls the mix when the run count moves — per NEW run, as asked', () => {
     const finds = Array.from({ length: 12 }, (_, i) => key(i + 1, -1));
     const w = { ...newWorld(42), finds };

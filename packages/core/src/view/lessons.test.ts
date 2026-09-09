@@ -237,6 +237,38 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the lesson registry
   });
 });
 
+describe('the territory lesson answers for the board it is read on', () => {
+  /**
+   * A card explaining the mark under the thumb must not describe a territory
+   * the player cannot have (2026-09-09).
+   *
+   * `core` quotes `territoryTiles`/`territoryTilesCap` — the bonus a HELD
+   * territory pays into every later run's purse — and says "for good". Both
+   * are dead on a daily or a shared board, where `territoryPays` is the only
+   * thing a territory hands over, and it went unmentioned.
+   */
+  for (const s of [STRINGS_EN, STRINGS_FR]) {
+    it(`quotes the dial that is live, in ${s.locale}`, () => {
+      const lesson = LESSONS.find((l) => l.id === 'territory');
+      if (lesson === undefined) throw new Error('the territory lesson is gone');
+      const world = lessonCore(lesson, TUNING, SETTLEMENT, s);
+      const noLedger: Tuning = { ...TUNING, territoryPays: TUNING.cachePays };
+      const board = lessonCore(lesson, noLedger, SETTLEMENT, s);
+
+      expect(world, 'a world stopped naming its later-run bonus').toContain(
+        String(TUNING.territoryTiles),
+      );
+      expect(board, 'a board with no ledger did not name what it pays').toContain(
+        String(TUNING.cachePays),
+      );
+      expect(board, 'a board with no ledger promised a later run a bonus').not.toContain(
+        String(TUNING.territoryTilesCap),
+      );
+      expect(board, 'the two boards read the same sentence').not.toBe(world);
+    });
+  }
+});
+
 describe('the lesson registry, whatever the language', () => {
   /**
    * A figure OR rows, never both — the portrait-card rule, stated where the

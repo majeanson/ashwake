@@ -85,8 +85,22 @@ export type LessonStrings = {
   };
   readonly site: LessonHead & { readonly core: (pays: number) => string };
   readonly shrine: LessonHead & { readonly core: string };
+  /**
+   * The territory lesson, and the one sentence that has to know which KIND of
+   * board it is being read on (2026-09-09).
+   *
+   * A territory pays four ways and three of them need a ledger: the field it
+   * unfurls, `territoryTiles` into every later run's purse, +10 relics on the
+   * crossing, and greeting a later run already yours. On a daily or a shared
+   * board only the first is live — so `core` quoted the two dead numbers and
+   * the word "for good", and never mentioned `territoryPays`, the one number
+   * a territory there actually hands over. `pays` is the same sentence for
+   * that board, and `lessons.ts` picks between them on the dial rather than on
+   * a run kind, so it cannot disagree with what the engine paid.
+   */
   readonly territory: LessonHead & {
     readonly core: (radius: number, tiles: number, cap: number) => string;
+    readonly pays: (radius: number, tiles: number) => string;
   };
   /** A hidden find, which is a DESTINATION like the four above it. It had no
    *  lesson of its own until 2026-08-30, and `LESSON_FOR_REWARD` pointed it at
@@ -979,6 +993,16 @@ export type Strings = {
     readonly which: {
       readonly title: string;
       readonly nowWorld: string;
+      /**
+       * What does NOT apply on a daily or a shared board.
+       *
+       * These two said "nothing below about KEEPING or buying applies here"
+       * until 2026-09-09, and keeping now does: the ending offers to continue
+       * the board as one of the three worlds, carrying the ground walked and
+       * the territories claimed. Buying is still the honest half — a board
+       * with no ledger is played on the shipped dials, with no upgrade, no
+       * unlock and no perk, which is what makes a shared score comparable.
+       */
       readonly nowShared: string;
       readonly nowDaily: string;
       readonly world: string;

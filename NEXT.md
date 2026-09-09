@@ -253,6 +253,26 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**A shared run leaves no trace at all, not even a diary row (2026-09-09,
+`LOG.md` Session 65).** `settle`'s seed guard returns every ledger untouched
+for a detour, which is right about the WORLD and possibly wrong about the
+diary: a daily gets a row and a try count (`settleDaily`), and a shared board
+now plays a daily's economy and ends on a daily's offer, so the one thing it
+still does not share is the record that it happened. **The question only Marc
+can answer: should a shared run appear in the hall of fame's diary?** It would
+need its own row kind (it is not a world run and not a dated daily), and the
+argument against is that a link is somebody else's board and the diary is a
+record of YOUR worlds. Left alone because it is a taste, not a defect.
+
+**`claim.shrineDetour` and `view.hex.shrineDetour`/`shrineDetourClaimed` are
+now unreachable, and deliberately kept for a few weeks (2026-09-09).** A
+detour generates no shrines at all under `NO_LEDGER`, so nothing can reach
+these three sentences — **except a `?seed=` run saved before today and resumed
+after the update**, whose cells already hold shrines the new economy would not
+have made. That is a real upgrade path and it is why they stay. **Delete them
+once no such save can exist** (a month is generous), or the next dead-text
+sweep re-adjudicates them from scratch, which is how a ritual stops being run.
+
 **~~A DETOUR keeps its shrines and its finds, and neither pays this device
 anything~~ — ANSWERED 2026-09-09, same day it was written.** Marc answered it
 by asking for the flow rather than the rule: _"For a shared world, it should be

@@ -127,6 +127,8 @@ export const STRINGS_FR: Strings = {
             ? ` Chacun que tu tiens fait commencer tes prochaines parties avec +${tiles} tuiles, jusqu’à +${cap}.`
             : ''
         }`,
+      pays: (radius, tiles) =>
+        `Un TERRITOIRE te donne +${nb(tiles)} tuiles et rend le sol à ${radius} hex à la ronde natal de sa couleur. Sur ce plateau, ça dure la partie, à moins que tu gardes le plateau comme l’un de tes mondes.`,
     },
     find: {
       name: 'TROUVAILLE',
@@ -745,13 +747,13 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     which: {
       title: 'QUELLE PARTIE',
       nowWorld: `EN CE MOMENT${D}: TON PROPRE MONDE. Tout ce manuel s’applique.`,
-      nowShared: `EN CE MOMENT${D}: UNE PARTIE PARTAGÉE. Rien de ce qui suit sur garder ou acheter ne s’applique ici.`,
-      nowDaily: `EN CE MOMENT${D}: LE QUOTIDIEN. Rien de ce qui suit sur garder ou acheter ne s’applique ici.`,
+      nowShared: `EN CE MOMENT${D}: UNE PARTIE PARTAGÉE. Rien de ce qui suit sur acheter ne s’applique ici.`,
+      nowDaily: `EN CE MOMENT${D}: LE QUOTIDIEN. Rien de ce qui suit sur acheter ne s’applique ici.`,
       world:
         'TON MONDE est un des trois que cet appareil garde. Il se souvient d’une partie à l’autre, et se joue avec tout ce que tu as acheté et trouvé.',
-      shared: `UNE PARTIE PARTAGÉE est un lien qui porte une graine. Le monde de quelqu’un d’autre, joué nu${D}: pas d’améliorations, pas d’atout, rien de gardé.`,
+      shared: `UNE PARTIE PARTAGÉE est un lien qui porte une graine. Le monde de quelqu’un d’autre, joué nu${D}: pas d’améliorations, pas d’atout. À la fin, tu peux garder le plateau comme l’un de tes mondes.`,
       daily:
-        'LE QUOTIDIEN est un monde que tout le monde reçoit pour cette date. Joué nu, tes essais comptés, ton propre monde intact.',
+        'LE QUOTIDIEN est un monde que tout le monde reçoit pour cette date. Joué nu, tes essais comptés, ton propre monde intact. À la fin, tu peux garder le plateau comme l’un de tes mondes.',
       howToShare: 'PARTAGER, à la fin d’une partie, transforme la tienne en un tel lien.',
     },
     beginShared: 'COMMENCER · PARTIE PARTAGÉE',

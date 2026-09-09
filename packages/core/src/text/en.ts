@@ -126,6 +126,8 @@ export const STRINGS_EN: Strings = {
             ? ` Each one held starts your later runs with +${tiles} tiles, up to +${cap}.`
             : ''
         }`,
+      pays: (radius, tiles) =>
+        `A TERRITORY hands you +${tiles} tiles and claims the ground within ${radius} hexes as native to its colour. On this board it lasts the run, unless you keep the board as one of your worlds.`,
     },
     find: {
       name: 'FIND',
@@ -736,14 +738,14 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     which: {
       title: 'WHICH GAME',
       nowWorld: 'RIGHT NOW: YOUR OWN WORLD. Everything in this manual applies.',
-      nowShared: 'RIGHT NOW: A SHARED RUN. Nothing below about keeping or buying applies here.',
-      nowDaily: 'RIGHT NOW: THE DAILY. Nothing below about keeping or buying applies here.',
+      nowShared: 'RIGHT NOW: A SHARED RUN. Nothing below about buying applies here.',
+      nowDaily: 'RIGHT NOW: THE DAILY. Nothing below about buying applies here.',
       world:
         'YOUR WORLD is one of three this device keeps. It is remembered between runs, and played with everything you have bought and found.',
       shared:
-        'A SHARED RUN is a link with a seed in it. Somebody else’s world, played plain: no upgrades, no perk, nothing kept.',
+        'A SHARED RUN is a link with a seed in it. Somebody else’s world, played plain: no upgrades, no perk. At the end you can keep the board as one of your worlds.',
       daily:
-        'THE DAILY is one world everybody gets for that date. Played plain, your tries counted, your own world untouched.',
+        'THE DAILY is one world everybody gets for that date. Played plain, your tries counted, your own world untouched. At the end you can keep the board as one of your worlds.',
       howToShare: 'SHARE, on the end screen, turns your run into such a link.',
     },
     beginShared: 'BEGIN · SHARED RUN',

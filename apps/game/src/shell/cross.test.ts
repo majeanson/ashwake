@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { CROSSING } from '@content/goals';
 import { TUNING } from '@content/tuning';
 import { newRun } from '@engine/reduce';
-import { EMPTY_PROGRESS, type Progress } from '@meta/progress';
+import { EMPTY_PROGRESS, PERKS, type Progress } from '@meta/progress';
 import { newWorld } from '@meta/world';
+import { newlyMetGoals } from '@meta/goals';
 import { worldEventsOf } from '@meta/timeline';
 import { carriedBy, cross, dowryOf } from './cross';
 
@@ -69,9 +70,57 @@ describe('crossing', () => {
     expect(after.world.revealed).toHaveLength(0);
   });
 
-  it('keeps the perks, because those are the DEVICE and not the place', () => {
-    const withPerks = { ...now, progress: { ...now.progress, found: ['stonewalker' as const] } };
-    expect(cross(withPerks).progress.found).toEqual(['stonewalker']);
+  /**
+   * THE SHELF ARRIVES ON THE NEW WORLD, not merely on the returned progress
+   * (2026-09-09).
+   *
+   * This test read `cross(...).progress.found` and passed for eleven days
+   * while the crossed-into world was minted with an EMPTY shelf: `progress` is
+   * copied through by `{ ...now.progress }` whatever happens to the world, and
+   * the field it names is stripped from the device blob by contract
+   * (`encodeProgress`) because perks live on the WORLD. So the assertion could
+   * not fail, and its own title said why it was looking in the wrong place —
+   * "those are the DEVICE and not the place" is the model perks were moved OUT
+   * of on 2026-08-26.
+   *
+   * Both are asserted now. The world's copy is the one that survives a reload
+   * and the one `economyFor` reads.
+   */
+  it('carries the perk shelf onto the world it mints, not just through the purse', () => {
+    const withPerks = {
+      ...now,
+      progress: {
+        ...now.progress,
+        found: ['stonewalker' as const],
+        equipped: ['stonewalker' as const],
+      },
+    };
+    const after = cross(withPerks);
+    expect(after.world.perks, 'the new world was minted with an empty shelf').toEqual([
+      'stonewalker',
+    ]);
+    expect(after.world.worn, 'the worn perk was taken off in the crossing').toBe('stonewalker');
+    expect(after.progress.found).toEqual(['stonewalker']);
+  });
+
+  /**
+   * AND THE SURVEY IS NOT RE-EARNED BY THE CARRY (2026-09-09).
+   *
+   * `perksAll` reads the shelf, the shelf now arrives on the new world, and
+   * `goalsMet` starts empty — so a player owning all five perks collected 40
+   * relics on the crossed-into world's first settle, every crossing, forever,
+   * for a hunt no find in that world had done. `sealGoals` marks what a minted
+   * world was HANDED as already paid, and on empty ground that is exactly
+   * `perksAll` and nothing else.
+   */
+  it('owes no survey relics for a shelf it was handed', () => {
+    const all = PERKS.map((p) => p.id);
+    const after = cross({ ...now, progress: { ...now.progress, found: all } });
+    expect(after.world.goalsMet, 'the carried shelf was not sealed').toContain('perksAll');
+    expect(newlyMetGoals(after.world, after.progress), 'a fresh world owed relics').toEqual([]);
+    // The other four are untouched: empty ground has met none of them, so
+    // nothing that has to be EARNED here was sealed away.
+    expect(after.world.goalsMet).toEqual(['perksAll']);
   });
 
   it('writes the world it LEFT into the diary, with what it paid', () => {

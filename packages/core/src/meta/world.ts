@@ -72,9 +72,18 @@ export type WorldMemory = {
    * crossing: Marc walked out of a fully-awake world with 75 relics and
    * without the two perks he had found in it, and called the trade "not
    * worth it". A crossing now carries both fields whole into the new world's
-   * memory (`newWorld`'s `carry` argument, seeded at `shell/keeper.ts`'s
-   * `cross` — see LOG.md 2026-08-28); a NEW WORLD or a SETTLE still starts
-   * every perk unfound, exactly as before.
+   * memory (`newWorld`'s `carry` argument, passed at `shell/cross.ts` — see
+   * LOG.md 2026-08-28); a NEW WORLD or a SETTLE still starts every perk
+   * unfound, exactly as before.
+   *
+   * **This sentence named the wrong file for twelve days** (corrected
+   * 2026-09-09). It said "seeded at `shell/keeper.ts`'s `cross`", which is
+   * Ashwake 1's file; in this body `carry` had no caller at all, so a crossing
+   * minted an EMPTY shelf and `App`'s perk-shelf effect wrote the perks back
+   * on a later render. Right by a second mechanism, with a window on disk in
+   * between where the shelf was gone. The pattern is the one `CLAUDE.md` names
+   * twice over: an optional input nothing passes, and a comment asserting an
+   * invariant that stops a reader checking.
    */
   readonly perks: readonly PerkId[];
   readonly worn: PerkId | null;
@@ -86,9 +95,10 @@ export type WorldMemory = {
 
 /**
  * `carry` is the crossing's own seam (2026-08-28): a departing world's perk
- * shelf, threaded straight into the fresh one at the moment it is minted —
- * see `shell/store.ts`'s `createWorld` and `shell/keeper.ts`'s `cross`. Every
- * other caller (a fresh boot, NEW WORLD, SETTLE) omits it, and the shelf
+ * shelf, threaded straight into the fresh one at the moment it is minted — see
+ * `shell/cross.ts`, its one and only caller since 2026-09-09 and its FIRST,
+ * which is a story told at `WorldMemory.perks`. Every other caller (a fresh
+ * boot, NEW WORLD, SETTLE, a board kept from a daily) omits it, and the shelf
  * starts empty exactly as it always has. `finds` is never carried — a find
  * is a fact about GEOGRAPHY, and the new world's is unrelated to the old
  * one's, so its hunt is un-claimed everywhere even for a perk already held.

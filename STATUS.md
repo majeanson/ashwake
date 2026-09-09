@@ -4,7 +4,54 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — a territory is worth claiming on a board with
+Last checkpoint: **2026-09-09 — the crossing was paying 40 relics a lap, and
+`newWorld`'s `carry` had never once been passed.**
+
+Marc asked what else there was of the same kind. `LOG.md` Session 65 is the
+reasoning; the short answer is that "a world minted holding facts it did not
+earn" has exactly two sites and only one of them was guarded.
+
+**Verified:**
+
+- **The crossing no longer re-pays the survey.** `perksAll` reads the perk
+  shelf and a crossing CARRIES it, so a player owning all five perks collected
+  **40 relics on the new world's first settle, every crossing, forever**.
+  `sealGoals` — written this morning for the kept-board path — is the fix at
+  the second site, and on empty ground it seals exactly `perksAll` and nothing
+  that still has to be earned there.
+- **`newWorld`'s `carry` has a caller.** It has existed since 2026-08-28 as
+  the answer to losing perks in a crossing and **nothing in this repository
+  passed it**; the perks survived only because `App`'s perk-shelf effect wrote
+  them back on a later render, after `keeper.flush()` had already put an EMPTY
+  shelf on disk. A tab closed in that window lost every perk in the world just
+  left, permanently. `meta/world.ts` said it was fixed and named Ashwake 1's
+  file.
+- **`cross.test.ts` could not fail**, and its title said why: it asserted
+  `progress.found`, "because those are the DEVICE and not the place", which is
+  the model perks were moved out of on 2026-08-26. It asserts the world's own
+  shelf now.
+- **Two sentences this morning's work had made false**: `which.nowShared` and
+  `nowDaily` said nothing about KEEPING applies, and `which.shared` ended
+  "nothing kept". Both languages.
+- **The territory lesson quotes the dial that is live**, forked on
+  `territoryPays` rather than on a run kind — it was quoting the two dead
+  numbers and the word "for good" on a board where neither holds.
+- **Two sweeps came back clean and are recorded so they are not re-run**: every
+  optional hook input in `view/` has a real caller (`carry` was the only one
+  that did not), and **all 88 `Tuning` fields** have a consumer outside
+  `content/tuning.ts` — the sixteen with exactly one were each checked by hand.
+- **`rearmedSpent`'s coin was correct** and now has a face count over it, so
+  the two `toContain(['cache', 'site'])` assertions sitting on it stop being a
+  question.
+
+**Left for Marc (`NEXT.md` §1):** whether a shared run should get a diary row,
+and a dated reminder to delete the three now-unreachable shrine-on-a-detour
+sentences once no pre-update save can resume.
+
+**Counts:** 1100 tests / 86 files, `pnpm sim` byte-identical, typecheck and
+lint clean.
+
+Previous checkpoint: **2026-09-09 — a territory is worth claiming on a board with
 no ledger, and a shared board is a daily you were handed.**
 
 Marc asked for three things at once: territories that follow a daily into a
