@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
-import { arcSparkline, dailyBadge, dailyName, dailySeed } from '@meta/daily';
+import { arcSparkline, dailyBadge, dailyName, dailySeed, dailyStreak } from '@meta/daily';
 import { appendEntry } from '@meta/timeline';
 import { startingPerk } from '@engine/reduce';
 import { NAME } from '@meta/identity';
@@ -72,6 +72,7 @@ import { Shop } from './screens/Shop';
 import { Worlds } from './screens/Worlds';
 import {
   activeSlot,
+  markSaid,
   clearDailyRun,
   clearEverything,
   clearRun,
@@ -84,6 +85,7 @@ import {
   runFor,
   readTimeline,
   readWorld,
+  wasSaid,
   readProgress,
   memoryFor,
   worldSeedFor,
@@ -298,6 +300,17 @@ const economyAt = (at: Slot, seed: number) => {
     ? economyFor({ kind: 'detour' })
     : economyFor({ kind: 'home', world, progress: readProgress() });
 };
+
+/**
+ * How many runs a world has to hold before the game mentions losing it.
+ *
+ * A judgement rather than an arithmetic: one run is somebody trying the game,
+ * and a warning that arrives before there is anything to warn about is noise
+ * on the screen that decides whether they press NEW RUN. Three is a player
+ * on their third expedition into a place they have been building — the first
+ * point at which "this could be lost" is a sentence about something.
+ */
+const BACK_UP_AFTER_RUNS = 3;
 
 function dial(params: URLSearchParams, name: string, fallback: number): number {
   const raw = params.get(name);
@@ -726,7 +739,7 @@ function Game() {
    * own tests instead of forty lines a reader following a placement has to
    * walk past. The arguments moved with them.
    */
-  const { inApp, dismissInApp, offerInstall } = useInstallOffer();
+  const { inApp, dismissInApp, offerInstall, showHandInstall } = useInstallOffer();
 
   const s = useMemo(() => stringsFor(locale), [locale]);
   /*
@@ -1285,6 +1298,8 @@ function Game() {
    * walked. The state object is the identity: the reducer produced exactly one
    * for this ending.
    */
+  const [showBackUp, setShowBackUp] = useState(false);
+
   const banked = useRef<GameState | null>(null);
 
   useEffect(() => {
@@ -1419,6 +1434,30 @@ function Game() {
      * the screen that has to show it.
      */
     setGoals(after.goals);
+
+    /*
+     * AND WHETHER THIS IS THE ENDING THAT SAYS A WORLD CAN BE LOST
+     * (2026-09-09).
+     *
+     * Here rather than in an effect of its own, and the reason is the
+     * paragraph above: this block is the one place that runs exactly once per
+     * ending, guarded by `banked`, and `markSaid` is a WRITE — a value that is
+     * read and then written must be settled once or it is settled twice.
+     * `react-hooks/set-state-in-effect` refuses a second effect doing this and
+     * is right to.
+     *
+     * `after.world` rather than the disk, for the same reason the survey reads
+     * it: the run that just banked is counted, so a player's third expedition
+     * is told on the third ending and not on the fourth.
+     *
+     * Never on a daily or a shared board — both return above, before this
+     * line, because neither has a world and neither is the moment to talk
+     * about keeping one.
+     */
+    if (!wasSaid('backUpNote') && after.world.runs >= BACK_UP_AFTER_RUNS) {
+      markSaid('backUpNote');
+      setShowBackUp(true);
+    }
   }, [
     witness,
     snap.hud.ended,
@@ -3404,9 +3443,25 @@ function Game() {
                has already cleared the kept board, so entering today's daily IS
                starting today's board over. Two doors would be two places for
                "what a retry resets" to drift apart. */
-            daily={dailyTry === null ? null : { try: dailyTry, onRetry: enterDaily }}
+            /* And the STREAK, read from the book the settle above just wrote —
+               so the number is what the front door will say next time rather
+               than one run behind it. See `EndScreen`'s `daily.streak`. */
+            daily={
+              dailyTry === null
+                ? null
+                : {
+                    try: dailyTry,
+                    onRetry: enterDaily,
+                    streak: dailyStreak(readDailyBook(), today),
+                  }
+            }
             importDaily={importDaily}
             onInstall={offerInstall}
+            handInstall={showHandInstall}
+            /* BACK UP, once, and only when there is something to lose — the
+               threshold and the once-ever mark are settled where the ending
+               banks, because `markSaid` is a write. See the banking effect. */
+            backUp={showBackUp}
             fromLink={session.detour}
           />
         </div>

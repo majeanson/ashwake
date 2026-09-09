@@ -120,7 +120,25 @@ export type EndScreenProps = {
    * number. NEW RUN on a daily LEAVES the daily, so without this there was no
    * way back onto today's board except three taps through MORE.
    */
-  readonly daily?: { readonly try: number; readonly onRetry: () => void } | null;
+  readonly daily?: {
+    readonly try: number;
+    readonly onRetry: () => void;
+    /**
+     * CONSECUTIVE DAYS PLAYED, ENDING TODAY (2026-09-09).
+     *
+     * `dailyStreak` has existed since Stage 4 and was printed in exactly one
+     * place — the front door's badge, which is read BEFORE playing. The moment
+     * a streak does any work is the moment a run ends, and this screen said
+     * `TRY 3` and nothing else.
+     *
+     * Computed by the shell, not here: it is a fact about the daily BOOK, and
+     * a screen that derived it would be a second place for it to be wrong (the
+     * same reason `dailyBadge` computes it rather than taking it — "a badge
+     * that could be handed a streak from a different device is a badge that
+     * can lie").
+     */
+    readonly streak: number;
+  } | null;
   /**
    * KEEP THIS BOARD: turn the board just played into one of the three worlds
    * (2026-09-05; a shared board too, 2026-09-09).
@@ -149,6 +167,34 @@ export type EndScreenProps = {
    * that has been asked once is not asked again. See `shell/install.ts`.
    */
   readonly onInstall?: (() => void) | undefined;
+  /**
+   * HOW TO INSTALL, where there is no dialog to open (2026-09-09).
+   *
+   * `onInstall` is Chrome's native one-tap dialog and iOS never offers one, so
+   * on an iPhone that button could never render and **no screen in this game
+   * mentioned the home screen at all**. With no backend by ruling (D13) the
+   * icon is the only way back, which made it the largest single reason a
+   * player did not return.
+   *
+   * A sentence and not a button, because there is nothing to call: no API
+   * opens iOS's share sheet. The shell decides when (`shell/platform.ts`), the
+   * same way it decides `onInstall`.
+   */
+  readonly handInstall?: boolean | undefined;
+  /**
+   * THAT A WORLD CAN BE LOST, said once, when there is something to lose
+   * (2026-09-09).
+   *
+   * BACK UP works and lives three taps deep behind SETTINGS ▸ DEVICE; the only
+   * proactive storage warning fires inside an in-app browser. So an ordinary
+   * player with a world worth keeping was never told it lives in one place —
+   * and storage loss is the one failure nobody comes back from.
+   *
+   * The shell decides the threshold, for the reason it decides the other
+   * three: "is there something to lose" is a fact about the device's ledgers,
+   * and a screen that derived it would be a second place for it to be wrong.
+   */
+  readonly backUp?: boolean | undefined;
   /** This run came from a shared link, so the chain can carry on from here. */
   readonly fromLink?: boolean;
 };
@@ -168,6 +214,8 @@ export function EndScreen({
   daily,
   importDaily,
   onInstall,
+  handInstall,
+  backUp,
   fromLink,
   hud,
   harvests,
@@ -270,6 +318,26 @@ export function EndScreen({
           {daily != null ? s.ui.ending.try(daily.try) : s.ui.ending.run(standing?.run ?? 0)}
         </p>
       ) : null}
+
+      {/*
+        WHY COME BACK, on the one screen where the answer lands (2026-09-09).
+
+        This game has no backend by ruling (D13): no push, no email, no store
+        listing. The home-screen icon and this sentence are the entire habit
+        loop, which made a streak that was computed and never printed the
+        cheapest retention bug in the app.
+
+        Above the score rather than below the buttons: a player who has just
+        finished reads down from the top, and the thing that has to survive the
+        glance is what the streak is worth. Two sentences and not one with a
+        fork inside it — on day one there is nothing to protect and the honest
+        line is an invitation.
+      */}
+      {daily != null && (
+        <p className="note end-streak" data-hud="streak">
+          {daily.streak > 1 ? s.ui.ending.streak(daily.streak) : s.ui.ending.comeBack}
+        </p>
+      )}
 
       {/* The page's one `h1`, and it is the score — see `s.ui.ending.scored`.
           The digits stay on screen; the sentence is what the heading list and
@@ -484,6 +552,27 @@ export function EndScreen({
         than a gate — and once ever, marked at the moment it is SHOWN, so a
         player who declined it is not asked again next run.
       */}
+      {/*
+        THE TWO SENTENCES THAT ARE NOT BUTTONS (2026-09-09).
+
+        Beside the install offer because they answer the same question — how do
+        I get back here — and after the actions because both are invitations
+        rather than gates. Each is said once ever, marked when SHOWN, which is
+        the reading the other two once-ever notes already use: a player who
+        read an invitation has been invited.
+      */}
+      {handInstall === true && (
+        <p className="note end-install-note" data-hud="hand-install">
+          {s.ui.handInstall}
+        </p>
+      )}
+
+      {backUp === true && (
+        <p className="note end-install-note" data-hud="back-up">
+          {s.ui.backUpNote}
+        </p>
+      )}
+
       {onInstall !== undefined && (
         <button
           type="button"

@@ -1090,6 +1090,27 @@ export type Strings = {
       readonly shortOfBest: (n: number) => string;
       readonly run: (n: number) => string;
       readonly try: (n: number) => string;
+      /**
+       * THE REASON TO COME BACK TOMORROW (2026-09-09).
+       *
+       * `dailyStreak` has been computed since Stage 4 and printed in exactly
+       * one place: the front door's daily badge, which a player reads BEFORE
+       * they play. The moment it does any work is the moment they finish —
+       * and the ending said `TRY 3` and nothing else. **The word "tomorrow"
+       * appeared in neither catalogue.**
+       *
+       * This game has no backend by ruling (D13): no push, no email, no store
+       * listing. So the home-screen icon and this sentence are the entire
+       * habit, which makes a computed-and-unprinted streak the cheapest
+       * retention bug there is.
+       *
+       * Two sentences rather than one with a fork inside it: on day one there
+       * is no streak to protect and the honest line is an invitation, not a
+       * tally. `streak` is only spoken above 1 — see `Ending.dailyStreak`.
+       */
+      readonly streak: (days: number) => string;
+      /** Day one, or a streak just broken: nothing to protect yet. */
+      readonly comeBack: string;
       /** Replay today's board. The retry loop lives where the itch is. */
       readonly tryAgain: string;
       /**
@@ -1285,6 +1306,34 @@ export type Strings = {
      * do about it.
      */
     readonly install: string;
+    /**
+     * HOW TO INSTALL BY HAND, on the platform with no dialog (2026-09-09).
+     *
+     * iOS never fires `beforeinstallprompt`, so `s.ui.install` — a BUTTON —
+     * can never appear there, and until today no screen in the game mentioned
+     * the home screen at all. With no backend by ruling (D13) the home-screen
+     * icon is the only way back, so on iPhone the way back was unreachable and
+     * unmentioned.
+     *
+     * It names Safari's two taps exactly, which is why the sniff behind it
+     * excludes Chrome and Firefox on iOS: a sentence pointing at the wrong
+     * menu is worse than no sentence. The icons are spelled in WORDS rather
+     * than drawn, because the share glyph belongs to iOS and is not in this
+     * game's registry (D10: a symbol invented in one place).
+     */
+    readonly handInstall: string;
+    /**
+     * THAT A WORLD LIVES IN ONE PLACE (2026-09-09).
+     *
+     * BACK UP has worked since Stage 4 and sits three taps deep behind
+     * SETTINGS ▸ DEVICE. The only proactive storage warning fires inside an
+     * in-app browser, so an ordinary player with a world worth keeping was
+     * never told it could be lost — and losing it is the one failure nobody
+     * comes back from.
+     *
+     * Said once, and only once there is something to lose.
+     */
+    readonly backUpNote: string;
     readonly inApp: string;
     /** Put a note down. Short, because it sits inside a floating line. */
     readonly dismiss: string;

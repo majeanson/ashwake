@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { localToday, markSaid, wasSaid } from './storage';
-import { canInstall, inAppBrowser, isInstalled, promptInstall } from './install';
+import { canInstall, inAppBrowser, isInstalled, needsHandInstall, promptInstall } from './install';
 
 /**
  * The three things `App` knows about the DEVICE rather than about the game
@@ -64,11 +64,35 @@ export function useInstallOffer(): {
    * again next run is how an invitation becomes nagging.
    */
   readonly offerInstall: (() => void) | undefined;
+  /**
+   * The iOS install GESTURE, or nothing — the platform Chrome's dialog cannot
+   * reach (2026-09-09).
+   *
+   * True where the phone can only be installed by hand and has not been told
+   * how. It is a sentence rather than a callback because there is nothing to
+   * call: no browser API opens iOS's share sheet, so the only thing the game
+   * can do is name the two taps. See `shell/install.ts`'s `needsHandInstall`.
+   *
+   * Marked when SHOWN, like the other three, which is the honest reading of
+   * "once ever": a player who read the invitation has been invited.
+   */
+  readonly showHandInstall: boolean;
 } {
   const [installable, setInstallable] = useState(() => canInstall() && !isInstalled());
   const [inApp, setInApp] = useState(() => {
     if (!inAppBrowser() || wasSaid('inAppNote')) return false;
     markSaid('inAppNote');
+    return true;
+  });
+  /*
+   * Read and marked in the initialiser, once, for `inApp`'s own reason: this
+   * is a fact about the device rather than about the run, so it must not be
+   * re-decided on a re-render — and an effect would mark it a frame after the
+   * screen had already shown it.
+   */
+  const [showHandInstall] = useState(() => {
+    if (!needsHandInstall() || wasSaid('handInstall')) return false;
+    markSaid('handInstall');
     return true;
   });
 
@@ -92,7 +116,7 @@ export function useInstallOffer(): {
   }, [installable]);
 
   const dismissInApp = useCallback(() => setInApp(false), []);
-  return { inApp, dismissInApp, offerInstall };
+  return { inApp, dismissInApp, offerInstall, showHandInstall };
 }
 
 /**

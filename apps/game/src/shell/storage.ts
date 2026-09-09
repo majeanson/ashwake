@@ -97,6 +97,25 @@ const DEVICE = {
    */
   installNudge: `${NS}.installnudge.v1`,
   inAppNote: `${NS}.inappnote.v1`,
+  /**
+   * The iOS install gesture, said once (2026-09-09).
+   *
+   * Its own key rather than sharing `installNudge`: they are the same
+   * invitation but they are not the same event, and a device that later moves
+   * from one to the other (a shared link opened on a phone, then on a laptop)
+   * should not have the second silenced by the first. See
+   * `shell/install.ts`'s `needsHandInstall`.
+   */
+  handInstall: `${NS}.handinstall.v1`,
+  /**
+   * That a world lives in exactly one place, said once (2026-09-09).
+   *
+   * The counterpart to `inAppNote`, for the ordinary browser: BACK UP works
+   * and is three taps deep behind SETTINGS, so a player with a world worth
+   * protecting was never told it could be lost. Fired only once there IS
+   * something to lose — see `EndScreen`'s `backUp`.
+   */
+  backUpNote: `${NS}.backupnote.v1`,
 } as const;
 
 export type Slot = 1 | 2 | 3;
@@ -471,17 +490,23 @@ const clearLastError = (): void => drop(DEVICE.lastError);
 /* ---- said once, ever ------------------------------------------------------ */
 
 /**
- * The two once-ever notes — see `DEVICE.installNudge` and `DEVICE.inAppNote`.
+ * The once-ever notes — see the `DEVICE` keys of the same names.
+ *
+ * Four of them since 2026-09-09: the two install offers (Chrome's dialog and
+ * iOS's by-hand gesture, which are the same invitation on platforms that
+ * cannot share one mechanism) and the two warnings (an in-app browser about to
+ * throw your world away, and the fact that a world lives in one place).
  *
  * Reading a mark that cannot be written comes back `false`, which shows the
  * note again. That is the right way round for the in-app warning in
  * particular: a storage that keeps nothing is the very condition the sentence
  * is warning about, so the failure mode proves the point rather than hiding it.
  */
-export const wasSaid = (which: 'installNudge' | 'inAppNote'): boolean =>
-  read(DEVICE[which]) !== null;
+export type SaidOnce = 'installNudge' | 'inAppNote' | 'handInstall' | 'backUpNote';
 
-export const markSaid = (which: 'installNudge' | 'inAppNote'): void => write(DEVICE[which], '1');
+export const wasSaid = (which: SaidOnce): boolean => read(DEVICE[which]) !== null;
+
+export const markSaid = (which: SaidOnce): void => write(DEVICE[which], '1');
 
 /* ---- the daily ------------------------------------------------------------ */
 

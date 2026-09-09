@@ -82,6 +82,55 @@ export function isInstalled(): boolean {
 }
 
 /**
+ * A PLATFORM THAT CAN ONLY BE INSTALLED BY HAND — which is to say, iOS
+ * (2026-09-09).
+ *
+ * `canInstall()` is true only once Chrome has fired `beforeinstallprompt`, and
+ * **iOS never fires it** — this file says so three functions up. So on an
+ * iPhone `installable` was false forever, the end screen's install button
+ * never rendered, and **no screen in the game ever mentioned the home screen at
+ * all.**
+ *
+ * That is the single largest reason a player does not come back. This game has
+ * no backend by ruling (D13): no push, no email, no store listing. The
+ * home-screen icon IS the way back, and on the platform Ashwake is tested on it
+ * was unreachable and unmentioned.
+ *
+ * A browser cannot be asked "can the user add this to their home screen", so
+ * this is a user-agent sniff, and it is the same case `inAppBrowser` below
+ * already earns: there is no capability to feature-detect, and a wrong answer
+ * is cheap in both directions — a false positive is one dismissible line about
+ * a menu that does exist, a false negative is the status quo.
+ *
+ * The three exclusions are all load-bearing:
+ *
+ *   - **already installed** — `navigator.standalone`, which is iOS's own
+ *     answer and the only thing that works there;
+ *   - **an in-app browser** — a WebView inside Instagram or Discord has no
+ *     "Add to Home Screen" to reach, and it already gets its own and far more
+ *     urgent warning (`inAppBrowser`);
+ *   - **Chrome/Firefox on iOS** — they render with WebKit but their own share
+ *     sheets differ, and a sentence naming the wrong menu is worse than none.
+ *     Safari is the one whose gesture can be written down exactly.
+ *
+ * iPadOS 13+ reports a desktop UA, so an iPad is deliberately out of scope
+ * here: it is not the phone this game is played on, and guessing at it would
+ * put a wrong sentence in front of the one platform the sniff cannot see.
+ */
+export function needsHandInstall(): boolean {
+  try {
+    const ua = navigator.userAgent;
+    const iOS = /iPhone|iPod/.test(ua);
+    if (!iOS || isInstalled() || inAppBrowser()) return false;
+    // Chrome (CriOS), Firefox (FxiOS), Edge (EdgiOS) and Opera (OPiOS) on iOS
+    // all render in WebKit and none of them shares Safari's menu wording.
+    return !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Inside somebody else's app.
  *
  * The tokens are the four hosts that actually carry shared links, plus the two

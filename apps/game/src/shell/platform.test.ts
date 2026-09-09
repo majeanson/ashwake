@@ -19,11 +19,13 @@ vi.mock('./install', () => ({
   promptInstall: () => {
     prompted += 1;
   },
+  needsHandInstall: () => mockHandInstall,
 }));
 
 let mockCanInstall = false;
 let mockInstalled = false;
 let mockInApp = false;
+let mockHandInstall = false;
 let prompted = 0;
 
 beforeEach(() => {
@@ -31,6 +33,7 @@ beforeEach(() => {
   mockCanInstall = false;
   mockInstalled = false;
   mockInApp = false;
+  mockHandInstall = false;
   prompted = 0;
 });
 
@@ -84,6 +87,54 @@ describe('the install offer', () => {
   it('says nothing about an in-app browser on an ordinary one', () => {
     const { result } = renderHook(() => useInstallOffer());
     expect(result.current.inApp).toBe(false);
+  });
+});
+
+describe('the install gesture, where there is no dialog to open', () => {
+  /**
+   * iOS never fires `beforeinstallprompt`, so `offerInstall` — a button that
+   * opens Chrome's dialog — could never appear on an iPhone, and no screen in
+   * the game mentioned the home screen at all. With no backend by ruling (D13)
+   * the icon is the only way back, which made this the largest single reason a
+   * player did not return.
+   */
+  it('says nothing where the browser can install by itself', () => {
+    mockCanInstall = true;
+    const { result } = renderHook(() => useInstallOffer());
+    expect(result.current.showHandInstall, 'both invitations at once').toBe(false);
+  });
+
+  it('names the gesture where that is the only way in', () => {
+    mockHandInstall = true;
+    const { result } = renderHook(() => useInstallOffer());
+    expect(result.current.showHandInstall).toBe(true);
+  });
+
+  it('says it once ever, and marks it when SHOWN', () => {
+    mockHandInstall = true;
+    const first = renderHook(() => useInstallOffer());
+    expect(first.result.current.showHandInstall).toBe(true);
+    // A second mount is a second run, on a phone that has already been told.
+    const again = renderHook(() => useInstallOffer());
+    expect(again.result.current.showHandInstall, 'an invitation became a nag').toBe(false);
+  });
+
+  /*
+   * The two notes have their own marks on purpose: they are the same
+   * invitation but not the same event, and a device that meets one and later
+   * the other (a link opened on a phone, then on a laptop) must not have the
+   * second silenced by the first.
+   */
+  it('is not silenced by the browser dialog having been offered', () => {
+    mockCanInstall = true;
+    const chrome = renderHook(() => useInstallOffer());
+    act(() => chrome.result.current.offerInstall?.());
+    expect(prompted).toBe(1);
+
+    mockCanInstall = false;
+    mockHandInstall = true;
+    const phone = renderHook(() => useInstallOffer());
+    expect(phone.result.current.showHandInstall).toBe(true);
   });
 });
 

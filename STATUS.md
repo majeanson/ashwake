@@ -4,7 +4,44 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — the CSP would have told every visitor their
+Last checkpoint: **2026-09-09 — three sentences are the whole habit, and all
+three were unprinted.**
+
+Marc asked what blocks a player coming back, then asked for all three fixed.
+`LOG.md` Session 70. With no backend by ruling (D13) — no account, no push, no
+email, no store — the reason a second session happens is three sentences on one
+screen, and every one was computed-and-unprinted or unreachable.
+
+**Verified:**
+
+- **iOS can be installed, and is told how.** `canInstall()` needs Chrome's
+  `beforeinstallprompt` and **iOS never fires it**, so the install button could
+  never render on an iPhone and **no screen in the game mentioned the home
+  screen at all** — on the one platform this game is played on, where the icon
+  IS the way back. `needsHandInstall()` names Safari's two taps; it excludes an
+  installed phone, an in-app browser (no such menu, and it has a louder
+  warning), and Chrome/Firefox on iOS, because **a sentence naming the wrong
+  menu is worse than none**.
+- **A daily's ending says what tomorrow is for.** `dailyStreak` has existed
+  since Stage 4, printed only on the front door — which is read BEFORE playing.
+  The word "tomorrow" was in neither catalogue.
+- **A world worth keeping is told it can be lost, once**, after three runs in
+  it. BACK UP was three taps deep and the only proactive storage warning fired
+  inside an in-app browser.
+- **The lint rule improved the design.** `set-state-in-effect` refused a second
+  effect for the backup decision; it folded into the banking effect, which is
+  already the one place that runs once per ending. Not a disable comment.
+- **The Québec typography test caught a missing fine space** in the new prose,
+  on the first run — the first time it has fired on new writing rather than on
+  a review.
+- **Tested where each claim lives:** the user-agent sniff against real UA
+  strings (`install.test.ts`, new — Playwright's Chromium is not an iPhone),
+  and the wiring in `e2e/return.spec.ts` (six tests, three of them negatives).
+
+**Counts:** 1138 unit tests / 88 files; e2e 115 on Chromium + 46 on WebKit;
+`pnpm sim` byte-identical; typecheck and lint clean.
+
+Previous checkpoint: **2026-09-09 — the CSP would have told every visitor their
 browser was too old.**
 
 Two rulings from Marc and a prod-readiness pass. `LOG.md` Session 69.

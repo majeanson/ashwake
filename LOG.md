@@ -5634,3 +5634,74 @@ ever an argument about a record of what you did.
 ever."_ Fourth look dial ruled dead rather than wired, and `NEXT.md` now says
 not to wire them without asking again — honouring them costs the legal edge,
 the board's most-used affordance, 45% of its weight.
+
+### Session 70 — three sentences are the whole habit, and all three were unprinted (2026-09-09)
+
+**Question:** Marc: _"what other blockers do we have for easy
+user-will-come-back"_, then _"work on all 3"_. So: **what actually stops a
+second session, in a game with no backend?**
+
+**Answer: the app had no way to be returned TO, and it never said so.** Ashwake
+has no account, no push, no email and no store listing by ruling (D13). Which
+means the entire reason a second session happens is three sentences on one
+screen — and every one of them was computed-and-unprinted or unreachable.
+
+**1. On iOS there was no way to install and nothing said one existed.**
+`canInstall()` is true only once Chrome fires `beforeinstallprompt`, and
+`install.ts` has said in its own docblock since 2026-09-02 that **iOS never
+fires it**. So `installable` was false forever on an iPhone, the end screen's
+install BUTTON could never render, and **no screen in the game mentioned the
+home screen at all** — on the one platform this game is tested and played on.
+With no backend, the home-screen icon IS the way back, so the way back was both
+unreachable and unmentioned.
+
+`needsHandInstall()` is a user-agent sniff and it is the second case in this
+file that earns one, for `inAppBrowser`'s exact reason: there is no capability
+to feature-detect, and a wrong answer is cheap both ways — a false positive is
+one line about a menu that does exist, a false negative is the status quo. The
+three exclusions all carry weight: already installed (`navigator.standalone`,
+iOS's own answer), an in-app browser (no such menu, and it has a more urgent
+warning already), and Chrome/Firefox on iOS (WebKit engines whose share sheets
+differ — **a sentence naming the wrong menu is worse than none**). iPad is
+deliberately out of scope: iPadOS reports a desktop UA, and guessing would put
+a wrong sentence in front of the one platform the sniff cannot see.
+
+**2. The daily's ending never mentioned the streak, or tomorrow.**
+`dailyStreak` has been computed since Stage 4 and printed in exactly one place:
+the front door's badge, which a player reads BEFORE playing. The moment a
+streak does any work is the moment a run ends — and the ending said `TRY 3`.
+**The word "tomorrow" appeared in neither catalogue.** Two sentences rather
+than one with a fork inside it, because on day one there is nothing to protect
+and the honest line is an invitation, not a tally of one.
+
+**3. A world lives in one place and nobody was told.** BACK UP has worked since
+Stage 4 and sits three taps deep behind SETTINGS ▸ DEVICE; the only proactive
+storage warning fires inside an in-app browser. So an ordinary player with a
+world worth keeping was never told it could be lost, and storage loss is the
+one failure nobody comes back from. Said once, after three runs in a world —
+a judgement and not an arithmetic: one run is somebody trying the game, and a
+warning that arrives before there is anything to warn about is noise on the
+screen that decides whether they press NEW RUN.
+
+**The lint rule was right and made the design better.**
+`react-hooks/set-state-in-effect` refused a second effect for the backup
+decision, and the fix was not a disable comment: it folded into the banking
+effect, which is already the one place that runs exactly once per ending and
+already carries the argument for setting state there. `markSaid` is a WRITE,
+and a value read-then-written must be settled once or it is settled twice.
+
+**And the Québec typography test caught the fine space before a colon**, in
+`handInstall`, on the first run. That test has been in place since 2026-08-28
+and this is the first time it has fired on new prose rather than on a review —
+which is the whole argument for having the language's rules as a test rather
+than as a style note.
+
+**What was tested where, and why.** The SNIFF is a unit test against real
+user-agent strings (`install.test.ts`, new): a regex is exactly as good as the
+agents it was written against, and Playwright's Chromium is not an iPhone —
+pretending otherwise would be a test of a lie. What only a browser can prove is
+that the sentences REACH the screen and that the two install paths are
+exclusive, which is `e2e/return.spec.ts` (six tests, including the three
+negatives: a world's ending has no tomorrow, a fresh device is not warned about
+a world it has not built, and a daily is not asked to protect one it does not
+have).

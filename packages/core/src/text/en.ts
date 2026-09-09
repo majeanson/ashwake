@@ -765,6 +765,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       shortOfBest: (n) => `${n} short of best`,
       run: (n) => `RUN ${n}`,
       try: (n) => `TRY ${n}`,
+      streak: (days) => `${days} DAYS IN A ROW. A new board tomorrow.`,
+      comeBack: 'A new board tomorrow.',
       tryAgain: 'TRY AGAIN',
       continueInWorld: 'CONTINUE IN MY WORLD',
       importInto: 'KEEP THIS BOARD AS ONE OF YOUR WORLDS:',
@@ -797,6 +799,10 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     lensClearLabel: (ground) => `Turn the ${ground} lens off`,
     newVersion: 'NEW VERSION · TAP TO LOAD',
     install: 'INSTALL ASHWAKE',
+    handInstall:
+      'Keep Ashwake on your home screen: tap Share at the bottom of Safari, then Add to Home Screen. It opens without the browser bars, and your worlds stay where they are.',
+    backUpNote:
+      'Your worlds live on this phone only, in this browser. There is no account and nothing is uploaded, so BACK UP in SETTINGS is the one way to keep them if you clear your browsing data or change phones.',
     inApp:
       'You are in an in-app browser, and your world may not be kept here. Open this page in Safari or Chrome to keep it.',
     dismiss: 'Not now',
