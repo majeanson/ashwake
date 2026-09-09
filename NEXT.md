@@ -16,7 +16,31 @@ sweep over what already ships, opened on Marc's ask and tracked there so it is
 resumable. A pointer rather than a copy, on purpose: two lists of the same work
 is how one of them goes stale, which is the hazard the paragraph above exists
 to warn about. What that pass left for Marc is in §5b–§5d below — all four answered
-on 2026-09-08 except §5c, which he deferred.
+on 2026-09-08 except §5c, which he deferred. Its one remaining open row —
+B6.5, the `App.tsx` extraction — **moved to `PASS.md` P2** on 2026-09-09 and is
+struck there, so it lives in exactly one place.
+
+**`PASS.md` is the 2026-09-09 pass, row by row** — ten items of two to three
+days each, opened on Marc's ask for _"10 ideas of 2-3 days work"_ and then
+_"plan to do all 10 thoroughly no rush no cut corners"_. A pointer rather than
+a copy, for the reason directly above. Two things about it belong here rather
+than there:
+
+- **Session A runs NOW, in parallel** (Marc's ruling, 2026-09-09). It needs his
+  evening rather than a session, so it is not in the queue at all; whatever it
+  names is `PASS.md` P0 and outranks every row in that file.
+- **The French goes to Marc as a published artifact he annotates** (his
+  ruling, same day) — `PASS.md` P3. That closes the oldest thing on this list
+  that has only ever needed his eyes: `ROADMAP.md` S1b has said "Marc has not
+  read the French yet" since the day the catalogue shipped, and `fr-CA` is what
+  a player sees unless they go and change it.
+
+**And checking the code before planning it retired one of the ten and re-scoped
+four**, which is this file's own rule paying for itself again — the corrections
+are the first section of `PASS.md`. The retired one is the atlas: it is
+argued, tested, bilingual and already photographed, so what was left of it was
+never a session's work. It is one row on the Session A sheet instead — does he
+open it twice?
 
 ---
 

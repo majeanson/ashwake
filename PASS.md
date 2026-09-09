@@ -1,0 +1,590 @@
+# PASS.md — the ten, row by row
+
+Opened 2026-09-09, on Marc's ask for _"10 ideas of 2-3 days work"_ and then
+_"plan to do all 10 thoroughly no rush no cut corners"_.
+
+This is a **living checklist**, not a record, and it carries exactly the
+contract `IMPROVEMENTS.md` opened with. `STATUS.md` is what is done and
+verified; `LOG.md` is the reasoning; this file exists only so a pass this wide
+is resumable across sessions. When every row is `done`, fold the lessons into
+`LOG.md` and `STATUS.md` and delete the rest.
+
+**Check a row against the code before acting on it** — the standing rule, and
+this file is exactly the kind of open-list `NEXT.md` warns about. It has
+already paid: **four of the ten were re-scoped by checking and one was retired
+outright**, before a line of the plan was written. That section is next,
+because it is the most useful thing in this file.
+
+**One list, not two.** `IMPROVEMENTS.md` B6.5 — the only `open` row that pass
+left behind — is **adopted here as P2** and struck there. Two lists of the same
+work is how one of them goes stale.
+
+## Scale, stated plainly
+
+Ten items at two to three days each is **twenty to thirty working days**. The
+file is written so that stopping after any one of them leaves the repository
+better and every ledger honest: each item lands on `main` as its own commit,
+with its ledgers updated in that commit, and is deployed and verified where it
+touches what ships.
+
+## Two rulings from Marc, 2026-09-09
+
+1. **Session A runs NOW, in parallel.** It needs his evening and not a session
+   of mine, so it does not sit in the queue at all. Whatever it names becomes
+   **P0**, a floating batch that re-ranks everything below it. Asked where it
+   should sit, Marc took the parallel option: the ten get aimed at real
+   complaints instead of my guesses.
+2. **The French review surface is a published artifact he annotates** (P3), not
+   a repo page and not an in-app screen. He reads it on the phone, leaves
+   comment threads on the lines he wants changed, and they come back to the
+   session directly. The cost is named in P3: the surface lives outside the
+   repo, so the corrections — not the page — are the deliverable.
+
+## What checking the code corrected, before a line was planned
+
+The ten were proposed off the ledgers. Four of them were partly wrong about
+what already ships, and that is worth more than the plan itself.
+
+- **P4 — "the board on a keyboard and to a screen reader."** I proposed
+  building a keyboard path and a live region. **Both exist and have since
+  2026-08-29.** `board/cursor.ts` is the marker's arithmetic, `board/keys.ts`
+  is the map, arrows LOOK and Enter ACTS, `onLook` says the hex into the toast,
+  and the toast is `role="status" aria-live="polite"` (`App.tsx:3216`).
+  `Board.tsx:595` declares `role="application"` with `aria-describedby`. So the
+  work is not building it. **It is proving it, over the whole game, which
+  nothing has ever done** — and `INTERACTIONS.md`'s own closing lesson is that
+  a role is a promise about behaviour and declaring one without keeping it is
+  worse than declaring neither.
+- **P7 — "version the save format."** I proposed a schema stamp and a
+  migration table. `storage.ts:44` already answers it, differently and better:
+  **keys carry a version, so a shape change is a new key rather than a corrupt
+  read**, and every decoder is a trust boundary that returns a default rather
+  than throwing. Building a second mechanism over that would be the mistake
+  `IMPROVEMENTS.md` B6.3 declined. What is genuinely unbuilt is the parking
+  lot's own item — **compaction**: `encodeWorld` is `JSON.stringify`
+  (`meta/world.ts:328`) over an unbounded `revealed: readonly HexKey[]`.
+- **P8 — "the failure paths."** I proposed an error boundary and a report path.
+  Both shipped 2026-08-29: `ui/Boundary.tsx`, `shell/failure.ts` as plain DOM
+  built out of neither React nor three, a hand-rolled Sentry envelope, and a
+  CSP `connect-src` that makes the privacy claim enforceable rather than
+  prose. What is left is narrower and sharper, and one piece of it is a real
+  loop with no exit — see P8.1.
+- **P9 — "the atlas earns its place or goes."** Reading `screens/Atlas.tsx`,
+  the delete branch is not live: it is argued, tested, bilingual, already
+  photographed at thirty and three hundred runs, and it answers a question the
+  worlds list cannot. **Retired from this pass** and demoted to one row on
+  Marc's Session A sheet — _does he open it twice?_ Its slot is taken by the
+  payload budget (P9 below), which is a real instrument this repository is
+  missing and has already been burned by once.
+
+Two of the ten survived contact unchanged (P1, P2), and three were confirmed
+live but under-specified (P3, P5, P6), which is what the rows are for.
+
+## How to read a row
+
+- **id** — item and row. Items land in the order at the bottom; each row is a
+  commit or part of one.
+- **status** — `open`, `done`, or `ruled` (a decision taken and stated).
+- **where** — the file, and the line it was found at. Lines drift; the symbol
+  named beside them does not.
+
+Every item carries **one written question**, put in `LOG.md` before the work
+starts and answered after it, per `CLAUDE.md`. Where an item's answer lives on
+a screen rather than in the core, **the finding is the deliverable** — it goes
+to Marc at the declaration and in `NEXT.md`, and is not guessed at.
+
+---
+
+## P0 — whatever Session A names (floating)
+
+Not planned, because planning it is the thing Session A exists to prevent. It
+is here so the pass has a place to put it: a bug Marc finds on his own phone
+outranks every row below, and a first-minute complaint outranks all of them
+together. `?playtest=1` records three of the four facts off the `act` seam
+already (`LOG.md` Session 61), so the sheet arrives as a transcript.
+
+**The one rule this pass owes the stranger.** `CLAUDE.md`: nothing that changes
+the first minute ships between Session A's LAST clean pass and Session C. That
+binds at the end, not now — so first-minute work is allowed all through this
+pass and freezes once Marc declares a clean pass. P4, P5 and P0 are the three
+items most likely to touch it; each says so in its own section.
+
+---
+
+## P1 — the sweep becomes a tool (`pnpm sweep`)
+
+`CLAUDE.md` now carries **six** hand-run rituals: exports with no consumer,
+fields nothing reads, optional inputs nobody passes, branches of a consumed
+value, catalogue sentences no screen prints, and doors that forget a flag. Each
+was invented after a miss, each found real bugs, and each leaves false
+positives the next sweep re-adjudicates from scratch — which is, in that file's
+own words, **how a ritual stops being run**. The 2026-09-08 sweep is the
+evidence: one genuinely dead export in a list of sixteen that were merely
+file-internal.
+
+**The surface it must walk:** 472 exports in `packages/core`, 388 in
+`apps/game`, 1,163 `readonly` fields, 90 test files.
+
+**No new dependency.** `typescript` is already a devDependency and `tsx` is
+already the script runner, so the compiler API is the whole toolkit. A
+ts-morph or a knip would be a second opinion about a graph this repository can
+read for itself, and every one of the six rituals is a query the type checker
+already has the answer to.
+
+| id   | status | statement                                                                                                                        | where                   |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| P1.1 | open   | **the module sweep** — every `export` with no importer outside its own file, which is the ritual as written                      | `scripts/sweep/`        |
+| P1.2 | open   | **the field sweep** — every `readonly` property of an exported type, and whether any file reads it. The `cell.band` class        | `render/Renderer.ts`    |
+| P1.3 | open   | **the optional-input sweep** — every optional parameter and field, and whether a caller passes it. The `perkAt` class            | `view/receipts.ts`      |
+| P1.4 | open   | **the branch sweep** — union members of a consumed value no consumer compares against. The `teach.as === 'toast'` class          | `shell/teaching.ts:119` |
+| P1.5 | open   | **the catalogue sweep** — keys in `text/Strings.ts` no `view/`, `meta/` or screen reads. The `figure.hold` class                 | `text/Strings.ts`       |
+| P1.6 | open   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class | `shell/store.ts`        |
+| P1.7 | open   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file         | —                       |
+| P1.8 | open   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed           | `package.json`          |
+| P1.9 | open   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool                                   | —                       |
+
+**P1.6 is the one that may not work, and it says so here rather than in a
+retrospective.** The fog was a _tested, correct consumer_ handed a hard-coded
+empty list at the call site, and `CLAUDE.md`'s own conclusion is that grepping
+finds nothing and reading the consumer finds nothing either. A literal-argument
+heuristic will be noisy — `{}` and `[]` are legitimate empties all over this
+codebase. It ships **report-only and ranked**, or it ships as a documented
+non-goal. It does not ship as a gate.
+
+**The allowlist is seeded from what is already ruled**, so the first report is
+not a re-litigation of settled decisions: `Ring.width` (`board/rings.ts:105`,
+ruled 2026-09-09 — 0.16 stays), `keeper.alive` (a second authority IS the bug),
+`cell.previewColour` (tried, reverted, D11's neighbour), `Said.brief`
+(`NEXT.md` §5c, deferred by Marc), the `shrineDetour` trio (kept for the
+upgrade path, delete after 2026-10-09), `meta/route#HOME`, and `meta/mark`'s
+maskable exports (the baker is their consumer).
+
+**Report, not a gate — at first.** The bar for making it CI-blocking is one
+clean run with an empty allowlist delta, and that bar is written here so a
+later session does not have to invent it.
+
+> **Question:** the ritual that found fifteen inert mechanics — how much of it
+> is mechanical, and does the mechanical half find anything the four hand
+> passes walked past?
+
+**Verify:** `pnpm sweep` twice (idempotent), plus the full gate. Every finding
+fixed, allowlisted with a reason, or written into `NEXT.md` as Marc's.
+
+---
+
+## P2 — finish the `App.tsx` extraction (adopted: `IMPROVEMENTS.md` B6.5)
+
+B6.5 was written against **3,208 lines**. `App.tsx` is **3,978** today, so the
+row has been losing ground for a week. `shell/beginning.ts` (B6.4) is the proof
+the shape works: it took the five run-doors, and closed four missing steps on
+the way — `takeCrossing` skipping three refs and `newRun` never calling
+`beginRun` among them.
+
+The convention is `shell/signpost.ts`: **the pure decision leaves, the wiring
+stays thin.** B6.7's ruling holds — a docblock travels WITH the code it is
+about, it does not go to `LOG.md`.
+
+| id   | status | statement                                                                                                      | where                   |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| P2.1 | open   | `buildSession` — the boot ladder, the one place a `?seed=`, a `?daily=` and a slot are told apart              | `App.tsx:993–1148`      |
+| P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off            | `App.tsx:1692–2111`     |
+| P2.3 | open   | the board's gestures — `describe`, `onLook`, `onTap`, `onSelect`, `onHarvest`, `onLens`, `clearLens`, `onHold` | `App.tsx:2111–2409`     |
+| P2.4 | open   | the voice — `say`, `speakAfter`, `forgetEnding`, `saidOnce`, `signpost`, `dry`, and the one-speaker rule       | `App.tsx:398–730`       |
+| P2.5 | open   | the look — `theme`, `look`, `vignette`, and the three media queries that feed them                             | `App.tsx:766–958`       |
+| P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix             | `App.tsx:2531–2835`     |
+| P2.7 | open   | share, and `importDaily`                                                                                       | `App.tsx:2409`, `:2835` |
+| P2.8 | open   | the purse, and `purseLesson`'s moment                                                                          | `App.tsx:2869–2932`     |
+| P2.9 | open   | the world's live memory — `worldHeld`, `keepWorld`, `forgetWorld`                                              | `App.tsx:818–866`       |
+
+**P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a
+lesson, a world merge and a diary row, and it is the seam `?playtest=1` records
+off. Several of this body's inert mechanics lived inside it. It is extracted
+**last** of the nine, after the cheap ones have proved the shape on this file,
+and it gets its own commit and its own test file.
+
+**Order inside the item:** P2.5, P2.9, P2.7, P2.8 (small, disjoint), then P2.1,
+P2.4, P2.3, P2.6, then P2.2. **Target: `App.tsx` under 1,500 lines and wiring
+only** — a target, not a bar, because a line count is not the point and hitting
+it by moving comments out would be a fraud.
+
+**Run P1 first.** Extracting a dead region is the one way to make dead code
+harder to find, and the sweep's report is the list of what not to carry.
+
+> **Question:** does extracting a region still find a bug, or only move lines?
+> B6.4 found four. If P2's nine find none, that is an answer about a file that
+> has already been swept, and worth recording as one.
+
+**Verify:** the full gate per region, `pnpm sim` byte-identical (a pure
+refactor cannot move a rule), and `pnpm test:e2e` green on both projects.
+
+---
+
+## P3 — the French, read at last (a published artifact Marc annotates)
+
+`DEFAULT_LOCALE` is `fr-CA`. It is the language a player sees unless they go
+and change it, it runs ~20% longer than English, D4 makes it **Marc's review
+surface**, and `ROADMAP.md` S1b has said since the day it shipped: _"Marc has
+not read the French yet."_ That is 866 lines and roughly 630 entries, in the
+shipping default, unread.
+
+Marc's ruling (2026-09-09): a **published artifact**, phone-readable, annotated
+with comment threads that come back to the session.
+
+| id   | status | statement                                                                                                           | where               |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| P3.1 | open   | the extractor — walk `fr-CA.ts` and `en.ts` through the TYPE, pair every leaf, keep the path. Reuses P1's machinery | `text/Strings.ts`   |
+| P3.2 | open   | where each sentence is READ — which screen, from the graph P1.5 walks. One with no screen is a P1 finding           | `view/`, `screens/` |
+| P3.3 | open   | the page — by screen, French in the real face at the real size, English beneath, the audit shot beside it           | `audit-shots/`      |
+| P3.4 | open   | glossary terms inked as `conceptPattern` inks them, so a term is reviewed where a player meets it                   | `view/tips.ts`      |
+| P3.5 | open   | `text.test.ts`'s Québec typography shown per line, so Marc reviews PROSE and not punctuation                        | `text/text.test.ts` |
+| P3.6 | open   | publish, watch it, and land his threads as commits — one per batch, English snapshots untouched                     | —                   |
+
+**The corrections are the deliverable, not the page.** The artifact lives
+outside the repository, so what has to come back into it is a diff to
+`fr-CA.ts` and a line in `LOG.md`. A review that leaves no trace in git is a
+review that did not happen.
+
+**Nothing about English may move.** `en.ts` is the prose exactly as it was
+before the catalogue existed, and the snapshots under `view/__snapshots__` are
+what say so. They are never re-recorded silently, and a French correction that
+touches an English snapshot is a bug in the correction.
+
+**Delivered early, on purpose.** Marc now has two things that need his eyes —
+Session A and this — and both can be in his hands while I am inside P2.
+
+> **Question:** does a catalogue read as prose when it is lifted out of its
+> screen, and which of the ~630 does he actually change?
+
+**Verify:** `pnpm test` (the typography test is the floor), the English
+snapshots byte-identical, `pnpm test:e2e` for any screen whose text moved.
+
+---
+
+## P4 — the accessibility proof (RE-SCOPED: it is built, and unproven)
+
+I proposed building this. It is built — see the corrections section. What has
+never happened is anyone checking it, and `INTERACTIONS.md`'s own closing
+lesson is the reason that matters: **a role is a promise about behaviour, and
+declaring one without keeping it is worse than declaring neither.** The three
+things a screen reader was told _wrongly_ in Batch 3 were all of that shape.
+
+| id   | status | statement                                                                                                                | where           |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | --------------- |
+| P4.1 | open   | a FOURTH audit axis: `page.accessibility.snapshot()` per screen, graded — every interactive node named, every state told | `e2e/audit/`    |
+| P4.2 | open   | the board's own tree: `role="application"` means the app owns the keys, so prove `board-keys` exists and says which      | `Board.tsx:595` |
+| P4.3 | open   | a keyboard-only full run: door → BEGIN → place → pop → end → new run, with no pointer event dispatched at all            | `e2e/`          |
+| P4.4 | open   | ONE speaker: `say()` drives the toast; prove nothing else announces over it, in either language                          | `App.tsx:3216`  |
+| P4.5 | open   | what a reader is told during a POP — the camera flies, the board changes, and the toast is the only witness              | `App.tsx:1692`  |
+| P4.6 | open   | both languages, at 320 and 390, because an accessible name is a STRING and French runs 20% longer                        | `e2e/audit/`    |
+| P4.7 | open   | whatever the grade names                                                                                                 | —               |
+
+**This one can touch the first minute**, so it lands before Marc's last clean
+pass or not at all. A fix that changes what is announced on the front door is a
+first-minute change even though no pixel moves.
+
+> **Question:** the board says it can be read out — can a run be FINISHED
+> without seeing it?
+
+**Verify:** the new axis run in both languages; every finding fixed or written
+down; `pnpm test:e2e` green including the keyboard-only run.
+
+---
+
+## P5 — the performance instrument, throttled
+
+`IMPROVEMENTS.md` B4.16 shipped a low-end path — **cap dpr at 1.5 above
+devicePixelRatio 2, drop MSAA at dpr ≥ 2** — as a _default nobody measured_,
+picked in a session that could not see a phone. B4.2 turned the beacon breath
+into a 30 Hz timer because "a `useFrame` cannot stop asking for frames without
+stopping being called", also unmeasured on a device. `NEXT.md` §5b records what
+happens when a number is guessed at from a session with no phone in it.
+
+The instrument is the screen audit's sibling, and it follows B8.6's ruling
+exactly: **a report somebody reads, not a gate.**
+
+| id   | status | statement                                                                                                  | where                        |
+| ---- | ------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| P5.1 | open   | the trace — CDP over `?place=n`'s fixed opening, so eight runs are eight measurements of ONE board         | `shell/walk.ts`              |
+| P5.2 | open   | the axes — 1× / 4× / 6× CPU throttle, at dpr 2 and 3, in the shipping direction                            | `playwright.audit.config.ts` |
+| P5.3 | open   | grade B4.16's two defaults against what they cost and what they buy                                        | `Board.tsx:426`              |
+| P5.4 | open   | the ambient load with nothing happening — the breath timer and the ember pool, which run for the whole run | `HexField.tsx:183`           |
+| P5.5 | open   | the first frame after BEGIN, and the `Board` chunk's parse cost on a throttled CPU                         | `App.tsx:247`                |
+| P5.6 | open   | `perf/report.md`, with the same staleness header the screen audit learned to write                         | —                            |
+| P5.7 | open   | whatever it names                                                                                          | —                            |
+
+**A software renderer is not a phone** — that is B8.6's own argument against
+running the screen audit in CI, and it applies double here. So the numbers this
+produces are **relative**: the same board, the same walk, one setting changed.
+An absolute frame time off a desktop runner would be a number that reads like a
+measurement and is not one, which is worse than no number.
+
+**Where a finding is a LOOK finding it stops and goes to Marc.** Dropping MSAA
+is not a performance decision alone.
+
+> **Question:** what does this board cost on a phone that is not this laptop,
+> and are the two low-end defaults the right ones?
+
+**Verify:** the report regenerated; any change to the board's defaults carries
+its measurement in `LOG.md`, and the palette and materials budgets stay green.
+
+---
+
+## P6 — the engine the phone actually runs
+
+`playwright.config.ts` runs WebKit over **six of fourteen specs**. The hard
+rule is that testing happens on a phone, in portrait — where the browser is
+Safari. Seven specs have never run on it: `board`, `cards`, `links`, `return`,
+`shots`, `steady`, `playtest`. (`csp` is chromium-only for a stated reason and
+stays that way: WebKit's own troika refusal is swallowed by the noise filter,
+so the exact console lines that test exists to catch would be invisible there.)
+
+| id   | status | statement                                                                                                     | where               |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------- | ------------------- |
+| P6.1 | open   | **the blob-worker refusal, first** — WebKit refuses troika's glyph worker, so the board draws no labels there | `e2e/helpers.ts`    |
+| P6.2 | open   | `board.spec.ts` on WebKit, once P6.1 says what it may assert                                                  | `e2e/board.spec.ts` |
+| P6.3 | open   | `cards`, `links`, `return`, `steady`                                                                          | `e2e/`              |
+| P6.4 | open   | `shots` and `playtest`                                                                                        | `e2e/`              |
+| P6.5 | open   | the safe areas and the dynamic viewport — the URL bar that `steady.spec.ts` was written for                   | `ui.css`            |
+| P6.6 | open   | the audio unlock: `ui.sound`'s tap is the gesture, and WebKit's rules are its own                             | `shell/voice.ts:31` |
+| P6.7 | open   | install on iOS — there is no `beforeinstallprompt`, so `install.ts`'s offer must already know that            | `shell/install.ts`  |
+| P6.8 | open   | whatever the seven fail at                                                                                    | —                   |
+
+**P6.1 decides the size of this item.** If the blob refusal is a harness
+artifact only (it is documented as one), the board specs assert around labels
+and the item is small. If it is real on a device, it is a shipped bug on the
+one engine that matters and it outranks everything else in this file.
+
+> **Question:** which of the seven fail on the engine the phone actually runs —
+> and is the label refusal a harness artifact or a bug with a phone in it?
+
+**Verify:** `pnpm test:e2e` green on both projects with the widened matrix.
+
+---
+
+## P7 — a world's memory has no size (RE-SCOPED: compaction, not versioning)
+
+The versioning half is already answered and answered better: **keys carry a
+version, so a shape change is a new key rather than a corrupt read**
+(`storage.ts:44`), and every decoder treats its input as hostile. What is
+unbuilt is the parking lot's own item.
+
+`encodeWorld` is `JSON.stringify(world)` (`meta/world.ts:328`) over
+`revealed: readonly HexKey[]` (`:35`) — **one string key per hex ever
+revealed, unbounded, three worlds at a time, in a 5 MB store.** The shed ladder
+exists precisely because that store fills up, and `storage.ts:254` records the
+day a version of it shed a WORLD and left its run behind.
+
+| id   | status | statement                                                                                                    | where                |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------ | -------------------- |
+| P7.1 | open   | **measure first** — what a 5-, 30- and 300-run world actually weighs, off `shell/fixture.ts`                 | `shell/fixture.ts`   |
+| P7.2 | open   | the codec: a compact `revealed` and `territories`, behind a NEW key so an old blob still reads               | `meta/world.ts:328`  |
+| P7.3 | open   | the round trip — `decode(encode(w))` equal for every world the fixture builds, plus a hostile blob per field | `meta/world.test.ts` |
+| P7.4 | open   | a bound, or a written argument for none: what this game does at 10,000 revealed hexes                        | `meta/world.ts:441`  |
+| P7.5 | open   | the ladder's new shape — compaction should make a rung RARER, and `shed.test.ts` is the pin                  | `shell/shed.test.ts` |
+| P7.6 | open   | quota exhaustion driven end to end in a browser, not only in a unit test                                     | `e2e/`               |
+
+**A codec with no caller is how two codecs come to disagree** —
+`storage.ts:787` says so about a case this repository has already had. So the
+old decoder stays exactly as long as a device can still hold an old blob, and
+the date it may be deleted is written at the declaration, the way the
+`shrineDetour` trio's is.
+
+**`knownFraction` must not move.** It is `revealed.length / disc` and it is
+printed in the atlas; a compaction that changes what `revealed.length` means
+changes a number on a screen, which makes it a rule change wearing a codec's
+clothes.
+
+> **Question:** does a world's memory have a size, and what does this game do
+> when a device runs out of room mid-run?
+
+**Verify:** the full gate, `shed.test.ts` and `storage.test.ts` green, plus a
+measured before/after in `LOG.md`. `pnpm sim` untouched — no rule moves here.
+
+---
+
+## P8 — the three failure paths, and the header's own confession
+
+The boundary, the panel, the report and the CSP all shipped. What is left is
+three specific holes and one named weakness.
+
+| id   | status | statement                                                                                                                      | where                  |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| P8.1 | open   | **the stale-chunk loop.** `Board` is `lazy()`; an old `index.html` against new hashed names rejects, and CONTINUE re-enters it | `App.tsx:247`          |
+| P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)                          | `shell/storage.ts:318` |
+| P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it                        | `board/gl.ts`          |
+| P8.4 | open   | **hash the two inline blocks at build time and drop `'unsafe-inline'`** — `_headers` names this exact missing build step       | `public/_headers`      |
+| P8.5 | open   | an offline FIRST visit, and a second visit offline, against the narrowed precache                                              | `vite.config.ts:183`   |
+| P8.6 | open   | the panel's repeat counting under each of the above, since a loop is what it counts                                            | `shell/failure.ts:156` |
+
+**P8.1 is the one with no exit today.** The failure panel's CONTINUE is
+`panel.remove()` plus a boundary reset, and the boundary remounts the tree —
+straight back into an import that will reject again, forever, because the
+rejected chunk name is baked into the served `index.html`. The fix is a
+decision, not a patch: either a chunk-load rejection earns the **second allowed
+reload** (`CLAUDE.md` permits exactly two, and this would be a third — so it
+must be argued or folded into the service-worker update path), or the worker's
+navigation handling is made to guarantee the mismatch cannot happen. **Both
+options are written up before either is built.**
+
+**P8.4 is hardening with a real cost.** `'unsafe-inline'` currently covers the
+browser-floor guard and the pre-JS paint, both static. Hashing them means a
+build step that writes `_headers`, which is a generated file the deploy must
+not be able to skip — the same argument `scripts/notices.ts` made and won.
+
+> **Question:** is there a state this game can reach where the only exit is
+> clearing site data?
+
+**Verify:** each hole reproduced BEFORE it is fixed, in a test that fails
+without the fix; `csp.spec.ts` and `verify-deploy` green after P8.4.
+
+---
+
+## P9 — the payload budget (REPLACES the atlas item)
+
+The atlas was retired — see the corrections section; it is argued, tested,
+photographed and answers a question the worlds list cannot, so what is left of
+it is one row on Marc's Session A sheet: _does he open it twice?_
+
+Its slot goes to the instrument this repository is missing and has already been
+burned by once. `IMPROVEMENTS.md` Batch 8 measured everything **once, in
+prose**: app 114.9 KB gzipped, vendor 333.1 KB, the compiler's 16 KB, the
+precache 2.7 MB → 1.8 MB. Nothing re-measures any of it. And B8's own chunking
+ruling ends by saying the cost of `three` riding in the `Board` chunk "shows up
+immediately as the entry chunk's byte count jumping on the next build" — which
+requires a watcher, and there is none.
+
+This repository already knows the shape: `pnpm sim` against a golden file, the
+palette against a budget, the baked art against the theme. A number that may
+not move without a reason in the same commit.
+
+| id   | status | statement                                                                                                        | where                |
+| ---- | ------ | ---------------------------------------------------------------------------------------------------------------- | -------------------- |
+| P9.1 | open   | the measurer — per-chunk gzip and brotli off the build, plus fonts, art and the SW precache total                | `scripts/budget.ts`  |
+| P9.2 | open   | the bars, each with an ARGUMENT beside it, committed the way `sim.golden.txt` is                                 | `budget.json`        |
+| P9.3 | open   | CI gate; a bar moves only in a commit whose `LOG.md` line says why                                               | `.github/`           |
+| P9.4 | open   | the entry chunk's static-import graph, so `three` leaking back into it is caught by name and not by a byte count | `vite.config.ts:315` |
+| P9.5 | open   | the pre-JS paint and the two preloaded faces — B8.2's FOUT fix, with nothing watching it                         | `index.html`         |
+
+**A gate, unlike P1 and P5** — and the difference is defensible: a byte count is
+exact, reproducible on any machine, and does not depend on a renderer. That is
+precisely what B8.6 said the screen audit was NOT, which is why that one stayed
+a report and this one does not.
+
+> **Question:** B8 measured once, in prose. What has moved since?
+
+**Verify:** `pnpm budget` green on a clean tree; deliberately break it by
+importing `three` into the entry and confirm CI goes red.
+
+---
+
+## P10 — the matrices answer to tests
+
+`MODES.md` and `INTERACTIONS.md` are prose statements of things the compiler
+and the tests could assert. `MODES.md` was written on 2026-09-09 precisely
+because three sessions in a row landed on a door that forgot a flag, and it
+opens by telling the reader to check it against the code.
+
+**It is already stale, and that was found today rather than by a session that
+trusted it.** Its last bullet says a shared run leaves no trace and calls it an
+open question in `NEXT.md` §1 — while `SharedEntry` shipped the same day
+(`meta/timeline.ts:136`) and `NEXT.md` §1 records it as built. Corrected on the
+way into this item, and it is the whole argument for the item.
+
+| id    | status | statement                                                                                              | where                    |
+| ----- | ------ | ------------------------------------------------------------------------------------------------------ | ------------------------ |
+| P10.1 | open   | the door table generated from `Door` and `economyFor` — a flag added is a row added, or the test fails | `shell/beginning.ts`     |
+| P10.2 | open   | the two seed guards and the five-reader table asserted, not described                                  | `shell/settle.ts`        |
+| P10.3 | open   | `INTERACTIONS.md`'s ✓ rows: each names the handler it claims, and a ✓ with no consumer fails           | `INTERACTIONS.md`        |
+| P10.4 | open   | one home for the ruled-dead — P1.7's allowlist — cited by both files instead of restated in each       | `scripts/sweep/allow.ts` |
+| P10.5 | done   | **the stale bullet**: `MODES.md`'s shared-run line, corrected 2026-09-09                               | `MODES.md`               |
+
+**The failure mode to design against is a matrix nobody reads.** A generated
+table that says only what the types already say is documentation of the
+compiler. So each row generated must carry the thing the code cannot say — the
+WHY column — from the source, and the test asserts the SHAPE while the prose
+stays hand-written. If that split cannot be made to work, the honest outcome is
+a test that fails when the doc and the code disagree and no generation at all.
+
+> **Question:** can a matrix be generated without becoming a matrix nobody
+> reads?
+
+**Verify:** the full gate; then delete a flag from one door and confirm the
+test names the door and the flag.
+
+---
+
+## Order, and why
+
+1. **P1 — the sweep.** First, because everything below is better aimed with its
+   report in hand, and because P10 and P3 both reuse its machinery.
+2. **P3 — the French artifact.** Second, and early on purpose: it costs Marc's
+   time, and his time is now running in parallel with Session A. Both of his
+   inputs should be queued before I disappear into P2.
+3. **P10 — the matrices.** Shares P1's machinery while it is fresh, and stops
+   two ledgers going stale over a month-long pass. It has already been proved
+   necessary by P10.5.
+4. **P2 — the extraction.** The big one, done while the sweep's report is still
+   the newest thing in the repository, and before P4 and P8 start editing the
+   same file.
+5. **P9 — the payload budget.** Before P4, P5 and P6, so anything they add to
+   the bundle is measured on the way in rather than discovered later.
+6. **P7 — compaction.** Disjoint from everything above it.
+7. **P8 — the failure paths.** After P9, because P8.1 and P8.5 both touch the
+   service worker and P9.1 measures its precache.
+8. **P6 — WebKit.** The engine the phone runs, before the two items that will
+   want to run on it.
+9. **P5 — performance.** After P2, so the trace is of the shape that ships.
+10. **P4 — the accessibility proof.** Last of the ten, because it is the one
+    most likely to want changes on screens the other nine have been editing.
+
+**P0 interrupts any of them.** Session A is running now.
+
+**Two dependencies are hard, the rest are preferences:** P10 needs P1's
+machinery, and P2 must not run before P1 (extracting dead code is how dead code
+becomes invisible). Everything else can be reordered on the day.
+
+## Verification, per item
+
+Every item, without exception, before it lands:
+
+```
+pnpm typecheck && pnpm lint && pnpm test && pnpm sim && pnpm build && pnpm test:e2e
+```
+
+`pnpm sim` byte-identical to `packages/core/sim.golden.txt` is the one that
+matters most in a pass with no rule changes in it: **a diff there is a rule
+that moved**, and nothing in this file is allowed to move one. `pnpm bake` and
+its `apps/game/public` diff run for any item that touches the theme, the fonts
+or the icons. Items that change what ships are deployed and
+`pnpm verify:deploy`'d in the same session.
+
+And per `CLAUDE.md`: the item's written question goes into `LOG.md` **before**
+the work, answered after; `STATUS.md` moves only at a checkpoint; and this
+file's rows go to `done` in the same commit as the work, never after.
+
+## What this pass deliberately does not do
+
+- **No new mechanics, and no rule changes.** The golden sim stays
+  byte-identical. Nothing here touches `packages/core/src/engine` or `content`
+  except to read it.
+- **No look decision taken without Marc.** `NEXT.md` §5b is the record of what
+  guessing costs: two look changes guessed at from a session with no phone in
+  it, both wrong within the hour. Where an item's answer lives on a screen, the
+  finding is the deliverable — stated at the declaration and in `NEXT.md`.
+- **No new dependency without an argument in the commit.** P1 and P9 are both
+  buildable out of `typescript` and `tsx`, which are already here.
+- **No reopening what is deferred by ruling.** `NEXT.md` §4: Tier-1 uniques,
+  sound's written question, the leaderboard (D13, needs a backend), store
+  wrappers, the waypoint-perk earn, world mood, ground-feeds-draft, the
+  timeline's spine, and pop-vs-burn-vs-wait. `Said.brief` (§5c) and
+  `Ring.width` stay dead until asked again.
+- **No PR gate.** Land on `main`; CI gates the deploy.
+
+## What is left for Marc, in one list
+
+- **Session A**, on the deployed v2, on his phone, in portrait. Running now.
+- **The French**, when P3's artifact reaches him. Roughly 630 entries; the
+  threads come back here.
+- **The atlas**, one row on the Session A sheet: does he open it twice?
+- **Any look finding** P4, P5 or P6 turns up, each stated at its declaration
+  and repeated in `NEXT.md`.

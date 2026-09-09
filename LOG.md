@@ -5887,3 +5887,66 @@ landed in the wrong object. Typecheck caught it in one line. **A lazy match
 bounded by "the next thing that looks like a sibling" does not know where an
 object ends** — the same lesson as the greedy docblock an hour earlier, and the
 same fix: anchor on the exact text, including the closing brace.
+
+### Session 74 — ten ideas, and checking them cost one of them (2026-09-09)
+
+**Question:** Marc asked for _"10 ideas of 2-3 days work"_ and then _"plan to
+do all 10 thoroughly no rush no cut corners"_. So, before any of it is built:
+**what does the standing rule cost when it is applied to a plan rather than to
+a ledger — and does checking ten proposals against the code change any of
+them?**
+
+**Answer: it changed five of the ten, and one of the five was retired
+outright.** The ideas were proposed off `STATUS.md`, `NEXT.md`,
+`IMPROVEMENTS.md` and `ROADMAP.md`, which is exactly the reading a session
+does when it starts. Four of them were partly wrong about what already ships:
+
+- **The board's keyboard path and its live region were both already built**
+  (2026-08-29): `board/cursor.ts`, `board/keys.ts`, arrows LOOK and Enter
+  ACTS, and `onLook` speaking into the toast, which is `role="status"`. The
+  proposal was to build them. The work is to PROVE them, which nothing has ever
+  done — and `INTERACTIONS.md`'s own closing lesson is why that is not a
+  smaller job: a role is a promise about behaviour, and three things a screen
+  reader was told WRONGLY were the hardest half of Batch 3 to notice.
+- **Storage is already versioned**, and in a better shape than the one I
+  proposed: `storage.ts:44` — keys carry a version, so a shape change is a new
+  key rather than a corrupt read. Adding a schema stamp over that would have
+  been B6.3's mistake, a second mechanism doing the first one's job. What is
+  actually unbuilt is the parking lot's own item, compaction: `encodeWorld` is
+  `JSON.stringify` over an unbounded `revealed: HexKey[]`.
+- **The error boundary, the failure panel, the crash report and the CSP all
+  shipped.** What is left is three specific holes, and one of them is a loop
+  with no exit: `Board` is `lazy()`, so a service worker serving an old
+  `index.html` against new hashed chunk names rejects the import — and
+  CONTINUE remounts the tree straight back into the same rejection, forever.
+  That is worth more than the four generalities it was hiding behind.
+- **The atlas does not need a session.** It is argued, tested, bilingual and
+  already photographed at thirty and three hundred runs; "earn its place or go"
+  is a question for an eye, not a plan. Retired to one row on the Session A
+  sheet, and its slot given to the payload budget — `IMPROVEMENTS.md` Batch 8
+  measured every byte ONCE, in prose, and its own chunking ruling ends by
+  saying the cost "shows up immediately as the entry chunk's byte count jumping
+  on the next build", which requires a watcher that does not exist.
+
+**And the fifth was a ledger that had gone stale in five days.** `MODES.md`'s
+last bullet says a shared run leaves no trace and calls it an open question in
+`NEXT.md` §1 — while `SharedEntry` shipped on 2026-09-09
+(`meta/timeline.ts:136`) and §1 records it as built. The file that was written
+BECAUSE three sessions in a row trusted a stale statement, and which opens by
+telling the reader to check it against the code, was itself wrong on the day it
+was read. Corrected, and it is now the argument for P10: **a matrix that states
+in prose what the code could assert goes stale on the same day it is written.**
+
+**Two questions went to Marc rather than being guessed**, and both changed the
+plan's shape. Session A — the one thing on `ROADMAP.md` S6 that no code can
+do — **runs now, in parallel**, because it costs his evening and not a session
+of mine; it is P0, a floating batch that outranks everything. And the French
+review is **a published artifact he annotates**, not a repo page and not an
+in-app screen, so the ~630 unread `fr-CA` entries reach him on the phone they
+ship to and his threads come back here.
+
+**`PASS.md` is the deliverable**, and `IMPROVEMENTS.md` B6.5 moved into it
+rather than being copied — two lists of the same work is how one of them goes
+stale, which is the hazard three of the findings above are instances of. It has
+grown from 3,208 lines to 3,978 since that row was written, which is the row
+losing ground while it sat in a file of finished ones.

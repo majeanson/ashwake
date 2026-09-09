@@ -16,7 +16,8 @@ this file is exactly the kind of open-list `NEXT.md` warns about.
 ## How to read a row
 
 - **id** — batch and item. Batches land in order; each batch is one commit.
-- **status** — `open`, `done`, or `ruled` (a look decision taken and stated).
+- **status** — `open`, `done`, `ruled` (a look decision taken and stated), or
+  `moved` (adopted by another ledger, which is then the only place it lives).
 - **where** — the file, and the line it was found at. Lines drift; the symbol
   named beside them does not.
 
@@ -251,7 +252,7 @@ compiler-safe, because those lint rules have been enforcing exactly that.
 | B6.2 | done   | fix whatever the healthcheck rejects; opt a file out explicitly, with the reason at the top, if it cannot compile                  | `board/`             |
 | B6.3 | ruled  | `memo()` on `Board`, and a `<Speech>` subtree — **declined on a measurement**, see below                                           | `App.tsx`            |
 | B6.4 | done   | extract `shell/beginning.ts` — one `enterRun(...)` every door calls. Closes B5.3                                                   | `App.tsx:437`        |
-| B6.5 | open   | extract the rest, following the `shell/signpost.ts` convention (pure decision out, wiring thin)                                    | `App.tsx`            |
+| B6.5 | moved  | extract the rest, following the `shell/signpost.ts` convention (pure decision out, wiring thin) — **now `PASS.md` P2**             | `App.tsx`            |
 | B6.6 | ruled  | `StringsContext` + `ThemeContext` — **declined on the same measurement**                                                           | `App.tsx`            |
 | B6.7 | ruled  | move the historical half of the docblocks to `LOG.md` — **declined**, it is the house style working                                | `App.tsx`            |
 
@@ -294,7 +295,14 @@ whether they were still true. A changelog in a separate file is a changelog
 nobody opens while editing the line it is about. `LOG.md` is the per-session
 record and stays that; the docblocks are why-this-line and stay that.
 
-**B6.5 stays open**, and is the one worth doing next: `App.tsx` is 3,208 lines,
+**B6.5 stayed open, and has MOVED to `PASS.md` P2** (2026-09-09). It was the
+only open row this pass left behind, and leaving it here beside a file of
+finished ones is how a checklist becomes a record nobody re-reads. It has also
+been losing ground: 3,208 lines when this was written, **3,978** when it moved.
+`PASS.md` carries it as nine numbered regions with line ranges, so the next
+session picks up a list rather than a paragraph. The original entry follows.
+
+B6.5 is the one worth doing next: `App.tsx` is 3,208 lines,
 and `shell/beginning.ts` (B6.4) is the proof the shape works — it landed here,
 took the five run-doors with it, and closed four missing steps on the way. The
 remaining eight regions are a session of their own, and they are extraction

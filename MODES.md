@@ -109,5 +109,17 @@ run on this world" are different questions, and every reader has to pick one.
 - A daily's **score stays on the daily ladder** even if the board is kept
   (`worldFromRun` leaves `runs` and `bestPoints` at zero). Marc's answer when
   asked, over both "the run counts as run 1" and "seed only".
-- A shared run **leaves no trace at all**, not even a diary row. Open question
-  in `NEXT.md` §1.
+- A shared run banks **no ledger**, and until 2026-09-09 it left no trace at
+  all. It gets a DIARY ROW now and nothing else: `SharedEntry`
+  (`meta/timeline.ts:136`) is its own timeline kind, written by `settle`'s
+  detour branch and led by the seed the way a daily's row is led by its date.
+  Its own kind rather than a `RunEntry` with a marker, because `runsOf` feeds
+  the TOTALS run count and `prehistory`'s arithmetic — both questions about
+  THIS device's worlds — and a shared run inside that filter would inflate
+  every total.
+
+  **This bullet said "Open question in `NEXT.md` §1" until 2026-09-09**, while
+  §1 had recorded the answer on the day the file was written. Corrected by
+  `PASS.md` P10.5, which is the item that exists because of it: a matrix that
+  states in prose what the code could assert goes stale on the same day it is
+  written.
