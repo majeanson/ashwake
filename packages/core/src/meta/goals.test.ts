@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GOALS } from '@content/goals';
 import { EMPTY_PROGRESS, PERKS, type Progress } from './progress';
 import { decodeWorld, encodeWorld, newWorld, UNLOCKS, type WorldMemory } from './world';
-import { isGoalMet, metGoalIds, newlyMetGoals } from './goals';
+import { isGoalMet, metGoalIds, newlyMetGoals, sealGoals } from './goals';
 
 /**
  * The survey (2026-08-18): five world-scale goals, each paying relics once
@@ -81,6 +81,53 @@ describe('the survey — once-only payout', () => {
     const newly = newlyMetGoals(world, EMPTY_PROGRESS);
     expect(newly).toContain('reach20');
     expect(newly).toContain('territories4');
+  });
+});
+
+describe('the survey — a world PLANTED from a run it did not have', () => {
+  /**
+   * `sealGoals`, and the faucet it closes (2026-09-09).
+   *
+   * `worldFromRun` hands a fresh world the ground a daily or a shared board
+   * walked, its territories and how far it got — three of the five goals' own
+   * inputs. `goalsMet` starts empty and the payout runs at the END of the next
+   * run, so one placement in the planted world collected `known40` (35),
+   * `reach20` (25) and `territories4` (30) for a survey nothing there had done.
+   * On a board that can be retried until it is good and re-planted every day,
+   * that is 90 relics a day.
+   *
+   * The `known40` half has been live since the import shipped on 2026-09-05.
+   */
+  it('pays nothing for a survey the run did before the world existed', () => {
+    const handed = worldWith({
+      farthestReach: 25,
+      territories: ['a', 'b', 'c', 'd'],
+      // 40% of the disc a reach of 25 describes (3 x 25 x 26 + 1 = 1951).
+      revealed: Array.from({ length: 900 }, (_, i) => `${i},0`),
+    });
+    // Every one of the three is true of the board as handed over.
+    expect(newlyMetGoals(handed, EMPTY_PROGRESS)).toEqual(
+      expect.arrayContaining(['reach20', 'territories4', 'known40']),
+    );
+
+    const sealed = sealGoals(handed, EMPTY_PROGRESS);
+    expect(newlyMetGoals(sealed, EMPTY_PROGRESS), 'a planted world paid for its dowry').toEqual([]);
+    // Sealed, not zeroed: the facts are true and the atlas should say so.
+    expect(metGoalIds(sealed, EMPTY_PROGRESS)).toEqual(metGoalIds(handed, EMPTY_PROGRESS));
+    expect(sealed.farthestReach).toBe(25);
+    expect(sealed.territories).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('still pays for a goal the player goes on to meet in that world', () => {
+    const sealed = sealGoals(worldWith({ farthestReach: 25 }), EMPTY_PROGRESS);
+    expect(newlyMetGoals(sealed, EMPTY_PROGRESS)).not.toContain('reach20');
+    const later = { ...sealed, territories: ['a', 'b', 'c', 'd'] };
+    expect(newlyMetGoals(later, EMPTY_PROGRESS)).toContain('territories4');
+  });
+
+  it('leaves a world that has met nothing exactly as it was', () => {
+    const blank = newWorld(3);
+    expect(sealGoals(blank, EMPTY_PROGRESS)).toBe(blank);
   });
 });
 

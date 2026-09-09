@@ -253,6 +253,16 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**~~A DETOUR keeps its shrines and its finds, and neither pays this device
+anything~~ — ANSWERED 2026-09-09, same day it was written.** Marc answered it
+by asking for the flow rather than the rule: _"For a shared world, it should be
+able to be played like a daily for a first run, then the same question goes: do
+we continue in a world? if yes, we keep the same."_ So a detour plays a daily's
+economy (`NO_LEDGER`), and its ending offers KEEP THIS BOARD like a daily's
+does. The geography argument that kept it out survives untouched — nothing in
+`NO_LEDGER` moves ground, walls, caches, sites or territories, and a shrine
+only changes FACE. `LOG.md` Session 64. The original argument follows.
+
 **A DETOUR keeps its shrines and its finds, and neither pays this device
 anything (2026-09-09, `LOG.md` Session 63).** A daily's do not: `NO_LEDGER`
 in `shell/economy.ts` rewrites a daily's shrines into caches and sites and

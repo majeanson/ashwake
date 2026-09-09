@@ -71,6 +71,31 @@ export type Tuning = {
   readonly cachePays: number;
   readonly sitePays: number;
   readonly territoryRadius: number;
+  /**
+   * Tiles a territory hands over ON THE SPOT, graded by distance like a site's
+   * points (2026-09-09, Marc: *"maybe they could give tiles in daily too? (not
+   * in world?)"*).
+   *
+   * **Zero in a world, and that is the point.** A territory in a WORLD is paid
+   * in three things that outlive the run: the native field it unfurls now,
+   * `territoryTiles` into the purse of every LATER run, and +10 relics on the
+   * crossing's dowry. A board with no ledger to write into keeps only the
+   * first, which is why Marc called a daily's territories underpowered. This is
+   * the dial that pays the other two back in the one currency a single run can
+   * actually spend.
+   *
+   * Named beside `cachePays` and `sitePays` on purpose, and NOT
+   * `territoryTiles`: that name is already taken, by the per-later-run bonus
+   * this exists to substitute for. Two dials with one name would be the drift
+   * this folder's whole convention is against.
+   *
+   * Zero in every shipped tuning, so a world is untouched and the golden sim
+   * cannot move; `shell/economy.ts` is the only thing that raises it, for a
+   * daily and for a shared board's first run, where it is set to `cachePays` —
+   * a cache is the tile number this board has already taught the player to
+   * read.
+   */
+  readonly territoryPays: number;
 
   /**
    * Quests (M1 of `ROADMAP.md`, Gate B's structural fix). Claiming a scoring
@@ -679,6 +704,9 @@ export const BARE_TUNING: Tuning = {
   cachePays: 12,
   sitePays: 25,
   territoryRadius: 2,
+  // Zero: the standing contract. A world pays a territory in the field it
+  // unfurls, in the purse of every later run, and in the crossing's dowry.
+  territoryPays: 0,
   beaconHorizon: 4,
 
   cachePaysPerRing: 0,

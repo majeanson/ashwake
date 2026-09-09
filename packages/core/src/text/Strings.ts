@@ -373,6 +373,13 @@ export type Strings = {
       readonly find: string;
       readonly territoryClaimed: (radius: number, owns: string) => string;
       readonly territory: (radius: number, owns: string) => string;
+      /**
+       * A territory on a board with no ledger behind it: it pays TILES, and
+       * the field it unfurls only outlives the run if the board is continued
+       * as a world (2026-09-09). Chosen by `territoryPays` being raised,
+       * which `shell/economy.ts` does for a daily and a shared board.
+       */
+      readonly territoryPays: (radius: number, owns: string, tiles: number) => string;
       /** What a territory with no colour yet is native to. */
       readonly someColour: string;
       readonly chainOut: (sentence: string) => string;
@@ -555,6 +562,16 @@ export type Strings = {
     readonly cache: (tiles: number) => string;
     readonly site: (pts: number, need: number, radius: number, bonus: number) => string;
     readonly territory: (radius: number, owns: string) => string;
+    /**
+     * The same claim on a board that cannot keep it — a daily, or a shared
+     * board's first run (2026-09-09).
+     *
+     * Two facts `claim.territory` cannot carry: the tiles it just paid, and
+     * that the field is this run's unless the board is continued as a world.
+     * The second one is the offer the ending is about to make, said at the
+     * moment the player earns the reason to take it.
+     */
+    readonly territoryPays: (radius: number, owns: string, tiles: number) => string;
     readonly shrine: (unlock: string) => string;
     /** Past the end of the ledger, with nowhere onward to go. */
     readonly shrineAwake: string;
@@ -1056,14 +1073,23 @@ export type Strings = {
        */
       readonly continueInWorld: string;
       /**
-       * The picker's own heading: which of the three this daily becomes.
+       * The picker's own heading: which of the three this board becomes.
        *
-       * Only the ground travels (`meta/world.ts`'s `worldFromRun`), and the
-       * heading says so, because the one thing a player must not be surprised
-       * by here is what they are about to spend: picking a world that has been
-       * played asks to ABANDON it, in the words `newWorldArmed` already uses.
+       * The one thing a player must not be surprised by here is what they are
+       * about to spend: picking a world that has been played asks to ABANDON
+       * it, in the words `newWorldArmed` already uses.
        */
       readonly importInto: string;
+      /**
+       * What travels and what does not — `meta/world.ts`'s `worldFromRun`, in
+       * words.
+       *
+       * It named the ground alone until 2026-09-09, when the territories
+       * started travelling too (Marc: *"make sure territories follow up in a
+       * new world"*). A sentence listing what you keep is a sentence that has
+       * to be re-read every time that list moves, which is why the list lives
+       * in one function and this says the same three things it does.
+       */
       readonly importKeeps: string;
       readonly relicsBanked: (n: number) => string;
       /**

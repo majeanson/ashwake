@@ -41,7 +41,8 @@ export type RunKind =
    *  nothing is worse than no door. */
   | { readonly kind: 'daily' }
   /** Somebody else's seed. A replay scored under this device's upgrades would
-   *  not be a replay of anything. */
+   *  not be a replay of anything, so it plays a daily's economy: no relics, no
+   *  ledger, and the offer to keep the board at the end (2026-09-09). */
   | { readonly kind: 'detour' };
 
 /**
@@ -81,20 +82,59 @@ const NO_RELICS = { burnRelics: 0, claimRelics: 0, luckToRelics: 0, titheRate: 0
  * is three files of chain to hold one of Marc's sentences up, which is exactly
  * the kind of agreement that breaks silently — `economy.test.ts` pins it.
  *
- * TERRITORY stays. Its ledger half (+6 tiles to LATER runs) is dead in a
- * daily, but the ground it claims is native the moment it is claimed, and that
- * pays inside the run — which is the line this list is drawn on.
+ * TERRITORY stays, and now it PAYS (2026-09-09, Marc: *"otherwise territories
+ * in daily are underpowered ... maybe they could give tiles in daily too? (not
+ * in world?)"*). The reasoning above put it on the right side of the line for
+ * the wrong reason: the ground it claims is native the moment it is claimed, so
+ * it does pay inside the run — but the other two thirds of what a territory is
+ * worth, `territoryTiles` into every later run's purse and +10 relics on the
+ * crossing, are both dead here. `territoryPays` is the substitute, set to a
+ * cache's own `cachePays` and graded by distance, and it is the one landmark
+ * dial that is HIGHER outside a world than in one.
+ *
+ * **And what a territory claims can now outlive the board after all**, if the
+ * player takes the ending's offer to continue it as a world — see
+ * `shell/adopt.ts`. That is the other half of Marc's ask and the reason the
+ * claim receipt says "continue this board in a world to keep it" rather than
+ * the world's own "it stays yours between runs".
  */
 const NO_LEDGER = {
   shrinesReborn: true,
   findEvery: 0,
   findChance: 0,
   findSense: 0,
+  // The substitute for everything a territory pays into a ledger. A cache's
+  // own base, graded by distance in `territoryPaysAt` — see `territoryPays`.
+  territoryPays: TUNING.cachePays,
 } as const;
 
+/*
+ * A SHARED BOARD IS A DAILY YOU WERE HANDED (2026-09-09).
+ *
+ * Marc: *"For a shared world, it should be able to be played like a daily for a
+ * first run, then the same question goes: do we continue in a world? if yes, we
+ * keep the same."*
+ *
+ * A detour used to get `NO_RELICS` and nothing else, on the argument that
+ * somebody else's world should be *"played as it stands"*. That argument is
+ * about the GEOGRAPHY, and it survives: the ground, the walls, the caches, the
+ * sites and the territories are all still exactly the board the sharer walked,
+ * because `NO_LEDGER` touches none of them. What it takes away is the two
+ * landmark kinds that pay into a ledger a detour does not have — a shrine that
+ * unlocks nothing and a find whose perk `App` refuses to grant — which on a
+ * shared link were landmarks that cost a placement to reach and paid literally
+ * nothing. Exactly the daily's own bug, one step over, and it was in
+ * `NEXT.md` §1 for one day.
+ *
+ * Only shrines move geography at all, and only by wearing a cache's or a
+ * site's face instead (`engine/world.ts`'s `reborn`) — so continuing the
+ * board as a world does not rearrange it, it WAKES it: the doors appear where
+ * the caches were.
+ */
 export function economyFor(run: RunKind, base: Tuning = TUNING): Tuning {
-  if (run.kind === 'daily') return { ...base, ...NO_RELICS, ...NO_LEDGER };
-  if (run.kind === 'detour') return { ...base, ...NO_RELICS };
+  if (run.kind === 'daily' || run.kind === 'detour') {
+    return { ...base, ...NO_RELICS, ...NO_LEDGER };
+  }
 
   const woken = applyUnlocks(base, unlockedBy(run.world));
   // The world's own perk shelf, composited over the device's purse — a perk

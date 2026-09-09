@@ -403,6 +403,8 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         `TERRITORY: yours. The ground within ${radius} hexes is native to ${owns}.`,
       territory: (radius, owns) =>
         `TERRITORY: claim it and the ground within ${radius} hexes becomes native to ${owns}, for good.`,
+      territoryPays: (radius, owns, tiles) =>
+        `TERRITORY: claim it for +${tiles} tiles, and the ground within ${radius} hexes becomes native to ${owns} for this run.`,
       someColour: 'a colour',
       chainOut: (sentence) => `${sentence} Build your chain out to it.`,
       shimmers: 'Something shimmers here. Grow your ground to it.',
@@ -572,6 +574,9 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     territory: (radius, owns) =>
       `TERRITORY CLAIMED
 Ground within ${radius} hexes is native to ${owns} now, and it stays yours between runs.`,
+    territoryPays: (radius, owns, tiles) =>
+      `TERRITORY CLAIMED
++${tiles} tiles, and the ground within ${radius} hexes is native to ${owns}. Continue this board in a world to keep it.`,
     shrine: (unlock) => `SHRINE WOKEN
 ${unlock}
 Yours from your next run on, in this world for good.`,
@@ -757,7 +762,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       continueInWorld: 'CONTINUE IN MY WORLD',
       importInto: 'KEEP THIS BOARD AS ONE OF YOUR WORLDS:',
       importKeeps:
-        'The ground you walked comes with it. Relics, shrines and the score stay with the daily.',
+        'The ground you walked and the territories you claimed come with it. The score and the relics stay behind, and the shrines wake up.',
       relicsBanked: (n) => `${n} relics banked`,
       placements: 'PLACEMENTS',
       popped: 'POPPED',

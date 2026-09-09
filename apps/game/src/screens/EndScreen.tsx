@@ -122,8 +122,14 @@ export type EndScreenProps = {
    */
   readonly daily?: { readonly try: number; readonly onRetry: () => void } | null;
   /**
-   * KEEP THIS BOARD: turn the daily just played into one of the three worlds
-   * (2026-09-05). Absent off a daily, where there is nothing to import.
+   * KEEP THIS BOARD: turn the board just played into one of the three worlds
+   * (2026-09-05; a shared board too, 2026-09-09).
+   *
+   * Present on a daily and on a shared link, absent in a world, and **the
+   * shell decides which** — this screen used to gate the offer on `daily`
+   * as well, which is how a shared board came to be offered nothing. One
+   * condition, in one place, is the whole fix: `App`'s `importDaily` is
+   * undefined wherever there is nothing to keep.
    *
    * The worlds come in whole rather than as a count, because the row has to
    * say what picking it would COST — a world with runs on it is one this
@@ -491,7 +497,10 @@ export function EndScreen({
 
       <nav className="panel-menu">
         {/*
-          KEEP THIS BOARD, off a daily's ending (2026-09-05).
+          KEEP THIS BOARD, off a daily's ending (2026-09-05) or a shared
+          board's (2026-09-09 — Marc: *"For a shared world, it should be able to
+          be played like a daily for a first run, then the same question goes:
+          do we continue in a world?"*).
 
           It was `onNewRun` — the same door NEW RUN opens everywhere else,
           relabelled — which left the daily for a fresh expedition into
@@ -505,12 +514,12 @@ export function EndScreen({
           already uses — and only a second press on the armed row goes through.
           An empty slot needs no arming, because there is nothing to lose.
         */}
-        {daily != null && importDaily !== undefined && !picking && (
+        {importDaily !== undefined && !picking && (
           <button type="button" data-action="import-daily" onClick={() => setPicking(true)}>
             {s.ui.ending.continueInWorld}
           </button>
         )}
-        {daily != null && importDaily !== undefined && picking && (
+        {importDaily !== undefined && picking && (
           <>
             <p className="fact-label">{s.ui.ending.importInto}</p>
             <p className="note">{s.ui.ending.importKeeps}</p>

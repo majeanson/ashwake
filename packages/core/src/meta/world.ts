@@ -111,27 +111,59 @@ export const newWorld = (
 });
 
 /**
- * A world minted from a run that has already been played: its MAP, and none
- * of its spoils (2026-09-05, Marc, of a daily's ending — *"i want to import
- * this seed in one of my 3 worlds as a new world that i'd like to explore
- * further, with this first run in mind"*).
+ * A world minted from a run that has already been played: its MAP and what it
+ * CONQUERED, and none of its spoils (2026-09-05; territories added 2026-09-09).
  *
- * The daily is the case, and it is why this is not `rememberRun`. A daily is a
- * board everyone plays and anyone may replay: banking its relics, its shrines
- * or its score into a world would make "retry until the run is good, then
- * import it" the best way to open a world, which is a strategy about the
- * MENU rather than about the game. So the run's ground travels — the point is
- * to carry on exploring a place you have seen rather than to meet it twice —
- * and `runs`, `bestPoints`, `farthestReach`, the shrines, the territories and the
- * finds all start where `newWorld` starts them. Marc chose exactly this shape
- * when asked, over both "the run counts as run 1" and "seed only".
+ * Marc, of a daily's ending: *"i want to import this seed in one of my 3
+ * worlds as a new world that i'd like to explore further, with this first run
+ * in mind."* That is why this is not `rememberRun`. A daily is a board
+ * everyone plays and anyone may replay: banking its relics or its score into a
+ * world would make "retry until the run is good, then import it" the best way
+ * to open a world, which is a strategy about the MENU rather than about the
+ * game. So `runs` and `bestPoints` start where `newWorld` starts them, and
+ * Marc chose exactly that when asked, over both "the run counts as run 1" and
+ * "seed only".
  *
- * `revealed` is every key on the finished board, which is what `mergeRun` unions
- * for a live run — the same definition of "seen", stated once here rather than
- * a second one that could drift from it.
+ * **TERRITORIES TRAVEL NOW, and that reverses one field of it** (2026-09-09,
+ * Marc: *"make sure territories follow up in a new world if we go from daily to
+ * world, otherwise territories in daily are underpowered"*). The 2026-09-05
+ * shape left them behind under the anti-farm argument above, and the argument
+ * does not reach them: a territory is a fixed HEX of the geography, so
+ * retrying a daily to claim one buys the same reward for the same walk rather
+ * than a menu trick. What it was costing was the whole point of claiming one
+ * on a board with no ledger — the field lasts the run, the `territoryTiles`
+ * bonus to later runs is dead there, and the crossing's +10 relics is dead
+ * too. Three of a territory's four payments were unreachable. `territoryPays`
+ * (`content/tuning.ts`) answers the run's half; this answers the world's.
+ *
+ * `farthestReach` travels with them, because it is a fact about the ground and
+ * not about the score, and because `knownFraction` divides by it: a world
+ * holding 400 remembered hexes with a reach of zero reports itself 100% known
+ * of a ten-hex disc, which is the atlas lying about the board it was handed.
+ *
+ * Shrines and finds stay empty and need no argument: a board reaches this
+ * function only from a daily or a shared link, and neither generates either
+ * (`shell/economy.ts`'s `NO_LEDGER`). They appear when the board becomes a
+ * world, which is what "continuing" it means.
+ *
+ * **Nothing here writes `goalsMet`, and the caller must** — see
+ * `meta/goals.ts`'s `sealGoals`. A planted world can already satisfy
+ * `known40`, `reach20` and now `territories4` on the strength of a run that
+ * happened before it existed, and its first `settle` would pay relics for all
+ * three. Every field folded in above is a field one of those five goals reads.
+ *
+ * `mergeRun` does the folding rather than a second walk of `state.cells`: it is
+ * the same definition of "seen", "claimed" and "how far", stated once.
  */
 export function worldFromRun(worldSeed: number, state: GameState): WorldMemory {
-  return { ...newWorld(worldSeed), revealed: Object.keys(state.cells) };
+  const blank = newWorld(worldSeed);
+  const walked = mergeRun(blank, state);
+  return {
+    ...blank,
+    revealed: walked.revealed,
+    territories: walked.territories,
+    farthestReach: walked.farthestReach,
+  };
 }
 /**
  * What the Nth shrine you reach switches on, in order (M4).

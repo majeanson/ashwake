@@ -437,6 +437,24 @@ export const cachePaysAt = (
   (t.cachePaysPerRing > 0 ? t.cachePaysPerRing * (distanceMultiplierAt(k, t, origin) - 1) : 0);
 
 /**
+ * What a territory hands over in TILES at this hex, which is zero in a world.
+ *
+ * Graded by distance the way a site's points are, rather than by a cache's
+ * per-ring dial: a territory is one landmark, so it gets one dial and the
+ * grade every other far-away claim already has. Zero when the dial is zero, so
+ * a world's territories pay exactly what they always paid.
+ *
+ * One function, for the reason `cachePaysAt` is one function: the payment, the
+ * claim receipt and the tap description must not be able to disagree about the
+ * number.
+ */
+export const territoryPaysAt = (
+  k: HexKey,
+  t: Tuning,
+  origin: { q: number; r: number } = ORIGIN,
+): number => (t.territoryPays > 0 ? t.territoryPays * distanceMultiplierAt(k, t, origin) : 0);
+
+/**
  * The points multiplier a harvest of exactly these tiles earns.
  *
  * How far from home the pocket sits: `1 + floor(mean distance / distanceStep)`.

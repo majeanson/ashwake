@@ -520,14 +520,14 @@ describe('worldFromRun — a daily kept as a world (2026-09-05)', () => {
     );
     expect(kept.revealed.length, 'a kept board arrived blank').toBeGreaterThan(0);
 
-    // Everything a run earns starts where a fresh world starts it.
+    // Everything a run EARNS starts where a fresh world starts it. The
+    // territories and the reach are not on this list any more (2026-09-09) —
+    // see the test below, and `worldFromRun`'s own docblock for why they moved.
     const blank = newWorld(9);
     expect({
       runs: kept.runs,
       bestPoints: kept.bestPoints,
-      farthestReach: kept.farthestReach,
       shrines: kept.shrines,
-      territories: kept.territories,
       finds: kept.finds,
       perks: kept.perks,
       worn: kept.worn,
@@ -535,9 +535,7 @@ describe('worldFromRun — a daily kept as a world (2026-09-05)', () => {
     }).toEqual({
       runs: blank.runs,
       bestPoints: blank.bestPoints,
-      farthestReach: blank.farthestReach,
       shrines: blank.shrines,
-      territories: blank.territories,
       finds: blank.finds,
       perks: blank.perks,
       worn: blank.worn,
@@ -548,5 +546,39 @@ describe('worldFromRun — a daily kept as a world (2026-09-05)', () => {
     expect(played.revealed.length, 'the two disagree about what “seen” means').toBe(
       kept.revealed.length,
     );
+  });
+
+  /**
+   * THE TERRITORIES COME WITH IT (2026-09-09, Marc: *"make sure territories
+   * follow up in a new world if we go from daily to world, otherwise
+   * territories in daily are underpowered"*).
+   *
+   * One field of the 2026-09-05 ruling above, reversed on new evidence: three
+   * of a territory's four payments are unreachable on a board with no ledger,
+   * so leaving them behind made claiming one on a daily nearly worthless.
+   * `farthestReach` travels with them because `knownFraction` divides by it.
+   *
+   * Built by hand rather than by walking a board to a territory: this is a test
+   * about which FIELDS `worldFromRun` folds, and the folding is `mergeRun`'s,
+   * which `mergeRun`'s own tests above already walk a real board for.
+   */
+  it('carries the territories the run claimed, and how far it walked', () => {
+    const state = newRun(9, TUNING);
+    const at: HexKey = '3,-1';
+    const conquered: GameState = {
+      ...state,
+      cells: {
+        ...state.cells,
+        [at]: { kind: 'landmark', reward: 'territory', colour: 'green', claimed: true },
+        '2,0': { kind: 'tile', colour: 'green' },
+      },
+    };
+    const kept = worldFromRun(9, conquered);
+    expect(kept.territories, 'a claimed territory stayed behind').toEqual([at]);
+    expect(kept.farthestReach, 'the reach stayed behind').toBe(
+      mergeRun(newWorld(9), conquered).farthestReach,
+    );
+    // Still not the spoils.
+    expect([kept.runs, kept.bestPoints]).toEqual([0, 0]);
   });
 });

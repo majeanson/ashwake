@@ -15,6 +15,7 @@ import {
   reachOf,
   ripeKeys,
   scoreOf,
+  territoryPaysAt,
   withinBeaconHorizon,
   worthOf,
 } from '@engine/rules';
@@ -1903,8 +1904,14 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
       return claimed ? x.findClaimed : x.find;
     }
     const owns = colour === null ? x.someColour : name(colour);
-    return claimed
-      ? x.territoryClaimed(t.territoryRadius, owns)
+    if (claimed) return x.territoryClaimed(t.territoryRadius, owns);
+    // The tiles it would pay, from the function that will pay them. Zero in a
+    // world, where "for good" is true and the sentence is unchanged; raised on
+    // a daily and a shared board, where the field lasts one run unless the
+    // board is continued as a world (2026-09-09).
+    const pays = territoryPaysAt(hex, t, homeOf(state));
+    return pays > 0
+      ? x.territoryPays(t.territoryRadius, owns, pays)
       : x.territory(t.territoryRadius, owns);
   };
 

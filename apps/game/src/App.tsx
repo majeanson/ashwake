@@ -30,7 +30,7 @@ import {
   type Progress,
   type TeachId,
 } from '@meta/progress';
-import { metGoalIds } from '@meta/goals';
+import { metGoalIds, sealGoals } from '@meta/goals';
 import { ONLY_WORLD } from '@meta/records';
 import {
   worldFromRun,
@@ -2676,6 +2676,14 @@ function Game() {
    * brand-new device arriving through a link should not have to burn a world
    * nobody chose in order to keep the one somebody did.
    *
+   * **It is no longer the only door a shared board has** (2026-09-09). A
+   * detour plays a daily's economy now and ends on a daily's KEEP THIS BOARD
+   * offer, which carries what the run walked and lets the player name the
+   * slot. This one is the shortcut past the trial: taken on the door, before
+   * playing, by somebody who already knows they want the seed as a world. So
+   * the two are not duplicates — they are BEFORE and AFTER, and only the after
+   * one has a board to carry.
+   *
    * It goes in through `enterWorld`, not by writing state here, for that
    * function's own reason: everything a run starts from has to be put down in
    * one order, or two doors disagree about what a run starts from.
@@ -2708,19 +2716,31 @@ function Game() {
   }, [session.detour, daily, snap.state.rootSeed, enterWorld]);
 
   /**
-   * KEEP THIS BOARD — a daily, turned into one of this device's three worlds
-   * (2026-09-05, Marc, of what CONTINUE IN MY WORLD had always meant to him:
-   * *"i want to import this seed in one of my 3 worlds as a new world that
-   * i'd like to explore further, with this first run in mind"*).
+   * KEEP THIS BOARD — the board just played, turned into one of this device's
+   * three worlds (2026-09-05, Marc, of what CONTINUE IN MY WORLD had always
+   * meant to him: *"i want to import this seed in one of my 3 worlds as a new
+   * world that i'd like to explore further, with this first run in mind"*).
    *
-   * The sibling of `settleThisWorld` above, and deliberately not the same
-   * function: that one keeps a SHARED seed and is refused on a daily, offers
-   * only the first free slot, and carries nothing but the number. This one is
-   * a daily specifically, picks the slot the player names — a world with runs
-   * on it is one this would abandon, so the choosing belongs to them — and
-   * carries the ground the run walked. What it does NOT carry is the run:
-   * `worldFromRun`'s own docblock has the reasoning, and it is Marc's answer
-   * when asked, over both "the run counts as run 1" and "seed only".
+   * **A SHARED BOARD REACHES IT TOO** (2026-09-09, Marc: *"For a shared world,
+   * it should be able to be played like a daily for a first run, then the same
+   * question goes: do we continue in a world? if yes, we keep the same."*) It
+   * was a daily-only offer, and a shared link had only `settleThisWorld` on
+   * the front door — which keeps the SEED, takes the first free slot rather
+   * than one the player names, and carries nothing the run did. Both halves of
+   * Marc's sentence are the same offer now: a detour plays a daily's economy
+   * (`shell/economy.ts`) and ends on a daily's question.
+   *
+   * `settleThisWorld` stays, because it answers a different moment: it is
+   * taken BEFORE playing, by somebody who wants the seed as a world from run
+   * one rather than a trial of it. This one is taken after, and it carries what
+   * the trial did.
+   *
+   * What it does NOT carry is the run — `worldFromRun`'s docblock has the
+   * reasoning, and it is Marc's answer when asked, over both "the run counts as
+   * run 1" and "seed only". `sealGoals` is the guard that makes that true of
+   * the SURVEY as well: the ground, the territories and the reach it plants are
+   * three of the five goals' own inputs, so without it one placement in the new
+   * world collected 90 relics for a survey nothing there had done.
    *
    * `settleWorldInto` rather than a write here, for `settleSlot`'s reason: the
    * slot's saved run and shop have to go with it, and one place should know
@@ -2729,13 +2749,13 @@ function Game() {
    * or two doors disagree about what a run starts from.
    */
   const importDaily = useMemo(() => {
-    if (daily === null) return undefined;
+    if (daily === null && !session.detour) return undefined;
     const seed = snap.state.rootSeed;
     const state = snap.state;
     return {
       worlds: ledgers.worlds,
       onImport: (into: Slot) => {
-        settleWorldInto(into, worldFromRun(seed, state));
+        settleWorldInto(into, sealGoals(worldFromRun(seed, state), readProgress()));
         // The diary's arrival entry, before the navigation — a world taken is
         // a world-scale moment, and no run-end hook sees this door.
         writeTimeline(
@@ -2751,7 +2771,7 @@ function Game() {
         enterWorld(into);
       },
     };
-  }, [daily, snap.state, ledgers.worlds, enterWorld]);
+  }, [daily, session.detour, snap.state, ledgers.worlds, enterWorld]);
 
   /**
    * The purse's own handler, kept OUT of whichever component draws the

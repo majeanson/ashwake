@@ -1,5 +1,5 @@
 import type { Colour } from '@content/tuning';
-import { cachePaysAt, distanceMultiplierAt, homeOf } from '@engine/rules';
+import { cachePaysAt, distanceMultiplierAt, homeOf, territoryPaysAt } from '@engine/rules';
 import type { HexKey } from '@engine/hex';
 import type { GameState, LandmarkReward } from '@engine/state';
 import type { PerkId } from '@meta/progress';
@@ -258,7 +258,14 @@ function receiptFor(
 
     case 'territory': {
       const owns = colour === undefined ? s.view.hex.someColour : namesOf(theme, s.locale)[colour];
-      return c.territory(t.territoryRadius, owns);
+      // The tiles the engine just paid, from the one function that paid them.
+      // Zero in a world, where the sentence is the one it always was; raised
+      // on a daily and a shared board, where the field is this run's only and
+      // the receipt has to say both things (see `claim.territoryPays`).
+      const paid = territoryPaysAt(hex, t, homeOf(after));
+      return paid > 0
+        ? c.territoryPays(t.territoryRadius, owns, paid)
+        : c.territory(t.territoryRadius, owns);
     }
 
     case 'shrine': {

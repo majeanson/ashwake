@@ -46,3 +46,36 @@ export function newlyMetGoals(world: WorldMemory, progress: Progress): readonly 
   const already = new Set(world.goalsMet);
   return metGoalIds(world, progress).filter((id) => !already.has(id));
 }
+
+/**
+ * A world PLANTED from a run that happened before it existed, with every goal
+ * it already satisfies marked as paid (2026-09-09).
+ *
+ * `meta/world.ts`'s `worldFromRun` hands a fresh world the ground a daily or a
+ * shared board walked, its territories, and how far it got. Three of the five
+ * goals read exactly those fields, `goalsMet` starts empty, and the payout runs
+ * at the end of the NEXT run — so one placement in the planted world was enough
+ * to collect `known40` (35 relics), `reach20` (25) and `territories4` (30) for
+ * a survey nothing in that world had done. On a board that can be retried until
+ * it is good and re-planted every day, that is a faucet.
+ *
+ * **The `known40` half of it is live on `main` today** and has been since the
+ * import shipped on 2026-09-05: `worldFromRun` carried `revealed` with a
+ * `farthestReach` of zero, so `knownFraction` divided a few hundred remembered
+ * hexes by a ten-hex disc and answered 100%.
+ *
+ * Sealing rather than zeroing the fields, because the fields are TRUE — the
+ * ground was walked, the territories were taken, the reach was reached, and the
+ * atlas should say so. What is not true is that this world's survey earned
+ * anything, and `goalsMet` is precisely the ledger of "already accounted for".
+ * Anything the player goes on to meet HERE still pays, once, exactly as it
+ * always did.
+ *
+ * It lives in this file rather than beside `worldFromRun` because the detector
+ * is here: `meta/world.ts` cannot import `meta/goals.ts`, which imports it.
+ */
+export function sealGoals(world: WorldMemory, progress: Progress): WorldMemory {
+  const already = metGoalIds(world, progress);
+  if (already.length === 0) return world;
+  return { ...world, goalsMet: [...new Set([...world.goalsMet, ...already])] };
+}

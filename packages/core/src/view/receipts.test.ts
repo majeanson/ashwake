@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { TUNING } from '@content/tuning';
+import { TUNING, type Tuning } from '@content/tuning';
 import { newRun } from '@engine/reduce';
+import { homeOf, territoryPaysAt } from '@engine/rules';
 import type { Cell, GameState, LandmarkReward } from '@engine/state';
 import { LANDMARK_ICON } from '@theme/icons';
 import { resolveTheme } from '@theme/index';
@@ -73,6 +74,46 @@ describe('a claim speaks', () => {
   it('says nothing for a landmark that was ALREADY claimed', () => {
     const claimed = withLandmark('2,0', 'shrine', true);
     expect(claimsBetween(claimed, claimed, ctx)).toHaveLength(0);
+  });
+});
+
+describe('a territory on a board with no ledger behind it', () => {
+  /**
+   * THE RECEIPT SAYS THE NUMBER THE PURSE RECEIVED (2026-09-09).
+   *
+   * `territoryPays` is 0 in a world, where the sentence is the one it always
+   * was — "it stays yours between runs", which is true there. Raised on a
+   * daily and a shared board, where it is NOT true unless the player keeps the
+   * board, the receipt has to carry both new facts: the tiles it just paid, and
+   * that the field lasts the run otherwise. Read from `territoryPaysAt`, the
+   * same function the engine paid from, for `cachePaysAt`'s own reason: Ashwake
+   * 1's UI once priced a cache from world origin instead of from home and
+   * announced several times what it actually banked.
+   */
+  const noLedger: Tuning = { ...TUNING, territoryPays: TUNING.cachePays };
+  const held = (hex: string, claimed: boolean, tuning: Tuning): GameState => {
+    const base = newRun(7, tuning);
+    return {
+      ...base,
+      cells: {
+        ...base.cells,
+        [hex]: { kind: 'landmark', reward: 'territory', claimed, colour: 'green' },
+      },
+    };
+  };
+
+  it('quotes the tiles the engine paid, and only where they were paid', () => {
+    const hex = '2,0';
+    const paid = territoryPaysAt(hex, noLedger, homeOf(held(hex, true, noLedger)));
+    expect(paid, 'the fixture pays nothing, so this test proves nothing').toBeGreaterThan(0);
+
+    const said = claimsBetween(held(hex, false, noLedger), held(hex, true, noLedger), ctx);
+    expect(said[0]?.text).toContain(String(paid));
+
+    // A world's receipt is unchanged, and does not quote a payment it did not
+    // make: `territoryPays` is 0 there.
+    const inWorld = claimsBetween(held(hex, false, TUNING), held(hex, true, TUNING), ctx);
+    expect(inWorld[0]?.text).toBe(s.claim.territory(TUNING.territoryRadius, 'FARM'));
   });
 });
 

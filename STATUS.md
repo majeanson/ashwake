@@ -4,7 +4,51 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — one hex draws one cell, and the daily's coin
+Last checkpoint: **2026-09-09 — a territory is worth claiming on a board with
+no ledger, and a shared board is a daily you were handed.**
+
+Marc asked for three things at once: territories that follow a daily into a
+world, tiles for a territory in a daily, and a shared board playable like a
+daily with the same question at the end. Two of the three doors were already
+built (2026-09-05); the work was one field, one condition and one dial.
+`LOG.md` Session 64 is the reasoning.
+
+**Verified:**
+
+- **Territories travel when a board is kept as a world.** `worldFromRun`
+  carried `revealed` and nothing else, which is exactly why Marc called a
+  daily's territories underpowered: three of a territory's four payments —
+  `territoryTiles` into later runs, +10 relics on the crossing, greeting a
+  later run already yours — are unreachable without a ledger. `farthestReach`
+  travels beside them because `knownFraction` divides by it. `runs` and
+  `bestPoints` still do not, which is Marc's own 2026-09-05 answer, unchanged.
+  `homeworld.test.ts` walks the whole seam: claimed on the daily, in the
+  world, lent back, in the next run's claim ledger.
+- **And that opened a relic faucet, one third of which was already open.** The
+  planted world's ground, territories and reach are three of the five survey
+  goals' own inputs and `goalsMet` starts empty, so one placement in the
+  adopted world collected 90 relics for a survey nothing there had done. The
+  `known40` third **has been live since the import shipped on 2026-09-05**:
+  a few hundred remembered hexes over a `farthestReach` of zero is 100% of a
+  ten-hex disc. `sealGoals` marks what is already true as already paid —
+  sealed, not zeroed, because the facts are true and the atlas should say so.
+- **A territory pays tiles where there is no ledger, and only there.**
+  `territoryPays`, zero in every shipped tuning so the golden sim cannot move,
+  set to a cache's own `cachePays` for a daily and a shared board and graded
+  by distance like a site's points. Not named `territoryTiles`: that name
+  belongs to the per-later-run bonus this substitutes for.
+- **A shared board plays a daily's economy** and ends on a daily's KEEP THIS
+  BOARD offer. The end screen gated that offer on `daily != null` as well as
+  on the offer existing, so a shared board was shown nothing even once the
+  shell was willing; one place decides now.
+- **Two sentences, both languages.** A daily's territory claim says the tiles
+  it paid and "continue this board in a world to keep it", instead of the
+  world's "it stays yours between runs" — a promise a daily could not keep.
+
+**Counts:** 1096 tests / 86 files, `pnpm sim` byte-identical, typecheck and
+lint clean.
+
+Previous checkpoint: **2026-09-09 — one hex draws one cell, and the daily's coin
 gets its second face.**
 
 Marc sent a screenshot of one star drawn twice and asked, in the same breath,

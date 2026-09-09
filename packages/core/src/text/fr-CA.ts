@@ -406,6 +406,8 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `TERRITOIRE${D}: à toi. Le sol à ${radius} hex à la ronde est natal de ${owns}.`,
       territory: (radius, owns) =>
         `TERRITOIRE${D}: réclame-le et le sol à ${radius} hex à la ronde devient natal de ${owns}, pour de bon.`,
+      territoryPays: (radius, owns, tiles) =>
+        `TERRITOIRE${D}: réclame-le pour +${nb(tiles)} tuiles, et le sol à ${radius} hex à la ronde devient natal de ${owns} pour cette partie.`,
       someColour: 'une couleur',
       chainOut: (sentence) => `${sentence} Fais grandir ta chaîne jusque-là.`,
       shimmers: 'Quelque chose scintille ici. Fais grandir ton sol jusque-là.',
@@ -581,6 +583,9 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     territory: (radius, owns) =>
       `TERRITOIRE RÉCLAMÉ
 Le sol à moins de ${radius} hexes est natif de ${owns} maintenant, et il te reste entre les parties.`,
+    territoryPays: (radius, owns, tiles) =>
+      `TERRITOIRE RÉCLAMÉ
++${nb(tiles)} tuiles, et le sol à moins de ${radius} hexes est natif de ${owns}. Continue ce plateau dans un monde pour le garder.`,
     shrine: (unlock) =>
       `SANCTUAIRE ÉVEILLÉ
 ${unlock}
@@ -764,7 +769,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       continueInWorld: 'CONTINUER DANS MON MONDE',
       importInto: `GARDE CE PLATEAU COMME L’UN DE TES MONDES${D}:`,
       importKeeps:
-        'Le terrain que tu as parcouru te suit. Les reliques, les sanctuaires et le score restent au quotidien.',
+        'Le terrain que tu as parcouru et les territoires que tu as réclamés te suivent. Le score et les reliques restent derrière, et les sanctuaires s’éveillent.',
       relicsBanked: (n) => `${nb(n)} reliques mises de côté`,
       placements: 'POSES',
       popped: 'RÉCOLTES',

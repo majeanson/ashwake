@@ -85,6 +85,32 @@ describe('reaching a destination', () => {
     expect(again.tiles).toBe(spentAt - 1);
   });
 
+  /**
+   * A TERRITORY PAYS TILES ONLY WHERE THERE IS NO LEDGER (2026-09-09, Marc:
+   * *"maybe they could give tiles in daily too? (not in world?)"*).
+   *
+   * `territoryPays` is 0 in every shipped tuning, so the first half of this is
+   * the pin that a WORLD is untouched — the same claim `pnpm sim` makes by
+   * printing the golden file, said here where a reader of the payout can see
+   * it. `shell/economy.ts` raises it for a daily and a shared board, and the
+   * grade is the site's, so the number is the dial times the distance
+   * multiplier at the hex rather than the dial.
+   */
+  it('pays a territory no tiles in a world, and its dial times the distance outside one', () => {
+    const world = withLandmark('territory');
+    const before = world.state.tiles;
+    expect(world.state.tuning.territoryPays, 'a world paid a territory in tiles').toBe(0);
+    expect(reduce(world.state, { type: 'PLACE', hex: key(1, 0) }).tiles).toBe(before - 1);
+
+    const noLedger: Tuning = { ...CALM, territoryPays: 6 };
+    const { state, landmark } = withLandmark('territory', noLedger);
+    const paid = reduce(state, { type: 'PLACE', hex: key(1, 0) });
+    expect(paid.tiles).toBe(state.tiles - 1 + 6 * distanceMultiplierAt(landmark, noLedger));
+    // And still exactly once: a second tile against a spent territory pays
+    // nothing but the cost.
+    expect(reduce(paid, { type: 'PLACE', hex: key(2, -1) }).tiles).toBe(paid.tiles - 1);
+  });
+
   it('unfurls a territory into a native field, now and for later reveals', () => {
     const { state, landmark } = withLandmark('territory');
     const next = reduce(state, { type: 'PLACE', hex: key(1, 0) });

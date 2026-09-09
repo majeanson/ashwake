@@ -16,6 +16,7 @@ import {
   reachOf,
   ripeKeys,
   scoreOf,
+  territoryPaysAt,
 } from './rules';
 import type {
   Action,
@@ -550,6 +551,19 @@ function place(state: GameState, hex: HexKey): GameState {
       // run, so the engine only marks it reached and the shell reads that
       // when the world is written.
       if (c.reward === 'territory' && c.colour !== undefined) {
+        /*
+         * AND IT PAYS TILES WHERE THERE IS NO LEDGER TO PAY INTO (2026-09-09).
+         *
+         * Zero in a world — `territoryPays` is 0 in every shipped tuning —
+         * so this line adds nothing to the game Marc has been playing. A
+         * daily and a shared board raise it in `shell/economy.ts`, because
+         * there the field is ALL a territory gives: no crossing to add ten
+         * relics to, and nothing that greets a later run already yours unless
+         * the board is adopted as a world. Same shape as the cache above, same
+         * one function behind it, so the receipt cannot quote a number the
+         * purse did not receive.
+         */
+        tiles += territoryPaysAt(n, t, homeOf(state));
         // The claim unfurls: already-revealed open ground inside the radius
         // becomes the territory's field now; ground revealed later gets the
         // same answer from `claimedFields` at reveal time.

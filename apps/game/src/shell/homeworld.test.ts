@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { newRun } from '@engine/reduce';
 import { TUNING } from '@content/tuning';
 import { pickLocale } from '@content/locale';
-import { newWorld } from '@meta/world';
+import { newWorld, worldFromRun } from '@meta/world';
+import { newlyMetGoals, sealGoals } from '@meta/goals';
+import type { HexKey } from '@engine/hex';
+import type { GameState } from '@engine/state';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { settle } from './settle';
@@ -15,6 +18,7 @@ import {
   memoryFor,
   NO_MEMORY,
   readWorld,
+  settleWorldInto,
   worldSeedFor,
   writeWorld,
 } from './storage';
@@ -117,6 +121,77 @@ describe('the world a run is played on', () => {
     });
     expect(foreign.progress.relics, 'a detour paid out').toBe(0);
     expect(foreign.goals, 'a detour met a goal').toEqual([]);
+  });
+});
+
+describe('a board kept as a world (2026-09-09)', () => {
+  /**
+   * THE WHOLE CHAIN, because Marc asked for it in those words: *"make sure
+   * territories follow up in a new world if we go from daily to world."*
+   *
+   * Four files stand between a territory claimed on a daily and a territory
+   * standing claimed on the first run of the world that daily became —
+   * `meta/world.ts`'s `worldFromRun`, `shell/storage.ts`'s `settleWorldInto`
+   * and `memoryFor`, and `engine/reduce.ts`'s `newRun` — and every one of
+   * them was already tested in isolation while the chain was broken: the fold
+   * simply left `territories` behind. This is the seam test, and it belongs in
+   * this file for this file's own stated reason: what it pins crosses several
+   * modules and belongs to none of them.
+   */
+  it('carries a territory claimed on a daily into the world that daily becomes', () => {
+    const seed = 8181;
+    const at: HexKey = '3,-1';
+    const played = finished(seed);
+    const daily: GameState = {
+      ...played.state,
+      cells: {
+        ...played.state.cells,
+        [at]: { kind: 'landmark', reward: 'territory', colour: 'green', claimed: true },
+      },
+    };
+
+    settleWorldInto(2, sealGoals(worldFromRun(seed, daily), EMPTY_PROGRESS));
+    expect(readWorld(2)?.territories, 'the claim did not reach the world').toEqual([at]);
+
+    // And the run that opens there starts with it already yours.
+    const lent = memoryFor(2, seed);
+    expect(lent.claimed, 'the world did not lend the claim back').toContain(at);
+    // And the engine opens holding it. It is not on the BOARD yet — a fresh
+    // run reveals only its arrival clearing — but it is in the run's claim
+    // ledger, which is what makes it reveal already yours and its field
+    // already native when the ground reaches it. That last step is pinned on
+    // a walked board in `meta/world.test.ts`; what was broken was this seam.
+    const opened = newRun(seed, TUNING, lent.claimed, lent.finds);
+    expect(opened.claimed, 'the run opened without the claim').toContain(at);
+  });
+
+  /**
+   * And the survey is not paid for it — see `meta/goals.ts`'s `sealGoals`.
+   * A planted world's ground, territories and reach are three of the five
+   * goals' inputs, and the payout runs at the end of the NEXT run, so without
+   * the seal one placement in the new world collected relics for a survey
+   * nothing there had done.
+   */
+  it('pays no survey relics for what the board arrived holding', () => {
+    const seed = 8282;
+    const played = finished(seed);
+    const conquered: GameState = {
+      ...played.state,
+      cells: {
+        ...played.state.cells,
+        ...Object.fromEntries(
+          (['3,-1', '4,-1', '5,-1', '6,-1'] as HexKey[]).map((k) => [
+            k,
+            { kind: 'landmark', reward: 'territory', colour: 'green', claimed: true } as const,
+          ]),
+        ),
+      },
+    };
+    const planted = sealGoals(worldFromRun(seed, conquered), EMPTY_PROGRESS);
+    expect(planted.territories.length, 'the fixture claimed nothing').toBe(4);
+    expect(newlyMetGoals(planted, EMPTY_PROGRESS), 'a planted world owed relics').toEqual([]);
+    // Unsealed, it owed for a survey it did not do.
+    expect(newlyMetGoals(worldFromRun(seed, conquered), EMPTY_PROGRESS)).toContain('territories4');
   });
 });
 

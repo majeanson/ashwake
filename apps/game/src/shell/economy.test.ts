@@ -106,13 +106,43 @@ describe('the two kinds of run that earn nothing', () => {
    * perk lives on the world, and a daily has no world — so a daily's finds
    * shimmered, cost a placement to reach and paid nothing. See `NO_LEDGER`.
    */
-  it('puts no hidden finds in a daily at all', () => {
-    const t = economyFor({ kind: 'daily' });
-    expect([t.findEvery, t.findChance, t.findSense]).toEqual([0, 0, 0]);
-    // A detour is somebody else's world, played as it stands: its finds are
-    // real, they simply pay this device nothing.
+  it('puts no hidden finds in a daily, nor in a shared board', () => {
+    for (const kind of ['daily', 'detour'] as const) {
+      const t = economyFor({ kind });
+      expect([t.findEvery, t.findChance, t.findSense], kind).toEqual([0, 0, 0]);
+    }
+  });
+
+  /**
+   * A SHARED BOARD IS A DAILY YOU WERE HANDED (2026-09-09, Marc: *"For a
+   * shared world, it should be able to be played like a daily for a first
+   * run"*).
+   *
+   * This file used to pin the opposite — "a detour is not a daily", on the
+   * argument that somebody else's world should be played as it stands. That
+   * argument is about the GEOGRAPHY and it still holds: nothing in `NO_LEDGER`
+   * touches ground, walls, caches, sites or territories, so a shared link is
+   * still the board the sharer walked. What it takes away is the two landmark
+   * kinds that pay into a ledger a detour does not have.
+   */
+  it('plays a shared board on a daily’s economy, geography untouched', () => {
+    const daily = economyFor({ kind: 'daily' });
     const detour = economyFor({ kind: 'detour' });
-    expect(detour.findChance, 'a detour is not a daily').toBe(TUNING.findChance);
+    expect(detour).toEqual(daily);
+    // The board itself is the sharer's: every dial that decides where a hex,
+    // a wall or a landmark stands is the shipped one.
+    for (const dial of [
+      'destinationEvery',
+      'destinationChance',
+      'cacheShareNear',
+      'siteShareNear',
+      'territoryShareNear',
+      'territoryRadius',
+      'worldWalls',
+      'elevationEvery',
+    ] as const) {
+      expect(detour[dial], dial).toBe(TUNING[dial]);
+    }
   });
 
   /**
@@ -128,17 +158,45 @@ describe('the two kinds of run that earn nothing', () => {
     expect([t.burnRelics, t.burnLuck]).toEqual([0, 0]);
   });
 
-  it('plays a shared seed on the plain economy, with no relics', () => {
+  it('changes nothing a shared board does not need changed', () => {
     const t = economyFor({ kind: 'detour' });
-    expect(t.shrinesReborn, 'a detour is not a daily').toBe(TUNING.shrinesReborn);
-    expect([t.burnRelics, t.claimRelics, t.luckToRelics, t.titheRate]).toEqual([0, 0, 0, 0]);
-    // Everything else is untouched: a replay scored under this device's
-    // upgrades would not be a replay of anything.
-    expect({ ...t, burnRelics: TUNING.burnRelics }).toEqual({
+    // Every dial, listed: a replay scored under this device's upgrades would
+    // not be a replay of anything, so the shop and the perks reach neither of
+    // the two kinds that earn nothing.
+    expect(t).toEqual({
       ...TUNING,
+      burnRelics: 0,
       claimRelics: 0,
       luckToRelics: 0,
       titheRate: 0,
+      shrinesReborn: true,
+      findEvery: 0,
+      findChance: 0,
+      findSense: 0,
+      territoryPays: TUNING.cachePays,
     });
+  });
+
+  /**
+   * A TERRITORY PAYS TILES WHERE THERE IS NO LEDGER, AND ONLY THERE
+   * (2026-09-09, Marc: *"maybe they could give tiles in daily too? (not in
+   * world?)"*).
+   *
+   * Three of a territory's four payments are dead outside a world: the
+   * `territoryTiles` bonus to later runs, the +10 relics on the crossing, and
+   * greeting a later run already yours. `territoryPays` is the substitute and
+   * the one landmark dial that is HIGHER outside a world than in one.
+   */
+  it('pays a territory in tiles outside a world, and never inside one', () => {
+    for (const kind of ['daily', 'detour'] as const) {
+      expect(economyFor({ kind }).territoryPays, kind).toBe(TUNING.cachePays);
+    }
+    expect(TUNING.territoryPays, 'a world paid a territory in tiles').toBe(0);
+    const home = economyFor({
+      kind: 'home',
+      world: newWorld(7),
+      progress: EMPTY_PROGRESS,
+    });
+    expect(home.territoryPays, 'a world paid a territory in tiles').toBe(0);
   });
 });

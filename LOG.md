@@ -5207,3 +5207,72 @@ somebody else's world, played as it stands", because a replay scored under
 this device's economy would not be a replay of anything. It is in `NEXT.md`
 §1 for Marc rather than changed, since which of those two rules wins is a
 design call and not a defect.
+
+### Session 64 — three asks about a board with no ledger, and most of the answer was already built (2026-09-09)
+
+**Question:** Marc asked for three things in one message: territories that
+follow a daily into a world, maybe tiles for a territory in a daily, and a
+shared board playable like a daily with the same question at the end. So:
+**when an ask reaches for a mechanic, how much of it is already there?**
+
+**Answer: two of the three doors existed, and the honest work was one field and
+one condition.** `worldFromRun` and the KEEP THIS BOARD picker shipped on
+2026-09-05 — slot chosen by the player, armed on a world with runs on it,
+carrying the ground the daily walked. `settleThisWorld` shipped before that for
+a shared seed. Checking before building is what this repository's own rule says
+and it is the only reason a second importer was not written beside the first.
+
+**The one field: `worldFromRun` carried `revealed` and nothing else, and that
+is precisely what made Marc's complaint true.** A territory pays four ways — the
+field it unfurls now, `territoryTiles` into every later run's purse, +10 relics
+on the crossing's dowry, and greeting a later run already yours. On a board with
+no ledger, three of those four are unreachable. Territories travel now, with
+`farthestReach` beside them because `knownFraction` divides by it; `runs` and
+`bestPoints` still do not, which is Marc's own 2026-09-05 answer and unchanged.
+This reverses ONE field of that ruling, and the reason it can be reversed is
+that the anti-farm argument behind it does not reach a territory: a territory is
+a fixed hex of the geography, so retrying a daily to claim one buys the same
+reward for the same walk rather than a menu trick.
+
+**And carrying it opened a relic faucet, one third of which was already open.**
+The planted world's ground, territories and reach are three of the five survey
+goals' own inputs; `goalsMet` starts empty and the payout runs at the END of
+the next run. So one placement in the adopted world collected `known40` (35),
+`reach20` (25) and `territories4` (30) for a survey nothing in that world had
+done — on a board that can be retried until it is good and re-planted every
+day. **The `known40` third has been live since the import shipped**, because
+`worldFromRun` carried a few hundred remembered hexes with a `farthestReach`
+of zero and `knownFraction` divided them by a ten-hex disc: 100% known, 35
+relics, every time. `sealGoals` closes all three by marking what is already
+true as already paid — sealing rather than zeroing, because the facts ARE true
+and the atlas should say so; what is not true is that this world's survey earned
+anything.
+
+**The one condition: the end screen gated KEEP THIS BOARD on `daily != null`
+as well as on the offer being present**, so a shared board was offered nothing
+even once the shell was willing. One place decides now — `App` — and the screen
+draws what it is given. Same shape as every miss this week: two guards for one
+question, and the second one wrong.
+
+**A shared board plays a daily's economy.** That was `NEXT.md` §1 for exactly
+one day, put there yesterday as a design call for Marc, and he answered it by
+asking for the flow rather than the rule. A detour's shrines unlocked nothing
+and its finds' perks were refused at the grant, so both were landmarks that cost
+a placement and paid nothing. `NO_LEDGER` covers it now. The geography argument
+that kept it out survives untouched: nothing in `NO_LEDGER` moves ground, walls,
+caches, sites or territories, and shrines only change FACE — so continuing a
+board as a world does not rearrange it, it wakes it, and the doors appear where
+the caches were.
+
+**`territoryPays` is a new dial and it is the one landmark dial that is HIGHER
+outside a world than in it.** Zero in every shipped tuning, set to a cache's own
+`cachePays` for a daily and a shared board, graded by distance like a site's
+points. It could not be called `territoryTiles`: that name has belonged to the
+per-later-run bonus since M3, and it is the exact thing this substitutes for.
+
+**Two sentences and no more.** The claim receipt and the tap answer both fork on
+the dial being raised, so a daily says "+N tiles, and the ground within R hexes
+is native to X. Continue this board in a world to keep it" instead of the
+world's "it stays yours between runs" — which was a promise a daily could not
+keep, and is now the offer the ending is about to make, said at the moment the
+player earns the reason to take it.
