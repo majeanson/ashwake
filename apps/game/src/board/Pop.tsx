@@ -9,7 +9,14 @@ import { cellTint } from '@theme/torch';
 import type { AssetBook } from './assets';
 import { embersFor, emberPhase, type Ember } from './ambient';
 import { glowTexture } from './glow';
-import { capacityFor, groundBatches, hexRadiusOf, standOf, type GroundBatch } from './ground';
+import {
+  capacityFor,
+  groundBatches,
+  hexRadiusOf,
+  radiusScaleOf,
+  standOf,
+  type GroundBatch,
+} from './ground';
 import { commitInstances, tintInto } from './instances';
 import { cascadeDelays, cascadeMs, glowPhase, leapPhase, REDUCED_MS } from './leap';
 import { useBatchResources } from './resources';
@@ -211,6 +218,9 @@ export function Pop({
     for (const batch of batches) {
       const mesh = meshes.current.get(batch.key);
       if (mesh === undefined) continue;
+      // The same per-surface gutter the field draws (see `HexField`), so a
+      // tile does not change width at the moment it leaps.
+      const gutter = radiusScaleOf(theme, batch.surface);
       batch.items.forEach((item, i) => {
         const delay = delays.get(item.cell.key) ?? 0;
         const stand = standOf(item, batch.kind);
@@ -220,7 +230,7 @@ export function Pop({
         if (!phase.gone) alive = true;
         dummy.position.set(item.x, stand.height / 2 + phase.lift, item.z);
         dummy.rotation.set(0, phase.spin, 0);
-        dummy.scale.set(phase.scale, stand.scaleY * phase.scale, phase.scale);
+        dummy.scale.set(gutter * phase.scale, stand.scaleY * phase.scale, gutter * phase.scale);
         dummy.updateMatrix();
         dummy.rotation.set(0, 0, 0);
         mesh.setMatrixAt(i, dummy.matrix);

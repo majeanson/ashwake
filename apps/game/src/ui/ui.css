@@ -3351,3 +3351,41 @@ h3.fact-label {
   overflow-x: auto;
   white-space: pre;
 }
+
+/*
+ * THE VIGNETTE (2026-09-08) — `board.vignette`, authored since the theme was
+ * written and drawn by nothing until now.
+ *
+ * Everything visual about it is an inline style from the direction's own
+ * tokens (see `App`), because `daylight` authors `null` and must draw nothing
+ * at all — a case a stylesheet cannot state without a second rule to turn the
+ * element off. What lives here is only the geometry and the one rule that
+ * matters: it is never in the way.
+ */
+.board-vignette {
+  position: absolute;
+  inset: 0;
+  /* Over the board and UNDER every control on it, so it can never dim a
+     button. `--z-board` is the canvas's own rung; this sits on it and the
+     chrome's `--z-chrome` is five rungs above. */
+  z-index: var(--z-board);
+  /* The whole safety of the thing. A full-bleed element over the board that
+     took a tap would eat every placement on the screen. */
+  pointer-events: none;
+}
+
+/*
+ * The reserved action row (2026-09-08) — see `screens/ActionBar`.
+ *
+ * Shaped exactly like an `.act` button and drawn like nothing, so the bar is
+ * the same height on the first frame of a run as it is once a pocket ripens
+ * and the board never resizes under the canvas. `visibility: hidden` rather
+ * than `opacity: 0`: it keeps the box, and it takes the element out of the tap
+ * order and the accessibility tree in one word.
+ */
+.act.gap {
+  visibility: hidden;
+  /* It must never be the thing a thumb finds, even for the frame before
+     `visibility` applies. */
+  pointer-events: none;
+}

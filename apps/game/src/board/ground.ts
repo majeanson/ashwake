@@ -39,6 +39,49 @@ export function hexRadiusOf(theme: Theme): number {
   return 1 - theme.board.seam;
 }
 
+/**
+ * How much WIDER a surface's own gutter is than the board's, as a fraction of
+ * the hex radius (2026-09-08, Marc: honour `Surface.inset` as authored).
+ *
+ * ## Two gutters that are the same quantity, and the trap in reading one
+ *
+ * `board.seam` and `Surface.inset` are both "gap as a fraction of the hex
+ * radius", authored in two places. Every terrain sits at `0.06` and **`empty`
+ * sits at `0.09`** in both directions, deliberately, so that open ground reads
+ * looser than ground you have built. The board drew one flat value, so that
+ * distinction had never been visible.
+ *
+ * **Honouring `inset` literally would have undone a fix Marc asked for by
+ * looking.** `seam` is 0.04–0.05; terrain's `inset` is 0.06. Taking the
+ * absolute number would widen the gutter under EVERY hex back to what it was
+ * before 2026-09-04 — the build he saw on a phone and said *"the contours are
+ * too thick"* about. Landing one look decision by silently reverting another
+ * is not honouring anything.
+ *
+ * So what is read is the DIFFERENCE the authoring expresses, not its absolute
+ * value: a surface gets the board's seam plus however much its own inset
+ * exceeds the terrain baseline. Built ground keeps exactly the weight Marc
+ * tuned; empty ground gets the extra 0.03 its direction asks for. **The
+ * arithmetic is mine and the intent is the theme's**, which is worth saying
+ * plainly — if the looser reading was wanted, this function is where it
+ * changes.
+ *
+ * The baseline is read off a terrain rather than hard-coded, so a direction
+ * that re-authors its grid moves both halves together.
+ */
+export function gutterOf(theme: Theme, surface: Surface): number {
+  const base = theme.terrain.green.inset;
+  return Math.max(0, surface.inset - base);
+}
+
+/** The radius a given SURFACE's prism is built at, as a fraction of the shared
+ *  geometry's — an instance scale, so no batch needs its own geometry. */
+export function radiusScaleOf(theme: Theme, surface: Surface): number {
+  const shared = hexRadiusOf(theme);
+  if (shared <= 0) return 1;
+  return (shared - gutterOf(theme, surface)) / shared;
+}
+
 export type GroundItem = {
   readonly cell: CellView;
   /** Board coordinates, in hex radii. */

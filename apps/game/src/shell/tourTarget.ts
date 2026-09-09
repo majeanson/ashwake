@@ -28,15 +28,27 @@ import type { BoardView } from '@render/Renderer';
  * COLOURS, the story** and the cost line, which are about the run rather than
  * about ground.
  *
- * **And WALL and FIELD, which ARE places and are the interesting omission.**
- * Both are toast-class: a line beside a game still in motion, spoken on the
- * quiet beat after a placement. Flying the board away there would break the
- * oldest camera ruling this repository has — Marc, 2026-08-29: *"when we place
- * a tile, make sure the map doesnt move and stays stationary, it always zoom in
- * or zoom out a bit and its annoying"* — where every entry below fires off a
- * card the player has just read and pressed GOT IT on, with nothing else
- * happening. One line each to add if that trade is wrong; the trade is a screen
- * decision, so it is stated in `NEXT.md` rather than guessed at here.
+ * ## WALL and FIELD were the interesting omission, and they are IN (2026-09-08)
+ *
+ * They are the two toast-class places — a line beside a game still in motion,
+ * spoken on the quiet beat after a placement — and this file argued them out on
+ * the strength of the oldest camera ruling here, Marc, 2026-08-29: *"when we
+ * place a tile, make sure the map doesnt move and stays stationary, it always
+ * zoom in or zoom out a bit and its annoying."* Put to him with that argument
+ * on 2026-09-08, he chose **fly to them too**: all seven concepts on the map
+ * get the same treatment.
+ *
+ * **The ruling is not broken by this, and the distinction is worth keeping
+ * straight.** What Marc objected to was the board moving on EVERY placement —
+ * an ambient, unasked-for drift that made the map feel unstable. Each of these
+ * fires **once per device, ever**, the first time that idea is met. A trip
+ * nobody can trigger twice is an event, not a behaviour; the ruling is about
+ * the behaviour.
+ *
+ * They are still the two entries most worth watching in Session A, for the one
+ * reason that has not changed: unlike the five above, these speak while the
+ * player's hand is still moving. If either reads as the map running away, this
+ * is one line to take back out.
  */
 export function tourTarget(id: TeachId, board: BoardView): HexKey | null {
   const cell = board.cells.find((c) => {
@@ -50,6 +62,13 @@ export function tourTarget(id: TeachId, board: BoardView): HexKey | null {
         return c.kind === 'landmark' && !c.claimed && c.landmark === id;
       case 'ripe':
         return c.ripe;
+      // The two toast-class places, added 2026-09-08 on Marc's answer. Each
+      // predicate is `teaching.ts`'s own, copied in the same order for the
+      // same reason as the four above — `tourTarget.test.ts` pins the pair.
+      case 'wall':
+        return c.kind === 'wall';
+      case 'field':
+        return c.kind === 'empty' && c.native !== null;
       default:
         return false;
     }

@@ -67,3 +67,49 @@ export function torched(base: Rgb, tint: Rgb): Rgb {
   };
   return (channel(16) << 16) | (channel(8) << 8) | channel(0);
 }
+
+/**
+ * WHAT YOU ARE HOLDING, where you could put it (2026-09-08).
+ *
+ * `CellView.previewColour` has been computed for every legal hex since the
+ * rules were lifted — `view.ts`: `legal ? heldColour : null` — and read by
+ * nothing. `theme.ghost` is a whole Surface every direction authors at alpha
+ * 0.26–0.28, also read by nothing. They are two halves of one idea that has
+ * never been drawn on this board.
+ *
+ * ## Why this is a TINT and not an outline, and what that cost to learn
+ *
+ * It was tried once, on 2026-09-02, as a colour on the legal RING, and Marc
+ * caught it on a phone within the hour: *"the first tile I put seems to
+ * refresh the whole map display."* He was describing exactly what it did —
+ * after a placement the hand redraws, the auto-selected card is usually a
+ * different colour, and every legal edge on the board changed colour in one
+ * frame. The most frequent action in the game became the loudest event on the
+ * screen.
+ *
+ * **The diagnosis was WEIGHT, not colour.** Ashwake 1 drew a hairline stroke;
+ * `HexField` draws a 0.16-radius ring band at full opacity, an order of
+ * magnitude more ink. `board/rings.ts`'s note at the bottom concluded that if
+ * the held colour is ever worth showing here it belongs to a FILL rather than
+ * to the outline — an outline is a STATE, a fill is a PROPOSAL — and left the
+ * choice to Marc. He took it on 2026-09-08.
+ *
+ * So this rides the per-instance tint the torch already writes every frame: no
+ * new mesh, no new geometry, no second pass, and the outline is untouched. The
+ * strength is the direction's own `ghost.alpha`, and `?ghost=` overrides it —
+ * because the honest reading of the history is that this is the same risk in a
+ * quieter channel, and the number wants a phone rather than an argument.
+ */
+export function previewTint(
+  theme: Theme,
+  tint: Rgb,
+  held: keyof Theme['terrain'],
+  strength: number,
+): Rgb {
+  if (strength <= 0) return tint;
+  const surface = theme.terrain[held];
+  // The colour a TILE of that ground is, not the ghost surface's own fill: the
+  // question the player is asking is "what would MY card look like here", and
+  // every direction already answers it in `terrain`.
+  return mix(tint, surface.fill, Math.min(1, strength));
+}

@@ -4,14 +4,21 @@ import { Color, Object3D, type InstancedMesh } from 'three';
 import type { HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
 import type { Layout } from '@render/layout';
-import { cellTint } from '@theme/torch';
+import { cellTint, previewTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
 import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { setMarkAnisotropy } from './marks';
-import { capacityFor, groundBatches, hexRadiusOf, standOf, type GroundBatch } from './ground';
+import {
+  capacityFor,
+  groundBatches,
+  hexRadiusOf,
+  radiusScaleOf,
+  standOf,
+  type GroundBatch,
+} from './ground';
 import { commitInstances, tintInto } from './instances';
 import { Labels } from './Labels';
 import { thetaStartFor } from './prism';
@@ -72,6 +79,9 @@ export type HexFieldProps = {
   /** Where the keyboard's marker is standing, or null while nobody has
    *  pressed a key. */
   readonly cursor: HexKey | null;
+  /** How strongly a legal hex shows the colour you are HOLDING — the
+   *  direction's own `ghost.alpha`, or `?ghost=`. Zero draws none. */
+  readonly ghostStrength: number;
   readonly onTap: (key: HexKey, cell: CellView) => void;
 };
 
@@ -86,6 +96,7 @@ export function HexField({
   assets,
   textures,
   cursor,
+  ghostStrength,
   onTap,
 }: HexFieldProps) {
   const layout = useMemo<Layout>(() => ({ ...UNIT, orientation }), [orientation]);
@@ -144,17 +155,39 @@ export function HexField({
     for (const batch of batches) {
       const mesh = meshes.current.get(batch.key);
       if (mesh === undefined) continue;
+      /*
+       * The surface's OWN gutter, as an instance scale (2026-09-08).
+       *
+       * `Surface.inset` is authored per surface — every terrain at 0.06 and
+       * `empty` at 0.09 — so open ground is meant to read looser than ground
+       * you have built, and the board drew one flat value for all of them.
+       * An XZ scale rather than a second geometry: the prism is shared by the
+       * whole batch and every instance already carries a matrix, so this costs
+       * one multiply per hex and no draw calls at all. `radiusScaleOf` carries
+       * the argument for why it reads the DIFFERENCE rather than the absolute
+       * number.
+       */
+      const gutter = radiusScaleOf(theme, batch.surface);
       batch.items.forEach((item, i) => {
         const stand = standOf(item, batch.kind);
         dummy.position.set(item.x, stand.height / 2, item.z);
-        dummy.scale.set(1, stand.scaleY, 1);
+        dummy.scale.set(gutter, stand.scaleY, gutter);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
         // The TINT, not the finished colour: the surface itself is in the
         // texture now, and the torch multiplies it in display space on the GPU
         // (`torchShader.ts`). `setRGB` writes into the working space unchanged,
         // which is what lets the shader read the display-space numbers.
-        const tint = cellTint(theme, item.cell);
+        const base = cellTint(theme, item.cell);
+        /*
+         * And the tile you are HOLDING, on every hex it could go on
+         * (2026-09-08). `previewColour` is computed for every legal cell and
+         * was read by nothing; `theme.ghost`'s alpha is the strength. The
+         * argument for a fill over an outline — and the bug report that
+         * settled it — is at `previewTint`.
+         */
+        const held = item.cell.previewColour;
+        const tint = held === null ? base : previewTint(theme, base, held, ghostStrength);
         // A beacon sits at its still value until the breath takes over, so a
         // reduced-motion board is lit rather than merely un-animated.
         const lit = batch.kind === 'beacon' ? STILL_BREATH : 1;
@@ -179,7 +212,7 @@ export function HexField({
       commitInstances(rm, rings.length);
     }
     invalidate();
-  }, [batches, rings, theme, invalidate]);
+  }, [batches, rings, theme, ghostStrength, invalidate]);
 
   /**
    * Every beacon's still colour, unpacked once (2026-09-02).

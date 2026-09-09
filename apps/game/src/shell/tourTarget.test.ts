@@ -64,14 +64,24 @@ const onlyUnmet = (id: TeachId): Progress =>
 
 /** The lessons that name a hex, and every other lesson with the reason it does
  *  not. Together they must be all of `TEACH_IDS` — see the last test. */
-const TARGETED: readonly TeachId[] = ['ripe', 'cache', 'site', 'shrine', 'territory'];
+// WALL and FIELD joined on 2026-09-08, on Marc's answer: all seven concepts
+// that stand on the map get the trip. They are the two toast-class entries —
+// spoken while a hand is still moving rather than off a card just dismissed —
+// and so the two most worth watching in Session A. See `tourTarget.ts`.
+const TARGETED: readonly TeachId[] = [
+  'ripe',
+  'cache',
+  'site',
+  'shrine',
+  'territory',
+  'wall',
+  'field',
+];
 const DECLINED: readonly TeachId[] = [
   'story', // what this place is; no place in it
   'place', // the legal edge, which is everywhere at once
   'pop', // a button, and RIPE has just flown to the same pocket
   'costRise', // the run's own arithmetic
-  'wall', // a place, but toast-class — see `tourTarget.ts`
-  'field', // likewise
   'rare',
   'rareUnique', // in the hand
   'lens',

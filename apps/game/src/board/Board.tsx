@@ -219,6 +219,15 @@ export type BoardProps = {
   /** Device pixels per CSS pixel the canvas actually draws at — the SHARPNESS
    *  slider's own number. Defaults to `board/quality.ts`'s per-phone guess. */
   readonly renderScale?: number;
+  /**
+   * How strongly a legal hex shows the colour you are HOLDING (2026-09-08).
+   *
+   * Optional, defaulting to the direction's own `ghost.alpha` — so the board
+   * draws what the theme authors unless `?ghost=` says otherwise. Zero draws
+   * none, which is the whole undo for a look change with a bug report in its
+   * history. See `@theme/torch#previewTint`.
+   */
+  readonly ghostStrength?: number;
   readonly reducedMotion?: boolean;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
@@ -682,6 +691,7 @@ export function Board(props: BoardProps) {
           />
           <HexField
             view={props.view}
+            ghostStrength={props.ghostStrength ?? theme.ghost.alpha}
             theme={theme}
             orientation={theme.orientation}
             relief={lean.relief}

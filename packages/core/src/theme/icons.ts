@@ -53,6 +53,13 @@ export type IconName =
   // The cross-screen concepts.
   | 'relic'
   | 'luck'
+  // The HUD's own row. Five joined `luck` on 2026-09-08, when Marc chose the
+  // stat row as six marks rather than six words — see `screens/Hud`'s
+  // `STAT_ICON`. There is no `tiles` here: `tile` already draws one.
+  | 'points'
+  | 'reach'
+  | 'cost'
+  | 'left'
   | 'wall'
   | 'stone'
   | 'fame'
@@ -121,6 +128,26 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
 
   relic: 'fill/coins-fill.svg',
   luck: 'fill/clover-fill.svg',
+
+  /*
+   * THE STAT ROW, as marks (2026-09-08).
+   *
+   * Chosen against the twenty-three already here rather than for their own
+   * sake: a mark is only worth having if it cannot be mistaken at 16px for one
+   * of the others, and this row draws all six side by side at the top of the
+   * screen, where a confusion is permanent.
+   *
+   * `points` is a SIGMA — a running total, and the only shape in the set that
+   * is a letter rather than an object, which is what keeps it clear of `relic`
+   * (coins) and `fame` (a trophy). `reach` is a COMPASS: how far out you have
+   * got, where `site`'s star and `find`'s sparkle are things on the ground.
+   * `cost` is a TAG, the price of the next placement. `left` is an HOURGLASS,
+   * the only clock this game has.
+   */
+  points: 'fill/sigma-fill.svg',
+  reach: 'fill/compass-fill.svg',
+  cost: 'fill/tag-fill.svg',
+  left: 'fill/hourglass-fill.svg',
   wall: 'fill/wall-fill.svg',
   stone: 'fill/stack-fill.svg',
   fame: 'fill/trophy-fill.svg',
@@ -158,9 +185,39 @@ export const LANDMARK_ICON = {
 /** The game's own voice — a hex, because the game is hexes. */
 export const TILE_ICON: IconName = 'tile';
 
+/**
+ * THE HUD'S SIX, as marks (2026-09-08).
+ *
+ * "Stats stay words" was this file's rule until Marc overturned it. The reason
+ * is in `screens/Hud`'s own `STAT_ICON` note and it is not aesthetic: French is
+ * the default locale, `TUILES` and `PORTÉE` clipped at 390 and lost most of
+ * themselves at 320, and every fix available to a WORD is a way of losing
+ * gracefully. `luck` had been a mark since the row was built and had never
+ * clipped in any language at any width. So all six are marks.
+ *
+ * **Here rather than in the screen, and that is the point of moving it.** The
+ * symbol language belongs to the core — `tokens.test.ts` walks every registry
+ * in this file and fails if a vendored icon is drawn by nothing or a named one
+ * was never vendored, which is the check that keeps twenty-nine marks honest.
+ * A table of marks living in `apps/` is a table that check cannot see.
+ *
+ * `tiles` reuses `tile`: the stat is tiles, and the game's own voice is
+ * already a hex.
+ */
+export const STAT_ICON = {
+  tiles: 'tile',
+  points: 'points',
+  luck: 'luck',
+  map: 'reach',
+  cost: 'cost',
+  left: 'left',
+} as const satisfies Readonly<
+  Record<'tiles' | 'points' | 'luck' | 'map' | 'cost' | 'left', IconName>
+>;
+
 /** Cross-screen CONCEPTS, as distinct from the grounds, the destinations and
- *  the game's own voice. Marks only for ideas that recur across screens;
- *  stats stay words. */
+ *  the game's own voice. Marks only for ideas that recur across screens; the
+ *  HUD's own row is `STAT_ICON` above. */
 export const CONCEPT_ICON = {
   relic: 'relic',
   luck: 'luck',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TUNING } from '@content/tuning';
-import type { IconName } from '@theme/icons';
+import { STAT_ICON } from '@theme/icons';
 import { Icon } from '../ui/Icon';
 import { statNote, type HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
@@ -68,20 +68,19 @@ export function Hud({ hud, s, onNote }: HudProps) {
           >
             <span className="stat-label">
               {/*
-                The TABLE decides which stats are marks, not this line
-                (2026-09-08). It read `id === 'luck' ? <Icon name="luck"/>`,
-                with `STAT_ICON` — the table written to answer exactly that
-                question — declared below and read by nothing: this body's
-                signature miss, one export wide. The render is identical; what
-                changes is that a direction wanting a second mark now has one
-                place to say so, the way `LANDMARK_GLYPH` is the authority on
-                what a destination MEANS rather than each drawing site being.
+                ALL SIX ARE MARKS since 2026-09-08 (Marc's answer), and the
+                TABLE decides which — this line read `id === 'luck' ? <Icon
+                name="luck"/>` while `STAT_ICON`, the table written to answer
+                exactly that question, sat exported and read by nothing.
+
+                `statLabel` is still here and still per-locale: it is the
+                button's accessible NAME, so a screen reader reads TUILES where
+                an eye sees a hexagon. A mark is the label's shorthand, not its
+                replacement — and the tap still prints the stat's own sentence.
+                See `STAT_ICON` in `theme/icons.ts` for why the row stopped
+                being words at all.
               */}
-              {STAT_ICON[id] === undefined ? (
-                statLabel(id, s)
-              ) : (
-                <Icon name={STAT_ICON[id]} title={statLabel(id, s)} />
-              )}
+              <Icon name={STAT_ICON[id]} title={statLabel(id, s)} />
             </span>{' '}
             <b className={`stat-value${rose === id ? ' rose' : ''}`}>{shown}</b>
           </button>
@@ -111,26 +110,30 @@ function valueOf(id: StatId, hud: HudView): number | null {
 }
 
 /**
- * The marks on the row.
+ * A stat's NAME — which since 2026-09-08 is what a screen reader hears and
+ * what a sighted player never sees.
  *
- * Short labels rather than sentences, and the two words that ARE words follow
- * the locale. Anything longer belongs in the catalogue, and `statNote` is
- * where it is.
+ * The row draws marks now (`STAT_ICON`), so this is the `title` on each icon
+ * and the button's accessible name, and it is still per-locale for exactly
+ * that reason: the mark is a shorthand for the word, and the word is what a
+ * reader is owed.
+ *
+ * **The history is worth keeping, because this row has changed its mind
+ * twice.** REACH and COST were `↗` and `$` until 2026-08-30, when they became
+ * words again on the rule that marks are for cross-screen CONCEPTS and stats
+ * stay words. That rule held until the French pass measured what it cost:
+ * `TUILES` and `PORTÉE` clipping on an ordinary phone in the default locale,
+ * with no fix available to a word that was not a way of losing gracefully.
+ * The marks are back, chosen from the vendored Phosphor set rather than
+ * invented as characters — which is the part of 2026-08-30's argument that
+ * was right and is why `↗` and `$` are not what came back.
  *
  * **LUCK is the registry's mark, not a lookalike** (2026-08-29, Marc: "reuse
  * symbols, cards, etc."). Luck is one of the two currencies that follow a
  * player between the board, the shop and the end screen, so it is one of the
  * seven ideas the concept registry names — and this row drew `♦` instead, a
- * second symbol for the thing the registry already had. The ACTION BAR's purse
- * toggle drew `♦` too, for a day longer.
- *
- * **REACH and COST are WORDS again** (2026-08-30). They were `↗` and `$`,
- * which `theme/tokens.ts` had already ruled against in as many words: marks
- * are for cross-screen CONCEPTS and stats stay words. Neither has a registry
- * entry, neither should gain one for this row's sake, and neither is an icon —
- * so once the symbol language became Phosphor (Marc: "no emojis only phosphor
- * icons or assets") they were the two characters left standing on the busiest
- * row in the game. The row is a grid now and a word fits.
+ * second symbol for the thing the registry already had. It is why its NAME
+ * still comes from the lesson below rather than from `s.ui.stats`.
  */
 /*
  * **The words come from the CATALOGUE** (2026-09-02).
@@ -149,41 +152,3 @@ export function statLabel(id: StatId, s: Strings): string {
   // Drawn as the icon; this is its accessible name and its fallback.
   return id === 'luck' ? s.lesson.luck.name : s.ui.stats[id];
 }
-
-/**
- * The stats that are drawn as a mark rather than as a word.
- *
- * **This table shipped inert from the day it was written until 2026-09-08** —
- * declared, exported, and read by nothing, while the render hard-coded `id ===
- * 'luck'`. It has a consumer now, and it renders exactly what it rendered
- * before, because it says exactly what that branch said.
- *
- * ## A SECOND ENTRY IS MARC'S, AND HERE IS THE EVIDENCE FOR IT
- *
- * `DEFAULT_LOCALE` is `fr-CA`, so the French stat row is the row a player sees
- * unless they change it — and it is the one that does not fit. Every one of
- * the fifteen `clipped` findings in `audit-shots/report.md` is this element in
- * French: `TUILES` losing 20px and `PORTÉE` 18px at 320, and 3–6px at **390,
- * which is an ordinary phone**. English never clips at either width.
- *
- * That is a known, ARGUED state and not an oversight: `IMPROVEMENTS.md` B7.11
- * ruled the ellipsis in deliberately, on the reasoning that a measured 3px
- * behind a `…` beats an unmeasured word running into its neighbour, and
- * `.stat-label` in `ui.css` carries the rest of the argument — the label is
- * the half that gives so the number survives, and it is pinned in px so a
- * bigger root cannot spend the one budget already spent.
- *
- * The ellipsis is what you do when the word must be a word. **A mark is the
- * other lever, and it is the one that dissolves the problem rather than
- * dressing it**: `luck` has not clipped in any language at any width, because
- * it is not a word. Five entries here would end the finding outright.
- *
- * It is not taken, and the reason is `CLAUDE.md`'s: a mark instead of a word
- * is a LOOK decision — six glyphs where six labels are is a different HUD, and
- * a stat is the one control on the board that explains rather than acts, so
- * making it wordless costs the thing it is for. The ring repaint of
- * 2026-09-02 is why this is stated rather than guessed at. **The finding is
- * the deliverable; the choice is Marc's, and it is one look at a phone in
- * French.** See `NEXT.md` §5d.
- */
-export const STAT_ICON: Partial<Record<StatId, IconName>> = { luck: 'luck' };

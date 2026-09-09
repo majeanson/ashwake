@@ -72,6 +72,9 @@ export function ActionBar({
   // See SACRIFICE below: a burn is only offered once relics mean something.
   const burnKnown = !hud.burnPaysRelics || knowsRelics || hud.relics > 0;
   const burn = hud.canHarvest && burnKnown ? hud.harvestBurn : 0;
+  /** Whether the bar has anything at all in it — the one thing the reserved
+   *  row below needs to know. Every button in it is conditional. */
+  const anyAction = hud.canHarvest || burn > 0 || hud.ended;
 
   return (
     <div className="controls">
@@ -146,6 +149,36 @@ export function ActionBar({
         )}
         {hud.ended && (
           <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
+        )}
+        {/*
+          THE ROW IS RESERVED FOR THE WHOLE RUN (2026-09-08, Marc's answer).
+
+          Every button above is conditional, so this bar was EMPTY for most of
+          an opening and grew the first time a pocket ripened — `.controls` 85px
+          to 145px, and `.board-host` is `flex: 1`, so the WebGL canvas's
+          backing store was reallocated under it. The flash that caused was
+          fixed in Session 56 by repainting in the same task; the RESIZE was
+          not, and it is the third instance of one disease — `ui.css` already
+          records the stat row ("the board resizes because the score went from
+          99 to 100") and the purse drawer, both fixed by stopping the resize
+          rather than absorbing it.
+
+          Asked whether 60px of board on every phone for every run was worth a
+          map that never moves, Marc said yes.
+
+          **A spacer shaped like a button, not a `min-height`.** The bar's
+          height is content — icon, label and value at whatever the root font
+          is — so a magic number in the stylesheet would be right until a label
+          wrapped or the root moved, and wrong silently. This is the same
+          answer the hand already gives with its `tile gap` spacers, for the
+          same reason. `visibility: hidden` keeps the box and drops the ink,
+          the focus and the accessible name all at once.
+        */}
+        {!anyAction && (
+          <div className="act gap" aria-hidden="true">
+            <span className="act-label">&nbsp;</span>
+            <span className="act-value">&nbsp;</span>
+          </div>
         )}
       </div>
 

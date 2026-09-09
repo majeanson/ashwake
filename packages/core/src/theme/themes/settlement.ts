@@ -84,10 +84,19 @@ export const SETTLEMENT: Theme = {
     legalEdge: 0xd8a24a,
     ripeEdge: 0xffd98a,
     ripeEdgeWidth: 0.16,
-    // Gentler than torchlit's. A settlement's dark is the country outside it,
-    // not the walls of a cave — it should suggest a horizon rather than close
-    // one in.
-    vignette: { colour: 0x080604, strength: 0.55 },
+    /*
+     * A settlement's dark is the country outside it, not the walls of a cave —
+     * it should suggest a horizon rather than close one in.
+     *
+     * **0.55 → 0.30 on 2026-09-08, and the number is Marc's.** The board had
+     * never drawn this at all: the channel was authored against Ashwake 1's
+     * flat Pixi board and nothing in this body read it, so 0.55 was a value
+     * nobody had ever seen applied to a LIT, three-dimensional board that
+     * already falls off at its own edges. Shown the choice, Marc took a little
+     * over half. `?vignette=` overrides it without a rebuild, which is how the
+     * last word on it gets said — on a phone, by looking.
+     */
+    vignette: { colour: 0x080604, strength: 0.3 },
     home: { ring: 0xd8a24a, ringWidth: 0.07 },
     beaconFade: 0.72,
     sheen: 0.05,

@@ -8,6 +8,7 @@ import {
   CONCEPT_ICON,
   ICON_SOURCE,
   LANDMARK_ICON,
+  STAT_ICON,
   TILE_ICON,
   type IconName,
 } from './icons';
@@ -77,6 +78,8 @@ describe('one symbol language (2026-08-26, extended 2026-08-27)', () => {
       TILE_ICON,
       ...Object.values(CONCEPT_ICON),
       ...Object.values(CHROME_ICON),
+      // The HUD's row joined the language on 2026-09-08 — see `STAT_ICON`.
+      ...Object.values(STAT_ICON),
     ]);
     const vendored = new Set(Object.keys(ICON_SOURCE) as IconName[]);
     expect(

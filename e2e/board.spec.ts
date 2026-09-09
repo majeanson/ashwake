@@ -57,6 +57,31 @@ const apart = (a: Buffer, b: Buffer): number => {
  * mid-dive" is a claim about a machine rather than about the board. This polls
  * instead: it is the same assertion, made whenever the runner gets round to it.
  */
+/**
+ * The board once it has STOPPED, as a thumbnail (2026-09-08).
+ *
+ * A flick leaves the camera gliding under its own momentum, and a screenshot
+ * taken during that glide is a picture of a board on its way somewhere. Two
+ * consecutive frames that agree is the cheapest honest statement that the
+ * motion is over — and it is deliberately the same coarse 48×48 measure
+ * everything else here uses, so "still" means the same thing to this helper as
+ * "the same picture" means to `settleUntil`.
+ *
+ * The ambient life — embers, the beacons' breath — is what the 48×48 average
+ * is for: it never moves two frames more than a point or so apart, where a
+ * gliding camera moves them several.
+ */
+const stillBoard = async (page: Page, ms = 4000): Promise<Buffer> => {
+  const until = Date.now() + ms;
+  let last = await small(page);
+  for (;;) {
+    await page.waitForTimeout(120);
+    const now = await small(page);
+    if (apart(last, now) < 1.5 || Date.now() > until) return now;
+    last = now;
+  }
+};
+
 const settleUntil = async (
   page: Page,
   was: Buffer,
@@ -121,7 +146,20 @@ test('speaks French to a French phone, English to an English one', async ({ brow
     // was never told before.
     await expect(page.locator('[data-door="mode"]')).toBeVisible();
     await begin(page);
-    await expect(page.locator('[data-stat="tiles"]')).toContainText(stat);
+    /*
+     * The stat's ACCESSIBLE NAME, not its text (2026-09-08).
+     *
+     * The row draws marks now, so `TUILES` is no longer on the screen as
+     * characters — it is the icon's `title` and the button's name. That is
+     * exactly what this test should have been reading all along: the claim is
+     * *"the app speaks the device's language"*, and the language a mark
+     * speaks is the one a screen reader hears.
+     *
+     * Worth being explicit that this is not the assertion getting weaker: if
+     * the row ever went back to words, this still passes, and if the
+     * catalogue regressed in either direction it still fails.
+     */
+    await expect(page.locator('[data-stat="tiles"]')).toHaveAccessibleName(new RegExp(stat, 'i'));
     await context.close();
   }
 });
@@ -725,8 +763,24 @@ test('the view cycle hands the board back, and never loses the board you made', 
   await page.mouse.down();
   await page.mouse.move(cx - 30, cy - 10, { steps: 8 });
   await page.mouse.up();
-  await page.waitForTimeout(900);
-  const own = await small(page);
+  /*
+   * WAIT FOR THE BOARD TO STOP, rather than for 900ms (flake named
+   * 2026-09-08).
+   *
+   * This test failed two runs in three on unmodified `main`, at 3.6 and 4.6
+   * against a threshold of 3, and the cause is in the four lines above: eight
+   * fast steps and a lift is a FLICK, so the board is still gliding under its
+   * own momentum when the shutter opens. `own` was a picture of a board
+   * mid-throw; MY VIEW later restores the camera where the glide ENDED, and
+   * the two were never going to match. The 900ms was a bet on the glide being
+   * over, and on a runner this repository has measured at eleven times slower
+   * than a desktop it is a bet that loses about a third of the time.
+   *
+   * Polling for stillness is the same fix `settleUntil` below already is, and
+   * the same lesson `vitest.config.ts` records about stopwatches: ask the
+   * board whether it has stopped instead of guessing how long that takes.
+   */
+  const own = await stillBoard(page);
 
   await aimAt('home');
   await view.click();

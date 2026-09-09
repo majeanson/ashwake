@@ -9,7 +9,7 @@ import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { distance, key, parse, type HexKey } from '@engine/hex';
-import { namesOf } from '@theme/tokens';
+import { namesOf, rgba } from '@theme/tokens';
 import {
   colourLesson,
   debugLine,
@@ -818,6 +818,24 @@ function Game() {
       // other dial here.
       directions: dial(params, 'themes', 0) > 0,
       /*
+       * `?vignette=` — the strength dial, added with the vignette itself
+       * (2026-09-08) and for the reason every dial in this list exists: the
+       * number is a LOOK decision and the only place it can be settled is a
+       * phone. Marc chose 0.30 as the default from three options, sight
+       * unseen, and this is how he disagrees with it without a rebuild.
+       *
+       * `NaN` rather than a number means "use the direction's own", which is
+       * what `dial`'s fallback gives when the parameter is absent — so a
+       * board with no `?vignette=` is exactly the board the theme authors.
+       */
+      vignette: dial(params, 'vignette', Number.NaN),
+      /* `?ghost=` — how strongly a legal hex shows the colour you are holding.
+       * Same shape and same reason as `?vignette=`: a look change with a bug
+       * report in its history wants a number that can be argued with on a
+       * phone, and `?ghost=0` is the whole undo. NaN means the direction's own
+       * `ghost.alpha`. */
+      ghost: dial(params, 'ghost', Number.NaN),
+      /*
        * `?playtest=1` — the stranger console (Stage 6, 2026-09-08).
        *
        * A query flag rather than a route, and rather than a row anywhere:
@@ -832,6 +850,35 @@ function Game() {
       playtest: dial(params, 'playtest', 0) > 0,
     };
   }, []);
+
+  /**
+   * The vignette as an inline style, or null where the direction wants none.
+   *
+   * Built here rather than in the stylesheet because both halves of it are the
+   * THEME's: `daylight` authors `null` and must draw nothing at all, and the
+   * colour and strength are numbers a direction owns. A CSS variable would put
+   * the "or nothing" case in a stylesheet, which is the one place it cannot be
+   * expressed without a second rule to turn the element off.
+   *
+   * `?vignette=` overrides the strength and nothing else — the colour stays
+   * the direction's, because the dial exists to answer "how much", which is
+   * the question Marc was asked.
+   */
+  const vignette = useMemo(() => {
+    const authored = theme.board.vignette;
+    if (authored === null) return null;
+    const strength = Number.isFinite(look.vignette) ? look.vignette : authored.strength;
+    if (strength <= 0) return null;
+    return {
+      // Clear through the middle, where the ground you have built is, and
+      // reaching its full alpha only at the corners. `70%` is where the falloff
+      // starts; below that the board is untouched.
+      background: `radial-gradient(ellipse at center, transparent 45%, ${rgba(
+        authored.colour,
+        strength,
+      )} 100%)`,
+    };
+  }, [theme.board.vignette, look.vignette]);
 
   /*
    * THE STRANGER'S SHEET, and the door onto it (Stage 6, 2026-09-08).
@@ -2966,6 +3013,7 @@ function Game() {
             materials={look.materials}
             art={look.art}
             renderScale={renderScale}
+            {...(Number.isFinite(look.ghost) ? { ghostStrength: look.ghost } : {})}
             reducedMotion={reducedMotion}
             onTap={onTap}
             handle={board}
@@ -2973,6 +3021,34 @@ function Game() {
             keyHelp={s.ui.board.reach}
           />
         </Suspense>
+        {/*
+          THE VIGNETTE, at last (2026-09-08).
+
+          `board.vignette` has been authored since the theme was written and
+          drawn by nothing — the default board was missing atmosphere its own
+          direction asks for. Settlement authors it; daylight authors `null`
+          deliberately, on the argument that there is no dark for a pale board
+          to fall off into, so this renders for exactly one direction.
+
+          **CSS rather than a shader, and that is the whole implementation.** A
+          vignette is screen-space by definition — it darkens the CORNERS of
+          the frame, not the far end of the world — so a post-processing pass
+          would be a lot of machinery to reproduce what one gradient already
+          says. It also keeps the promise the board host makes elsewhere:
+          chrome floats OVER the board and never inside it.
+
+          `inert` is not enough here because this is not chrome a finger should
+          ever find, so `pointer-events: none` in the stylesheet is what keeps
+          every tap going to the hex under it.
+
+          The token's rule is honoured by construction: `strength` is a
+          CEILING, so the gradient reaches its alpha only at the very corners
+          and the middle — where the ground you have built is — stays entirely
+          clear. Darkness hides the space, never the ground.
+        */}
+        {vignette !== null && (
+          <div className="board-vignette" aria-hidden="true" style={vignette} />
+        )}
         {/*
           What just happened, over the board rather than beside it (2026-08-30).
 
