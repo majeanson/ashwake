@@ -27,6 +27,36 @@ import type { WorldMemory } from '@meta/world';
  * Every write goes through here. A component that reached for `writeRun`
  * directly would be a component that can write after the world moved on, which
  * is the entire bug.
+ *
+ * ## AND THE RULE FOR CLEARING SOMETHING THIS MIGHT STILL HOLD (2026-09-09)
+ *
+ * `saveRun` is DEBOUNCED, so at any moment a write may be armed and not yet
+ * made. **Anything that clears or replaces what the keeper is holding must
+ * first make sure that armed write cannot land after it.** There are exactly
+ * two ways, and both are in use:
+ *
+ *   1. **`flush()` first, then clear.** The pending write lands where the
+ *      clear can remove it. The world branch of `App`'s banking effect and
+ *      `takeCrossing` both do this.
+ *   2. **Switch PLACE, which drops this keeper.** `useDevice`'s `move()`
+ *      calls `drop()` before the new keeper exists, and a dropped keeper never
+ *      writes again — so a clear followed synchronously by `setSlot`/
+ *      `setDaily` is safe. SETTLE, KEEP THIS BOARD, ABANDON and RESET ALL all
+ *      rest on this, and `useDevice.test.ts` is what proves the hand-over
+ *      happens. It holds only because nothing awaits in between: an `await`
+ *      inserted between a clear and its `move()` would reopen the hole.
+ *
+ * **The daily branch did neither, for the whole of Stage 4** (Marc, 2026-09-09:
+ * *"when i try to restart a daily ... its not restarted at all when i come
+ * back"*). It called `clearDailyRun()` with a save armed; 400ms later the timer
+ * wrote the finished board back, and TRY AGAIN resumed the run that had just
+ * ended. Its comment asserted the opposite — "the settle above has already
+ * cleared the kept board" — which is why three readers walked past it.
+ *
+ * All six clear-sites in the shell were swept the same day. One was broken;
+ * two use rule 1; four use rule 2. This keeper is also the app's ONLY deferred
+ * writer — the two other timers in `shell/` revoke a blob URL and register the
+ * service worker — so this list is the whole surface.
  */
 
 export type Keeper = {

@@ -199,7 +199,46 @@ const teaching = async (page: Page): Promise<void> => {
 const settle = (page: Page): Promise<void> => page.waitForTimeout(600);
 
 const SCREENS: readonly Screen[] = [
+  /*
+   * THE FIRST SCREEN ANYBODY EVER SEES, WHICH HAD NEVER BEEN PHOTOGRAPHED
+   * (2026-09-09).
+   *
+   * Every front-door shot in this file uses `FRESH`, and `FRESH` carries
+   * `seed=7` so the board behind it is deterministic. A seed that is not this
+   * device's world is a DETOUR — so **all three front-door shots are the
+   * SHARED-LINK door**, with its two extra paragraphs and its SETTLE offer.
+   * `front-door-many` is the plain one, and it has three hundred runs of
+   * history behind it.
+   *
+   * So the door a stranger meets, and the door a public link lands on, was the
+   * one screen in thirty-six that nobody had looked at. Found the same way
+   * `end-daily` was, an hour apart: by asking why a shot did not change when
+   * the copy on it did.
+   *
+   * No query at all, on purpose. The front door draws no board, so a random
+   * world seed cannot make this shot vary — and the point is precisely the
+   * absence of every parameter, including `taught=1`. This is a device that
+   * has never played.
+   */
+  { name: 'front-door-first', query: '', reach: alreadyThere },
   { name: 'front-door', query: FRESH, reach: alreadyThere },
+  /*
+   * THE DOOR A SHARED DAILY LINK LANDS ON (2026-09-09).
+   *
+   * Third gap of one shape, found within the hour. `daily` in this list
+   * PRESSES the daily button and photographs the board; nothing photographed
+   * the front door in its `mode === 'daily'` state, which is what a `?daily=`
+   * link opens — and `meta/share.ts` has emitted those links since the rules
+   * were lifted.
+   *
+   * The pattern behind all three: **this file photographs screens by how the
+   * app is NAVIGATED, so every screen reached only by a URL somebody is SENT
+   * was missing.** `front-door` was mis-set (its `seed=7` made it the shared
+   * door and left the plain one unshot), `front-door-daily` did not exist, and
+   * `end-daily` did not either. Those three are exactly the screens a public
+   * link delivers a stranger to.
+   */
+  { name: 'front-door-daily', query: 'daily=2026-08-26', reach: alreadyThere },
   { name: 'front-door-returning', query: `${FRESH}&place=12`, reach: alreadyThere },
   { name: 'board', query: `${FRESH}&place=12`, reach: begin },
   { name: 'board-grown', query: `${FRESH}&place=40`, reach: begin },
@@ -231,6 +270,23 @@ const SCREENS: readonly Screen[] = [
   { name: 'shop', query: PLAYED, reach: viaMore('shop', 'more') },
   { name: 'fame', query: PLAYED, reach: viaMore('fame', 'more') },
   { name: 'end', query: PLAYED, reach: begin },
+  /*
+   * A DAILY'S ENDING, WHICH HAD NEVER BEEN PHOTOGRAPHED (2026-09-09).
+   *
+   * Thirty-five screens and not one of them was the end of a daily — the most
+   * SEEN ending in the game, because the daily is the thing a player comes
+   * back for. Found the moment it mattered: the streak line landed on that
+   * screen this morning, the audit came back with the same 164 findings it had
+   * before, and the reason was not that the new prose measures clean. **The
+   * audit never visits the screen it is on.**
+   *
+   * Which is this repository's own signature miss, on the instrument rather
+   * than in the game: a check that cannot see the thing it is asked about
+   * reports success. It carries three lines the world's ending does not — TRY
+   * n, the streak, and KEEP THIS BOARD with its slot picker — and at 320 it is
+   * the most crowded ending there is.
+   */
+  { name: 'end-daily', query: 'taught=1&end=1&daily=2026-08-26', reach: begin },
   {
     name: 'end-payout-open',
     query: PLAYED,
@@ -523,6 +579,16 @@ const NARROW = [
   'teaching-placed',
   'worlds',
   'worlds-many',
+  // The most crowded ending in the game — TRY n, the streak, and KEEP THIS
+  // BOARD's picker, none of which a world's ending carries (added 2026-09-09
+  // with the screen itself).
+  // The first impression, at the smallest width still sold.
+  'front-door-first',
+  'front-door-daily',
+  'end-daily',
+  // A three-hundred-run ending, which is the only pass that shows the BACK UP
+  // note: the threshold is three runs in a world and `PLAYED` seeds one.
+  'end-many',
 ] as const;
 
 test.describe('320', () => {

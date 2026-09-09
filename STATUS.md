@@ -4,7 +4,47 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — three sentences are the whole habit, and all
+Last checkpoint: **2026-09-09 — a retry that resumed the run it had just
+finished, S5 struck as settled, and the copy cut on the screens people act on.**
+
+`LOG.md` Sessions 70 and 71.
+
+**Verified:**
+
+- **A daily's TRY AGAIN resumed the run it had just ended** (Marc: _"its not
+  restarted at all when i come back"_). `saveRun` is debounced 400ms; the daily
+  branch called `clearDailyRun()` with a save armed and never flushed, so the
+  timer wrote the finished board back. The world branch has flushed before
+  clearing since Stage 4 — **same fork, same missing half, as `settleDaily`'s
+  seed guard.** And the comment asserted the opposite, which is why three
+  readers walked past it. Two fixes: the effect flushes, and a RETRY no longer
+  asks the disk at all.
+- **All six clear-sites swept.** One broken, two use `flush()`-then-clear, four
+  are safe because switching place drops the keeper — which holds only because
+  nothing awaits in between, now written down in `keeper.ts`. That keeper is
+  the app's only deferred writer, so the six are the whole surface.
+- **S5 was already decided, twice** — D7 (2026-08-29) records Marc's ruling
+  verbatim, D12 (2026-09-03) closed the registry, and `daylight` is
+  settlement's LIGHT FACE rather than a rival. Three documents were still
+  calling it open, eleven days on, and one of them sent this session to put a
+  settled question back in front of him. Struck in all three.
+- **Three audit blind spots, one shape:** no daily ending, no first-ever front
+  door (every front-door shot carried `seed=7`, which made it the SHARED door),
+  and no shared-daily door. **Those three are exactly the screens a public link
+  delivers a stranger to** — the only ones that matter first for a reveal, and
+  the only ones nobody had photographed. All added, all in the 320 pass.
+- **Copy cut on the screens people ACT on**, measured rather than judged: the
+  front door's mode line 190 → 69, `settleNote` deleted (it restated its own
+  button), the end screen's two new notes 251 → 89 and ~160 → 68. The manual
+  keeps the long versions: a door and a reference page are different jobs.
+- **And a fresh-eyes pass caught my own copy**: three different "keep" verbs for
+  three different objects, co-occurring on one screen. One verb per object now.
+
+**Counts:** 1140 unit tests / 88 files; e2e 115 Chromium + 46 WebKit; audit 164
+findings over 126 visits, all one known-allowed kind; `pnpm sim`
+byte-identical.
+
+Previous checkpoint: **2026-09-09 — three sentences are the whole habit, and all
 three were unprinted.**
 
 Marc asked what blocks a player coming back, then asked for all three fixed.
@@ -364,7 +404,7 @@ the board is a flick, so the reference shot was of a board still gliding. It
 polls for stillness now; three for three, and faster.
 
 **Deferred by Marc:** `Said.brief` stays built and unreachable (`NEXT.md`
-§5c). **Still his, and unchanged:** choosing the direction (S5), and Session A
+§5c). **Still his, and unchanged:** Session A
 against the deployed v2 before the stranger.
 
 **Counts:** 1082 tests / 86 files, 101 e2e on Chromium + 41 on WebKit, `pnpm

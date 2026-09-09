@@ -478,7 +478,13 @@ direction that shipped and was retired; the direction itself is not.
 - **Deploy secrets.** The `deploy` job exists and is gated on the
   `DEPLOY_ENABLED` variable; the two Cloudflare secrets and the custom domain
   `ashwake.marcportal.com` are Marc's to set.
-- **The visual direction** (Stage 5), by looking, on the phone.
+- ~~**The visual direction** (Stage 5), by looking, on the phone.~~ **CHOSEN
+  2026-08-29 (D7), registry closed 2026-09-03 (D12)** — struck here 2026-09-09,
+  because this line outlived both rulings by eleven days and four, and sent a
+  session to put a settled question back in front of Marc. `daylight` is
+  settlement's light face rather than a rival, and `pickForScheme` hands it to
+  a phone set to light or high contrast, so the only choice left is the
+  device's.
 - **Session C** — v2.0's gate. Unattempted on either body.
 - Ashwake 1's D22 (telemetry and the privacy line) and D23 (the first-run
   acknowledgement, only after Session C) carry over unchanged.

@@ -87,14 +87,27 @@ sessions; S2 and S3 are the fat ones.
       now knows its PLACE, so a daily cannot write a world's memory either —
       the rule lives in the one thing that writes._ **Left:** the History-API
       router, which `NEXT.md` argues may not be wanted at all.
-- [~] **S5 — the look.** Materials and lighting landed in S2c; what is left is
-  the DIRECTION. The parked "settlement" reading (FARM · MARKET · QUARRY ·
-  ROADS) is **built** as of 2026-08-29 (`LOG.md` Session 10, D7): a fifth
-  entry in `THEMES`, a fifth row in SETTINGS with its own swatch, shot into
-  `docs/shots/s5-settlement*.png`. _Question: does it pass the budgets
-  without relaxing one? **Yes** — all 152 palette assertions, with three
-  colours moved and no threshold._ **What is left is the choosing**, which
-  is Marc's and only happens on a phone.
+- [x] **S5 — the look. DONE: settlement is the direction.** Materials and
+      lighting landed in S2c; the DIRECTION was chosen on 2026-08-29 (D7, `LOG.md`
+      Session 10) — Marc, on seeing it drawn in its own figures: _"i want to go
+      this way since its a strong theme and i feael like names of eahc color
+      reveal what they do too."_ FARM · MARKET · QUARRY · ROADS, the names carrying
+      the rules, shot into `docs/shots/s5-settlement*.png`. _Question: does it pass
+      the budgets without relaxing one? **Yes** — all 152 palette assertions, with
+      three colours moved and no threshold._
+
+  **And the registry closed on 2026-09-03 (D12):** two directions, not four.
+  `torchlit`, `torchlit-bright` and `placeholder` are deleted; `daylight` is
+  reskinned onto settlement, so it is not a rival fiction but settlement's
+  LIGHT FACE — same four names, same motif, same rules — handed automatically
+  to a phone set to light or to high contrast (`pickForScheme`). There is no
+  second choice to make, and the device makes the one that is left.
+
+  **This line said "what is left is the choosing" until 2026-09-09**, four days
+  after D12 closed it and eleven after D7 made it. It sent at least one session
+  to tell Marc a settled question was still open, which is the exact hazard
+  `NEXT.md` opens by warning about — **a stale open-list is worse than none.**
+
 - [~] **S6 — the console, Session A on v2, then the stranger.** **The console
   is BUILT** (2026-09-08, `LOG.md` Session 61): `?playtest=1` rather than a
   `/playtest` route, because D9 ruled out a router and this is the `?ff=`

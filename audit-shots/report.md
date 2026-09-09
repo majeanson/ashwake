@@ -1,8 +1,8 @@
 # Screen audit
 
-164 findings across 113 of 113 screen-visits:
-35 screens × 2 directions at 390×844,
-the same 35 again in fr-CA, and 8 of them at 320×568.
+164 findings across 126 of 126 screen-visits:
+38 screens × 2 directions at 390×844,
+the same 38 again in fr-CA, and 12 of them at 320×568.
 
 Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,
 no horizontal page scroll, no clipped text.

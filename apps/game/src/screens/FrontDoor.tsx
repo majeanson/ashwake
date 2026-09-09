@@ -121,10 +121,18 @@ export function FrontDoor({
         every visit is chrome. On the two doors that DO need it, it is the
         difference between a stranger understanding the deal and finding out
         afterwards that their run banked nothing.
+
+        **ONE SENTENCE, NOT THE MANUAL'S (2026-09-09).** This printed
+        `which.shared` — 190 characters, the longest string on any screen a
+        player is trying to act on — with `settleNote` under it and a second
+        button between the two. Seven lines about run modes before a stranger's
+        first tap, on the screen a public link lands on. `doorShared` and
+        `doorDaily` are the same deal in a breath; WHICH GAME still carries the
+        whole of it, one tap away.
       */}
       {mode !== 'world' && (
         <p className="note" data-door="mode">
-          {mode === 'shared' ? s.ui.which.shared : s.ui.which.daily}
+          {mode === 'shared' ? s.ui.which.doorShared : s.ui.which.doorDaily}
         </p>
       )}
 
@@ -132,14 +140,22 @@ export function FrontDoor({
         Keep the seed — see `settle`. Above the quiet choices and under the
         explanation of what a shared run IS, because it is the answer to the
         sentence directly above it.
+
+        **ITS PARAGRAPH IS GONE (2026-09-09).** `settleNote` explained the
+        button in three lines directly under a button whose own label already
+        says it: "SETTLE HERE · keep the seed as WORLD 1". A sentence that
+        restates the control it sits beneath is the definition of chrome, and
+        it was the third paragraph on the first screen anybody sees.
+
+        The catalogue entry is DELETED rather than left unread: a sentence no
+        screen prints is the false positive the next dead-text sweep has to
+        re-adjudicate from scratch, which is how a ritual stops being run
+        (`CLAUDE.md`). `git log` is the archive.
       */}
       {settle != null && (
-        <>
-          <button type="button" className="quiet" data-door="settle" onClick={settle.onSettle}>
-            {s.ui.settleWorld(settle.slot)}
-          </button>
-          <p className="note">{s.ui.settleNote}</p>
-        </>
+        <button type="button" className="quiet" data-door="settle" onClick={settle.onSettle}>
+          {s.ui.settleWorld(settle.slot)}
+        </button>
       )}
 
       {/* DAILY, uniform with BEGIN now — see the doc comment above and

@@ -1020,6 +1020,29 @@ export type Strings = {
       readonly daily: string;
       /** SHARE, on the ending, is what turns a run into such a link. */
       readonly howToShare: string;
+      /**
+       * THE SAME TWO FACTS, SHORT ENOUGH FOR A DOOR (2026-09-09).
+       *
+       * `shared` and `daily` above are the MANUAL's sentences: a reader who
+       * opened WHICH GAME wants the whole deal, and 190 characters is the
+       * right length there. The FRONT DOOR printed the same paragraphs — so
+       * the first screen anybody sees, and the screen a public link lands on,
+       * asked a stranger to read seven lines about run modes before their
+       * first tap.
+       *
+       * Measured rather than judged: `which.shared` was the longest string on
+       * any screen a player is trying to ACT on, with `settleNote` under it
+       * and a second button between them.
+       *
+       * One sentence each. What a door owes is the deal in a breath — this
+       * board is not yours to keep, and nothing you buy applies — and the
+       * manual is one tap away for the rest. Two sentences rather than a
+       * truncation of one, because a door and a reference page are two
+       * different jobs and D4 says the catalogue holds the sentence each
+       * needs.
+       */
+      readonly doorShared: string;
+      readonly doorDaily: string;
     };
     /**
      * BEGIN, on a door that is not this device's own world.
@@ -1043,7 +1066,6 @@ export type Strings = {
      * choice.
      */
     readonly settleWorld: (slot: number) => string;
-    readonly settleNote: string;
     /**
      * The onward invitation, beside SHARE on a run that arrived by link.
      *

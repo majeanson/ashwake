@@ -4,7 +4,7 @@ import { dailySeed } from '@meta/daily';
 import { TUNING } from '@content/tuning';
 import { newWorld } from '@meta/world';
 import { keeperFor } from './keeper';
-import { clearEverything, readDailyRun, readRun, readWorld, SLOTS } from './storage';
+import { clearDailyRun, clearEverything, readDailyRun, readRun, readWorld, SLOTS } from './storage';
 
 /**
  * **The relic farm, made structurally impossible.**
@@ -118,6 +118,18 @@ describe('a keeper', () => {
  * because the keeper is the only thing that writes.
  */
 describe('a daily keeper', () => {
+  // The debounce is a timer, and two of the tests below are about WHEN it
+  // fires relative to a clear — so this block needs the same fake clock the
+  // one above has had since it was written.
+  beforeEach(() => {
+    clearEverything();
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    clearEverything();
+  });
+
   it('writes the board under the date, not under a slot', () => {
     const keeper = keeperFor({ daily: '2026-08-29' });
     /*
@@ -136,6 +148,47 @@ describe('a daily keeper', () => {
     // And the same board is not offered for any other date.
     expect(readDailyRun('2026-08-30')).toBeNull();
     for (const slot of SLOTS) expect(readRun(slot)).toBeNull();
+  });
+
+  /**
+   * A PENDING SAVE OUTLIVES A CLEAR UNLESS SOMEBODY FLUSHES (2026-09-09, Marc:
+   * *"when i try to restart a daily ... its not restarted at all when i come
+   * back"*).
+   *
+   * `saveRun` is debounced 400ms so a placement does not put a JSON encode in
+   * the middle of a tap. When a run ENDS, the last placement's timer can still
+   * be armed — and the daily branch of `App`'s banking effect called
+   * `clearDailyRun()` while it was, without the `keeper.flush()` the world
+   * branch has done since Stage 4. The timer then fired and wrote the board
+   * back, so TRY AGAIN resumed a finished game.
+   *
+   * This is the mechanism, in eight lines, with no React in it: the fix is an
+   * ORDER, and an order is exactly what a comment claiming one cannot prove.
+   */
+  it('lets a pending save land AFTER a clear, unless it is flushed first', () => {
+    const keeper = keeperFor({ daily: '2026-08-29' });
+    keeper.saveRun(newRun(dailySeed('2026-08-29'), TUNING));
+
+    // The wrong order: clear while a save is armed.
+    clearDailyRun();
+    expect(readDailyRun('2026-08-29'), 'the clear did not clear').toBeNull();
+    vi.runAllTimers();
+    expect(
+      readDailyRun('2026-08-29'),
+      'a pending save did not resurrect the run — this test proves nothing',
+    ).not.toBeNull();
+  });
+
+  it('cannot, once the pending save has been flushed into the clear', () => {
+    const keeper = keeperFor({ daily: '2026-08-29' });
+    keeper.saveRun(newRun(dailySeed('2026-08-29'), TUNING));
+
+    // The order the world branch has always used, and the daily branch now
+    // does: let the write land where the clear can remove it.
+    keeper.flush();
+    clearDailyRun();
+    vi.runAllTimers();
+    expect(readDailyRun('2026-08-29'), 'a finished daily came back from the disk').toBeNull();
   });
 
   it('refuses to write a world at all', () => {

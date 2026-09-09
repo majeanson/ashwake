@@ -5705,3 +5705,63 @@ exclusive, which is `e2e/return.spec.ts` (six tests, including the three
 negatives: a world's ending has no tomorrow, a fresh device is not warned about
 a world it has not built, and a daily is not asked to protect one it does not
 have).
+
+### Session 71 — a retry that resumed the run it had just finished, and the comment that said it could not (2026-09-09)
+
+**Question:** Marc, mid-session: _"when i try to restart a daily, it seems to
+restard my world then kicks me out of my daily, wihle its not restarted at all
+when i come back"_, and then _"make sure this kind of problem is not reapeated
+elsewhere too"_. So: **is a debounced write a class of bug, or was this one
+site?**
+
+**Answer: one site, and the reason it is only one is worth writing down more
+than the fix is.**
+
+`keeper.saveRun` is debounced 400ms so a placement does not put a JSON encode
+in the middle of a tap. When a run ENDS, the last placement's timer can still be
+armed — and the daily branch of `App`'s banking effect called
+`clearDailyRun()` while it was. Four hundred milliseconds later the timer fired
+and **wrote the finished board back**, so TRY AGAIN resumed the run that had
+just ended. The world branch has done `keeper.flush()` then `clearRun(slot)`
+since Stage 4; the daily half simply omitted the line. **Same fork, same missing
+half, as `settleDaily`'s absent seed guard eight hours earlier.**
+
+**And the comment was the bug's alibi.** _"TRY AGAIN is `enterDaily`, not a
+second door: the settle above has already cleared the kept board, so entering
+today's daily IS starting today's board over."_ Every clause of that is true
+except the one doing the work — the clear it names was undone by a timer the
+same branch never stopped. Third instance this week of the shape `CLAUDE.md`
+names: a comment asserting an invariant is not the invariant, and it is the
+sentence that stops a reader checking.
+
+**Two fixes, because they are two bugs.** The effect flushes before it clears.
+And TRY AGAIN no longer asks the disk at all: it shared one function with the
+front door's daily button, which SHOULD hand back a half-played board, so
+`openDaily(resume)` takes the argument and the two doors differ by exactly that
+— `startRun`'s own shape, including the reason it is not the callback handed to
+a button.
+
+**The sweep Marc asked for, in full.** Six places clear something the keeper
+might hold. One was broken. Two use `flush()` then clear (the world branch, the
+crossing). **Four are safe only because switching PLACE drops the keeper** —
+`useDevice`'s `move()` calls `drop()` before the new keeper exists, and SETTLE,
+KEEP THIS BOARD, ABANDON and RESET ALL all rest on that. `useDevice.test.ts`
+already proves the hand-over. **It holds only because nothing awaits in
+between**, which nothing said until today: an `await` between a clear and its
+`move()` reopens the hole.
+
+And this keeper is the app's ONLY deferred writer — the two other timers in
+`shell/` revoke a blob URL and register the service worker — so those six sites
+are the whole surface. The rule now lives in `keeper.ts`, which is the file that
+owns the lifetime.
+
+**`keeper.test.ts` pins the mechanism in eight lines with no React in it**: one
+test proves a pending save DOES resurrect a cleared run, the other proves
+flushing first stops it. The first would have been red this morning, which is
+the only reason the second means anything.
+
+**Note on the reset fix from Session 66.** RESET ALL is one of the four sites
+that rely on `move()`, and it reaches `move()` only through the `setDaily(null)`
+added this morning for an unrelated reason — `setDaily` calls `move`
+unconditionally. So that fix closed a second hole nobody had looked for, and it
+was luck rather than design.

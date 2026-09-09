@@ -752,12 +752,12 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       daily:
         'THE DAILY is one world everybody gets for that date. Played plain, your tries counted, your own world untouched. At the end you can keep the board as one of your worlds.',
       howToShare: 'SHARE, on the end screen, turns your run into such a link.',
+      doorShared: 'Somebody else’s board, played plain.',
+      doorDaily: 'One board, everybody, today. Played plain.',
     },
     beginShared: 'BEGIN · SHARED RUN',
     beginDaily: (day) => `BEGIN DAILY ${day}`,
     settleWorld: (slot) => `SETTLE THIS WORLD · keep the seed as WORLD ${slot}`,
-    settleNote:
-      'The seed becomes a world of your own: fresh, unexplored, and played with your relics and its own shrines from then on. This run stays exactly as it was.',
     cameByLink: 'This world reached you by a link. It travels the same way out.',
     ending: {
       scored: (n) => `Run over: ${n} point${plural(n, '', 's')}`,
@@ -799,10 +799,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     lensClearLabel: (ground) => `Turn the ${ground} lens off`,
     newVersion: 'NEW VERSION · TAP TO LOAD',
     install: 'INSTALL ASHWAKE',
-    handInstall:
-      'Keep Ashwake on your home screen: tap Share at the bottom of Safari, then Add to Home Screen. It opens without the browser bars, and your worlds stay where they are.',
-    backUpNote:
-      'Your worlds live on this phone only, in this browser. There is no account and nothing is uploaded, so BACK UP in SETTINGS is the one way to keep them if you clear your browsing data or change phones.',
+    handInstall: 'Ashwake on your home screen: tap Share in Safari, then Add to Home Screen.',
+    backUpNote: 'Your worlds live on this phone only. BACK UP, in SETTINGS, saves them.',
     inApp:
       'You are in an in-app browser, and your world may not be kept here. Open this page in Safari or Chrome to keep it.',
     dismiss: 'Not now',

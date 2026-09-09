@@ -1336,6 +1336,26 @@ function Game() {
       });
       writeDailyBook(after.book);
       writeTimeline(after.timeline);
+      /*
+       * FLUSH BEFORE CLEARING, WHICH THIS HALF NEVER DID (2026-09-09, Marc:
+       * *"when i try to restart a daily, it seems to restard my world then
+       * kicks me out of my daily, wihle its not restarted at all when i come
+       * back"*).
+       *
+       * `keeper.saveRun` is debounced by 400ms so a placement does not put a
+       * JSON encode in the middle of a tap. When a run ENDS, the last
+       * placement's save can still be armed — and `clearDailyRun()` ran while
+       * it was. Four hundred milliseconds later the timer fired and wrote that
+       * board back, so the daily's run key held a nearly-finished game again.
+       * TRY AGAIN then RESUMED it, and nothing appeared to restart.
+       *
+       * The world branch below has done `keeper.flush()` then `clearRun(slot)`
+       * since Stage 4 and is right: flushing first lets the pending write land
+       * where the clear can remove it. The daily half simply omitted the line —
+       * the same asymmetry `settleDaily` had with its missing seed guard, in
+       * the same fork, found the same day.
+       */
+      keeper.flush();
       clearDailyRun();
       // Which try this was, for the ending to confess above TRY AGAIN. The
       // number reached the diary and the share line and never the screen the
@@ -2671,30 +2691,61 @@ function Game() {
    */
   /* TODAY, re-read when the page comes back — `shell/platform#useToday`. */
   const today = useToday();
-  const enterDaily = useCallback(() => {
-    enterRun(wiring, {
-      daily: today,
-      resume: readDailyRun(today),
-      seed: dailySeed(today),
-      // A daily has no world memory at all, and letting go of the held copy is
-      // what stops a board the world never walked being merged into it.
-      memory: undefined,
-      // No ledger, so no unlocks and no relics — and its shrines are rewritten
-      // into caches and sites, because a door that opens nothing is worse than
-      // no door at all.
-      economy: economyFor({ kind: 'daily' }),
-      wakeAt: null,
-      // NULL IS THE MODE. A daily has no world, so there is nothing for NEW
-      // GROUND to be new against — which is different from a world whose reach
-      // is zero, and the distinction is why `reachAtStart` is `number | null`.
-      from: null,
-      // A daily is not a detour: it is a place the keeper knows, walled off by
-      // construction, and `daily` is the flag that says so.
-      detour: false,
-      keepsWorld: false,
-      fromMenus: true,
-    });
-  }, [wiring, today]);
+  /**
+   * Today's board, resumed or dealt fresh — and the difference is the whole
+   * reason this takes an argument (2026-09-09).
+   *
+   * Two doors reach a daily and they want opposite things. The FRONT DOOR
+   * should hand back the board you left half-played; **TRY AGAIN must not**,
+   * because retry means retry. They shared one function that always resumed,
+   * so a retry gave you the run you had just finished — Marc: *"its not
+   * restarted at all when i come back"*. The keeper's un-flushed pending save
+   * (see the banking effect) is what put a finished board back on the disk for
+   * it to find; this is why finding one there can no longer matter.
+   *
+   * An argument rather than two functions, for `startRun`'s reason: the two
+   * differ by exactly one thing, and everything else — the economy, the
+   * absence of world memory, what the run measures against — has to be put
+   * down in one order or the two doors disagree about what a daily IS.
+   *
+   * NOT the callback handed to a button, also for `startRun`'s reason:
+   * `onClick` passes the mouse event as the first argument, and a `resume`
+   * that is quietly a `MouseEvent` is exactly the kind of thing that reaches a
+   * phone.
+   */
+  const openDaily = useCallback(
+    (resume: GameState | null) => {
+      enterRun(wiring, {
+        daily: today,
+        resume,
+        seed: dailySeed(today),
+        // A daily has no world memory at all, and letting go of the held copy is
+        // what stops a board the world never walked being merged into it.
+        memory: undefined,
+        // No ledger, so no unlocks and no relics — and its shrines are rewritten
+        // into caches and sites, because a door that opens nothing is worse than
+        // no door at all.
+        economy: economyFor({ kind: 'daily' }),
+        wakeAt: null,
+        // NULL IS THE MODE. A daily has no world, so there is nothing for NEW
+        // GROUND to be new against — which is different from a world whose reach
+        // is zero, and the distinction is why `reachAtStart` is `number | null`.
+        from: null,
+        // A daily is not a detour: it is a place the keeper knows, walled off by
+        // construction, and `daily` is the flag that says so.
+        detour: false,
+        keepsWorld: false,
+        fromMenus: true,
+      });
+    },
+    [wiring, today],
+  );
+
+  /** The front door's daily: today's board, picked up where it was left. */
+  const enterDaily = useCallback(() => openDaily(readDailyRun(today)), [openDaily, today]);
+
+  /** TRY AGAIN, on a daily's ending: today's board, from the first tile. */
+  const retryDaily = useCallback(() => openDaily(null), [openDaily]);
 
   const enterWorld = useCallback(
     (next: Slot) => {
@@ -3439,10 +3490,24 @@ function Game() {
             world={endWorld}
             onMainMenu={toMainMenu}
             standing={standing}
-            /* TRY AGAIN is `enterDaily`, not a second door: the settle above
-               has already cleared the kept board, so entering today's daily IS
-               starting today's board over. Two doors would be two places for
-               "what a retry resets" to drift apart. */
+            /*
+             * TRY AGAIN IS ITS OWN DOOR (2026-09-09), and this comment was the
+             * bug's alibi.
+             *
+             * It said "the settle above has already cleared the kept board, so
+             * entering today's daily IS starting today's board over" — and the
+             * clear it named was undone 400ms later by the keeper's pending
+             * debounced save, which that branch never flushed. So `enterDaily`,
+             * which RESUMES whatever is on the disk, handed back the run that
+             * had just finished. Marc: *"its not restarted at all when i come
+             * back"*.
+             *
+             * Both halves are fixed and they are different fixes: the banking
+             * effect flushes before it clears, and a RETRY no longer asks the
+             * disk at all (`openDaily(null)`). A comment that asserts an
+             * invariant is not the invariant — and this one stopped three
+             * readers, including its author, from checking.
+             */
             /* And the STREAK, read from the book the settle above just wrote —
                so the number is what the front door will say next time rather
                than one run behind it. See `EndScreen`'s `daily.streak`. */
@@ -3451,7 +3516,10 @@ function Game() {
                 ? null
                 : {
                     try: dailyTry,
-                    onRetry: enterDaily,
+                    // TRY AGAIN deals a fresh board — see `openDaily`. It was
+                    // `enterDaily`, which RESUMES, so a retry handed back the
+                    // run that had just finished.
+                    onRetry: retryDaily,
                     streak: dailyStreak(readDailyBook(), today),
                   }
             }
