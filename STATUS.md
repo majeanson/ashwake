@@ -4,7 +4,55 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-08 — the nine-domain review, and the bug under the
+Last checkpoint: **2026-09-08 — the seven answers, and zero clipped.**
+
+Session 61 handed Marc every look decision it had refused to guess at; he
+answered all seven and this is them built. `LOG.md` Session 62 is the
+reasoning.
+
+**Verified:**
+
+- **The stat row is six marks, and the audit proves what it bought**: 179
+  findings → **164**, fifteen `clipped` → **zero**. The whole category was one
+  element in French, the locale the game ships in. `statLabel` survives as
+  every stat's accessible name, so a screen reader still hears TUILES, and a
+  tap still prints the stat's own sentence. `STAT_ICON` lives in
+  `theme/icons.ts` so `tokens.test.ts` walks it.
+- **The vignette draws**, at 0.30 rather than the authored 0.55, in CSS rather
+  than a post-processing pass — a vignette is screen-space by definition.
+  `?vignette=` argues with the number.
+- **The held colour draws**, as a FILL through the per-instance tint rather
+  than as a ring — the 2026-09-02 revert diagnosed weight, not colour.
+  `?ghost=0` is the undo.
+- **`Surface.inset` is honoured as the DIFFERENCE it expresses**, not its
+  absolute value, because the literal reading would have quietly undone the
+  contour fix of 2026-09-04. The arithmetic is stated as mine and
+  `ground.test.ts` pins it.
+- **The action bar is reserved for the whole run** — the board no longer
+  resizes under the canvas when POP appears. Third instance of the disease,
+  first with a test: `e2e/steady.spec.ts`, checked to fail without the fix.
+- **WALL and FIELD fly**, once per device each. The oldest camera ruling is
+  about ambient drift on every placement, and the distinction is kept at
+  `shell/tourTarget.ts`.
+
+**Two of §5b's five were already closed when the section was read** —
+`board.seam` (wired 2026-09-04) and `Ring.width` (ruled dead 2026-09-01) —
+and were caught by checking the code before asking rather than after.
+
+**A flake named, and it was not this session's**: `board.spec.ts`'s view
+cycle failed two runs in three on unmodified `main`. The drag that arranges
+the board is a flick, so the reference shot was of a board still gliding. It
+polls for stillness now; three for three, and faster.
+
+**Deferred by Marc:** `Said.brief` stays built and unreachable (`NEXT.md`
+§5c). **Still his, and unchanged:** choosing the direction (S5), and Session A
+against the deployed v2 before the stranger.
+
+**Counts:** 1082 tests / 86 files, 101 e2e on Chromium + 41 on WebKit, `pnpm
+sim` byte-identical, `pnpm artcheck` green, audit 164 findings over 113/113
+visits.
+
+Previous checkpoint: **2026-09-08 — the nine-domain review, and the bug under the
 bug.**
 
 Marc asked for a thorough review and picked nine of the ten domains it

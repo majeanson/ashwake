@@ -5078,3 +5078,70 @@ broken up beyond the three device facts that cannot see the game: the reason
 is written at the top of the file, and it is that `act` being the one place
 that knows what an action did is what makes the receipts, the voice, the buzz
 and now the sheet agree with each other.
+
+### Session 62 — seven answers, and the row stops losing words in the language it ships in (2026-09-08)
+
+**Question:** Session 61 ended by handing Marc the look decisions it had
+refused to guess at. He answered all seven. So: **does asking beat guessing —
+and does a session that only implements answers still find anything?**
+
+**Answer: yes to both, and the second is the interesting half.** Three of the
+seven turned out to be questions about something that had already changed, and
+building the other four turned up a flaky gate that had nothing to do with any
+of them.
+
+**The stat row is the headline, and it is measurable.** The screen audit went
+from **179 findings to 164, and from fifteen `clipped` to zero** — the entire
+category was one element, in French, in the locale the game ships in. Marc
+chose all six as marks over the ellipsis and over a mix. What the row gave up
+is written at the declaration rather than glossed: a stat is the one control
+on the board that EXPLAINS rather than acts, so the label survives as the
+button's accessible name and the tap still prints the sentence. Whether a
+stranger ever taps one is a Session A question now.
+
+**`STAT_ICON` moved into the core on the way**, and that is the reusable
+lesson: `tokens.test.ts` walks every icon registry in `theme/icons.ts` and
+fails if a vendored mark is drawn by nothing or a named one was never
+vendored. A table of marks living in `apps/` is a table that check cannot see —
+the test caught it immediately, which is the check working exactly as designed.
+
+**Two of §5b's five channels were already closed when the section was read.**
+`board.seam` was wired on 2026-09-04 and `Ring.width` was ruled dead on
+purpose on 2026-09-01, and the section still listed both as open. Caught by
+checking the code before asking, which is this repository's own rule, and it
+mattered here in a way it usually does not: I would have put two settled
+questions in front of Marc as though they were live.
+
+**The `inset` answer is the one with judgement in it.** Honouring
+`Surface.inset` literally would have silently reverted a fix Marc asked for by
+looking — terrain authors 0.06 against a seam of 0.04–0.05, so the absolute
+number widens every gutter on the board back to what he called "too thick" on
+2026-09-04. So what is read is the DIFFERENCE the authoring expresses. The
+arithmetic is mine, it is stated as mine, and `ground.test.ts` pins it so the
+next reader of `inset: 0.09` learns from a failing test that 0.09 is not the
+number on the board. **Landing one look decision by quietly undoing another is
+not honouring anything.**
+
+**The two channels that needed a number I did not have got a DIAL.**
+`?vignette=` and `?ghost=` sit beside `?tilt=` and `?light=`, because Marc
+picked 0.30 sight-unseen from three options and the last word on a look
+belongs to a phone. `?ghost=0` is also the whole undo for the one change here
+with a bug report in its history — the preview colour, tried once as a ring
+tint on 2026-09-02 and caught within the hour. The diagnosis then was WEIGHT
+rather than colour, so this rides the per-instance tint the torch already
+writes and leaves the outline alone.
+
+**And a flake, named.** `board.spec.ts`'s view cycle failed two runs in three
+— on unmodified `main`, which is the only reason it is not recorded here as
+mine. The drag that arranges the board is eight fast steps and a lift, which is
+a FLICK: `own` was a photograph of a board still gliding, and MY VIEW later
+restored the camera where the glide ENDED. The 900ms wait was a bet on the
+momentum being spent, on a runner measured at eleven times slower than a
+desktop. It polls for stillness now — the same lesson `vitest.config.ts`
+records about stopwatches, in the file next door.
+
+**The POP row is the third instance of one disease and the first with a
+test.** `e2e/steady.spec.ts` measures the board host across the moment POP
+appears, and was checked to FAIL without the spacer before being kept. The
+stat row and the purse drawer were both fixed the same way and neither had a
+test, which is how there came to be a third.

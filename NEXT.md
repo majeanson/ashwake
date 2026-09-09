@@ -15,7 +15,8 @@ now", sorted by whether it needs Marc.
 sweep over what already ships, opened on Marc's ask and tracked there so it is
 resumable. A pointer rather than a copy, on purpose: two lists of the same work
 is how one of them goes stale, which is the hazard the paragraph above exists
-to warn about. What that pass leaves for Marc is in §5b and §5c below.
+to warn about. What that pass left for Marc is in §5b–§5d below — all four answered
+on 2026-09-08 except §5c, which he deferred.
 
 ---
 
@@ -252,6 +253,15 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**~~The board still RESIZES when POP appears~~ — RESERVED, 2026-09-08.** Asked
+whether 60px of board on every phone for every run was worth a map that never
+moves, Marc said yes. The action bar carries a button-shaped spacer whenever it
+would otherwise be empty — a spacer rather than a `min-height`, because the
+bar’s height is content and a magic number would be right until a label wrapped.
+The third instance of this disease and the first with a TEST: `e2e/steady.spec.ts`
+measures the board host across the moment POP appears, and was checked to fail
+without the spacer. The original argument follows.
+
 **The board still RESIZES when POP appears (2026-09-05, `LOG.md` Session 56).**
 Marc's _"the whole screen flashes"_ was measured to its cause: the action bar
 grows the first time a pocket ripens — `.controls` 85px to 145px — and
@@ -281,6 +291,15 @@ ease-out. Fixed: the scrim fades up with its card. Both flashes were real, one
 report covered both, and the second was found only by screencasting every
 composited frame and grading it for flatness rather than by reading the code
 that had just been changed.
+
+**~~Does WALL and FIELD earn a camera trip?~~ — YES, both, 2026-09-08.** Put
+to Marc with the ruling against them stated in full, he chose to fly to both.
+The oldest camera ruling is not broken by it and the distinction is kept at
+`shell/tourTarget.ts`: what he objected to in 2026-08-29 was the board moving
+on EVERY placement, an ambient drift; each of these fires once per device,
+ever. They remain the two most worth watching in Session A, because unlike the
+other five they speak while a hand is still moving — one line each to take
+back out. The original argument follows.
 
 **Does WALL and FIELD earn a camera trip? (2026-09-08, `LOG.md` Session 59.)**
 Marc: _"yes do the same for caches, sites and territories and other concepts on
@@ -846,7 +865,25 @@ screen audit regenerated so Marc can look at what changed while he slept.
 
 ---
 
-## 5b. The look the directions author and the board does not read
+## 5b. ~~The look the directions author and the board does not read~~ — ANSWERED 2026-09-08
+
+**All five are closed, and two of them were already closed when this section
+was last read** (`LOG.md` Session 61). Checked against the code before being
+acted on, which is this file's own rule and which is what caught it:
+
+| Channel          | What happened                                                               |
+| ---------------- | --------------------------------------------------------------------------- |
+| `board.seam`     | **Was already wired**, 2026-09-04 — `ground.ts#hexRadiusOf`. Section stale. |
+| `Ring.width`     | **Already ruled** left dead on purpose, 2026-09-01. Section stale.          |
+| `board.vignette` | Drawn, at 0.30 rather than 0.55, with `?vignette=` to argue with it.        |
+| `theme.ghost`    | Drawn as the preview FILL, with `?ghost=` — see `torch.ts#previewTint`.     |
+| `Surface.inset`  | Honoured as the DIFFERENCE it expresses; `ground.test.ts` pins why.         |
+
+Marc answered all three live ones on 2026-09-08. The two that needed a number
+he did not have carry a dial as well as a default, because the last word on a
+look belongs to a phone and not to a default I picked.
+
+The original section follows, unedited.
 
 Found by the third audit pass (2026-09-02, `LOG.md` S37d), which pointed the
 consumer-grep at the THEME. **Five authored channels reach no pixel.** Each is
@@ -889,7 +926,18 @@ and these five are not findings with defaults, they are a re-tune of the whole
 board's atmosphere and line weight. The pass took every look decision that had
 one honest answer and left these, which have none until somebody looks.
 
-## 5c. Nothing sets `Said.brief` — needs Marc
+## 5c. Nothing sets `Said.brief` — DEFERRED by Marc, 2026-09-08
+
+**Asked and answered: leave it dead for now.** Offered the three readings —
+cut the path, wire one caller, or leave it — Marc chose to leave it. So it
+stays built and unreachable until Session A or the stranger test names a
+moment that wants a receipt nobody has to put down. Nothing is owed and
+nothing changed.
+
+Left open rather than struck, because the question is deferred rather than
+settled: the path is still dead weight if the answer is ever "no".
+
+The original section follows.
 
 Found 2026-09-02 walking the OPTIONAL fields (`IMPROVEMENTS.md` Batch 5), which
 is the blind spot `CLAUDE.md`'s newest rule names and the same one `perkAt` hid
@@ -917,7 +965,24 @@ its own content, and it held a focusable button that the timer removed out from
 under the focus — so whichever way this goes, it goes from a correct starting
 point.
 
-## 5d. The French stat row does not fit, and a mark is the lever — needs Marc
+## 5d. ~~The French stat row does not fit~~ — ANSWERED 2026-09-08: six marks
+
+**Marc chose all six as marks**, shown the three readings. The screen audit
+went from 179 findings to **164, and from fifteen `clipped` to zero** — the
+whole category was this one element in French. The glyphs are in
+`theme/icons.ts` (a sigma, a compass, a tag, an hourglass beside the clover
+and the hex), chosen against the twenty-three already in the set because six
+of them are drawn side by side and a confusion at 16px would be permanent.
+
+**What the row gave up, recorded because it is real:** a stat is the one
+control on the board that EXPLAINS rather than acts, and a mark is not
+self-describing on first sight. Two things stand against that and both were
+already true — every stat carries `statLabel` as its accessible name, so a
+screen reader still hears TUILES, and a tap still prints that stat's own
+sentence. **Worth watching in Session A specifically**: whether a stranger
+ever taps one.
+
+The original section follows.
 
 Found 2026-09-08 by re-running the export sweep, which turned up `STAT_ICON` in
 `screens/Hud.tsx` — the table naming which stats are drawn as marks — declared,
