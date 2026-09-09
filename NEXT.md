@@ -263,6 +263,32 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**THE FONTS SHIP WITH NO LICENCE, AND THEY ARE OFL (2026-09-09, found in the
+pre-public review).** `cinzel.ttf/woff2` and `ebgaramond*.woff2` are served to
+every visitor from `apps/game/public/fonts/`, and there is **no licence for
+either anywhere in the repository**. `docs/licences/` holds one file,
+`phosphor-LICENSE` — and `docs/` is not served, so even that notice never
+reaches the bundle that carries Phosphor's icon paths.
+
+Both fonts are SIL Open Font License, which requires the copyright notice and
+the licence to be distributed WITH the font. Cinzel says so in its own name
+table, which is authoritative and readable locally:
+
+> Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+> licenseURL: https://scripts.sil.org/OFL
+
+**What is blocked, and it is one fact.** EB Garamond ships only as woff2 in
+this repo and in `../tiles`, so its notice cannot be read locally — and a
+licence file with a GUESSED copyright line is worse than none, which is why
+this is here rather than done. **Marc: where did `ebgaramond*.woff2` come
+from** (Google Fonts, the upstream octaviopardo/georgd repo, a Fontsource
+package)? With that, all three notices go into `docs/licences/` and a served
+`/third-party.txt`, with the OFL 1.1 body copied verbatim rather than retyped.
+
+Not a launch blocker in the sense that anything breaks — a launch blocker in
+the sense that it is the one thing on this list somebody outside can notice and
+be right about.
+
 **~~A shared run leaves no trace at all, not even a diary row~~ — ANSWERED
 2026-09-09: YES, BUILT.** Marc: _"1. yes"_. `SharedEntry` is its own timeline
 kind, written by `settle`'s detour branch, drawn in the DIARY tab led by the
