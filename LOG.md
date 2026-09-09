@@ -5833,3 +5833,57 @@ guessed**: the control's new name, the back-up warning's three-run threshold,
 and the streak line's placement above the score. All three confirmed as built,
 which is the cheapest possible answer and only available because they were
 asked.
+
+### Session 73 — the notice was inside the font all along (2026-09-09)
+
+**Question:** the pre-public review found the one gap an outsider could notice
+and be right about: two OFL typefaces served to every visitor with no licence
+anywhere in the repository. Marc, asked where EB Garamond came from: _"not
+sure?"_. So: **is an unknown provenance a blocker, or a question asked of the
+wrong thing?**
+
+**Answer: the wrong thing. Every OpenType file carries its own copyright in its
+`name` table**, so the authoritative notice was inside the bytes already being
+served. Nothing had to be trusted, fetched or remembered:
+
+> Copyright 2020 The Cinzel Project Authors (github.com/NDISCOVER/Cinzel)
+> Copyright 2017 The EB Garamond Project Authors (github.com/octaviopardo/EBGaramond12)
+
+Cinzel also ships as an uncompressed TTF, so that one is a plain table read. EB
+Garamond is woff2 only — in this repo and in `../tiles` — so it meant
+brotli-decompressing the font's table stream. Worth the hour: the alternative
+was a copyright line typed from memory, and **a wrong attribution in a licence
+file is worse than no licence file.**
+
+**`scripts/notices.ts` is the deliverable, not the two files it wrote.** A
+transcribed copyright is a fact that can be wrong and that nobody will ever
+re-check; a generated one cannot drift from what is being served. Swap a font
+and its notice follows. It is in `pnpm bake`, so a font change cannot silently
+leave a stale notice, and the OFL body is copied verbatim from a licence already
+vendored in `node_modules` — legal text is not retyped either.
+
+**The half that was actually missing was distribution.** `docs/licences` is not
+served, so the one notice the repository did hold — Phosphor's — reached nobody
+either. `/third-party.txt` is served from the same origin as the fonts and the
+marks it covers, `verify-deploy` fails if it 404s (a licence that 404s is not
+distributed with anything, which is the security headers' argument again), and
+one quiet line in SETTINGS under the privacy sentence is the only thing on any
+screen that says it exists. They answer one question between them: what is in
+this page that is not mine.
+
+**Two false starts, both recorded at the line.** Walking the woff2 table
+directory to locate `name` inside the decompressed stream got a wrong offset —
+`glyf` and `loca` invert the transform flag's meaning and it is the entries'
+STREAM lengths that accumulate — so the notice is scanned for instead, which is
+a page of spec less for the same authority: a byte offset was never the point.
+And the compressed stream is anchored at the TAIL by `totalCompressedSize`,
+because these fonts carry a `metaOffset` pointing past their own end.
+
+**And a placement bug worth naming**, because it is the third regex mistake of
+the day: `/ {4}privacy:[sS]*?
+(?= {4}[a-zA-Z]+:)/` matched from the LAST
+key of `ui` across the closing brace and into `payout`, so the new string
+landed in the wrong object. Typecheck caught it in one line. **A lazy match
+bounded by "the next thing that looks like a sibling" does not know where an
+object ends** — the same lesson as the greedy docblock an hour earlier, and the
+same fix: anchor on the exact text, including the closing brace.

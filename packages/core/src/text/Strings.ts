@@ -1284,6 +1284,19 @@ export type Strings = {
     readonly legendLegal: string;
     readonly privacy: string;
     /**
+     * The way to the third-party notices (2026-09-09).
+     *
+     * Ashwake serves two OFL typefaces and one MIT icon set, and both licences
+     * require the notice to be distributed WITH the work. `/third-party.txt`
+     * is that distribution; this is the only thing on any screen that says it
+     * exists, and it sits under the privacy sentence because they answer the
+     * same question — what is in this page that is not mine.
+     *
+     * A plain link and not a panel: it is a legal notice, it is read once by
+     * almost nobody, and a screen for it would be a screen to maintain.
+     */
+    readonly notices: string;
+    /**
      * What a tap on the board says when it cannot place.
      *
      * Ashwake 1 wrote all three straight into its tap handler in English. A

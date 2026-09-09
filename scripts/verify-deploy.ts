@@ -161,6 +161,9 @@ async function checkAssets(base: string): Promise<void> {
   for (const path of [
     '/manifest.webmanifest',
     '/sw.js',
+    // A licence that 404s is not distributed with anything, which is the whole
+    // reason this file exists rather than only `docs/licences` (2026-09-09).
+    '/third-party.txt',
     '/icon.svg',
     '/icon-180.png',
     '/icon-192.png',

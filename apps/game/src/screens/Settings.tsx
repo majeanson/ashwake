@@ -350,6 +350,27 @@ export function Settings({
           </button>
         </PanelMenu>
         <p className="note">{s.ui.privacy}</p>
+        {/*
+          THE THIRD-PARTY NOTICES, WHICH NOTHING POINTED AT (2026-09-09).
+
+          Two OFL typefaces and one MIT icon set are served to every visitor,
+          and both licences require their notice to travel with the work. The
+          repository held one of the three, in `docs/licences`, which is not
+          served — so nothing that reached a player carried a notice at all.
+          `scripts/notices.ts` writes `/third-party.txt` from the fonts' own
+          name tables, and this is the only thing on any screen that says it is
+          there.
+
+          Under the privacy sentence because they answer one question between
+          them: what is in this page that is not mine. A plain link rather than
+          a panel — it is a legal notice, read once by almost nobody, and a
+          screen for it would be a screen to maintain.
+        */}
+        <p className="note">
+          <a href="/third-party.txt" target="_blank" rel="noopener">
+            {s.ui.notices}
+          </a>
+        </p>
       </section>
     </Panel>
   );

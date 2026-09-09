@@ -4,7 +4,36 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — one mechanic had two names, and the door had
+Last checkpoint: **2026-09-09 — the notice was inside the font all along.**
+
+The pre-public review's one real gap, closed. `LOG.md` Session 73.
+
+**Verified:**
+
+- **Both typefaces now ship their licence, and the copyright lines are READ OUT
+  OF THE FONTS** — every OpenType file carries its own notice in its `name`
+  table, so nothing is transcribed. Cinzel from its TTF; EB Garamond by
+  brotli-decompressing the woff2, since that is the only form it ships in here
+  or in `../tiles`. Marc did not know where it came from, and did not need to.
+- **`scripts/notices.ts` is the deliverable**, not the files it writes: a
+  generated notice cannot drift from what is served, and it is in `pnpm bake`
+  so a font swap cannot leave a stale one. The OFL body is copied verbatim from
+  a vendored licence — legal text is not retyped.
+- **The half that was missing was DISTRIBUTION.** `docs/licences` is not
+  served, so even Phosphor's notice reached nobody. `/third-party.txt` is
+  served from the same origin as the work it covers, `verify-deploy` fails if
+  it 404s, and one line in SETTINGS under the privacy sentence says it exists.
+- **Two woff2 false starts and one regex mistake, all recorded at the line** —
+  the table-directory walk (transform flags invert for `glyf`/`loca`; stream
+  lengths accumulate), the tail-anchored stream, and a lazy match that ran past
+  a closing brace into the next object. Third regex slip of the day, same
+  lesson: anchor on exact text.
+
+**Counts:** 1145 unit tests / 88 files; e2e 115 Chromium + 46 WebKit; audit 164
+findings over 126 visits, all one known-allowed kind; `pnpm sim`
+byte-identical.
+
+Previous checkpoint: **2026-09-09 — one mechanic had two names, and the door had
 two offers.**
 
 The identified list, finished. `LOG.md` Session 72; the three open judgements

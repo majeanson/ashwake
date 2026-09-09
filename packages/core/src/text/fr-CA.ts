@@ -838,6 +838,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     legendRipe: `Bord MÛR${D}: cette tuile est prête à récolter.`,
     legendLegal: `Bord permis${D}: tu peux poser ici.`,
     privacy: `Rien ne quitte ton téléphone${D}: pas de compte, pas d’analytique, pas de serveur. Partager n’envoie que ce que tu vois dans la feuille de partage, et un rapport de plantage seulement si tu touches ENVOYER LE RAPPORT.`,
+    notices: 'Polices et icônes : les mentions',
   },
   payout: {
     heading: 'D’OÙ VIENNENT LES POINTS',

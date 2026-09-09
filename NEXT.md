@@ -263,6 +263,16 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**~~THE FONTS SHIP WITH NO LICENCE, AND THEY ARE OFL~~ — DONE 2026-09-09, and
+it needed no answer from Marc.** Asked where EB Garamond came from he said
+_"not sure?"_ — and the question was aimed at the wrong thing: every OpenType
+file carries its own copyright in its `name` table, so the authoritative notice
+was inside the bytes already being served. `scripts/notices.ts` reads both
+(brotli-decompressing the woff2 to do it), writes `docs/licences/*` and the
+SERVED `/third-party.txt`, and is in `pnpm bake`; `verify-deploy` fails if the
+file 404s, and one line in SETTINGS says it exists. `LOG.md` Session 73. The
+original finding follows.
+
 **THE FONTS SHIP WITH NO LICENCE, AND THEY ARE OFL (2026-09-09, found in the
 pre-public review).** `cinzel.ttf/woff2` and `ebgaramond*.woff2` are served to
 every visitor from `apps/game/public/fonts/`, and there is **no licence for
