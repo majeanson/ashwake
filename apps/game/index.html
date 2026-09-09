@@ -105,19 +105,50 @@
       The bundle needs Safari/iOS 16.4-era syntax, and on anything older the
       entry MODULE fails to parse — including the error listener inside it —
       leaving a dark screen whose every control does nothing, forever, silently.
-      A CLASSIC script parses everywhere back to ES5; if the probe throws, the
-      visitor gets one honest sentence instead of a game that looks broken.
+      A CLASSIC script parses everywhere back to ES5, so it is the one that
+      speaks; the visitor gets one honest sentence instead of a game that looks
+      broken.
 
       The colours are literals for the same reason the paint below is: this runs
       before the bundle that holds the theme exists.
+
+      ## A MODULE PROBE, NOT `new Function` (2026-09-09)
+
+      This guard used to be `try { new Function('class P { #m() {...} static {} }') }`,
+      and `new Function` is EVAL. The moment `_headers` grew a Content Security
+      Policy without `'unsafe-eval'` — which is the whole point of having one —
+      the probe threw on every engine on earth, the catch ran, and **every
+      visitor was told their browser was too old.** Caught by `e2e/csp.spec.ts`,
+      which runs the game under the policy the edge will actually serve; it
+      cannot be caught by `vite preview`, which serves no `_headers` at all.
+
+      The replacement tests the same syntax by the same mechanism the bundle
+      uses: an inline MODULE carrying private class methods, a static block and
+      `??`. An engine that cannot parse that module never sets the flag —
+      whether it failed on the syntax or has no module support at all, which
+      are the two ways the entry bundle can fail to run. Module scripts are
+      deferred, so this has executed by the time `DOMContentLoaded` fires, which
+      is what makes the classic script below a valid reader of the flag.
+
+      No eval, no external request, and it probes the real thing rather than a
+      string that resembles it.
     -->
+    <script type="module">
+      // The newest syntax the shipped bundle actually uses. If this module does
+      // not parse, nothing here runs and the classic script below speaks.
+      class P {
+        #m() {
+          return 1 ?? 2;
+        }
+        static {}
+      }
+      void P;
+      window.__ashwakeCanRun = true;
+    </script>
     <script>
-      try {
-        // Private class methods + static blocks: the newest syntax the shipped
-        // bundle actually uses. A parse failure lands in the catch.
-        new Function('class P { #m() { return 1 ?? 2; } static { } }');
-      } catch (e) {
+      if (!window.__ashwakeCanRun) {
         document.addEventListener('DOMContentLoaded', function () {
+          if (window.__ashwakeCanRun) return;
           document.body.innerHTML =
             '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;' +
             // The default direction's ground, like the pre-JS paint below —

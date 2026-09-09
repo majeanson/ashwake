@@ -5553,3 +5553,84 @@ same reason it would have been worthless**: the scripted `?end=1` path does not
 speak through `App`'s `act`, so the toast is absent with or without the fix,
 and a test that cannot fail is what this week has spent itself on.
 `beginning.test.ts` fails without it, which is the test that counts.
+
+### Session 69 — the CSP would have told every visitor their browser was too old (2026-09-09)
+
+**Question:** Marc: _"continue before stranger test to improve the app so its
+more public facing and prod-ready"_, plus two rulings — a shared run gets a
+diary row, and the ring widths stay dead. So: **what does "prod-ready" find
+that feature work does not?**
+
+**Answer: two bugs that only exist on the deployed build, and both were in the
+hardening itself.**
+
+`public/_headers` had caching and nothing else — no CSP, no `nosniff`, no
+`Referrer-Policy`, no `Permissions-Policy`, nothing about framing. Writing them
+is ordinary. What was not ordinary is that **`connect-src` turns this game's
+own prose into something a browser enforces**: "nothing leaves your phone" is a
+claim in `meta/report.ts`, in the manual, and the whole reason the fonts are
+self-hosted, and until today a reader had to take it on trust. One consented
+outbound request exists (a crash report, only when a human taps SEND REPORT),
+so the allowlist is one host long and everything else is barred whatever a
+future bundle contains.
+
+**And then the policy broke the game twice, in ways nothing before a deploy
+could have seen**, because `vite preview` serves no `_headers` at all.
+
+**One: the browser floor guard is `eval`.** It was
+`try { new Function('class P { #m() {…} static {} }') } catch { …too old… }` —
+a probe for the newest syntax the bundle uses. `new Function` is eval, a CSP
+without `'unsafe-eval'` blocks it, so the probe threw on **every engine on
+earth** and every visitor got _"ASHWAKE a besoin d'un navigateur plus
+récent"_. The most public-facing failure this app can have, on the first load,
+in the first second.
+
+It is an inline MODULE now carrying that same syntax, with the classic script
+reading a flag it sets. Strictly better than what it replaced: it tests the
+real mechanism (a module parse, which is how the bundle actually loads) rather
+than a string that resembles it, it covers both ways the entry can fail — bad
+syntax and no module support at all — and it needs no eval. Module scripts are
+deferred, so the flag is set before `DOMContentLoaded`, which is what makes the
+classic reader valid.
+
+**Two: `worker-src 'self' blob:` is not enough for the board's labels.**
+`troika-three-text` starts its glyph worker from a blob URL — and that worker
+then calls `importScripts` on ANOTHER blob URL to rehydrate its module. A
+worker inherits the document's policy and `importScripts` inside it answers to
+`script-src`, not `worker-src`. So the worker started and died from the inside:
+_"worker module init function failed to rehydrate"_, six times, and a board
+with **no numbers and no marks on it at all**.
+
+That is the exact failure `e2e/helpers.ts` has documented since 2026-09-08 as a
+WebKit HARNESS artifact. Shipping this policy would have made it real in every
+browser. `blob:` is in `script-src` now and the cost is named rather than
+hidden.
+
+**`e2e/csp.spec.ts` is what found both**, and the shape is the point: it PARSES
+the policy out of the file the edge will serve and applies it to the document by
+hand, so a policy edited in one place cannot pass a test pinned to a copy of it.
+Chromium only, deliberately — WebKit's own troika refusal is already swallowed
+by `watchErrors`'s noise filter, so the exact lines this test exists to catch
+would be invisible there, and a test that cannot fail on an engine is worse than
+not running it there.
+
+**And `verify-deploy` checks the other half.** A file the platform may or may
+not honour is not a header; a typo in a rule name, a directive the parser
+rejects, or a future move to another host all fail the same silent way. Green
+CI is not a deploy, so the request is made against the live site and
+`connect-src` is singled out by name: if the promise is ever dropped, the deploy
+fails.
+
+**The diary row was the easy half.** `SharedEntry` is its own timeline kind
+because `runsOf` feeds the TOTALS run count and `prehistory`'s arithmetic, both
+about this device's own worlds — a shared run inside that filter would inflate
+every total and make "runs before the record began" go negative. The row leads
+with the SEED the way a daily's leads with its date, because that is a shared
+board's only identity. Every ledger is still untouched: the guard was always
+right about the world, the purse and the shelf of bests, and none of those was
+ever an argument about a record of what you did.
+
+**Ring widths: RULED DEAD.** Marc: _"fine as is, ill correct in the future if
+ever."_ Fourth look dial ruled dead rather than wired, and `NEXT.md` now says
+not to wire them without asking again — honouring them costs the legal edge,
+the board's most-used affordance, 45% of its weight.

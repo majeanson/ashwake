@@ -651,7 +651,12 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     sacrificeLuck: 'SACRIFICE LUCK',
     sacrificeLuckFor: (relics) => `SACRIFICE LUCK FOR ${relics}`,
     tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND' },
-    fame: { title: 'HALL OF FAME', diary: 'DIARY', totals: 'TOTALS' },
+    fame: {
+      title: 'HALL OF FAME',
+      diary: 'DIARY',
+      totals: 'TOTALS',
+      shared: (seed) => `SHARED BOARD ${seed}`,
+    },
     tabGrows: 'more to come here as you play',
     language: 'LANGUAGE',
     languages: { 'fr-CA': 'FRANÇAIS', en: 'ENGLISH' },

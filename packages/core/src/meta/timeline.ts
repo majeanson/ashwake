@@ -112,6 +112,38 @@ export type DailyEntry = {
   readonly detail?: RunDetail;
 };
 
+/**
+ * A finished run on somebody ELSE'S board (2026-09-09, Marc's ruling on
+ * `NEXT.md` §1: *"1. yes"*).
+ *
+ * A shared link banked nothing at all — not a relic, not a record, and not the
+ * fact that it happened. `settle`'s seed guard is right about every LEDGER
+ * (ground unioned from a foreign geography is unremovable, and a link that paid
+ * the person who opened it is a link people would post on purpose), and it was
+ * over-broad about the DIARY: a diary is a record of what you did, and playing
+ * a friend's board is a thing you did.
+ *
+ * It carries the SEED rather than a slot, because that is its whole identity —
+ * a shared board belongs to no world of yours, and the seed is what lets a row
+ * be recognised, re-shared, or matched against the sender's.
+ *
+ * **Not a `RunEntry` with a marker.** `runsOf` feeds the TOTALS tab's run
+ * count and `prehistory`'s arithmetic, both of which are about this device's
+ * OWN worlds; a shared run inside that filter would inflate every total and
+ * make "runs before the record began" go negative. Its own kind is what keeps
+ * the existing selectors honest by construction.
+ */
+export type SharedEntry = {
+  readonly at: number;
+  readonly kind: 'shared';
+  /** The board's seed — a shared run's only identity. */
+  readonly seed: number;
+  readonly score: number;
+  readonly reach: number;
+  readonly arc: string;
+  readonly detail?: RunDetail;
+};
+
 /** A world-scale event that is not a run: leaving, arriving, or one of the
  *  three thresholds a run can push a world past (2026-08-26, F6 — the diary
  *  starts telling the world's story, not just the runs'): the last shrine
@@ -136,7 +168,7 @@ const WORLD_EVENTS: readonly WorldEventEntry['event'][] = [
   'all-finds',
 ];
 
-export type TimelineEntry = RunEntry | DailyEntry | WorldEventEntry;
+export type TimelineEntry = RunEntry | DailyEntry | SharedEntry | WorldEventEntry;
 export type Timeline = readonly TimelineEntry[];
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
@@ -244,6 +276,22 @@ const decodeEntry = (v: unknown): TimelineEntry | null => {
       arc,
       try: tryN,
       best,
+      ...(detail === undefined ? {} : { detail }),
+    };
+  }
+
+  if (v['kind'] === 'shared') {
+    const { seed, score, reach, arc } = v;
+    if (!isCount(seed) || !isCount(score) || !isCount(reach)) return null;
+    if (typeof arc !== 'string') return null;
+    const detail = decodeDetail(v['detail']);
+    return {
+      at,
+      kind: 'shared',
+      seed,
+      score,
+      reach,
+      arc,
       ...(detail === undefined ? {} : { detail }),
     };
   }
@@ -361,11 +409,19 @@ export const worldEventsOf = (t: Timeline, slot: number | null): readonly WorldE
 export const streamOf = (
   t: Timeline,
   slot: number | null,
-): readonly (RunEntry | WorldEventEntry)[] =>
-  t.filter(
-    (e): e is RunEntry | WorldEventEntry =>
-      (e.kind === 'run' || e.kind === 'world') && (slot === null || e.slot === slot),
-  );
+): readonly (RunEntry | SharedEntry | WorldEventEntry)[] =>
+  t.filter((e): e is RunEntry | SharedEntry | WorldEventEntry => {
+    // A SHARED run belongs to no slot, so it shows in the whole-device stream
+    // and in no per-world one — asking "what happened in world 2" and being
+    // told about a friend's board would be an answer to a different question.
+    if (e.kind === 'shared') return slot === null;
+    return (e.kind === 'run' || e.kind === 'world') && (slot === null || e.slot === slot);
+  });
+
+/** Runs on other people's boards, newest last — same filter contract as
+ *  `dailiesOf`, and deliberately NOT part of `runsOf`: see `SharedEntry`. */
+export const sharedOf = (t: Timeline): readonly SharedEntry[] =>
+  t.filter((e): e is SharedEntry => e.kind === 'shared');
 
 /** The DAILY tab's data. */
 export const dailiesOf = (t: Timeline): readonly DailyEntry[] =>

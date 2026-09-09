@@ -4,7 +4,7 @@ import { EMPTY_PROGRESS } from '@meta/progress';
 import { GOALS } from '@content/goals';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
-import { dailiesOf, runsOf, type Timeline } from '@meta/timeline';
+import { dailiesOf, runsOf, sharedOf, streamOf, type Timeline } from '@meta/timeline';
 import { dailySeed } from '@meta/daily';
 import { newWorld, type WorldMemory } from '@meta/world';
 import { endingPayout } from '@engine/reduce';
@@ -415,8 +415,40 @@ describe('a run played on somebody else’s seed', () => {
     expect(settle(settling).records).toEqual({});
   });
 
-  it('writes no diary row', () => {
-    expect(settle(settling).timeline).toHaveLength(0);
+  /**
+   * IT DOES WRITE A DIARY ROW, AS OF 2026-09-09 — Marc's ruling on `NEXT.md`
+   * §1, and the inversion of what this test used to say.
+   *
+   * The guard above is right about every LEDGER for reasons that do not reach
+   * the diary: the world must not take foreign ground, the purse must not pay
+   * the person who opened a link, the shelf of bests must not rank a run
+   * excluded from the race. None of those is an argument about a record of what
+   * you DID, and playing a friend's board is a thing you did.
+   *
+   * Its own `kind`, which is the half worth pinning: `runsOf` feeds the TOTALS
+   * run count and `prehistory`'s arithmetic, both about this device's own
+   * worlds, and a shared run inside that filter would inflate every total.
+   */
+  it('writes a diary row, and only the diary', () => {
+    const after = settle(settling);
+    const shared = sharedOf(after.timeline);
+    expect(shared, 'a shared run left no trace of having happened').toHaveLength(1);
+    expect(shared[0]?.seed, 'the row does not say whose board it was').toBe(snap.state.rootSeed);
+    expect(shared[0]?.score).toBe(snap.hud.points);
+    // A shared run mints no relics, so a row claiming otherwise would be the
+    // diary disagreeing with the purse.
+    expect(shared[0]?.detail?.relics).toBe(0);
+  });
+
+  it('keeps it out of every filter that is about this device’s own worlds', () => {
+    const after = settle(settling);
+    expect(runsOf(after.timeline, null), 'a shared run counted as one of mine').toHaveLength(0);
+    expect(dailiesOf(after.timeline), 'a shared run counted as a daily').toHaveLength(0);
+    // And it is in the whole-device stream, which is what the DIARY tab draws,
+    // but in no per-world one: "what happened in world 2" must not answer with
+    // a friend's board.
+    expect(streamOf(after.timeline, null)).toHaveLength(1);
+    expect(streamOf(after.timeline, 1)).toHaveLength(0);
   });
 
   it('still folds a run played on its OWN world', () => {

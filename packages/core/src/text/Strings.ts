@@ -731,6 +731,16 @@ export type Strings = {
       readonly title: string;
       readonly diary: string;
       readonly totals: string;
+      /**
+       * A diary row for a run on somebody else's board (2026-09-09).
+       *
+       * A shared run banked nothing at all, including the fact that it
+       * happened; `settle`'s guard is right about every ledger and was
+       * over-broad about the diary. The row has to say WHOSE board it was, and
+       * the seed is a shared run's only identity — so the seed is in the
+       * sentence rather than beside it, the way a daily's date is.
+       */
+      readonly shared: (seed: number) => string;
     };
     readonly language: string;
     readonly languages: Readonly<Record<Locale, string>>;

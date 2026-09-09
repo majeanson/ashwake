@@ -149,7 +149,50 @@ export function settle(now: Settling): Settled {
       // compares by identity can see that nothing happened.
       world: before,
       records: now.records,
-      timeline: now.timeline,
+      /*
+       * EXCEPT THE DIARY, WHICH IS NOT A LEDGER (2026-09-09, Marc's ruling on
+       * `NEXT.md` §1: *"1. yes"*).
+       *
+       * A shared run banked nothing at all until today, including the fact
+       * that it happened — and the guard above is right about every other
+       * ledger for reasons that do not reach this one. The world must not take
+       * foreign ground (unremovable afterwards). The purse must not pay the
+       * person who opened a link (a link people would post on purpose). The
+       * shelf of bests must not rank a run excluded from the race. **None of
+       * those is an argument about a record of what you did**, and playing a
+       * friend's board is a thing you did.
+       *
+       * Its own `kind` (`SharedEntry`), so `runsOf` — which feeds the TOTALS
+       * run count and `prehistory`'s arithmetic, both about this device's own
+       * worlds — cannot pick it up. The seed rather than a slot, because a
+       * shared board belongs to no world of yours.
+       */
+      timeline: capShots(
+        appendEntry(now.timeline, {
+          at: now.at,
+          kind: 'shared',
+          seed: now.state.rootSeed,
+          score: now.hud.points,
+          reach: now.hud.depthValue,
+          arc: arcSparkline(now.state.log.harvests),
+          detail: {
+            placements: now.hud.placements,
+            harvests: now.hud.summary?.harvests ?? 0,
+            popped: now.hud.summary?.tilesTaken ?? 0,
+            bigPop: now.hud.summary?.biggestHarvest ?? 0,
+            bigPopAt: now.hud.summary?.biggestAt ?? 0,
+            claims: now.hud.summary?.claims ?? 0,
+            quests: now.hud.summary?.quests ?? 0,
+            // Zero, and not `hud.relics`: a shared run mints none (`NO_RELICS`),
+            // and a row claiming otherwise would be the screen disagreeing with
+            // the purse.
+            relics: 0,
+            epitaph: now.hud.epitaph ?? '',
+            ...(now.shot === undefined ? {} : { shot: now.shot }),
+          },
+        }),
+        SHOTS_KEPT,
+      ),
       goals: [],
       /*
        * A detour pays NO relics either.

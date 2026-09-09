@@ -1,3 +1,64 @@
+# ---------------------------------------------------------------------------
+# THE SECURITY HEADERS, AND THE ONE THAT IS A PROMISE (2026-09-09).
+#
+# This file had caching and nothing else. What follows is ordinary hardening
+# for a public page plus one line that is not ordinary at all:
+# `connect-src`.
+#
+# **"Nothing leaves your phone" is a claim this game makes in prose** —
+# `meta/report.ts`'s privacy contract, the manual, and the reason the fonts are
+# self-hosted at all (Ashwake 1 fell into a CDN on 2026-08-20 and climbed out).
+# A claim in prose is a claim a reader has to take on trust. `connect-src`
+# makes the browser enforce it: this app may talk to its own origin and to
+# Sentry, and to nothing else, ever, whatever a future bundle happens to
+# contain. The Sentry host is there because ONE outbound request exists and it
+# is consented — a crash report leaves only when a human taps SEND REPORT, on
+# the failure panel or in SETTINGS ▸ LAST ERROR (`shell/failure.ts`).
+#
+# **`blob:` IS IN `script-src`, AND IT HAS TO BE.** This is the one directive
+# here that was got wrong first and measured second.
+#
+# `troika-three-text` — the board's label renderer — starts its glyph worker
+# from a blob URL, and then that worker calls `importScripts` on ANOTHER blob
+# URL to rehydrate its module. A worker inherits the document's policy, and
+# `importScripts` inside it is governed by `script-src`, not by `worker-src`.
+# So `worker-src 'self' blob:` alone let the worker start and then killed it
+# from the inside: *"worker module init function failed to rehydrate"*, six
+# times, and a board with **no numbers and no marks on it at all**.
+#
+# That is the exact failure `e2e/helpers.ts` documents for Playwright's WebKit,
+# where the same refusal is a harness artifact. Shipping this policy without
+# `blob:` would have made it real, in every browser, on the deployed build only
+# — `vite preview` serves no `_headers`, so nothing before a deploy would have
+# said a word. `e2e/csp.spec.ts` runs the game under this exact policy, read
+# from this exact file, which is how it was found before it shipped.
+#
+# The cost is named: `blob:` in `script-src` means a script this page GENERATES
+# may run. On a page with no user input, no cookies, no session and no
+# server-rendered anything, that is a far smaller surface than the external
+# scripts this still bars — and the alternative is a game whose board cannot
+# print a number.
+#
+# **`script-src` carries `'unsafe-inline'` and that is a real weakness, named
+# rather than hidden.** `index.html` runs one inline classic script — the
+# browser floor guard, which must parse on engines the module bundle cannot —
+# and one inline `<style>`, the pre-JS paint. Both are static, so both could
+# be hashed; the hashes would have to be computed at build time and written
+# here, which is a build step this repository does not have yet. Until it does,
+# the honest position is that `script-src 'self' 'unsafe-inline'` still bars
+# every EXTERNAL script, which is the vector that matters for a page with no
+# user input, no cookies and no session.
+#
+# `frame-ancestors` and `X-Frame-Options` together: nobody frames this game,
+# and the second is for engines that never learned the first.
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://o4510241708244992.ingest.us.sentry.io; manifest-src 'self'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
 # The fingerprinted bundle is immutable by construction — a new build asks
 # for different names — so a returning visitor should never pay sixteen
 # conditional round trips re-validating it (2026-08-20, launch audit; the

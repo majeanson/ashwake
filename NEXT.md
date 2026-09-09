@@ -164,6 +164,16 @@ as working; `describeHexOf`'s `unlockLabel` and `crossingDowry` were never
 passed, so every shrine promised "a system"; and a daily's hidden finds granted
 nothing at all, because a perk needs a world to live on.
 
+**~~A ring's WIDTH is dead data~~ — RULED 2026-09-09: 0.16 STAYS.** Marc, asked
+whether the board's line weight is better at the authored numbers: _"fine as is,
+ill correct in the future if ever."_ So the hard-coded band is the ruling and
+the three authored widths stay dead on purpose — the fourth look dial ruled
+dead rather than wired, after `Ring.width` (2026-09-01), the props (D11) and
+the theme's own `inset` reading (2026-09-08). **Do not wire them without asking
+again**: honouring them makes every outline thinner than the one it draws
+today, and the legal edge — the most-used affordance the board has — loses 45%
+of its weight. The original argument follows.
+
 **A ring's WIDTH is dead data** (found 2026-09-01, deliberately left). Every
 direction authors three widths (`edgeWidth`, `ripeEdgeWidth`, `home.ringWidth`),
 `board/rings.ts`'s ladder computes six values out of them, and `HexField` draws
@@ -252,6 +262,17 @@ card half runs and the manual grows again (`teaching.test.ts` pins both new
 rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
+
+**~~A shared run leaves no trace at all, not even a diary row~~ — ANSWERED
+2026-09-09: YES, BUILT.** Marc: _"1. yes"_. `SharedEntry` is its own timeline
+kind, written by `settle`'s detour branch, drawn in the DIARY tab led by the
+seed the way a daily's row is led by its date. Its own kind rather than a
+`RunEntry` with a marker, because `runsOf` feeds the TOTALS run count and
+`prehistory`'s arithmetic — both about this device's own worlds — and a shared
+run inside that filter would inflate every total. The ledgers are untouched:
+the guard is still right about the world, the purse and the shelf of bests, and
+none of those was ever an argument about a record of what you did. The original
+argument follows.
 
 **A shared run leaves no trace at all, not even a diary row (2026-09-09,
 `LOG.md` Session 65).** `settle`'s seed guard returns every ledger untouched

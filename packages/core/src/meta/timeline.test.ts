@@ -8,6 +8,7 @@ import {
   prehistory,
   runHighlights,
   runsOf,
+  sharedOf,
   SHOT_CHAR_MAX,
   streamOf,
   worldEventsOf,
@@ -166,6 +167,68 @@ describe('decodeTimeline', () => {
       run({ detail: baseDetail }),
     ]);
     expect(decodeTimeline(detail(7))).toEqual([run({ detail: baseDetail })]);
+  });
+});
+
+describe('a shared board’s row (2026-09-09)', () => {
+  /**
+   * Marc's ruling on `NEXT.md` §1: a shared run should appear in the diary.
+   * It banked nothing at all before, including the fact that it happened.
+   *
+   * Its own `kind` is the load-bearing decision, so these are the two things
+   * worth pinning: the codec round-trips it (a blob written by today's build is
+   * read by tomorrow's), and it stays out of every filter that is about this
+   * device's own worlds.
+   */
+  const shared = {
+    at: 1_756_000_000_000,
+    kind: 'shared' as const,
+    seed: 515151,
+    score: 4310,
+    reach: 12,
+    arc: '▁▃█',
+  };
+
+  it('round-trips through the codec', () => {
+    const t = [shared];
+    expect(decodeTimeline(encodeTimeline(t))).toEqual(t);
+  });
+
+  it('round-trips with its end-screen block', () => {
+    const t = [
+      {
+        ...shared,
+        detail: {
+          placements: 40,
+          harvests: 3,
+          popped: 22,
+          bigPop: 9,
+          bigPopAt: 31,
+          claims: 2,
+          quests: 0,
+          relics: 0,
+          epitaph: 'ran dry',
+        },
+      },
+    ];
+    expect(decodeTimeline(encodeTimeline(t))).toEqual(t);
+  });
+
+  it('is refused when it does not say whose board it was', () => {
+    // The seed is a shared run's only identity, so a row without one is not a
+    // row this module wrote.
+    expect(decodeTimeline('[{"at":1,"kind":"shared","score":1,"reach":1,"arc":""}]')).toEqual([]);
+  });
+
+  it('is in the device-wide stream and in no other filter', () => {
+    const t = [shared];
+    expect(sharedOf(t)).toEqual([shared]);
+    expect(streamOf(t, null), 'the DIARY tab would not show it').toEqual([shared]);
+    // `runsOf` feeds the TOTALS run count and `prehistory`; a shared run in it
+    // would inflate every total and make "runs before the record" go negative.
+    expect(runsOf(t, null), 'a shared run counted as one of this device’s').toEqual([]);
+    expect(dailiesOf(t)).toEqual([]);
+    expect(streamOf(t, 1), 'a per-world stream answered with a friend’s board').toEqual([]);
   });
 });
 

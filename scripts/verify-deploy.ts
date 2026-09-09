@@ -213,10 +213,64 @@ async function servesAFile(base: string, path: string): Promise<void> {
   throw new Error(`HEAD ${path} -> ${last} after ${ASSET_ATTEMPTS} attempts`);
 }
 
+/**
+ * The security headers actually reached the edge (2026-09-09).
+ *
+ * `public/_headers` is a file the platform may or may not honour, and the way
+ * to find out is not to read it. Cloudflare applies it to the assets Worker;
+ * a typo in a rule name, a directive the parser rejects, or a future move to a
+ * different host all fail the same silent way: the file is still in the repo,
+ * the header is simply not on the response.
+ *
+ * Checked here rather than in a unit test for the reason this whole script
+ * exists: **green CI is not a deploy.** A test can prove the file says the
+ * right thing; only a request can prove a browser will be told it.
+ *
+ * `connect-src` is singled out because it is the one directive that is a
+ * PROMISE rather than hardening: "nothing leaves your phone", enforced by the
+ * browser instead of asserted in prose. If that clause is ever dropped, this
+ * fails and the deploy fails with it.
+ */
+const CSP_MUST_CARRY: readonly string[] = [
+  "default-src 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'none'",
+  // The board's glyph worker is started from a blob URL by
+  // `troika-three-text`; without this the labels do not draw at all.
+  "worker-src 'self' blob:",
+  // The promise. One consented outbound request, and nothing else.
+  "connect-src 'self' https://",
+];
+
+const HEADERS_MUST_CARRY: readonly (readonly [string, string])[] = [
+  ['x-content-type-options', 'nosniff'],
+  ['x-frame-options', 'DENY'],
+  ['referrer-policy', 'no-referrer'],
+];
+
+async function checkHeaders(base: string): Promise<void> {
+  const res = await fetch(`${base}/`, { cache: 'no-store' });
+  if (res.status === 403 && res.headers.has('cf-mitigated')) {
+    throw new EdgeBlockedError('GET / -> 403 (edge bot challenge, not the app)');
+  }
+  const csp = res.headers.get('content-security-policy');
+  if (csp === null) throw new Error('no Content-Security-Policy on the live page');
+  for (const clause of CSP_MUST_CARRY) {
+    if (!csp.includes(clause)) throw new Error(`CSP is missing "${clause}": ${csp}`);
+  }
+  for (const [name, value] of HEADERS_MUST_CARRY) {
+    const got = res.headers.get(name);
+    if (got !== value) throw new Error(`${name} is ${got ?? 'absent'}, want ${value}`);
+  }
+  console.log('ok  security headers served');
+}
+
 async function verifyAgainst(base: string, expected: string): Promise<void> {
   console.log(`verifying ${base} serves ${expected.slice(0, 7)} ...`);
   await waitForVersion(base, expected);
   await checkAssets(base);
+  await checkHeaders(base);
 }
 
 async function run(): Promise<void> {

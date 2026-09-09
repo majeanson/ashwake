@@ -219,10 +219,22 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
    * timestamp. An ordinary run has no date of its own and keeps `when`, which
    * is the only thing placing it in a device's history at all.
    */
+  /*
+   * AND A SHARED BOARD SAYS WHOSE IT WAS (2026-09-09, Marc's ruling on
+   * `NEXT.md` §1).
+   *
+   * A shared run left no trace at all until today. Its row leads with the SEED
+   * because that is a shared board's only identity — it belongs to no world of
+   * yours — the same way a daily's row leads with its date. The score, the arc
+   * and the timestamp follow in the shape every other row uses, so the diary
+   * reads as one list rather than three.
+   */
   const summary =
     entry.kind === 'daily'
       ? `${s.ui.daily} · ${dayOf(entry.date)} · ${ordinal(entry.try, s.locale)}`
-      : `${entry.score} · ${entry.arc} · ${when}`;
+      : entry.kind === 'shared'
+        ? `${s.ui.fame.shared(entry.seed)} · ${entry.score} · ${entry.arc} · ${when}`
+        : `${entry.score} · ${entry.arc} · ${when}`;
 
   return (
     <Fold summary={summary}>

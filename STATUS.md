@@ -4,8 +4,45 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — pushed, and an e2e test that was green because
-of the bug.**
+Last checkpoint: **2026-09-09 — the CSP would have told every visitor their
+browser was too old.**
+
+Two rulings from Marc and a prod-readiness pass. `LOG.md` Session 69.
+
+**Verified:**
+
+- **The security headers exist**, and `connect-src` is the one that is a
+  promise rather than hardening: "nothing leaves your phone" is enforced by
+  the browser now instead of asserted in prose. One consented outbound request
+  (a crash report, only on a human tap) is the whole allowlist.
+- **The browser floor guard was `eval`.** `new Function(...)` probing the
+  bundle's newest syntax is blocked by any CSP without `'unsafe-eval'`, so the
+  probe threw on **every engine** and every visitor was told their browser was
+  too old — on the first load, in the first second. It is an inline MODULE
+  carrying that syntax now, with the classic script reading the flag it sets:
+  no eval, and it tests the real mechanism rather than a string resembling it.
+- **`worker-src 'self' blob:` is not enough for the board's labels.**
+  `troika-three-text`'s glyph worker `importScripts` a second blob URL, which
+  answers to `script-src` — so the worker started and died from the inside, and
+  the board had **no numbers and no marks on it at all**. The exact failure
+  `e2e/helpers.ts` documents as a WebKit harness artifact, about to be real
+  everywhere. `blob:` is in `script-src` and the cost is named.
+- **Both were found by `e2e/csp.spec.ts`**, which PARSES the policy out of the
+  file the edge serves and applies it by hand — neither is visible before a
+  deploy, because `vite preview` serves no `_headers`. `verify-deploy` checks
+  the other half: that Cloudflare puts the header on the response at all.
+- **A shared run gets a diary row** (Marc: _"1. yes"_). `SharedEntry` is its
+  own timeline kind, led by the seed the way a daily's row is led by its date;
+  `runsOf` and `prehistory` cannot pick it up, so no total moves. Every ledger
+  is still untouched.
+- **Ring widths ruled dead** (Marc: _"fine as is"_). Fourth look dial ruled
+  rather than wired; `NEXT.md` says not to wire them without asking again.
+
+**Counts:** 1127 unit tests / 87 files; e2e 109 on Chromium + 46 on WebKit;
+`pnpm sim` byte-identical; typecheck and lint clean.
+
+Previous checkpoint: **2026-09-09 — pushed, and an e2e test that was green
+because of the bug.**
 
 Marc asked for the work pushed and for some of his eighteen-item visual
 checklist automated. Four of the eighteen can be made by a machine, and writing
