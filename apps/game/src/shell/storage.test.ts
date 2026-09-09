@@ -4,6 +4,9 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import type { GameState } from '@engine/state';
 import { createSession } from './store';
+import { dailySeed } from '@meta/daily';
+import { newRun } from '@engine/reduce';
+import { TUNING } from '@content/tuning';
 
 /**
  * The trust boundary, tested (2026-09-02).
@@ -222,5 +225,78 @@ describe('restore', () => {
     // Ashwake 1's ruling: a merged backup is two histories interleaved and
     // nobody can say what the device now is.
     expect(disk.items.has('ashwake.locale.v1')).toBe(false);
+  });
+});
+
+describe('the daily run this device left unfinished (2026-09-09)', () => {
+  /**
+   * The date check has been here since Stage 4; the SEED check had not, and it
+   * is the same asymmetry `settleDaily` had. `enterDaily` hands what comes
+   * back straight to `restart` without asking, so one of the two callers was
+   * already forgetting.
+   *
+   * Reachable: RESET ALL from inside a daily used to leave `daily` set, so the
+   * keeper wrote the next run — played on a fresh WORLD — under today's date.
+   * `App` clears the flag now; a device that did it before the fix still has
+   * that run on disk.
+   */
+  const DAY = '2026-09-09';
+
+  it('hands back a run played on that date’s own board', async () => {
+    const s = await load();
+    const run = newRun(dailySeed(DAY), TUNING);
+    s.writeDailyRun(DAY, run);
+    expect(s.readDailyRun(DAY)?.rootSeed).toBe(dailySeed(DAY));
+  });
+
+  it('refuses one played on any other board, however right the date', async () => {
+    const s = await load();
+    // Exactly the shape a reset-during-a-daily wrote: today's date, a world's
+    // seed.
+    s.writeDailyRun(DAY, newRun(s.worldSeedFor(1), TUNING));
+    expect(s.readDailyRun(DAY), 'a foreign board resumed as today’s daily').toBeNull();
+  });
+
+  it('refuses another date’s, as it always did', async () => {
+    const s = await load();
+    s.writeDailyRun(DAY, newRun(dailySeed(DAY), TUNING));
+    expect(s.readDailyRun('2026-09-10')).toBeNull();
+  });
+});
+
+describe('the run a slot has unfinished, and which door asks how (2026-09-09)', () => {
+  /**
+   * A slot's run key is where a DETOUR's run lives too: the keeper is made from
+   * the `Place`, a `?seed=` visitor is standing in a slot, so their board is
+   * saved there under a foreign `rootSeed`. `App`'s boot ladder depends on
+   * exactly that, which is why `readRun` must NOT filter by seed.
+   *
+   * `enterWorld` did ask by slot, though, and that was the bug: a visitor who
+   * opened WORLDS mid-run and tapped WORLD 1 was handed **the shared board
+   * back** under that world's name. Nothing was corrupted — `worldHeld`
+   * refuses to merge a foreign seed and `settle` refuses to bank it — which is
+   * what made it invisible: the board came back, the label said WORLD 1, and
+   * nothing it did counted.
+   */
+  it('hands a foreign run back by SLOT, because a reload of a shared link needs it', async () => {
+    const s = await load();
+    const mine = s.worldSeedFor(1);
+    const shared = mine + 1;
+    s.writeRun(1, newRun(shared, TUNING));
+    expect(s.readRun(1)?.rootSeed, 'a shared link could not survive a reload').toBe(shared);
+  });
+
+  it('refuses it by WORLD, which is what a door into that world must ask', async () => {
+    const s = await load();
+    const mine = s.worldSeedFor(1);
+    s.writeRun(1, newRun(mine + 1, TUNING));
+    expect(s.runFor(1, mine), 'a door into a world resumed somebody else’s board').toBeNull();
+  });
+
+  it('hands back the world’s own run', async () => {
+    const s = await load();
+    const mine = s.worldSeedFor(1);
+    s.writeRun(1, newRun(mine, TUNING));
+    expect(s.runFor(1, mine)?.rootSeed).toBe(mine);
   });
 });

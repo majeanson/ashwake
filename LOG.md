@@ -5419,3 +5419,70 @@ question, two ways to not be in a world.
 doors by five flags, the four ways a world is minted and which three must seal,
 and the two seed guards. Everything in it was checked against the code as it was
 written, which is how three of these were found.
+
+### Session 67 — five more of the same vein, and the door finally got a test (2026-09-09)
+
+**Question:** Marc: _"what else could we improve in the same veins?"_ The vein
+being state whose lifetime is wrong, forks where only one half is guarded, and
+rules spelled twice. So: **can the vein be swept mechanically, or does each one
+have to be stumbled into?**
+
+**Answer: all three sweep. Five findings, and the last one was created by this
+morning's own fix.**
+
+**1. `note` — the strip over the board — was cleared by nothing.**
+`forgetEnding` clears eleven pieces of ending state; `enterRun` clears seven
+more; `note` was in neither, because it belongs to the BOARD rather than to the
+ending or the run's ledgers. So the first frame of a new run carried the last
+run's last sentence over it — on any device where `begin()` says nothing, which
+is every device with no territory bonus and every lesson already taught. The
+door puts it down now (`Wiring.forgetNote`).
+
+**2. `readDailyRun` checked the date and not the seed.** The same asymmetry
+`settleDaily` had this morning: `readRun`'s caller compares `rootSeed`, and
+`enterDaily` hands what comes back straight to `restart` without asking. One
+of two callers already forgot, so the guard belongs in the reader. Reachable
+through the very bug fixed an hour earlier: a device that hit RESET ALL inside a
+daily before the fix still has a world's run on disk under today's date.
+
+**3. "Has this world been played?" was spelled twice** — `isFreeSlot` in
+storage and, negated, `played` in the KEEP THIS BOARD picker. One decides which
+slots the front door's SETTLE may take; the other whether a row ARMS before it
+is overwritten; **and as of this morning they gate the same door.** One
+sentence in `meta/world.ts` now (`hasBeenPlayed`), because it is a fact about a
+world. The case that makes it worth naming is the VIRGIN world — minted by
+`worldSeedFor` whether or not anybody stepped into it — and the case that makes
+the ground half non-redundant is a world walked and abandoned mid-run, which has
+`runs: 0` and hexes.
+
+**4. `enterWorld` resumed the run in the SLOT, not the run on that WORLD** —
+and this one this morning's fix made worse. A slot's run key is where a detour's
+run lives (the keeper is made from the `Place`, and a `?seed=` visitor is
+standing in a slot), so a visitor who opened WORLDS mid-run and tapped WORLD 1
+was **handed the shared board back under that world's name.** Nothing was
+corrupted — `worldHeld` refuses to merge a foreign seed, `settle` refuses to
+bank it — which is exactly what made it invisible: the board came back, the
+label said WORLD 1, and nothing it did counted. Before this morning the stale
+`detour` flag was accidentally guarding some of that; correcting the flag
+removed the accident.
+
+`runFor(slot, seed)` is the fix, and it is `memoryFor`'s own shape — that
+function has said "hands back nothing when the seed is not its own" since Stage 4. **`readRun` deliberately keeps NO guard**, and now says so in three
+sentences at the declaration, because filtering it would silently stop a shared
+link surviving a reload. That is the more valuable half of this finding: a
+missing guard that looks exactly like an oversight, one line from a guard that
+was one.
+
+**5. And the keeper's own fixture was banking a daily on seed 1.** Second
+fixture today that pins a board the game cannot produce — `settle.test.ts` was
+the first. Both were green because the guard they should have needed did not
+exist.
+
+**`beginning.test.ts` is the durable answer.** Three sessions of bugs in
+`enterRun`'s neighbourhood and the door had no test, because what matters about
+a door is not what each hand does — every hand has its own test — but that it
+calls ALL of them, in an order where nothing is undone by the step after it. It
+takes a wiring of spies and asserts the sequence: the keeper is pointed at the
+place before the board exists, the screen's carry-over is cleared before the
+arrival speaks, the world is let go except by the crossing that just minted one,
+and `detour` reaches `restart`. **A door is not testable by reading it.**

@@ -4,8 +4,48 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — a mode is a set of flags, and every bug was a
-door that forgot one.**
+Last checkpoint: **2026-09-09 — the vein sweeps: five more, and the door
+finally has a test.**
+
+Asked what else was of the same kind, all three shapes swept mechanically —
+state whose lifetime is wrong, forks where one half is guarded, rules spelled
+twice. `LOG.md` Session 67.
+
+**Verified:**
+
+- **The strip over the board was cleared by nothing.** `note` is per-run and
+  belongs to the BOARD, so neither `forgetEnding` (eleven pieces) nor
+  `enterRun` (seven) had it — and a new run opened with the last run's last
+  sentence over it on any device where `begin()` says nothing. The door puts
+  it down now.
+- **`readDailyRun` checked the date and not the seed** — the same asymmetry
+  `settleDaily` had, and reachable through the very RESET-ALL bug fixed an
+  hour before it: a device that did it then still has a world's run on disk
+  under today's date.
+- **"Has this world been played?" was spelled twice** — `isFreeSlot` and,
+  negated, the KEEP THIS BOARD picker's `played`. They gate the same door as
+  of this morning. One sentence in `meta/world.ts` (`hasBeenPlayed`).
+- **`enterWorld` resumed the run in the SLOT, not the run on that WORLD**, and
+  this morning's own fix made it worse: a `?seed=` visitor who opened WORLDS
+  mid-run and tapped WORLD 1 was handed **the shared board back under that
+  world's name**, banking nothing, silently. `runFor(slot, seed)` is the fix;
+  **`readRun` deliberately keeps no guard** and now says so in three sentences,
+  because filtering it would stop a shared link surviving a reload.
+- **A second test fixture pinning a board the game cannot produce** — the
+  keeper's daily, on seed 1. `settle.test.ts` was the first, this morning.
+- **`beginning.test.ts` is new**, and is the durable answer to three sessions
+  of bugs in one neighbourhood: a wiring of spies asserting that the door calls
+  every hand, in an order where nothing is undone by the step after it. **A
+  door is not testable by reading it.**
+
+`MODES.md` gained the readers table: which of the five run/world readers may
+see a foreign board and which may not.
+
+**Counts:** 1122 tests / 87 files, `pnpm sim` byte-identical, typecheck and
+lint clean.
+
+Previous checkpoint: **2026-09-09 — a mode is a set of flags, and every bug was
+a door that forgot one.**
 
 Marc asked for a summary of how each mode works and a revision pass over it.
 Writing it down as a matrix found four things reading file by file had not.

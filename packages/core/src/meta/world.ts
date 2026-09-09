@@ -408,6 +408,27 @@ export function mergeRun(world: WorldMemory, state: GameState): WorldMemory {
 }
 
 /**
+ * Whether anybody has actually PLAYED this world, as opposed to it merely
+ * existing (2026-09-09).
+ *
+ * `worldSeedFor` mints a world the first time a slot is read, whether or not
+ * anyone ever steps into it, so "has a world" and "is taken" are two different
+ * questions. A VIRGIN world counts as unplayed: a device arriving through a
+ * shared link should not have to burn world 1 on a random board nobody chose
+ * in order to keep the one somebody did.
+ *
+ * **It was spelled twice** — `shell/storage.ts`'s `isFreeSlot` and, negated,
+ * the KEEP THIS BOARD picker's own `played` in `screens/EndScreen.tsx`. One
+ * decides which slots the front door's SETTLE may take; the other decides
+ * whether a row ARMS before it is overwritten. Two statements of one rule, in
+ * a screen and in storage, and as of 2026-09-09 they gate the same door: a
+ * shared board can be kept through the picker now. So it is one sentence,
+ * here, because it is a fact about a WORLD.
+ */
+export const hasBeenPlayed = (world: WorldMemory | null): boolean =>
+  world !== null && (world.runs > 0 || world.revealed.length > 0);
+
+/**
  * How much of the world is known, as a fraction of a disc the size of the
  * farthest thing ever reached (minimum ten, so run one is not "100% of a
  * one-hex world"). Honest rather than flattering: the plane is infinite, so

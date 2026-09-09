@@ -3,6 +3,7 @@ import {
   decodeDailyRun,
   encodeDailyBook,
   encodeDailyRun,
+  dailySeed,
   type DailyBook,
 } from '@meta/daily';
 import { decodeFeatures, encodeFeatures, type FeatureSet } from '@meta/features';
@@ -13,7 +14,14 @@ import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
 import { decodeTimeline, encodeTimeline, type Timeline } from '@meta/timeline';
 import { SHED_LADDER, type ShedRungId } from '@meta/shedLadder';
-import { decodeWorld, encodeWorld, newWorld, rearmedSpent, type WorldMemory } from '@meta/world';
+import {
+  decodeWorld,
+  encodeWorld,
+  hasBeenPlayed,
+  newWorld,
+  rearmedSpent,
+  type WorldMemory,
+} from '@meta/world';
 import type { GameState } from '@engine/state';
 import type { HexKey } from '@engine/hex';
 
@@ -491,9 +499,28 @@ export function localToday(now: Date = new Date()): string {
 }
 
 /** The daily board kept for `date`, or null — the date guard is the core's. */
+/**
+ * The daily run this device left unfinished, if it is THIS date's and was
+ * played on THIS date's board.
+ *
+ * The date check has been here since Stage 4. **The seed check had not**
+ * (2026-09-09), and it is the same asymmetry `settleDaily` had: `readRun`'s
+ * caller compares `saved.rootSeed` to the seed the page is opening on, and
+ * `enterDaily` hands this straight to `restart` without asking. A daily's seed
+ * is a pure function of its date, so the guard belongs HERE rather than at each
+ * caller — one of two callers already forgot.
+ *
+ * It is not hypothetical. RESET ALL from inside a daily used to leave `daily`
+ * set, so the keeper went on writing the next run — played on a fresh world —
+ * under today's date. `App` clears the flag now, but a device that did it
+ * before the fix still has that run on disk, and this is what refuses to
+ * resume it.
+ */
 export function readDailyRun(date: string): GameState | null {
   const kept = decodeDailyRun(read(DEVICE.dailyRun));
-  return kept === null || kept.date !== date ? null : decodeRun(kept.run);
+  if (kept === null || kept.date !== date) return null;
+  const run = decodeRun(kept.run);
+  return run === null || run.rootSeed !== dailySeed(date) ? null : run;
 }
 
 export const writeDailyRun = (date: string, state: GameState): void =>
@@ -617,7 +644,42 @@ export function memoryFor(slot: Slot, seed: number): RunMemory {
   };
 }
 
+/**
+ * The run this slot has unfinished, WHATEVER board it was played on — and that
+ * is deliberate, however much it looks like a missing guard.
+ *
+ * A slot's run key is where a DETOUR's run lives too: the keeper is made from
+ * the `Place`, and a `?seed=` visitor is standing in a slot, so their board is
+ * saved here under a foreign `rootSeed`. `App`'s boot ladder depends on
+ * exactly that — "the saved run second ... reloading a shared link has to pick
+ * that same run back up rather than deal a fresh board on the same seed" — so
+ * filtering by seed here would silently stop a shared link surviving a reload.
+ *
+ * Which is why `runFor` below exists and why `readDailyRun` guards and this
+ * does not: a daily's key is per-DATE and can only ever hold that date's board,
+ * and a slot's cannot. **Do not "fix" this by adding a seed check.**
+ */
 export const readRun = (slot: Slot): GameState | null => decodeRun(read(slotKeys(slot).run));
+
+/**
+ * The run this slot has unfinished ON THIS WORLD, and nothing else
+ * (2026-09-09).
+ *
+ * The sibling of `memoryFor`, which has said the same thing since Stage 4 —
+ * "hands back nothing when the seed is not its own" — and for the same reason.
+ * `enterWorld` resumed `readRun(next)` unfiltered, so a `?seed=` visitor who
+ * opened WORLDS mid-run and tapped WORLD 1 was handed **the shared board back**
+ * under that world's name: the run key held their detour, and the door asked
+ * for it by slot rather than by world.
+ *
+ * Nothing was corrupted — `worldHeld` refuses to merge a foreign seed and
+ * `settle`'s guard refuses to bank it — which is exactly what made it invisible:
+ * the board came back, the label said WORLD 1, and nothing it did counted.
+ */
+export const runFor = (slot: Slot, seed: number): GameState | null => {
+  const kept = readRun(slot);
+  return kept !== null && kept.rootSeed === seed ? kept : null;
+};
 
 export const writeRun = (slot: Slot, state: GameState): void =>
   write(slotKeys(slot).run, encodeRun(state));
@@ -674,17 +736,12 @@ export function settleWorldInto(slot: Slot, world: WorldMemory): void {
 }
 
 /**
- * A slot with nothing in it, or nothing that was ever PLAYED.
- *
- * The active slot is minted at boot by `worldSeedFor` whether or not anybody
- * played it, so "has a world" is not the same question as "is taken". A virgin
- * world counts as empty: otherwise a brand-new device arriving through a shared
- * link burns world 1 on a random board nobody chose.
+ * A slot with nothing in it, or nothing that was ever PLAYED — this file's
+ * half of `meta/world.ts`'s `hasBeenPlayed`, which is where the rule lives
+ * and why (it was written here AND, negated, in the KEEP THIS BOARD picker).
+ * All this adds is reading the slot.
  */
-export const isFreeSlot = (slot: Slot): boolean => {
-  const world = readWorld(slot);
-  return world === null || (world.runs === 0 && world.revealed.length === 0);
-};
+export const isFreeSlot = (slot: Slot): boolean => !hasBeenPlayed(readWorld(slot));
 
 /** Every key this game owns. RESET ALL, and the thing RESTORE writes over. */
 export function clearEverything(): void {

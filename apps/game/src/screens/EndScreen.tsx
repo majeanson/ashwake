@@ -1,5 +1,5 @@
 import type { Progress } from '@meta/progress';
-import type { WorldMemory } from '@meta/world';
+import { hasBeenPlayed, type WorldMemory } from '@meta/world';
 import type { Theme } from '@theme/tokens';
 import { arcNote, type HudView } from '@view/view';
 import type { LessonId } from '@view/lessons';
@@ -525,7 +525,11 @@ export function EndScreen({
             <p className="note">{s.ui.ending.importKeeps}</p>
             {SLOTS.map((slot) => {
               const world = importDaily.worlds[slot];
-              const played = world !== null && (world.runs > 0 || world.revealed.length > 0);
+              // The same sentence `isFreeSlot` reads, from the one place it
+              // is written (`meta/world.ts`). It was spelled here as well,
+              // negated, and the two now gate the same door: as of 2026-09-09
+              // a shared board is kept through this picker too.
+              const played = hasBeenPlayed(world);
               const isArmed = armed === slot;
               return (
                 <button
@@ -544,7 +548,7 @@ export function EndScreen({
                   {isArmed
                     ? s.ui.newWorldArmed(slot)
                     : `${s.ui.worldN(slot)} · ${
-                        played
+                        world !== null && played
                           ? `${world.runs} · ${world.bestPoints} · ${s.ui.stats.map} ${world.farthestReach}`
                           : s.ui.emptyWorld
                       }`}

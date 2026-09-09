@@ -87,6 +87,20 @@ they are the same rule stated twice because they write different ledgers:
   people, so a score on it from a private board is the only kind of wrong
   nobody can notice from outside.
 
+## Which reader may see a foreign board, and which may not
+
+A slot's run key holds a DETOUR's run: the keeper is made from the `Place`, and
+a `?seed=` visitor is standing in a slot. So "the run in this slot" and "the
+run on this world" are different questions, and every reader has to pick one.
+
+| Reader                  | Filters by seed?      | Why                                                                                                                                   |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `readRun(slot)`         | **no, deliberately**  | `App`'s boot ladder resumes a shared link on reload. Adding a guard here silently breaks that.                                        |
+| `runFor(slot, seed)`    | yes                   | What a door INTO a world must ask. `enterWorld` used `readRun` and handed a visitor the shared board back under WORLD 1.              |
+| `memoryFor(slot, seed)` | yes                   | Since Stage 4: "hands back nothing when the seed is not its own."                                                                     |
+| `readDailyRun(date)`    | yes, since 2026-09-09 | A date's key can only ever hold that date's board, so the guard belongs in the reader — one of its two callers had already forgotten. |
+| `worldHeld(seed)`       | yes                   | Which is what blocked the `enterWorld` bug from corrupting anything, and what made it invisible.                                      |
+
 ## What is deliberately NOT shared
 
 - A shared board's **geography is the sharer's**, which is why `NO_LEDGER`

@@ -81,6 +81,7 @@ import {
   writeDailyBook,
   readRecords,
   readRun,
+  runFor,
   readTimeline,
   readWorld,
   readProgress,
@@ -2440,13 +2441,26 @@ function Game() {
       startedFrom,
       banked,
       setLens,
+      // The strip over the board belongs to the run being left — see
+      // `Wiring.forgetNote`. `say` with null is what a tap on it already does.
+      forgetNote: () => say(null),
       setWalking,
       leaveMenus,
       frameTheRun,
       begin: beginRun,
       wentAgain,
     }),
-    [session, setDaily, forgetEnding, forgetWorld, leaveMenus, frameTheRun, beginRun, wentAgain],
+    [
+      session,
+      setDaily,
+      forgetEnding,
+      forgetWorld,
+      say,
+      leaveMenus,
+      frameTheRun,
+      beginRun,
+      wentAgain,
+    ],
   );
 
   /**
@@ -2655,7 +2669,10 @@ function Game() {
       const seed = worldSeedFor(next);
       enterRun(wiring, {
         daily: null,
-        resume: readRun(next),
+        // On THIS world, not merely in this slot — see `runFor`. A slot's run
+        // key is where a shared link's run lives too, so asking by slot handed
+        // a detour's board back under a world's name.
+        resume: runFor(next, seed),
         seed,
         memory: memoryFor(next, seed),
         economy: economyAt(next, seed),

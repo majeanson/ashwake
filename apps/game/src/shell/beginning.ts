@@ -128,6 +128,17 @@ export type Wiring = {
   /** The state a finished run was banked from, cleared so the next can bank. */
   readonly banked: { current: GameState | null };
   readonly setLens: (colour: null) => void;
+  /**
+   * Put down whatever the strip over the board is still saying (2026-09-09).
+   *
+   * `note` is per-RUN — a claim, a pop's lead line, NEW GROUND — and nothing
+   * cleared it on the way through a door. `forgetEnding` clears eleven pieces
+   * of ending state and not this one, because this one belongs to the BOARD.
+   * So the first frame of a new run carried the last run's last sentence over
+   * it, on any device where `begin()` happens to say nothing: no territory
+   * bonus and every lesson already taught, which is every veteran device.
+   */
+  readonly forgetNote: () => void;
   /** The ending is gone, so the way back to its map is too. */
   readonly setWalking: (walking: boolean) => void;
   readonly leaveMenus: () => void;
@@ -172,6 +183,7 @@ export function enterRun(w: Wiring, door: Door): void {
 
   // 4. WHAT THE SCREEN CARRIED OVER AND MUST NOT.
   w.setLens(null);
+  w.forgetNote();
   w.setWalking(false);
   if (door.fromMenus) w.leaveMenus();
 

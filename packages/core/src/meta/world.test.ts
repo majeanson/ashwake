@@ -11,6 +11,7 @@ import {
   knownFraction,
   mergeRun,
   newWorld,
+  hasBeenPlayed,
   rearmedSpent,
   rememberRun,
   unlockedBy,
@@ -404,6 +405,41 @@ describe('shrines and the unlock ledger (M4)', () => {
   it('loads a world written before shrines existed', () => {
     const old = '{"worldSeed":5,"revealed":["0,0"],"territories":[],"runs":2}';
     expect(decodeWorld(old)?.shrines).toEqual([]);
+  });
+});
+
+describe('hasBeenPlayed — one sentence for "is this slot taken"', () => {
+  /**
+   * It was spelled twice (2026-09-09): `shell/storage.ts`'s `isFreeSlot` and,
+   * negated, the KEEP THIS BOARD picker's own `played`. One decides which
+   * slots the front door's SETTLE may take, the other whether a row ARMS
+   * before it is overwritten — and as of 2026-09-09 they gate the same door,
+   * because a shared board is kept through the picker too.
+   *
+   * The case that matters is the VIRGIN world: `worldSeedFor` mints one the
+   * first time a slot is read, whether or not anybody steps into it, so
+   * "has a world" and "is taken" are different questions and a device arriving
+   * through a shared link must not have to burn world 1 to keep the board it
+   * came for.
+   */
+  it('counts a world nobody has stepped into as unplayed', () => {
+    expect(hasBeenPlayed(null)).toBe(false);
+    expect(hasBeenPlayed(newWorld(5)), 'a minted world counted as taken').toBe(false);
+  });
+
+  it('counts one run, or one hex of ground, as played', () => {
+    expect(hasBeenPlayed({ ...newWorld(5), runs: 1 })).toBe(true);
+    expect(hasBeenPlayed({ ...newWorld(5), revealed: [key(0, 0)] })).toBe(true);
+  });
+
+  /*
+   * The ground half is not redundant with the run count. A world merges its
+   * ground on every action (`mergeRun`) and only counts the run at `settle`,
+   * so a world walked and abandoned mid-run has `runs: 0` and hexes — which is
+   * exactly the world a player would be furious to see called empty.
+   */
+  it('counts a world walked and abandoned before its first run ended', () => {
+    expect(hasBeenPlayed({ ...newWorld(5), runs: 0, revealed: [key(1, 0), key(2, 0)] })).toBe(true);
   });
 });
 

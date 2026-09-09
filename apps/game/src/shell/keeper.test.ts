@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { newRun } from '@engine/reduce';
+import { dailySeed } from '@meta/daily';
 import { TUNING } from '@content/tuning';
 import { newWorld } from '@meta/world';
 import { keeperFor } from './keeper';
@@ -119,7 +120,15 @@ describe('a keeper', () => {
 describe('a daily keeper', () => {
   it('writes the board under the date, not under a slot', () => {
     const keeper = keeperFor({ daily: '2026-08-29' });
-    const state = newRun(1, TUNING);
+    /*
+     * On THAT DATE'S board, because `readDailyRun` checks the seed as well as
+     * the date now (2026-09-09) — and because a daily run on seed 1 is a thing
+     * that cannot happen in the game. This said `newRun(1, TUNING)` and passed,
+     * which is the same fixture problem `settle.test.ts` had: the assertion is
+     * about the keeper's PLACE, and a board it could never have been handed
+     * makes that assertion about nothing.
+     */
+    const state = newRun(dailySeed('2026-08-29'), TUNING);
     keeper.saveRun(state);
     keeper.flush();
 
