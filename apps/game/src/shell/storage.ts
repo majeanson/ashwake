@@ -725,24 +725,15 @@ export function clearSlot(slot: Slot): void {
   drop(keys.shop);
 }
 
-/**
- * SETTLE a seed into a slot — keep a shared world as one of your own
- * (2026-09-02).
+/*
+ * `settleSlot` was DELETED here on 2026-09-09 (Marc: *"Remove it"*).
  *
- * Ashwake 1's `settleSlot`, and the miss it was written to fix travels with it:
- * this used to be `createWorld` alone, so when the "empty" slot was the VIRGIN
- * ACTIVE one, its saved run and its shop survived into the settled world — and
- * a run whose seed no longer matches its world is exactly the corruption the
- * seed guard in `settle` refuses. Wiping the footprint is the half that stops
- * it happening at all.
- *
- * The seed settles EXACTLY as played. Ashwake 1 masked it to 31 bits here and
- * would have settled a different world than the one just previewed whenever a
- * hand-typed seed was negative.
+ * It minted a blank world on a given seed and took the slot's footprint with
+ * it — the front door's SETTLE, and its only caller. That offer is gone: a
+ * shared board is kept from its ENDING now, which carries the ground walked
+ * rather than only the number, so `settleWorldInto` (which takes a world that
+ * is not blank) is the one seam left. `git log` is the archive.
  */
-export function settleSlot(slot: Slot, worldSeed: number): void {
-  settleWorldInto(slot, newWorld(worldSeed));
-}
 
 /**
  * The same seam, for a world that is not blank (2026-09-05).

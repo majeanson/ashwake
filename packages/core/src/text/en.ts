@@ -171,10 +171,10 @@ export const STRINGS_EN: Strings = {
       name: 'STASH',
       terms: ['STASH'],
       coreMany: (slots) =>
-        `The dashed HOLD cards keep ${slots} tiles for later. Tap one to stash the selected card; tap a held card to trade that tile back.`,
+        `The dashed STASH cards keep ${slots} tiles for later. Tap one to stash the selected card; tap a stashed card to trade that tile back.`,
       coreOne:
-        'The dashed HOLD card keeps one tile for later. Tap to stash the selected card; tap it again to trade that tile back.',
-      more: 'Held tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.',
+        'The dashed STASH card keeps one tile for later. Tap to stash the selected card; tap it again to trade that tile back.',
+      more: 'Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.',
     },
     sizeBonus: {
       name: 'SIZE BONUS',
@@ -438,9 +438,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     place: 'Glowing edges are where a tile may go. The faint number is what it would pay.',
     pop: 'Ripe tiles that touch are ONE pocket. They pop together, and leave stone.',
     rare: 'A placed rare wears a ring in its own colour: magic, then unique.',
-    stash: 'The dashed slot is the stash. Tap it to keep the selected card for later.',
-    hold: 'HOLD',
-    held: 'HELD',
+    stash: 'The dashed slot is the stash. Tap it to stash the selected card for later.',
   },
 
   perk: {
@@ -636,9 +634,9 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     closeAll: 'CLOSE ALL',
     daily: 'DAILY',
     shop: 'THE SHOP',
-    hold: 'HOLD',
-    holdEmpty: 'Hold the selected tile for later',
-    holdSwap: (ground) => `Swap the held ${ground} tile back into the hand`,
+    hold: 'STASH',
+    holdEmpty: 'Stash the selected tile for later',
+    holdSwap: (ground) => `Take the stashed ${ground} tile back into the hand`,
     holdNothing: 'Nothing in hand to stash. Tap a card first.',
     holdTrades: 'Tap a card in your hand first: the stash trades, it does not deal.',
     pop: 'POP',
@@ -757,7 +755,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     beginShared: 'BEGIN · SHARED RUN',
     beginDaily: (day) => `BEGIN DAILY ${day}`,
-    settleWorld: (slot) => `SETTLE THIS WORLD · keep the seed as WORLD ${slot}`,
     cameByLink: 'This world reached you by a link. It travels the same way out.',
     ending: {
       scored: (n) => `Run over: ${n} point${plural(n, '', 's')}`,

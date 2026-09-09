@@ -90,11 +90,8 @@ import {
   memoryFor,
   worldSeedFor,
   onShed,
-  isFreeSlot,
-  settleSlot,
   settleWorldInto,
   setActiveSlot,
-  SLOTS,
   writeRecords,
   writeTimeline,
   type Slot,
@@ -2781,59 +2778,27 @@ function Game() {
     [wiring, setSlot, progress.found, startsFrom],
   );
 
-  /**
-   * KEEP THE SEED — settle a shared world as one of this device's three
-   * (2026-09-02).
+  /*
+   * KEEP THE SEED IS GONE (2026-09-09, Marc's ruling: *"Remove it"*).
    *
-   * Ashwake 1's front-door SETTLE, absent from this body entirely. `?seed=` is
-   * how a stranger meets the game and how a good board reaches a friend, and
-   * without this a link was a one-sitting visit, always, however good the
-   * ground turned out to be. Only the SEED travels: the sender's run, their
-   * relics and their shrines stay theirs.
+   * `settleThisWorld` was Ashwake 1's front-door SETTLE, ported on 2026-09-02
+   * because a `?seed=` link was otherwise a one-sitting visit however good the
+   * ground turned out to be. That reason is answered better now and elsewhere:
+   * a shared board plays a daily's economy and its ENDING offers KEEP THIS
+   * BOARD, which carries the ground walked and the territories claimed and lets
+   * the player name the slot rather than taking the first free one.
    *
-   * Offered only on a shared door with a free slot. `isFreeSlot` counts a
-   * VIRGIN active world as free, which is the case that matters most — a
-   * brand-new device arriving through a link should not have to burn a world
-   * nobody chose in order to keep the one somebody did.
+   * So the door had two offers to keep the same board, the worse one first, and
+   * that one was the only un-bordered control between two bordered buttons —
+   * it read as a caption. **Keeping a board is one thing that happens in one
+   * place now**, at the end, carrying what the run did.
    *
-   * **It is no longer the only door a shared board has** (2026-09-09). A
-   * detour plays a daily's economy now and ends on a daily's KEEP THIS BOARD
-   * offer, which carries what the run walked and lets the player name the
-   * slot. This one is the shortcut past the trial: taken on the door, before
-   * playing, by somebody who already knows they want the seed as a world. So
-   * the two are not duplicates — they are BEFORE and AFTER, and only the after
-   * one has a board to carry.
-   *
-   * It goes in through `enterWorld`, not by writing state here, for that
-   * function's own reason: everything a run starts from has to be put down in
-   * one order, or two doors disagree about what a run starts from.
+   * What went with it: the `settle` prop and its button on `FrontDoor`,
+   * `ui.settleWorld`, and `storage.ts`'s `settleSlot` — whose only caller this
+   * was. `isFreeSlot` stays: nothing else read it either, but it is the
+   * VIRGIN-world question, and `meta/world.ts`'s `hasBeenPlayed` under it is
+   * read by the KEEP THIS BOARD picker. `git log` is the archive.
    */
-  const settleThisWorld = useMemo(() => {
-    if (!session.detour || daily !== null) return null;
-    const free = SLOTS.find(isFreeSlot);
-    if (free === undefined) return null;
-    const seed = snap.state.rootSeed;
-    return {
-      slot: free,
-      onSettle: () => {
-        settleSlot(free, seed);
-        // The diary's arrival entry, before the navigation that follows:
-        // settling is a world-scale moment rather than a run, and it happens on
-        // a door no run-end hook ever sees.
-        writeTimeline(
-          appendEntry(readTimeline(), {
-            at: Date.now(),
-            kind: 'world',
-            event: 'settled',
-            slot: free,
-            worldSeed: seed,
-          }),
-        );
-        setActiveSlot(free);
-        enterWorld(free);
-      },
-    };
-  }, [session.detour, daily, snap.state.rootSeed, enterWorld]);
 
   /**
    * KEEP THIS BOARD — the board just played, turned into one of this device's
@@ -2844,16 +2809,15 @@ function Game() {
    * **A SHARED BOARD REACHES IT TOO** (2026-09-09, Marc: *"For a shared world,
    * it should be able to be played like a daily for a first run, then the same
    * question goes: do we continue in a world? if yes, we keep the same."*) It
-   * was a daily-only offer, and a shared link had only `settleThisWorld` on
-   * the front door — which keeps the SEED, takes the first free slot rather
-   * than one the player names, and carries nothing the run did. Both halves of
-   * Marc's sentence are the same offer now: a detour plays a daily's economy
+   * was a daily-only offer, and a shared link had only the front door's SETTLE
+   * — which kept the SEED, took the first free slot rather than one the player
+   * names, and carried nothing the run did. Both halves of Marc's sentence are
+   * the same offer now: a detour plays a daily's economy
    * (`shell/economy.ts`) and ends on a daily's question.
    *
-   * `settleThisWorld` stays, because it answers a different moment: it is
-   * taken BEFORE playing, by somebody who wants the seed as a world from run
-   * one rather than a trial of it. This one is taken after, and it carries what
-   * the trial did.
+   * **And it is the ONLY offer, since 2026-09-09.** The front door's SETTLE is
+   * deleted (Marc: *"Remove it"*): two ways to keep one board, the worse one
+   * first, was the thing to fix rather than a distinction to defend.
    *
    * What it does NOT carry is the run — `worldFromRun`'s docblock has the
    * reasoning, and it is Marc's answer when asked, over both "the run counts as
@@ -3547,7 +3511,6 @@ function Game() {
             dailyBadge={dailyBadge(readDailyBook(), today, s)}
             mode={mode}
             day={daily === null ? undefined : dailyName(daily)}
-            settle={settleThisWorld}
           />
         </div>
       )}

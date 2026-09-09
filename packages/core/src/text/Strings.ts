@@ -423,9 +423,20 @@ export type Strings = {
     readonly pop: string;
     readonly rare: string;
     readonly stash: string;
-    readonly hold: string;
-    readonly held: string;
   };
+  /*
+   * `figure.hold` and `figure.held` were DELETED here on 2026-09-09.
+   *
+   * `figureCaption` is `s.figure[id]` and `FigureId` is the six figures the
+   * manual draws — `hold` and `held` were never among them, so neither string
+   * was reachable by any path. The dashed slot inside a figure is labelled
+   * `s.ui.hold`, which is the control's own word and the one thing that should
+   * label it.
+   *
+   * They are also how the naming collision hid: a catalogue that holds THREE
+   * words for one mechanic (`stash`, `hold`, `held`) reads like three things.
+   * `git log` is the archive.
+   */
 
   readonly perk: Readonly<
     Record<
@@ -1053,19 +1064,6 @@ export type Strings = {
      */
     readonly beginShared: string;
     readonly beginDaily: (day: string) => string;
-    /**
-     * SETTLE THIS WORLD — keep a shared seed as one of your three (2026-09-02).
-     *
-     * Ashwake 1's answer to "this board is good and I am about to lose it": the
-     * geography becomes one of this device's worlds, fresh and unexplored,
-     * played with your own economy from then on. Only the SEED travels; the
-     * sender's run stays theirs.
-     *
-     * It names the slot, because with three worlds there is no "the empty one"
-     * to assume, and a button that picks for you is a surprise rather than a
-     * choice.
-     */
-    readonly settleWorld: (slot: number) => string;
     /**
      * The onward invitation, beside SHARE on a run that arrived by link.
      *

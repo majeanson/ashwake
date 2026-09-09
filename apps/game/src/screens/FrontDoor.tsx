@@ -60,14 +60,6 @@ export type FrontDoorProps = {
   /** Which day a daily door is for, already named by the catalogue. The badge
    *  beside it is a whole standing and far too long for a button. */
   readonly day?: string | undefined;
-  /**
-   * SETTLE THIS WORLD — keep this shared seed as one of your three.
-   *
-   * Present only on a shared door with a free slot. Ashwake 1's answer to a
-   * board worth keeping, and the one thing on this screen that becomes
-   * permanent, so it names the slot it would take.
-   */
-  readonly settle?: { readonly slot: number; readonly onSettle: () => void } | null;
 };
 
 export function FrontDoor({
@@ -80,7 +72,6 @@ export function FrontDoor({
   themeId,
   mode,
   day,
-  settle,
 }: FrontDoorProps) {
   const lockup = useArtSlot(themeId, 'ui.logo');
   return (
@@ -137,26 +128,21 @@ export function FrontDoor({
       )}
 
       {/*
-        Keep the seed — see `settle`. Above the quiet choices and under the
-        explanation of what a shared run IS, because it is the answer to the
-        sentence directly above it.
+        KEEP THE SEED IS GONE (2026-09-09, Marc: *"Remove it"*).
 
-        **ITS PARAGRAPH IS GONE (2026-09-09).** `settleNote` explained the
-        button in three lines directly under a button whose own label already
-        says it: "SETTLE HERE · keep the seed as WORLD 1". A sentence that
-        restates the control it sits beneath is the definition of chrome, and
-        it was the third paragraph on the first screen anybody sees.
+        A quiet SETTLE HERE button stood here with its own paragraph under it,
+        offering to keep this shared seed as WORLD 1. It was the second
+        keep-offer on the screen — the ENDING makes the other, and the other is
+        strictly better: it carries the ground walked and the territories
+        claimed, and it lets the player name the slot instead of taking the
+        first free one. It was also the only un-bordered control between two
+        bordered buttons, which made it read as a caption rather than a thing
+        you press.
 
-        The catalogue entry is DELETED rather than left unread: a sentence no
-        screen prints is the false positive the next dead-text sweep has to
-        re-adjudicate from scratch, which is how a ritual stops being run
-        (`CLAUDE.md`). `git log` is the archive.
+        So keeping a board happens once, in one place, where it can carry what
+        the run did. `App`'s `settleThisWorld`, `ui.settleWorld`,
+        `ui.settleNote` and `storage.ts`'s `settleSlot` all went with it.
       */}
-      {settle != null && (
-        <button type="button" className="quiet" data-door="settle" onClick={settle.onSettle}>
-          {s.ui.settleWorld(settle.slot)}
-        </button>
-      )}
 
       {/* DAILY, uniform with BEGIN now — see the doc comment above and
           `.door-begin, .door-daily` in ui.css. Absent on a door that is

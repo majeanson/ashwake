@@ -181,7 +181,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     "pop": "Ripe tiles that touch are ONE pocket. They pop together, and leave stone.",
     "rare": "A placed rare wears a ring in its own colour: magic, then unique.",
     "ripen": "Six sides covered: the middle tile is ripe, and worth what matches it.",
-    "stash": "The dashed slot is the stash. Tap it to keep the selected card for later.",
+    "stash": "The dashed slot is the stash. Tap it to stash the selected card for later.",
   },
   "names": [
     [
@@ -831,7 +831,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     "pop": "Des tuiles mûres qui se touchent font UNE poche. Elles se récoltent ensemble, et laissent de la pierre.",
     "rare": "Une rare posée porte un anneau de sa couleur : magique, puis unique.",
     "ripen": "Six côtés couverts : la tuile du milieu est mûre, et vaut ce qui lui ressemble.",
-    "stash": "La case pointillée, c’est la réserve. Touche-la pour garder la carte choisie pour plus tard.",
+    "stash": "La case pointillée, c’est la RÉSERVE. Touche-la pour y mettre la carte choisie.",
   },
   "names": [
     [

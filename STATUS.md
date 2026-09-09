@@ -4,7 +4,42 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — a retry that resumed the run it had just
+Last checkpoint: **2026-09-09 — one mechanic had two names, and the door had
+two offers.**
+
+The identified list, finished. `LOG.md` Session 72; the three open judgements
+were put to Marc and all three confirmed as built.
+
+**Verified:**
+
+- **The stash has ONE name.** The control said GARDER / HOLD; the concept — the
+  tappable term, the lesson's title, Marc's accented spelling pinned in two
+  tests — is RÉSERVE / STASH, and the lesson prose used both in one sentence.
+  In French `garder` also meant keeping a BOARD as a world and was the root of
+  SAUVEGARDER: one verb, three referents, on screens one tap apart. The control
+  says the concept's name now, and `text.test.ts` fails if they drift apart or
+  if the retired word reappears anywhere a player reads.
+- **`figure.hold` and `figure.held` were dead** — `FigureId` never contained
+  either, so no path could reach them. They are also how the collision hid: a
+  catalogue with four words for one mechanic reads like four things.
+- **The front door's SETTLE is gone** (Marc: _"Remove it"_). It kept only the
+  seed, took the first free slot, carried nothing the run did, and was the one
+  un-bordered control between two bordered buttons. The ending's KEEP THIS
+  BOARD is strictly better on every count. **The shared door went from seven
+  lines of prose to one.** Four more symbols came out with it —
+  `ui.settleWorld`, `ui.settleNote`, `settleSlot` and `SLOTS` — and the
+  compiler found the last two only because the first were deleted rather than
+  left unread.
+- **A tooling lesson, paid for twice**: a generator wrote a literal BACKSPACE
+  where a regex word boundary was meant (ESLint's `no-control-regex` caught
+  it), and a greedy optional-docblock regex ate a props block. Match exact
+  strings; build escapes with `String.fromCharCode`. Written at the line.
+
+**Counts:** 1145 unit tests / 88 files; e2e 115 Chromium + 46 WebKit; audit 164
+findings over 126 visits, all one known-allowed kind; `pnpm sim`
+byte-identical; typecheck and lint clean.
+
+Previous checkpoint: **2026-09-09 — a retry that resumed the run it had just
 finished, S5 struck as settled, and the copy cut on the screens people act on.**
 
 `LOG.md` Sessions 70 and 71.

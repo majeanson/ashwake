@@ -172,10 +172,10 @@ export const STRINGS_FR: Strings = {
       name: 'RÉSERVE',
       terms: ['RÉSERVE'],
       coreMany: (slots) =>
-        `Les cartes pointillées GARDER mettent ${slots} tuiles de côté. Touches-en une pour y mettre la carte choisie; touche une carte gardée pour la reprendre en RÉSERVE contre ta tuile.`,
+        `Les cartes pointillées RÉSERVE mettent ${slots} tuiles de côté. Touches-en une pour y mettre la carte choisie; touche une carte en réserve pour la reprendre contre ta tuile.`,
       coreOne:
-        'La carte pointillée GARDER met une tuile de côté, en RÉSERVE. Touche-la pour y mettre la carte choisie; touche-la encore pour reprendre cette tuile.',
-      more: 'Les tuiles gardées survivent à une repioche. Garde une rare, ou la couleur qu’une poche attend.',
+        'La carte pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la carte choisie; touche-la encore pour reprendre cette tuile.',
+      more: 'Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.',
     },
     sizeBonus: {
       name: 'BONUS DE TAILLE',
@@ -442,10 +442,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       'Les bords qui luisent sont là où une tuile peut aller. Le chiffre pâle est ce qu’elle paierait.',
     pop: 'Des tuiles mûres qui se touchent font UNE poche. Elles se récoltent ensemble, et laissent de la pierre.',
     rare: `Une rare posée porte un anneau de sa couleur${D}: magique, puis unique.`,
-    stash:
-      'La case pointillée, c’est la réserve. Touche-la pour garder la carte choisie pour plus tard.',
-    hold: 'GARDER',
-    held: 'GARDÉE',
+    stash: 'La case pointillée, c’est la RÉSERVE. Touche-la pour y mettre la carte choisie.',
   },
 
   perk: {
@@ -647,10 +644,10 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     closeAll: 'TOUT FERMER',
     daily: 'QUOTIDIEN',
     shop: 'LA BOUTIQUE',
-    hold: 'GARDER',
-    holdEmpty: 'Garder la tuile choisie pour plus tard',
-    holdSwap: (ground) => `Reprendre la tuile ${ground} en réserve`,
-    holdNothing: 'Rien en main à garder. Touche d’abord une carte.',
+    hold: 'RÉSERVE',
+    holdEmpty: 'Mettre la tuile choisie en réserve',
+    holdSwap: (ground) => `Reprendre la tuile ${ground} de la réserve`,
+    holdNothing: 'Rien en main à mettre en réserve. Touche d’abord une carte.',
     holdTrades: `Touche d’abord une carte${D}: la réserve échange, elle ne distribue pas.`,
     pop: 'RÉCOLTER',
     take: 'PRENDRE',
@@ -765,7 +762,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     },
     beginShared: 'COMMENCER · PARTIE PARTAGÉE',
     beginDaily: (day) => `COMMENCER LE QUOTIDIEN ${day}`,
-    settleWorld: (slot) => `S’ÉTABLIR ICI · garder la graine comme MONDE ${slot}`,
     cameByLink: 'Ce monde t’est arrivé par un lien. Il repart par le même chemin.',
     ending: {
       scored: (n) => `Partie terminée${D}: ${nb(n)} point${pl(n, '', 's')}`,

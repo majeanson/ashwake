@@ -179,6 +179,70 @@ const SAME_IN_BOTH: readonly string[] = [
   '3 pts',
 ];
 
+/**
+ * ONE MECHANIC, ONE WORD (2026-09-09).
+ *
+ * The stash had two names in front of the player at once. The CONTROL on the
+ * hand said HOLD / GARDER; the CONCEPT — the tappable glossary term, the
+ * lesson's own title, Marc's accented spelling pinned two tests down — was
+ * STASH / RÉSERVE. The lesson prose used both in one sentence: *"Les cartes
+ * pointillées GARDER ... pour la reprendre en RÉSERVE"*. And the catalogue held
+ * a third and a fourth word for it (`figure.hold`, `figure.held`) that no path
+ * could reach.
+ *
+ * In French it was worse than untidy. `garder` was also the verb for keeping a
+ * BOARD as a world (the ending's whole offer) and the root of `SAUVEGARDER`
+ * (back up your worlds) — so one verb meant three different things on screens
+ * that can be one tap apart, and a player who learned GARDER on the board read
+ * it again about their worlds.
+ *
+ * `CLAUDE.md`: *"Plain words. No invented vocabulary until a concept has
+ * earned a name."* A concept that has earned one has earned exactly one. This
+ * is that rule as a test, because it is the kind of drift that arrives one
+ * innocent sentence at a time.
+ */
+describe('one mechanic, one word', () => {
+  for (const s of CATALOGUES) {
+    it(`labels the stash control with the stash's own name, in ${s.locale}`, () => {
+      expect(s.ui.hold, 'the control and the concept have drifted apart').toBe(s.lesson.stash.name);
+    });
+
+    /*
+     * The retired control words, which must not come back anywhere a player
+     * reads. HOLD/GARDER as a standalone token — not `gardées` inside a
+     * sentence, and not `SAUVEGARDER`, which is a different mechanic with a
+     * different word and is allowed to keep it.
+     */
+    it(`never calls the stash by its retired name, in ${s.locale}`, () => {
+      const retired = s.locale === 'fr-CA' ? /\bGARDER\b/ : /\bHOLD\b/;
+      for (const text of everyString(s)) {
+        // SAUVEGARDER contains GARDER; the word boundary above already spares
+        // it, and this states why rather than leaving the reader to work it out.
+        if (/SAUVEGARDER/.test(text)) continue;
+        expect(text, `${s.locale}: "${text}" still calls the stash by its old name`).not.toMatch(
+          retired,
+        );
+      }
+    });
+  }
+
+  /*
+   * And the words for the three different KEEPS stay three different words.
+   * They can co-occur: the end screen can carry the install note, the back-up
+   * note and KEEP THIS BOARD, and a fresh-eyes pass on 2026-09-09 found all
+   * three saying "keep" about three different objects.
+   */
+  it('does not use one verb for the board, the worlds and the app', () => {
+    const fr = STRINGS_FR;
+    expect(fr.ui.handInstall, 'the install note competes with KEEP THIS BOARD').not.toMatch(
+      /\bGarde\b|\bgarder\b/,
+    );
+    expect(fr.ui.backUpNote, 'the back-up note competes with KEEP THIS BOARD').not.toMatch(
+      /\bgarde\b|\bgarder\b/,
+    );
+  });
+});
+
 describe('the two languages say different things', () => {
   /** Both catalogues walked in step, so each pair of values can be compared. */
   function pairs(a: unknown, b: unknown, path: string, out: [string, string][]): void {

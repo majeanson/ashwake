@@ -5765,3 +5765,71 @@ that rely on `move()`, and it reaches `move()` only through the `setDaily(null)`
 added this morning for an unrelated reason — `setDaily` calls `move`
 unconditionally. So that fix closed a second hole nobody had looked for, and it
 was luck rather than design.
+
+### Session 72 — one mechanic had two names, and the door had two offers (2026-09-09)
+
+**Question:** Marc: _"improve what you identified thoroughly no cut corners,
+plan ahead"_, and then _"let me answer the uncertainties remaining as well"_.
+So: **what does finishing an identified list properly cost, and what does it
+turn up on the way?**
+
+**Answer: the two findings I had surfaced and not acted on were both about ONE
+thing having TWO names, and mapping before editing is what made them safe.**
+
+**1. The stash had two names in front of the player at once.** The CONTROL on
+the hand said GARDER / HOLD. The CONCEPT — the tappable glossary term, the
+lesson's own title, Marc's accented spelling pinned in two separate tests — is
+RÉSERVE / STASH. The lesson prose used both in one sentence: _"Les cartes
+pointillées GARDER … pour la reprendre en RÉSERVE"_. So a player who tapped the
+term in the manual learned a word that was not on the button they press.
+
+**In French it was three meanings, not two.** `garder` is also the verb for
+keeping a BOARD as a world — the ending's whole offer — and the root of
+`SAUVEGARDER`, backing up your worlds. One verb, three referents, on screens
+that are one tap apart. `CLAUDE.md`: _"Plain words. No invented vocabulary
+until a concept has earned a name."_ A concept that has earned one has earned
+exactly one.
+
+The control says the concept's name now (Marc: _"Yes, RÉSERVE"_), which frees
+`garder` for the board. **And a test holds it**: `ui.hold === lesson.stash.name`
+in both languages, plus a sweep that fails if the retired word reappears
+anywhere a player reads — sparing `SAUVEGARDER`, which is a different mechanic
+that is allowed its own word, and saying so rather than leaving a reader to
+work out why the boundary is there.
+
+**Two dead catalogue entries came out with it.** `figure.hold` and
+`figure.held` — `figureCaption` is `s.figure[id]` and `FigureId` is the six
+figures the manual draws; neither was ever among them. They are also HOW the
+collision hid: a catalogue holding four words for one mechanic reads like four
+things.
+
+**2. The front door had two offers to keep the same board, the worse one
+first.** `settleThisWorld` kept the SEED, took the first free slot, and carried
+nothing the run did; the ending's KEEP THIS BOARD carries the ground walked and
+the territories claimed and lets the player name the slot. It was also the only
+un-bordered control between two bordered buttons, which made it read as a
+caption. Marc: _"Remove it"_. Keeping a board happens once, in one place, where
+it can carry what the run did — and the shared door went from **seven lines of
+prose to one**.
+
+**Removing it took four more things with it**, which is the part worth
+recording: the `settle` prop and its button on `FrontDoor`, `ui.settleWorld`,
+`ui.settleNote`, `storage.ts`'s `settleSlot` (whose only caller it was) and
+`SLOTS` from `App`'s imports. A feature is never one symbol, and the compiler
+found the last two only because the first three were deleted rather than left
+unread.
+
+**A tooling lesson, paid for twice.** A generator writing `\\b` into a
+regex literal produced a literal BACKSPACE (0x08), and ESLint's
+`no-control-regex` caught it — the boundaries were silently gone. The fix is
+`new RegExp('…')` with the escape built from `String.fromCharCode`, and it is
+written at the line. Separately, a greedy `/(?:docblock)?readonly settle?:/`
+regex ate a whole props block; `git checkout` of the one file and an exact
+string match was the recovery. **When editing by generator, match exact strings
+and never let a docblock group be optional-and-greedy.**
+
+**And the three remaining uncertainties went to Marc rather than being
+guessed**: the control's new name, the back-up warning's three-run threshold,
+and the streak line's placement above the score. All three confirmed as built,
+which is the cheapest possible answer and only available because they were
+asked.
