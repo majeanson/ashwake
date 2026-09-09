@@ -441,6 +441,33 @@ describe('shrinesReborn — a world with no ledger has no shrines (Day 2, launch
       expect(['cache', 'site']).toContain(a!.reward);
       expect(destinationAt(9, s.q, s.r, reborn)).toEqual(a);
     }
+  });
+
+  /*
+   * BOTH FACES, because the coin had one (2026-09-09).
+   *
+   * The pin above is `toContain` over a two-element list, which is exactly as
+   * true of a rewrite that always says `site` — and it always did: the flip
+   * read `hashAt(...) % 2 === 0` on a hash uniform in [0, 1), so the remainder
+   * was the float itself and the test was 0 once in 2^32. Marc asked for
+   * *"tile cache or points"* and a daily paid points, only ever points.
+   *
+   * Forty seeds rather than one, because this is a distribution and a single
+   * seed with a dozen shrines can miss a face honestly.
+   */
+  it('gives a daily both faces, never only one', () => {
+    const reborn = { ...TUNING, shrinesReborn: true };
+    const faces = { cache: 0, site: 0 };
+    for (let seed = 1; seed <= 40; seed++) {
+      for (const d of destinationsWithin(seed, 80, TUNING)) {
+        if (d.reward !== 'shrine') continue;
+        const face = destinationAt(seed, d.q, d.r, reborn)?.reward;
+        if (face === 'cache' || face === 'site') faces[face] += 1;
+      }
+    }
+    expect(faces.cache + faces.site).toBeGreaterThan(100);
+    expect(faces.cache, 'every reborn shrine became a site').toBeGreaterThan(0);
+    expect(faces.site, 'every reborn shrine became a cache').toBeGreaterThan(0);
     // Everything that was NOT a shrine is untouched by the dial.
     for (const d of destinationsWithin(9, 60, TUNING).filter((x) => x.reward !== 'shrine')) {
       expect(destinationAt(9, d.q, d.r, reborn)?.reward).toBe(d.reward);

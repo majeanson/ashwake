@@ -277,6 +277,41 @@ describe('destinations and rarity in the view', () => {
     }
   });
 
+  /*
+   * ONE HEX, ONE CELL (2026-09-09, Marc, on a phone: *"we see double glyphs in
+   * 3d (one flat, one on top)"*).
+   *
+   * The memory pass skipped the live board and never added its own keys to the
+   * set, and the beacon pass filtered against the live board alone, so a
+   * remembered destination inside the beacon horizon came out TWICE. Two cells
+   * at one hex is two hexes and two marks on the board: `Labels` lays a
+   * remembered mark flat and stands a beacon's up on a billboard, which is the
+   * squashed star with a second star standing on it in the screenshot.
+   *
+   * The beacon wins (Marc's ruling): the horizon decides what glows, not
+   * whether an earlier run walked past. Asserted on the CELLS rather than on
+   * the count alone, because "one cell" would also be satisfied by the wrong
+   * one surviving.
+   */
+  it('draws a remembered destination inside the horizon once, as the beacon', () => {
+    const { seed, state } = seeded();
+    const remembered = destinationsWithin(seed, TUNING.beaconHorizon, TUNING).map((d) =>
+      key(d.q, d.r),
+    );
+    expect(remembered.length).toBeGreaterThan(0);
+    const cells = toBoardView(state, null, null, remembered, {
+      radius: 2,
+      fade: 8,
+      floor: 0.4,
+    }).cells;
+    for (const k of remembered) {
+      const at = cells.filter((c) => c.key === k);
+      expect(at, `${k} drew ${at.length} cells`).toHaveLength(1);
+      expect(at[0]?.beacon).toBe(true);
+      expect(at[0]?.remembered).toBe(false);
+    }
+  });
+
   it('says where to go, in words, with a distance', () => {
     const hud = toHudView(seeded().state, EN);
     expect(hud.hint).toMatch(/glows \d+ out/);

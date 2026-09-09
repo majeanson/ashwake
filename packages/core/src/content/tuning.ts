@@ -626,8 +626,11 @@ export type Tuning = {
    * Every shrine on the plane reveals as a cache or a site instead (Marc,
    * Day 2 of launch week: 'in dailies, shrines have no meaning') — a world
    * with no unlock ledger has no use for a door to one. The daily flips
-   * this at the edge (main.ts); home worlds and shared replays keep their
-   * shrines. Applied inside destinationAt, so every surface agrees.
+   * this at the edge (`shell/economy.ts`); home worlds and shared replays keep
+   * their shrines. Applied at the bottom of `blockDestination`, which is the
+   * one place BOTH generators come through, so every surface agrees — it said
+   * `destinationAt` here until 2026-09-02 and the beacons never came through
+   * that at all (see `reborn`).
    */
   readonly shrinesReborn: boolean;
   readonly pointsPerPop: number;

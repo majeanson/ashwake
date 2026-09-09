@@ -360,8 +360,47 @@ export function toBoardView(
   };
 
   const onBoard = new Set(Object.keys(state.cells));
+
+  /*
+   * WHAT WILL BE DRAWN OVER THE MAP, KNOWN BEFORE THE MAP IS DRAWN
+   * (2026-09-09, Marc, on a phone: *"we see double glyphs in 3d (one flat, one
+   * on top)"*).
+   *
+   * Three passes below add cells the live board does not hold: memory, then
+   * beacons, then shimmers. Each skipped `onBoard` and only the LIVE board was
+   * ever in it, because the memory pass never put its own keys there. So a
+   * remembered destination inside the beacon horizon was pushed TWICE, once as
+   * remembered fog and once as a beacon, and the board obligingly drew both:
+   * `Labels` lays a remembered mark FLAT on its hex and stands a beacon’s up on
+   * a billboard, which is exactly the squashed star with a second star standing
+   * on it in Marc’s screenshot. Two hexes, two marks, one place.
+   *
+   * **The beacon wins** (Marc’s ruling, same day). A beacon is the promise that
+   * there is somewhere to go, and the HORIZON is what decides which
+   * destinations carry it, not whether an earlier run happened to walk past.
+   * Memory winning would have put the beacons out one by one in exactly the
+   * worlds a player replays most.
+   *
+   * So both live passes are selected HERE, above the memory pass, and memory
+   * yields to either. Reordering the three passes would say the same thing and
+   * would also reorder `cells` for everything downstream that reads them in
+   * order; this says it where a reader of the memory pass can see it.
+   *
+   * **The shimmer is included on purpose, not by accident of the fix.** It has
+   * the identical hole — a find inside `findSense` of the live board, standing
+   * on ground this world remembers, was two cells too — and the same rule
+   * settles it: what is glowing NOW beats the map of what was walked before.
+   * Rarer, because it needs KEEN NOSE bought, and it costs a one-hex hole in
+   * the fog where the glow is, which is exactly how a beacon already reads.
+   */
+  const beacons = beaconsFor(state, ctx.reach).filter((d) => !onBoard.has(key(d.q, d.r)));
+  const shimmers = shimmersFor(state, ctx);
+  const overMemory = new Set<HexKey>();
+  for (const d of beacons) overMemory.add(key(d.q, d.r));
+  for (const f of shimmers) overMemory.add(key(f.q, f.r));
+
   for (const k of memory) {
-    if (onBoard.has(k)) continue;
+    if (onBoard.has(k) || overMemory.has(k)) continue;
     const { q, r } = parse(k);
     const ground = terrainAt(state.rootSeed, q, r, state.tuning);
     // A reborn landmark wears its NEW face in the fog too (2026-08-20): a
@@ -418,8 +457,7 @@ export function toBoardView(
   // Destinations the board has not grown to yet, glowing through ground that
   // is not drawn: the endless world's somewhere-to-go. The horizon moves with
   // reach, so the next glow appears at the rim as you push toward the last.
-  for (const d of beaconsFor(state, ctx.reach)) {
-    if (onBoard.has(key(d.q, d.r))) continue;
+  for (const d of beacons) {
     // The beacon wears the reborn face too (2026-08-20) — a woken shrine
     // rolled into a site this run glows as the ★ walking there will pay.
     const reborn = state.rearmed[key(d.q, d.r)];
@@ -452,51 +490,35 @@ export function toBoardView(
 
   // The shimmer (`findSense` > 0, sold as KEEN NOSE): a hidden find within
   // sense range of ANY cell of this run's board glows dimly — no glyph, no
-  // kind, no atlas entry. This loop is the ONE consumer of `findsWithin`;
-  // nothing else may draw an unrevealed find, because a find that shows
-  // through the dark is a destination with extra steps. `findsCached` and
-  // `ctx.ground` mirror `destinationsCached` and its beacon caller — before
-  // this the scan ran uncached (O(blocks²) every render) over a ground list
-  // re-parsed from scratch every render too, at O(cells) — real cost once
-  // reach grows past a couple dozen.
-  if (state.tuning.findSense > 0) {
-    const sense = state.tuning.findSense;
-    // Widened by the home offset (2026-08-21): `findsWithin` scans a disc
-    // around world ORIGIN, and `ctx.reach` is measured from HOME, so a camp
-    // run asked for a disc that did not contain its own ground and the
-    // purchased perk shimmered nothing. The ground filter below is what
-    // actually decides what draws, so a wider scan costs blocks, not truth.
-    const scan = ctx.reach + sense + 1 + distance(homeOf(state), ORIGIN_HEX);
-    for (const f of findsCached(state.rootSeed, scan, state.tuning)) {
-      const k = key(f.q, f.r);
-      if (onBoard.has(k)) continue;
-      if (!ctx.ground.some((h) => distance(h, f) <= sense)) continue;
-      cells.push({
-        key: k,
-        q: f.q,
-        r: f.r,
-        kind: 'landmark',
-        colour: null,
-        landmark: null,
-        claimed: false,
-        beacon: false,
-        shimmer: true,
-        remembered: false,
-        rarity: null,
-        native: null,
-        light: lit(f.q, f.r),
-        band: band(f.q, f.r),
-        ripe: false,
-        targeted: false,
-        dimmed: false,
-        lensed: false,
-        worth: 0,
-        home: false,
-        legal: false,
-        preview: null,
-        previewColour: null,
-      });
-    }
+  // kind, no atlas entry. `shimmersFor` is the ONE selector of unrevealed
+  // finds; nothing else may draw one, because a find that shows through the
+  // dark is a destination with extra steps.
+  for (const f of shimmers) {
+    cells.push({
+      key: key(f.q, f.r),
+      q: f.q,
+      r: f.r,
+      kind: 'landmark',
+      colour: null,
+      landmark: null,
+      claimed: false,
+      beacon: false,
+      shimmer: true,
+      remembered: false,
+      rarity: null,
+      native: null,
+      light: lit(f.q, f.r),
+      band: band(f.q, f.r),
+      ripe: false,
+      targeted: false,
+      dimmed: false,
+      lensed: false,
+      worth: 0,
+      home: false,
+      legal: false,
+      preview: null,
+      previewColour: null,
+    });
   }
 
   return { cells, targetHex: ctx.target };
@@ -585,6 +607,33 @@ function beaconsFor(
   return destinationsCached(state.rootSeed, scan, state.tuning).filter(
     (d) =>
       state.cells[key(d.q, d.r)] === undefined && distance({ q: d.q, r: d.r }, home) <= horizon,
+  );
+}
+
+/**
+ * Unrevealed finds close enough to the run’s ground to shimmer.
+ *
+ * Lifted out of `toBoardView` (2026-09-09) for the reason `beaconsFor` was
+ * always a selector: the memory pass has to know what will be drawn OVER the
+ * map before it draws the map, and “what will be drawn” cannot live inside the
+ * loop that draws it. See the note above the memory pass.
+ *
+ * `findsCached` and `ctx.ground` mirror `destinationsCached` and its beacon
+ * caller — before that the scan ran uncached (O(blocks²) every render) over a
+ * ground list re-parsed from scratch every render too, at O(cells), real cost
+ * once reach grows past a couple dozen. The scan is widened by the home offset
+ * (2026-08-21): `findsWithin` scans a disc around world ORIGIN and `ctx.reach`
+ * is measured from HOME, so a camp run asked for a disc that did not contain
+ * its own ground and the purchased perk shimmered nothing. The ground filter is
+ * what actually decides what draws, so a wider scan costs blocks, not truth.
+ */
+function shimmersFor(state: GameState, ctx: RenderContext): { q: number; r: number }[] {
+  if (state.tuning.findSense <= 0) return [];
+  const sense = state.tuning.findSense;
+  const scan = ctx.reach + sense + 1 + distance(homeOf(state), ORIGIN_HEX);
+  return findsCached(state.rootSeed, scan, state.tuning).filter(
+    (f) =>
+      state.cells[key(f.q, f.r)] === undefined && ctx.ground.some((h) => distance(h, f) <= sense),
   );
 }
 

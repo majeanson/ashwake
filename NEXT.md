@@ -253,6 +253,25 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**A DETOUR keeps its shrines and its finds, and neither pays this device
+anything (2026-09-09, `LOG.md` Session 63).** A daily's do not: `NO_LEDGER`
+in `shell/economy.ts` rewrites a daily's shrines into caches and sites and
+zeroes its finds outright, on Marc's own reasoning that a landmark paying into
+a ledger the run does not have is a door that opens nothing. A detour — a
+shared seed that is not this device's world — gets `NO_RELICS` and nothing
+else, so its shrines still read as shrines and its finds still shimmer, and
+`App`'s grant refuses both because a perk lives on the world it was found in.
+Walking to one costs a placement and pays literally nothing.
+
+**This is deliberate and `economy.test.ts` says so** — "a detour is somebody
+else's world, played as it stands", because a replay scored under this device's
+economy would not be a replay of anything. So the two rules genuinely conflict
+and only Marc can pick: either a detour's board is the SAME board everybody
+else played (today's answer, with two landmark kinds inert on it), or a detour
+gets `NO_LEDGER` too and plays a board with no dead doors on it, at the cost
+of no longer being the same geography the sharer walked. Left alone rather than
+changed, because it is a design call and not a defect.
+
 **~~The board still RESIZES when POP appears~~ — RESERVED, 2026-09-08.** Asked
 whether 60px of board on every phone for every run was worth a map that never
 moves, Marc said yes. The action bar carries a button-shaped spacer whenever it

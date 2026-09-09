@@ -4,7 +4,51 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-08 — the seven answers, and zero clipped.**
+Last checkpoint: **2026-09-09 — one hex draws one cell, and the daily's coin
+gets its second face.**
+
+Marc sent a screenshot of one star drawn twice and asked, in the same breath,
+whether the translations are honest and whether every landmark a daily proposes
+can pay. `LOG.md` Session 63 is the reasoning.
+
+**Verified:**
+
+- **One hex draws one cell.** `toBoardView`'s memory pass never added its own
+  keys to `onBoard` and `beaconsFor` filters against the LIVE board alone, so
+  a remembered destination inside the beacon horizon came out TWICE — drawn
+  flat by the memory cell and standing on a billboard by the beacon cell, which
+  is the double glyph. **The beacon wins** (Marc's ruling): the horizon decides
+  what glows, not whether an earlier run walked past. `shimmersFor` is a
+  selector beside `beaconsFor` now, because the memory pass has to know what
+  will be drawn over the map before it draws the map. `view.test.ts` asserts
+  the surviving cell, not just the count.
+- **A daily's reborn shrines are caches AND sites.** The flip was
+  `hashAt(...) % 2 === 0` on a hash uniform in [0, 1), so it was 0 once in
+  2^32: **585 reborn shrines over the first forty seeds, 585 sites, zero
+  caches.** Marc asked for "tile cache or points" on Day 2 of launch week. The
+  pin over it was `toContain(['cache', 'site'])`, which passes on a coin with
+  one face; `world.test.ts` counts both faces now.
+- **The rewrite's docblock in `tuning.ts` pointed at the wrong function** —
+  still "applied inside destinationAt", the exact sentence that was wrong when
+  the rewrite moved into `blockDestination` on 2026-09-02 because the beacons
+  never came through `destinationAt`.
+- **The translations are clean, and now pinned.** No JSX text node, no
+  hardcoded label, no locale fork outside `text/`; the two single-language
+  surfaces are deliberate (the stranger console, which no player reaches) or
+  carry both languages (the `<noscript>` and browser-floor panels, which run
+  before the catalogue exists). `text.test.ts` walks the two catalogues in
+  step and fails on a French entry holding English words — sixteen matched,
+  all sixteen real Québec cognates or a language named in its own language,
+  kept as an allowlist a reviewer defends.
+
+**Left for Marc:** a DETOUR keeps its shrines and its finds and neither pays
+anything — the daily's own bug one step over, deliberate per
+`economy.test.ts`, and a design call rather than a defect (`NEXT.md` §1).
+
+**Counts:** 1086 tests / 86 files, `pnpm sim` byte-identical, typecheck and
+lint clean.
+
+Previous checkpoint: **2026-09-08 — the seven answers, and zero clipped.**
 
 Session 61 handed Marc every look decision it had refused to guess at; he
 answered all seven and this is them built. `LOG.md` Session 62 is the

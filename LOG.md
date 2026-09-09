@@ -5145,3 +5145,65 @@ test.** `e2e/steady.spec.ts` measures the board host across the moment POP
 appears, and was checked to FAIL without the spacer before being kept. The
 stat row and the purse drawer were both fixed the same way and neither had a
 test, which is how there came to be a third.
+
+### Session 63 — a double glyph, a coin with one face, and a translation check that came back clean (2026-09-09)
+
+**Question:** Marc sent one screenshot of a star drawn twice on one hex and
+asked two more things in the same breath: are the translations honest, and can
+every landmark a daily proposes actually pay. So: **when a rendering artefact
+and two audit questions arrive together, do they turn out to be three
+unrelated jobs?**
+
+**Answer: no. Two of the three were the same failure — a check that could not
+fail.** The double glyph was two CELLS, not two draws: `toBoardView`'s memory
+pass skipped `onBoard` and never added its own keys to it, and `beaconsFor`
+filters against the LIVE board alone, so a remembered destination inside the
+beacon horizon was pushed twice. `Labels` lays a remembered mark flat on its
+hex and stands a beacon's up on a billboard, so one place drew a squashed star
+with a second star standing on it. Marc's ruling: the beacon wins, because the
+horizon should decide what glows, not whether an earlier run happened to walk
+past. Memory winning would have put the beacons out one by one in exactly the
+worlds a player replays most.
+
+**The daily question found the coin with one face.** `reborn` rewrites a
+daily's shrines into "a cache or a site" with
+`hashAt(seed ^ 0x5e17ab1e, q, r) % 2 === 0`, and `hashAt` is uniform in
+[0, 1) — as its own docblock says two screens up — so the remainder is the
+float itself and `=== 0` is true once in 2^32. Measured: **585 reborn shrines
+over the first forty seeds, 585 sites, zero caches.** Marc asked for "tile
+cache or points" on Day 2 of launch week and the daily has paid points, only
+ever points, ever since.
+
+**And the pin over it read `expect(['cache', 'site']).toContain(a!.reward)`,
+which passes on a coin that has one face.** That is the reusable lesson and it
+is a new shape of the one this file keeps recording: a comment that asserts an
+invariant is not the invariant, and **a test that asserts membership in the set
+of allowed answers is not a test that both answers happen.** The same test now
+counts faces over forty seeds.
+
+**The shrine rewrite's own docblock in `tuning.ts` was still stale too**, and
+in the reassuring direction: "Applied inside destinationAt, so every surface
+agrees" — which is the exact sentence that was wrong on 2026-09-02, when the
+rewrite moved down into `blockDestination` precisely because the beacons never
+came through `destinationAt`. The fix moved; the sentence pointing at it did
+not.
+
+**The translation check came back clean, and got a test so it stays that
+way.** No JSX text node, no hardcoded label, no locale fork outside
+`text/` — the two exceptions are both deliberate and documented (the stranger
+console, single-language because no player reaches it; the pre-bundle
+`<noscript>` and browser-floor panels, which carry BOTH languages because the
+catalogue is not loaded yet). What no type and no typography rule could see is
+a French entry holding the English words, so `text.test.ts` now walks the two
+catalogues in step and reports any value that came out identical. Sixteen did;
+all sixteen are real Québec cognates (CACHE, SITE, UNIQUE, TOTAL, DISTANCE,
+MENU, PTS, AUTO, DESTINATIONS) or a language named in its own language, and
+they are an allowlist a reviewer has to defend rather than a threshold.
+
+**What was left alone, and named instead: a DETOUR keeps its shrines and its
+finds, and neither pays this device anything.** That is the daily's own bug one
+step over, and it is deliberate — `economy.test.ts` says "a detour is
+somebody else's world, played as it stands", because a replay scored under
+this device's economy would not be a replay of anything. It is in `NEXT.md`
+§1 for Marc rather than changed, since which of those two rules wins is a
+design call and not a defect.

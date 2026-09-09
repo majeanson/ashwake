@@ -144,6 +144,100 @@ describe('the catalogues', () => {
   });
 });
 
+/**
+ * A SENTENCE THAT IS THE SAME IN BOTH LANGUAGES IS A SENTENCE NOBODY WROTE
+ * TWICE (2026-09-09, Marc: *"make sure all translations are done correctly. no
+ * hardcoded fr or en"*).
+ *
+ * The catalogue being a typed object makes a MISSING sentence a type error, and
+ * the rules above make a badly TYPESET one a test failure. What neither can see
+ * is a French entry holding the English words: it is present, it is correct
+ * French typography, and it is not French. This walks the two catalogues in
+ * parallel, calls every function on the same sample facts, and reports any
+ * value that came out identical.
+ *
+ * The allowed list is the exception and it is short on purpose. Every entry is
+ * a word Québec French genuinely writes the same way, or the name of a language
+ * said in its own language. A new name on this list is a decision somebody has
+ * to defend in review; a new name NOT on it is an untranslated string.
+ */
+const SAME_IN_BOTH: readonly string[] = [
+  // Québec French writes these words exactly as English does.
+  'AUTO',
+  'CACHE',
+  'DESTINATIONS',
+  'DISTANCE',
+  'MENU',
+  'PTS',
+  'SITE',
+  'TOTAL',
+  'UNIQUE',
+  // A language picker says each language in that language.
+  'ENGLISH',
+  'FRANÇAIS',
+  // "3 pts" is the abbreviation in both.
+  '3 pts',
+];
+
+describe('the two languages say different things', () => {
+  /** Both catalogues walked in step, so each pair of values can be compared. */
+  function pairs(a: unknown, b: unknown, path: string, out: [string, string][]): void {
+    if (typeof a === 'string' && typeof b === 'string') {
+      out.push([path, a === b ? a : '']);
+      return;
+    }
+    if (typeof a === 'function' && typeof b === 'function') {
+      const fa = a as (...x: unknown[]) => unknown;
+      const fb = b as (...x: unknown[]) => unknown;
+      const shapes = [
+        Array.from({ length: fa.length }, () => 3),
+        Array.from({ length: fa.length }, () => 'X'),
+        Array.from({ length: fa.length }, (_, i) => (i === 0 ? 3 : 'X') as unknown),
+      ];
+      for (const args of shapes) {
+        try {
+          pairs(fa(...args), fb(...args), `${path}(${args.join(',')})`, out);
+        } catch {
+          // A function wanting a string where we passed a number: another
+          // shape above covers it.
+        }
+      }
+      return;
+    }
+    if (Array.isArray(a) && Array.isArray(b)) {
+      a.forEach((v, i) => pairs(v, b[i], `${path}[${i}]`, out));
+      return;
+    }
+    if (typeof a === 'object' && a !== null && typeof b === 'object' && b !== null) {
+      for (const k of Object.keys(a)) {
+        const rec = a as Record<string, unknown>;
+        pairs(rec[k], (b as Record<string, unknown>)[k], `${path}.${k}`, out);
+      }
+    }
+  }
+
+  it('never gives the English words as the French ones', () => {
+    const out: [string, string][] = [];
+    pairs(STRINGS_EN, STRINGS_FR, '', out);
+    // Three letters, because a bare number or a one-letter mark is the same in
+    // both languages by arithmetic rather than by translation.
+    const identical = out
+      .filter(([, text]) => text !== '' && /[A-Za-zÀ-ÿ]{3}/.test(text))
+      .filter(([, text]) => !SAME_IN_BOTH.includes(text));
+    expect(
+      [...new Set(identical.map(([at, text]) => `${at} = ${JSON.stringify(text)}`))].sort(),
+    ).toEqual([]);
+  });
+
+  it('still walks enough of the catalogue to mean something', () => {
+    const out: [string, string][] = [];
+    pairs(STRINGS_EN, STRINGS_FR, '', out);
+    // A guard on the walker, not on the words: a `pairs` that stopped
+    // descending would pass the test above by seeing nothing at all.
+    expect(out.length).toBeGreaterThan(500);
+  });
+});
+
 describe('Québec French', () => {
   const strings = everyString(STRINGS_FR);
 

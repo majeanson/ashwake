@@ -166,7 +166,20 @@ export function blockDestination(
  */
 function reborn(d: Destination, seed: number, t: Tuning): Destination {
   if (d.reward !== 'shrine' || !t.shrinesReborn) return d;
-  return { ...d, reward: hashAt(seed ^ 0x5e17ab1e, d.q, d.r) % 2 === 0 ? 'cache' : 'site' };
+  /*
+   * AND EVERY ONE OF THEM WAS A SITE (2026-09-09).
+   *
+   * The coin flip was `hashAt(...) % 2 === 0`. `hashAt` is uniform in [0, 1),
+   * as its own docblock says two screens up, so the remainder mod 2 is the
+   * float itself and `=== 0` is true once in 2^32. Measured rather than
+   * reasoned about: 585 reborn shrines over the first forty seeds, 585 sites,
+   * zero caches. Marc asked for *"tile cache or points"* and the daily paid
+   * points, only ever points, for a week.
+   *
+   * The existing pin could not see it — `expect(['cache', 'site']).toContain`
+   * passes on a coin that has one face. `world.test.ts` asks for both now.
+   */
+  return { ...d, reward: hashAt(seed ^ 0x5e17ab1e, d.q, d.r) < 0.5 ? 'cache' : 'site' };
 }
 
 /** The destination standing at exactly this hex, if any. What reveal consults. */
