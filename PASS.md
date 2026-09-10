@@ -306,7 +306,7 @@ about, it does not go to `LOG.md`.
 | P2.3 | done   | the gestures — `INTERACTIONS.md`'s first table as a function, and the order is the rule             | `shell/tap.ts`      |
 | P2.4 | done   | the voice — one speaker at a time: the receipts in the air, and the rule that was a JSX guard       | `shell/speaking.ts` |
 | P2.5 | done   | the look — `theme`, `look`, `vignette`; the media queries stay, they are the sampling               | `shell/look.ts`     |
-| P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix  | `App.tsx:2531–2835` |
+| P2.6 | ruled  | the doors — **already extracted by B6.4**; the find was a second world-seed minter                  | `shell/storage.ts`  |
 | P2.7 | done   | share — the fork, once, for the sentence AND the card. `importDaily` ruled: it is wiring, see below | `shell/handOver.ts` |
 | P2.8 | ruled  | the purse — **not extracted**, and the reason is below. One docblock corrected                      | `App.tsx`           |
 | P2.9 | done   | the world's live memory — `worldHeld`, `keepWorld`, `forgetWorld`, and the seed rule as `heldFor`   | `shell/held.ts`     |
@@ -421,7 +421,33 @@ only at the tap, because a trip that runs its course ends itself.
 Every tap path is e2e-driven, which is what makes this row's green suite mean
 something.
 
-**Left open: P2.6 and P2.2.** One region and then the item. `act` is still last, still gets its own commit and its own test
+**P2.6 IS RULED, and the row told me to expect that**: _"check
+`shell/beginning.ts` FIRST; B6.4 took five already."_ It did. `enterRun` owns
+the ORDER, and what is left in `App` is each door stating its whole `Door`
+inline — which is not incidental, it is the invariant `modes.test.ts` asserts,
+and the compiler asking every door to answer is what stops a sixth forgetting a
+flag. Extracting them further would mean passing `wiring`, `today`, `progress`
+and four setters into a module: that is moving a closure, not lifting a
+decision, and `openDaily` and `enterWorld` have no decision left in them to
+lift.
+
+**The find is one of `MODES.md`'s four world-minting sites bypassing the
+minter.** `shell/storage.ts`'s `freshWorldSeed` mixes the clock with entropy
+and its docblock states the property: _"still roughly ordered, so a seed in a
+bug report says roughly when, and no longer collidable."_ `takeCrossing` rolled
+`Math.floor(Math.random() * 2 ** 31)` — no clock — so **a crossed-into world
+was the one world in the game whose seed said nothing about when it was born.**
+The ledger records that NEW RUN, the world switcher and RESET ALL each rolled
+their own once; the crossing survived that fix because it MINTS a world rather
+than reading a slot's.
+
+`freshWorldSeed` is exported and has two callers now, and `modes.test.ts` gains
+a guard on the reflex rather than on the four sites: a raw `Math.random` in the
+game's source is the minter, a crash id, or a new second implementation of one
+of them. Named exceptions, so adding one is a decision somebody writes down.
+Verified by mutation — it names the file and the line.
+
+**Left open: P2.2.** The item. `act` is still last, still gets its own commit and its own test
 file.
 
 **P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a

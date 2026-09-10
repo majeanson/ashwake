@@ -6757,3 +6757,35 @@ exporting the type a function returns when only that function's own file needs
 it. Four for four is not bad luck, it is a reflex, and the gate is what keeps
 it out of the report. Worth writing down so the next extraction starts by not
 doing it.
+
+**P2.6 — the doors are already where they belong, and the find was a seed.**
+The row said to check `shell/beginning.ts` first and it was right: B6.4 took
+the ORDER, and what remains in `App` is each door stating its whole `Door`
+inline. That is not leftover — it IS the invariant `modes.test.ts` asserts, and
+the compiler asking every door to answer is what stops a sixth forgetting a
+flag. Extracting further would mean handing `wiring`, `today`, `progress` and
+four setters to a module, which is moving a closure rather than lifting a
+decision. `openDaily` and `enterWorld` have no decision left in them.
+
+**But one of `MODES.md`'s four world-minting sites was bypassing the minter.**
+`shell/storage.ts`'s `freshWorldSeed` mixes the clock with entropy, and its
+docblock states why: _"still roughly ordered, so a seed in a bug report says
+roughly when, and no longer collidable."_ `takeCrossing` rolled
+`Math.floor(Math.random() * 2 ** 31)` — no clock — so **a crossed-into world
+was the one world in this game whose seed said nothing about when it was
+born.** The ledger already records NEW RUN, the world switcher and RESET ALL
+each rolling their own; the crossing survived that fix precisely because it
+MINTS a world rather than reading a slot's, so it was not in the list anybody
+was checking.
+
+`freshWorldSeed` is exported now and has two callers. The guard went into
+`modes.test.ts` and is aimed at the REFLEX rather than at the four sites: a raw
+`Math.random` in the game's source is the minter, a crash id, or somebody's
+second implementation of one of them — named exceptions, so a third is a
+decision written down. Mutation-tested: it names the file and the line.
+
+**Two rows in a row have now ended in a ruling rather than a module** (P2.8,
+P2.6, with P2.7's `importDaily` a third). That is worth saying plainly: the
+answer to "does extracting a region find a bug" is turning out to be **yes,
+but the region often does not want to move.** Six of the eight rows found
+something; three of them found it while deciding NOT to extract.

@@ -212,6 +212,58 @@ describe('MODES.md’s guards, readers and kinds are real', () => {
   });
 
   /*
+   * ONE THING MINTS A WORLD SEED (`PASS.md` P2.6, 2026-09-10).
+   *
+   * `MODES.md` lists four places a world comes from, and `freshWorldSeed`'s
+   * docblock states the property they must share: the clock is mixed with
+   * entropy so a seed stays *"roughly ordered, so a seed in a bug report says
+   * roughly when, and no longer collidable"*.
+   *
+   * It was true of three of the four. `App`'s `takeCrossing` minted with
+   * `Math.floor(Math.random() * 2 ** 31)` — no clock — so a crossed-into world
+   * was the one world whose seed said nothing about when it was born. The
+   * ledger recorded that NEW RUN, the world switcher and RESET ALL had each
+   * rolled their own once; the crossing was the one that survived that fix,
+   * because it MINTS a world rather than reading a slot's.
+   *
+   * So the guard is on the reflex rather than on the four sites: a raw
+   * `Math.random` in the game's source is either the minter, a crash id, or a
+   * new second implementation of one of them. Named exceptions rather than a
+   * pattern, so adding one is a decision somebody writes down.
+   */
+  it('leaves exactly one `Math.random` that mints anything', () => {
+    const allowed = new Map([
+      ['apps/game/src/shell/storage.ts', 'the world-seed minter itself'],
+      ['apps/game/src/shell/failure.ts', 'a crash report id, which is not a seed'],
+    ]);
+    const offenders: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+        const rel = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) {
+          walk(rel);
+          continue;
+        }
+        if (!/\.tsx?$/.test(entry.name) || /\.(test|spec)\.tsx?$/.test(entry.name)) continue;
+        const src = readFileSync(join(ROOT, rel), 'utf8');
+        // Only where it is CALLED. Two board files explain at length why they
+        // do not use one, and a comment is not a second minter.
+        for (const line of src.split('\n')) {
+          if (!/Math\.random\(/.test(line)) continue;
+          if (/^\s*[*/]/.test(line)) continue;
+          if (!allowed.has(rel)) offenders.push(`${rel}: ${line.trim()}`);
+        }
+      }
+    };
+    walk('apps/game/src');
+    expect(
+      offenders,
+      'a new `Math.random` in the game: if it mints a world seed it wants ' +
+        '`freshWorldSeed`, and if it does not it wants a line in this test',
+    ).toEqual([]);
+  });
+
+  /*
    * The three kinds the file is named for, and the mapping is the interesting
    * half: the columns are WORLD, DAILY and SHARED — what a player would call
    * them — while `economyFor` knows `home`, `daily` and `detour`. That

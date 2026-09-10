@@ -87,6 +87,7 @@ import {
   wasSaid,
   readProgress,
   memoryFor,
+  freshWorldSeed,
   worldSeedFor,
   onShed,
   settleWorldInto,
@@ -2283,7 +2284,17 @@ function Game() {
    * world they paid to leave.
    */
   const takeCrossing = useCallback(() => {
-    const seed = Math.floor(Math.random() * 2 ** 31);
+    /*
+     * ONE MINTER FOR A WORLD SEED (2026-09-10).
+     *
+     * This rolled `Math.floor(Math.random() * 2 ** 31)` — a second formula for
+     * the one thing `shell/storage.ts`'s `freshWorldSeed` exists to do, and the
+     * one that drops the CLOCK. Its docblock's promise is that a seed stays
+     * "roughly ordered, so a seed in a bug report says roughly when", and that
+     * was true of three of `MODES.md`'s four world-minting sites. A crossing
+     * mints a world like any other; it uses the minter like any other now.
+     */
+    const seed = freshWorldSeed();
     const after = cross({
       state: snap.state,
       // The live copy, so what is banked is what the card offered — see

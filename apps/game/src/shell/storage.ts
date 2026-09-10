@@ -586,8 +586,19 @@ export const writeWorld = (slot: Slot, world: WorldMemory): void =>
  * `homeworld.test.ts` catches on a fast machine. So the clock is mixed with
  * entropy: still roughly ordered, so a seed in a bug report says roughly when,
  * and no longer collidable.
+ *
+ * **EXPORTED SINCE 2026-09-10, because it had a second caller all along and
+ * that caller was rolling its own.** `MODES.md` lists four places a world
+ * comes from; the CROSSING is one of them, and `App`'s `takeCrossing` minted
+ * with `Math.floor(Math.random() * 2 ** 31)` — no clock, so a crossed-into
+ * world was the one world in the game whose seed did not say roughly WHEN it
+ * was born, and the property this docblock promises was true of three of the
+ * four. Found extracting `PASS.md` P2.6.
+ *
+ * It is the only `Math.random` left in `apps/game/src` outside a crash id and
+ * two comments explaining why the board does not use one.
  */
-const freshWorldSeed = (): number =>
+export const freshWorldSeed = (): number =>
   (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) & 0x7fffffff;
 
 /**
