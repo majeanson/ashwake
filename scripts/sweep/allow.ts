@@ -27,6 +27,303 @@ type Ruling = {
 };
 
 /**
+ * A DECISION RECORD IN CODE — written for whoever reads the source, never for
+ * a program (ruled 2026-09-10).
+ *
+ * Three tables in this repository are design documents that happen to compile.
+ * `theme/assets.ts` says so in its first line: "the local copy of the design
+ * document's asset sheet", where each slot's `label` and `note` tell whoever
+ * fills it what the art has to DO. `sim/policy.ts` gives every policy "the
+ * strategy, in one sentence. If it needs two, it is two policies" — a rule
+ * about the code, enforced by a reader. `Theme.source` names where a value
+ * came from "so a value can be argued with rather than guessed at".
+ *
+ * These are not the `HudView.hint` shape and the distinction is the whole
+ * ruling: that was a SENTENCE THE GAME COMPUTED FOR A PLAYER and no screen
+ * printed. These are addressed to a developer, and the source file IS the
+ * screen they are printed on. Neither has a reader to be missing.
+ *
+ * `AssetSlot.tiling` joins them on a checked fact rather than a guess: both
+ * slots that claim it are `wired: false`, so it describes only art the
+ * renderer does not sample yet — a note to whoever wires them. Its neighbour
+ * `wired` was in this list for one draft and is NOT any more, because its
+ * claim ("a slot that says false will not appear on screen no matter what you
+ * put in it") is checkable and is now a test in `theme.test.ts`. Where a
+ * design record makes a claim about BEHAVIOUR, the claim is the test.
+ */
+const DESIGN_RECORD: readonly Ruling[] = (
+  [
+    'packages/core/src/theme/assets.ts#AssetSlot.label',
+    'packages/core/src/theme/assets.ts#AssetSlot.note',
+    'packages/core/src/theme/assets.ts#AssetSlot.tiling',
+    'packages/core/src/sim/policy.ts#Policy.note',
+    'packages/core/src/theme/tokens.ts#Theme.source',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'A decision record in code, addressed to a developer rather than to a ' +
+    'player — see `DESIGN_RECORD` for the argument, and for why this is not ' +
+    'the `HudView.hint` shape.',
+}));
+
+/**
+ * THE HARNESS'S PER-RUN RECORD (ruled 2026-09-10).
+ *
+ * `RunResult` is one simulated run, and `sim/report.ts` aggregates the columns
+ * a table can show — medians over four hundred runs. Three fields are not
+ * among them: `policy` and `seed`, which identify a run rather than measure
+ * it, and `bestHarvest`, whose POSITION (`bestHarvestAt`) is aggregated while
+ * its magnitude is not.
+ *
+ * Identity is read the moment a single run is inspected instead of counted —
+ * `sim.test.ts`'s cap test does exactly that. `bestHarvest` is the one with a
+ * real answer available: a median of it would be a column. **That is a golden
+ * moved**, and `CLAUDE.md` allows a golden to move only in the commit that
+ * gives the reason, so it is a decision rather than hygiene. Written here so
+ * the next reader knows the number is already there.
+ */
+const HARNESS_RECORD: readonly Ruling[] = (
+  [
+    'packages/core/src/sim/run.ts#RunResult.policy',
+    'packages/core/src/sim/run.ts#RunResult.seed',
+    'packages/core/src/sim/run.ts#RunResult.bestHarvest',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'The harness’s per-run record — see `HARNESS_RECORD`. Aggregating ' +
+    '`bestHarvest` would add a column to `sim.golden.txt`, which is a golden ' +
+    'moved and therefore a decision, not a sweep’s to take.',
+}));
+
+/**
+ * FIELDS IN A SAVED BLOB, WHICH IS `PASS.md` P7'S SUBJECT (ruled 2026-09-10).
+ *
+ * Both are written into what a device stores and read by nothing. `GameState
+ * .version` is the discriminator a migration would switch on, with no
+ * migration yet; `HarvestRecord.tiles` is what a pop paid in tiles, kept per
+ * harvest for a whole run's log while the end screen counts harvests BY CHOICE
+ * instead.
+ *
+ * Not cut here, and the reason is a hard rule rather than caution: these sit
+ * in `packages/core/src/engine`, whose shape `pnpm sim` pins byte for byte,
+ * and they are part of a blob already on players' phones. **P7 is the item
+ * that is allowed to change what a save looks like**, and it inherits
+ * `RunDetail`'s six unread numbers for the same reason. One item, one
+ * migration, one reason in `LOG.md`.
+ */
+const SAVED_BLOB: readonly Ruling[] = (
+  [
+    'packages/core/src/engine/state.ts#GameState.version',
+    'packages/core/src/engine/state.ts#HarvestRecord.tiles',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'Dead weight in a saved blob, and changing a save is `PASS.md` P7’s job ' +
+    'rather than a sweep’s — see `SAVED_BLOB`.',
+}));
+
+/**
+ * THE TIMELINE'S SPINE, DEFERRED BY RULING (`NEXT.md` §4).
+ *
+ * A run's HIGHLIGHTS — what was remarkable about it, and how much — are
+ * detected, written for every run and every world event, and shown nowhere,
+ * because the screen that would show them is the timeline, and the timeline's
+ * spine is one of the things `NEXT.md` §4 defers. `DailyEntry.best` is the
+ * same shape one row down: today's standing best, stored per daily, printed by
+ * no screen that exists.
+ *
+ * Reported honestly rather than silenced quietly: these are exactly the
+ * "sentence the core writes that no screen prints" class, and the only reason
+ * they are not findings is that the screen was deliberately not built. If §4
+ * ever reopens, this entry is the list of what is already computed and waiting.
+ */
+const TIMELINE_SPINE: readonly Ruling[] = (
+  [
+    'packages/core/src/meta/timeline.ts#Highlight.kind',
+    'packages/core/src/meta/timeline.ts#Highlight.n',
+    'packages/core/src/meta/timeline.ts#RunEntry.highlights',
+    'packages/core/src/meta/timeline.ts#DailyEntry.best',
+    // The three READERS of that spine, added 2026-09-10: functions that select
+    // a run, a world event or a shared board out of the timeline, each with a
+    // spec and no screen to call it. `PASS.md` P10 owns the reader table.
+    'packages/core/src/meta/timeline.ts#worldEventsOf',
+    'packages/core/src/meta/timeline.ts#sharedOf',
+    'packages/core/src/meta/timeline.ts#prehistory',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'Computed and waiting for the timeline, whose spine `NEXT.md` §4 defers — ' +
+    'see `TIMELINE_SPINE`. Not a gap; a screen nobody has agreed to build.',
+}));
+
+/**
+ * FIVE THINGS THE HUD WORKS OUT AND NEVER SAYS — MARC'S (`NEXT.md` §1).
+ *
+ * The strongest class in the first report, and the one `CLAUDE.md` is most
+ * explicit about: where the answer lives on a SCREEN, the finding is the
+ * deliverable. Each of these is computed on every frame and read by nothing,
+ * and each is either a sentence this game is missing or a number that should
+ * stop being computed — which is not a question a session without a phone
+ * gets to answer. `NEXT.md` §1 states all five, loudest first, and each
+ * declaration in `view/view.ts` carries its own finding.
+ *
+ * Two of them corrected a docblock that ASSERTED its own consumer:
+ * `questPays` said "the points button wears it" and no screen read it;
+ * `pocketsReady` named a "POP · N READY" label nothing has ever drawn. Both
+ * had survived four hand passes, and both survived them BECAUSE of the
+ * sentence — the exact failure `CLAUDE.md` describes.
+ *
+ * `guide` is here for a different reason: Marc removed the line on
+ * 2026-08-29 and `App.tsx` says at the empty spot that the sentence stays
+ * computed on purpose, so a coaching mode finds it built. That is a RULING
+ * already taken, and `tilesSpare` is the fact that went out with it.
+ */
+const HUD_UNSAID: readonly Ruling[] = (
+  [
+    'packages/core/src/view/view.ts#HudView.colours',
+    'packages/core/src/view/view.ts#HudView.spotlight',
+    'packages/core/src/view/view.ts#ColourPotential.count',
+    'packages/core/src/view/view.ts#ColourPotential.worth',
+    'packages/core/src/view/view.ts#ColourPotential.bonus',
+    'packages/core/src/view/view.ts#ColourPotential.ripeCount',
+    'packages/core/src/view/view.ts#ColourPotential.ripeWorth',
+    'packages/core/src/view/view.ts#HudView.questPays',
+    'packages/core/src/view/view.ts#HudView.pocketsReady',
+    'packages/core/src/view/view.ts#HudView.tilesSpare',
+    'packages/core/src/view/view.ts#HudView.guide',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'A fact the HUD computes and no screen prints, and whether it should be ' +
+    'printed is a screen decision — `NEXT.md` §1 asks it, the declaration ' +
+    'carries it, and `HUD_UNSAID` says why a sweep does not get to answer it.',
+}));
+
+/**
+ * A FIELD WHOSE ONLY READER IS THE TEST THAT PROVES IT (ruled 2026-09-10).
+ *
+ * `CLAUDE.md` already has the founding case and it is deliberate:
+ * `keeper.alive` "exists so a test can check a promise no caller may branch
+ * on, and says so at its declaration". These are the same shape, and the pass
+ * reports them honestly — every row says "though N test read(s) exist" rather
+ * than claiming nothing reads them.
+ *
+ * They divide into three, all legitimate:
+ *
+ *   - **A ref a test inspects.** `Wiring.saidOnce`, `startedFrom` and
+ *     `banked` are React refs the shell mutates; `beginning.test.ts` is what
+ *     can see that a door set them. A production reader would be a second
+ *     authority, which is `keeper.alive`'s argument exactly.
+ *   - **A record the harness writes and a spec reads.** `e2e/audit`'s six
+ *     `Finding` fields, `SurfaceSamples.label` and `.face`,
+ *     `RunResult.death` and `.steps`, `RngStreams.region`, `Route.seed`.
+ *     The instrument's output IS its assertion surface; `fixture.test.ts`
+ *     exists because an instrument needs tests of its own.
+ *   - **A claim a test now enforces.** `AssetSlot.wired` — "a slot that
+ *     says false will not appear on screen no matter what you put in it" —
+ *     was in this file for one draft as a design record, and is not any more:
+ *     `theme.test.ts` asserts it. **Where a design record makes a claim about
+ *     behaviour, the claim is the test**, and this is the one entry here that
+ *     earned its place by gaining a reader rather than by argument.
+ *
+ * `WorldEventEntry.n` is the exception that is really `TIMELINE_SPINE`'s: it
+ * is a highlight's magnitude, waiting on the same screen.
+ */
+const TEST_IS_THE_READER: readonly Ruling[] = (
+  [
+    'apps/game/src/shell/beginning.ts#Wiring.saidOnce.current',
+    'apps/game/src/shell/beginning.ts#Wiring.startedFrom.current',
+    'apps/game/src/shell/beginning.ts#Wiring.banked.current',
+    'apps/game/src/shell/cross.ts#Crossed.carried',
+    'e2e/audit/audit.ts#Finding.kind',
+    'e2e/audit/audit.ts#Finding.where',
+    'e2e/audit/audit.ts#Finding.text',
+    'e2e/audit/audit.ts#Finding.detail',
+    'e2e/audit/audit.ts#Finding.value',
+    'e2e/audit/audit.ts#Finding.bar',
+    'packages/core/src/engine/rng.ts#RngStreams.region',
+    'packages/core/src/meta/route.ts#Route.seed',
+    'packages/core/src/meta/timeline.ts#WorldEventEntry.n',
+    'packages/core/src/render/paint.ts#SurfaceSamples.label',
+    'packages/core/src/render/paint.ts#SurfaceSamples.face',
+    'packages/core/src/sim/run.ts#RunResult.death',
+    'packages/core/src/sim/run.ts#RunResult.steps',
+    'packages/core/src/theme/assets.ts#AssetSlot.wired',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'Its only reader is the test that proves it — the `keeper.alive` shape, ' +
+    'and `TEST_IS_THE_READER` divides the eighteen into the three kinds and ' +
+    'says why each is right.',
+}));
+
+/**
+ * A BUDGET, A PROBE OR A GATE — THE EXPORT EXISTS FOR THE TEST THAT ENFORCES
+ * A RULE (ruled 2026-09-10).
+ *
+ * `CLAUDE.md` makes this legitimate in as many words: **"the palette answers
+ * to tests"**, and the contrast budget and the greyscale ladder are named as
+ * hard rules. A threshold with no runtime reader is not dead — it is the
+ * NUMBER the rule is stated in, and the test is where a rule of that kind
+ * lives. Same for a gate: Gate C is `sim.test.ts` and nothing else.
+ *
+ * Three kinds, all reported honestly by the pass as "read only by tests":
+ *
+ *   - **A budget.** `MIN_LIT_FIELD_LIFT` and `edgeCasing` are numbers the
+ *     theme tests hold every direction to. A production reader would be a
+ *     second authority on a threshold that has one.
+ *   - **A probe.** `surfaceSamples`, `sideNormals`, `renders`, `planKey`,
+ *     `hexAt` and `zoomLayout` measure what a material or a layout ACTUALLY
+ *     does, so a claim about it can be checked without a screen. That is the
+ *     whole method the palette rule depends on.
+ *   - **A decision, pinned.** `slotsOf` returns 1 and says at its declaration
+ *     that the SECOND SLOT upgrade was deleted and refunded on 2026-08-18;
+ *     `gateD` evaluates a design gate whose retired sibling `gateB` is a
+ *     comment in the same file. Both are records with a test holding them
+ *     still, which is more than a comment can do.
+ *
+ * **What would make one of these a real finding**: a production reader
+ * appearing that spells the number out again instead of importing it. That is
+ * what happened to `CHROME_ICON` and to `dailyRunFor` on this same run — both
+ * sat in a draft of this list, and both left it by GAINING the caller that
+ * was going round them. This list is for the ones where no caller is missing.
+ */
+const RULE_LIVES_IN_A_TEST: readonly Ruling[] = (
+  [
+    'packages/core/src/meta/progress.ts#slotsOf',
+    'packages/core/src/meta/records.ts#gateD',
+    'packages/core/src/render/layout.ts#hexAt',
+    'packages/core/src/render/layout.ts#zoomLayout',
+    'packages/core/src/render/paint.ts#planKey',
+    'packages/core/src/render/paint.ts#surfaceSamples',
+    'packages/core/src/theme/rig.ts#sideNormals',
+    'packages/core/src/theme/rig.ts#renders',
+    'packages/core/src/theme/tokens.ts#edgeCasing',
+    'packages/core/src/theme/tokens.ts#MIN_LIT_FIELD_LIFT',
+    'packages/core/src/view/lessons.ts#lessonCore',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'A budget, a probe or a gate: the export exists for the test that enforces ' +
+    'a rule, which `CLAUDE.md` states as a hard rule for the palette — see ' +
+    '`RULE_LIVES_IN_A_TEST`, and what would turn one of these into a finding.',
+}));
+
+/**
  * ASHWAKE 1'S SURFACE, kept on purpose (`CLAUDE.md`, ruled 2026-09-08).
  *
  * "The four in `packages/core/src/engine` and `content` were left exported on
@@ -60,6 +357,15 @@ const LIFT_SURFACE: readonly Ruling[] = (
     'packages/core/src/engine/world.ts#blockDestination',
     'packages/core/src/engine/world.ts#Find',
     'packages/core/src/engine/world.ts#blockFind',
+    // Read only by their own specs, added 2026-09-10. Same ruling, and the
+    // hex helpers are the clearest case in the repository: `disc` carries
+    // seventy-two test references and no caller in this body at all.
+    'packages/core/src/engine/hex.ts#keyOf',
+    'packages/core/src/engine/hex.ts#neighbours',
+    'packages/core/src/engine/hex.ts#disc',
+    'packages/core/src/engine/hex.ts#toPixel',
+    'packages/core/src/engine/rng.ts#rngChance',
+    'packages/core/src/engine/rules.ts#blankMap',
   ] as const
 ).map((id) => ({
   id,
@@ -227,6 +533,13 @@ export const ALLOW: readonly Ruling[] = [
       'session with no phone in it.',
   },
   ...LIFT_SURFACE,
+  ...DESIGN_RECORD,
+  ...HARNESS_RECORD,
+  ...SAVED_BLOB,
+  ...TIMELINE_SPINE,
+  ...HUD_UNSAID,
+  ...TEST_IS_THE_READER,
+  ...RULE_LIVES_IN_A_TEST,
 ];
 
 /** Index, so a pass can ask in one call. */

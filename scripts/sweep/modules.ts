@@ -26,6 +26,11 @@ import type { Workspace } from './program';
  *    `CLAUDE.md`'s own instruction is to demote these to `const` and
  *    `function`, precisely so the NEXT sweep's signal stays clean.
  *
+ * A FOURTH was added on 2026-09-10 and retired the same day: read in its own
+ * file AND by a spec. It shipped seventy-four rows, every one of them a unit
+ * test importing its unit, and `alsoTestedCount` carries what is left of it —
+ * a number in the header. The argument is at the branch.
+ *
  * **The compiler answers, not a grep.** `findReferences` resolves re-exports,
  * aliased imports, type-only imports and JSX identifiers — four things this
  * codebase contains and four ways a text search is wrong.
@@ -119,6 +124,18 @@ function readers(w: Workspace, file: ts.SourceFile, name: ts.Identifier): Reader
 }
 
 /**
+ * How many exports the last module pass found read in their own file AND by a
+ * spec — the category retired below, kept as a number for the header.
+ *
+ * A module-level `let` and not a return value, because `index.ts` drives the
+ * passes through one `{ name, run }` list and a second channel on that shape
+ * would be five files of plumbing for one integer. Read AFTER `moduleSweep`
+ * has run, which is the only order `index.ts` has.
+ */
+let alsoTested = 0;
+export const alsoTestedCount = (): number => alsoTested;
+
+/**
  * The pass.
  *
  * Test files and tool-owned files are not asked about: a spec exports nothing
@@ -129,6 +146,7 @@ function readers(w: Workspace, file: ts.SourceFile, name: ts.Identifier): Reader
  */
 export function moduleSweep(w: Workspace): readonly Finding[] {
   const out: Finding[] = [];
+  alsoTested = 0;
   for (const file of w.files) {
     const path = w.path(file);
     if (TEST.test(path) || toolOwned(path)) continue;
@@ -193,23 +211,23 @@ export function moduleSweep(w: Workspace): readonly Finding[] {
          * finding wastes a reader's minute, a finding whose fix does not
          * compile wastes it AFTER they trusted it.
          *
-         * Graded `likely`, and it asks the tests-only question rather than the
-         * demotion one: the export is load-bearing for the spec that imports
-         * it, so what is actually open is whether the spec should be reaching
-         * past the file's own surface at all.
+         * **AND THEN IT SHIPPED SEVENTY-FOUR ROWS AND WAS RETIRED THE SAME
+         * DAY.** It is not a finding: a symbol used in its own file and
+         * imported by that file's spec is used, tested, and offered to nobody
+         * else. What it describes is unit testing, and asking the same settled
+         * question seventy-four times a run is precisely how `CLAUDE.md` says
+         * a ritual stops being run — the failure this whole tool exists to
+         * prevent. The repository's practice was already the answer: the
+         * 2026-09-08 sweep demoted twelve file-internal exports and left the
+         * ones a spec imports alone.
+         *
+         * It is COUNTED rather than dropped, in the report's header, so the
+         * number is still there for anyone who wants to argue the other way.
+         * The tests-only case one branch up — where nothing in production
+         * reads it at all — is the one that stays a finding, and it caught
+         * `CHROME_ICON` on this very run.
          */
-        out.push({
-          pass: 'module',
-          id,
-          file: path,
-          line,
-          grade: 'likely',
-          what: `\`${name.text}\` is read in its own file (${own}) and by tests (${tests}), and nowhere else`,
-          detail:
-            'NOT demotable — a test imports it, so dropping `export` breaks the ' +
-            'spec. The tests-only question applies instead: say at the ' +
-            'declaration why a test reaches for it, or cut both.',
-        });
+        alsoTested += 1;
       }
     }
   }

@@ -43,6 +43,19 @@ in `apps/game/src` are `const` and `function` now; the four in
 `packages/core/src/engine` and `content` were left exported on purpose,
 because that code is Ashwake 1's lift and its surface is Ashwake 1's.
 
+**But a demotion is not free, and it is the ritual that blinds the others.**
+`pnpm sweep` exists now (`SWEEP.md`, `scripts/sweep/`), and the first batch of
+this instruction — 141 symbols on 2026-09-10 — took `Ring.width` and
+`ConfirmingProps.holdMs` off the FIELD and OPTIONAL passes along with their
+types, because all four of the other passes walked only exported declarations.
+Both had a ruling written that same morning. **A field's readers, an optional
+input's suppliers, a call site and a comparison are the whole program whatever
+their type's visibility**; `export` was never the question, and the passes ask
+it no more. What caught it was the report's own "Rulings that match nothing"
+section. **A symbol a test imports is also not demotable** — the tool said so
+on 74 rows and it was wrong on every one: a unit test importing its unit is
+unit testing, not a finding.
+
 **And once more over the FIELDS.** A module sweep cannot see a property:
 `CellView` has twenty-two, the board is the only thing that could read one, and
 "nothing imports it" is never true of a field. Walking them found five more the
@@ -99,7 +112,19 @@ the core — a sentence, a number, a record — wiring it is the whole fix. Wher
 the answer lives on a screen, **the finding is the deliverable**; state it at
 the declaration and in `NEXT.md`, and leave the decision to Marc.
 
-Hard rules — all inherited, all still enforced:
+**And all six rituals are a program now — so audit the INSTRUMENT, not only
+the code.** `pnpm sweep` writes `SWEEP.md`; `scripts/sweep/allow.ts` is where a
+ruling goes so the next run does not re-litigate it. Adjudicating its first
+report (2026-09-10, `LOG.md` Session 78) took 330 findings to 2 and corrected
+**five separate faults in the tool**, every one of them invisible until
+somebody acted on it: advice that did not compile, three passes blinded by
+their own remedy, a category that shipped 74 rows of noise, `as const
+satisfies` hiding twenty real readers, and the report dropping the
+prescriptions its own passes wrote. **A finding you cannot act on wastes a
+minute; a finding whose fix does not compile wastes it after you trusted the
+tool.** So: when a report and the code disagree, the code is a witness — read
+it before editing anything, and when a ruling in the allowlist stops matching,
+suspect the pass before you suspect the subject.
 
 - **The core is pure.** `packages/core` has no DOM, no `Math.random`, no
   `Date`, no async, no React, no three. ESLint enforces every one of those

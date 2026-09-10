@@ -5,7 +5,7 @@ import { order, type Finding } from './finding';
 import { argumentSweep } from './arguments';
 import { branchSweep } from './branches';
 import { fieldSweep } from './fields';
-import { moduleSweep } from './modules';
+import { alsoTestedCount, moduleSweep } from './modules';
 import { optionalSweep } from './optional';
 import { ROOT, workspace } from './program';
 
@@ -42,10 +42,30 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * One pass's findings, and **what each finding says to DO about itself**.
+ *
+ * `Finding.detail` was written eight times across the five passes — demote this,
+ * say so at the declaration or cut it, a test import is load-bearing — and
+ * printed nowhere: the table held `what` and dropped the prescription. Found by
+ * the sweep's own field pass on 2026-09-10, which makes it the exact fault
+ * `CLAUDE.md` describes: a sentence the core writes that no screen prints.
+ *
+ * A `detail` is shared by every finding of a kind, so printing it in each row
+ * would repeat one sentence seventy times. It goes UNDER the table instead,
+ * once per distinct sentence, with the kinds listed in the order they appear.
+ */
 function table(findings: readonly Finding[]): string {
   if (findings.length === 0) return '_Nothing._\n';
   const rows = findings.map((f) => `| ${f.grade} | \`${f.file}:${f.line}\` | ${f.what} |`);
-  return ['| grade | where | what |', '| --- | --- | --- |', ...rows].join('\n') + '\n';
+  const out = ['| grade | where | what |', '| --- | --- | --- |', ...rows].join('\n') + '\n';
+
+  const seen: string[] = [];
+  for (const f of findings) {
+    if (f.detail !== undefined && !seen.includes(f.detail)) seen.push(f.detail);
+  }
+  if (seen.length === 0) return out;
+  return out + '\n' + seen.map((d) => '- ' + d).join('\n') + '\n';
 }
 
 function main(): void {
@@ -80,7 +100,9 @@ function main(): void {
     `Walked **${w.files.length} files** in ${((Date.now() - started) / 1000).toFixed(1)}s, ` +
       `over ${PASSES.length} passes covering the six rituals in \`CLAUDE.md\` — the catalogue ` +
       `is the field pass taught to recurse, and \`fields.ts\` says why. **${live.length} findings**, ` +
-      `${ruled.length} absorbed by \`scripts/sweep/allow.ts\` (${ALLOW.length} rulings).`,
+      `${ruled.length} absorbed by \`scripts/sweep/allow.ts\` (${ALLOW.length} rulings). ` +
+      `A further ${alsoTestedCount()} exports are read in their own file AND by their own ` +
+      `spec, which is not a finding — \`modules.ts\` carries the argument.`,
   );
   lines.push('');
   if (orphaned.length > 0) {

@@ -49,6 +49,56 @@ type KeyIndex = {
   readonly writers: (name: string, exceptFile: string) => readonly string[];
 };
 
+/**
+ * THE SAME PROBLEM, MIRRORED — reads the compiler cannot attribute (2026-09-10).
+ *
+ * The optional pass needed unattributable WRITES; the field pass needs
+ * unattributable READS, and it needs them for the same reason. A table declared
+ * `] as const satisfies readonly FeatureDef[]` has an element type that is the
+ * LITERAL, not `FeatureDef` — so `FEATURES.filter((f) => f.player)` reads a
+ * property whose declaration is the object literal, and `findReferences` on
+ * `FeatureDef.player` never sees it. All four of `FeatureDef`'s fields came
+ * back "WRITTEN (3) and never read" while the settings panel was built on
+ * three of them, and `AssetSlot` did the same on thirteen writes.
+ *
+ * **The filter is what keeps this from muting real findings.** `keys.ts`'s
+ * standing trade — an unattributable write of the same name elsewhere silences
+ * a true finding, which is the right way round — is too generous here, because
+ * the names are `id`, `label`, `note`, `count`. So a read only withholds when
+ * it sits in a file that NAMES the owner type: `features.ts` mentions
+ * `FeatureDef`, and a `.count` read in `Board.tsx` cannot silence
+ * `ColourPotential.count` unless that file mentions `ColourPotential`. Crude
+ * on purpose — the alternative is resolving structural assignability for every
+ * property in the program, and this answers the whole class the first report
+ * hit for two lines of filter.
+ *
+ * **THE COST, STATED: A DECODER LOOKS LIKE A CONSUMER.** `meta/timeline.ts`
+ * destructures `RunDetail`'s six numbers off an `unknown` blob, checks each
+ * with `isCount`, and writes them straight back out — so this index counts six
+ * reads and withholds six findings the hand pass had already called dead
+ * weight in that blob. Validating a value and copying it IS a read by any
+ * definition a compiler can offer; telling it apart from USING one needs
+ * dataflow this pass does not have. So those six live in `PASS.md` P7, which
+ * is about compacting the very blob they sit in, rather than in a report that
+ * can no longer see them. A blind spot named in the ledger is worth more than
+ * a heuristic guessing at it.
+ */
+type ReadIndex = {
+  /**
+   * Whether any file that could plausibly be reading THIS type reads a key
+   * called `name` off a shape the compiler could not attribute.
+   *
+   * "Plausibly" is two spellings, and the second was needed within the hour:
+   * a file that names the TYPE (`features.ts` says `FeatureDef`), or one that
+   * names the MODULE the type is declared in (`Settings.tsx` says
+   * `@meta/features` and reads `feature.wired` three times off
+   * `PLAYER_FEATURES`, whose element type is the literal). Naming only the
+   * type left `wired` reported as unread while the NOT BUILT row it decides
+   * was sitting in the diff.
+   */
+  readonly unattributed: (name: string, owner: string, module: string) => boolean;
+};
+
 export function keyIndex(w: Workspace): KeyIndex {
   const byName = new Map<string, Set<string>>();
 
@@ -123,5 +173,63 @@ export function keyIndex(w: Workspace): KeyIndex {
   return {
     writers: (name, exceptFile) =>
       [...(byName.get(name) ?? new Set<string>())].filter((f) => f !== exceptFile),
+  };
+}
+
+/** The read half. `ReadIndex` above carries the argument. */
+export function readIndex(w: Workspace): ReadIndex {
+  const byName = new Map<string, Set<string>>();
+  const text = new Map<string, string>();
+
+  const declaresIt = (symbol: ts.Symbol | undefined): boolean =>
+    (symbol?.declarations ?? []).some(
+      (d) => ts.isPropertySignature(d) || ts.isPropertyDeclaration(d),
+    );
+
+  for (const file of w.files) {
+    const path = w.path(file);
+    // A test is allowed to withhold here, unlike in `keyIndex`: the field pass
+    // already counts a test read separately and says so in the row.
+    text.set(path, file.text);
+    const note = (name: string): void => {
+      const set = byName.get(name) ?? new Set<string>();
+      set.add(path);
+      byName.set(name, set);
+    };
+    const visit = (node: ts.Node): void => {
+      // `f.player` — reading a property off something.
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        ts.isIdentifier(node.name) &&
+        !declaresIt(w.checker.getSymbolAtLocation(node.name))
+      ) {
+        note(node.name.text);
+      }
+      // `const { player } = f` — the destructuring IS the read.
+      if (ts.isBindingElement(node) && node.parent !== undefined) {
+        const key = node.propertyName ?? node.name;
+        if (
+          ts.isObjectBindingPattern(node.parent) &&
+          ts.isIdentifier(key) &&
+          !declaresIt(w.checker.getSymbolAtLocation(key))
+        ) {
+          note(key.text);
+        }
+      }
+      node.forEachChild(visit);
+    };
+    visit(file);
+  }
+
+  return {
+    unattributed: (name, owner, module) => {
+      const files = byName.get(name);
+      if (files === undefined) return false;
+      for (const f of files) {
+        const src = text.get(f) ?? '';
+        if (src.includes(owner) || src.includes(module)) return true;
+      }
+      return false;
+    },
   };
 }

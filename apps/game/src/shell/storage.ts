@@ -3,6 +3,7 @@ import {
   decodeDailyRun,
   encodeDailyBook,
   encodeDailyRun,
+  dailyRunFor,
   dailySeed,
   type DailyBook,
 } from '@meta/daily';
@@ -542,9 +543,22 @@ export function localToday(now: Date = new Date()): string {
  * resume it.
  */
 export function readDailyRun(date: string): GameState | null {
-  const kept = decodeDailyRun(read(DEVICE.dailyRun));
-  if (kept === null || kept.date !== date) return null;
-  const run = decodeRun(kept.run);
+  /*
+   * THE DATE RULE COMES FROM THE CORE (2026-09-10).
+   *
+   * `meta/daily#dailyRunFor` is that rule — "the board to resume for `date`,
+   * or null; a mismatch is not an error, an unfinished board from another date
+   * is simply not today's" — pure, and tested. This function spelled it out a
+   * second time as `kept.date !== date`, and `pnpm sweep` found the core's
+   * copy read by nothing but its own spec. One rule, two implementations, and
+   * `App.tsx` calls this one "the one rule a daily may never break".
+   *
+   * The SEED check below is a second and separate rule, and it stays here:
+   * `readRun`'s note says why a slot must not have one and a daily must.
+   */
+  const raw = dailyRunFor(decodeDailyRun(read(DEVICE.dailyRun)), date);
+  if (raw === null) return null;
+  const run = decodeRun(raw);
   return run === null || run.rootSeed !== dailySeed(date) ? null : run;
 }
 

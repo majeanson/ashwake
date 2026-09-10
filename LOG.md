@@ -6194,4 +6194,158 @@ still open, and the tool's whole argument is that its signal survives being
 re-read — so: **how many of the report's findings survive contact with the
 code, and does adjudicating one change the report itself?**
 
-_(Answer written at the end of this session.)_
+**Answer: 330 became 2, and adjudicating them changed the TOOL five times.**
+Every pass it has was wrong in some way that only acting on it could reveal,
+and the two best findings of the day were about the sweep rather than about the
+game.
+
+**THE TOOL'S OWN ADVICE DID NOT COMPILE, and this is the one to remember.** The
+module pass's file-internal branch fired on `own > 0` whatever `tests` was — so
+a symbol with one in-file reader was reported as read ONLY inside its own file
+however many specs imported it, and the prescribed fix is to demote. I demoted
+204 symbols across 95 files and twenty-five of them broke the build at once:
+`sim/policy#farm`, `theme/rig#FLAT_RIG`, `view/view#epitaphFor`,
+`theme/tokens#fieldDots`. `PASS.md`'s precision note, written the day before,
+was about the opposite failure — a sweep that invents findings is a sweep
+nobody runs twice. **This is that lesson's worse half**, because an invented
+finding costs a reader a minute and a finding whose fix does not compile costs
+it after they have trusted it. The fourth category I added for it shipped
+seventy-four rows and I retired it the same hour: every one was a unit test
+importing its unit, which is not a finding, it is unit testing. It is a number
+in the header now.
+
+**THEN THE FIX BLINDED THREE MORE PASSES, AND THE REPORT CAUGHT IT ITSELF.**
+141 demotions landed, and `field`, `optional`, `argument` and `branch` all
+walked only EXPORTED declarations — so `Ring.width` and
+`ConfirmingProps.holdMs`, two rulings written that same morning, went dark
+along with their types. What told me was the **"Rulings that match nothing"**
+section, on the very first run after the batch: two entries with no subject.
+That section was added a day earlier on the argument that an allowlist entry
+matching nothing means the subject is gone *or a pass has quietly stopped
+seeing it*, and it earned its place inside twenty-four hours on the second
+reading. `export` was never the right question for a field, an optional input,
+a call site or a comparison.
+
+**AND THE FIELD PASS COULD NOT SEE THROUGH `as const satisfies`** — twenty
+false rows, one shape. A table's element type is the LITERAL, so
+`FEATURES.filter((f) => f.player)` reads a property whose declaration is an
+object literal and `findReferences` on `FeatureDef.player` never sees it. All
+four of that type's fields reported as written and never read while SETTINGS is
+built on three of them; `AssetSlot` did the same on thirteen writes. `keys.ts`
+grew a `readIndex`, the mirror of the write index the optional pass already
+had — and the filter is what makes it safe: a read withholds a finding only in
+a file that NAMES the owner type or its module, so a `.count` somewhere cannot
+mute `ColourPotential.count`. Every true HUD finding survived the fix, which is
+how I know the filter is the right width. The owner-name spelling was too tight
+by one notch for an hour: `Settings.tsx` reads `feature.wired` three times and
+never says `FeatureDef`, only `@meta/features`.
+
+**Its cost is stated rather than hidden, and it cost a real finding.** A
+decoder that destructures, validates and re-writes is indistinguishable from a
+consumer without dataflow, and `timeline.ts:211` does exactly that to
+`RunDetail`'s six numbers — so six findings the hand pass had already called
+dead weight are now invisible to the tool. They went to `PASS.md` **P7.4**
+instead, with `HarvestRecord.tiles` and `GameState.version` beside them, because
+P7 is the only item allowed to change what a save looks like. A blind spot
+named in the ledger beats a heuristic guessing at it.
+
+**WHAT THE REPORT FOUND IN THE GAME, and the first two are the same bug twice.**
+
+**`CHROME_ICON` was `STAT_ICON` again** — the table saying which seven marks
+are the chrome's, with a test asserting nothing on the board may be one of
+them, while MENU, MORE, the panel's BACK and CLOSE and MORE's speaker each
+wrote the string as a literal and went round it. Their neighbours on the same
+screens go through `CONCEPT_ICON`. The danger is precise: rename an icon and
+the test goes on passing about a table nobody reads while five screens draw the
+old name.
+
+**The daily's resume rule had two implementations, and a comment claimed
+otherwise.** `meta/daily#dailyRunFor` IS the rule — "the board to resume for
+`date`, or null; a mismatch is not an error, an unfinished board from another
+date is simply not today's" — pure, tested, and called by nothing.
+`storage.ts#readDailyRun` spelled `kept.date !== date` out a second time, and
+`storage.ts`'s own comment on the storage key says *"`dailyRunFor` is where
+that guard lives"*. It was not, until today. `App.tsx` calls the same guard
+"the one rule a daily may never break". That is the third time this repository
+has caught a comment asserting an invariant nothing enforced, and the second
+this week.
+
+**`toneColour` was `ringColour`'s unreachable fork**, and I found it by being
+wrong. The field pass flagged `FigCell.tone` as an optional input nothing
+supplies; I read the rare figure, saw it had moved to rings on 2026-08-30, and
+deleted the field as superseded — and typecheck said `Figure.tsx` reads it,
+twice. So it was not dead, it was the `perkAt` shape: a reader with no supplier,
+colouring a MARK by rarity, resolving to plain ink on every figure render since
+the stars left. Both are gone and nothing on any figure moved, which the render
+can prove because `theme.ink.ink` is what the calls already evaluated to.
+
+**`AssetSlot.wired` promised something nothing kept.** "A slot that says
+`false` will not appear on screen no matter what you put in it" — enforced by
+nobody, so a direction pointing a terrain at an unwired slot would have loaded
+its art while the file went on promising it could not. `theme.test.ts` asserts
+the cheap direction of the claim per direction now. Where a design record makes
+a claim about BEHAVIOUR, the claim is a test.
+
+**`'capped'` was a cause of death this repository had never produced.**
+`RunOptions.maxSteps` had no supplier anywhere, which made the hard stop
+untested and made "ends every run by running dry, never on a clock" a claim
+about a branch nothing could reach. One run against a cap of ten fixes it —
+and the first draft of that test asserted `death` and got null, because `death`
+is the ENGINE's cause and `outcome` is the HARNESS's, and a capped run is
+stopped from outside while perfectly alive. The test says so now.
+
+**`Finding.detail` was the sweep committing its own sin.** Eight prescriptions
+written across five passes — demote this, say so at the declaration or cut it,
+a test import is load-bearing — and the table writer printed `what` and dropped
+every one. A sentence the core writes that no screen prints, in the tool built
+to find them.
+
+**Four cuts and one name.** `ui.dismiss` ("Not now") because both notices it was
+written for make the SENTENCE the button; `payout.heading` because those five
+words were a COMMENT in Ashwake 1 and no screen ever had that title;
+`Snapshot.harvestAt`, a third name for the priced pocket — the `Session.strings`
+shape from last session without the bug, since `hud.harvestAt` is the copy
+every screen reads; and `FigureLayout.halfW`/`halfH`, computed out where
+`corners` measures its own six points. The name is `Centre`: `{ cx, cz }` had
+four spellings in `camera.ts`, which is exactly why `Frame.centre.cx` reported
+as unread while `Board.tsx` reads the pair every frame. **The finding was true
+of the symbol and false of the code, and a name fixed both halves.**
+
+**And twice the CODE corrected the QUEUE.** The report asked for `luckCore`'s
+twin clause to be shared as a string; both languages already share it through a
+module-level `LUCK_CORE`, and the two sites cannot read it off `Strings`
+because they sit inside the literal that defines `Strings` — which is why the
+const exists. `nameRecord(wanted)` is an OpenType nameID where `0` is the
+copyright record: P1.6's predicted noise, arriving exactly as predicted, in the
+pass that shipped report-only because it predicted it.
+
+**WHAT IS LEFT IS MARC'S, AND IT IS THE BEST THING IN THE REPORT.** Five facts
+the HUD computes on every frame and no screen says, all in `NEXT.md` §1. The
+loudest is the colour lens: long-press a card in Ashwake 1 and the line under
+the board gave you the ground's whole report — *N tiles standing, worth W, B of
+it from its power (ash), R ripe now, and the formula* — and this body dims the
+board and says LICHEN. Every number is computed, `colourPotentials` tallies
+every live tile TWICE per HUD build to measure each power's own take rather
+than estimate it, and all of it is thrown away. `INTERACTIONS.md` marks that
+gesture ✓, which is right about the gesture and blind to the sentence.
+
+Two of the five had a docblock asserting their own consumer — `questPays` said
+"the points button wears it" and `pocketsReady` named a "POP · N READY" label
+nothing has ever drawn — and **both survived four hand passes BECAUSE of that
+sentence.** They are corrected at the declaration now, which is the only place
+the next reader will be standing.
+
+**89 rulings, seven of them classes.** Twelve or eighteen paragraphs saying one
+thing is how an argument stops being read, so the lift's surface, the design
+records, the two flavours of test-is-the-reader, the saved blob, the timeline's
+spine and the HUD's unsaid five each share one reason and enumerate their
+members — enumerated, so a nineteenth is a finding somebody looks at rather
+than a wildcard nobody notices. Two entries left this list by GAINING a caller
+rather than by argument: `CHROME_ICON` and `dailyRunFor`. That is the shape to
+watch for.
+
+**A TDZ, twice, in the same file.** Both class lists are spread into `ALLOW`, so
+both had to be declared above it; lint caught each as an unused assignment
+rather than as the import-time throw it would have been. Session 77 paid for
+this lesson eight days ago in `store.ts` and it is the same lesson: a `const`
+read before its own declaration.

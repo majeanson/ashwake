@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import type { Finding } from './finding';
 import type { Workspace } from './program';
+import { readIndex } from './keys';
 
 /**
  * P1.2 — the field sweep: **and once more over the FIELDS** (`CLAUDE.md`,
@@ -277,6 +278,7 @@ const passFor = (path: string): string => (path.endsWith('text/Strings.ts') ? 't
 
 export function fieldSweep(w: Workspace): readonly Finding[] {
   const out: Finding[] = [];
+  const { unattributed } = readIndex(w);
   for (const file of w.files) {
     const path = w.path(file);
     if (TEST.test(path)) continue;
@@ -287,6 +289,9 @@ export function fieldSweep(w: Workspace): readonly Finding[] {
      * child is adjudicated by what is known about its PARENT and the parent
      * may be declared after it inside an intersection.
      */
+    /* The module a reader would spell to import this file — `@meta/features`
+     * is how `Settings.tsx` names the home of `FeatureDef`. */
+    const moduleName = path.replace(/.tsx?$/, '').split('/').slice(-2).join('/');
     const fields = fieldsOf(file);
     const refs = new Map<ts.Identifier, readonly ts.ReferenceEntry[]>();
     for (const { name } of fields) refs.set(name, refsOf(w, file, name));
@@ -333,6 +338,20 @@ export function fieldSweep(w: Workspace): readonly Finding[] {
         });
         continue;
       }
+
+      /*
+       * A READ THE COMPILER COULD NOT ATTRIBUTE, in a file that names this
+       * type (2026-09-10) — see `keys.ts#readIndex` for the whole argument.
+       *
+       * `] as const satisfies readonly FeatureDef[]` gives the table an
+       * element type that is the LITERAL, so `FEATURES.filter((f) => f.player)`
+       * reads a property `findReferences` cannot connect to
+       * `FeatureDef.player`. All four of that type's fields reported as written
+       * and never read while SETTINGS was built on three of them, and
+       * `AssetSlot` did the same on thirteen writes. Eight false findings in
+       * one report, one shape.
+       */
+      if (unattributed(name.text, owner, moduleName)) continue;
 
       const line = file.getLineAndCharacterOfPosition(name.getStart(file)).line + 1;
       const id = `${path}#${owner}.${name.text}`;

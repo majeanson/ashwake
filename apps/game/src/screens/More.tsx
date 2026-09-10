@@ -1,4 +1,5 @@
 import type { Strings } from '@text/Strings';
+import { CHROME_ICON } from '@theme/icons';
 import { Confirming } from '../ui/Confirming';
 import { Icon } from '../ui/Icon';
 import { Panel, PanelMenu } from '../ui/Panel';
@@ -118,7 +119,7 @@ export function More({
             aria-label={sound ? s.ui.soundOn : s.ui.soundOff}
             onClick={onSound}
           >
-            <Icon name={sound ? 'soundOn' : 'soundOff'} />
+            <Icon name={sound ? CHROME_ICON.soundOn : CHROME_ICON.soundOff} />
             <span>{s.ui.sound}</span>
           </button>
           <button type="button" data-go="settings" onClick={onSettings}>

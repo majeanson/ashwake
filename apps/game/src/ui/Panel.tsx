@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { CHROME_ICON } from '@theme/icons';
 import { Icon } from './Icon';
 import { useDialogStack } from './dialog';
 
@@ -107,7 +108,7 @@ export function Panel({ id, title, back, closeAll, onBack, children, head, tabbe
           panel it would be a second button making the first one's promise.
         */}
           <button type="button" className="panel-back" onClick={onBack} aria-label={back}>
-            <Icon name="back" />
+            <Icon name={CHROME_ICON.back} />
           </button>
           <h1 className="panel-title" id={`${id}-title`}>
             {title}
@@ -120,7 +121,7 @@ export function Panel({ id, title, back, closeAll, onBack, children, head, tabbe
               onClick={stack.closeAll}
               aria-label={closeAll}
             >
-              <Icon name="close" />
+              <Icon name={CHROME_ICON.close} />
             </button>
           )}
         </div>

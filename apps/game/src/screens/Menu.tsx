@@ -1,4 +1,5 @@
 import type { Strings } from '@text/Strings';
+import { CHROME_ICON } from '@theme/icons';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -51,7 +52,7 @@ export function MenuButton({
         aria-expanded={open}
         onClick={onToggle}
       >
-        <Icon name="menu" />
+        <Icon name={CHROME_ICON.menu} />
       </button>
     </div>
   );

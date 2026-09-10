@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '@content/tuning';
-import { decodeManifest, manifestHas } from './assets';
+import { ASSET_SLOTS, decodeManifest, manifestHas } from './assets';
 import { themeCssVars } from './css';
 import { DEFAULT_THEME_ID, parseThemeId, resolveTheme, THEMES } from './index';
 import {
@@ -346,6 +346,41 @@ describe.each(THEMES.map((t) => [t.name.en, t] as const))('%s', (_name, theme: T
     for (const s of surfaces) {
       if (s.asset === null) continue;
       expect(decodeManifest({ [theme.id]: [s.asset] })[theme.id]).toContain(s.asset);
+    }
+  });
+
+  /*
+   * THE `wired` COLUMN IS A PROMISE, AND NOTHING WAS KEEPING IT (2026-09-10).
+   *
+   * `assets.ts` says it out loud: "a slot that says `wired: false` will not
+   * appear on screen no matter what you put in it." A few slots describe
+   * mechanics this game does not have — there is no fog, and a harvest pops
+   * every ripe tile at once rather than chaining — and they are kept because
+   * the art direction assumes them.
+   *
+   * `pnpm sweep`'s field pass found `AssetSlot.wired` written thirteen times
+   * and read by nothing, which means the sentence above was true only by luck:
+   * a direction that pointed a terrain at an unwired slot would have loaded its
+   * art, and the file would have gone on promising it could not. `CLAUDE.md`:
+   * a comment that asserts an invariant is not the invariant, and it is the
+   * sentence that stops a reader checking.
+   *
+   * The check is the cheap direction of the claim — every slot a direction
+   * NAMES must be wired — rather than the expensive one, which would need a
+   * renderer. That is the half a theme can get wrong.
+   */
+  it('never points a surface at a slot the build does not read', () => {
+    const wired = new Map(ASSET_SLOTS.map((slot) => [slot.id, slot.wired] as const));
+    const surfaces = [
+      ...COLOURS.map((c) => theme.terrain[c]),
+      theme.wall,
+      theme.stone,
+      theme.empty,
+      theme.ghost,
+    ];
+    for (const s of surfaces) {
+      if (s.asset === null) continue;
+      expect(wired.get(s.asset), `${theme.id} points at ${s.asset}`).toBe(true);
     }
   });
 });

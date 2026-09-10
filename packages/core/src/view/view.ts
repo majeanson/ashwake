@@ -665,6 +665,12 @@ export type HudView = {
    * left to want. Marc found this state on the board with 202 tiles and 167
    * placements left: the mechanism was working exactly as designed and the
    * game never said a word about it.
+   *
+   * **AND IT STILL DOES NOT** (`pnpm sweep`, 2026-09-10; `NEXT.md` §1). The
+   * sentence exists in both languages and lives in `guide` below, which Marc
+   * removed from over the hand on 2026-08-29 — so the fix for the state he
+   * found went out with the line that carried it, and this boolean is a door
+   * with nothing on the other side of it.
    */
   readonly tilesSpare: boolean;
 
@@ -726,17 +732,33 @@ export type HudView = {
 
   /**
    * The colour lens: each colour's standing holdings on the board, in the
-   * exact unit the points formula sums — worth. What the chips print, and
-   * what the active chip expands into a calculation.
+   * exact unit the points formula sums — worth.
+   *
+   * **NOTHING PRINTS EITHER OF THESE** (`pnpm sweep`, 2026-09-10; `NEXT.md`
+   * §1, "five things the HUD works out and never says"). The chips this used
+   * to describe are Ashwake 1's, where a long-pressed card put a five-clause
+   * report under the board. This body lights the lens and says the ground's
+   * NAME in the toast, so the board dims correctly and the numbers behind it
+   * go nowhere — and `colourPotentials` tallies every live tile twice per HUD
+   * build to work them out, because a colour's own take is MEASURED rather
+   * than estimated. Marc's, because the answer needs five new sentences in
+   * both languages and the French pass is already with him.
    */
   readonly colours: readonly ColourPotential[];
-  /** The chip currently held down, with its numbers. Null when none. */
+  /** The colour currently held up, with its numbers. Null when none. Unread —
+   *  see `colours` directly above. */
   readonly spotlight: ColourPotential | null;
 
   readonly ripeCount: number;
   /**
-   * Separate ripe pockets, not ripe tiles — POP · N READY counts decisions,
-   * and a big pocket is still one decision.
+   * Separate ripe pockets, not ripe tiles — a big pocket is still one
+   * decision, and that is the number worth showing.
+   *
+   * **THERE IS NO "POP · N READY"** (`pnpm sweep`, 2026-09-10; `NEXT.md` §1).
+   * This docblock named a label no screen has ever drawn: POP says what the
+   * priced pocket pays and never says how many decisions are waiting. Read
+   * only by `view.test.ts`, which pins the counting rule the label would have
+   * needed.
    */
   readonly pocketsReady: number;
   /** What harvesting right now would pay, each way. Both are always shown. */
@@ -753,9 +775,18 @@ export type HudView = {
   readonly harvestAt: HexKey | null;
 
   /**
-   * True when taking the priced pocket as POINTS collects the standing
-   * bounty. The points button wears it, because a reason to press a button
-   * belongs on the button.
+   * True when taking the priced pocket as POINTS collects the standing bounty.
+   *
+   * **THE POINTS BUTTON DOES NOT WEAR IT**, and this docblock claimed it did
+   * until `pnpm sweep` asked (2026-09-10; `NEXT.md` §1). No screen reads this
+   * field. The FIGURE on the button is already right — the multiplier is
+   * applied inside `harvestValue` — so what is missing is any sign of why it
+   * is bigger. Ashwake 1 put the site glyph on the POP label and a `bounty`
+   * class on both buttons; where it goes on this body's action bar is Marc's,
+   * because it is the most-pressed control on the board.
+   *
+   * `CLAUDE.md`: a comment that asserts an invariant is not the invariant, and
+   * it is the sentence that stops a reader checking. This one stopped four.
    */
   readonly questPays: boolean;
 

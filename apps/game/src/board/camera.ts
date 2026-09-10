@@ -104,19 +104,32 @@ export const FLAT: Lean = { tilt: 0, yaw: 0, tallest: 0 };
 
 const isFlat = (lean: Lean): boolean => lean.tilt === 0 && lean.yaw === 0;
 
-export type CameraState = {
-  /** Multiplier over the fit; 1 is the fit. */
-  readonly zoom: number;
-  /** Where the viewport centre sits in world units (hex radii), x and z. */
+/**
+ * A point the viewport is centred on, in world units (hex radii).
+ *
+ * **One name for a shape that had four** (2026-09-10). `CameraState`, the
+ * frame's own `centre`, `fitCentre`'s return and `focus` each spelled
+ * `{ cx, cz }` out again, so the compiler saw four unrelated properties called
+ * `cx` — which is how `pnpm sweep` came to report `Frame.centre.cx` and
+ * `.cz` as written and never read while `Board.tsx` reads the pair on every
+ * frame. The finding was true of the SYMBOL and false of the code, and a name
+ * is the fix for both halves at once.
+ */
+type Centre = {
   readonly cx: number;
   readonly cz: number;
+};
+
+export type CameraState = Centre & {
+  /** Multiplier over the fit; 1 is the fit. */
+  readonly zoom: number;
 };
 
 export type Frame = {
   /** The fit for this board in this viewport. */
   readonly fit: Layout;
   /** The world point the fit puts at the viewport centre. */
-  readonly centre: { readonly cx: number; readonly cz: number };
+  readonly centre: Centre;
   readonly width: number;
   readonly height: number;
   readonly lean: Lean;
@@ -250,7 +263,7 @@ export function frameFor(
 }
 
 /** The world point the fit puts at the viewport centre. */
-const fitCentre = (frame: Frame): { readonly cx: number; readonly cz: number } => frame.centre;
+const fitCentre = (frame: Frame): Centre => frame.centre;
 
 export const zoomMaxOf = (frame: Frame): number =>
   zoomCeiling(frame.fit.size, ZOOM_MAX, hexPxMaxFor(frame.width, frame.height));
@@ -350,7 +363,7 @@ export const FIT_HEX_PX_MIN = 16;
  */
 export function fitCamera(
   frame: Frame,
-  focus?: { readonly cx: number; readonly cz: number },
+  focus?: Centre,
 ): CameraState {
   if (frame.fit.size <= 0) return { zoom: 1, ...fitCentre(frame) };
   const readable = FIT_HEX_PX_MIN / frame.fit.size;

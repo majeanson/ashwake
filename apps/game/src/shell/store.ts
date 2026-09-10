@@ -37,8 +37,17 @@ import type { PerkId } from '@meta/progress';
 
 export type Snapshot = {
   readonly state: GameState;
-  /** The pocket being priced, or null for the default. */
-  readonly harvestAt: HexKey | null;
+  /*
+   * There was a `harvestAt` here, cut 2026-09-10 — the priced pocket, in a
+   * THIRD place.
+   *
+   * `pnpm sweep` found it written on every build and read by nobody, and the
+   * reason is Session 77's exactly: the closure variable is what the store's
+   * own dispatches read, and `hud.harvestAt` is what every screen reads. The
+   * snapshot's copy was a spelling of the same fact that had no reader and no
+   * way to disagree usefully — unlike `Session.theme` and `Session.strings`,
+   * whose unread halves WERE the bug, this one is just a third name.
+   */
   readonly board: BoardView;
   readonly hud: HudView;
   /**
@@ -400,7 +409,6 @@ export function createSession(opts: {
     const ctx = renderContext(state, harvestAt);
     return {
       state,
-      harvestAt,
       board: toBoardView(state, harvestAt, spotlight, memory?.revealed ?? [], theme.light, ctx),
       hud: toHudView(state, strings, harvestAt, spotlight, ctx),
       popped,

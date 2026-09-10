@@ -141,109 +141,120 @@ already has the answer to.
 | P1.6 | done   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class | `shell/store.ts`        |
 | P1.7 | done   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file         | —                       |
 | P1.8 | done   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed           | `package.json`          |
-| P1.9 | open   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool                                   | —                       |
+| P1.9 | done   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool. **330 findings → 2**              | `SWEEP.md`              |
 
-### What the first report found (2026-09-10)
+### What the first report found, and what adjudicating it found (2026-09-10)
 
-**345 findings over 276 files in 117 seconds.** The tool is built; P1.9 —
-adjudicating what it says — is the half still open, and this is the queue.
+**345 findings on the first run, 330 on the second, and 2 left.** `LOG.md`
+Session 78 is the account; this is the ledger. The one written question was
+whether the mechanical half of six hand rituals finds anything four hand passes
+walked past, and it does — but **the biggest thing it found was itself.**
 
-**Two things validate it before anything else.** It reproduced two findings
+**Two things validated it before anything else.** It reproduced four findings
 made by hand and recorded in the ledgers (`Ring.width`, `Said.brief`,
-`Keeper.alive`, `Confirming.holdMs`), and it was RIGHT where a grep would
-have been wrong: `engine/hex.ts#disc` reports as read only by tests, and a
-text search says `meta/world.ts` uses it. Both are true and they are
-different symbols — `world.ts:440` declares a local `const disc`.
+`Keeper.alive`, `Confirming.holdMs`), and it was RIGHT where a grep would have
+been wrong: `engine/hex.ts#disc` reports as read only by tests, and a text
+search says `meta/world.ts` uses it. Both are true and they are different
+symbols — `world.ts:440` declares a local `const disc`.
 
-**Executed this session:**
+**THE TOOL'S OWN ADVICE DID NOT COMPILE.** The module pass's file-internal
+branch fired on `own > 0` whatever `tests` was, so any symbol with one in-file
+reader was reported as read ONLY inside its own file however many specs
+imported it — and the prescribed fix is to demote. Acting on it broke
+twenty-five at once (`sim/policy#farm`, `theme/rig#FLAT_RIG`,
+`view/view#epitaphFor`, `theme/tokens#fieldDots`). The precision note that used
+to sit here was written about the OPPOSITE failure; this is its worse half,
+because a reader ACTS on a finding they trust. There is a fourth category now,
+and it was retired the same day it shipped: seventy-four rows of a unit test
+importing its unit, counted in the header instead of listed.
 
-- **`render/Renderer.ts#Renderer` is deleted.** A seventy-line interface for
-  Ashwake 1's imperative renderer, implemented by nothing in this body, in the
-  file every board module imports `CellView` from. **It was also the only DOM
-  type in `packages/core`** — `mount(host: HTMLElement)`, in the package whose
-  first hard rule is no DOM. `no-restricted-globals` sees a global used as a
-  VALUE, not one used as a TYPE, so it walked through a rule this repository
-  calls hard. Deleting it closes the hole; the note at the line says so.
-- **Six rulings seeded into `allow.ts`**, each with its date and its argument.
+**THEN THE FIX BLINDED THREE PASSES.** 141 demotions, and `field`, `optional`,
+`argument` and `branch` all walked only EXPORTED declarations — so `Ring.width`
+and `ConfirmingProps.holdMs`, both ruled that same morning, went dark with
+their types. **The report's own "Rulings that match nothing" section is what
+said so**, on the first run after the batch, which is exactly the job it was
+added to do. `export` was never the right question for a field, an optional
+input, a call site or a comparison.
 
-**The queue, by what each finding needs:**
+**AND THE FIELD PASS COULD NOT SEE THROUGH `as const satisfies`.** Twenty rows
+of it — all four of `FeatureDef`'s fields while SETTINGS is built on three of
+them, all four of `AssetSlot`'s on thirteen writes — because a table's element
+type is the LITERAL, so `findReferences` cannot connect
+`FEATURES.filter((f) => f.player)` to `FeatureDef.player`. `keys.ts` grew a
+`readIndex` for it: the mirror of the write index the optional pass already
+had, with a filter on the owner type's name so that `count` and `label` cannot
+mute a true finding. **Its cost is stated at the declaration**: a decoder that
+destructures, validates and re-writes counts as a consumer, which is why
+`RunDetail`'s six unread numbers live in P7 below rather than in a report that
+can no longer see them.
 
-| what                                                                                 | count | needs                                                                             |
-| ------------------------------------------------------------------------------------ | ----- | --------------------------------------------------------------------------------- |
-| **dead sentences** — `ui.dismiss`, `payout.heading`, zero readers in either language | 2     | a screen prints them or they go                                                   |
-| **one sentence spelled twice** — `luckCore`, read by a pin and re-typed in prose     | 1     | `view.ts:1691`'s own comment says they share a clause; make them share a string   |
-| **`typography.sentenceEnd`** — a language's terminal punctuation, applied by a test  | 1     | is the rule meant to run at runtime?                                              |
-| **a run's shape, stored and never shown** — six `RunDetail` fields                   | 6     | print them or stop writing them. **Feeds P7 directly** — dead weight in that blob |
-| **optional inputs nothing supplies**                                                 | 3     | a missing caller or dead API surface. Was 13 — see the precision note below       |
-| **arguments that can never be anything else** — `screenOf(h)`, `runsOf`/`streamOf`   | 3     | the slot filter on the timeline readers is dead; `MODES.md` names those readers   |
-| **exported, read only by tests**                                                     | 23    | mostly the core's lift, whose surface is Ashwake 1's — rule and allowlist         |
-| **exported, read only inside its own file**                                          | 226   | `CLAUDE.md`: demote to `const`/`function`. See below                              |
+**What was fixed in the code, every one of it found by the report:**
 
-**And one more, found while checking a false positive: `HudView.colours` has
-no reader.** `colourPotentials` runs on every HUD build and tallies the whole
-board TWICE — once normally, once with every colour's power switched off — so
-each colour's own take can be measured rather than estimated. Five numbers per
-colour, and `ColourPotential`'s fields carry no reference at all because they
-are filled by a spread. Not merely dead: dead and expensive, on every view of
-every run.
+- **`CHROME_ICON` was `STAT_ICON` again** — the table saying which marks are
+  chrome, with a test, while MENU, MORE, the panel's BACK and CLOSE and MORE's
+  speaker each wrote the string as a literal. Five call sites read the table
+  now, so a renamed icon cannot leave the test passing about a table nobody
+  uses.
+- **The daily's resume rule had two implementations.** `meta/daily#dailyRunFor`
+  IS that rule, pure and tested and called by nothing; `storage.ts` spelled
+  `kept.date !== date` out a second time. `storage.ts`'s own key comment said
+  "`dailyRunFor` is where that guard lives", which was false until the fix.
+- **`AssetSlot.wired`'s promise is a test.** "A slot that says `false` will not
+  appear on screen no matter what you put in it" was enforced by nothing;
+  `theme.test.ts` asserts it per direction now.
+- **`toneColour` was `ringColour`'s unreachable fork** — found by deleting
+  `FigCell.tone`, which the field pass had flagged as an optional input nothing
+  supplies and which turned out to HAVE a reader. It resolved to plain ink on
+  every figure render; both are gone and nothing on any figure moved.
+- **`'capped'` was a cause of death nothing had ever produced.**
+  `RunOptions.maxSteps` had no supplier at all, so the hard stop was untested;
+  `sim.test.ts` plays one run against a cap of ten.
+- **`Finding.detail` was the sweep printing none of its own prescriptions** —
+  eight sentences written across five passes, dropped by the table writer.
+- **Four cuts**: `ui.dismiss` and `payout.heading` (dead sentences, both with
+  the reason left at the line), `Snapshot.harvestAt` (a third name for the
+  priced pocket, the `Session.strings` shape without the bug), and
+  `FigureLayout.halfW`/`halfH`.
+- **One simplification**: `{ cx, cz }` had four spellings in `camera.ts`, which
+  is why `Frame.centre.cx` reported as unread while `Board.tsx` reads the pair
+  on every frame. It is `Centre` now, and the finding was true of the SYMBOL
+  and false of the code.
 
-### The precision lesson, and what it cost
+**And where the code corrected the QUEUE.** `luckCore` was the report asking
+for a string the code already shares (`LUCK_CORE`, module-level in both
+languages, because the two sites sit inside the literal that DEFINES
+`Strings`). `nameRecord(wanted)` is an OpenType nameID and `0` is the copyright
+record — P1.6's predicted noise, arriving exactly as predicted.
 
-**Ten of the first thirteen optional findings were false**, and the reason is
-the very thing that makes `findReferences` better than a grep, working against
-it. A symbol is exactly what an object literal inside a generic callback does
-not share with the type it becomes:
+**89 rulings, and seven of them are CLASSES rather than entries**, because
+twelve or eighteen paragraphs saying one thing is how an argument stops being
+read: `LIFT_SURFACE` (Ashwake 1's surface, per `CLAUDE.md`, enumerated rather
+than matched by directory so a nineteenth is a finding somebody looks at),
+`DESIGN_RECORD` (a table addressed to a developer, where the source file IS the
+screen it is printed on), `TEST_IS_THE_READER` and `RULE_LIVES_IN_A_TEST` (the
+`keeper.alive` shape, and `CLAUDE.md`'s "the palette answers to tests"),
+`SAVED_BLOB`, `TIMELINE_SPINE` and `HUD_UNSAID`.
 
-```
-<Bars rows={COLOURS.map((c) => ({ label, icon, value, paint }))} />
-```
+**WHAT IS LEFT IS MARC'S, AND IT IS THE BEST THING IN THE REPORT.** `NEXT.md`
+§1 now carries **five facts the HUD computes and no screen says**: the colour
+lens's whole report (Ashwake 1 printed five clauses on a long-press; this body
+says the ground's name and throws the numbers away, having tallied the board
+twice to get them), a standing bounty with no mark on either POP button, a
+"POP · N READY" that has never existed, `tilesSpare` whose sentence went out
+with the guide line, and the guide line itself. Two of the five corrected a
+docblock that asserted its own consumer, and **both had survived four hand
+passes BECAUSE of that sentence.** Plus `screenOf(h)`: the board's fit measures
+the ground plane while `relief.ts` lifts a hex by up to 0.55 radii.
 
-`map` infers its element type from the literal rather than taking it from
-`readonly Bar[]`, so `Bar.paint` looked unsupplied while `Payout.tsx` sets it
-twice. `Tab.grows` the same, set at `Manual.tsx:218`. A spread does it too,
-which is why `ColourPotential`'s five fields show no reference of any kind.
+**Two findings point at another item and are the only two rows left in the
+report**: `runsOf(slot)` and `streamOf(slot)`, called with `null` everywhere,
+which is a question about the reader table **P10** is going to assert.
 
-`scripts/sweep/keys.ts` is the answer and it took two tries, both recorded at
-the line:
+**The CI bar is now reachable and is deliberately not claimed.** P1's bar was
+one clean run with an empty allowlist delta; the run stands at two findings,
+both owned by P10. Making it blocking is P10's to do, once its two are
+answered.
 
-1. **Withholding on the NAME alone silenced `Said.brief`** — the repository's
-   own signature miss, with thirty lines at its declaration saying nothing sets
-   it — because `App.tsx` passes `brief=` to `SaidCard`, whose props type
-   declares a `brief` of its own. Two properties, one name.
-2. **So the withhold became structural**: a key counts only when the compiler
-   cannot attribute it to any declared property. And a JSX attribute has to be
-   attributed through the ELEMENT'S PROPS TYPE — `getSymbolAtLocation` on the
-   attribute name hands back the attribute's own symbol, so every
-   `<X foo={} />` in the codebase read as unattributable and `Said.brief`
-   stayed silenced through the first fix.
-
-**Nothing would have said so**, which is why the report grew a **`Rulings that
-match nothing`** section in the same hour: an allowlist entry matching no
-finding means the subject is gone — or that a pass quietly stopped seeing it.
-It caught its own first case immediately, and it is what keeps the allowlist
-from becoming a drawer of exemptions for code that no longer exists.
-
-**The trade that remains is stated rather than hidden**: a genuinely
-unattributable write of the same name elsewhere still silences a true finding.
-That is the right way round. A sweep that invents ten findings is a sweep
-nobody runs twice, and `CLAUDE.md` already says what becomes of a ritual whose
-signal goes.
-
-**The 226 are the tail, and they are not one job.** `CLAUDE.md`'s instruction
-is to demote them so the NEXT sweep's signal stays clean, and it is right — but
-the same file rules that `packages/core/src/engine` and `content` keep their
-surface because it is Ashwake 1's. So the tail splits: the game's own are
-demoted, the core's lift is allowlisted with that ruling cited, and neither is
-done by a script that cannot tell them apart. It is a batch of its own, run
-against the gate, and it is what stands between this report and a CI gate —
-`PASS.md` P1's bar for that is one clean run with an empty allowlist delta.
-
-**Two findings point at other items rather than at this one.** `RunDetail`'s
-six unread numbers are dead weight in the exact blob **P7** is about to
-compact, and `runsOf(slot)`/`streamOf(slot)` being called with `null`
-everywhere is a question about the reader table **P10** is going to assert.
-Neither is fixed here; both are written where the item that owns them will
-find them.
 **P1.6 is the one that may not work, and it says so here rather than in a
 retrospective.** The fog was a _tested, correct consumer_ handed a hard-coded
 empty list at the call site, and `CLAUDE.md`'s own conclusion is that grepping
@@ -505,6 +516,25 @@ day a version of it shed a WORLD and left its run behind.
 | P7.1 | open   | **measure first** — what a 5-, 30- and 300-run world actually weighs, off `shell/fixture.ts`                 | `shell/fixture.ts`   |
 | P7.2 | open   | the codec: a compact `revealed` and `territories`, behind a NEW key so an old blob still reads               | `meta/world.ts:328`  |
 | P7.3 | open   | the round trip — `decode(encode(w))` equal for every world the fixture builds, plus a hostile blob per field | `meta/world.test.ts` |
+| P7.4 | open   | **eight numbers written into a save and read by nothing** — inherited from P1.9, see below                    | `meta/timeline.ts`   |
+
+**P7.4 is P1.9's, and it is here because this is the only item allowed to
+change what a save looks like** (2026-09-10). `pnpm sweep` found eight fields
+written into stored blobs with no consumer: `RunDetail`'s `placements`,
+`popped`, `bigPop`, `bigPopAt`, `claims` and `quests`, plus
+`HarvestRecord.tiles` (what a pop paid in tiles, kept per harvest for a whole
+run's log while the end screen counts harvests BY CHOICE) and
+`GameState.version`, the discriminator a migration would switch on with no
+migration yet.
+
+Two notes for whoever does the measuring. **The six are invisible to the tool
+now**, and deliberately: `keys.ts#readIndex` cannot tell a decoder that
+destructures, validates and re-writes from a consumer, so `timeline.ts:211`
+reads as six readers. This row is where they live instead. And **they are dead
+weight in exactly the blob P7.1 is about to weigh** — measure with and without
+them, because the answer may be that the compaction is mostly this.
+
+`scripts/sweep/allow.ts#SAVED_BLOB` and `TIMELINE_SPINE` point here.
 | P7.4 | open   | a bound, or a written argument for none: what this game does at 10,000 revealed hexes                        | `meta/world.ts:441`  |
 | P7.5 | open   | the ladder's new shape — compaction should make a rung RARER, and `shed.test.ts` is the pin                  | `shell/shed.test.ts` |
 | P7.6 | open   | quota exhaustion driven end to end in a browser, not only in a unit test                                     | `e2e/`               |
@@ -641,8 +671,11 @@ test names the door and the flag.
 
 ## Order, and why
 
-1. **P1 — the sweep.** First, because everything below is better aimed with its
-   report in hand, and because P10 and P3 both reuse its machinery.
+1. **~~P1 — the sweep.~~ DONE 2026-09-10.** First, because everything below is
+   better aimed with its report in hand, and because P10 and P3 both reuse its
+   machinery. Both of those are now true in the other direction as well: the
+   only two findings left in the report are P10's, and P10 inherits the fixed
+   passes rather than the blind ones. **P10 is next.**
 2. **P3 — the French artifact.** Second, and early on purpose: it costs Marc's
    time, and his time is now running in parallel with Session A. Both of his
    inputs should be queued before I disappear into P2.
@@ -714,3 +747,8 @@ file's rows go to `done` in the same commit as the work, never after.
 - **The atlas**, one row on the Session A sheet: does he open it twice?
 - **Any look finding** P4, P5 or P6 turns up, each stated at its declaration
   and repeated in `NEXT.md`.
+- **Five facts the HUD works out and never says**, and one about the board's
+  fit — P1.9's whole remainder, all six in `NEXT.md` §1 (2026-09-10). The
+  colour lens is the loudest and the one with a sequence attached: saying yes
+  needs about five new sentences in both languages, so it wants to go INTO the
+  next French pass rather than behind it.

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { CHROME_ICON } from '@theme/icons';
 import { Icon } from './Icon';
 
 /**
@@ -29,7 +30,7 @@ export function Fold({
       <summary>
         {summary}
         <span className="fold-caret" aria-hidden="true">
-          <Icon name="more" />
+          <Icon name={CHROME_ICON.more} />
         </span>
       </summary>
       {children}

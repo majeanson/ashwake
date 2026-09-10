@@ -312,6 +312,24 @@ a tile count and twenty other specs carry it.
 one worker, or find out what actually fails to link. Left alone while it is one
 flake on one machine.
 
+**IT SPREAD ONCE, WITH A DIFFERENT SYMPTOM (2026-09-10, Session 78).** A full
+run failed `board.spec.ts:167` — "takes a placement with the board leaned and
+turned" — on `placeOneTile: no legal hex found in the search rings`, which is
+not a shader error and is not `watchErrors`. That spec passed alone
+immediately, and two full runs after it were clean: 116 Chromium and 46 WebKit,
+twice. **The change it ran against cannot have caused it** — the only edit to
+`board/` that day was type-level (`{ cx, cz }` gaining the name `Centre`, no
+value moved), which is the strongest evidence yet that the machine rather than
+the code is producing these.
+
+So the count is now two symptoms, three specs, one machine, and still nothing
+on CI. It is the same decision as above and it is a little more urgent: a suite
+that fails one in three runs on different tests each time is a suite whose red
+nobody will read. **The cheapest honest option is a retry on the affected
+project**, because it makes a flake look like a flake instead of like a
+regression somebody has to disprove by hand — which is what this session spent
+twenty minutes doing.
+
 **A DAILY IN PROGRESS CANNOT BE RESTARTED (2026-09-10, Marc playing:** _"we
 still cant restart a daily without us getting back to our worlds"_**).**
 
@@ -352,6 +370,76 @@ A daily is one board a day and starting it over costs the player nothing but
 their own progress on it — so this is a taste question about how loud the door
 should be, not a rules question. `MODES.md` gains the row whichever way it
 goes, because a restart is a DOOR and doors are what that file is for.
+
+**FIVE THINGS THE HUD WORKS OUT AND NEVER SAYS (2026-09-10, `pnpm sweep`'s
+first report, `LOG.md` Session 78).** One question, asked five times, and it
+is the one `CLAUDE.md` says not to guess at: **does the HUD say this?** Each
+is computed on every frame today and read by nothing, so each is either a
+sentence this game is missing or a number that should stop being computed.
+They are listed loudest-first.
+
+1. **THE COLOUR LENS ANSWERS WITH A NAME, AND ASHWAKE 1 ANSWERED WITH A
+   REPORT.** Long-press a card here and the board dims to that ground and the
+   toast says LICHEN. Long-press a card in Ashwake 1 and the line under the
+   board said, in the ground's own name: _"N tiles standing · worth W — B from
+   its power (ash) · R of it ripe now · pts when popped = worth × pocket size
+   × distance"_, plus the colour's power clause. All of it is computed here —
+   `HudView.colours`, `HudView.spotlight` and `ColourPotential`'s five
+   numbers — and printed nowhere. **`INTERACTIONS.md` calls this gesture ✓**,
+   which is right about the gesture and blind to the sentence: exactly the
+   limit `CLAUDE.md` names for a gesture matrix.
+
+   It is also the one with a COST. `colourPotentials` tallies every live tile
+   on the board TWICE per HUD build — once normally, once with all four colour
+   powers switched off — so each colour's own take is measured rather than
+   estimated. That is the right way to get the number and it is thrown away on
+   every frame of every run.
+
+   **Why it is not just wired:** the report needs about five new sentences in
+   both languages, and the French artifact (P3) is already with you. New
+   strings now are unreviewed French on a screen. So the sequence matters:
+   say yes and they go into the next French pass, not behind it.
+
+2. **A STANDING BOUNTY IS NOT ON THE BUTTON.** `HudView.questPays` — its own
+   docblock says _"the points button wears it, because a reason to press a
+   button belongs on the button"_ — is read by no screen. Ashwake 1 put the
+   SITE glyph on the POP label and a `bounty` class on both buttons. The
+   points figure is already correct (the multiplier is inside
+   `harvestValue`); what is missing is any sign of WHY it is bigger.
+   No new sentence needed — it is a mark, and this body's mark vocabulary
+   already has the site icon. **The question is only where it goes**, on the
+   most-pressed control on the board, which is the `Ring.width` lesson.
+
+3. **"POP · N READY" DOES NOT EXIST.** `HudView.pocketsReady` counts separate
+   ripe POCKETS rather than ripe tiles, and its docblock explains that a big
+   pocket is still one decision. Nothing prints it. The POP button shows what
+   the priced pocket pays; it never says how many decisions are waiting.
+
+4. **`HudView.tilesSpare`** is the boolean behind _"More tiles than you can
+   spend. POP for PTS from here on"_ — the state you found on the board with
+   202 tiles and 167 placements left, where the mechanism worked exactly as
+   designed and the game never said a word. The SENTENCE exists in both
+   languages; it lives in `hud.guide`, and you removed the guide line on
+   2026-08-29 (_"remove tips above hand tiles"_). So the fact has no door.
+
+5. **`HudView.guide` itself**, which is that removal. Left computed on
+   purpose and recorded here rather than in the report, so a future coaching
+   mode finds it built. Nothing to decide unless 4 changes your mind.
+
+Each of the five carries this finding at its declaration in `view/view.ts`,
+and `scripts/sweep/allow.ts`'s `HUD_UNSAID` points here so the sweep stops
+re-asking. **Answering 1 or 3 changes the first minute**, so both are inside
+`CLAUDE.md`'s freeze once Session A declares a clean pass.
+
+**THE BOARD'S FIT IGNORES HOW TALL A TILE STANDS (2026-09-10, same report).**
+`screenOf` takes a height and every one of its five production call sites
+passes `0`, so the camera's fit and extents measure the GROUND plane while
+`relief.ts` lifts a hex by up to four contour bands plus a rarity's stand —
+about 0.55 hex radii, roughly 20px at a normal zoom, at the top edge only.
+Not dead generality: `camera.test.ts` passes a real height, and `0` is
+CORRECT for the drag inverse, which maps a finger onto the ground. Whether the
+FIT should include lift is a framing change on the first screen anybody sees,
+so it is yours. Cheap either way.
 
 **~~THE FONTS SHIP WITH NO LICENCE, AND THEY ARE OFL~~ — DONE 2026-09-09, and
 it needed no answer from Marc.** Asked where EB Garamond came from he said

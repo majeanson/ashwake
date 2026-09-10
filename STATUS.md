@@ -4,7 +4,65 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-09 — the notice was inside the font all along.**
+Last checkpoint: **2026-09-10 — the sweep's first report, adjudicated, and the
+tool was wrong five times.**
+
+`PASS.md` P1 is DONE. `LOG.md` Session 78. **330 findings → 2**, and both
+remaining rows are P10's by design.
+
+**Verified:**
+
+- **`pnpm sweep` is trustworthy in a way it was not this morning**, and every
+  correction came from acting on it. The module pass's advice DID NOT COMPILE:
+  its file-internal branch ignored test importers, so demoting what it named
+  broke twenty-five specs at once. Then the demotion batch (141 symbols)
+  blinded the field, optional, argument and branch passes, which walked only
+  EXPORTED declarations — caught by the report's own "Rulings that match
+  nothing" section on the first run after. Then `as const satisfies` was found
+  hiding twenty real readers, fixed by a `readIndex` mirroring the write index
+  the optional pass had. A fourth category shipped 74 rows of noise and was
+  retired the same hour. And `Finding.detail` — the passes' own prescriptions —
+  was printed nowhere.
+- **Six real things in the game, all found by the report.** `CHROME_ICON` was
+  `STAT_ICON` again (five screens wrote the icon strings as literals past the
+  table that has the test); the daily's resume rule had two implementations and
+  a comment claiming otherwise; `AssetSlot.wired`'s promise is a test now;
+  `toneColour` was `ringColour`'s unreachable fork, found by deleting a field
+  that turned out to have a reader; `'capped'` was a cause of death nothing had
+  ever produced; and `{ cx, cz }` had four spellings in `camera.ts`.
+- **Four cuts, all with the reason left at the line**: `ui.dismiss`,
+  `payout.heading`, `Snapshot.harvestAt`, `FigureLayout.halfW`/`halfH`.
+- **89 rulings in `scripts/sweep/allow.ts`, seven of them CLASSES** with one
+  shared reason and enumerated members — the lift's surface, the design
+  records, two flavours of test-is-the-reader, the saved blob, the timeline's
+  spine, and the HUD's unsaid five. Enumerated rather than wildcarded, so the
+  next member is a finding somebody looks at.
+- **What is left for Marc is in `NEXT.md` §1**: five facts the HUD computes on
+  every frame and no screen says — the colour lens's whole report, a standing
+  bounty with no mark on either POP button, a "POP · N READY" that has never
+  existed, `tilesSpare`, and the guide line — plus the board's fit measuring
+  the ground plane while a hex stands up to 0.55 radii taller. Two of the five
+  had a docblock asserting their own consumer, and both had survived four hand
+  passes because of it.
+- **`PASS.md` P7 gained P7.4**: eight numbers written into a saved blob and read
+  by nothing, inherited from this pass because P7 is the only item allowed to
+  change what a save looks like. Six of them are invisible to the tool now and
+  the reason is stated at `keys.ts#readIndex` — a decoder that validates and
+  re-writes cannot be told from a consumer without dataflow.
+
+**Counts:** 1160 unit tests / 88 files; e2e 116 Chromium + 46 WebKit, green on
+two consecutive full runs; `pnpm sim` byte-identical to
+`packages/core/sim.golden.txt`; `pnpm sweep` 2 findings, 89 rulings, no orphans.
+`pnpm typecheck`, `lint` and `build` clean. The screen audit was NOT re-run
+this session — nothing here changes a screen except five chrome icons that
+resolve to the same glyphs.
+
+**One flake, recorded not fixed:** a full e2e run failed
+`board.spec.ts:167` on `placeOneTile: no legal hex found`, passed alone
+immediately, and two full runs after were clean. Second symptom of the machine
+flake in `NEXT.md` §1, and the only board change that day was type-level.
+
+Previous checkpoint: **2026-09-09 — the notice was inside the font all along.**
 
 The pre-public review's one real gap, closed. `LOG.md` Session 73.
 

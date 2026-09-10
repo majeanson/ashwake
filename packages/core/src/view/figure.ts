@@ -172,9 +172,15 @@ type FigureLayout = {
   readonly cells: readonly PlacedCell[];
   readonly width: number;
   readonly height: number;
-  /** Half the drawn width and height of one hex at this size and facing. */
-  readonly halfW: number;
-  readonly halfH: number;
+  /*
+   * There were a `halfW` and a `halfH` here, cut 2026-09-10 — half the drawn
+   * width and height of one hex at this size and facing.
+   *
+   * `pnpm sweep` found both written on every layout and read by nothing.
+   * `Figure.tsx` draws a hex from `corners`, which measures its own six
+   * points, and the two numbers are still computed INSIDE `layoutOf` where the
+   * bounding box needs them. What was dead was handing them back out.
+   */
 };
 
 /**
@@ -190,7 +196,7 @@ export function figureLayout(spec: FigureSpec, orientation: Orientation, size = 
   const halfW = orientation === 'pointy' ? (Math.sqrt(3) / 2) * size : size;
   const halfH = orientation === 'pointy' ? size : (Math.sqrt(3) / 2) * size;
   const placed = cells.map((cell) => ({ cell, ...place({ q: cell.q, r: cell.r }, layout) }));
-  if (placed.length === 0) return { cells: [], width: 0, height: 0, halfW, halfH };
+  if (placed.length === 0) return { cells: [], width: 0, height: 0 };
   const minX = Math.min(...placed.map((p) => p.x)) - halfW;
   const minY = Math.min(...placed.map((p) => p.y)) - halfH;
   const width = Math.max(...placed.map((p) => p.x)) + halfW - minX;
@@ -199,7 +205,5 @@ export function figureLayout(spec: FigureSpec, orientation: Orientation, size = 
     cells: placed.map((p) => ({ ...p.cell, x: p.x - minX, y: p.y - minY })),
     width,
     height,
-    halfW,
-    halfH,
   };
 }

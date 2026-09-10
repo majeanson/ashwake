@@ -247,6 +247,18 @@ export const CONCEPT_ICON = {
  * these say something about the SCREEN rather than about the plane, which is
  * why they are exempt from the no-collision rule that binds the other four
  * registries — and why nothing on the board may ever be one of them.
+ *
+ * **AND EVERY SCREEN WENT ROUND IT UNTIL 2026-09-10.** `pnpm sweep` found this
+ * table read only by `tokens.test.ts`: `MENU`, the fold, the panel's BACK and
+ * CLOSE, and MORE's speaker each wrote `<Icon name="menu" />` as a literal,
+ * while their neighbours on the same screens went through `CONCEPT_ICON`. It
+ * is `STAT_ICON`'s shape exactly — the table that says WHICH, with a test, and
+ * a render that hard-codes past it (`CLAUDE.md`, 2026-09-08).
+ *
+ * It matters here more than it looks: the test asserts nothing on the board may
+ * be one of these seven, and a screen holding the string rather than the key
+ * would keep drawing a renamed icon's old name while the test went on passing
+ * about a table nobody used. The five call sites read the table now.
  */
 export const CHROME_ICON = {
   back: 'back',
