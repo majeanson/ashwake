@@ -818,14 +818,71 @@ measured before/after in `LOG.md`. `pnpm sim` untouched — no rule moves here.
 The boundary, the panel, the report and the CSP all shipped. The named
 weakness in the header is closed (P8.4); what is left is three specific holes.
 
-| id   | status | statement                                                                                                                | where                    |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| P8.1 | part   | **the stale-chunk loop** — reproduced; CONTINUE fixed; the slow-line case is Marc’s, unbuilt                             | `shell/failure.ts`       |
-| P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)                    | `shell/storage.ts:318`   |
-| P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it                  | `board/gl.ts`            |
+| id   | status | statement                                                                                                      | where                    |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| P8.1 | part   | **the stale-chunk loop** — reproduced; CONTINUE fixed; the slow-line case is Marc’s, unbuilt                   | `shell/failure.ts`       |
+| P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)          | `shell/storage.ts:318`   |
+| P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it        | `board/gl.ts`            |
 | P8.4 | done   | **the two inline blocks are hashed at build time and `'unsafe-inline'` is gone** — the build writes the policy | `vite.config.ts`         |
-| P8.5 | open   | an offline FIRST visit, and a second visit offline, against the narrowed precache                                        | `vite.config.ts:183`     |
-| P8.6 | done   | the panel’s repeat counting, pinned under the loop that makes it move                                                    | `ui/staleChunk.test.tsx` |
+| P8.5 | done   | **offline is exercised, and it was broken** — `caches.match` honoured `Vary`; four tests, one Marc trade       | `e2e/offline.spec.ts`    |
+| P8.6 | done   | the panel’s repeat counting, pinned under the loop that makes it move                                          | `ui/staleChunk.test.tsx` |
+
+### P8.5, done: offline was broken, and it told you your browser was old (2026-09-10)
+
+**The worker had never once been run with the network off.** Every claim about
+offline in this repository — two bugs' worth of scar tissue in `sw.js`, the
+all-or-nothing `isCore` split, the narrowed precache — was an argument about
+code. `e2e/offline.spec.ts` runs it, and the second visit did not work.
+
+**The bug: `caches.match(request)` honours `Vary`.** Everything in the cache is
+put there by `cache.add(url)` during install — a plain same-origin GET with no
+`Origin` header. The page then asks for its own bundle and its own faces in
+CORS mode (`<script type="module" crossorigin>`, `<link rel="preload"
+as="font" crossorigin>`), which sends one. Against a host that answers
+`Vary: Origin` — `vite preview` does — every match missed, the handler fell
+through to the network, and offline that is `ERR_FAILED` for the bundle, the
+stylesheet and both faces. Nine refusals, deterministic, 3 runs of 3.
+
+**And the way it failed is worse than the failure.** With the entry module
+never fetched, `window.__ashwakeCanRun` is never set, so `index.html`'s
+browser-floor guard fires and an up-to-date Chromium is told _"ASHWAKE a besoin
+d'un navigateur plus récent"_. That is the second witness for P8.3's
+misdiagnosis note — the first was a stale chunk reported as "needs WebGL" —
+and it is exactly the white screen this precache was written to prevent
+(2026-08-18), wearing a sentence.
+
+The fix is `ignoreVary: true` on both matches, and `ignoreSearch` on the
+navigation so `/?seed=7` finds the shell rather than falling through to the
+`/index.html` fallback. Not a shortcut: every entry is a fingerprinted,
+single-variant file plus one shell, in a cache named for the build. There is no
+second variant to choose between, so varying on a request header can only lose
+the one copy there is.
+
+**The live edge does not send `Vary` today** — checked with `curl` against
+`ashwake.marcportal.com` while writing this, on both `/` and a hashed chunk —
+so this was reproduced on the preview server rather than in production. That is
+the point of having a pre-deploy harness at all, and the worker's correctness
+should not rest on a header the host happens to omit.
+
+**What the tests pin, four of them:**
+
+1. A second visit plays with the network off — door, press, board, and an empty
+   console. Fails without the fix.
+2. A device that prefers LIGHT still plays, on the procedural floor, and offline
+   costs it nothing but its art. Also fails without the fix.
+3. The precache carries the shipping direction's art and not the other's, plus
+   the page, a script, a stylesheet and all four faces.
+4. A first visit with no network is the BROWSER saying so — `page.goto` rejects.
+   There is no document, so there is no white screen and nothing for the failure
+   panel to be wrong about. The only alternative would be a native install.
+
+**And one finding that is Marc's, in `NEXT.md` §1.** The precache ships one
+direction because a phone renders one — an argument written when FOUR shipped.
+Two do now (D12), and `pickForScheme` sends every device that prefers light or
+contrast to `daylight`, so the uncovered share is no longer a quarter but
+roughly half. Covering it is 301.3 KB raw, which is over `budget.json`'s
+precache bar; the fallback is graceful and measured, so this is a trade rather
+than a bug.
 
 ### P8.4, done: the build writes the policy now (2026-09-10)
 
@@ -915,6 +972,15 @@ infers that from "the board never drew" plus "no WebGL", and a chunk that never
 loaded also means the board never drew. A misdiagnosis, and a harmless one,
 since such a browser cannot play either way. Written at the test's own
 `withWebgl` helper and at P8.3 rather than fixed.
+
+**And a second witness, from P8.5 (2026-09-10):** offline, with the entry
+module unfetched, `index.html`'s browser-floor guard fires and an up-to-date
+Chromium is told _"ASHWAKE a besoin d'un navigateur plus récent"_. Two
+unrelated failures, one wrong sentence, and it is the only sentence some
+players will ever see. **A page that cannot load its bundle cannot tell you
+why, so it guesses — and it guesses the same wrong thing every time.** P8.3
+owns the fix, and it is a wording decision as much as a logic one, since these
+two sentences are the exception to D4 that lives in the pre-JS head.
 
 **P8.1 is the one with no exit today.** The failure panel's CONTINUE is
 `panel.remove()` plus a boundary reset, and the boundary remounts the tree —

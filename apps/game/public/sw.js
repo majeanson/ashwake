@@ -98,6 +98,44 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+/*
+ * HOW A CACHED RESPONSE IS FOUND AGAIN, which is not the obvious way
+ * (2026-09-10, `PASS.md` P8.5 — the first time this worker was ever run with
+ * the network off).
+ *
+ * `ignoreVary`, and it is the difference between a game and a white screen.
+ * A `Cache` remembers the REQUEST it stored a response for, and `match`
+ * honours the response's `Vary` header when deciding whether a new request is
+ * the same one. Everything here is put in by `cache.add(url)` during install —
+ * a plain same-origin GET, no `Origin` header. But the page asks for its own
+ * bundle and its own fonts in CORS mode (`<script type="module" crossorigin>`,
+ * `<link rel="preload" as="font" crossorigin>`), which DOES send `Origin`. So
+ * against any host that answers `Vary: Origin` — `vite preview` does — every
+ * one of those matches missed, the handler fell through to the network, and
+ * offline that is `ERR_FAILED` for the bundle, the stylesheet and both faces.
+ *
+ * **And the way it failed is worse than the failure.** With the entry module
+ * unfetched, `window.__ashwakeCanRun` is never set, so the browser-floor guard
+ * in `index.html` fires and an up-to-date Chromium is told *"ASHWAKE needs a
+ * newer browser"* — a second witness for the misdiagnosis noted at P8.3, and
+ * the exact shape of the white screen this precache was written to prevent in
+ * the first place (2026-08-18).
+ *
+ * Ignoring `Vary` is not a shortcut here, it is the semantics this cache
+ * actually has: every entry is a fingerprinted, immutable, single-variant file
+ * plus one shell, stored under a cache name that carries the build. There is
+ * no second variant to pick between, so varying on a request header can only
+ * ever lose the one copy there is.
+ *
+ * `ignoreSearch` on the navigation for the same reason: `/?seed=7` and
+ * `/?daily=1` are shared links to the same document, and matching by full URL
+ * meant every one of them fell through to the `/index.html` fallback below.
+ * (It also means the query-bearing copies this handler puts in are never read
+ * back as distinct — harmless, and the cache is emptied every build.)
+ */
+const CACHED = { ignoreVary: true };
+const CACHED_ANY_QUERY = { ignoreVary: true, ignoreSearch: true };
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -133,7 +171,9 @@ self.addEventListener('fetch', (event) => {
         ]);
         if (winner !== null) return winner;
 
-        const cached = (await caches.match(request)) ?? (await caches.match('/index.html'));
+        const cached =
+          (await caches.match(request, CACHED_ANY_QUERY)) ??
+          (await caches.match('/index.html', CACHED));
         // A first visit on a line this slow has nothing cached yet, so the
         // network — however late — is the only answer left to wait for.
         return cached ?? network;
@@ -143,7 +183,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((hit) => {
+    caches.match(request, CACHED).then((hit) => {
       if (hit !== undefined) return hit;
       return fetch(request).then((response) => {
         if (response.ok && response.type === 'basic') {

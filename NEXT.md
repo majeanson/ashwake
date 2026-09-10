@@ -287,6 +287,34 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**HALF THE PHONES GET NO ART OFFLINE, AND COVERING THEM IS 301 KB (2026-09-10,
+`PASS.md` P8.5).** The service worker precaches ONE direction's art —
+`settlement`, the default — because `vite.config.ts` argued on 2026-09-02 that
+a device renders one direction and downloading the rest in the background of
+somebody's first minute is the minute the stranger test measures. That argument
+was written when FOUR directions shipped. Two do now (D12), and
+`pickForScheme` sends every device that prefers light _or_ more contrast to
+`daylight` — so the share that is uncovered went from a quarter to roughly
+half.
+
+Measured rather than guessed, now that offline is actually exercised: such a
+device's second visit **still boots, still plays, and draws on the procedural
+floor**; the nine `daylight` PNGs are the only things the network refuses, and
+nothing else breaks. So this is a trade, not a bug.
+
+- **Cover it:** +301.3 KB raw in the precache (2043.8 → 2345.1 KB), which is
+  over `budget.json`'s 2085 KB precache bar — so the bar moves too, with the
+  reason. Cost is paid once, in the background, by every phone.
+- **Leave it:** half of devices get a stone-and-ink board offline instead of a
+  painted one, until they have visited enough times for the fetch handler to
+  have cached the art opportunistically (which it does, on any online visit
+  where the art is drawn).
+
+My lean is **leave it** — the fallback is the floor the game shipped with for
+weeks and it is honest-looking, and 301 KB is a real cost for the second visit
+of a minority of a minority (light-preferring AND offline). But it is a payload
+and a look question at once, which makes it yours.
+
 **THE E2E SUITE HAS A GPU FLAKE ON THIS MACHINE (found 2026-09-10, not
 fixed).** Two full runs of identical code: the first failed one test, the
 second failed a different one, and both failed on

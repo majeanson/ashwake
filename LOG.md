@@ -7029,9 +7029,9 @@ file the deploy must not be able to skip?
 
 **Answer: yes, and it was worth it because `'unsafe-inline'` made the rest of
 the policy decorative.** `_headers` had CONFESSED to the weakness rather than
-hidden it — *"both static, so both could be hashed; the hashes would have to be
+hidden it — _"both static, so both could be hashed; the hashes would have to be
 computed at build time and written here, which is a build step this repository
-does not have yet"* — and the confession was accurate and load-bearing: with
+does not have yet"_ — and the confession was accurate and load-bearing: with
 `'unsafe-inline'` in `script-src`, ANY inline `<script>` that reaches this
 document runs, which is the entire mechanism the directive exists to stop.
 `vite.config.ts`'s `contentPolicy` plugin is that build step, in
@@ -7098,3 +7098,68 @@ phone-side proof.
 **Next:** P8.2 (quota exhaustion in a browser, which shares a harness with the
 deferred P7.6 and may deserve the same treatment), P8.3 (no WebGL, and a
 context loss that never restores), P8.5 (offline first and second visits).
+
+### Session 85 — offline had never been switched off (2026-09-10)
+
+**Question (`PASS.md` P8.5):** does this game actually work with the network
+off — a first visit, and a second one — against the precache the build
+narrowed?
+
+**Answer: the second visit did not, and it told you your browser was too old.**
+The worker, the precache stamp and the `isCore` split have been in the build
+since Stage 4 and carry two bugs' worth of scar tissue in their comments.
+Nothing had ever loaded the game with the network off. It fails on the second
+visit, deterministically, three runs of three.
+
+**`caches.match(request)` honours `Vary`.** Everything in the cache is put
+there by `cache.add(url)` at install — a plain GET, no `Origin` header. The
+page then asks for its own bundle and its own faces in CORS mode
+(`<script type="module" crossorigin>`, `<link rel="preload" as="font"
+crossorigin>`), which sends one. Against a host that answers `Vary: Origin` —
+`vite preview` does — every match missed, the handler fell through to the
+network, and offline that is `ERR_FAILED` for the bundle, the stylesheet and
+both faces. `ignoreVary: true` is the fix, plus `ignoreSearch` on the
+navigation so a `?seed=` link finds the shell rather than the fallback. It is
+not a shortcut: every entry is a fingerprinted single-variant file plus one
+shell, in a cache named for the build, so varying on a request header can only
+lose the one copy there is.
+
+**The symptom is the part worth remembering.** With the entry module never
+fetched, `window.__ashwakeCanRun` is never set, so the browser-floor guard
+fires and an up-to-date Chromium reads _"ASHWAKE a besoin d'un navigateur plus
+récent"_. **A page that cannot load its bundle cannot tell you why, so it
+guesses — and it guesses the same wrong thing every time.** Second witness for
+the note at P8.3, where the first was a stale chunk reported as "this browser
+needs WebGL". Three unrelated failures, one sentence, and it is the only
+sentence some players will ever see.
+
+**Reproduced on the preview server, not in production**, and that distinction
+is stated rather than smoothed over: `curl` says the live edge sends no `Vary`
+at all today, on `/` or on a hashed chunk. So this was not breaking players
+this morning. It was one header of a host's default away from breaking all of
+them, on the one feature whose whole purpose is the case where nothing else can
+be fetched — and a pre-deploy harness that only ever runs online cannot tell
+the difference.
+
+**My own test was wrong twice before the code was wrong once**, both times by
+gating on the wrong fact. Polling the CACHE for the shell passes while install
+is still writing art best-effort, and passes before `activate` has claimed the
+page — so the reload was a plain network navigation the worker never saw. The
+gate is `navigator.serviceWorker.controller`, which is downstream of both.
+
+**And the finding that is Marc's:** the precache ships one direction because a
+phone renders one — written when four shipped. Two do now, and `pickForScheme`
+sends every light-preferring or high-contrast device to `daylight`, so the
+uncovered share is roughly half. Measured: such a device still boots, still
+plays, and draws on the PROCEDURAL floor, with the nine `daylight` PNGs the
+only refusals. Covering it is 301.3 KB raw and moves `budget.json`'s precache
+bar. `NEXT.md` §1, with a lean and without a change.
+
+**Verified:** format, typecheck, lint clean; 1260 tests / 97 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; e2e 122/122 chromium (four new)
+and 46 passed / 1 skipped webkit. The two offline-play tests fail against the
+worker as it stood this morning, which is P8's rule.
+
+**Next:** P8.2 (quota exhaustion in a browser) and P8.3 (no WebGL, and a
+context loss that never restores) close the item — and P8.3 now has two
+witnesses waiting for it rather than one.
