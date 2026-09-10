@@ -148,9 +148,31 @@ const HARNESS_RECORD: readonly Ruling[] = (
  * Not cut here, and the reason is a hard rule rather than caution: these sit
  * in `packages/core/src/engine`, whose shape `pnpm sim` pins byte for byte,
  * and they are part of a blob already on players' phones. **P7 is the item
- * that is allowed to change what a save looks like**, and it inherits
- * `RunDetail`'s six unread numbers for the same reason. One item, one
- * migration, one reason in `LOG.md`.
+ * that is allowed to change what a save looks like**, and it inherited
+ * `RunDetail`'s six unread numbers for the same reason.
+ *
+ * ## P7 RAN, AND RULED THAT BOTH STAY (2026-09-10)
+ *
+ * It measured before it built, which is what its first row asked for, and the
+ * measurement said stop: a world three hundred runs deep is 24 KB, and three
+ * worlds with three runs is 2.3% of a 5 MB store. So there is no compaction to
+ * ride along with, and each of these is judged on its own twelve bytes.
+ *
+ *   - **`GameState.version`** stays. It is the one field whose entire purpose
+ *     is to be read by code that does not exist yet, it costs about twelve
+ *     bytes a saved run, and removing it means the first migration has to add
+ *     it back before it can switch on anything. `storage.ts`'s per-key
+ *     versioning is the braces; this is the belt.
+ *   - **`HarvestRecord.tiles`** stays. It is what one pop paid in TILES, and
+ *     the end screen counts harvests by CHOICE instead — but it is a fact
+ *     about a harvest that a reader of the log would reasonably expect to
+ *     find, in the one record that describes a pop.
+ *
+ * And `RunDetail`'s six turned out not to be dead at all: they are the run's
+ * SHAPE, the hall of fame prints four of nine, and `RunDetail`'s docblock
+ * quotes Marc asking for "a 'full detail' of the run". That is a screen
+ * decision and it is in `NEXT.md` §1 with both costs measured — see
+ * `TIMELINE_SPINE`'s note, and P7.7.
  */
 const SAVED_BLOB: readonly Ruling[] = (
   [

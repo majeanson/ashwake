@@ -686,15 +686,21 @@ revealed, unbounded, three worlds at a time, in a 5 MB store.** The shed ladder
 exists precisely because that store fills up, and `storage.ts:254` records the
 day a version of it shed a WORLD and left its run behind.
 
-| id   | status | statement                                                                                                    | where                |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------ | -------------------- |
-| P7.1 | open   | **measure first** — what a 5-, 30- and 300-run world actually weighs, off `shell/fixture.ts`                 | `shell/fixture.ts`   |
-| P7.2 | open   | the codec: a compact `revealed` and `territories`, behind a NEW key so an old blob still reads               | `meta/world.ts:328`  |
-| P7.3 | open   | the round trip — `decode(encode(w))` equal for every world the fixture builds, plus a hostile blob per field | `meta/world.test.ts` |
-| P7.4 | open   | **eight numbers written into a save and read by nothing** — inherited from P1.9, see below                   | `meta/timeline.ts`   |
+| id   | status | statement                                                                                | where                |
+| ---- | ------ | ---------------------------------------------------------------------------------------- | -------------------- |
+| P7.1 | done   | **measure first** — 24 KB at 300 runs, 2.3% of the store for three worlds and three runs | `shell/fixture.ts`   |
+| P7.2 | ruled  | the codec — **NOT BUILT**, and the measurement is the argument                           | `meta/world.ts:328`  |
+| P7.3 | ruled  | the round trip — moot with no second codec to round-trip through                         | `meta/world.test.ts` |
+| P7.4 | done   | a written argument for NO bound: 10,000 hexes is ~83 KB, three worlds 5% of the store    | `meta/world.ts:441`  |
+| P7.5 | ruled  | the ladder’s shape — moot: nothing is compacting, so no rung changes                     | `shell/shed.test.ts` |
+| P7.6 | open   | quota exhaustion end to end — DEFERRED with a reason; still worth doing                  | `e2e/`               |
+| P7.7 | open   | **six facts a saved run keeps and no screen prints** — Marc’s, in `NEXT.md` §1           | `meta/timeline.ts`   |
 
-**P7.4 is P1.9's, and it is here because this is the only item allowed to
-change what a save looks like** (2026-09-10). `pnpm sweep` found eight fields
+**P7.7 is P1.9's, and it is here because this is the only item allowed to
+change what a save looks like** (2026-09-10). _(It was numbered P7.4 when it
+was written, which collided with the row of that name already in this table and
+pushed three rows out of it. Renumbered 2026-09-10 — a ledger that has two rows
+with one name is a ledger nobody can cite.)_ `pnpm sweep` found eight fields
 written into stored blobs with no consumer: `RunDetail`'s `placements`,
 `popped`, `bigPop`, `bigPopAt`, `claims` and `quests`, plus
 `HarvestRecord.tiles` (what a pop paid in tiles, kept per harvest for a whole
@@ -710,9 +716,6 @@ weight in exactly the blob P7.1 is about to weigh** — measure with and without
 them, because the answer may be that the compaction is mostly this.
 
 `scripts/sweep/allow.ts#SAVED_BLOB` and `TIMELINE_SPINE` point here.
-| P7.4 | open | a bound, or a written argument for none: what this game does at 10,000 revealed hexes | `meta/world.ts:441` |
-| P7.5 | open | the ladder's new shape — compaction should make a rung RARER, and `shed.test.ts` is the pin | `shell/shed.test.ts` |
-| P7.6 | open | quota exhaustion driven end to end in a browser, not only in a unit test | `e2e/` |
 
 **A codec with no caller is how two codecs come to disagree** —
 `storage.ts:787` says so about a case this repository has already had. So the
@@ -725,8 +728,85 @@ printed in the atlas; a compaction that changes what `revealed.length` means
 changes a number on a screen, which makes it a rule change wearing a codec's
 clothes.
 
+### Measured first, and the measurement is the answer (2026-09-10)
+
 > **Question:** does a world's memory have a size, and what does this game do
 > when a device runs out of room mid-run?
+
+**Yes, and it is small.** Off `shell/fixture.ts`, `encodeWorld`:
+
+| runs | blob    | revealed    | `revealed`'s share |
+| ---- | ------- | ----------- | ------------------ |
+| 1    | 925 B   | 112 hexes   | 83.2%              |
+| 5    | 1.8 KB  | 233 hexes   | 90.2%              |
+| 30   | 5.0 KB  | 616 hexes   | 94.0%              |
+| 300  | 24.0 KB | 2,835 hexes | 97.6%              |
+
+So this item's premise is **right about the shape and immaterial about the
+magnitude.** `revealed` is indeed almost the whole blob and it does grow without
+a bound in the type — and a world three hundred runs deep is twenty-four
+kilobytes. A played-out RUN is 16.6 KB (121 placements, 175 cells). Three
+worlds and three runs together: **121.6 KB, or 2.3% of a 5 MB store.**
+
+**P7.2 and P7.3 are therefore RULED NOT BUILT**, and the argument is the
+numbers plus three costs this item already names:
+
+- **Two codecs that must agree.** `storage.ts:787` — _"a codec with no caller
+  is how two codecs come to disagree"_ — and this item's own paragraph says the
+  old decoder stays as long as a device can hold an old blob, with a deletion
+  date to police. That is real, permanent maintenance.
+- **`knownFraction` must not move.** It is `revealed.length / disc` and it is
+  printed in the atlas, so a compaction that changes what `revealed.length`
+  means is **a rule change wearing a codec's clothes** — this item says so
+  itself.
+- **The saving is about 2% of a quota**, on the store's own worst case.
+
+Building it would be a codec, a retirement schedule and a screen-number risk,
+to reclaim two per cent. **The honest answer to "measure first" is that the
+measurement said stop.**
+
+**P7.4 is answered as the row allowed — a written argument for no bound.**
+`revealed` is the union of the discs a world has reached, and reach grows
+roughly with the square root of runs. At **10,000 revealed hexes** — the number
+that row names — a world's blob is about 83 KB and three of them 250 KB, which
+is 5% of the store. There is no bound and there does not need to be one; what
+there is now is a measurement saying so, where before there was neither.
+
+**P7.5 is moot and ruled with it**: the shed ladder's shape only changes if
+compaction changes what a rung frees, and nothing is compacting.
+
+**P7.6 is DEFERRED, and the measurement is why.** Driving real quota exhaustion
+in a browser means filling five megabytes for real, and the ladder it would
+exercise is already pinned by `shed.test.ts` and `storage.test.ts`. What
+changed is the priority: at 4% of quota after three hundred runs, exhaustion is
+a long way from a player, and the instrument is a large one for a path that is
+both unit-pinned and distant. It stays open in `NEXT.md` rather than pretending
+to be done.
+
+### And P7.7 turned out to be Marc's, not dead weight
+
+The six unread `RunDetail` fields cost **24.5% of the timeline** — 2.4 KB at
+thirty runs, 23.7 KB at three hundred, 79 KB at a thousand. That is a real,
+measured saving from deleting nothing but dead bytes.
+
+**Except they are not dead.** `screens/Fame.tsx` prints exactly four of the
+nine stored facts — the epitaph, the shot, the pop count and the relics — and
+`RunDetail`'s own docblock says what it is for, quoting Marc: _"a 'full detail'
+of the run"_, and _"the same facts `summariseRun` put on the screen the night it
+happened"_. The five that are stored and unprinted are the run's SHAPE:
+placements, tiles popped, the biggest pop and where in the run it landed,
+destinations claimed, bounties collected.
+
+So this is the `HudView` situation again, in a saved blob: **a fact the game
+keeps and no screen says.** Deleting five facts Marc asked for to reclaim
+0.45% of a quota would be the wrong way round, and printing them is a screen
+decision. It is in `NEXT.md` §1 beside the HUD's five, with the cost either
+way, so the choice is his and it is informed.
+
+`GameState.version` and `HarvestRecord.tiles` stay, with the argument written
+at `SAVED_BLOB`: twelve bytes a run for the discriminator a migration will
+want, and `tiles` is the one field of a harvest the end screen does not count
+but a reader of the log reasonably would.
 
 **Verify:** the full gate, `shed.test.ts` and `storage.test.ts` green, plus a
 measured before/after in `LOG.md`. `pnpm sim` untouched — no rule moves here.

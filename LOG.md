@@ -6903,3 +6903,65 @@ by importing `three` into the entry"_ — is the only reason P9.4 works. Two of
 my three wrong drafts passed a clean tree happily. **An instrument that has
 only ever been run against a green tree has not been tested; it has been
 admired.**
+
+### Session 82 — a world's memory has a size, and it is small (2026-09-10)
+
+**Question (`PASS.md` P7):** does a world's memory have a size, and what does
+this game do when a device runs out of room mid-run?
+
+**Answer: yes, and the measurement said stop.** The item's first row is
+"measure first" and that turned out to be the whole of it.
+
+Off `shell/fixture.ts` and `encodeWorld`: a world one run deep is 925 bytes and
+112 revealed hexes; at five runs 1.8 KB; at thirty 5.0 KB; **at three hundred
+runs, 24.0 KB and 2,835 hexes.** `revealed` is 83% of the blob at one run and
+97.6% at three hundred — so the item is exactly right that it dominates, and
+exactly wrong about the consequence. A played-out RUN is 16.6 KB. **Three
+worlds and three runs together are 121.6 KB: 2.3% of a 5 MB store.**
+
+So **P7.2 and P7.3 are ruled not built**, against three costs the item itself
+names: two codecs that must be kept in agreement (`storage.ts:787` — _"a codec
+with no caller is how two codecs come to disagree"_), an old decoder with a
+retirement date to police, and `knownFraction` — `revealed.length / disc`,
+printed in the atlas — which makes a change to what `revealed.length` MEANS
+into "a rule change wearing a codec's clothes", in this item's own words. All
+of that to reclaim two per cent.
+
+**P7.4 is answered the way its row allowed: a written argument for no bound.**
+`revealed` is the union of the discs a world has reached and reach grows
+roughly as the square root of runs, so the 10,000 hexes that row names is about
+83 KB a world and 250 KB for three — 5% of the store. There is no bound and
+none is needed; what there is now is a measurement saying so.
+
+**P7.6 is deferred rather than done**, and the measurement is why: real quota
+exhaustion means filling five megabytes for real, the ladder is already pinned
+by `shed.test.ts` and `storage.test.ts`, and at 4% of quota after three hundred
+runs exhaustion is a long way from a player. A big instrument for a distant,
+unit-pinned path. It stays open.
+
+**AND P7.7 WAS NOT DEAD WEIGHT, WHICH IS THE FIND.** The sweep handed this
+item "eight numbers written into a save and read by nothing", and the six
+`RunDetail` fields do cost **24.5% of the timeline** — 23.7 KB at three hundred
+runs. But `screens/Fame.tsx` prints four of the nine stored facts, and
+`RunDetail`'s own docblock says what the other five are for, quoting Marc: _"a
+'full detail' of the run"_ and _"the same facts `summariseRun` put on the screen
+the night it happened"_. The five unprinted ones are the run's SHAPE —
+placements, tiles popped, the biggest pop and where it landed, claims,
+bounties.
+
+**So it is the `HudView` situation in a saved blob: a fact the game keeps and
+no screen says.** Deleting five facts Marc asked for to reclaim 0.45% of a
+quota is the wrong way round, so it is in `NEXT.md` §1 beside the HUD's five
+with both costs measured. `GameState.version` and `HarvestRecord.tiles` stay,
+each with its own argument at `SAVED_BLOB` rather than a shared one.
+
+**The lesson, and it is the item's own.** Three of P7's seven rows were
+answered by measuring rather than building, and two of those would have been
+weeks of codec if I had started at P7.2. **A row that says "measure first" is
+not a warm-up; it is a decision point, and the honest outcome of a measurement
+is sometimes that the item is smaller than it looked.**
+
+**Also repaired: this table had two rows numbered P7.4.** My own P1.9 handover
+inserted a row mid-table in an earlier session and pushed three rows out of it,
+so P7.4/5/6 sat orphaned below the prose and there were two P7.4s. Renumbered;
+a ledger with two rows of one name is a ledger nobody can cite.

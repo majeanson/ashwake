@@ -596,6 +596,35 @@ and `scripts/sweep/allow.ts`'s `HUD_UNSAID` points here so the sweep stops
 re-asking. **Answering 1 or 3 changes the first minute**, so both are inside
 `CLAUDE.md`'s freeze once Session A declares a clean pass.
 
+**AND A SIXTH, IN A SAVED RUN RATHER THAN ON THE BOARD (2026-09-10,
+`PASS.md` P7).** Every finished run stores nine facts about itself and the
+hall of fame's expanded row prints **four**: the epitaph, the board's
+thumbnail, the pop count and the relics carried out. The five it keeps and
+never says are the run's SHAPE —
+
+- **placements** — how many tiles it took;
+- **popped** — tiles cashed across every pop;
+- **bigPop** and **bigPopAt** — the biggest single pop, and where in the run it
+  landed (the arc already draws this and the number is never given);
+- **claims** and **quests** — destinations claimed, bounties collected.
+
+`RunDetail`'s own docblock says what it is for, quoting you: _"a 'full detail'
+of the run"_, and _"the same facts `summariseRun` put on the screen the night
+it happened"_. Four of nine is not that.
+
+**Both costs are measured, so the choice is informed either way.** Keeping
+them: they are 24.5% of the timeline blob — 2.4 KB at thirty runs, 23.7 KB at
+three hundred, 79 KB at a thousand, which is 0.45% of a 5 MB store at three
+hundred runs. Printing them: five more rows in a row that already exists and
+already has two, plus five sentences in both languages, which — like the lens
+— want to go INTO the next French pass rather than behind it.
+
+**Deleting them was the version of this row I was handed** (P7 inherited it
+from the sweep as "eight numbers written into a save and read by nothing") and
+it is the wrong way round: reclaiming half a per cent of a quota by throwing
+away facts you asked for is a bad trade. So it is a screen decision, and it is
+yours.
+
 **THE BOARD'S FIT IGNORES HOW TALL A TILE STANDS (2026-09-10, same report).**
 `screenOf` takes a height and every one of its five production call sites
 passes `0`, so the camera's fit and extents measure the GROUND plane while
