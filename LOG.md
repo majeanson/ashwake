@@ -6702,3 +6702,29 @@ link survive losing its query string — and a camp fixture with territories and
 no shrines, which is a world with somewhere to camp and no permission to:
 `camp` is the fifth rung of `UNLOCKS`, so four shrines is a fully-awake world
 with no camp. Both are written out at the assertion rather than quietly fixed.
+
+**P2.4 — the voice, and the useful half was the RULE.** `say` is a `setState`
+wrapper and `forgetEnding` clears eleven pieces of ending state; neither wants
+a module, and saying so is half the row. What did want one is **one speaker at
+a time**, in two halves that could not be asked a question: a timer registry
+whose count is its size by construction, and the rule as a five-part condition
+inside a JSX guard with twenty-five lines of comment over it.
+
+`mayTeach` is that condition as a function with a test per clause, and every
+clause is a bug this game has had. The one Marc reported is the interesting
+one: a pop's receipt waits out the cascade, so for the whole of that wait no
+card is raised — and a lesson that came due on the same dispatch opened over
+the animation and was unmounted the instant the receipt arrived. **Shown, and
+withdrawn before it could be read.** `speaking > 0` is the clause `said` alone
+cannot cover, which is why both exist, and the test now says that out loud.
+
+**The old condition was doing two jobs**, which typecheck caught the moment I
+replaced it: stating the rule, and narrowing `card` away from null for four
+uses inside the block. The narrowing has a name now (`teaching`) rather than an
+assertion at each use — splitting those apart is what the extraction was for,
+and re-adding `card !== null` beside the call would have been the lazy answer.
+
+**And routing `forgetEnding` through `silence` needed its dep declared.** The
+empty array was true of the three inlined statements it replaced and is not
+true of a call; the comment at the line says that rather than leaving a reader
+to wonder why a stable callback is listed.

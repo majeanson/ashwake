@@ -304,7 +304,7 @@ about, it does not go to `LOG.md`.
 | P2.1 | done   | the boot ladder — the only door that is not `enterRun`, and the only place `detour` can become true            | `shell/boot.ts`     |
 | P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off            | `App.tsx:1692–2111` |
 | P2.3 | open   | the board's gestures — `describe`, `onLook`, `onTap`, `onSelect`, `onHarvest`, `onLens`, `clearLens`, `onHold` | `App.tsx:2111–2409` |
-| P2.4 | open   | the voice — `say`, `speakAfter`, `forgetEnding`, `saidOnce`, `signpost`, `dry`, and the one-speaker rule       | `App.tsx:398–730`   |
+| P2.4 | done   | the voice — one speaker at a time: the receipts in the air, and the rule that was a JSX guard                  | `shell/speaking.ts` |
 | P2.5 | done   | the look — `theme`, `look`, `vignette`; the media queries stay, they are the sampling                          | `shell/look.ts`     |
 | P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix             | `App.tsx:2531–2835` |
 | P2.7 | done   | share — the fork, once, for the sentence AND the card. `importDaily` ruled: it is wiring, see below            | `shell/handOver.ts` |
@@ -380,8 +380,25 @@ losing its query string) and a camp fixture with territories and no shrines — 
 world with somewhere to camp and no permission to. Both are written out at the
 assertion.
 
-**Left open: P2.4, P2.3, P2.6 and P2.2.** The three remaining regions and then
-the item. `act` is still last, still gets its own commit and its own test
+**P2.4 took the RULE, not the plumbing.** `say` is a `setState` wrapper and
+`forgetEnding` clears eleven pieces of ending state — neither wants a module.
+What did was **one speaker at a time**, which lived in two halves that could
+not be asked a question: a timer registry with a count that is its size by
+construction, and the rule itself as a five-part condition inside a JSX guard
+with twenty-five lines of comment over it.
+
+`mayTeach` is that condition as a function, with a test per clause — and every
+clause is a bug that has happened, including the one Marc reported: a lesson
+that came due on the same dispatch as a pop opened over the cascade and was
+UNMOUNTED when the receipt landed. Shown, and withdrawn before it could be
+read. `speaking > 0` is the clause `said` cannot cover, and the test says so.
+
+**The old condition was doing two jobs** — stating the rule and narrowing
+`card` away from null for four uses inside the block — so the narrowing got a
+name (`teaching`) rather than an assertion at each use. Splitting those apart
+is what the extraction was for.
+
+**Left open: P2.3, P2.6 and P2.2.** Two regions and then the item. `act` is still last, still gets its own commit and its own test
 file.
 
 **P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a

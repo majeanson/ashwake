@@ -101,6 +101,7 @@ import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
 import { handOverOf } from './shell/handOver';
+import { mayTeach, useSpeaking } from './shell/speaking';
 import { bootPlan } from './shell/boot';
 import { useHeldWorld } from './shell/held';
 import { dial, lookFrom, themeFor, vignetteStyle } from './shell/look';
@@ -579,52 +580,16 @@ function Game() {
   const signpost = useRef<string | null | undefined>(undefined);
   /** Whether the running-dry warning is standing. Per run — see `shell/dry.ts`. */
   const dry = useRef(false);
-  /**
-   * SENTENCES STILL ON THEIR WAY (2026-09-02).
+  /*
+   * ONE SPEAKER AT A TIME — the registry, the count and the rule are all in
+   * `shell/speaking.ts`, which carries the argument and Marc's report.
    *
-   * A pop's card is held back for the length of the cascade it is accounting
-   * for, so the receipt lands as the tiles finish falling rather than over
-   * them. Two `setTimeout`s in `act` do that, and **neither was ever cancelled**
-   * — so POP and then immediately NEW RUN put the previous run's receipt on
-   * top of a fresh board, describing a pocket that no longer exists on a board
-   * it was never about.
-   *
-   * A set rather than one slot: two cards can legitimately be in flight (a
-   * first-pop lesson and the pop's own receipt), and replacing the pending id
-   * would silently drop one of them. Every door into a run clears it, through
-   * `forgetEnding`; so does unmount.
-   *
-   * Declared above `forgetEnding` for the reason `signpost` gives.
+   * `silence` is what a door out of a run owes: every timer dropped and the
+   * count with it, which `forgetEnding` below spends.
    */
-  const saying = useRef<Set<number>>(new Set());
-  /**
-   * HOW MANY RECEIPTS ARE STILL IN THE AIR (2026-09-09).
-   *
-   * Marc, of his first pop: *"make sure no cards can pop while the first pop
-   * is happening (i think i had luck explained and coudnt see)."* He is
-   * describing a card that was raised and then taken away before he could read
-   * it, and the window it happened in is one this file made on purpose.
-   *
-   * A pop's receipt WAITS for the cascade — `cascadeMs`, so the accounting
-   * arrives after the thing it accounts for, which is Marc's own ask from
-   * 2026-08-29. For the whole of that wait `saidCard` is still `null`, and the
-   * teaching card's gate is `saidCard === null`. So a lesson that came due on
-   * the same dispatch — and popping tiles is exactly what raises LUCK — opened
-   * over the cascade, and was then UNMOUNTED the moment the pop's own card
-   * arrived. The card was not covered. It was shown and withdrawn.
-   *
-   * A count rather than a boolean because two receipts can be in the air at
-   * once, and STATE rather than reading `saying` because a ref cannot gate a
-   * render. It is `saying`'s size by construction: both are written only by
-   * `speakAfter` and cleared only by `forgetEnding`, which is what keeps two
-   * things that must agree from coming apart — the same hazard `note`'s own
-   * docblock names about `more`.
-   */
-  const [speaking, setSpeaking] = useState(0);
+  const { speaking, speakAfter, silence } = useSpeaking();
   const forgetEnding = useCallback(() => {
-    for (const id of saying.current) window.clearTimeout(id);
-    saying.current.clear();
-    setSpeaking(0);
+    silence();
     setGained({ perks: [], unlocks: [] });
     setEndWorld(null);
     setGoals([]);
@@ -640,41 +605,11 @@ function Game() {
     // And the shelf a find would be judged against belongs to the board being
     // left. The next dispatch aims it again; until then, nothing is promised.
     forgetShelf();
-  }, []);
-  /* And a page being taken down has nothing left to say. */
-  useEffect(() => {
-    const held = saying.current;
-    return () => {
-      for (const id of held) window.clearTimeout(id);
-      held.clear();
-    };
-  }, []);
-
-  /**
-   * Say this once the board has finished doing the thing it is about.
-   *
-   * The one door for a receipt that waits — see `speaking` for what Marc
-   * reported and why the wait needed a flag as well as a timer. `wait` of zero
-   * speaks now and arms nothing, so the caller never has to branch.
-   *
-   * The id is held in `saying` so a door out of the run can put it down, and
-   * removed there before the flag drops, so the two are never briefly
-   * disagreeing about whether anything is owed.
-   */
-  const speakAfter = useCallback((wait: number, show: () => void): void => {
-    if (wait <= 0) {
-      show();
-      return;
-    }
-    setSpeaking((n) => n + 1);
-    const id = window.setTimeout(() => {
-      saying.current.delete(id);
-      setSpeaking((n) => Math.max(0, n - 1));
-      show();
-    }, wait);
-    saying.current.add(id);
-  }, []);
-
+    // `silence` is a `useCallback` with no deps of its own, so this list is
+    // stable — but it is DECLARED rather than left out, because the empty array
+    // was true of the three inlined statements this call replaced and is not
+    // true of a call.
+  }, [silence]);
   /** What this run has already said once. See `startedFrom` for the reach. */
   const saidOnce = useRef<Set<OnceId>>(new Set());
 
@@ -2758,6 +2693,18 @@ function Game() {
   const playing = started && !snap.hud.ended;
 
   /**
+   * The lesson allowed to interrupt right now, or null.
+   *
+   * `shell/speaking.ts#mayTeach` is the rule and carries the bug behind each of
+   * its clauses. It is spent into a NAME here rather than read inline in the
+   * JSX, because the old five-part condition was doing two jobs: stating the
+   * rule, and narrowing `card` away from null for the four uses inside the
+   * block. Splitting those apart is the whole point of the extraction, so the
+   * narrowing gets a name too instead of an assertion at each use.
+   */
+  const teaching = mayTeach({ card, said: saidCard !== null, touring, speaking }) ? card : null;
+
+  /**
    * A desktop, or anything else with a real pointer.
    *
    * The only thing it gates is the manual's key list: the keys themselves are
@@ -3798,9 +3745,9 @@ function Game() {
         withdrawn before it could be read. Held now until the board has
         finished saying what it is already saying.
       */}
-      {card !== null && card !== 'story' && saidCard === null && !touring && speaking === 0 && (
+      {teaching !== null && (
         <LessonCard
-          id={card}
+          id={teaching}
           theme={theme}
           s={s}
           // FIRED by a moment, so it carries the lesson's first-contact
@@ -3810,8 +3757,8 @@ function Game() {
           dismiss={s.ui.gotIt}
           onDismiss={() => {
             // The same quiet beat the story card spends — see above.
-            const after = told(progress, card);
-            setProgress((p) => told(p, card));
+            const after = told(progress, teaching);
+            setProgress((p) => told(p, teaching));
             speakLesson(after, session.get());
             /*
              * AND GO AND LOOK AT IT, where the lesson was about a place.
@@ -3822,7 +3769,7 @@ function Game() {
              * are done reading. `showOnBoard` is silent for a lesson with no
              * hex, so most cards pass straight through it.
              */
-            showOnBoard(card);
+            showOnBoard(teaching);
           }}
         />
       )}
