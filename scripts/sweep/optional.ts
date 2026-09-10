@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import type { Finding } from './finding';
+import { keyIndex } from './keys';
 import type { Workspace } from './program';
 
 /**
@@ -109,6 +110,7 @@ function nodeAt(file: ts.SourceFile, pos: number): ts.Node {
 }
 
 export function optionalSweep(w: Workspace): readonly Finding[] {
+  const keys = keyIndex(w);
   const out: Finding[] = [];
   for (const file of w.files) {
     const path = w.path(file);
@@ -117,6 +119,16 @@ export function optionalSweep(w: Workspace): readonly Finding[] {
     for (const { owner, name } of optionalsOf(file)) {
       const { real, tests } = suppliers(w, file, name);
       if (real > 0) continue;
+
+      /*
+       * A key of this name written anywhere else WITHHOLDS the claim.
+       * `keys.ts` carries the argument in full: an object literal inside a
+       * generic callback does not share a symbol with the type it becomes,
+       * so `Bar.paint` looked unsupplied while `Payout.tsx` sets it twice.
+       * Four false findings before this existed.
+       */
+      const elsewhere = keys.writers(name.text, path);
+      if (elsewhere.length > 0) continue;
       const line = file.getLineAndCharacterOfPosition(name.getStart(file)).line + 1;
       const full = owner === '' ? name.text : owner + '.' + name.text;
       out.push({

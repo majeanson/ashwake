@@ -174,10 +174,60 @@ different symbols — `world.ts:440` declares a local `const disc`.
 | **one sentence spelled twice** — `luckCore`, read by a pin and re-typed in prose     | 1     | `view.ts:1691`'s own comment says they share a clause; make them share a string   |
 | **`typography.sentenceEnd`** — a language's terminal punctuation, applied by a test  | 1     | is the rule meant to run at runtime?                                              |
 | **a run's shape, stored and never shown** — six `RunDetail` fields                   | 6     | print them or stop writing them. **Feeds P7 directly** — dead weight in that blob |
-| **optional inputs nothing supplies**                                                 | 10    | each is a missing caller or dead API surface                                      |
+| **optional inputs nothing supplies**                                                 | 3     | a missing caller or dead API surface. Was 13 — see the precision note below       |
 | **arguments that can never be anything else** — `screenOf(h)`, `runsOf`/`streamOf`   | 3     | the slot filter on the timeline readers is dead; `MODES.md` names those readers   |
 | **exported, read only by tests**                                                     | 23    | mostly the core's lift, whose surface is Ashwake 1's — rule and allowlist         |
 | **exported, read only inside its own file**                                          | 226   | `CLAUDE.md`: demote to `const`/`function`. See below                              |
+
+**And one more, found while checking a false positive: `HudView.colours` has
+no reader.** `colourPotentials` runs on every HUD build and tallies the whole
+board TWICE — once normally, once with every colour's power switched off — so
+each colour's own take can be measured rather than estimated. Five numbers per
+colour, and `ColourPotential`'s fields carry no reference at all because they
+are filled by a spread. Not merely dead: dead and expensive, on every view of
+every run.
+
+### The precision lesson, and what it cost
+
+**Ten of the first thirteen optional findings were false**, and the reason is
+the very thing that makes `findReferences` better than a grep, working against
+it. A symbol is exactly what an object literal inside a generic callback does
+not share with the type it becomes:
+
+```
+<Bars rows={COLOURS.map((c) => ({ label, icon, value, paint }))} />
+```
+
+`map` infers its element type from the literal rather than taking it from
+`readonly Bar[]`, so `Bar.paint` looked unsupplied while `Payout.tsx` sets it
+twice. `Tab.grows` the same, set at `Manual.tsx:218`. A spread does it too,
+which is why `ColourPotential`'s five fields show no reference of any kind.
+
+`scripts/sweep/keys.ts` is the answer and it took two tries, both recorded at
+the line:
+
+1. **Withholding on the NAME alone silenced `Said.brief`** — the repository's
+   own signature miss, with thirty lines at its declaration saying nothing sets
+   it — because `App.tsx` passes `brief=` to `SaidCard`, whose props type
+   declares a `brief` of its own. Two properties, one name.
+2. **So the withhold became structural**: a key counts only when the compiler
+   cannot attribute it to any declared property. And a JSX attribute has to be
+   attributed through the ELEMENT'S PROPS TYPE — `getSymbolAtLocation` on the
+   attribute name hands back the attribute's own symbol, so every
+   `<X foo={} />` in the codebase read as unattributable and `Said.brief`
+   stayed silenced through the first fix.
+
+**Nothing would have said so**, which is why the report grew a **`Rulings that
+match nothing`** section in the same hour: an allowlist entry matching no
+finding means the subject is gone — or that a pass quietly stopped seeing it.
+It caught its own first case immediately, and it is what keeps the allowlist
+from becoming a drawer of exemptions for code that no longer exists.
+
+**The trade that remains is stated rather than hidden**: a genuinely
+unattributable write of the same name elsewhere still silences a true finding.
+That is the right way round. A sweep that invents ten findings is a sweep
+nobody runs twice, and `CLAUDE.md` already says what becomes of a ritual whose
+signal goes.
 
 **The 226 are the tail, and they are not one job.** `CLAUDE.md`'s instruction
 is to demote them so the NEXT sweep's signal stays clean, and it is right — but

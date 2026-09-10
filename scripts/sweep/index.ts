@@ -57,6 +57,19 @@ function main(): void {
   const ruled = all.filter((f) => ruledOn(f.id) !== undefined);
   const live = all.filter((f) => ruledOn(f.id) === undefined).sort(order);
   const stale = expired(today());
+  /*
+   * A RULING THAT MATCHES NOTHING is a ruling whose subject is gone — the
+   * export was deleted, the field was wired, or a pass stopped being able to
+   * see it. Left silent, the allowlist fills with exemptions for code that no
+   * longer exists, which is the same rot it was built to stop: the next reader
+   * cannot tell a live ruling from a fossil.
+   *
+   * It caught its own first case on the day it was written. Six rulings went
+   * in and five matched, because the fallback in `keys.ts` had silenced one of
+   * them, and nothing would have said so.
+   */
+  const seen = new Set(all.map((f) => f.id));
+  const orphaned = ALLOW.filter((r) => !seen.has(r.id));
 
   const lines: string[] = [];
   lines.push('# SWEEP.md — what the rituals found, run by a program');
@@ -70,6 +83,14 @@ function main(): void {
       `${ruled.length} absorbed by \`scripts/sweep/allow.ts\` (${ALLOW.length} rulings).`,
   );
   lines.push('');
+  if (orphaned.length > 0) {
+    lines.push('## Rulings that match nothing');
+    lines.push('');
+    lines.push('The subject is gone, or a pass stopped seeing it. Check, then cut.');
+    lines.push('');
+    for (const r of orphaned) lines.push('- `' + r.id + '` — ruled ' + r.on + '. ' + r.why);
+    lines.push('');
+  }
   if (stale.length > 0) {
     lines.push('## Rulings whose reason has run out');
     lines.push('');
