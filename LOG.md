@@ -6965,3 +6965,58 @@ is sometimes that the item is smaller than it looked.**
 inserted a row mid-table in an earlier session and pushed three rows out of it,
 so P7.4/5/6 sat orphaned below the prose and there were two P7.4s. Renumbered;
 a ledger with two rows of one name is a ledger nobody can cite.
+
+### Session 83 — the only exit is not clearing site data (2026-09-10)
+
+**Question (`PASS.md` P8):** is there a state this game can reach where the
+only exit is clearing site data?
+
+**Answer: not on a working line, and the reason is that the fix was already
+half-built.** P8.1 describes `Board` being `lazy()`, an `index.html` that
+survived a deploy naming chunks the new build does not serve, and CONTINUE
+re-entering the rejection forever. Two of those three are true. The third is
+not: **`public/sw.js` answers navigations network-first with a 2.5 second
+timeout**, so RELOAD fetches the new document with the new names and the loop
+breaks. That row offered two options and one of them — _"the worker's
+navigation handling is made to guarantee the mismatch cannot happen"_ — was
+substantially already the case, which is worth knowing before writing a line of
+either.
+
+**Past 2.5 seconds it IS reachable**: the cached shell answers, names chunks
+that 404, and RELOAD repeats until the network wins. That half is a
+reload-policy question — `CLAUDE.md` allows exactly two reloads and this would
+be a third — so **both options are in `NEXT.md` §1 unbuilt**, which is what the
+row instructed. I stated a lean (tighten the worker rather than add an escape,
+because a two-reload rule erodes one exception at a time) and left the call.
+
+**AND CONTINUE COULD NEVER HAVE FIXED IT, which is fixed.** React caches a
+`lazy` rejection: the second mount re-throws the stored error **without making
+a request**. `ui/staleChunk.test.tsx` counts loader calls and proves it — one
+call, a remount, still one call, panel back up. So the panel withholds CONTINUE
+for this class and keeps RELOAD and the report. `Boundary`'s own docblock
+already carried the rule — _"a button that says CONTINUE has to continue into
+something"_ — and this was the case that broke it, which is why it needed no
+ruling: **a button that provably cannot work is worse than its absence**,
+because pressing it moves the repeat counter and teaches the player the GAME is
+broken rather than that the PAGE is stale.
+
+**The reproduction cost two rewrites, and both taught something.**
+
+1. The first asserted CONTINUE _exists_ and then clicked it. It failed on
+   "the panel offered no CONTINUE" — because jsdom has no WebGL, and the panel's
+   `!boardAlive && webglMissing()` split hides CONTINUE for a browser that
+   cannot draw. **A stale chunk means the board never drew, so in a genuinely
+   WebGL-less browser this failure is reported as "this browser needs WebGL".**
+   A misdiagnosis, harmless — that browser cannot play either way — and now a
+   note at P8.3 rather than a fix.
+2. Once the fix landed, the reproduction failed _because the fix worked_, which
+   is the right kind of failure and the wrong test. It is two tests now: the
+   MECHANISM (counting loader calls across a remount, which is the claim) and
+   the BEHAVIOUR (the panel's buttons, which is the pin that fails without the
+   fix). Verified by reverting the fix — the behaviour test names it exactly.
+
+**P8's verify rule earned itself again**: _"each hole reproduced BEFORE it is
+fixed, in a test that fails without the fix."_ Had I read the row and patched
+the panel, I would have shipped a hidden button and never learned that RELOAD
+already escapes — which is the actual answer to the item's question, and it
+came out of the reproduction rather than out of the fix.

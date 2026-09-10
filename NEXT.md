@@ -596,6 +596,52 @@ and `scripts/sweep/allow.ts`'s `HUD_UNSAID` points here so the sweep stops
 re-asking. **Answering 1 or 3 changes the first minute**, so both are inside
 `CLAUDE.md`'s freeze once Session A declares a clean pass.
 
+**THE STALE-CHUNK LOOP: MOSTLY NOT REACHABLE, AND ONE DECISION LEFT
+(2026-09-10, `PASS.md` P8.1).** The question P8 asks is _"is there a state this
+game can reach where the only exit is clearing site data?"_ Answered:
+
+**Not on a working line.** `public/sw.js` answers navigations **network-first
+with a 2.5 second timeout**, falling back to the cached shell only after that —
+so RELOAD fetches the new `index.html` with the new chunk names, and the loop
+breaks. P8.1's second option ("the worker's navigation handling is made to
+guarantee the mismatch cannot happen") turns out to be substantially already
+true, which is why nothing was built for it.
+
+**Reachable on a slow one.** Slower than 2.5s and the cached shell answers,
+naming chunks the new build does not serve; the chunk request misses the cache
+and 404s; the import rejects; the panel comes up; RELOAD does the same thing
+again. Until the network beats the timeout, that is a loop.
+
+**And CONTINUE could never fix it, which IS fixed.** React caches a `lazy`
+rejection: the second mount re-throws the stored error **without making a
+request**. `ui/staleChunk.test.tsx` counts the loader calls and proves it. So
+the panel no longer offers CONTINUE for this class — `Boundary`'s own docblock
+already had the rule (_"a button that says CONTINUE has to continue into
+something"_) and this was the case that broke it. RELOAD and the report stay.
+That needed no ruling from you; a button that provably cannot work is worse
+than its absence, because pressing it moves the repeat counter and teaches a
+player the game is broken rather than that the page is stale.
+
+**WHAT IS YOURS: the slow-line case, and it is a reload-policy question.**
+`CLAUDE.md` allows exactly two reloads — the service-worker update and the
+boot-failure panel — so a third needs your word. Two options, neither built:
+
+1. **A chunk rejection earns a reload, folded into the existing update path.**
+   The panel already has RELOAD; this would make it automatic once, on a
+   stale-chunk error, rather than waiting for a tap. Cheapest, and it is
+   arguably not a third door at all — it is the boot-failure reload firing
+   itself. Risk: an automatic reload on a genuinely offline device is a loop of
+   its own, so it needs a "once per build" latch.
+2. **Tighten the worker instead.** Serve navigations network-only when the
+   cached shell's build sha does not match `/version.json` — the worker
+   already refuses to cache that file for exactly this kind of reason. No new
+   reload, no new door, and the mismatch stops existing. Costs a request on
+   every navigation and needs care to stay offline-capable.
+
+I lean to **2**, because it removes the state rather than adding an escape from
+it, and because `CLAUDE.md`'s two-reload rule is the sort of thing that erodes
+one exception at a time. But it is your rule and this is your call.
+
 **AND A SIXTH, IN A SAVED RUN RATHER THAN ON THE BOARD (2026-09-10,
 `PASS.md` P7).** Every finished run stores nine facts about itself and the
 hall of fame's expanded row prints **four**: the epitaph, the board's

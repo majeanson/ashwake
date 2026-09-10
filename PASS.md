@@ -818,14 +818,51 @@ measured before/after in `LOG.md`. `pnpm sim` untouched — no rule moves here.
 The boundary, the panel, the report and the CSP all shipped. What is left is
 three specific holes and one named weakness.
 
-| id   | status | statement                                                                                                                      | where                  |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
-| P8.1 | open   | **the stale-chunk loop.** `Board` is `lazy()`; an old `index.html` against new hashed names rejects, and CONTINUE re-enters it | `App.tsx:247`          |
-| P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)                          | `shell/storage.ts:318` |
-| P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it                        | `board/gl.ts`          |
-| P8.4 | open   | **hash the two inline blocks at build time and drop `'unsafe-inline'`** — `_headers` names this exact missing build step       | `public/_headers`      |
-| P8.5 | open   | an offline FIRST visit, and a second visit offline, against the narrowed precache                                              | `vite.config.ts:183`   |
-| P8.6 | open   | the panel's repeat counting under each of the above, since a loop is what it counts                                            | `shell/failure.ts:156` |
+| id   | status | statement                                                                                                                | where                    |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| P8.1 | part   | **the stale-chunk loop** — reproduced; CONTINUE fixed; the slow-line case is Marc’s, unbuilt                             | `shell/failure.ts`       |
+| P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)                    | `shell/storage.ts:318`   |
+| P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it                  | `board/gl.ts`            |
+| P8.4 | open   | **hash the two inline blocks at build time and drop `'unsafe-inline'`** — `_headers` names this exact missing build step | `public/_headers`        |
+| P8.5 | open   | an offline FIRST visit, and a second visit offline, against the narrowed precache                                        | `vite.config.ts:183`     |
+| P8.6 | done   | the panel’s repeat counting, pinned under the loop that makes it move                                                    | `ui/staleChunk.test.tsx` |
+
+### P8.1, answered: the loop is mostly not reachable (2026-09-10)
+
+> **Question:** is there a state this game can reach where the only exit is
+> clearing site data?
+
+**Not on a working line, and the row's own second option is why.**
+`public/sw.js` answers navigations **network-first with a 2.5 second timeout**,
+falling back to the cached shell only after that — so RELOAD fetches the new
+`index.html` with the new chunk names and the loop breaks. _"The worker's
+navigation handling is made to guarantee the mismatch cannot happen"_ turns out
+to be substantially already true, which is why nothing was built for it.
+
+**Reachable on a slow one.** Past 2.5s the cached shell answers, naming chunks
+the new build does not serve, and RELOAD does the same thing again until the
+network beats the timeout. That half is real, it is a reload-policy question,
+and **both options are written up unbuilt in `NEXT.md` §1** exactly as this row
+instructs — with a lean stated and the call left to Marc, because
+`CLAUDE.md`'s two-reload rule is his.
+
+**And CONTINUE could never have fixed it, which IS fixed.** React caches a
+`lazy` rejection: the second mount re-throws the stored error **without making
+a request**, so continuing re-enters a failure having touched no network.
+`ui/staleChunk.test.tsx` counts the loader calls and proves it. The panel
+withholds CONTINUE for this class now, keeping RELOAD and the report —
+`Boundary`'s own docblock already had the rule (_"a button that says CONTINUE
+has to continue into something"_) and this was the case that broke it. No
+ruling needed for that: a button that provably cannot work is worse than its
+absence, because pressing it moves the repeat counter and teaches a player the
+GAME is broken rather than that the PAGE is stale.
+
+**One thing found on the way, and left as a note.** In a browser with no WebGL
+a stale-chunk failure is reported as _"this browser needs WebGL"_ — the panel
+infers that from "the board never drew" plus "no WebGL", and a chunk that never
+loaded also means the board never drew. A misdiagnosis, and a harmless one,
+since such a browser cannot play either way. Written at the test's own
+`withWebgl` helper and at P8.3 rather than fixed.
 
 **P8.1 is the one with no exit today.** The failure panel's CONTINUE is
 `panel.remove()` plus a boundary reset, and the boundary remounts the tree —

@@ -49,6 +49,39 @@ export function describeError(error: unknown): string {
 }
 
 /**
+ * A CHUNK THE SERVED DOCUMENT NAMES AND THE BUILD DOES NOT (`PASS.md` P8.1).
+ *
+ * `Board` is `lazy()`, so an `index.html` that survived a deploy asks for
+ * hashed names the new build no longer serves and the import rejects. What
+ * makes it its own class is that **React caches a `lazy` rejection**: the
+ * second mount re-throws the stored error without making a request, so the
+ * boundary's way back in cannot work — it clears the flag, the tree mounts,
+ * and the same rejection arrives having touched no network.
+ * `ui/staleChunk.test.tsx` counts the loader calls and proves it.
+ *
+ * `Boundary`'s own docblock states the rule this breaks: *"a button that says
+ * CONTINUE has to continue into something."* So the panel stops offering one
+ * here. It is not a fix for the loop — RELOAD is, and `NEXT.md` §1 carries the
+ * decision about the slow-line case where even that can fail — but a button
+ * that provably cannot work is worse than its absence, because pressing it
+ * moves the repeat counter and teaches the player that the game is broken
+ * rather than that the page is stale.
+ *
+ * Matched on the message, which is the only thing a module-load failure gives
+ * you: browsers word it differently (Chromium *"Failed to fetch dynamically
+ * imported module"*, WebKit *"Importing a module script failed"*, Firefox
+ * *"error loading dynamically imported module"*) and none of them uses a
+ * distinct error type. Broad on purpose: a false positive costs one hidden
+ * button on a failure that was going to need a reload anyway.
+ */
+export function isStaleChunk(error: unknown): boolean {
+  const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  return /dynamically imported module|Importing a module script failed|ChunkLoadError/i.test(
+    message,
+  );
+}
+
+/**
  * POST one report, and never throw.
  *
  * Lifted out of `meta/report.ts`, which asked for it in a comment: the
@@ -181,6 +214,11 @@ export function showFailure(s: Strings, error?: unknown, onContinue?: () => void
   // be fixed by CONTINUE, and loops on RELOAD. Telling that visitor "your run
   // is saved" is a lie wearing a stack trace. Name the real problem instead.
   const noWebgl = !boardAlive && webglMissing();
+  /*
+   * A stale chunk cannot be continued INTO — see `isStaleChunk`. The panel
+   * still reports and still offers RELOAD, which is the exit that works.
+   */
+  const stale = isStaleChunk(error);
 
   const words = document.createElement('p');
   words.textContent = noWebgl ? s.ui.crash.noWebgl : s.ui.crash.broke;
@@ -266,7 +304,11 @@ export function showFailure(s: Strings, error?: unknown, onContinue?: () => void
   row.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;';
   // A WebGL-less browser has no game underneath to continue INTO, and nothing
   // useful to report — the message already says everything there is to say.
+  //
+  // A STALE CHUNK has a game underneath and a report worth sending; what it has
+  // no use for is CONTINUE, which provably re-enters the same cached rejection.
   if (noWebgl) row.append(reload);
+  else if (stale) row.append(reload, send, copy);
   else row.append(go, reload, send, copy);
 
   panel.replaceChildren(words, count, shown, row);
