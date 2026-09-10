@@ -6667,3 +6667,38 @@ camera fix, and 5 of 5 without it.** So the fix neither caused nor cured it,
 which is worth stating in both directions — I checked because my change touches
 the lean path that test uses, and "it is the known flake" was not a claim I was
 entitled to make without measuring.
+
+**P2.1 — the boot ladder, and the gate found the bug.** `MODES.md`'s boot door
+is the only one that does not go through `enterRun` and the only place `detour`
+can become true; it had no test, because calling it meant building a live
+session out of `location` and four storage functions. `shell/boot.ts` takes the
+ladder with the disk injected — 22 tests, every rung and all four camp guards.
+
+Then `pnpm sweep` refused to pass on **a ruling that matched nothing**:
+`Route.seed`, ruled "read only by tests" the day before. That section exists
+because the subject being gone and a pass going blind look identical, so I
+checked both — the references were unchanged, and disabling my own `readIndex`
+withhold did not bring it back. **The answer was the third possibility I had
+not considered: the field had gained the reader it should have had all along.**
+
+The ladder rolled its own seed parse — `Number(params.get('seed')) || null` —
+sitting one line below a call to `parseRoute`, which already parses and
+validates the seed. The local one was worse in two ways `route.test.ts` had
+already decided: it passed a FRACTIONAL seed through (`?seed=7.9` opened a
+board on 7.9, against that test's own words — _"a hand-typed 7.9 must open the
+same world as 7 rather than something no other phone can reproduce"_), and it
+could not tell 0 from absent, which is the mistake `dial` exists to avoid one
+import away. It reads `route.seed` now; `?seed=` and `?seed=0` open board 0 the
+way the core says they do rather than quietly going home, and nothing generates
+either link.
+
+**So the gate's value was not the finding it printed but the question it
+forced.** A ruling with no subject made me re-read a file I had just written
+and thought was finished.
+
+**Two of my tests were wrong before the code was.** The ladder's second rung —
+a saved run outranks home for the SEED, which is exactly what lets a shared
+link survive losing its query string — and a camp fixture with territories and
+no shrines, which is a world with somewhere to camp and no permission to:
+`camp` is the fifth rung of `UNLOCKS`, so four shrines is a fully-awake world
+with no camp. Both are written out at the assertion rather than quietly fixed.

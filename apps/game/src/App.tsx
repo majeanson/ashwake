@@ -101,6 +101,7 @@ import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
 import { handOverOf } from './shell/handOver';
+import { bootPlan } from './shell/boot';
 import { useHeldWorld } from './shell/held';
 import { dial, lookFrom, themeFor, vignetteStyle } from './shell/look';
 import { enterRun, type StartedFrom } from './shell/beginning';
@@ -878,65 +879,22 @@ function Game() {
   }, [watching]);
 
   function buildSession(): Session {
-    const params = new URLSearchParams(location.search);
-    // A run this device left behind is resumed as the very object the reducer
-    // left, not re-simulated — a replayed run is a run that can disagree with
-    // the one that was played. A shot query means a fresh board every time.
-    const scripted = dial(params, 'place', 0) > 0 || dial(params, 'end', 0) > 0;
     /*
-     * A DETOUR: somebody else's world, opened from a shared link.
+     * WHICH BOARD THIS PAGE OPENS ON — the ladder is `shell/boot.ts`.
      *
-     * `?seed=` is what SHARE puts in the URL, so this is the ordinary way a
-     * stranger meets the game. The run is real and it is scored; what it must
-     * not do is touch the device's OWN world — see the seed guard in
-     * `settle`, and `detour` here, which is what stops a shrine claiming an
-     * unlock for a world this run was never played on.
+     * It is `MODES.md`'s **boot** door: the one door that is not `enterRun`,
+     * and the only place in the game where `detour` can become true. The
+     * decision is nothing but its inputs, so it is a function with the disk
+     * passed in; what stays here is the session itself, whose callbacks close
+     * over the very object being built.
      */
-    /*
-     * A shared DAILY, which is the other kind of link SHARE hands out.
-     *
-     * `meta/share.ts` has emitted `?daily=` since the rules were lifted and
-     * `meta/route.ts` was written to read it back, and nothing in this body
-     * ever did — so a player who shared their daily result handed out a link
-     * that silently ignored the date and opened the front door of the
-     * recipient's own world. Same shape as the four inert mechanics, on the
-     * URL surface instead of a button.
-     *
-     * The seed is the DATE's, so the link opens the board it is talking about;
-     * the kept run is that date's, which `readDailyRun` refuses to hand back
-     * under any other date. It is not a DETOUR — a detour is a foreign world
-     * seed that must not touch this device's world memory, and a daily is
-     * already walled off by being a `Place` the keeper knows.
-     */
-    const opening = parseRoute(location.search).daily;
-    const asked = opening !== null ? dailySeed(opening) : Number(params.get('seed') ?? '') || null;
-    const saved = scripted ? null : opening !== null ? readDailyRun(opening) : readRun(slot);
-    /*
-     * The device's own world, minted here if this slot has never had one.
-     *
-     * It used to be `readWorld(slot)?.worldSeed ?? null`, falling through to
-     * the literal `1` — so every phone that had never played opened on the
-     * same board, and the world it later settled adopted whatever seed the run
-     * happened to carry. `worldSeedFor` inverts that back to Ashwake 1's
-     * order: the world is the place, and the run is played on it.
-     */
-    const mine = opening !== null ? null : worldSeedFor(slot);
-
-    /*
-     * Which world this page is opening on, in order of who outranks whom:
-     * the URL, then the run this device left unfinished, then home.
-     *
-     * The URL first because a link is an explicit request and the only way
-     * anyone plays somebody else's board. The saved run second, and it is the
-     * reason this is a ladder rather than `asked ?? mine`: a run is saved
-     * under the seed it was PLAYED on, and reloading a shared link has to pick
-     * that same run back up rather than deal a fresh board on the same seed.
-     * A run whose seed does not match what the page is opening is not
-     * resumable here at all — that is a different world, and `kept` drops it.
-     */
-    const seed = asked ?? saved?.rootSeed ?? mine ?? 1;
-    const kept = saved !== null && saved.rootSeed === seed ? saved : null;
-    const detour = opening === null && mine !== null && seed !== mine;
+    const plan = bootPlan(location.search, slot, {
+      dailyRun: readDailyRun,
+      run: readRun,
+      worldSeed: worldSeedFor,
+      world: readWorld,
+    });
+    const { daily: opening, seed, detour } = plan;
 
     const made = createSession({
       seed,
@@ -956,7 +914,7 @@ function Game() {
       ...(opening !== null ? {} : { memory: memoryFor(slot, seed) }),
       theme,
       strings: s,
-      resume: kept,
+      resume: plan.resume,
       /*
        * `?camp=1` — BEGIN AT CAMP, on the URL (2026-08-30).
        *
@@ -970,10 +928,7 @@ function Game() {
        * knows: a RESUMED run carries its own wake hex, and a detour or daily
        * has no world to have a farthest territory in.
        */
-      wakeAt:
-        parseRoute(location.search).camp && kept === null && !detour && opening === null
-          ? campFor(readWorld(slot))
-          : null,
+      wakeAt: plan.wakeAt,
       /*
        * What crossing would carry, priced at the moment a fully-awake world's
        * shrine is reached — so the card's offer and the amount banked are the
@@ -1024,9 +979,10 @@ function Game() {
       },
     });
     // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so
-    // the end screen can be looked at without playing for ten minutes.
-    if (dial(params, 'end', 0) > 0) walkToEnd(made);
-    else walk(made, Math.max(0, Math.trunc(dial(params, 'place', 0))));
+    // the end screen can be looked at without playing for ten minutes. Both
+    // numbers are read and clamped by `bootPlan`.
+    if (plan.toEnd) walkToEnd(made);
+    else walk(made, plan.place);
     // One session per run: language and direction change what it SAYS and how
     // it looks, never what it IS, so neither may restart it.
     return made;

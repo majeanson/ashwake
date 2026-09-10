@@ -301,7 +301,7 @@ about, it does not go to `LOG.md`.
 
 | id   | status | statement                                                                                                      | where               |
 | ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------- |
-| P2.1 | open   | `buildSession` — the boot ladder, the one place a `?seed=`, a `?daily=` and a slot are told apart              | `App.tsx:993–1148`  |
+| P2.1 | done   | the boot ladder — the only door that is not `enterRun`, and the only place `detour` can become true            | `shell/boot.ts`     |
 | P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off            | `App.tsx:1692–2111` |
 | P2.3 | open   | the board's gestures — `describe`, `onLook`, `onTap`, `onSelect`, `onHarvest`, `onLens`, `clearLens`, `onHold` | `App.tsx:2111–2409` |
 | P2.4 | open   | the voice — `say`, `speakAfter`, `forgetEnding`, `saidOnce`, `signpost`, `dry`, and the one-speaker rule       | `App.tsx:398–730`   |
@@ -359,8 +359,29 @@ says it wants, called at all three mint sites (`cross.ts`, `fixture.ts`, and
 here). Everything else is storage writes and a navigation. There was nothing to
 find and nothing worth moving.
 
-**Left open: P2.1, P2.4, P2.3, P2.6 and P2.2.** The four bigger regions and
-then the item. `act` is still last, still gets its own commit and its own test
+**P2.1 found the best one yet, and the GATE found it.** The boot door had no
+test — calling it meant building a live session out of `location` and four
+storage functions. The disk is injected now, with 22 tests: every rung of the
+ladder and all four camp guards.
+
+Then `pnpm sweep` refused to pass on a ruling that matched NOTHING:
+`Route.seed`, ruled "read only by tests" the day before. **It was the gate
+asking why a validated seed parser being called one line above had no reader.**
+The ladder rolled its own — `Number(params.get('seed')) || null` — which passed
+a FRACTIONAL seed through (`?seed=7.9` opened a board on 7.9, against
+`route.test.ts`'s own words: _"a hand-typed 7.9 must open the same world as 7
+rather than something no other phone can reproduce"_) and could not tell 0 from
+absent, one import away from `dial`, whose entire reason for existing is that
+zero is a real answer.
+
+Two of my own tests were wrong before the code was: the ladder's second rung (a
+saved run outranks home for the SEED, which is what lets a shared link survive
+losing its query string) and a camp fixture with territories and no shrines — a
+world with somewhere to camp and no permission to. Both are written out at the
+assertion.
+
+**Left open: P2.4, P2.3, P2.6 and P2.2.** The three remaining regions and then
+the item. `act` is still last, still gets its own commit and its own test
 file.
 
 **P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a

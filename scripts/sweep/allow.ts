@@ -275,6 +275,16 @@ const HUD_UNSAID: readonly Ruling[] = (
  *
  * `WorldEventEntry.n` is the exception that is really `TIMELINE_SPINE`'s: it
  * is a highlight's magnitude, waiting on the same screen.
+ *
+ * **AND ONE ENTRY LEFT THIS LIST BY GAINING A CALLER (2026-09-10), which is
+ * the outcome this file's docblock says to hope for.** `meta/route#Route.seed`
+ * was here for a day. Extracting the boot ladder into `shell/boot.ts` put a
+ * validated seed parser and a hand-rolled one in the same function, and the
+ * hand-rolled one — `Number(params.get('seed')) || null` — both passed a
+ * FRACTIONAL seed through and could not tell 0 from absent. The ladder reads
+ * `route.seed` now, so the field has a production reader and this ruling had
+ * no subject. **The gate refused to pass until it was removed**, which is
+ * exactly what "Rulings that match nothing" is for.
  */
 const TEST_IS_THE_READER: readonly Ruling[] = (
   [
@@ -289,7 +299,6 @@ const TEST_IS_THE_READER: readonly Ruling[] = (
     'e2e/audit/audit.ts#Finding.value',
     'e2e/audit/audit.ts#Finding.bar',
     'packages/core/src/engine/rng.ts#RngStreams.region',
-    'packages/core/src/meta/route.ts#Route.seed',
     'packages/core/src/meta/timeline.ts#WorldEventEntry.n',
     'packages/core/src/render/paint.ts#SurfaceSamples.label',
     'packages/core/src/render/paint.ts#SurfaceSamples.face',
