@@ -43,6 +43,7 @@ const spies = () => {
   } as unknown as Session;
   const w: Wiring = {
     session,
+    flush: spy('flush'),
     setDaily: spy('setDaily'),
     forgetEnding: spy('forgetEnding'),
     forgetWorld: spy('forgetWorld'),
@@ -76,6 +77,21 @@ const DOOR: Door = {
 const at = (names: readonly string[], name: string) => names.indexOf(name);
 
 describe('every door into a run', () => {
+  /**
+   * THE FLUSH IS FIRST, and the order is the whole rule.
+   *
+   * The keeper debounces by 400ms and writes to the PLACE it was made from.
+   * `setDaily` changes that place, so a flush after it writes the run being
+   * left into the run being entered — which is worse than the bug it fixes.
+   * Measured before the fix (`e2e/daily.spec.ts`): a daily left at 20 tiles
+   * came back at 21, because no door flushed at all.
+   */
+  it('writes what the last run still owes BEFORE the place moves', () => {
+    const { w, names } = spies();
+    enterRun(w, DOOR);
+    expect(names()[0], 'the keeper was not flushed first').toBe('flush');
+    expect(at(names(), 'flush')).toBeLessThan(at(names(), 'setDaily'));
+  });
   it('points the keeper at the place BEFORE the board exists', () => {
     const { w, names } = spies();
     enterRun(w, DOOR);

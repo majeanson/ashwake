@@ -865,6 +865,30 @@ function Game() {
    */
   const session = useOnce(buildSession);
 
+  /*
+   * THE SESSION IS TOLD WHAT LANGUAGE THE PLAYER READS, on every change.
+   *
+   * Marc, playing on 2026-09-10: *"im stupposed to be in french but i got
+   * english translations at some places"* — a woken shrine's unlock, a death
+   * sentence and a beacon's line, all English, under a COMPRIS button.
+   *
+   * `buildSession` runs through `useOnce`, so the catalogue it was handed was
+   * the one this PAGE booted in, and `store.ts` read it out of the closure
+   * forever after. Every React string re-rendered when LANGUE changed and
+   * every sentence the core computes did not — the epitaph, the signpost, a
+   * claim's receipt, a spend's — because nothing could give the session a
+   * second catalogue. And the page never reloads: one page, many sessions is
+   * a hard rule, so there was no moment at which it would have corrected
+   * itself.
+   *
+   * An effect rather than a call during render, because `resupply` commits to
+   * the store and notifies subscribers, and a store that publishes mid-render
+   * is the tearing `useSyncExternalStore` exists to prevent.
+   */
+  useEffect(() => {
+    session.resupply(theme, s);
+  }, [session, theme, s]);
+
   const look = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return {
@@ -2490,6 +2514,8 @@ function Game() {
   const wiring = useMemo(
     () => ({
       session,
+      // The run being LEFT still owes its last 400ms — see `Wiring.flush`.
+      flush: () => keeper.flush(),
       setDaily,
       forgetEnding,
       forgetWorld,
@@ -2508,6 +2534,7 @@ function Game() {
     }),
     [
       session,
+      keeper,
       setDaily,
       forgetEnding,
       forgetWorld,

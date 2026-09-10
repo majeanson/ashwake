@@ -116,6 +116,26 @@ export type StartedFrom = {
  *  the order and nothing else. */
 export type Wiring = {
   readonly session: Session;
+  /**
+   * Write anything the keeper still owes, BEFORE the place changes.
+   *
+   * The keeper debounces by `SETTLE_MS` (400ms) so a tap is cheap, and it
+   * flushes on hide so a closed phone loses nothing. What it did not do is
+   * flush when a DOOR was taken, and a door changes the place the keeper
+   * writes to — so the last 400ms of a run went to the keeper that was about
+   * to be dropped, and the player came back to a board one placement behind
+   * the one they left.
+   *
+   * Measured on 2026-09-10 with `e2e/daily.spec.ts`: a daily left at 20 tiles
+   * was resumed at 21. Marc had reported the shape of it a day earlier from
+   * the other end — *"its not restarted at all when i come back"* — and that
+   * fix flushed the BANKING path only, which is why this survived it.
+   *
+   * It is first in the order below for the same reason `setDaily` is second:
+   * everything here is about the run being LEFT, and once the place moves
+   * there is nothing left to write it with.
+   */
+  readonly flush: () => void;
   readonly setDaily: (date: string | null) => void;
   /** Put down the last ending — see `App`'s `forgetEnding`. */
   readonly forgetEnding: () => void;
@@ -166,6 +186,10 @@ export type Wiring = {
  * one does.
  */
 export function enterRun(w: Wiring, door: Door): void {
+  // 0. WHAT THE RUN BEING LEFT STILL OWES. Before anything moves: the keeper
+  //    debounces, and the place is about to change under it. See `Wiring.flush`.
+  w.flush();
+
   // 1. WHERE. The keeper is made from the place; nothing may write before it
   //    points at the right one.
   w.setDaily(door.daily);

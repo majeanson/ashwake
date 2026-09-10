@@ -165,6 +165,15 @@ export type Session = {
   readonly theme: Theme;
   readonly strings: Strings;
   /**
+   * Hand the session the look and the language it should speak in NOW.
+   *
+   * A no-op when neither moved, so the effect that calls it on every render
+   * costs nothing; a rebuilt snapshot when either did, so the sentences the
+   * HUD carries change with it. See the note beside `let theme` for the bug
+   * this exists to close.
+   */
+  readonly resupply: (theme: Theme, strings: Strings) => void;
+  /**
    * True when this run is on a seed that is not the device world's — a
    * `?seed=` link. Exposed rather than recomputed by every caller, so the
    * board's tap and the session's own receipts cannot disagree about whether
@@ -342,6 +351,40 @@ export function createSession(opts: {
    *
    * `build` passed a literal `[]` here for four stages — see `RunMemory`.
    */
+  /**
+   * THE LOOK AND THE LANGUAGE ARE RE-SUPPLIABLE, and until 2026-09-10 they
+   * were not (Marc, playing: *"im stupposed to be in french but i got english
+   * translations at some places"* — the woken shrine's unlock, a death
+   * sentence, and a beacon's `still glows` line, all in English under a
+   * COMPRIS button).
+   *
+   * Both arrived in `opts` and were read straight out of the closure, so the
+   * catalogue a page BOOTED in was the catalogue every sentence the core
+   * computes was written in, for the life of that page. And the page never
+   * reloads: `CLAUDE.md` makes one page, many sessions a hard rule, so
+   * choosing LANGUE in settings re-rendered every React string and could not
+   * touch the epitaph, the signpost, a claim's receipt or a spend's.
+   *
+   * **The theme had it too, on the same line**, which is the half nobody
+   * reported: switching direction mid-run left every receipt naming the
+   * grounds of the direction you left — LICHEN where the board now says FARM.
+   *
+   * They are `let` rather than `opts.` reads now, and `resupply` is the door.
+   * The snapshot is rebuilt on the way through, so the sentences the HUD
+   * carries — the epitaph among them — change language on the spot. What does
+   * NOT change is anything already SAID: a receipt in React state was a
+   * sentence at the moment it was spoken, and re-translating the past would
+   * be a game rewriting what it told you.
+   */
+  let theme = opts.theme;
+  let strings = opts.strings;
+
+  /*
+   * ABOVE `snapshot`, and that is not cosmetic: `let snapshot = build()` runs
+   * during `createSession`, and `build` reads both of these. Declared after it,
+   * they are in the temporal dead zone and every session throws on creation —
+   * which is what 24 store tests said the first time this moved.
+   */
   let memory = opts.memory;
   let state = opts.resume ?? open(opts.seed, tuning, memory, opts.wakeAt ?? null);
   let harvestAt: HexKey | null = null;
@@ -358,15 +401,8 @@ export function createSession(opts: {
     return {
       state,
       harvestAt,
-      board: toBoardView(
-        state,
-        harvestAt,
-        spotlight,
-        memory?.revealed ?? [],
-        opts.theme.light,
-        ctx,
-      ),
-      hud: toHudView(state, opts.strings, harvestAt, spotlight, ctx),
+      board: toBoardView(state, harvestAt, spotlight, memory?.revealed ?? [], theme.light, ctx),
+      hud: toHudView(state, strings, harvestAt, spotlight, ctx),
       popped,
       said,
     };
@@ -397,7 +433,7 @@ export function createSession(opts: {
     let icon: IconName | undefined;
 
     if (action.type === 'HARVEST' && cashed !== null && cashed.count > 0) {
-      lines.push(harvestNote(before, action.choice, cashed, opts.strings));
+      lines.push(harvestNote(before, action.choice, cashed, strings));
       /*
        * A harvest leads with the mark its BUTTON wears (2026-08-30).
        *
@@ -416,16 +452,16 @@ export function createSession(opts: {
 
     if (action.type === 'SPEND') {
       const paid = spendReceipt(before, after, action.on, action.colour, {
-        theme: opts.theme,
-        strings: opts.strings,
+        theme,
+        strings,
       });
       if (paid !== null) lines.push(paid);
     }
 
     const claims = saidOf(
       claimsBetween(before, after, {
-        theme: opts.theme,
-        strings: opts.strings,
+        theme,
+        strings,
         // A DETOUR is a run on a seed that is not this world's — a `?seed=`
         // link, which is exactly what SHARE hands out. It has no ledger to
         // narrate, so a shrine says what shrines ARE rather than what the
@@ -475,8 +511,20 @@ export function createSession(opts: {
   let detour = opts.detour === true;
 
   return {
-    theme: opts.theme,
-    strings: opts.strings,
+    // Getters, so a caller that reads them after a `resupply` is told the
+    // truth rather than what the page booted in.
+    get theme() {
+      return theme;
+    },
+    get strings() {
+      return strings;
+    },
+    resupply(nextTheme: Theme, nextStrings: Strings) {
+      if (nextTheme === theme && nextStrings === strings) return;
+      theme = nextTheme;
+      strings = nextStrings;
+      commit();
+    },
     get detour() {
       return detour;
     },

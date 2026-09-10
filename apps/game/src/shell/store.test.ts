@@ -392,3 +392,68 @@ describe('a world and the daily, switched between', () => {
     expect(daily.beaconShrines, 'a daily advertised a shrine it cannot give').toBe(0);
   });
 });
+
+/**
+ * THE LOOK AND THE LANGUAGE, AFTER THE PAGE HAS BOOTED (2026-09-10).
+ *
+ * Marc, playing: *"im stupposed to be in french but i got english translations
+ * at some places"* — a woken shrine's unlock, a death sentence and a beacon's
+ * `still glows` line, all English, under a COMPRIS button.
+ *
+ * `createSession` took the catalogue in its options and read it out of the
+ * closure forever after, and `App` builds the session through `useOnce`. So the
+ * language a page BOOTED in was the language every sentence the core computes
+ * was written in, for the whole visit — and because one page, many sessions is
+ * a hard rule (`CLAUDE.md`), there was never a reload to correct it. React
+ * strings changed with LANGUE; the epitaph, the signpost and every receipt did
+ * not.
+ *
+ * The theme had the same bug on the same line, and nobody had reported it:
+ * switching direction mid-run left receipts naming the grounds of the direction
+ * you had left.
+ */
+describe('the session speaks the language it is given now', () => {
+  const french = () => stringsFor('fr-CA');
+  const english = () => stringsFor('en');
+
+  it('rewrites what the HUD says when the language changes', () => {
+    const s = createSession({ seed: 3, theme: resolveTheme(null), strings: english() });
+    walk(s, 8);
+    const before = s.get().hud;
+
+    s.resupply(resolveTheme(null), french());
+    const after = s.get().hud;
+
+    // The same board, a different catalogue: the numbers hold and the words move.
+    expect(after.placements).toBe(before.placements);
+    expect(after.guide).not.toBe(before.guide);
+  });
+
+  it('hands back a NEW snapshot, so a subscriber is told', () => {
+    const s = createSession({ seed: 3, theme: resolveTheme(null), strings: english() });
+    walk(s, 6);
+    let told = 0;
+    s.subscribe(() => (told += 1));
+
+    s.resupply(resolveTheme(null), french());
+    expect(told, 'nothing was notified, so no screen would re-render').toBeGreaterThan(0);
+  });
+
+  it('costs nothing when neither moved, so an effect may call it every render', () => {
+    const theme = resolveTheme(null);
+    const strings = english();
+    const s = createSession({ seed: 3, theme, strings });
+    walk(s, 4);
+    const snapshot = s.get();
+
+    s.resupply(theme, strings);
+    expect(s.get(), 'an unchanged resupply rebuilt the world').toBe(snapshot);
+  });
+
+  it('says which language it is speaking, rather than which it booted in', () => {
+    const s = createSession({ seed: 3, theme: resolveTheme(null), strings: english() });
+    const fr = french();
+    s.resupply(resolveTheme(null), fr);
+    expect(s.strings).toBe(fr);
+  });
+});

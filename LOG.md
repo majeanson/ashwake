@@ -6122,3 +6122,67 @@ went from 142 unplaced to 2 once the ancestor walk moved to lookup time, and
 both survivors — `typography.sentenceEnd` and `luckCore` — are exactly the two
 the export sweep had independently flagged as read only by tests. Two
 instruments, built a day apart for different questions, naming the same pair.
+
+### Session 77 — two bugs reported from a phone, and one of them was the language (2026-09-10)
+
+**Question:** Marc, playing, reported two things an hour apart: _"we still cant
+restart a daily without us getting back to our worlds"_ and then, quoting three
+sentences off his own screen, _"im stupposed to be in french but i got english
+translations at some places"_. So: **what does a report from a phone cost to
+check, and does checking it find the bug that was reported?**
+
+**Answer: it found three, and only one of them was the one reported.**
+
+**THE LANGUAGE, and it is the worst of the three.** The three sentences he
+quoted — `unlock.luck`, a `view.epitaph.broke` line, `view.glows.atEdge` — are
+all `en.ts`, and all three are computed by the CORE rather than rendered by a
+component. `createSession` takes `strings` in its options and reads them out of
+the closure forever after; `App` builds the session through `useOnce`. **So the
+language a page BOOTED in was the language every sentence the core writes was
+written in, for the whole visit** — and `CLAUDE.md` makes one page, many
+sessions a hard rule, so there was no reload to correct it. Choosing LANGUE
+re-rendered every React string and could not touch the epitaph, the signpost, a
+claim's receipt or a spend's. A COMPRIS button over an English sentence is
+exactly what that looks like.
+
+**The theme had the same bug on the same line**, and nobody had reported it:
+switch direction mid-run and every receipt goes on naming the grounds of the
+direction you left — LICHEN where the board now says FARM. Found only because
+the two values sit together in `opts`, which is the argument for fixing a class
+rather than an instance.
+
+**`pnpm sweep` had already put a finger on this file and it did not land.** The
+field pass reported `Session.theme` and `Session.strings` as written and never
+read, which was true and was the wrong half: the exposed fields are unread, and
+the COPY inside the closure is the one every sentence comes from. A sweep can
+say a field is unread; it cannot say that the thing reading the closure should
+have been reading the field.
+
+**THE KEEPER, which nobody reported.** Chasing the daily, a spec measured a
+board left at 20 tiles coming back at **21**. The keeper debounces by 400ms so
+a tap stays cheap and flushes on hide so a closed phone loses nothing — and
+**no door flushed it.** `enterRun` changes the place the keeper writes to, so
+the last moments of a run were owed to a keeper about to be dropped. Not
+daily-specific: a world switch had it too. The 2026-09-09 fix for the neighbour
+of this bug flushed the BANKING path, which is why this survived it — the same
+asymmetry twice in one fork.
+
+**THE DAILY, which was reported, is a GAP rather than a defect** and is now
+`NEXT.md` §1. `enterDaily` resumes by design; `openDaily(null)` deals fresh and
+has exactly one caller, TRY AGAIN, which lives on the end screen; MAIN MENU is
+end-screen-only too. So from a part-played daily the only way out is MORE ▸ MY
+WORLDS, which is the sentence Marc wrote. Where a restart belongs is a screen
+decision and three readings are written down for him.
+
+**A TDZ, paid for immediately.** Making the two captured values `let` put them
+below `let snapshot = build()`, which `build` reads — every session threw on
+creation and 24 store tests said so at once. They are declared above it now,
+with the reason at the line, because the next reader tidying this file will
+want to move them back.
+
+**And a stale preview server nearly sold me a false failure.** The flush
+regression failed once against a bundle built before the fix —
+`playwright.config.ts` documents `reuseExistingServer` as the one deliberate
+hole in its own build-first rule, and this is what falling into it looks like.
+The before and after are honest: 20 → 21 measured against the bug, 20 → 20
+against the fix.
