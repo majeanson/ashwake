@@ -6492,3 +6492,11 @@ shader that failed to link would surface as exactly this assertion and never as
 the canary), and three ways out are in §1. **Nothing was relaxed**: a threshold
 widened to make a suite green is the one move `CLAUDE.md` names, and the
 measurement is the deliverable.
+
+### Session 80 — the App.tsx extraction (2026-09-10)
+
+**Question (`PASS.md` P2):** does extracting a region still find a bug, or only
+move lines? `shell/beginning.ts` found four. If P2's nine find none, that is an
+answer about a file that has already been swept, and worth recording as one.
+
+_(Answer written at the end of this session.)_

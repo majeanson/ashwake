@@ -9,7 +9,7 @@ import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { distance, key, parse, type HexKey } from '@engine/hex';
-import { namesOf, rgba } from '@theme/tokens';
+import { namesOf } from '@theme/tokens';
 import {
   colourLesson,
   debugLine,
@@ -45,7 +45,7 @@ import {
 import { economyFor } from './shell/economy';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
-import { AUTO_THEME_ID, parseThemeId, pickForScheme, resolveTheme } from '@theme/index';
+import { parseThemeId } from '@theme/index';
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { tourMs } from './board/flight';
 import type { BoardHandle } from './board/Board';
@@ -101,6 +101,8 @@ import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
+import { useHeldWorld } from './shell/held';
+import { dial, lookFrom, themeFor, vignetteStyle } from './shell/look';
 import { enterRun, type StartedFrom } from './shell/beginning';
 import { useOnce } from './shell/useOnce';
 import { useLedgers } from './shell/ledgers';
@@ -199,23 +201,6 @@ import './ui/ui.css';
  */
 
 /**
- * How the board looks unless a query string says otherwise.
- *
- * The tilt is Marc's, chosen from `docs/shots/`. The other four are WORKING
- * defaults rather than rulings (2026-08-29): the chrome is built around
- * whatever the board looks like, and building it over a board nobody has
- * chosen is the more expensive mistake. Every one still takes a number, so
- * `?light=0` is one keystroke away, and `DECISIONS.md` carries the question as
- * open until Marc has seen them on a phone.
- */
-const TILT = 35;
-const YAW = 0;
-const RELIEF = 0.35;
-const LIGHT = 1;
-const MATERIALS = 1;
-const ART = 1;
-
-/**
  * THE RENDERER ARRIVES AFTER THE DOOR (2026-09-08).
  *
  * three, `@react-three/fiber`, `drei` and troika are 1.18MB of the 1.51MB
@@ -277,8 +262,6 @@ const CLAIM_HOLD_MS = 900;
  */
 const TOUR_HOLD_MS = 1200;
 
-/** A number off the query string, where zero is a real answer and `?x=` alone
- *  or a word is not — so `?tilt=0` gives the map back rather than the default. */
 /**
  * The economy a run in this slot plays under, read off the disk.
  *
@@ -308,13 +291,6 @@ const economyAt = (at: Slot, seed: number) => {
  * point at which "this could be lost" is a sentence about something.
  */
 const BACK_UP_AFTER_RUNS = 3;
-
-function dial(params: URLSearchParams, name: string, fallback: number): number {
-  const raw = params.get(name);
-  if (raw === null || raw.trim() === '') return fallback;
-  const value = Number(raw);
-  return Number.isFinite(value) ? value : fallback;
-}
 
 export function App() {
   return (
@@ -767,72 +743,21 @@ function Game() {
   const wantsContrast = useMediaQuery('(prefers-contrast: more)');
   const reducedMotion = useReducedMotion();
 
-  const theme = useMemo(() => {
-    if (storedTheme !== AUTO_THEME_ID) return resolveTheme(storedTheme);
-    // AUTO is the absence of a choice — what a fresh phone is set to — so the
-    // device answers.
-    return resolveTheme(pickForScheme(wantsLight, wantsContrast));
-  }, [storedTheme, wantsLight, wantsContrast]);
+  const theme = useMemo(
+    () => themeFor(storedTheme, wantsLight, wantsContrast),
+    [storedTheme, wantsLight, wantsContrast],
+  );
   useThemeVars(theme);
   useDocumentLocale(locale);
-  /**
-   * This session's live copy of the world memory.
+  /*
+   * This session's live copy of the world — `shell/held.ts` holds the ref, the
+   * one door every writer goes through, and the argument for both.
    *
-   * A ref rather than state, and rather than a read per action: the world is
-   * written by three separate seams now — the ground a run walks, the perk
-   * shelf, and the settle that closes a run — and each of them hands the
-   * keeper a WHOLE `WorldMemory`. Re-reading the disk for each would mean
-   * decoding a blob carrying every hex the player has ever revealed, on every
-   * tap; and two seams firing in one tick would each build from a copy that
-   * predates the other, so whichever wrote second would silently undo the
-   * first. One held object, and the seam that touches it last is the one the
-   * keeper writes.
-   *
-   * Null means "not read yet, or a different world" — `worldHeld` decides by
-   * SEED, exactly the way `settle`'s guard and `memoryFor` do.
-   *
-   * ## Declared UP HERE, above the session (2026-09-02)
-   *
-   * `shell/cross.ts` states the crossing's invariant in its own docblock:
-   * *"The card's offer and the amount actually banked are the same number by
-   * construction, because both call `dowryOf`."* Calling the same function is
-   * not the construction — **it has to be the same world**, and there were
-   * three different copies of it in this file:
-   *
-   *   - `crossingCarries`, which prices the offer, read `readWorld()` — the
-   *     DISK, which is whatever was last flushed.
-   *   - the card's own label and `takeCrossing`, which banks it, both read
-   *     `ledgers.worlds[slot]` — a snapshot refreshed only when a panel opens
-   *     or a run ends.
-   *   - and this, the live copy every seam writes to, was read by neither.
-   *
-   * `dowryOf` pays per territory HELD, and a territory claimed this run lands
-   * in the live copy first. So a crossing taken on the run that earned the
-   * territory offered one figure, printed a second on the card, and banked a
-   * third — the exact bug the docblock says is the worst kind, because the
-   * player only finds out after the world is gone.
-   *
-   * The block moved above `session` so `crossingCarries` can reach it. That is
-   * the whole reason it is here rather than beside `banked`.
+   * It is read here, ABOVE the session, because `crossingCarries` prices the
+   * crossing's offer off it and `takeCrossing` banks the same number: that
+   * "by construction" is only true if both reach the same world.
    */
-  const worldNow = useRef<WorldMemory | null>(null);
-  const worldHeld = useCallback((seed: number): WorldMemory | null => {
-    const held = worldNow.current;
-    if (held !== null && held.worldSeed === seed) return held;
-    const disk = readWorld(activeSlot());
-    return disk !== null && disk.worldSeed === seed ? disk : null;
-  }, []);
-  const keepWorld = useCallback(
-    (next: WorldMemory) => {
-      worldNow.current = next;
-      keeper.saveWorld(next);
-    },
-    [keeper],
-  );
-  /** A run is beginning somewhere else: let go, so nothing carries over. */
-  const forgetWorld = useCallback(() => {
-    worldNow.current = null;
-  }, []);
+  const { worldHeld, keepWorld, forgetWorld } = useHeldWorld(keeper);
 
   /**
    * THE SESSION IS BUILT ONCE, AND A `useMemo` COULD NOT PROMISE THAT
@@ -889,81 +814,14 @@ function Game() {
     session.resupply(theme, s);
   }, [session, theme, s]);
 
-  const look = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return {
-      tilt: dial(params, 'tilt', TILT),
-      yaw: dial(params, 'yaw', YAW),
-      relief: dial(params, 'relief', RELIEF),
-      light: dial(params, 'light', LIGHT),
-      materials: dial(params, 'materials', MATERIALS),
-      art: dial(params, 'art', ART) > 0,
-      // `?themes=1` puts a direction strip over the board — the workbench for
-      // the one look question that is not a number. Off by default like every
-      // other dial here.
-      directions: dial(params, 'themes', 0) > 0,
-      /*
-       * `?vignette=` — the strength dial, added with the vignette itself
-       * (2026-09-08) and for the reason every dial in this list exists: the
-       * number is a LOOK decision and the only place it can be settled is a
-       * phone. Marc chose 0.30 as the default from three options, sight
-       * unseen, and this is how he disagrees with it without a rebuild.
-       *
-       * `NaN` rather than a number means "use the direction's own", which is
-       * what `dial`'s fallback gives when the parameter is absent — so a
-       * board with no `?vignette=` is exactly the board the theme authors.
-       */
-      vignette: dial(params, 'vignette', Number.NaN),
-      /* `?ghost=` — how strongly a legal hex shows the colour you are holding.
-       * Same shape and same reason as `?vignette=`: a look change with a bug
-       * report in its history wants a number that can be argued with on a
-       * phone, and `?ghost=0` is the whole undo. NaN means the direction's own
-       * `ghost.alpha`. */
-      ghost: dial(params, 'ghost', Number.NaN),
-      /*
-       * `?playtest=1` — the stranger console (Stage 6, 2026-09-08).
-       *
-       * A query flag rather than a route, and rather than a row anywhere:
-       * `DECISIONS.md` D9 ruled out a router, and this is the `?ff=` class of
-       * surface — an instrument with no place on a player's screen. It is also
-       * the class where that matters most, because the one person who must
-       * never find it is the stranger holding the phone.
-       *
-       * Off by default like every other dial here, so a shared `?seed=` link
-       * cannot carry it.
-       */
-      playtest: dial(params, 'playtest', 0) > 0,
-    };
-  }, []);
+  /* Every dial the query string can turn — `shell/look.ts` carries them and
+     the argument for each. Read once, at boot: a dial is set before the page
+     opens and `location` cannot change under a page that never reloads. */
+  const look = useMemo(() => lookFrom(location.search), []);
 
-  /**
-   * The vignette as an inline style, or null where the direction wants none.
-   *
-   * Built here rather than in the stylesheet because both halves of it are the
-   * THEME's: `daylight` authors `null` and must draw nothing at all, and the
-   * colour and strength are numbers a direction owns. A CSS variable would put
-   * the "or nothing" case in a stylesheet, which is the one place it cannot be
-   * expressed without a second rule to turn the element off.
-   *
-   * `?vignette=` overrides the strength and nothing else — the colour stays
-   * the direction's, because the dial exists to answer "how much", which is
-   * the question Marc was asked.
-   */
-  const vignette = useMemo(() => {
-    const authored = theme.board.vignette;
-    if (authored === null) return null;
-    const strength = Number.isFinite(look.vignette) ? look.vignette : authored.strength;
-    if (strength <= 0) return null;
-    return {
-      // Clear through the middle, where the ground you have built is, and
-      // reaching its full alpha only at the corners. `70%` is where the falloff
-      // starts; below that the board is untouched.
-      background: `radial-gradient(ellipse at center, transparent 45%, ${rgba(
-        authored.colour,
-        strength,
-      )} 100%)`,
-    };
-  }, [theme.board.vignette, look.vignette]);
+  /* The vignette, or null where the direction authors none — `shell/look.ts`
+     has the argument for it being a style rather than a stylesheet. */
+  const vignette = useMemo(() => vignetteStyle(theme, look.vignette), [theme, look.vignette]);
 
   /*
    * THE STRANGER'S SHEET, and the door onto it (Stage 6, 2026-09-08).
@@ -1449,8 +1307,10 @@ function Game() {
     setEndWorld(session.detour ? null : after.world);
     // NEW BEST, or how far short — see `Settled.standing`.
     setStanding(after.standing);
-    worldNow.current = after.world;
-    keeper.saveWorld(after.world);
+    // Through `keepWorld` rather than the two statements it is made of: this
+    // site spelled them out, which is one rule with two spellings — see
+    // `shell/held.ts`. The flush is settle's own, and stays.
+    keepWorld(after.world);
     keeper.flush();
     writeRecords(after.records);
     writeTimeline(after.timeline);
@@ -1512,6 +1372,7 @@ function Game() {
     s,
     session,
     worldHeld,
+    keepWorld,
   ]);
 
   /**
