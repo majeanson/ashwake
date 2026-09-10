@@ -54,7 +54,7 @@ import { Panel, PanelMenu } from '../ui/Panel';
 const offerable = (feature: { readonly id: FeatureId }): boolean =>
   feature.id !== 'ui.haptics' || canBuzz();
 
-export type SettingsProps = {
+type SettingsProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly stored: ThemeId;

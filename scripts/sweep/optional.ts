@@ -26,12 +26,9 @@ import type { Workspace } from './program';
 const TEST = /\.(test|spec|audit)\.tsx?$/;
 const code = (s: string): string => '`' + s + '`';
 
-/** Every optional property an exported type declares, however deeply nested. */
+/** Every optional property a top-level type declares, however deeply nested. */
 function optionalsOf(file: ts.SourceFile): readonly { owner: string; name: ts.Identifier }[] {
   const out: { owner: string; name: ts.Identifier }[] = [];
-  const exported = (node: ts.Node): boolean =>
-    ts.canHaveModifiers(node) &&
-    (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 
   const members = (owner: string, list: ts.NodeArray<ts.TypeElement>): void => {
     for (const member of list) {
@@ -48,8 +45,18 @@ function optionalsOf(file: ts.SourceFile): readonly { owner: string; name: ts.Id
     }
   };
 
+  /*
+   * EVERY top-level type, exported or not (2026-09-10) — `fields.ts` carries
+   * the argument, and this pass lost the same thing on the same run.
+   *
+   * The 141-symbol demotion batch took `ConfirmingProps` off this surface, and
+   * `holdMs` — a ruling written that same morning about a test timer control
+   * being a REASON rather than a missing caller — went dark with it. It was
+   * the last entry left in "Rulings that match nothing", which is how it was
+   * found. An optional input's suppliers are the whole program; whether its
+   * type is exported was never the question.
+   */
   for (const statement of file.statements) {
-    if (!exported(statement)) continue;
     if (ts.isInterfaceDeclaration(statement)) members(statement.name.text, statement.members);
     else if (ts.isTypeAliasDeclaration(statement) && ts.isTypeLiteralNode(statement.type)) {
       members(statement.name.text, statement.type.members);

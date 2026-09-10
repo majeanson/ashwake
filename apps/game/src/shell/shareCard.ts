@@ -28,7 +28,7 @@ import { hex, type Theme } from '@theme/tokens';
  * browser against whichever direction is actually live.
  */
 
-export type ShareCardData = {
+type ShareCardData = {
   /** The score, worded — "8971 pts" / "8971 pts". */
   readonly scoreLine: string;
   /** How far out, worded — "REACH 13" / "PORTÉE 13". */

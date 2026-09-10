@@ -24,7 +24,7 @@ import { SLOTS, type Slot } from '../shell/storage';
  * does not make a fourth, it replaces the one you are standing in.
  */
 
-export type WorldsProps = {
+type WorldsProps = {
   readonly s: Strings;
   /**
    * The slot this panel is ABOUT — whose atlas it draws and whose ground the

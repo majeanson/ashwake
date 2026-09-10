@@ -16,7 +16,7 @@ import type { GameState } from '@engine/state';
  * than throwing — a lost tally must never cost a run.
  */
 
-export type Records = {
+type Records = {
   readonly runs: number;
   readonly bestPoints: number;
   /** Harvests taken as tiles, and as points. Gate B's whole subject. */
@@ -30,7 +30,7 @@ export type Records = {
   readonly arcRuns: number;
 };
 
-export const EMPTY: Records = {
+const EMPTY: Records = {
   runs: 0,
   bestPoints: 0,
   tilesHarvests: 0,

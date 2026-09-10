@@ -55,7 +55,7 @@ const PATTERNS = {
   claim: 22,
 } as const satisfies Record<string, number | readonly number[]>;
 
-export type Buzz = keyof typeof PATTERNS;
+type Buzz = keyof typeof PATTERNS;
 
 /**
  * Whether this device can do anything at all.

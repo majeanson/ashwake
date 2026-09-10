@@ -364,7 +364,7 @@ export function cameraAt(frame: Frame, zoom: number, worldX: number, worldZ: num
   return { zoom: clamp(zoom, zoomMinOf(frame), zoomMaxOf(frame)), cx: worldX, cz: worldZ };
 }
 
-export type Eye = {
+type Eye = {
   /** Offset from the point the camera looks at, in world units. */
   readonly x: number;
   readonly y: number;
@@ -527,7 +527,7 @@ export type Finger = { readonly x: number; readonly y: number };
  * up leans the camera back, the way a map does — the hand pushes the horizon
  * away.
  */
-export type TwoFinger = {
+type TwoFinger = {
   /** Multiplier on the zoom: the distance between the fingers, then and now. */
   readonly scale: number;
   /** Degrees the pair rotated, signed, in (-180, 180]. */

@@ -31,7 +31,7 @@ import { useArtSlot } from '../shell/art';
  * been used.
  */
 
-export type FrontDoorProps = {
+type FrontDoorProps = {
   readonly s: Strings;
   /** A run already in progress — BEGIN becomes RESUME. */
   readonly resuming: boolean;

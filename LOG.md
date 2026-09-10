@@ -6186,3 +6186,12 @@ regression failed once against a bundle built before the fix —
 hole in its own build-first rule, and this is what falling into it looks like.
 The before and after are honest: 20 → 21 measured against the bug, 20 → 20
 against the fix.
+
+### Session 78 — adjudicating the sweep's first report (2026-09-10)
+
+**Question:** the tool found 330 things. `PASS.md` P1.9 is the half that is
+still open, and the tool's whole argument is that its signal survives being
+re-read — so: **how many of the report's findings survive contact with the
+code, and does adjudicating one change the report itself?**
+
+_(Answer written at the end of this session.)_

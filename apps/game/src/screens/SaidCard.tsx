@@ -36,7 +36,7 @@ import { TipRows } from '../ui/TipRows';
  * rides on `Said` and the heading is whatever the catalogue wrote, whole.
  */
 
-export type SaidCardProps = {
+type SaidCardProps = {
   readonly text: string;
   readonly rows?: readonly TipRow[] | undefined;
   readonly theme: Theme;

@@ -9,7 +9,7 @@ import type { CellView } from './Renderer';
  * story), not about Pixi, and a 3D board has to print the same glyphs for the
  * same reasons or the two bodies would disagree about what a star means.
  */
-export type Label =
+type Label =
   /** A number the board prints on a hex: a worth, or a preview of one. */
   | { readonly text: string; readonly icon?: undefined; readonly faint: boolean }
   /** A MARK the board draws on a hex, named rather than spelled — see

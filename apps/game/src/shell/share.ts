@@ -115,7 +115,7 @@ export async function share(
   }
 }
 
-export type HandOffResult = 'shared' | 'downloaded' | 'copied' | 'failed';
+type HandOffResult = 'shared' | 'downloaded' | 'copied' | 'failed';
 
 /**
  * Get a BACKUP off the phone, by whatever door this platform has.

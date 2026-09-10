@@ -32,7 +32,7 @@ import { SLOTS, type Slot } from '../shell/storage';
 
 type TabId = 'diary' | 'daily' | 'totals';
 
-export type FameProps = {
+type FameProps = {
   readonly timeline: readonly TimelineEntry[];
   readonly records: RecordBook;
   readonly s: Strings;

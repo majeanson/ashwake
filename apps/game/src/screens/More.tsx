@@ -46,7 +46,7 @@ import { Panel, PanelMenu } from '../ui/Panel';
  * the bottom of the list every player scrolls past.
  */
 
-export type MoreProps = {
+type MoreProps = {
   readonly s: Strings;
   readonly virgin: boolean;
   readonly sound: boolean;

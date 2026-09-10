@@ -12,7 +12,7 @@ import { hex, rgba, type Theme } from './tokens';
  * Pure and string-only on purpose: it is testable without a browser, and it is
  * what the style gallery renders from as well as what the game applies.
  */
-export type CssVars = Readonly<Record<string, string>>;
+type CssVars = Readonly<Record<string, string>>;
 
 export function themeCssVars(theme: Theme): CssVars {
   const out: Record<string, string> = {

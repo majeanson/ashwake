@@ -32,7 +32,7 @@ import { destinationsWithin } from '@engine/world';
  * A move is a list of actions rather than one, because choosing a tile and
  * placing it is a single decision that happens to be two reducer steps.
  */
-export type Move = readonly Action[];
+type Move = readonly Action[];
 
 export type Policy = {
   readonly name: string;
@@ -198,7 +198,7 @@ export const farm: Policy = {
  * multipliers while placements are still cheap. If farm and rush score
  * comparably by these opposite routes, Gate C's third clause is met.
  */
-export const rush: Policy = {
+const rush: Policy = {
   name: 'rush',
   note: 'Chases the multiplier first: sprints outward, then stops and farms where it landed.',
   decide(state, stream) {
@@ -231,7 +231,7 @@ export const rush: Policy = {
  * wins then rule 5's timing decision is fake and `ripeTilesMatch` needs turning
  * off. That comparison is the harness's first real job.
  */
-export const hoard: Policy = {
+const hoard: Policy = {
   name: 'hoard',
   note: 'Never harvests until the map is full, then takes points. The suspected dominant line.',
   decide(state, stream) {
@@ -249,7 +249,7 @@ export const hoard: Policy = {
  * hoard's opposite number on the one axis that matters: WHEN, holding where and
  * how long fixed. If these two score the same, harvest timing does not matter.
  */
-export const trickle: Policy = {
+const trickle: Policy = {
   name: 'trickle',
   note: 'Cashes any harvest of three or more the moment it exists, but packs like a farmer otherwise.',
   decide(state, stream) {
@@ -342,12 +342,12 @@ export const spender: Policy = {
 };
 
 export const bank3 = bankAt(3);
-export const bank15 = bankAt(15);
+const bank15 = bankAt(15);
 /** Cashing exactly at the size bonus's cap — the economy's own answer. */
 export const bank20 = bankAt(20);
 export const bank40 = bankAt(40);
 /** The overshoot: a pocket this size is never built before the money runs out. */
-export const bank80 = bankAt(80);
+const bank80 = bankAt(80);
 
 /**
  * The nearest destination not yet claimed, revealed or still over the horizon.
@@ -504,7 +504,7 @@ export const chooser: Policy = {
  * should live a long time and finish near zero — the control that proves points
  * and tiles are not secretly the same currency.
  */
-export const survivor: Policy = {
+const survivor: Policy = {
   name: 'survivor',
   note: 'Always takes tiles, never points. Should live longest and score nothing.',
   decide(state, stream) {
@@ -523,7 +523,7 @@ export const survivor: Policy = {
  * the gap between this and `farm` is what "how well the player packs" is worth
  * in points. If that gap is small, the game has no skill in it.
  */
-export const blind: Policy = {
+const blind: Policy = {
   name: 'blind',
   note: 'Places in the first legal spot, ignoring colour. The no-skill floor to measure against.',
   decide(state, stream) {

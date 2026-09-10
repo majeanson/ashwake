@@ -58,7 +58,7 @@ export type ShedRungId =
    */
   | 'lost';
 
-export type ShedRung = {
+type ShedRung = {
   readonly id: ShedRungId;
 };
 

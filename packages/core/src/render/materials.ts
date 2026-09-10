@@ -19,7 +19,7 @@ import type { CellView } from './Renderer';
  */
 
 /** A surface, plus the direction's own art ghosted into it where there is any. */
-export type CellSurface = {
+type CellSurface = {
   readonly surface: Surface;
   /** A native field's ghost — the terrain slot's art, under its own pattern. */
   readonly ghost: { readonly asset: AssetId; readonly alpha: number } | null;

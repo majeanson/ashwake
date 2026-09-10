@@ -75,7 +75,7 @@ const ARCADE_LIFT = 3.2;
  *  thing tumbling out of the board rather than a coin in a slot machine. */
 const SPIN_TURNS = 0.42;
 
-export type LeapPhase = {
+type LeapPhase = {
   /** How far above its resting top the tile has risen, in hex radii. */
   readonly lift: number;
   /** Uniform scale; reaches zero when the tile is gone. */
@@ -112,7 +112,7 @@ export function leapPhase(motion: Motion, elapsed: number, delay: number): LeapP
   return { lift, scale: swell * shrink, spin: SPIN_TURNS * Math.PI * 2 * t, gone: false };
 }
 
-export type GlowPhase = {
+type GlowPhase = {
   readonly scale: number;
   /** 0..1, applied to an ADDITIVE material, where dark is the same as gone. */
   readonly strength: number;

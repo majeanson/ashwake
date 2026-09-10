@@ -44,7 +44,7 @@ import type { Workspace } from './program';
 
 const TEST = /\.(test|spec|audit)\.tsx?$/;
 
-export type KeyIndex = {
+type KeyIndex = {
   /** Files, other than the declaring one, that write a key of this name. */
   readonly writers: (name: string, exceptFile: string) => readonly string[];
 };

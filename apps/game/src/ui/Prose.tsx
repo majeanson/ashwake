@@ -25,7 +25,7 @@ import type { Strings } from '@text/Strings';
  * RÉSERVE, which is the bug Stage 1b found the hard way.
  */
 
-export type ProseProps = {
+type ProseProps = {
   readonly text: string;
   readonly s: Strings;
   /** Opens the term card. Omitted where prose is decorative — a card's own

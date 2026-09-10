@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from 'react';
  * action. One component.
  */
 
-export type ConfirmingProps = {
+type ConfirmingProps = {
   /** The quiet word, before anything is at stake. */
   readonly label: string;
   /** The consequence, stated. This is what the player actually reads. */

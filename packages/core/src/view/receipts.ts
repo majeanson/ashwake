@@ -69,7 +69,7 @@ const HOLDS_THE_SCREEN: Readonly<Record<LandmarkReward, boolean>> = {
   cache: false,
 };
 
-export type Receipt = {
+type Receipt = {
   readonly reward: LandmarkReward;
   /** The mark this claim happened to, drawn beside its words. */
   readonly icon: IconName;
@@ -83,7 +83,7 @@ export type Receipt = {
   readonly offers?: 'crossing';
 };
 
-export type ReceiptContext = {
+type ReceiptContext = {
   readonly theme: Theme;
   readonly strings: Strings;
   /**

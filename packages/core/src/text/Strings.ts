@@ -20,7 +20,7 @@ import type { Locale } from '@content/locale';
 
 /** A lesson's name and its tappable spellings. Every lesson has these; the
  *  sentences are per-lesson below because each has its own variables. */
-export type LessonHead = {
+type LessonHead = {
   readonly name: string;
   /** UPPERCASE, longest first — what `tips.ts` alternates over. */
   readonly terms: readonly string[];
@@ -30,7 +30,7 @@ export type LessonHead = {
  *  section, which is also the type of `Lesson.id`. */
 export type TaughtId = keyof LessonStrings;
 
-export type LessonStrings = {
+type LessonStrings = {
   readonly ripe: LessonHead & {
     readonly core: string;
     readonly stoneAsh: (red: string) => string;
@@ -1368,8 +1368,15 @@ export type Strings = {
      */
     readonly backUpNote: string;
     readonly inApp: string;
-    /** Put a note down. Short, because it sits inside a floating line. */
-    readonly dismiss: string;
+    /*
+     * There was a `dismiss` here — 'Not now' / 'Pas maintenant' — cut
+     * 2026-09-10 when `pnpm sweep` found it read by nothing. Both notices it
+     * was written for make the SENTENCE the button: the update line and the
+     * in-app warning are each one `<button>` wearing the whole warning, and
+     * the toast's dismissal is a tap on the paragraph plus Escape. Nothing in
+     * this game offers a decline beside a notice, so there was no caller to be
+     * missing — the `Confirming.holdMs` distinction, landing the other way.
+     */
     /** Hand this run to somebody. The game's only distribution mechanism. */
     readonly share: string;
     /** No share sheet here, so it went to the clipboard instead. */
@@ -1414,13 +1421,18 @@ export type Strings = {
   /**
    * Where a run's points came from, named (D4).
    *
-   * Ashwake 1 wrote these seven words straight into its end screen in English,
+   * Ashwake 1 wrote these words straight into its end screen in English,
    * which is exactly the mistake this block exists to make impossible: the
    * engine counts, the catalogue names, and a language missing one of these is
    * a type error rather than an English word on a French screen.
+   *
+   * There was a `heading` here — 'WHERE THE POINTS CAME FROM' — cut 2026-09-10
+   * when `pnpm sweep` found it read by nothing. It never had a screen: the
+   * fold's own summary is DETAILS in both bodies, those five words were a
+   * COMMENT in Ashwake 1's `game.ts`, and the three `Bars` below carry their
+   * own headings. A sentence written for a title no screen ever had.
    */
   readonly payout: {
-    readonly heading: string;
     readonly byColour: string;
     readonly byRarity: string;
     readonly bySource: string;

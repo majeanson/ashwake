@@ -82,7 +82,7 @@ export function radiusScaleOf(theme: Theme, surface: Surface): number {
   return (shared - gutterOf(theme, surface)) / shared;
 }
 
-export type GroundItem = {
+type GroundItem = {
   readonly cell: CellView;
   /** Board coordinates, in hex radii. */
   readonly x: number;
@@ -102,7 +102,7 @@ export type GroundBatch = {
   readonly items: readonly GroundItem[];
 };
 
-export type GroundOpts = {
+type GroundOpts = {
   readonly theme: Theme;
   readonly layout: Layout;
   readonly relief: number;

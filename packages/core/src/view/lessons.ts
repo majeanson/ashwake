@@ -97,7 +97,7 @@ export type LessonId =
   | 'reach';
 
 /** How heavy a sentence is. Absent means `more`. */
-export type Weight = 'core' | 'more' | 'card' | 'detail';
+type Weight = 'core' | 'more' | 'card' | 'detail';
 
 /**
  * One sentence of a lesson, in this run's own numbers and this device's own
@@ -112,7 +112,7 @@ export type Weight = 'core' | 'more' | 'card' | 'detail';
  * beat, and a clause-level beat would render an orphan fragment; the tests
  * enforce it by checking every beat ends in terminal punctuation.
  */
-export type Beat = {
+type Beat = {
   readonly say: (t: Tuning, theme: Theme, s: Strings) => string | null;
   readonly at?: Weight;
 };

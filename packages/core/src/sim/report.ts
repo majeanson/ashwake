@@ -9,7 +9,7 @@ import type { RunResult } from './run';
  * exactly the question a median answers.
  */
 
-export type Summary = {
+type Summary = {
   readonly policy: string;
   readonly runs: number;
 

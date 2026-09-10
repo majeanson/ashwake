@@ -71,7 +71,7 @@ import type { Strings } from '@text/Strings';
  * waits on a file.
  */
 
-export type TileProps = {
+type TileProps = {
   readonly colour: Colour;
   readonly rarity: Rarity;
   readonly theme: Theme;

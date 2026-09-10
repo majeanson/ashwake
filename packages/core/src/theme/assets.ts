@@ -19,7 +19,7 @@ import type { AssetId } from './tokens';
  * and losing that would cost more than an unused constant, but a slot that says
  * `wired: false` will not appear on screen no matter what you put in it.
  */
-export type AssetSlot = {
+type AssetSlot = {
   readonly id: AssetId;
   readonly label: string;
   /** Export size in pixels. Terrain is 3x the on-screen hex so it survives zoom. */

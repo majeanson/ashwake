@@ -29,7 +29,7 @@
  * and a decision belongs somewhere it can be tested without a browser.
  */
 
-export type Signpost = {
+type Signpost = {
   /** `HudView.hint` — the nearest unclaimed destination, or null. */
   readonly hint: string | null;
   /**

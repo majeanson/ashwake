@@ -40,7 +40,7 @@ import { Tile } from './Tile';
  * resolution decision, and it costs no context.
  */
 
-export type FigureProps = {
+type FigureProps = {
   readonly id: FigureId;
   readonly theme: Theme;
   readonly s: Strings;
@@ -122,7 +122,7 @@ export function Figure({ id, theme, s, caption = false }: FigureProps) {
                   >
                     <path
                       d={ICON_PATH[cell.icon]}
-                      fill={hex(toneColour(cell.tone, theme))}
+                      fill={hex(theme.ink.ink)}
                       stroke={hex(theme.ink.halo)}
                       strokeWidth={SIZE * 0.06 * (256 / (SIZE * 0.84))}
                       paintOrder="stroke"
@@ -137,7 +137,7 @@ export function Figure({ id, theme, s, caption = false }: FigureProps) {
                     dominantBaseline="central"
                     fontSize={SIZE * 0.7}
                     fontFamily="var(--font-display)"
-                    fill={hex(toneColour(cell.tone, theme))}
+                    fill={hex(theme.ink.ink)}
                     stroke={hex(theme.ink.halo)}
                     strokeWidth={SIZE * theme.ink.haloWidth * 0.4}
                     paintOrder="stroke"
@@ -241,8 +241,20 @@ const ringColour = (ring: Ring, theme: Theme) =>
             ? theme.ink.unique
             : theme.board.edge;
 
-const toneColour = (tone: 'magic' | 'unique' | undefined, theme: Theme) =>
-  tone === 'magic' ? theme.ink.magic : tone === 'unique' ? theme.ink.unique : theme.ink.ink;
+/*
+ * There was a `toneColour` here, cut 2026-09-10 — `ringColour`'s dead fork.
+ *
+ * It coloured a MARK by the rarity it stood for, off a `FigCell.tone` that no
+ * figure in `view/figure.ts` has ever set, so both call sites resolved to
+ * `theme.ink.ink` on every render. `pnpm sweep` found the field first (an
+ * optional input nothing supplies) and deleting it found this.
+ *
+ * It is superseded rather than merely unused: the rare figure drew two STARS
+ * until 2026-08-30, and this body has never printed one — rarity is a RING
+ * here, which is `ringColour` twenty lines up, live and reading the same two
+ * theme inks. Replacing the calls with `theme.ink.ink` is what they already
+ * evaluated to, so nothing on any figure moved.
+ */
 
 /** `corners` returns a flat [x, y, ...] list; SVG wants points. */
 function pairs(flat: readonly number[]): [number, number][] {

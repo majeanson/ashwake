@@ -28,7 +28,7 @@ import {
  * look at it rather than a mirror of it.
  */
 
-export type Ledgers = {
+type Ledgers = {
   readonly records: RecordBook;
   readonly timeline: Timeline;
   readonly worlds: Readonly<Record<Slot, WorldMemory | null>>;

@@ -161,7 +161,7 @@ export function moduleSweep(w: Workspace): readonly Finding[] {
             'check a promise no caller may branch on. Say so at the declaration ' +
             'or cut it.',
         });
-      } else {
+      } else if (tests === 0) {
         out.push({
           pass: 'module',
           id,
@@ -173,6 +173,42 @@ export function moduleSweep(w: Workspace): readonly Finding[] {
             'Demote to `const` or `function`. `CLAUDE.md`: do not export what ' +
             'one file uses — every one of these is a false positive the next ' +
             'sweep re-adjudicates from scratch.',
+        });
+      } else {
+        /*
+         * READ IN ITS OWN FILE **AND** BY A TEST — a different finding from
+         * either alone (2026-09-10).
+         *
+         * This branch used to be the `else` above, so any symbol with an
+         * in-file reader was reported as read ONLY inside its own file no
+         * matter how many specs imported it. The sentence was false and the
+         * advice was worse: demoting one of these deletes the import a spec is
+         * built on. Acting on the first report broke twenty-five at once —
+         * `sim/policy#farm`, `theme/rig#FLAT_RIG`, `view/view#epitaphFor`,
+         * `theme/tokens#fieldDots`.
+         *
+         * `PASS.md`'s precision note was written about the OPPOSITE failure:
+         * a sweep that invents findings is a sweep nobody runs twice. This is
+         * that lesson's other half, and it is the worse half — an invented
+         * finding wastes a reader's minute, a finding whose fix does not
+         * compile wastes it AFTER they trusted it.
+         *
+         * Graded `likely`, and it asks the tests-only question rather than the
+         * demotion one: the export is load-bearing for the spec that imports
+         * it, so what is actually open is whether the spec should be reaching
+         * past the file's own surface at all.
+         */
+        out.push({
+          pass: 'module',
+          id,
+          file: path,
+          line,
+          grade: 'likely',
+          what: `\`${name.text}\` is read in its own file (${own}) and by tests (${tests}), and nowhere else`,
+          detail:
+            'NOT demotable — a test imports it, so dropping `export` breaks the ' +
+            'spec. The tests-only question applies instead: say at the ' +
+            'declaration why a test reaches for it, or cut both.',
         });
       }
     }

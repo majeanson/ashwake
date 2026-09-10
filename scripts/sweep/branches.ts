@@ -75,9 +75,6 @@ type Union = {
 
 function unionsOf(file: ts.SourceFile): readonly Union[] {
   const out: Union[] = [];
-  const exported = (node: ts.Node): boolean =>
-    ts.canHaveModifiers(node) &&
-    (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 
   const literals = (type: ts.TypeNode): readonly string[] | null => {
     if (!ts.isUnionTypeNode(type)) return null;
@@ -101,8 +98,13 @@ function unionsOf(file: ts.SourceFile): readonly Union[] {
     }
   };
 
+  /*
+   * EVERY top-level declaration, exported or not (2026-09-10). `fields.ts`
+   * carries the argument: the 141-symbol demotion batch `CLAUDE.md` asks for
+   * silently shrank three of these five passes at once, and `export` was never
+   * the right question for a call site or a comparison.
+   */
   for (const statement of file.statements) {
-    if (!exported(statement)) continue;
     if (ts.isInterfaceDeclaration(statement)) members(statement.name.text, statement.members);
     else if (ts.isTypeAliasDeclaration(statement) && ts.isTypeLiteralNode(statement.type)) {
       members(statement.name.text, statement.type.members);

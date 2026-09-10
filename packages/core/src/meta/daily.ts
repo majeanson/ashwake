@@ -108,7 +108,7 @@ export function dailySeed(date: string): number {
 }
 
 /** One date's standing: the best score, and how many tries it took so far. */
-export type DailyRecord = {
+type DailyRecord = {
   readonly best: number;
   readonly tries: number;
 };
@@ -151,7 +151,7 @@ export const encodeDailyBook = (book: DailyBook): string => JSON.stringify(book)
  * yesterday's abandoned expedition would open on today's shared world — the
  * one thing a daily may never do, since every phone must agree.
  */
-export type DailyRun = { readonly date: string; readonly run: string };
+type DailyRun = { readonly date: string; readonly run: string };
 
 export const encodeDailyRun = (kept: DailyRun): string => JSON.stringify(kept);
 

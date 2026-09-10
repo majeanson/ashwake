@@ -35,7 +35,7 @@ import { isEphemeral, readAll, writeAll } from '../shell/storage';
  * screen is where that is either true or a lie.
  */
 
-export type DeviceProps = {
+type DeviceProps = {
   readonly s: Strings;
   readonly onBack: () => void;
   /** Everything gone. The caller reloads, because a shell that survives its

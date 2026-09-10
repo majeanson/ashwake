@@ -40,33 +40,35 @@ export type FigureId = 'ripen' | 'destinations' | 'place' | 'pop' | 'rare' | 'st
  *  the stroke ladder would draw round it; `mark` is the NUMBER printed on it
  *  and `icon` the mark drawn on it. All four are the board's own vocabulary,
  *  and `icon` is a registry name rather than a character since 2026-08-30. */
-export type FigCell = {
+type FigCell = {
   readonly q: number;
   readonly r: number;
   readonly ground: Colour | 'stone' | 'wall';
+  /**
+   * MAGIC and UNIQUE are rings here, and that is where the rarity's own
+   * colour lives (Marc, 2026-08-20: "make sure magic and unique have their
+   * own color").
+   *
+   * There was a `tone` beside `mark` for exactly that job — the MARK's voice,
+   * so a figure would not draw both STARS in the plain ink and teach that the
+   * two look alike. Cut 2026-09-10, when `pnpm sweep` found it set by no
+   * figure and read by nothing: the stars themselves went on 2026-08-30, when
+   * the `rare` figure below was rewritten to draw what this board actually
+   * draws. There is no star anywhere in the 3D body, so there is no mark left
+   * to have a voice. The distinction it protected is alive, one field up.
+   */
   readonly ring?: 'legal' | 'ripe' | 'lit' | 'spent' | 'magic' | 'unique';
   readonly mark?: string;
   readonly icon?: IconName;
   /** A preview number is faint where a ripe tile's worth is not — the same
    *  distinction `labelFor` makes on the board. */
   readonly faint?: boolean;
-  /**
-   * The mark's own voice, where it has one.
-   *
-   * MAGIC and UNIQUE have worn their own colours on the board since
-   * 2026-08-20 (Marc: "make sure magic and unique have their own color") —
-   * so a figure that drew both stars in the plain ink would be teaching that
-   * the two look alike, on the one section whose whole job is telling them
-   * apart. The first draft of the rare figure did exactly that and the
-   * screenshot caught it.
-   */
-  readonly tone?: 'magic' | 'unique';
 };
 
 /** One card in a `cards` figure. `slot: 'hold'` draws the dashed HOLD slot. */
-export type FigCard = { readonly colour: Colour } | { readonly slot: 'hold' };
+type FigCard = { readonly colour: Colour } | { readonly slot: 'hold' };
 
-export type FigureSpec = {
+type FigureSpec = {
   readonly hexes?: readonly FigCell[];
   readonly cards?: readonly FigCard[];
 };
@@ -166,7 +168,7 @@ export const figureCaption = (id: FigureId, s: Strings): string => s.figure[id];
  *  pixel space, already shifted so the top-left of the drawing is 0,0. */
 export type PlacedCell = FigCell & { readonly x: number; readonly y: number };
 
-export type FigureLayout = {
+type FigureLayout = {
   readonly cells: readonly PlacedCell[];
   readonly width: number;
   readonly height: number;

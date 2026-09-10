@@ -18,7 +18,7 @@ import type { Strings } from '@text/Strings';
  * toast and the guide line are the live regions; this is a display.
  */
 
-export type HudProps = {
+type HudProps = {
   readonly hud: HudView;
   readonly s: Strings;
   readonly onNote: (text: string) => void;
@@ -27,7 +27,7 @@ export type HudProps = {
 /** The ids `statNote` answers to, in the order Ashwake 1 laid them out. */
 const STATS = ['tiles', 'points', 'luck', 'map', 'cost', 'left'] as const;
 
-export type StatId = (typeof STATS)[number];
+type StatId = (typeof STATS)[number];
 
 export function Hud({ hud, s, onNote }: HudProps) {
   const [rose, setRose] = useState<StatId | null>(null);

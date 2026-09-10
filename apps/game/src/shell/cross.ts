@@ -59,7 +59,7 @@ export const dowryOf = (world: WorldMemory | null): number =>
 export const carriedBy = (state: GameState, world: WorldMemory | null): number =>
   dowryOf(world) + endingPayout(state).relics;
 
-export type Crossing = {
+type Crossing = {
   readonly state: GameState;
   readonly world: WorldMemory | null;
   readonly progress: Progress;
@@ -71,7 +71,7 @@ export type Crossing = {
   readonly at: number;
 };
 
-export type Crossed = {
+type Crossed = {
   readonly world: WorldMemory;
   readonly progress: Progress;
   readonly timeline: Timeline;

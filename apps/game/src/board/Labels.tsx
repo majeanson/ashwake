@@ -54,7 +54,7 @@ type PlacedLabel = {
   readonly top: number;
 };
 
-export type LabelsProps = {
+type LabelsProps = {
   readonly cells: readonly CellView[];
   readonly theme: Theme;
   readonly layout: Layout;

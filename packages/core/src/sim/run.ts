@@ -15,7 +15,7 @@ import type { Policy } from './policy';
  * data point is a finding and one discovered as a frozen terminal is an evening.
  */
 
-export type Outcome =
+type Outcome =
   /** Reached a real end state. The only healthy outcome. */
   | 'died'
   /** The policy had no move, or its move changed nothing. A deadlock. */
@@ -63,7 +63,7 @@ export type RunResult = {
   readonly steps: number;
 };
 
-export type RunOptions = {
+type RunOptions = {
   readonly tuning?: Tuning;
   /** Hard stop. Generous enough that hitting it is itself a finding. */
   readonly maxSteps?: number;
@@ -131,7 +131,7 @@ function summarise(
   };
 }
 
-export function playRun(policy: Policy, seed: number, options: RunOptions = {}): RunResult {
+function playRun(policy: Policy, seed: number, options: RunOptions = {}): RunResult {
   const maxSteps = options.maxSteps ?? 20000;
   const tuning = options.tuning ?? TUNING;
 

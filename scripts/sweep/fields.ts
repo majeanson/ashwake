@@ -32,12 +32,9 @@ import type { Workspace } from './program';
 const code = (s: string): string => '`' + s + '`';
 const TEST = /\.(test|spec|audit)\.tsx?$/;
 
-/** Every property this file declares on an exported type, with its name node. */
+/** Every property this file declares on a top-level type, with its name node. */
 function fieldsOf(file: ts.SourceFile): readonly { owner: string; name: ts.Identifier }[] {
   const out: { owner: string; name: ts.Identifier }[] = [];
-  const exported = (node: ts.Node): boolean =>
-    ts.canHaveModifiers(node) &&
-    (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 
   /**
    * Walk a type's members, and DOWN into the ones that are themselves
@@ -74,8 +71,24 @@ function fieldsOf(file: ts.SourceFile): readonly { owner: string; name: ts.Ident
     }
   };
 
+  /*
+   * EVERY top-level type, exported or not (2026-09-10).
+   *
+   * This used to be `if (!exported(statement)) continue;`, and the two rituals
+   * were quietly fighting. `CLAUDE.md`'s remedy for a file-internal export is
+   * to DEMOTE it — and the first batch of that, 141 symbols, took `Ring` and
+   * `ConfirmingProps` off this pass's surface along with them. Both had a
+   * standing ruling in `allow.ts`; the report's own "Rulings that match
+   * nothing" section is what said so, on the first run after the batch, which
+   * is exactly the job that section was added to do.
+   *
+   * A field's readers are the whole program whatever its type's visibility, so
+   * `export` was never the right question here. `Ring.width` is the case that
+   * proves it: three authored numbers the board does not honour, ruled dead ON
+   * PURPOSE by Marc — a ruling that stops being checked is a ruling nobody can
+   * find their way back to.
+   */
   for (const statement of file.statements) {
-    if (!exported(statement)) continue;
     if (ts.isInterfaceDeclaration(statement)) {
       members(statement.name.text, statement.members);
       continue;

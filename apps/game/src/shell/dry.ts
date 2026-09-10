@@ -30,7 +30,7 @@ const WARN_WITHIN = 3;
 /** How far clear of it a run must climb before the warning re-arms. */
 const CLEAR_BY = 6;
 
-export type Dryness = {
+type Dryness = {
   /** Tiles in the purse right now. */
   readonly tiles: number;
   /** What the next placement costs. */

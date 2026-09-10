@@ -36,10 +36,10 @@ import type { WorldMemory } from './world';
  */
 
 /** One ✦ moment a run produced. `n` counts repeats (two territories). */
-export type HighlightKind =
+type HighlightKind =
   'best-score' | 'best-reach' | 'shrine' | 'perk' | 'goal' | 'territory' | 'camp';
 
-export type Highlight = { readonly kind: HighlightKind; readonly n?: number };
+type Highlight = { readonly kind: HighlightKind; readonly n?: number };
 
 /**
  * The run's end screen, kept (2026-08-20, Marc: "a 'full detail' of the
@@ -133,7 +133,7 @@ export type DailyEntry = {
  * make "runs before the record began" go negative. Its own kind is what keeps
  * the existing selectors honest by construction.
  */
-export type SharedEntry = {
+type SharedEntry = {
   readonly at: number;
   readonly kind: 'shared';
   /** The board's seed — a shared run's only identity. */

@@ -18,7 +18,7 @@ import { Icon } from './Icon';
  * instead of the game.
  */
 
-export type Bar = {
+type Bar = {
   readonly label: string;
   /** A mark drawn INSTEAD of the label, where the row already has one in the
    *  game's vocabulary. `label` stays as the accessible name and the key. */

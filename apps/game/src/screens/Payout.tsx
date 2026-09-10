@@ -24,7 +24,7 @@ import { Fold } from '../ui/Fold';
  * and inventing zeroes would be a lie shaped like data.
  */
 
-export type PayoutProps = {
+type PayoutProps = {
   readonly summary: NonNullable<HudView['summary']>;
   /** The score itself, so the rows can add up to something on screen. */
   readonly points: number;

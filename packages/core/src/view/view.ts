@@ -140,7 +140,7 @@ function structureDistanceAt(dist: ReadonlyMap<HexKey, number>, q: number, r: nu
  * per-selector derivations produced, checked by the invariant tests staying
  * green with their displayed values unchanged.
  */
-export type RenderContext = {
+type RenderContext = {
   /** Every ripe key, in board order — one ripeness pass for the render. */
   readonly ripe: ReadonlySet<HexKey>;
   /** The pocket a harvest would pop: the tapped ripe tile's, or the biggest. */
@@ -1085,7 +1085,7 @@ export function arcNote(summary: NonNullable<HudView['summary']>, s: Strings): s
  * term a colour owns. The split into ripe and still-growing says how much of
  * that potential is cashable right now versus still being set up.
  */
-export type ColourPotential = {
+type ColourPotential = {
   readonly colour: Colour;
   /** Live tiles of this colour on the board. */
   readonly count: number;
@@ -1188,7 +1188,7 @@ function guideFor(state: GameState, ctx: RenderContext, s: Strings): string | nu
  * Placements the purse still buys at today's cost. The honest unit for
  * danger: ten tiles is a fortune at cost 1 and a death sentence at cost 5.
  */
-export const runwayOf = (state: GameState): number =>
+const runwayOf = (state: GameState): number =>
   Math.floor(state.tiles / Math.max(1, costOf(state.placements, state.tuning)));
 
 /**
@@ -1613,7 +1613,7 @@ export type TipRow = {
 };
 
 /** A card that teaches a set: the lead, and the rows under it. */
-export type SetLesson = {
+type SetLesson = {
   readonly text: string;
   /** The mark the card leads with. Beside the words rather than inside them:
    *  a mark has been an icon rather than a character since 2026-08-30, and a
@@ -1758,7 +1758,7 @@ export function groundHead(name: string, word: string, s: Strings): string {
  * fact about a language rather than about a power (D4, and `text.test.ts`
  * would have caught it).
  */
-export function powerHead(name: string, word: string): string {
+function powerHead(name: string, word: string): string {
   return name.toLowerCase() === word.toLowerCase() ? '' : word.toLowerCase();
 }
 
@@ -1832,7 +1832,7 @@ export function powerOf(colour: Colour, t: Tuning, theme: Theme, s: Strings): st
  * the shell owns) — `state` rides along inside it so the whole call is
  * `(ctx, hex)`.
  */
-export type DescribeContext = {
+type DescribeContext = {
   readonly state: GameState;
   readonly theme: Theme;
   readonly strings: Strings;

@@ -455,7 +455,7 @@ export const writeShopLevels = (slot: Slot, bought: Progress['bought']): void =>
 
 /* ---- the last failure ----------------------------------------------------- */
 
-export type LastError = {
+type LastError = {
   readonly text: string;
   /** Short sha, so an issue names the build it came from. */
   readonly sha: string;
@@ -502,7 +502,7 @@ const clearLastError = (): void => drop(DEVICE.lastError);
  * particular: a storage that keeps nothing is the very condition the sentence
  * is warning about, so the failure mode proves the point rather than hiding it.
  */
-export type SaidOnce = 'installNudge' | 'inAppNote' | 'handInstall' | 'backUpNote';
+type SaidOnce = 'installNudge' | 'inAppNote' | 'handInstall' | 'backUpNote';
 
 export const wasSaid = (which: SaidOnce): boolean => read(DEVICE[which]) !== null;
 

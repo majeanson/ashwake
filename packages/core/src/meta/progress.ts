@@ -39,7 +39,7 @@ import { rngNext, stream } from '@engine/rng';
 
 export type UpgradeId = 'tiles' | 'odds' | 'world' | 'pace' | 'sense';
 
-export type Upgrade = {
+type Upgrade = {
   readonly id: UpgradeId;
   /** Relics for the first level; each level after costs `cost * (level + 1)`. */
   readonly cost: number;
@@ -73,7 +73,7 @@ export const upgradeText = (id: UpgradeId, s: Strings): Strings['upgrade'][Upgra
 
 export type PerkId = 'rootbound' | 'secondwind' | 'stonewalker' | 'wallbreaker' | 'openhand';
 
-export type Perk = {
+type Perk = {
   readonly id: PerkId;
 };
 

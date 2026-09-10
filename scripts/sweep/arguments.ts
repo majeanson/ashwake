@@ -46,17 +46,19 @@ function literalEmpty(node: ts.Expression): string | null {
   return null;
 }
 
-/** Every exported function this file declares, with its parameter list. */
+/** Every function this file declares, with its parameter list. */
 function functionsOf(
   file: ts.SourceFile,
 ): readonly { name: ts.Identifier; params: readonly ts.ParameterDeclaration[] }[] {
   const out: { name: ts.Identifier; params: readonly ts.ParameterDeclaration[] }[] = [];
-  const exported = (node: ts.Node): boolean =>
-    ts.canHaveModifiers(node) &&
-    (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 
+  /*
+   * EVERY top-level declaration, exported or not (2026-09-10). `fields.ts`
+   * carries the argument: the 141-symbol demotion batch `CLAUDE.md` asks for
+   * silently shrank three of these five passes at once, and `export` was never
+   * the right question for a call site or a comparison.
+   */
   for (const statement of file.statements) {
-    if (!exported(statement)) continue;
     if (
       ts.isFunctionDeclaration(statement) &&
       statement.name !== undefined &&

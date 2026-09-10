@@ -33,7 +33,7 @@ import { applyUnlocks, unlockedBy, type WorldMemory } from '@meta/world';
  */
 
 /** Which kind of run this is, because only one of the three earns anything. */
-export type RunKind =
+type RunKind =
   /** This device's own world, on its own seed: everything applies. */
   | { readonly kind: 'home'; readonly world: WorldMemory; readonly progress: Progress }
   /** Today's shared board. No ledger, so no unlocks and no relics — and its

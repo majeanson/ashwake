@@ -43,7 +43,7 @@ import { hex, type Theme } from '@theme/tokens';
 export const HEX_R = 50;
 const R = HEX_R;
 
-export type HexProps = {
+type HexProps = {
   readonly theme: Theme;
   /** A ground to fill, or absent for a ring drawn around nothing. */
   readonly ground?: Colour | 'stone' | 'wall' | undefined;

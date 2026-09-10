@@ -27,7 +27,7 @@ import { useOnce } from '../shell/useOnce';
  * order `CylinderGeometry` fixes.
  */
 
-export type BatchResources = {
+type BatchResources = {
   readonly geometryFor: (kind: Kind) => BufferGeometry | undefined;
   readonly materialsFor: (batch: GroundBatch) => readonly Material[] | undefined;
 };

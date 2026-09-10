@@ -41,7 +41,7 @@ import {
  * `keeper.test.ts` calls the crossing in miniature.
  */
 
-export type Device = {
+type Device = {
   readonly locale: Locale;
   readonly setLocale: (locale: Locale) => void;
   readonly theme: ThemeId;

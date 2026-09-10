@@ -99,6 +99,31 @@ describe('gate C — the economy closes', SIM_TIMEOUT, () => {
       expect(runs.map((r) => r.death)).not.toContain('spent');
     }
   });
+
+  /*
+   * The hard stop has a caller now (2026-09-10).
+   *
+   * `pnpm sweep` found `RunOptions.maxSteps` supplied by nobody — the
+   * `perkAt` class, an OPTION whose absence no test could see. It is not a
+   * missing caller: 20000 is generous enough that `playRun`'s own note calls
+   * hitting it a finding, and the test above is the one that would notice.
+   *
+   * But an unsupplied option is also an untested branch, and `'capped'` was
+   * the one cause of death nothing in this repository had ever produced. One
+   * run against a cap of ten proves the guard fires and that the summary says
+   * so — which is what makes the assertion above ("never on a clock") a claim
+   * about the ECONOMY rather than about a branch that cannot be reached.
+   */
+  it('stops on the hard cap, and says that is why', () => {
+    const [run] = playMany(farm, 1, { tuning: TUNING, maxSteps: 10 });
+    expect(run?.outcome).toBe('capped');
+    expect(run?.steps).toBe(10);
+    // `death` is the ENGINE's cause and `outcome` is the HARNESS's, and a
+    // capped run is stopped from outside while it was still perfectly alive.
+    // The first draft of this test asserted `death`, got null, and that null
+    // is the distinction being made here rather than a bug.
+    expect(run?.death).toBeNull();
+  });
 });
 
 describe('what the harness proves about the one economy', SIM_TIMEOUT, () => {

@@ -48,7 +48,7 @@ import { Icon } from './Icon';
  */
 const BRIEF_MS = 4200;
 
-export type CardProps = {
+type CardProps = {
   readonly id: string;
   /** The mark that says what KIND of thing this is. From the registries only
    *  (`@theme/icons`), and an icon rather than a character since 2026-08-30. */

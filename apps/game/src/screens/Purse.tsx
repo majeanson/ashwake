@@ -51,7 +51,7 @@ import type { Strings } from '@text/Strings';
  *     invents a symbol.
  */
 
-export type PurseProps = {
+type PurseProps = {
   readonly hud: HudView;
   readonly theme: Theme;
   readonly s: Strings;

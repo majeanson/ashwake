@@ -66,7 +66,7 @@ export const KIND_LABEL: Readonly<Record<NoteKind, string>> = {
   surprised: 'WHAT THEY DID THAT THE GAME DID NOT EXPECT',
 };
 
-export type Note = {
+type Note = {
   readonly kind: NoteKind;
   readonly text: string;
   /** Milliseconds since the run began — the same clock the marks use. */

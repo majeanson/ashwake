@@ -88,7 +88,7 @@ export const markGroup = (ring: string, sparkFill: string): string =>
   `<path d="${HEX_RING}" fill="none" stroke="${ring}" stroke-width="4"/>` +
   `<path d="${spark(32, 32, 11)}" fill="${sparkFill}"/>`;
 
-export const MARK_GROUP = markGroup(RING, SPARK);
+const MARK_GROUP = markGroup(RING, SPARK);
 
 /** The favicon / install mark. `viewBox` only, so it scales to whatever it is dropped into. */
 export const MARK_SVG =

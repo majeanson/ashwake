@@ -38,7 +38,7 @@ import { Tile } from '../ui/Tile';
  * AND points were a choice, and neither is true now.
  */
 
-export type ActionBarProps = {
+type ActionBarProps = {
   readonly hud: HudView;
   readonly theme: Theme;
   readonly s: Strings;

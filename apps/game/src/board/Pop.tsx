@@ -38,7 +38,7 @@ import type { SurfaceTextures } from './surfaces';
  * what a tile looks like.
  */
 
-export type PopProps = {
+type PopProps = {
   readonly cells: readonly CellView[];
   readonly at: HexKey | null;
   /** Restarts the animation when the same cells pop twice. */

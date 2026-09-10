@@ -34,7 +34,7 @@ import type { Slot } from './storage';
 /** How many end-of-run board pictures the diary keeps. */
 const SHOTS_KEPT = 20;
 
-export type Settled = {
+type Settled = {
   readonly world: WorldMemory;
   readonly records: RecordBook;
   readonly timeline: Timeline;
@@ -100,7 +100,7 @@ export type Standing = {
 /** A run that banked nothing has no standing to report. */
 const NO_STANDING: Standing = { run: 0, isNewBest: false, previousBest: null };
 
-export type Settling = {
+type Settling = {
   readonly state: GameState;
   readonly hud: HudView;
   readonly slot: Slot;
@@ -301,7 +301,7 @@ export function settle(now: Settling): Settled {
 
 /* ---- the daily ------------------------------------------------------------ */
 
-export type SettledDaily = {
+type SettledDaily = {
   readonly book: DailyBook;
   readonly timeline: Timeline;
   readonly isNewBest: boolean;
@@ -318,7 +318,7 @@ export type SettledDaily = {
   readonly try: number;
 };
 
-export type SettlingDaily = {
+type SettlingDaily = {
   readonly date: string;
   readonly state: GameState;
   readonly hud: HudView;

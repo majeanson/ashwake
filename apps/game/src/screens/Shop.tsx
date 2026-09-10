@@ -36,7 +36,7 @@ import { TipRows } from '../ui/TipRows';
  * `buy` returns.
  */
 
-export type ShopProps = {
+type ShopProps = {
   readonly progress: Progress;
   readonly theme: Theme;
   readonly s: Strings;

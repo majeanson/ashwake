@@ -804,7 +804,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     backUpNote: 'Your worlds live on this phone only. BACK UP, in SETTINGS, saves them.',
     inApp:
       'You are in an in-app browser, and your world may not be kept here. Open this page in Safari or Chrome to keep it.',
-    dismiss: 'Not now',
     share: 'SHARE',
     copied: 'COPIED',
     shareFailed: 'COULD NOT SHARE',
@@ -837,7 +836,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     notices: 'Fonts and icons: the notices',
   },
   payout: {
-    heading: 'WHERE THE POINTS CAME FROM',
     byColour: 'BY COLOUR',
     byRarity: 'BY RARITY',
     bySource: 'BY SOURCE',

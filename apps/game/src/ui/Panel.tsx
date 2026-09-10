@@ -16,7 +16,7 @@ import { useDialogStack } from './dialog';
  * the panel on the way in and back to the opener on the way out.
  */
 
-export type PanelProps = {
+type PanelProps = {
   /** Stack identity — also what `useDoor` opens and closes. */
   readonly id: string;
   readonly title: string;

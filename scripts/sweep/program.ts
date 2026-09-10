@@ -64,7 +64,7 @@ function walk(dir: string, out: string[]): void {
 }
 
 /** Every file the sweep considers, absolute, in a stable order. */
-export function sourceFiles(): readonly string[] {
+function sourceFiles(): readonly string[] {
   const found: string[] = [];
   for (const dir of SOURCE_DIRS) walk(join(ROOT, dir), found);
   return found.sort();
@@ -79,7 +79,7 @@ export function sourceFiles(): readonly string[] {
  * unreachable — a sweep reporting a whole layer as dead, which is exactly the
  * kind of false positive that gets a report ignored.
  */
-export function options(): ts.CompilerOptions {
+function options(): ts.CompilerOptions {
   const file = join(ROOT, 'tsconfig.base.json');
   const raw = ts.readConfigFile(file, (p) => readFileSync(p, 'utf8'));
   if (raw.error !== undefined) {

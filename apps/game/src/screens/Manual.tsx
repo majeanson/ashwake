@@ -162,7 +162,7 @@ function drawnOnce(
 const grows = (ids: readonly LessonId[], met: ReadonlySet<TeachId> | null): boolean =>
   met !== null && ids.some((id) => !metHere(id, met));
 
-export type ManualProps = {
+type ManualProps = {
   readonly theme: Theme;
   readonly s: Strings;
   /** Whether this device has a real pointer, and so probably a keyboard. The

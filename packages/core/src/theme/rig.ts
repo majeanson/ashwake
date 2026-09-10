@@ -30,7 +30,7 @@ import { torched } from './torch';
 
 export type Vec3 = readonly [number, number, number];
 
-export type Light = {
+type Light = {
   /** Direction TO the light from the surface, unit length. */
   readonly dir: Vec3;
   readonly intensity: number;

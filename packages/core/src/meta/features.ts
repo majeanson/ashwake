@@ -15,7 +15,7 @@ import type { Strings } from '@text/Strings';
  *     its seed and its rules, with no ambient global deciding the outcome.
  */
 
-export type FeatureDef = {
+type FeatureDef = {
   readonly id: string;
   readonly defaultOn: boolean;
   /**

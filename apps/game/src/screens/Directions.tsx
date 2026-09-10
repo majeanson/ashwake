@@ -28,7 +28,7 @@ import { Swatch } from '../ui/Swatch';
  * to leave the phone on one direction and come back to it an hour later.
  */
 
-export type DirectionsProps = {
+type DirectionsProps = {
   readonly s: Strings;
   /** What the device has stored, which may be AUTO. */
   readonly stored: ThemeId;

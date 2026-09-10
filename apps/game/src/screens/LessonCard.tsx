@@ -28,7 +28,7 @@ import { TipRows } from '../ui/TipRows';
  * those four sentences were written, translated, tested and never shown.
  */
 
-export type LessonCardProps = {
+type LessonCardProps = {
   readonly id: LessonId;
   readonly theme: Theme;
   readonly s: Strings;

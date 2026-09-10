@@ -36,7 +36,7 @@ import { useArtSlot } from '../shell/art';
  * re-typed, so the screen cannot invent a word for a number.
  */
 
-export type EndScreenProps = {
+type EndScreenProps = {
   readonly hud: HudView;
   /** Every scoring harvest's points, in order — the run's shape. */
   readonly harvests: readonly number[];

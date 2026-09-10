@@ -60,7 +60,7 @@ const dummy = new Object3D();
 
 export const UNIT: Layout = { size: 1, originX: 0, originY: 0, orientation: 'pointy' };
 
-export type HexFieldProps = {
+type HexFieldProps = {
   readonly view: BoardView;
   readonly theme: Theme;
   readonly orientation: Layout['orientation'];

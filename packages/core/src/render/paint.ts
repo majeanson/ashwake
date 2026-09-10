@@ -27,7 +27,7 @@ import { mix, type Depth, type Pattern, type Rgb, type Surface } from '@theme/to
  */
 
 /** A stop on a gradient: where, what colour, and how opaque. */
-export type Stop = {
+type Stop = {
   /** 0..1 along the gradient. */
   readonly at: number;
   readonly colour: Rgb;
@@ -116,7 +116,7 @@ export const REFERENCE_HEX_PX = 34;
 export const patternScale = (texturePx: number): number => texturePx / 2 / REFERENCE_HEX_PX;
 
 /** What the surface is being painted for, beyond the surface itself. */
-export type PaintOpts = {
+type PaintOpts = {
   /** The square texture's side, in pixels. */
   readonly texturePx: number;
   /** The direction's depth wash, already resolved by `depthOf`. */
@@ -225,7 +225,7 @@ const SCORCH: PaintOp = {
  * interpreter, because a rotated pattern transform is exact at any angle and a
  * hand-drawn diagonal is not.
  */
-export function patternTile(pattern: Pattern, scale: number): PatternTile | null {
+function patternTile(pattern: Pattern, scale: number): PatternTile | null {
   switch (pattern.kind) {
     case 'none':
       return null;
@@ -372,7 +372,7 @@ export const planKey = (plan: readonly PaintOp[]): string => JSON.stringify(plan
  * The pattern inks are composited at their own alpha over the ground they cover,
  * because an ink at 16% over ash is not the ink and is not the ash.
  */
-export type SurfaceSamples = {
+type SurfaceSamples = {
   /**
    * **Where a centred label actually sits.** The fill or both gradient ends,
    * plus any opaque pattern that replaces the ground rather than inking over

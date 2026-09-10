@@ -102,7 +102,7 @@ type RigHandle = {
 };
 
 /** Where the keyboard is pointing, and what is there. */
-export type Aim = { readonly key: HexKey; readonly cell: CellView };
+type Aim = { readonly key: HexKey; readonly cell: CellView };
 
 export type BoardHandle = {
   zoomBy(factor: number): void;
@@ -199,7 +199,7 @@ export type BoardHandle = {
   focus(): void;
 };
 
-export type BoardProps = {
+type BoardProps = {
   readonly view: BoardView;
   readonly theme: Theme;
   /** The last pop — the store's counter and keys — so the leap can play. */
@@ -261,7 +261,7 @@ export { tourMs } from './flight';
  * an angle rather than nudging one, and `onLeanBy`'s deltas cannot say
  * "exactly here".
  */
-export type LeanSet = { readonly tilt: number; readonly yaw: number; readonly relief: number };
+type LeanSet = { readonly tilt: number; readonly yaw: number; readonly relief: number };
 
 /** The FLAT stop: straight down, squared up, and no relief. Marc's ruling,
  *  2026-09-08 — *"drop both, true north, flat"* — so it is a MAP, not a 3D

@@ -20,7 +20,7 @@ import type { TipRow } from './view';
  */
 
 /** A term made tappable: the spelling, and the lesson it opens. */
-export type ConceptTerm = {
+type ConceptTerm = {
   readonly term: string;
   readonly id: LessonId;
   readonly ink?: 'ink-magic' | 'ink-unique';

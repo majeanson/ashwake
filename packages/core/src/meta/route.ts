@@ -17,7 +17,7 @@
  */
 import { isPlayableDaily } from '@meta/daily';
 
-export type Route = {
+type Route = {
   /** A shared `?seed=` replay, or null off a link. */
   readonly seed: number | null;
   /** The daily's date, or null outside the daily. */

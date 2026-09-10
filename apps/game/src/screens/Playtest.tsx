@@ -45,7 +45,7 @@ import {
  * ever reaches it. `DECISIONS.md` D4 governs the sentences a PLAYER reads.
  */
 
-export type PlaytestProps = {
+type PlaytestProps = {
   readonly sheet: Sheet;
   readonly today: string;
   readonly onNote: (kind: NoteKind, text: string) => void;

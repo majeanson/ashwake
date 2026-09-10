@@ -47,6 +47,6 @@ export const SITE = 'ashwake.marcportal.com';
  * rasterises from — one source, so the favicon in this data URI and the
  * install icons on disk cannot drift apart.
  */
-export const ICON_SVG = MARK_SVG;
+const ICON_SVG = MARK_SVG;
 
 export const ICON_DATA_URI = `data:image/svg+xml,${encodeURIComponent(ICON_SVG)}`;

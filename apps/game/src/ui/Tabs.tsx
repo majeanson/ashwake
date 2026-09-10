@@ -30,7 +30,7 @@ import { useRef, type KeyboardEvent } from 'react';
  *     player press twice.
  */
 
-export type Tab<Id extends string> = {
+type Tab<Id extends string> = {
   readonly id: Id;
   readonly label: string;
   /**
@@ -45,7 +45,7 @@ export type Tab<Id extends string> = {
   readonly grows?: boolean;
 };
 
-export type TabsProps<Id extends string> = {
+type TabsProps<Id extends string> = {
   /**
    * What this row of tabs belongs to — `manual`, `fame`.
    *

@@ -88,7 +88,7 @@ export const linearToSrgb = (l: number): number =>
  * because WCAG's ratio is defined on linear light rather than on L*. Two
  * functions, one gamma decode, no chance of the two disagreeing.
  */
-export function luminance(c: Rgb): number {
+function luminance(c: Rgb): number {
   const srgb = [(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff].map((v) => srgbToLinear(v / 255)) as [
     number,
     number,
@@ -265,9 +265,9 @@ export type Pattern =
  * circle, a triangle, a square and a diamond differ in silhouette rather than
  * in detail, so they stay apart at the size a native field is drawn.
  */
-export type GlyphShape = 'circle' | 'triangle' | 'square' | 'diamond';
+type GlyphShape = 'circle' | 'triangle' | 'square' | 'diamond';
 
-export const NO_PATTERN: Pattern = { kind: 'none' };
+const NO_PATTERN: Pattern = { kind: 'none' };
 
 /**
  * How one kind of cell is painted.
@@ -343,7 +343,7 @@ export type AssetId =
   | 'ui.runEnd';
 
 /** Ink roles. Named for the job, so a direction can move any of them anywhere. */
-export type Ink = {
+type Ink = {
   /** Page and canvas background. */
   readonly bg: Rgb;
   /** Primary reading colour — the big numbers. */
@@ -429,7 +429,7 @@ export type Ink = {
   readonly haloWidth: number;
 };
 
-export type Type = {
+type Type = {
   /** Numbers and headings. */
   readonly display: string;
   /** Small tracked labels — TILES, POINTS, MAP, COST. */
@@ -451,7 +451,7 @@ export type Type = {
 /**
  * How the board is composed, as distinct from what the cells look like.
  */
-export type Board = {
+type Board = {
   readonly background: Rgb;
   /**
    * Gap between hexes, as a fraction of the hex radius.
@@ -755,7 +755,7 @@ export type Light = {
 };
 
 /** See `Theme.fog`'s own doc for what the two numbers mean. */
-export type Fog = {
+type Fog = {
   readonly veil: number;
   readonly alpha: number;
 };
@@ -1114,7 +1114,7 @@ export function fieldOverlayPattern(theme: Theme, colour: Colour): Pattern {
  * hex and the field around it read as one material at two weights rather
  * than two eras of art. Material under, marks over: see `bakeSurface`.
  */
-export type FieldGround =
+type FieldGround =
   | {
       readonly kind: 'art';
       readonly base: Surface;

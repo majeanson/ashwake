@@ -7,7 +7,7 @@ import { Icon } from './Icon';
  * cells — and they had already drifted in their markup. One shape.
  */
 
-export type Fact = {
+type Fact = {
   readonly label: string;
   /** A mark drawn INSTEAD of the label. `label` stays the accessible name. */
   readonly icon?: IconName | undefined;

@@ -34,7 +34,7 @@ export type ShareSubject =
       readonly tries: number;
     };
 
-export type Shared = {
+type Shared = {
   readonly text: string;
   /** Exactly the query the receiver needs — never this device's own rig. */
   readonly params: Readonly<Record<string, string>>;

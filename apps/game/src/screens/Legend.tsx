@@ -69,7 +69,7 @@ const PLACES = (Object.keys(LESSON_FOR_REWARD) as (keyof typeof LESSON_FOR_REWAR
   (reward) => ({ reward, id: LESSON_FOR_REWARD[reward] }),
 );
 
-export type LegendProps = {
+type LegendProps = {
   readonly theme: Theme;
   readonly s: Strings;
 };

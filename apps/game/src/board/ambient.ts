@@ -58,7 +58,7 @@ export type Ember = {
   readonly colour: number;
 };
 
-export type EmberPhase = {
+type EmberPhase = {
   readonly y: number;
   readonly x: number;
   readonly z: number;

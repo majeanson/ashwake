@@ -24,7 +24,7 @@ import { BAND_LIFT, mix, type Rgb, type Theme } from './tokens';
  */
 
 /** What the renderer knows about one cell's light, and nothing else. */
-export type CellLight = {
+type CellLight = {
   /** The view's own resolved torch, 0..1. */
   readonly light: number;
   /** Which contour band this ground sits in; 0 where the world is flat. */
@@ -40,7 +40,7 @@ export type CellLight = {
  * sprite); a 3D board cannot, because alpha on a prism shows the prism behind
  * it, so the step-back is taken out of the tint instead.
  */
-export const DIMMED_STEP = 0.45;
+const DIMMED_STEP = 0.45;
 
 /**
  * The tint one cell wears: the board's own background lifted toward white by

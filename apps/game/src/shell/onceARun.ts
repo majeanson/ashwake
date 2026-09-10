@@ -23,7 +23,7 @@ import type { Strings } from '@text/Strings';
 
 export type OnceId = 'newGround' | 'unique';
 
-export type Moment = {
+type Moment = {
   readonly state: GameState;
   /** How far this run has actually built — the view's own measure. */
   readonly hud: HudView;

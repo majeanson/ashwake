@@ -54,7 +54,7 @@ export const ZOOM_STEP = 1.15;
  *  thumb's drag, so a board can be crossed in a handful of presses. */
 export const PAN_STEP = 96;
 
-export type BoardCommand =
+type BoardCommand =
   | { readonly kind: 'cursor'; readonly dir: Direction }
   | { readonly kind: 'pan'; readonly dir: Direction }
   | { readonly kind: 'zoom'; readonly closer: boolean }
@@ -141,7 +141,7 @@ export function commandFor(chord: Chord): BoardCommand | null {
  * that the board must not take a key some control was going to use — which is a
  * short list, and this is it.
  */
-export type FocusKind = 'none' | 'control' | 'text';
+type FocusKind = 'none' | 'control' | 'text';
 
 export function focusKindOf(element: Element | null): FocusKind {
   if (element === null) return 'none';

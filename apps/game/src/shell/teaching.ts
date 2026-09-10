@@ -29,7 +29,7 @@ import { statNote, type HudView } from '@view/view';
  */
 
 /** What the game wants to say right now. */
-export type Teach = {
+type Teach = {
   readonly id: TeachId;
   /** A card interrupts; a toast is one line and goes on its own. */
   readonly as: 'card' | 'toast';

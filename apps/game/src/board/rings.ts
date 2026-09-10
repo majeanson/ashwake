@@ -15,12 +15,12 @@ import { kindOf, topOf } from './relief';
  * the field's job.
  */
 
-export type Ring = {
+type Ring = {
   readonly colour: number;
   readonly width: number;
 };
 
-export type PlacedRing = Ring & {
+type PlacedRing = Ring & {
   readonly x: number;
   readonly z: number;
   /** The top the ring floats a hair above. */

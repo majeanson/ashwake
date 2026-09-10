@@ -66,9 +66,9 @@ import { Icon } from '../ui/Icon';
  * three times and drifted away from three times.
  */
 
-export type View = 'flat' | 'home' | 'mine';
+type View = 'flat' | 'home' | 'mine';
 
-export type CameraProps = {
+type CameraProps = {
   readonly s: Strings;
   /** Where the button will go NEXT — its own label, and the whole rule above. */
   readonly next: View;

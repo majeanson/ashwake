@@ -21,7 +21,7 @@ import { rad } from './camera';
 /** Far enough that it reads as a direction. Only the direction is used. */
 const DISTANCE = 100;
 
-export type LightRigProps = {
+type LightRigProps = {
   readonly rig: Rig;
   /** Degrees the board is turned under the camera. */
   readonly yaw: number;

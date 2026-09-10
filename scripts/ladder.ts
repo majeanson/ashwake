@@ -46,7 +46,7 @@ export const TERRAINS = ['green', 'yellow', 'red', 'blue'] as const;
 
 export type Rung = { readonly token: number; readonly measured: number };
 /** `{ [themeId]: { [terrain]: Rung } }`, exactly as it is committed. */
-export type Ladder = Readonly<Record<string, Readonly<Record<string, Rung>>>>;
+type Ladder = Readonly<Record<string, Readonly<Record<string, Rung>>>>;
 
 /** Where the committed ladder lives — beside the art it grades. */
 export const LADDER_FILE = fileURLToPath(
@@ -54,7 +54,7 @@ export const LADDER_FILE = fileURLToPath(
 );
 
 /** A committed terrain PNG's path, for a direction and a colour. */
-export const terrainFile = (themeId: string, terrain: string): string =>
+const terrainFile = (themeId: string, terrain: string): string =>
   fileURLToPath(
     new URL(`../apps/game/public/assets/${themeId}/terrain.${terrain}.png`, import.meta.url),
   );

@@ -29,7 +29,7 @@ import { ICON_PATH } from './icons.gen';
  * passes `title` and it becomes an `img` with a name.
  */
 
-export type IconProps = {
+type IconProps = {
   readonly name: IconName;
   /**
    * The accessible name, where this icon is the only thing saying what it is.
