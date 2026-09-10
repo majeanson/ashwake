@@ -291,7 +291,11 @@ export function fieldSweep(w: Workspace): readonly Finding[] {
      */
     /* The module a reader would spell to import this file — `@meta/features`
      * is how `Settings.tsx` names the home of `FeatureDef`. */
-    const moduleName = path.replace(/.tsx?$/, '').split('/').slice(-2).join('/');
+    const moduleName = path
+      .replace(/.tsx?$/, '')
+      .split('/')
+      .slice(-2)
+      .join('/');
     const fields = fieldsOf(file);
     const refs = new Map<ts.Identifier, readonly ts.ReferenceEntry[]>();
     for (const { name } of fields) refs.set(name, refsOf(w, file, name));

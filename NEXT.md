@@ -330,6 +330,51 @@ project**, because it makes a flake look like a flake instead of like a
 regression somebody has to disprove by hand — which is what this session spent
 twenty minutes doing.
 
+**AND THE THIRD SYMPTOM IS NOT A FLAKE OF THAT KIND — IT FAILS ALONE, AND IT
+IS A THRESHOLD (2026-09-10, Session 79).** `board.spec.ts:683` — "the view
+cycle hands the board back" — failed a full run and then failed **once in three
+runs of that spec on its own**, which is the property the entry above says
+these do not have. Measured: `settleUntil(page, own, 'home')` returned
+**3.0894** and **3.3971** against a `toBeLessThan(3)`.
+
+**It is not this session's change, and that is proved rather than argued.** The
+only edit to `board/` was giving `{ cx, cz }` the name `Centre` in
+`camera.ts`. Building HEAD and building the change produces **byte-identical
+JavaScript across all five bundled assets** (sha256, `apps/game/dist`), so the
+shipped code is the same code. Whatever this is, it predates the session.
+
+**What the number means, because it decides who fixes it.** `stillBoard` calls
+a board STILL when two frames are less than **1.5** apart — that is the ambient
+life, the embers and the beacons' breath, averaged over 48×48. `settleUntil`
+calls a board HOME when it is less than **3** apart from the reference shot.
+So the whole margin between "this board is holding still" and "this board is
+back where it started" is 1.5 units wide, and the failures land 0.1 to 0.4
+outside it. That is a tolerance chosen to be tight, sitting one ambient beat
+away from its neighbour.
+
+**A hypothesis worth writing down and NOT worth acting on yet**: this spec does
+not call `watchErrors`. A shader that fails to link — the symptom the first
+entry above describes — would leave the board drawing something slightly
+different and would surface here as exactly this assertion, with no canary to
+say why. That would make two symptoms one cause. It is a guess; the evidence for
+it is that both live on one machine and neither has appeared on CI.
+
+**The decision is yours, and it is three ways:**
+
+1. **A retry on the chromium project.** Cheapest, and it stops a flake looking
+   like a regression. It also hides the cause, and if the hypothesis above is
+   right the cause is a renderer failing to link on this GPU.
+2. **Widen the tolerance, with a measured basis** — sample the settled distance
+   over twenty runs and set the bar off that, rather than off 3. Honest work,
+   but `CLAUDE.md`'s standing instruction about thresholds is **do not relax
+   one to pass**, and it is written about the palette for the same reason it
+   applies here.
+3. **Find out what fails to link.** The real fix, the most expensive, and the
+   only one that answers the first entry above as well.
+
+**Nothing was changed.** Relaxing a threshold to make a suite green is the one
+move the rules name, so the measurements are the deliverable.
+
 **A DAILY IN PROGRESS CANNOT BE RESTARTED (2026-09-10, Marc playing:** _"we
 still cant restart a daily without us getting back to our worlds"_**).**
 

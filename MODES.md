@@ -49,6 +49,16 @@ Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
 | **takeCrossing**                                                      | null           | false               | none (fresh world)       | `economyAt` | **true**     |
 | **RESET ALL** (direct `session.restart`)                              | null           | false (default)     | none                     | `economyAt` | —            |
 
+**NOT MODE FLAGS**, and this list is what makes the table above checkable:
+`Door` carries ten fields and the five columns are the five that decide what
+KIND of run this is. The other five — `resume`, `seed`, `wakeAt`, `from` and
+`fromMenus` — are facts about one PRESS: which board is being handed back, on
+what seed, whether a camp was chosen, what this run measures its gains against,
+and whether a panel has to close behind it. `seed` is in the three-kinds table
+above, where it belongs. **An eleventh field fails `shell/modes.test.ts` until
+somebody decides which of the two it is**, which is the one question the
+compiler cannot ask — it can only insist every door answers.
+
 **`detour` is false on every door and that is not redundancy.** A detour can
 only be ENTERED at boot, from the URL. Making each door say so is the check
 that a sixth door cannot forget — which is exactly what went wrong when the
@@ -79,13 +89,24 @@ holding facts it did not earn, seal the survey.**
 Both halves of the banking fork refuse a run played on a foreign board, and
 they are the same rule stated twice because they write different ledgers:
 
-- **`settle`** — `state.rootSeed !== world.worldSeed` returns every ledger
-  untouched. Ground unioned from a foreign geography is unremovable afterwards.
-- **`settleDaily`** — `state.rootSeed !== dailySeed(date)` returns the ladder
-  and the diary untouched. Added 2026-09-09; this half took the date on trust
-  for the whole of Stage 4, and the ladder is the one ledger compared BETWEEN
-  people, so a score on it from a private board is the only kind of wrong
-  nobody can notice from outside.
+- **`settle`** refuses a run whose `rootSeed` is not the world's and returns
+  every ledger untouched. Ground unioned from a foreign geography is
+  unremovable afterwards. Proved by **"a run played on somebody else's seed"**
+  in `shell/settle.test.ts`.
+- **`settleDaily`** refuses a run whose `rootSeed` is not `dailySeed(date)`
+  and returns the ladder and the diary untouched. Added 2026-09-09; this half
+  took the date on trust for the whole of Stage 4, and the ladder is the one
+  ledger compared BETWEEN people, so a score on it from a private board is the
+  only kind of wrong nobody can notice from outside. Proved by **"a daily
+  banked from a board that is not that date's"**, same file.
+
+**Both citations are asserted** (`shell/modes.test.ts`), and the citation is
+the point rather than the prose: a guard is protected by its test, so a matrix
+that names the test fails when the proof is deleted and not merely when the
+sentence rots. This section used to QUOTE the two expressions instead, and one
+of the two quotes was already wrong — `settle` compares against `before`, not
+a variable called `world`. A doc that quotes code is a doc that has to be
+edited every time the code is tidied, which is how it stops being edited.
 
 ## Which reader may see a foreign board, and which may not
 
@@ -123,3 +144,18 @@ run on this world" are different questions, and every reader has to pick one.
   `PASS.md` P10.5, which is the item that exists because of it: a matrix that
   states in prose what the code could assert goes stale on the same day it is
   written.
+
+---
+
+## Names in this file the code does not declare
+
+`shell/modes.test.ts` asserts that every symbol either matrix names in
+backticks is declared somewhere in `packages/core/src` or `apps/game/src` — so
+a rename cannot quietly turn a claim about today into a claim about a version
+that is gone. Two kinds of name legitimately cannot resolve, and they are
+listed rather than excluded by a rule, because a reader wants to know which
+names they can go and read:
+
+**GONE:** nothing. Every symbol this file names is still there.
+
+**NOT OURS:** nothing. This file names no platform API.

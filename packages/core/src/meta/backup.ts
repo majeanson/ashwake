@@ -100,9 +100,7 @@ const LEGACY_KEYS: Readonly<Record<string, string>> = {
  * would leave a blob on the device that nothing ever reads and every wipe has
  * to keep sweeping.
  */
-function migrateLegacy(
-  keys: Readonly<Record<string, unknown>>,
-): Readonly<Record<string, string>> {
+function migrateLegacy(keys: Readonly<Record<string, unknown>>): Readonly<Record<string, string>> {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(keys)) {
     const now = LEGACY_KEYS[key];

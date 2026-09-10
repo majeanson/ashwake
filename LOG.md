@@ -6221,8 +6221,8 @@ walked only EXPORTED declarations — so `Ring.width` and
 along with their types. What told me was the **"Rulings that match nothing"**
 section, on the very first run after the batch: two entries with no subject.
 That section was added a day earlier on the argument that an allowlist entry
-matching nothing means the subject is gone *or a pass has quietly stopped
-seeing it*, and it earned its place inside twenty-four hours on the second
+matching nothing means the subject is gone _or a pass has quietly stopped
+seeing it_, and it earned its place inside twenty-four hours on the second
 reading. `export` was never the right question for a field, an optional input,
 a call site or a comparison.
 
@@ -6264,8 +6264,8 @@ otherwise.** `meta/daily#dailyRunFor` IS the rule — "the board to resume for
 `date`, or null; a mismatch is not an error, an unfinished board from another
 date is simply not today's" — pure, tested, and called by nothing.
 `storage.ts#readDailyRun` spelled `kept.date !== date` out a second time, and
-`storage.ts`'s own comment on the storage key says *"`dailyRunFor` is where
-that guard lives"*. It was not, until today. `App.tsx` calls the same guard
+`storage.ts`'s own comment on the storage key says _"`dailyRunFor` is where
+that guard lives"_. It was not, until today. `App.tsx` calls the same guard
 "the one rule a daily may never break". That is the third time this repository
 has caught a comment asserting an invariant nothing enforced, and the second
 this week.
@@ -6322,8 +6322,8 @@ pass that shipped report-only because it predicted it.
 **WHAT IS LEFT IS MARC'S, AND IT IS THE BEST THING IN THE REPORT.** Five facts
 the HUD computes on every frame and no screen says, all in `NEXT.md` §1. The
 loudest is the colour lens: long-press a card in Ashwake 1 and the line under
-the board gave you the ground's whole report — *N tiles standing, worth W, B of
-it from its power (ash), R ripe now, and the formula* — and this body dims the
+the board gave you the ground's whole report — _N tiles standing, worth W, B of
+it from its power (ash), R ripe now, and the formula_ — and this body dims the
 board and says LICHEN. Every number is computed, `colourPotentials` tallies
 every live tile TWICE per HUD build to measure each power's own take rather
 than estimate it, and all of it is thrown away. `INTERACTIONS.md` marks that
@@ -6349,3 +6349,146 @@ both had to be declared above it; lint caught each as an unused assignment
 rather than as the import-time throw it would have been. Session 77 paid for
 this lesson eight days ago in `store.ts` and it is the same lesson: a `const`
 read before its own declaration.
+
+### Session 79 — the matrices answer to tests (2026-09-10)
+
+**Question (`PASS.md` P10):** can a matrix be generated without becoming a
+matrix nobody reads?
+
+**Answer: no, and it should not be generated — and the item's best find came
+from neither matrix.**
+
+**Why generation is the wrong instrument.** A generated door table prints what
+the compiler already knows: `daily` is a `string | null` at all four doors,
+`keepsWorld` a boolean. What it cannot print is the WHY column, which is the
+only reason anybody opens `MODES.md`. So it would produce documentation of the
+type system — and P10's own paragraph named that failure before the work
+started. `apps/game/src/shell/modes.test.ts` takes the outcome the row
+pre-authorised instead: eight assertions that fail when the doc and the code
+disagree, and no generation at all.
+
+**Where the check goes is the whole craft, and the two files are not alike.**
+`MODES.md`'s door table has column headers that ARE `Door`'s field names and
+rows that ARE call sites; that is structure, and it is checked. Adding an
+eleventh `Door` field fails until somebody classifies it — the file now carries
+a NOT MODE FLAGS list, because five of the ten fields are facts about one PRESS
+rather than about a MODE, and that is the one question the compiler cannot ask.
+It can only insist every door answers.
+
+`INTERACTIONS.md` is not that. Its third column is `✓`, `→ was a silent
+no-op`, `—` — a narrative comparison against Ashwake 1 — and P10.3's original
+wording (every ✓ names its handler) would have buried a hundred handler names
+in it. **That buys a check at the cost of the readability that makes anyone
+open the file, which is the failure and not the fix.** What is checked there is
+the NAMES: every symbol either matrix spells in backticks must be declared in
+the two source trees, or listed in that file's own exceptions section, split
+into GONE and NOT OURS. A matrix that compares two bodies is half history by
+design, so the exceptions are enumerated rather than excused by a rule — and
+the list is the answer a reader wanted anyway: which of these can I still go
+and read?
+
+**WHAT THE TESTS THEMSELVES FOUND: almost nothing, and it is worth saying so.**
+Six names failed on the first run and every one was correct prose — two
+deliberate history, four the platform's (`contextmenu`, `change`, `visible`,
+`inert`). **The first draft of the test's own docblock claimed the file was
+stale about the two, and it was not**: `searchFor` is written as "is **gone**"
+in its own sentence and `isTappable` is past tense on purpose. I corrected the
+claim before it shipped, which is the second time in two sessions that writing
+the justification down is what exposed it as wrong.
+
+**One real inaccuracy, and it changed the design.** `MODES.md` QUOTED
+`state.rootSeed !== world.worldSeed`; `settle` compares against `before`. The
+first version of that test matched the text, so it was pinning a tidy-up rather
+than a rule — and passing it would have taught the matrix to quote code, which
+is a doc that must be edited every time the code is tidied and therefore a doc
+that stops being edited. **A guard is protected by its TEST.** So the file cites
+the suite that proves each half — "a run played on somebody else's seed", "a
+daily banked from a board that is not that date's" — and the test asserts the
+citation resolves. Deleting the proof fails, which is strictly stronger than
+noticing later that a sentence rotted.
+
+**AND THE REAL FIND CAME FROM TWO INSTRUMENTS DISAGREEING.**
+`INTERACTIONS.md` said `previewColour` was _"unread ON PURPOSE now"_ — on the
+row written expressly to stop a fourth pass re-opening it — and `HexField.tsx`
+has tinted every legal hex with the held card's colour since 2026-09-08, as a
+preview FILL at `theme.ghost`'s alpha. That is exactly what the reverted
+attempt's own post-mortem prescribed: _"if the held colour is ever worth
+showing on this board it belongs to the preview FILL, not the outline."_ Only
+the OUTLINE still refuses the field, and `board/rings.ts` says so at the line,
+in the one place it is true of.
+
+**A stale ruling sends a session to re-open a question that was already
+ANSWERED** — P10.5's failure pointing the other way, from one cause. Nothing in
+the new tests caught it. What caught it was asking why `pnpm sweep` reported
+nothing about a field the matrix called dead: I suspected my own `readIndex`
+filter was muting a true finding, disabled the withhold, re-ran, and the field
+still did not appear — so the sweep was right and the prose was wrong. **The
+filter I was checking on was innocent, and the check found something else.**
+
+That is P10.4's whole argument, arriving on the day it was implemented: the
+ruled-dead live in `allow.ts`, dated and argued once, and the matrices cite it.
+`HOME` and the `previewColour` argument are citations now rather than copies.
+
+**And the sweep is a CI gate.** `pnpm sweep` exits non-zero on a finding, on a
+ruling that matches nothing, or on a ruling past its `until`; `ci.yml` runs it
+and then diffs `SWEEP.md`, the same pairing the golden sim has, because a tool
+that grades its own output is not a check. There is deliberately no `--check`
+flag — the run is the same run, and the file in the repository is the artefact
+a reader trusts.
+
+P1 wrote the bar so a later session could not invent a softer one: one clean run
+with an empty allowlist delta. The last two findings in the entire report were
+this item's — `runsOf(slot)` and `streamOf(slot)`, whose per-world filter chips
+are unbuilt and whose call site in `screens/Fame.tsx` says so out loud. Ruled,
+with the warning that `streamOf`'s shared-run branch is a RULE about the
+unbuilt screen and would be deleted along with the parameter. **330 findings →
+0, 91 rulings, nothing orphaned.**
+
+**Verified by mutation, as the row asked.** An eleventh `Door` field fails with
+`` `Door.newFlagNobodyClassified` is neither a column in MODES.md's door table
+nor under NOT MODE FLAGS ``; a door that spreads a default fails with
+`enterRun call 1 spreads a default instead of stating its whole Door`. And the
+gate itself was checked in both directions — a planted dead export took `pnpm
+sweep` to exit 1, naming what to do about it.
+
+**Two things caught by running the gate rather than by reasoning about it.**
+
+**The gate I had just written would have failed on every CI run.** `SWEEP.md`
+carried a `Generated on <date>` line and an `in 95.1s` duration, and `ci.yml`
+diffs the file — so a byte that changes on every run is a check that fails on
+every run. Found by running `git diff --exit-code -- SWEEP.md` before pushing
+rather than after. Both are gone from the file and print to stdout instead, and
+losing them costs a reader nothing: a "generated on" date says when somebody
+ran a tool, not when its answer was true, and git knows the second. Two
+consecutive runs are byte-identical now, which is the property the gate needs
+and did not have.
+
+**And Session 78's commit shipped an unformatted file.** `pnpm format:check`
+flagged `packages/core/src/meta/backup.ts`, which this session never touched:
+demoting `export function migrateLegacy` shortened the signature enough for
+prettier to want it on one line, and I ran `lint` and not `format:check` before
+committing. CI would have failed on the previous commit. The same reflow landed
+in `camera.ts` from the `Centre` rename. `PASS.md`'s per-item gate lists
+`format:check` first for exactly this reason and I did not run it — the lesson
+is not about prettier.
+
+**And the e2e suite is not green, which took a bundle diff to be sure about.**
+`board.spec.ts:683` failed a full run and then failed **once in three runs of
+that spec alone** — 3.0894 and 3.3971 against `toBeLessThan(3)`. This session
+had edited `camera.ts`, so "it is the known flake" was not a claim I was
+entitled to make. **Building HEAD and building the change gives byte-identical
+JavaScript across all five bundled assets**, so the shipped code is the same
+code and the flake predates the work. That is the cheapest possible proof for a
+type-only change and it is worth remembering as a technique: a rename that
+should not reach runtime can be shown not to, in one build and one `sha256sum`.
+
+It is also a DIFFERENT failure from the one `NEXT.md` §1 already records: that
+one passes alone, this one does not, and this one is a threshold — the margin
+between `stillBoard`'s "this board is holding still" (1.5) and `settleUntil`'s
+"this board is back where it started" (3) is 1.5 units wide, and the failures
+land a tenth to four tenths outside it. The measurements, a hypothesis that
+would unify the two symptoms (this spec does not call `watchErrors`, so a
+shader that failed to link would surface as exactly this assertion and never as
+the canary), and three ways out are in §1. **Nothing was relaxed**: a threshold
+widened to make a suite green is the one move `CLAUDE.md` names, and the
+measurement is the deliverable.

@@ -229,21 +229,34 @@ every field of `CellView` and `BoardView` and grepped the board for each.
 | Field / export       | Was                                                         | Now                                                                |
 | -------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
 | `voice.dry`          | every direction tunes the note; **nothing ever played it**  | the low fade, with Ashwake 1's hysteresis (`shell/dry.ts`)         |
-| `cell.previewColour` | legal edges in one fixed ink — the very bug the field fixed | **tried and REVERTED the same day** — see below                    |
+| `cell.previewColour` | legal edges in one fixed ink — the very bug the field fixed | the held card, as a preview FILL since 2026-09-08 — see below      |
 | `cell.band`          | five contour bands; the **3D** board drew them flat         | the world's own slopes, under the rarity channel                   |
 | `startingPerk`       | exported "so the UI can say why", said by nothing           | the arrival line, through `beginRun`                               |
 | the manual's drip    | all thirteen lessons printed to everyone                    | grows with the ledger, and a tab says when it is holding some back |
 
-**`previewColour` is unread ON PURPOSE now**, and this is the row a fourth pass
-will otherwise re-open. Wiring it made a legal hex wear the held card's colour;
-Marc caught it on a phone within the hour — _"the first tile i put seems to
-refresh the whole map display"_ — because after a placement the hand redraws
-and **every legal edge changed colour at once**. It worked in Ashwake 1 because
-there it was a hairline at `alpha: 0.75`; here it is a `0.16` ring band at full
-opacity, so the colour source was ported and the weight was not. If the held
-colour is ever worth showing on this board it belongs to the preview FILL, not
-the outline, and that is Marc's call on a phone. `rings.test.ts` pins the edge
-against the hand.
+**`previewColour` IS READ, and this paragraph said it was not until
+2026-09-10.** `HexField.tsx` has tinted every legal hex with the held card's
+colour since 2026-09-08 — as a FILL at `theme.ghost`'s alpha, which is exactly
+what the reverted attempt's own post-mortem prescribed. What refuses the field
+is the OUTLINE, and only the outline: `board/rings.ts` says so at the line, in
+the one place that is true of.
+
+That is worth more than the correction. **This was the row written to stop a
+fourth pass re-opening a settled question, and by being stale it would have
+sent one to re-open a question that had already been ANSWERED** — the opposite
+error, from the same cause. It is P10.5's shape a second time and it is the
+argument for this whole item: a ruling restated in prose drifts from the code
+it is about, whichever direction the code moves.
+
+The history, because it is why the fill and not the edge: wiring it into the
+ring made a legal hex wear the held card's colour, and Marc caught it on a
+phone within the hour — _"the first tile i put seems to refresh the whole map
+display"_ — because after a placement the hand redraws and **every legal edge
+changed colour at once**. It worked in Ashwake 1 because there it was a
+hairline at `alpha: 0.75`; here the ring is a `0.16` band at full opacity, so
+the colour source was ported and the weight was not. **`board/rings.ts` is the
+authority on that and this file does not restate it** (P10.4);
+`rings.test.ts` pins the edge against the hand.
 
 Verified rather than fixed, so a third pass need not re-walk them: the keeper's
 lifetime guards and hide-flush, `theme/tokens.ts` and `labelFor` (both
@@ -270,10 +283,13 @@ not by the board directly), and every key in the text catalogue.
    opened. Pinned in `e2e/menus.spec.ts`. `meta/route`'s `parseRoute` is read
    at boot for all three of its fields — `?seed=`, `?daily=` and `?camp=`;
    `searchFor` was the deletion D9 implied and is **gone**, while `HOME` stays
-   as what "no query at all" IS.
+   as what "no query at all" IS — ruled, once, in `scripts/sweep/allow.ts`
+   rather than argued again here (P10.4).
 3. **`meta/mark`**'s maskable exports duplicate nothing the app renders, and
    are kept on purpose: they are the source the shipped maskable icons were
    baked from, and the baker is part of the art pipeline `NEXT.md` §5 holds.
+   `pnpm sweep` agrees without a ruling — `scripts/icons.ts` is a consumer, so
+   there is nothing here to exempt.
 
 Everything else this file has ever listed is built. The standing check that
 found most of it is in `CLAUDE.md`: before calling a screen done, grep for a
@@ -322,3 +338,26 @@ behaviour**, and declaring one without keeping it is worse than declaring
 neither. A screen reader announces "tab, 1 of 4" and then hands the player a
 row of buttons. Nothing in a gesture matrix can see that, because from a
 finger's side it works.
+
+---
+
+## Names in this file the code does not declare
+
+`shell/modes.test.ts` asserts that every symbol this file names in backticks is
+declared somewhere in `packages/core/src` or `apps/game/src`. **This file
+compares two bodies, so half of what it names is deliberately history** — and
+that is exactly why the exceptions are enumerated here instead of excused by a
+rule: a reader skimming a ✓ row deserves to know whether the thing named in it
+is something they can still go and read.
+
+**GONE — named here on purpose, and not in the code:**
+
+- `searchFor` (`meta/route`) — the deletion D9 implied, and §7 already says
+  **gone**. Its neighbour `HOME` stays, as what "no query at all" IS.
+- `isTappable` (`HexField`) — the raycast filter that refused beacons and
+  remembered fog. Gone with the 2026-09-01 fix; the note at
+  `HexField.tsx:473` is what is left of it, and this file's sentence about it
+  is past tense for that reason.
+
+**NOT OURS — the platform's names, not this codebase's:** `contextmenu`,
+`change` and `visible` are DOM events; `inert` is an HTML attribute.

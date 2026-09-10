@@ -4,7 +4,78 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-10 — the sweep's first report, adjudicated, and the
+Last checkpoint: **2026-09-10 — the matrices answer to tests, and the sweep is
+a CI gate.**
+
+`PASS.md` P10 is DONE, and with it P1's last promise. `LOG.md` Session 79.
+**330 findings → 0, 91 rulings, nothing orphaned.**
+
+**Verified:**
+
+- **`pnpm sweep` is a CI gate**, which P1 wrote the bar for and left to P10:
+  non-zero on a finding, on a ruling that matches nothing, or on a ruling past
+  its `until`. `ci.yml` runs it and then diffs `SWEEP.md`, the same pairing the
+  golden sim has, because a tool that grades its own output is not a check.
+  Checked in both directions — a planted dead export exits 1 and says what to
+  do about it.
+- **The report is deterministic**, which the gate needed and did not have: the
+  `Generated on <date>` line and the run duration are gone from the file and
+  print to stdout. Two consecutive runs are byte-identical. Caught by running
+  the diff before pushing, not by reasoning about it.
+- **`MODES.md` and `INTERACTIONS.md` answer to eight assertions**
+  (`apps/game/src/shell/modes.test.ts`) and nothing is generated. A generated
+  door table would print what the compiler knows and not the WHY column, which
+  is the only reason the file is opened; P10's own paragraph named that
+  failure, so the item took the outcome it pre-authorised — a test that fails
+  when doc and code disagree.
+- **Verified by mutation, as the row asked.** An eleventh `Door` field fails
+  naming the field; a door that spreads a default fails naming the door.
+  `MODES.md` carries a NOT MODE FLAGS list now, because five of `Door`'s ten
+  fields are facts about one PRESS rather than about a MODE.
+- **The guards cite their proofs.** `MODES.md` quoted
+  `state.rootSeed !== world.worldSeed` and `settle` compares against `before`,
+  so the first version of that test pinned a tidy-up rather than a rule — and
+  would have taught the matrix to quote code, which is a doc that must be
+  edited whenever the code is tidied. Each half now names the suite that proves
+  it and the test asserts the citation resolves.
+- **A stale ruling found, and it was pointing the wrong way.**
+  `INTERACTIONS.md` said `previewColour` was "unread ON PURPOSE now" — on the
+  row written to stop a fourth pass re-opening it — while `HexField.tsx` has
+  read it as a preview FILL since 2026-09-08, which is what the reverted
+  attempt's own post-mortem prescribed. Only the OUTLINE refuses it, and
+  `board/rings.ts` says so at the line. **Nothing in the new tests caught it**:
+  it was caught by asking why the sweep reported nothing about a field the
+  matrix called dead. Two instruments disagreeing is the finding, and P10.4 —
+  one home for the ruled-dead — is the fix for the class.
+- **P10.4 in force**: the ruled-dead live in `scripts/sweep/allow.ts`, dated and
+  argued once; `HOME` and the `previewColour` argument are citations now rather
+  than copies. The last two findings in the whole report were this item's —
+  `runsOf(slot)`, `streamOf(slot)`, whose per-world filter chips are unbuilt and
+  whose call site says so — ruled with the warning that `streamOf`'s shared-run
+  branch is a rule about the unbuilt screen.
+
+**Counts:** 1168 unit tests / 89 files; `pnpm sweep` 0 findings / 91 rulings /
+no orphans, byte-identical on a second run; `pnpm sim` byte-identical to
+`packages/core/sim.golden.txt`; `pnpm format:check`, `typecheck`, `lint` and
+`build` clean.
+
+**E2E IS NOT GREEN ON THIS MACHINE, AND IT IS NOT THIS SESSION'S FAULT.**
+`board.spec.ts:683` fails about one run in three — **including on its own**,
+which is new — on `settleUntil(...)` returning 3.09 and 3.40 against a
+`toBeLessThan(3)`. WebKit is green at 46. **Proved independent of this work**:
+building HEAD and building the `Centre` rename give byte-identical JavaScript
+across all five bundled assets, so the shipped code is the same code. It is a
+THRESHOLD flake rather than the "passes alone" GPU one, the margin between
+"still" (1.5) and "home" (3) is 1.5 units wide, and `NEXT.md` §1 carries the
+measurements and three ways out. **Nothing was relaxed** — that is the one move
+`CLAUDE.md` names.
+
+**Session 78's commit shipped an unformatted file**, found here:
+`packages/core/src/meta/backup.ts`, reflowed by prettier because a demotion
+shortened its signature. `lint` was run and `format:check` was not, and CI would
+have failed on that commit. Fixed.
+
+Previous checkpoint: **2026-09-10 — the sweep's first report, adjudicated, and the
 tool was wrong five times.**
 
 `PASS.md` P1 is DONE. `LOG.md` Session 78. **330 findings → 2**, and both

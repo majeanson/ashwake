@@ -361,10 +361,7 @@ export const FIT_HEX_PX_MIN = 16;
  * hands it over, and it is read only in the cropped case, so a board that
  * fits whole is framed exactly as it always was.
  */
-export function fitCamera(
-  frame: Frame,
-  focus?: Centre,
-): CameraState {
+export function fitCamera(frame: Frame, focus?: Centre): CameraState {
   if (frame.fit.size <= 0) return { zoom: 1, ...fitCentre(frame) };
   const readable = FIT_HEX_PX_MIN / frame.fit.size;
   const zoom = clamp(Math.max(1, readable), zoomMinOf(frame), zoomMaxOf(frame));

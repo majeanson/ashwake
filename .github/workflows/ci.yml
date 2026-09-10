@@ -33,6 +33,20 @@ jobs:
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from
       # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
       - run: pnpm --filter @ashwake/core --silent sim > sim.out.txt && diff -u packages/core/sim.golden.txt sim.out.txt
+      # THE SIX RITUALS, AS A GATE (2026-09-10, `PASS.md` P1 → P10).
+      #
+      # `pnpm sweep` runs every ritual in CLAUDE.md and exits non-zero on a
+      # finding, on a ruling that matches nothing, or on a ruling past its
+      # `until`. P1 set the bar for making it blocking — one clean run with an
+      # empty allowlist delta — and P1.9's adjudication cleared it: 330
+      # findings to 0, 91 rulings, nothing orphaned.
+      #
+      # The `git diff` is the same move as the golden sim above, for the same
+      # reason: SWEEP.md in the repository is what a reader trusts, so a report
+      # nobody regenerated fails here rather than going quietly stale. A tool
+      # that grades its own output is not a check.
+      - run: pnpm sweep
+      - run: git diff --exit-code -- SWEEP.md
       # THE COMMITTED ART IS CURRENT — and this must run BEFORE the bake,
       # because the bake overwrites the very files it grades.
       #

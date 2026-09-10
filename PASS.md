@@ -131,17 +131,17 @@ ts-morph or a knip would be a second opinion about a graph this repository can
 read for itself, and every one of the six rituals is a query the type checker
 already has the answer to.
 
-| id   | status | statement                                                                                                                        | where                   |
-| ---- | ------ | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| P1.1 | done   | **the module sweep** — every `export` with no importer outside its own file, which is the ritual as written                      | `scripts/sweep/`        |
-| P1.2 | done   | **the field sweep** — every `readonly` property of an exported type, and whether any file reads it. The `cell.band` class        | `render/Renderer.ts`    |
-| P1.3 | done   | **the optional-input sweep** — every optional parameter and field, and whether a caller passes it. The `perkAt` class            | `view/receipts.ts`      |
-| P1.4 | done   | **the branch sweep** — union members of a consumed value no consumer compares against. The `teach.as === 'toast'` class          | `shell/teaching.ts:119` |
-| P1.5 | done   | **the catalogue sweep** — keys in `text/Strings.ts` no `view/`, `meta/` or screen reads. The `figure.hold` class                 | `text/Strings.ts`       |
-| P1.6 | done   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class | `shell/store.ts`        |
-| P1.7 | done   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file         | —                       |
-| P1.8 | done   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed           | `package.json`          |
-| P1.9 | done   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool. **330 findings → 2**              | `SWEEP.md`              |
+| id   | status | statement                                                                                                                                            | where                   |
+| ---- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| P1.1 | done   | **the module sweep** — every `export` with no importer outside its own file, which is the ritual as written                                          | `scripts/sweep/`        |
+| P1.2 | done   | **the field sweep** — every `readonly` property of an exported type, and whether any file reads it. The `cell.band` class                            | `render/Renderer.ts`    |
+| P1.3 | done   | **the optional-input sweep** — every optional parameter and field, and whether a caller passes it. The `perkAt` class                                | `view/receipts.ts`      |
+| P1.4 | done   | **the branch sweep** — union members of a consumed value no consumer compares against. The `teach.as === 'toast'` class                              | `shell/teaching.ts:119` |
+| P1.5 | done   | **the catalogue sweep** — keys in `text/Strings.ts` no `view/`, `meta/` or screen reads. The `figure.hold` class                                     | `text/Strings.ts`       |
+| P1.6 | done   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class                     | `shell/store.ts`        |
+| P1.7 | done   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file                             | —                       |
+| P1.8 | done   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed                               | `package.json`          |
+| P1.9 | done   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool. **330 findings → 2, and P10 took the last two to 0** | `SWEEP.md`              |
 
 ### What the first report found, and what adjudicating it found (2026-09-10)
 
@@ -250,10 +250,13 @@ the ground plane while `relief.ts` lifts a hex by up to 0.55 radii.
 report**: `runsOf(slot)` and `streamOf(slot)`, called with `null` everywhere,
 which is a question about the reader table **P10** is going to assert.
 
-**The CI bar is now reachable and is deliberately not claimed.** P1's bar was
-one clean run with an empty allowlist delta; the run stands at two findings,
-both owned by P10. Making it blocking is P10's to do, once its two are
-answered.
+**~~The CI bar is now reachable and is deliberately not claimed.~~ CLAIMED
+2026-09-10, by P10.** P1's bar was one clean run with an empty allowlist delta.
+P10 answered the last two findings (`runsOf(slot)` and `streamOf(slot)` — the
+unbuilt per-world filter chips), and `pnpm sweep` is a CI gate: non-zero on a
+finding, on a ruling that matches nothing, or on a ruling past its `until`,
+with `ci.yml` diffing `SWEEP.md` afterwards the way it diffs the golden sim.
+**330 findings → 0, 91 rulings, nothing orphaned.**
 
 **P1.6 is the one that may not work, and it says so here rather than in a
 retrospective.** The fog was a _tested, correct consumer_ handed a hard-coded
@@ -516,7 +519,7 @@ day a version of it shed a WORLD and left its run behind.
 | P7.1 | open   | **measure first** — what a 5-, 30- and 300-run world actually weighs, off `shell/fixture.ts`                 | `shell/fixture.ts`   |
 | P7.2 | open   | the codec: a compact `revealed` and `territories`, behind a NEW key so an old blob still reads               | `meta/world.ts:328`  |
 | P7.3 | open   | the round trip — `decode(encode(w))` equal for every world the fixture builds, plus a hostile blob per field | `meta/world.test.ts` |
-| P7.4 | open   | **eight numbers written into a save and read by nothing** — inherited from P1.9, see below                    | `meta/timeline.ts`   |
+| P7.4 | open   | **eight numbers written into a save and read by nothing** — inherited from P1.9, see below                   | `meta/timeline.ts`   |
 
 **P7.4 is P1.9's, and it is here because this is the only item allowed to
 change what a save looks like** (2026-09-10). `pnpm sweep` found eight fields
@@ -535,9 +538,9 @@ weight in exactly the blob P7.1 is about to weigh** — measure with and without
 them, because the answer may be that the compaction is mostly this.
 
 `scripts/sweep/allow.ts#SAVED_BLOB` and `TIMELINE_SPINE` point here.
-| P7.4 | open   | a bound, or a written argument for none: what this game does at 10,000 revealed hexes                        | `meta/world.ts:441`  |
-| P7.5 | open   | the ladder's new shape — compaction should make a rung RARER, and `shed.test.ts` is the pin                  | `shell/shed.test.ts` |
-| P7.6 | open   | quota exhaustion driven end to end in a browser, not only in a unit test                                     | `e2e/`               |
+| P7.4 | open | a bound, or a written argument for none: what this game does at 10,000 revealed hexes | `meta/world.ts:441` |
+| P7.5 | open | the ladder's new shape — compaction should make a rung RARER, and `shed.test.ts` is the pin | `shell/shed.test.ts` |
+| P7.6 | open | quota exhaustion driven end to end in a browser, not only in a unit test | `e2e/` |
 
 **A codec with no caller is how two codecs come to disagree** —
 `storage.ts:787` says so about a case this repository has already had. So the
@@ -646,26 +649,96 @@ open question in `NEXT.md` §1 — while `SharedEntry` shipped the same day
 (`meta/timeline.ts:136`) and `NEXT.md` §1 records it as built. Corrected on the
 way into this item, and it is the whole argument for the item.
 
-| id    | status | statement                                                                                              | where                    |
-| ----- | ------ | ------------------------------------------------------------------------------------------------------ | ------------------------ |
-| P10.1 | open   | the door table generated from `Door` and `economyFor` — a flag added is a row added, or the test fails | `shell/beginning.ts`     |
-| P10.2 | open   | the two seed guards and the five-reader table asserted, not described                                  | `shell/settle.ts`        |
-| P10.3 | open   | `INTERACTIONS.md`'s ✓ rows: each names the handler it claims, and a ✓ with no consumer fails           | `INTERACTIONS.md`        |
-| P10.4 | open   | one home for the ruled-dead — P1.7's allowlist — cited by both files instead of restated in each       | `scripts/sweep/allow.ts` |
-| P10.5 | done   | **the stale bullet**: `MODES.md`'s shared-run line, corrected 2026-09-09                               | `MODES.md`               |
+| id    | status | statement                                                                                                 | where                    |
+| ----- | ------ | --------------------------------------------------------------------------------------------------------- | ------------------------ |
+| P10.1 | done   | the door table checked against `Door` and the call sites — a flag added is a row added, or the test fails | `shell/modes.test.ts`    |
+| P10.2 | done   | the two seed guards and the five-reader table asserted, not described                                     | `shell/modes.test.ts`    |
+| P10.3 | done   | every name a matrix uses resolves, or is declared in the file's own exceptions block                      | `shell/modes.test.ts`    |
+| P10.4 | done   | one home for the ruled-dead — P1.7's allowlist — cited by both files instead of restated in each          | `scripts/sweep/allow.ts` |
+| P10.5 | done   | **the stale bullet**: `MODES.md`'s shared-run line, corrected 2026-09-09                                  | `MODES.md`               |
 
-**The failure mode to design against is a matrix nobody reads.** A generated
-table that says only what the types already say is documentation of the
-compiler. So each row generated must carry the thing the code cannot say — the
-WHY column — from the source, and the test asserts the SHAPE while the prose
-stays hand-written. If that split cannot be made to work, the honest outcome is
-a test that fails when the doc and the code disagree and no generation at all.
+### The answer, and what it cost to get (2026-09-10)
 
 > **Question:** can a matrix be generated without becoming a matrix nobody
 > reads?
 
-**Verify:** the full gate; then delete a flag from one door and confirm the
-test names the door and the flag.
+**No — and it should not be generated.** A generated door table prints what the
+compiler already knows (`daily` is a `string | null` at all four doors) and
+cannot print the only column anybody opens the file for, which is WHY. That is
+documentation of the type system, and this item's own paragraph named the
+failure before the work started. So it took the outcome this row
+pre-authorised: **a test that fails when the doc and the code disagree, and no
+generation at all** — eight assertions in `apps/game/src/shell/modes.test.ts`,
+prose left hand-written.
+
+**Where the check goes is the whole craft.** `MODES.md`'s door table has column
+headers that ARE `Door`'s field names and rows that ARE call sites; that is
+structure, and it is checked. `INTERACTIONS.md`'s third column is `✓`, `→ was
+a silent no-op`, `—` — a narrative comparison against Ashwake 1 — and P10.3's
+original wording (every ✓ names its handler) would have buried a hundred
+handler names in it. **That buys a check at the cost of the readability that
+makes anyone open the file, which is the failure and not the fix.** What is
+checked there instead is the NAMES: every symbol either matrix spells in
+backticks must be declared in `packages/core/src` or `apps/game/src`, or listed
+in that file's own "names the code does not declare" section — split into GONE
+and NOT OURS, which is the answer a reader wanted anyway.
+
+**Verified by mutation, as this row asked.** Adding an eleventh `Door` field
+fails with `` `Door.newFlagNobodyClassified` is neither a column in MODES.md's
+door table nor under NOT MODE FLAGS ``; making a door spread a default fails
+with `enterRun call 1 spreads a default instead of stating its whole Door`.
+Both name the door and the flag.
+
+**What the tests themselves found: almost nothing, and that is the result.**
+Six names failed to resolve on the first run and every one was correct prose —
+two deliberate history (`searchFor`, `isTappable`), four the platform's
+(`contextmenu`, `change`, `visible`, `inert`). The first draft of the test's own
+docblock claimed the file was stale about those two; it was not, and the claim
+was corrected before it shipped. One real inaccuracy: `MODES.md` QUOTED
+`state.rootSeed !== world.worldSeed` and `settle` compares against `before`.
+
+**That inaccuracy changed the design.** Text-matching a guard's expression pins
+a tidy-up rather than a rule, and passing it would have taught the matrix to
+quote code — which is a doc that must be edited every time the code is tidied,
+and therefore a doc that stops being edited. **A guard is protected by its
+TEST**, so `MODES.md` now cites the suite that proves each half and the test
+asserts the citation resolves: deleting the proof fails, which is strictly
+stronger than noticing later that a sentence rotted.
+
+**AND THE ITEM'S REAL FIND CAME FROM NEITHER FILE.** `INTERACTIONS.md` said
+`previewColour` was _"unread ON PURPOSE now"_ — on the row written expressly to
+stop a fourth pass re-opening it — while `HexField.tsx` has tinted every legal
+hex with the held card's colour since 2026-09-08, as a preview FILL, which is
+exactly what the reverted attempt's own post-mortem prescribed. Only the
+OUTLINE still refuses the field, and `board/rings.ts` says so at the line, in
+the one place that is true of.
+
+**A stale ruling sends a session to re-open a question that was already
+ANSWERED** — P10.5's failure pointing the other way, from the same cause. And
+nothing in the new tests caught it: it was caught by asking why `pnpm sweep`
+reported nothing about a field the matrix called dead. **Two instruments
+disagreeing is the finding**, and P10.4 is the fix for the class: the
+ruled-dead live in `allow.ts`, dated and argued once, and the matrices cite it.
+`HOME` and the `previewColour` argument are citations now rather than copies.
+
+### And the sweep is a CI gate, which P1 left to this item
+
+`pnpm sweep` exits non-zero on a finding, on a ruling that matches nothing, or
+on a ruling past its `until`; `ci.yml` runs it and then diffs `SWEEP.md`, the
+same pairing the golden sim has, because a tool that grades its own output is
+not a check.
+
+P1 wrote the bar so a later session could not invent a softer one — **one clean
+run with an empty allowlist delta** — and P1.9 cleared it. The last two
+findings in the whole report were `runsOf(slot)` and `streamOf(slot)`, which
+this item owned: the per-world filter chips are unbuilt and `screens/Fame.tsx`
+says so at the call site, so they are ruled in `TIMELINE_SLOT_FILTER` with the
+warning that `streamOf`'s shared-run branch is a RULE about the unbuilt screen
+and would be deleted with the parameter. **330 findings → 0, 91 rulings,
+nothing orphaned.**
+
+**Verify:** the full gate; then delete a flag from one door and confirm the test
+names the door and the flag. Both mutations run and recorded above.
 
 ---
 
@@ -679,9 +752,10 @@ test names the door and the flag.
 2. **P3 — the French artifact.** Second, and early on purpose: it costs Marc's
    time, and his time is now running in parallel with Session A. Both of his
    inputs should be queued before I disappear into P2.
-3. **P10 — the matrices.** Shares P1's machinery while it is fresh, and stops
-   two ledgers going stale over a month-long pass. It has already been proved
-   necessary by P10.5.
+3. **~~P10 — the matrices.~~ DONE 2026-09-10.** Shares P1's machinery while it
+   is fresh, and stops two ledgers going stale over a month-long pass. Proved
+   necessary twice over: P10.5 before it started, and a stale `previewColour`
+   ruling found while finishing it. **P2 is next.**
 4. **P2 — the extraction.** The big one, done while the sweep's report is still
    the newest thing in the repository, and before P4 and P8 start editing the
    same file.

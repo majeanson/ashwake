@@ -27,6 +27,43 @@ type Ruling = {
 };
 
 /**
+ * THE TIMELINE'S PER-WORLD FILTER, DEFERRED AT THE CALL SITE (`PASS.md` P10.4).
+ *
+ * `runsOf(t, slot)`, `streamOf(t, slot)` and `worldEventsOf(t, slot)` take a
+ * slot and every caller passes `null`. It is not dead generality and it is not
+ * a missing caller: `screens/Fame.tsx` says at the line why, and says it as a
+ * decision — *"`null` slot: every world. The diary is the DEVICE's story, and
+ * the per-world filter chips arrive with the crossing that makes them mean
+ * something."* The chips are unbuilt UI; the readers are ready for them.
+ *
+ * **These were the last two findings in the first report, and they are here
+ * rather than in `MODES.md` because P10.4 is the row that says so**: one home
+ * for the ruled-dead, cited by the matrices instead of restated in each. The
+ * cost of the other arrangement is on the record twice in one day —
+ * `INTERACTIONS.md` carried its own copy of the `previewColour` ruling and
+ * had it backwards, because `HexField` started reading the field on 2026-09-08
+ * and the prose did not hear about it.
+ *
+ * `streamOf` is the one to read before deleting the parameter: its shared-run
+ * branch (a shared board belongs to no slot, so it shows in the device stream
+ * and in no per-world one) is a RULE about the unbuilt screen, and deleting the
+ * slot would delete the rule with it.
+ */
+const TIMELINE_SLOT_FILTER: readonly Ruling[] = (
+  [
+    'packages/core/src/meta/timeline.ts#runsOf(slot)',
+    'packages/core/src/meta/timeline.ts#streamOf(slot)',
+  ] as const
+).map((id) => ({
+  id,
+  on: '2026-09-10',
+  why:
+    'The per-world filter chips are unbuilt and `screens/Fame.tsx` says so at ' +
+    'the call site \u2014 see `TIMELINE_SLOT_FILTER`, and read `streamOf`\u2019s ' +
+    'shared-run branch before deleting the parameter.',
+}));
+
+/**
  * A DECISION RECORD IN CODE — written for whoever reads the source, never for
  * a program (ruled 2026-09-10).
  *
@@ -540,6 +577,7 @@ export const ALLOW: readonly Ruling[] = [
   ...HUD_UNSAID,
   ...TEST_IS_THE_READER,
   ...RULE_LIVES_IN_A_TEST,
+  ...TIMELINE_SLOT_FILTER,
 ];
 
 /** Index, so a pass can ask in one call. */
