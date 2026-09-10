@@ -1,0 +1,77 @@
+{
+  "$why": [
+    "WHAT A PHONE MAY DOWNLOAD (`PASS.md` P9). Generated shape, hand-written",
+    "numbers: `pnpm budget` measures, this file is the bar, and CI compares.",
+    "",
+    "The model is `sim.golden.txt`'s: a number that may not move without a",
+    "reason in the same commit. It differs in one way and only one — a golden",
+    "file is an EXACT match and these are CEILINGS, because every code change",
+    "moves a byte count by a few hundred bytes and an exact match would fail on",
+    "every commit and be deleted by the end of the week. A ceiling with ~2%",
+    "headroom fails on a regression and not on a sentence.",
+    "",
+    "To move a bar: change it here, and say why in `LOG.md` in the same commit.",
+    "That is the whole ritual, and it is the same one the golden sim has."
+  ],
+
+  "firstPaint": {
+    "gzip": 178000,
+    "$why": [
+      "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
+      "stranger test is actually about. Read off `index.html`'s own script and",
+      "stylesheet links, so it cannot go stale when a chunk is renamed.",
+      "",
+      "Measured 170.3 KB gzipped on 2026-09-10. `IMPROVEMENTS.md` B8 measured",
+      "app 114.9 KB + vendor 333.1 KB = **448 KB, all of it before the door",
+      "drew a pixel** — and the 2026-09-08 lazy split moved the renderer out.",
+      "So this bar is the thing that split bought, and nothing was watching it.",
+      "",
+      "Gzip rather than brotli because gzip is the floor every browser and",
+      "every CDN agrees on; brotli is reported too and is strictly better."
+    ]
+  },
+
+  "renderer": {
+    "gzip": 291500,
+    "$why": [
+      "THE BOARD'S OWN CHUNK — three, `@react-three/fiber`, drei and troika.",
+      "Measured 279.0 KB gzipped on 2026-09-10.",
+      "",
+      "It is allowed to be large. It is not allowed to be in the first paint,",
+      "and that is a fact about the import GRAPH rather than about this number,",
+      "which is why `pnpm budget` also searches the entry chunk for the",
+      "renderer's own module specifiers. A byte count notices a leak only after",
+      "it has happened; a name is caught on the build that introduces it."
+    ]
+  },
+
+  "fonts": {
+    "raw": 156000,
+    "$why": [
+      "THE FOUR SELF-HOSTED FACES. Measured 149.3 KB raw on 2026-09-10.",
+      "",
+      "RAW and not gzipped, and that is the honest number: woff2 is already",
+      "compressed, so gzipping it measures nothing a server would do. The TTF",
+      "is the one file that would compress, and it is the BOARD's — troika",
+      "cannot parse woff2 — so it is not in the first paint either way.",
+      "",
+      "Two of the four are preloaded by `index.html`; `pnpm budget` asserts",
+      "that, because a preload the page does not use is a wasted round trip on",
+      "the first visit and a missing one is the FOUT B8.2 went and fixed."
+    ]
+  },
+
+  "precache": {
+    "raw": 2135000,
+    "$why": [
+      "WHAT AN OFFLINE INSTALL COSTS A PHONE'S STORAGE — the worker's own",
+      "list, read off the BUILT worker because `__PRECACHE_ASSETS__` is",
+      "substituted at build time. Measured 2043.6 KB raw over 28 files on",
+      "2026-09-10; B8 recorded 2.7 MB before its art pass and 1.8 MB after.",
+      "",
+      "RAW, because storage pays raw. It is also the bar most likely to move",
+      "for a good reason: every new terrain PNG lands here. Moving it is fine;",
+      "moving it without noticing is what this file is against."
+    ]
+  }
+}

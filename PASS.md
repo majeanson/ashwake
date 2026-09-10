@@ -788,20 +788,59 @@ This repository already knows the shape: `pnpm sim` against a golden file, the
 palette against a budget, the baked art against the theme. A number that may
 not move without a reason in the same commit.
 
-| id   | status | statement                                                                                                        | where                |
-| ---- | ------ | ---------------------------------------------------------------------------------------------------------------- | -------------------- |
-| P9.1 | open   | the measurer — per-chunk gzip and brotli off the build, plus fonts, art and the SW precache total                | `scripts/budget.ts`  |
-| P9.2 | open   | the bars, each with an ARGUMENT beside it, committed the way `sim.golden.txt` is                                 | `budget.json`        |
-| P9.3 | open   | CI gate; a bar moves only in a commit whose `LOG.md` line says why                                               | `.github/`           |
-| P9.4 | open   | the entry chunk's static-import graph, so `three` leaking back into it is caught by name and not by a byte count | `vite.config.ts:315` |
-| P9.5 | open   | the pre-JS paint and the two preloaded faces — B8.2's FOUT fix, with nothing watching it                         | `index.html`         |
+| id   | status | statement                                                                                    | where               |
+| ---- | ------ | -------------------------------------------------------------------------------------------- | ------------------- |
+| P9.1 | done   | the measurer — per-chunk gzip and brotli off the build, plus fonts and the SW precache total | `scripts/budget.ts` |
+| P9.2 | done   | the bars, each with an ARGUMENT beside it, committed the way `sim.golden.txt` is             | `budget.json`       |
+| P9.3 | done   | CI gate; a bar moves only in a commit whose `LOG.md` line says why                           | `.github/`          |
+| P9.4 | done   | the renderer caught by its own FINGERPRINT in the entry chunk, not by a byte count           | `scripts/budget.ts` |
+| P9.5 | done   | the pre-JS paint and the two preloaded faces — B8.2's FOUT fix, now watched                  | `scripts/budget.ts` |
 
 **A gate, unlike P1 and P5** — and the difference is defensible: a byte count is
 exact, reproducible on any machine, and does not depend on a renderer. That is
 precisely what B8.6 said the screen audit was NOT, which is why that one stayed
 a report and this one does not.
 
+### The answer (2026-09-10)
+
 > **Question:** B8 measured once, in prose. What has moved since?
+
+**The first paint has fallen from 448 KB gzipped to 170.3 KB, and nothing was
+watching either number.** B8 recorded app 114.9 KB + vendor 333.1 KB — and
+**all of it arrived before the door drew a pixel.** The 2026-09-08 lazy split
+moved the renderer behind a dynamic boundary, so what a stranger now waits for
+is 170.3 KB and the board's 279.0 KB arrives while the door is being read. The
+total is essentially unchanged; the MOMENT it is paid at is the whole change,
+and it is the moment the stranger test measures.
+
+The precache is 2043.6 KB raw over 28 files, against B8's 2.7 MB → 1.8 MB. The
+four faces are 149.3 KB raw.
+
+**Three drafts of the instrument were wrong, and each is written at the line:**
+
+1. **The precache parser read one quote style** and measured twelve files where
+   the worker precaches twenty-eight — the icons and the fonts, and none of the
+   art or the bundle. **A parser that silently finds a subset reports a budget
+   that can only ever pass**, which is worse than no budget: it said 158 KB
+   where B8 said 1.8 MB.
+2. **P9.4 looked for the bare package names**, and `three` is an English word —
+   the entry chunk says "one of three this dev", "the other three by VALUE". It
+   fired on the first run against an intact boundary, and **a false alarm on a
+   gate is how a gate gets switched off.**
+3. **Then it looked for import specifiers**, which is what a SOURCE says while
+   this reads a BUNDLE: rolldown inlines the module and the specifier is gone.
+   Proved by leaking `Vector3` into `App` on purpose — the byte bar jumped
+   92 KB and the name check stayed silent, which is exactly the hole P9.4
+   exists to close. It reads the packages' own warning prefixes now.
+
+**drei has no fingerprint and is deliberately not checked**: it ships almost no
+strings of its own, it cannot arrive without `@react-three/fiber` which IS
+checked, and its weight is trivial beside three's. Saying so beats inventing a
+marker that would rot.
+
+**Verified as the row asked**: `pnpm budget` green on a clean tree, and a
+deliberate `three` import in the entry turns both halves red — the bar by
+92.3 KB, and the fingerprint by name.
 
 **Verify:** `pnpm budget` green on a clean tree; deliberately break it by
 importing `three` into the entry and confirm CI goes red.

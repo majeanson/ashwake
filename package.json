@@ -9,6 +9,7 @@
     "bake": "pnpm bake:phosphor && pnpm bake:icons && pnpm bake:terrain && pnpm bake:art && pnpm bake:social && pnpm bake:notices",
     "bake:terrain": "tsx scripts/terrain.ts",
     "artcheck": "tsx scripts/artcheck.ts",
+    "budget": "tsx scripts/budget.ts",
     "bake:art": "tsx scripts/artslots.ts",
     "bake:icons": "tsx scripts/icons.ts",
     "bake:social": "tsx scripts/social.ts",

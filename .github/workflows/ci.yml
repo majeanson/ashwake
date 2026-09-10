@@ -47,6 +47,23 @@ jobs:
       # that grades its own output is not a check.
       - run: pnpm sweep
       - run: git diff --exit-code -- SWEEP.md
+      # WHAT A PHONE DOWNLOADS, against a bar (2026-09-10, `PASS.md` P9).
+      #
+      # `IMPROVEMENTS.md` B8 measured this once, in prose, and nothing
+      # re-measured any of it — while B8's own chunking ruling ends by saying
+      # the cost of `three` riding in the door's chunk "shows up immediately as
+      # the entry chunk's byte count jumping on the next build". That required a
+      # watcher and there was none.
+      #
+      # A GATE rather than a report, unlike the sweep's first pass and unlike
+      # the screen audit, and the difference is the one B8.6 itself drew: a byte
+      # count is exact, reproducible on any machine, and does not depend on a
+      # renderer. It runs AFTER the build, which produced `dist` above.
+      #
+      # It also fails on the renderer's module specifiers appearing in the entry
+      # chunk, which catches a lazy boundary breaking by NAME on the build that
+      # breaks it rather than by a byte count somebody notices later.
+      - run: pnpm budget
       # THE COMMITTED ART IS CURRENT — and this must run BEFORE the bake,
       # because the bake overwrites the very files it grades.
       #

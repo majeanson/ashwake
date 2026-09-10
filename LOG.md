@@ -6840,3 +6840,66 @@ route. The item's own words are that hitting a line count by moving comments
 out would be a fraud, and roughly half that file is the design record. What the
 nine rows actually bought is **eight findings**, and three of them came from
 deciding NOT to extract.
+
+### Session 81 — the payload budget (2026-09-10)
+
+**Question (`PASS.md` P9):** B8 measured once, in prose. What has moved since?
+
+**Answer: the first paint has fallen from 448 KB gzipped to 170.3 KB, and
+nothing was watching either number.** `IMPROVEMENTS.md` B8 recorded app
+114.9 KB + vendor 333.1 KB — and **all of it arrived before the door drew a
+pixel.** The 2026-09-08 lazy split moved the renderer behind a dynamic
+boundary, so a stranger now waits for 170.3 KB and the board's 279.0 KB arrives
+while the door is being read. The total is essentially unchanged; **the moment
+it is paid at is the whole change**, and it is the moment the stranger test
+measures. The precache is 2043.6 KB raw over 28 files against B8's 1.8 MB, and
+the four faces are 149.3 KB.
+
+`pnpm budget` is a GATE rather than a report, and the difference is the one
+B8.6 itself drew: a byte count is exact, reproducible on any machine, and does
+not depend on a renderer, which is precisely what the screen audit is not.
+`budget.json` holds a ceiling per moment with its argument beside it — the
+`sim.golden.txt` ritual, with the one difference that a golden file is an exact
+match and these are ceilings, because an exact byte match would fail on every
+commit and be deleted inside a week.
+
+**Three drafts of the instrument were wrong, and every one is written at the
+line rather than quietly fixed.**
+
+1. **The precache parser read one quote style.** The built worker is not the
+   source worker — the hand-written list keeps its single quotes, the stamped
+   array arrives double-quoted out of `JSON.stringify` — so it measured twelve
+   files where the worker precaches twenty-eight: the icons and the fonts, and
+   none of the art or the bundle. **A parser that silently finds a subset
+   reports a budget that can only ever pass.** It said 158 KB where B8 said
+   1.8 MB, and I would have committed that number.
+2. **P9.4 looked for the bare package names**, and `three` is an English word.
+   The entry chunk contains "one of three this dev", "the other three by
+   VALUE", "9-slice, three states", because half of what this app ships is
+   prose. It fired on its first run against a boundary that was perfectly
+   intact — and **a false alarm on a gate is how a gate gets switched off.**
+3. **Then it looked for import specifiers**, which is what a SOURCE file says
+   while this reads a BUNDLE: rolldown inlines the module and the specifier is
+   gone. I only found that out by doing what the row asked and leaking
+   `Vector3` into `App` on purpose: the byte bar jumped 92 KB and went red, and
+   the name check stayed **silent** — which is exactly the hole P9.4 exists to
+   close. It reads the packages' own warning prefixes now (`THREE.`, `R3F:`,
+   `troika`), which survive minification because a minifier renames
+   identifiers and cannot touch a message.
+
+**And the first version of my own docblock then described the version it
+replaced** — "searched for the renderer's own names: three, fiber, drei and
+troika" — after the code had stopped doing that and stopped checking drei.
+Corrected in the same sitting, which is the fourth time this week I have caught
+a comment asserting what the code near it no longer does.
+
+**drei has no fingerprint and is deliberately unchecked**: it ships almost no
+strings of its own, it cannot arrive without `@react-three/fiber` which IS
+checked, and its weight is trivial beside three's. Stating that beats inventing
+a marker that would rot.
+
+**The lesson worth carrying.** The row's verify step — _"deliberately break it
+by importing `three` into the entry"_ — is the only reason P9.4 works. Two of
+my three wrong drafts passed a clean tree happily. **An instrument that has
+only ever been run against a green tree has not been tested; it has been
+admired.**
