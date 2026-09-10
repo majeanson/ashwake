@@ -10,6 +10,7 @@ import {
   TILT,
   themeFor,
   vignetteStyle,
+  YAW,
 } from './look';
 
 /**
@@ -25,6 +26,9 @@ describe('the dials, off a query string', () => {
   it('gives the authored defaults for a bare URL', () => {
     const look = lookFrom('');
     expect(look.tilt).toBe(TILT);
+    // All six, because five of six is the gap that becomes "why not yaw?" —
+    // `pnpm sweep` asked exactly that, by finding YAW exported and unread.
+    expect(look.yaw).toBe(YAW);
     expect(look.relief).toBe(RELIEF);
     expect(look.light).toBe(LIGHT);
     expect(look.materials).toBe(MATERIALS);

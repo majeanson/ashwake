@@ -6493,10 +6493,85 @@ the canary), and three ways out are in §1. **Nothing was relaxed**: a threshold
 widened to make a suite green is the one move `CLAUDE.md` names, and the
 measurement is the deliverable.
 
-### Session 80 — the App.tsx extraction (2026-09-10)
+### Session 80 — the App.tsx extraction, four rows in (2026-09-10)
 
 **Question (`PASS.md` P2):** does extracting a region still find a bug, or only
 move lines? `shell/beginning.ts` found four. If P2's nine find none, that is an
 answer about a file that has already been swept, and worth recording as one.
 
-_(Answer written at the end of this session.)_
+**Answer, for the four small rows: four findings, no live bugs, and every one
+the shape that becomes one.** `App.tsx` 4,005 → 3,842. Two rows are DONE by
+extraction, one is done as a fork, and one is RULED not to move — which is
+itself an answer about a file that has been swept four times.
+
+**P2.5, the look → `shell/look.ts`.** Three decisions that were functions of
+their arguments and had no tests because there was no way to call one: the
+dials off the query string, which direction a device with no stored choice
+gets, and whether a vignette is drawn at all. Thirteen tests now. The media
+queries stay in `App` — they are the SAMPLING, and the split is
+`shell/signpost.ts`'s: the pure decision leaves, the wiring stays thin.
+
+**The find: `dial`'s docblock was orphaned.** It sat directly above
+`economyAt`'s own docblock while `dial` was declared thirty lines below, so a
+reader met the sentence attached to the wrong function. Nothing was broken,
+nothing would ever have said so, and it is only visible when a region is picked
+up and carried somewhere.
+
+`dial` is exported from a module about the LOOK, which wants an argument and
+has one: `?taught=`, `?place=` and `?end=` read the query string the same way,
+and what they share is not a look, it is the rule that **zero is a real
+answer** and a bare `?x=` or a word is not. A second implementation gets
+`?end=0` wrong — a fixture silently playing a whole run instead of none.
+
+**P2.9, the world's live copy → `shell/held.ts`.** A ref, three callbacks, and
+the seed rule that decides which copy answers, now `heldFor` with six tests. It
+is `settle`'s guard read from the other end: **a copy whose seed does not match
+is a wrong answer, not a miss**, because ground unioned from a foreign
+geography is unremovable afterwards.
+
+**The find: `settle` had a second spelling of `keepWorld`.** The ref's whole
+docblock claims one door — "the seam that touches it last is the one the keeper
+writes" — and `settle`'s branch wrote `worldNow.current = after.world;
+keeper.saveWorld(after.world);`, which is `keepWorld(after.world)` with the two
+statements copied out. Harmless today, half-changed the day somebody adds a
+third statement. **And routing it through the door surfaced a genuinely missing
+`useEffect` dependency** — added, not suppressed, because a lint rule that is
+silenced once is a lint rule.
+
+**P2.7, the share → `shell/handOver.ts`.** A daily and a world run share
+nothing but the verb, and the fork between them was spelled out TWICE inside
+one handler: once for the SENTENCE and once for the PICTURE. They had to agree
+or the card would print a number the text did not, on the one artefact whose
+whole job is being screenshotted. One branch with two outputs now, eight tests,
+and `ShareCardData` is exported so the card's six fields are declared once
+rather than twice — a second declaration of one shape being exactly how the two
+drift apart.
+
+**P2.8 IS RULED, NOT DONE.** `onPurse` is fifty lines of which the code is one
+boolean and four `setState` calls that cannot leave a component; both inputs
+are already named and `purseLesson` is already in the core. Extracting it would
+produce a module whose whole content is a docblock and a conditional, and this
+item's own target says hitting a line count by moving comments out **would be a
+fraud**. So the row is a ruling with a finding attached: the `shellSaid`
+docblock said its counter "only goes up" while its one caller decrements —
+true of the mechanism, backwards about the direction, and the very next
+sentence explains why the direction is the point.
+
+`importDaily` is ruled the same way and for a better reason: its one rule — a
+minted world must `sealGoals` — is already the single name `MODES.md` asks for,
+called at all three mint sites. Nothing to find, nothing worth moving.
+
+**AND THE SWEEP CAUGHT THE EXTRACTION.** `pnpm sweep` failed on five new
+exports read only inside their own file — `HandOver`, `ShareCardText`, `Held`,
+`Look`, `YAW` — which is the gate earning its place on the day after it was
+armed. Four demoted. `YAW` earned its export by being ASSERTED instead: the
+test checked five of the six authored defaults, and five of six is the gap that
+becomes "why not yaw?". **P2's "run P1 first" instruction has a second half —
+run it AFTER too**, or a region arrives carrying four new false positives for
+the next sweep to re-adjudicate.
+
+**One more thing typecheck caught that vitest did not.** `handOver.test.ts`
+passed on its own while calling `pickLocale('en')` where the signature takes a
+`readonly string[]` — vitest does not typecheck, so a green test file can hold
+a type error for as long as nobody runs `pnpm typecheck`. The gate's order is
+not arbitrary.

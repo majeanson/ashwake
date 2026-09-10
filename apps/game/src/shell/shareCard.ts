@@ -28,7 +28,12 @@ import { hex, type Theme } from '@theme/tokens';
  * browser against whichever direction is actually live.
  */
 
-type ShareCardData = {
+/**
+ * Exported since 2026-09-10, so `shell/handOver.ts` can BUILD one rather than
+ * declare the same six fields a second time. Two spellings of one shape is how
+ * a card comes to say a number the sentence did not.
+ */
+export type ShareCardData = {
   /** The score, worded — "8971 pts" / "8971 pts". */
   readonly scoreLine: string;
   /** How far out, worded — "REACH 13" / "PORTÉE 13". */

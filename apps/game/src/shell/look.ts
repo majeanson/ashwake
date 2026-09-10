@@ -62,7 +62,7 @@ export function dial(params: URLSearchParams, name: string, fallback: number): n
 }
 
 /** Every dial the query string can turn, resolved. */
-export type Look = {
+type Look = {
   readonly tilt: number;
   readonly yaw: number;
   readonly relief: number;

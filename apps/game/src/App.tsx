@@ -1,11 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
-import { arcSparkline, dailyBadge, dailyName, dailySeed, dailyStreak } from '@meta/daily';
+import { dailyBadge, dailyName, dailySeed, dailyStreak } from '@meta/daily';
 import { appendEntry } from '@meta/timeline';
 import { startingPerk } from '@engine/reduce';
 import { NAME } from '@meta/identity';
-import type { ShareSubject } from '@meta/share';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { distance, key, parse, type HexKey } from '@engine/hex';
@@ -101,6 +100,7 @@ import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
+import { handOverOf } from './shell/handOver';
 import { useHeldWorld } from './shell/held';
 import { dial, lookFrom, themeFor, vignetteStyle } from './shell/look';
 import { enterRun, type StartedFrom } from './shell/beginning';
@@ -540,8 +540,13 @@ function Game() {
    * `Said.id` is "said again" versus "still saying" — the identity a card is
    * keyed on so a second one is a second card. The session mints them for the
    * receipts; anything the shell raises on its own needs one from somewhere,
-   * and a counter that only goes up is the whole of it. Negative, so a shell
-   * utterance can never collide with a session's.
+   * and a counter that only ever moves one way is the whole of it. It moves
+   * DOWN: negative ids cannot collide with a session's, which count up.
+   *
+   * The sentence said "only goes up" until 2026-09-10 while the one caller
+   * decrements — true of the mechanism, backwards about the direction, and the
+   * next line explains why the direction is the point. Found reading the
+   * region for `PASS.md` P2.8.
    */
   const shellSaid = useRef(0);
   /** Goals this run was the one to meet, for the end screen. */
@@ -2292,72 +2297,43 @@ function Game() {
    * decides which one this run is and hands over the numbers.
    */
   const onShare = useCallback(async (): Promise<ShareResult> => {
-    const arc = arcSparkline(snap.state.log.harvests);
     /*
-     * The daily book, decoded ONCE (2026-09-02).
+     * WHICH run this is, and what the card says about it — one fork, in
+     * `shell/handOver.ts`, because the sentence and the picture have to agree
+     * and they used to be two spellings of the same branch.
      *
-     * It was read twice inside this one handler — for the tries the sentence
-     * confesses, and again for the badge on the card — which is two decodes of
-     * the same blob a few lines apart. Worse than the cost: they are two reads
-     * of a store that a settle could write between, so the sentence and the
-     * picture could in principle disagree about which try this was, on the one
-     * artefact whose whole job is being screenshotted.
+     * The book is decoded ONCE and handed in: it was read twice inside this
+     * handler, and two reads of a store a settle could write between could
+     * disagree about which try this was, on the one artefact whose whole job
+     * is being screenshotted.
      */
-    const book = daily === null ? null : readDailyBook();
-    const subject: ShareSubject =
-      daily === null
-        ? {
-            kind: 'run',
-            points: snap.hud.points,
-            placements: snap.hud.placements,
-            seed: snap.state.rootSeed,
-            arc,
-          }
-        : {
-            kind: 'daily',
-            date: daily,
-            points: snap.hud.points,
-            reach: snap.hud.depthValue,
-            arc,
-            // The try this was, confessed rather than hidden — the daily's own
-            // honesty rule. Read after settling, so it counts this run.
-            tries: book?.[daily]?.tries ?? 1,
-          };
+    const { subject, card: words } = handOverOf(
+      {
+        daily,
+        state: snap.state,
+        hud: snap.hud,
+        standing,
+        book: daily === null ? null : readDailyBook(),
+      },
+      s,
+    );
 
     /*
      * THE PICTURE (2026-09-02).
      *
      * `shell/share.ts` calls this the game's entire distribution mechanism, and
-     * until today it handed over a sentence. Ashwake 1 handed over a card: the
-     * score, the run's shape, the board ghosted behind it, and the address to
-     * go and do something about it. Every field is one the ending has already
-     * drawn from the same `hud` and `standing`, so the card cannot say a number
-     * the screen did not.
+     * until then it handed over a sentence. Ashwake 1 handed over a card: the
+     * score, the run's shape, the board ghosted behind it, and the address to go
+     * and do something about it.
      *
      * Best effort and never fatal: a browser missing a piece of the canvas API
      * hands back null and everything below falls through to the text-and-link
-     * share exactly as before.
+     * share exactly as before. This is the half that cannot leave — a canvas
+     * needs a `document`.
      */
     let card: Blob | null;
     try {
-      card = await renderShareCard(theme, {
-        scoreLine: s.share.cardScore(snap.hud.points),
-        reachLine: s.share.cardReach(snap.hud.depthValue),
-        arc: snap.state.log.harvests.map((h) => h.points),
-        headline: standing?.isNewBest === true ? s.ui.ending.newBest : null,
-        // A daily's ladder line already carries the number RUN/TRY would say.
-        topLine:
-          daily !== null
-            ? dailyBadge(book ?? {}, daily, s)
-            : standing !== null && standing.run > 0
-              ? s.ui.ending.run(standing.run)
-              : '',
-        // A daily plays a DATE, and a date is not a seed anybody outside this
-        // device's book can open. The footer stays empty rather than printing a
-        // number that means nothing, exactly as the text share drops it.
-        footerLine: daily !== null ? '' : s.share.cardSeed(snap.state.rootSeed),
-        shot: endShot.current,
-      });
+      card = await renderShareCard(theme, { ...words, shot: endShot.current });
     } catch {
       card = null;
     }

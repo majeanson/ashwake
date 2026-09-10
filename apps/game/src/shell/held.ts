@@ -60,7 +60,7 @@ export function heldFor(
   return disk !== null && disk.worldSeed === seed ? disk : null;
 }
 
-export type Held = {
+type Held = {
   /** The live world for this seed, or null when this device has none. */
   readonly worldHeld: (seed: number) => WorldMemory | null;
   /** Hold a new copy AND tell the keeper — the one door every writer uses. */

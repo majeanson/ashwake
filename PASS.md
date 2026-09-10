@@ -299,17 +299,69 @@ The convention is `shell/signpost.ts`: **the pure decision leaves, the wiring
 stays thin.** B6.7's ruling holds — a docblock travels WITH the code it is
 about, it does not go to `LOG.md`.
 
-| id   | status | statement                                                                                                      | where                   |
-| ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| P2.1 | open   | `buildSession` — the boot ladder, the one place a `?seed=`, a `?daily=` and a slot are told apart              | `App.tsx:993–1148`      |
-| P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off            | `App.tsx:1692–2111`     |
-| P2.3 | open   | the board's gestures — `describe`, `onLook`, `onTap`, `onSelect`, `onHarvest`, `onLens`, `clearLens`, `onHold` | `App.tsx:2111–2409`     |
-| P2.4 | open   | the voice — `say`, `speakAfter`, `forgetEnding`, `saidOnce`, `signpost`, `dry`, and the one-speaker rule       | `App.tsx:398–730`       |
-| P2.5 | open   | the look — `theme`, `look`, `vignette`, and the three media queries that feed them                             | `App.tsx:766–958`       |
-| P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix             | `App.tsx:2531–2835`     |
-| P2.7 | open   | share, and `importDaily`                                                                                       | `App.tsx:2409`, `:2835` |
-| P2.8 | open   | the purse, and `purseLesson`'s moment                                                                          | `App.tsx:2869–2932`     |
-| P2.9 | open   | the world's live memory — `worldHeld`, `keepWorld`, `forgetWorld`                                              | `App.tsx:818–866`       |
+| id   | status | statement                                                                                                      | where               |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------- |
+| P2.1 | open   | `buildSession` — the boot ladder, the one place a `?seed=`, a `?daily=` and a slot are told apart              | `App.tsx:993–1148`  |
+| P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off            | `App.tsx:1692–2111` |
+| P2.3 | open   | the board's gestures — `describe`, `onLook`, `onTap`, `onSelect`, `onHarvest`, `onLens`, `clearLens`, `onHold` | `App.tsx:2111–2409` |
+| P2.4 | open   | the voice — `say`, `speakAfter`, `forgetEnding`, `saidOnce`, `signpost`, `dry`, and the one-speaker rule       | `App.tsx:398–730`   |
+| P2.5 | done   | the look — `theme`, `look`, `vignette`; the media queries stay, they are the sampling                          | `shell/look.ts`     |
+| P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix             | `App.tsx:2531–2835` |
+| P2.7 | done   | share — the fork, once, for the sentence AND the card. `importDaily` ruled: it is wiring, see below            | `shell/handOver.ts` |
+| P2.8 | ruled  | the purse — **not extracted**, and the reason is below. One docblock corrected                                 | `App.tsx`           |
+| P2.9 | done   | the world's live memory — `worldHeld`, `keepWorld`, `forgetWorld`, and the seed rule as `heldFor`              | `shell/held.ts`     |
+
+### Four rows in, and the answer so far is yes (2026-09-10)
+
+> **Question:** does extracting a region still find a bug, or only move lines?
+
+**Four regions, four findings, none of them a live bug — and every one the
+shape that becomes one.** `App.tsx` 4,005 → 3,842. `LOG.md` Session 80.
+
+- **P2.5** — `dial`'s docblock was ORPHANED: it sat directly above
+  `economyAt`'s own docblock while `dial` was declared thirty lines below, so a
+  reader met the sentence attached to the wrong function. Only visible because
+  the region was picked up.
+- **P2.9** — `settle` spelled `keepWorld` out inline (`worldNow.current = …;
+keeper.saveWorld(…)`), so the ref whose whole docblock claims ONE door had
+  two. Harmless until somebody adds a third statement to `keepWorld`. Routing
+  it through the door then surfaced a genuinely missing `useEffect`
+  dependency, added rather than suppressed.
+- **P2.7** — the share's fork was spelled out TWICE in one handler, once for
+  the sentence and once for the card, and the two had to agree or the picture
+  would print a number the text did not. One branch with two outputs now, and
+  `ShareCardData` is exported so the card's six fields are declared once
+  instead of twice.
+- **P2.8** — the `shellSaid` docblock said its counter "only goes up" while its
+  one caller decrements. True of the mechanism, backwards about the direction,
+  and the next sentence explains why the direction is the point.
+
+**And the sweep caught the extraction itself**, which is the pairing working as
+intended: five new exports read only inside their own file (`HandOver`,
+`ShareCardText`, `Held`, `Look`, `YAW`). Four demoted; `YAW` earned its export
+by being asserted, because the test checked five of the six authored defaults
+and five of six is the gap that becomes a question. **A region extracted
+without the sweep run after it is a region that ships four new false
+positives** — P2's "run P1 first" instruction has a second half.
+
+**P2.8 IS RULED, NOT DONE, and the distinction matters.** `onPurse` is fifty
+lines of which the code is one boolean (`opening && !hasMet(progress,
+'purse')`) and four `setState` calls that cannot leave a component. Both inputs
+are already named and `purseLesson` is already in the core. Extracting it would
+produce a module whose entire content is a docblock and a conditional — and
+this item's own target says hitting a line count by moving comments out **would
+be a fraud**. The find is the docblock correction; the ruling is that the
+region is where it belongs.
+
+**P2.7's `importDaily` is ruled the same way and for a better reason.** Its one
+rule — a minted world must `sealGoals` — is already the one name `MODES.md`
+says it wants, called at all three mint sites (`cross.ts`, `fixture.ts`, and
+here). Everything else is storage writes and a navigation. There was nothing to
+find and nothing worth moving.
+
+**Left open: P2.1, P2.4, P2.3, P2.6 and P2.2.** The four bigger regions and
+then the item. `act` is still last, still gets its own commit and its own test
+file.
 
 **P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a
 lesson, a world merge and a diary row, and it is the seam `?playtest=1` records
