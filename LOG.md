@@ -6575,3 +6575,95 @@ passed on its own while calling `pickLocale('en')` where the signature takes a
 `readonly string[]` — vitest does not typecheck, so a green test file can hold
 a type error for as long as nobody runs `pnpm typecheck`. The gate's order is
 not arbitrary.
+
+**Marc's three rulings, and the flake turned out to be a real bug.**
+
+**RESTART now restarts what you are playing**, which is a better answer than the
+three readings offered: it is not about placement, because the control already
+existed. MORE's RESTART called `newRun()` unconditionally and `newRun` LEAVES
+the daily by design, so the one button that says "start this over" took a daily
+player into their own world. It branches on `daily` now, and both doors already
+existed — `openDaily(null)` had exactly one caller, TRY AGAIN on the end
+screen, which is why a run in PROGRESS could not reach it.
+
+**The pin is worth a sentence.** The tile count alone cannot catch this bug: a
+world run also starts at a full purse. Reverting the fix fails
+`e2e/daily.spec.ts` on its SECOND assertion — that MORE ▸ DAILY still resumes
+the board RESTART dealt — and not on the count at all. A shared board is not
+offered the control, because a mid-run RESTART on a detour would be `MODES.md`'s
+forbidden sixth door; that case is Marc's if he disagrees.
+
+**THE E2E FLAKE IS NOT A FLAKE. `board.spec.ts:683` was reporting a real defect
+about a third of the time**, and both of my hypotheses were wrong.
+
+Measured, with a throwaway spec since deleted: **not a shader** — seven runs of
+console and `pageerror` capture, `GL-NOISE (none)` every time. **Not the glide
+tail** — the board rests at poll index 3 every run and the drift after
+`stillBoard` would have called it still is 0.06 to 0.56, an order of magnitude
+short of the failures.
+
+**MY VIEW does not restore the angle.** Four clean runs with a reload between
+each: `data-lean` after pressing MY VIEW was `0,0,0` in three of four, against a
+remembered `35,0,0.35`. The one run that DID restore settled at 1.49; the three
+that stayed flat settled at 2.68, 2.75, 2.95, and once 4.11. **A flat board
+sits about three units from a tilted one at this pan and zoom** — which
+straddles a threshold of 3, and is why this looked like noise. Two earlier
+"fixes" to this test were tightening a measurement of a bug.
+
+A probe inside `myView()` settled the mechanism: `mine={tilt:0,yaw:0,relief:0}`
+on eight calls out of eight. The remembered view is already flat when MY VIEW is
+pressed, so `sameLean` is true, the angle branch never runs, and the board flies
+the pan and stays squared. A second probe caught `keepMine()` stamping a flat
+lean from a rig handle method reached through React; the last link is not nailed
+down and `NEXT.md` §1 says what the next step is rather than guessing.
+
+**What it is a bug against is the point.** Marc, 2026-09-08: _"make sure the
+third one is always 'my own custom view' so that if we toggle with this button
+we never lose the camera."_ Press FLAT to check something and MY VIEW hands back
+the flat board. **And nothing asserts it**: the camera test checks FLAT is
+`0,0,0` and that DEFAULT restores the direction's angle, and never checks MY
+VIEW's angle at all. The pixel threshold was the only witness, and it was loose
+enough to pass three times in four.
+
+**One claim of my own I had to retract.** I wrote in `NEXT.md` and here that
+this spec does not call `watchErrors`, so a failed shader link would never
+reach the canary. It calls it twenty-seven times over and this test's last line
+is `expect(errors).toEqual([])`. I asserted a fact about a file from a grep I
+had truncated, which is the same mistake as trusting a stale ledger — and it is
+the second false claim I have had to correct in three sessions by writing the
+justification down.
+
+**And then it was fixed, without the probe I had said it needed.** The
+mechanism fell out of one fact about the renderer: **R3F renders ON DEMAND.** A
+pan glide the board stops drawing mid-throw is left in `glide.current` rather
+than resting, and the next render — which is the one a lean change itself
+causes — resumes it for a single frame. That frame calls `keepMine()`, which
+reads the lean the same render has just changed. So FLAT stamped the remembered
+view as flat, and MY VIEW handed back the stop you had just left.
+
+The rule was already written at the glide: _"cancelled by anything the player
+does on purpose — a drag, a pinch, a flight — because a finger outranks a
+throw exactly as it outranks a journey."_ **A lean was not on that list.** One
+line in `Board.tsx`'s lean effect, which is the one place that already knows
+the angle is changing.
+
+**Before and after, measured both ways.** With the fix the view-cycle test
+passed 4 of 4 where it had failed about 1 in 3; without it the new assertion
+reports `Received: "0,0,0"` — the flat board, by name. The view-cycle test now
+checks `data-lean` BEFORE the pixel distance, because a wrong angle is what was
+broken and a named attribute says so where a distance can only say "about
+three".
+
+**One honest note about the second assertion I added.** The two-finger test
+gained the same MY VIEW claim, and it **passes without the fix** — a two-finger
+lean sets `orbited` and never starts a glide, so that path never had the bug. It
+is a claim worth holding and it is not the witness; the comment says so rather
+than implying otherwise.
+
+**The other symptom is still open and is a different one.**
+`board.spec.ts:167` still fails in a full suite run on `placeOneTile: no legal
+hex found`, and it is the "passes alone" kind: **5 of 5 in isolation with the
+camera fix, and 5 of 5 without it.** So the fix neither caused nor cured it,
+which is worth stating in both directions — I checked because my change touches
+the lean path that test uses, and "it is the known flake" was not a claim I was
+entitled to make without measuring.

@@ -3439,6 +3439,26 @@ function Game() {
         <More
           s={s}
           virgin={virgin}
+          /*
+           * A SHARED BOARD IS NOT OFFERED A RESTART, and hiding it is the
+           * honest answer rather than a third branch (2026-09-10).
+           *
+           * `MODES.md`: *"a detour can only be ENTERED at boot, from the
+           * URL"* — every door states `detour: false`, and that is the check
+           * a sixth door cannot forget. A mid-run RESTART that dealt the same
+           * shared seed again would be that sixth door, and it would be a
+           * design change to the one invariant three sessions of bugs bought.
+           *
+           * The alternative is worse: leaving the button to call `newRun()`
+           * is the bug above wearing a different mode. A visitor's own way to
+           * start the board over is the link they arrived by, and
+           * `CLAUDE.md`'s one page, many sessions rule means this game does
+           * not offer a reload as a control.
+           *
+           * **Marc's ruling named two modes and this is the third**, so it is
+           * in `NEXT.md` §1 as the one case his sentence did not cover.
+           */
+          canRestart={!session.detour}
           sound={isEnabled(features, 'ui.sound')}
           onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
           onBack={more.hide}
@@ -3448,12 +3468,35 @@ function Game() {
           onShop={() => shop.show()}
           onWorlds={() => worlds.show()}
           onDaily={enterDaily}
+          /*
+           * RESTART RESTARTS WHAT YOU ARE PLAYING (Marc's ruling, 2026-09-10:
+           * *"restart should restart whats being played currently (world or
+           * daily, one or the other)"*).
+           *
+           * It called `newRun()` unconditionally, and `newRun` LEAVES the
+           * daily on purpose — its own docblock says so, because a fresh
+           * random run played while the shell still thought it was in the
+           * daily would be banked under today's date. So the one control that
+           * looks like "start this over" took a daily player out of the daily
+           * and into their own world, which is exactly the sentence Marc
+           * wrote from his phone: *"we still cant restart a daily without us
+           * getting back to our worlds."*
+           *
+           * Two modes, two doors, and both already existed —
+           * `openDaily(null)` deals today's board fresh and had exactly one
+           * caller (TRY AGAIN, on the end screen), which is why a run in
+           * progress could not reach it.
+           *
+           * A shared board is the third mode and it is not offered this
+           * control at all: see `canRestart` below.
+           */
           onRestart={() => {
             // The whole stack, not this panel: MENU sits over whatever was
             // open when RESTART was pressed (the manual, say), so hiding only
             // this panel would leave that screen standing on a run that had
             // just been thrown away.
-            newRun();
+            if (daily !== null) openDaily(null);
+            else newRun();
             leaveMenus();
           }}
         />

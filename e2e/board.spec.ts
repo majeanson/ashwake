@@ -781,6 +781,10 @@ test('the view cycle hands the board back, and never loses the board you made', 
    * board whether it has stopped instead of guessing how long that takes.
    */
   const own = await stillBoard(page);
+  /** The angle the board is at when its reference picture is taken — a drag
+   *  pans and never leans, so this is the direction's own. MY VIEW owes it
+   *  back, and the assertion is at the end of the cycle. */
+  const leanAtOwn = (await page.locator('[data-lean]').getAttribute('data-lean')) ?? '';
 
   await aimAt('home');
   await view.click();
@@ -791,6 +795,40 @@ test('the view cycle hands the board back, and never loses the board you made', 
 
   await aimAt('mine');
   await view.click();
+
+  /*
+   * THE ANGLE, ASSERTED — and this is the witness the pixel threshold below
+   * should never have been on its own (2026-09-10).
+   *
+   * This test failed about one run in three, at 3.09, 3.40, 4.11 and 4.47
+   * against the `< 3` below, and was written up twice as a machine problem: a
+   * GPU flake, then a threshold too tight. **It was reporting a real bug.**
+   * `aimAt('mine')` reaches MY VIEW through FLAT — the press that reveals the
+   * label is the one that squares the board — and MY VIEW then handed back the
+   * FLAT board rather than the one the drag made. A flat board sits about three
+   * units from a tilted one at this pan and zoom, which is why the failure
+   * looked like noise: it straddled the bar.
+   *
+   * The cause is R3F rendering ON DEMAND. A pan glide the board stopped drawing
+   * mid-throw stays in `glide.current` instead of resting, and the next render
+   * — the one a lean change itself causes — resumes it for a frame. That frame
+   * calls `keepMine()`, which reads the lean that has just changed, so pressing
+   * FLAT stamped the player's remembered view as flat. `Board.tsx`'s lean
+   * effect drops the glide now, on the rule the glide's own note already
+   * stated: a finger outranks a throw.
+   *
+   * Diagnosed by probe: `mine` was `{tilt:0,yaw:0,relief:0}` on eight
+   * `myView()` calls out of eight. `LOG.md` Session 80, `NEXT.md` §1.
+   *
+   * It goes BEFORE the pixel check on purpose. A wrong angle is the thing that
+   * was actually broken, and a named attribute says so where a distance can
+   * only say "about three".
+   */
+  await expect(
+    page.locator('[data-lean]'),
+    'MY VIEW came back at a different angle from the board the drag made',
+  ).toHaveAttribute('data-lean', leanAtOwn);
+
   expect(await settleUntil(page, own, 'home'), 'MY VIEW did not give the board back').toBeLessThan(
     3,
   );
@@ -1013,6 +1051,10 @@ test('two fingers lean and turn the board, and the cycle puts it back', async ({
   await touch('touchEnd', [a, b]);
   expect(Number((await lean()).split(',')[1]), 'the twist did not turn the board').not.toBe(0);
 
+  /** The angle the player's own hands left the board at — what MY VIEW owes
+   *  them, asserted at the end of the cycle below. */
+  const orbited = await lean();
+
   /*
    * And the ONE button walks its way back. FLAT is 2D — every one of the three
    * at zero, because a board seen from above with its relief still on is a 3D
@@ -1033,6 +1075,38 @@ test('two fingers lean and turn the board, and the cycle puts it back', async ({
   await expect(host, 'DEFAULT did not restore the direction’s angle').toHaveAttribute(
     'data-lean',
     opened,
+  );
+
+  /*
+   * AND MY VIEW GIVES THE ANGLE BACK (2026-09-10).
+   *
+   * The gap that let a real bug ship for two days: this test checked that FLAT
+   * is 2D and that DEFAULT restores the direction's angle, and never once asked
+   * what MY VIEW does to the lean. The only witness was the view cycle's own
+   * PIXEL threshold, three tests down, and it was loose enough to pass three
+   * runs in four — so a board that came back flat read as a flaky number and
+   * was written up twice as a machine problem.
+   *
+   * What it was: R3F renders on demand, so a glide the board stopped drawing
+   * mid-throw stayed in `glide.current`, and the next render — the one a lean
+   * change itself causes — resumed it for a frame and stamped the remembered
+   * view with the NEW angle. Press FLAT, and MY VIEW handed back the flat
+   * board. `Board.tsx`'s lean effect carries the fix and the argument.
+   *
+   * Marc, 2026-09-08: *"make sure the third one is always 'my own custom view'
+   * so that if we toggle with this button we never lose the camera."* This is
+   * that sentence, as an assertion.
+   */
+  const mineWanted = orbited;
+  expect(mineWanted, 'the gestures above left the board at its opening angle').not.toBe(opened);
+  for (let i = 0; i < 6; i++) {
+    if ((await view.textContent())?.trim() === 'MY VIEW') break;
+    await view.click();
+  }
+  await view.click();
+  await expect(host, 'MY VIEW did not give back the angle the hands made').toHaveAttribute(
+    'data-lean',
+    mineWanted,
   );
 
   assertLooksLikeAPicture(await page.locator('canvas').screenshot(), 'the levelled board');

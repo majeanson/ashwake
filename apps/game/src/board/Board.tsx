@@ -927,6 +927,30 @@ function Rig({
    *  it — see `mine`. Cleared by the effect that stamps it. */
   const orbited = useRef(false);
   useEffect(() => {
+    /*
+     * A CHANGE OF ANGLE CANCELS A THROW (2026-09-10).
+     *
+     * The glide's own note says it is "cancelled by anything the player does on
+     * purpose — a drag, a pinch, a flight — because a finger outranks a throw
+     * exactly as it outranks a journey." A lean is something done on purpose
+     * and it was not on that list, and the reason it matters is that R3F
+     * renders ON DEMAND: when the board stops drawing, an unfinished glide is
+     * left in `glide.current` rather than resting, and the next render — the
+     * one a lean change itself causes — resumes it for a frame.
+     *
+     * That frame calls `keepMine()`, which reads `leanNow`, which this very
+     * effect has just set to the NEW angle. So pressing FLAT could stamp the
+     * player's remembered view with a flat lean, and MY VIEW then gave back the
+     * stop you had just left instead of the board your hands made — which is
+     * the thing Marc asked to be fixed on 2026-09-08 ("we never lose the
+     * camera"), reported as an e2e flake three times, and diagnosed on
+     * 2026-09-10: `mine` was `{tilt:0,yaw:0,relief:0}` on eight `myView()`
+     * calls out of eight. `LOG.md` Session 80 and `NEXT.md` §1.
+     *
+     * Dropped BEFORE `leanNow` moves would be the same fix; it is here because
+     * this is the one place that already knows the angle is changing.
+     */
+    glide.current = null;
     leanNow.current = { tilt, yaw, relief };
     if (!orbited.current) return;
     orbited.current = false;

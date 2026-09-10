@@ -60,6 +60,9 @@ type MoreProps = {
   readonly onWorlds: () => void;
   readonly onDaily: () => void;
   readonly onRestart: () => void;
+  /** False on a shared board, which has no restart to offer — `App` carries
+   *  the argument, and `MODES.md` the invariant behind it. */
+  readonly canRestart: boolean;
 };
 
 export function More({
@@ -75,6 +78,7 @@ export function More({
   onWorlds,
   onDaily,
   onRestart,
+  canRestart,
 }: MoreProps) {
   return (
     <Panel id="more" title={s.ui.menu} back={s.ui.back} closeAll={s.ui.closeAll} onBack={onBack}>
@@ -126,8 +130,15 @@ export function More({
             {s.ui.settings}
           </button>
           {/* Moved in from the manual's own retired MENU tab — it had no other
-              door. Its own confirmation, since it throws a live run away. */}
-          <Confirming label={s.ui.restart} armed={s.ui.restartArmed} onConfirm={onRestart} />
+              door. Its own confirmation, since it throws a live run away.
+
+              It restarts WHAT IS BEING PLAYED since 2026-09-10 — today's daily
+              if you are in one, this world's next run otherwise — and it is
+              absent on a shared board, which has no restart to offer. Both
+              arguments are at the call site in App.tsx. */}
+          {canRestart && (
+            <Confirming label={s.ui.restart} armed={s.ui.restartArmed} onConfirm={onRestart} />
+          )}
         </PanelMenu>
       </section>
     </Panel>

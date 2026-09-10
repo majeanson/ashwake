@@ -352,12 +352,13 @@ back where it started" is 1.5 units wide, and the failures land 0.1 to 0.4
 outside it. That is a tolerance chosen to be tight, sitting one ambient beat
 away from its neighbour.
 
-**A hypothesis worth writing down and NOT worth acting on yet**: this spec does
-not call `watchErrors`. A shader that fails to link — the symptom the first
-entry above describes — would leave the board drawing something slightly
-different and would surface here as exactly this assertion, with no canary to
-say why. That would make two symptoms one cause. It is a guess; the evidence for
-it is that both live on one machine and neither has appeared on CI.
+**~~A hypothesis worth writing down~~ — WRONG ON BOTH HALVES, and the second
+half was a claim I should have checked.** I wrote that this spec does not call
+`watchErrors`, so a failed shader link would surface as this assertion with no
+canary. **It does call it** — `board.spec.ts` has twenty-seven `watchErrors`
+call sites and this test's last line is `expect(errors).toEqual([])`. The
+tolerance assertion simply fires first. And the shader idea is dead too: see
+below.
 
 **The decision is yours, and it is three ways:**
 
@@ -375,46 +376,132 @@ it is that both live on one machine and neither has appeared on CI.
 **Nothing was changed.** Relaxing a threshold to make a suite green is the one
 move the rules name, so the measurements are the deliverable.
 
-**A DAILY IN PROGRESS CANNOT BE RESTARTED (2026-09-10, Marc playing:** _"we
-still cant restart a daily without us getting back to our worlds"_**).**
+**RULED 2026-09-10: option 3** — _find out what fails to link_. **ANSWERED:
+nothing fails to link. The board draws correctly; it draws the WRONG VIEW.**
 
-Checked, and he is right. There are two doors onto a daily and neither deals a
-fresh board to a player already standing in one:
+Three things were measured rather than argued, with a throwaway spec that has
+been deleted:
 
-- **`enterDaily` resumes, by design.** The front door and MORE both go through
-  it, and it hands back `readDailyRun(today)` — today's board picked up where
-  it was left. That is the right answer for the front door and the only answer
-  either door has.
-- **`openDaily(null)` deals a fresh one and has exactly one caller**: TRY
-  AGAIN, which lives on the END SCREEN. So it is reachable only once the run
-  is over.
-- **And MAIN MENU is end-screen-only too**, so from a part-played daily the
-  only way out is MORE ▸ MY WORLDS — which is, literally, getting back to your
-  worlds.
+1. **Not a shader.** Forty frames of console and `pageerror` capture, across
+   seven runs of the flick. `GL-NOISE (none)`, every time.
+2. **Not the glide tail.** The board comes to rest at poll index 3 every run,
+   and the drift after `stillBoard`'s rule would have called it still is
+   **0.06 to 0.56** — an order of magnitude short of the 3.09–4.11 the
+   failures measure. `keepMine` is already stamped on every glide frame, so
+   the remembered view tracks the throw to rest; that bug was found and fixed
+   once, in this same test's first run.
+3. **MY VIEW DOES NOT RESTORE THE ANGLE.** Four clean runs, reloaded between
+   each: `data-lean` after pressing MY VIEW was `0,0,0` — flat — in three of
+   four, against a remembered `35,0,0.35`. And the run where the angle DID
+   come back settled at **1.49**, comfortably inside the bar, while the three
+   that stayed flat settled at **2.68, 2.75, 2.95** and once **4.11**. A flat
+   board simply sits about three units from a tilted one at this pan and zoom,
+   which straddles a threshold of 3.
 
-**The defect half is fixed and shipped** (`LOG.md` Session 77): no door
-flushed the keeper, so leaving a run lost up to 400ms of it and a daily left
-at 20 tiles came back at 21. That was not daily-specific and is now closed for
-every door.
+**So the threshold was never the problem. It was reporting a real defect about
+a third of the time**, and the two earlier "fixes" to this test were tightening
+a measurement of a bug.
 
-**What is left is a screen decision, and it is yours: where does a restart
-live?** Three readings, and they are genuinely different games:
+**The mechanism, as far as it is established.** A probe inside `myView()`
+printed its own inputs on every call: `mine={tilt:0,yaw:0,relief:0}`,
+`now={tilt:0,yaw:0,relief:0}` — **eight calls out of eight.** The remembered
+view is already FLAT by the time MY VIEW is pressed, so `sameLean` is true, the
+angle branch never runs, and the board flies the pan and stays squared. A
+second probe caught `keepMine()` being called while the lean was flat, from a
+rig handle method reached through React — the minified frame is
+`keepMine ← Object.current ← <react internal>` — and the only handle methods
+that call it are `zoomBy` and `panBy`. **That last link is not nailed down**,
+because the diagnostic was pulled before decoding a minified stack any further,
+and a probe per call site is the next step rather than a guess.
 
-1. **A RESTART beside DAILY in MORE**, shown only when today's board has been
-   started. One tap, no confirmation to invent, and it sits where a player
-   already goes to find the daily. Cheapest, and it never surprises anyone.
-2. **MORE ▸ DAILY asks**, when a part-played board exists: RESUME or START
-   OVER. Honest about the choice, and it puts the question at the moment the
-   player is actually deciding — at the cost of a step on the common path,
-   which is resuming.
-3. **A restart on the BOARD**, in the quick menu, while a daily is being
-   played. Closest to hand, and the most dangerous: it is one tap from
-   throwing away a run, on the screen where a thumb is already moving fast.
+**What this is a bug AGAINST, which is why it matters more than the flake.**
+Marc, 2026-09-08: _"Revise all 3 camera modes so the third one is always 'my
+own custom view' so that if we toggle with this button we never lose the
+camera."_ Losing the camera by toggling is exactly what this does — press FLAT
+to check something and MY VIEW gives you back the flat board, not your
+arrangement.
 
-A daily is one board a day and starting it over costs the player nothing but
-their own progress on it — so this is a taste question about how loud the door
-should be, not a rules question. `MODES.md` gains the row whichever way it
-goes, because a restart is a DOOR and doors are what that file is for.
+**And why it shipped: nothing asserts it.** `board.spec.ts`'s camera test
+checks that FLAT is `0,0,0` and that DEFAULT restores the direction's angle. It
+never checks MY VIEW's angle. The view-cycle test measures MY VIEW in PIXELS,
+against a threshold loose enough to pass three quarters of the time.
+
+**FIXED, and it needed no probe in the end.** R3F renders **on demand**, so a
+pan glide the board stopped drawing mid-throw is left sitting in
+`glide.current` rather than resting — and the next render, which is the one a
+lean change itself causes, resumes it for one frame. That frame calls
+`keepMine()`, which reads the lean this very render has just changed. So
+pressing FLAT stamped the player's remembered view as FLAT, and MY VIEW then
+gave back the stop you had just left.
+
+The glide's own note already had the rule: it is _"cancelled by anything the
+player does on purpose — a drag, a pinch, a flight — because a finger outranks
+a throw exactly as it outranks a journey."_ **A lean was not on that list.** It
+is now, in `Board.tsx`'s lean effect, which is the one place that already knows
+the angle is changing.
+
+**The before and after are honest.** With the fix, the view-cycle test passed
+four runs out of four where it had been failing about one in three. Without it,
+the new assertion below reports `Received: "0,0,0"` — the flat board, by name.
+
+**And the pixel threshold is no longer the only witness.** The view-cycle test
+now asserts `data-lean` after MY VIEW, BEFORE the distance check: a wrong angle
+is what was actually broken, and a named attribute says so where a distance can
+only say "about three". `board.spec.ts`'s two-finger test gained the same claim
+for the gesture path — though honestly, that one PASSES without the fix, because
+a two-finger lean sets `orbited` and never starts a glide. It is a claim worth
+holding, not the witness for this bug.
+
+**The tolerance was never widened**, and it should not be: it was measuring
+something true.
+
+---
+
+**THE OTHER SYMPTOM IS STILL OPEN, and it is a different one.**
+`board.spec.ts:167` — "takes a placement with the board leaned and turned" —
+still fails in a full suite run, on `placeOneTile: no legal hex found in the
+search rings`. That is the FIRST symptom this section recorded, back on
+2026-09-10's earlier session, and it is the "passes alone" kind:
+
+- **5 runs out of 5 pass in isolation WITH the camera fix, and 5 out of 5
+  WITHOUT it.** So the fix neither caused it nor cured it, which is worth
+  stating in both directions.
+- It has still never appeared on CI, which fits a Linux runner drawing through
+  software WebGL.
+
+So the count now: **one of the two was a real bug and is fixed; one remains a
+genuine suite-only flake with no diagnosis.** The three options at the top of
+this entry still stand for that one — retry the project, measure, or chase it —
+and it is a smaller decision now that it is one test rather than a pattern.
+
+**~~A DAILY IN PROGRESS CANNOT BE RESTARTED~~ — RULED AND SHIPPED 2026-09-10.**
+Marc, asked where the restart lives: _"restart should restart whats being
+played currently (world or daily, one or the other)."_ Which is a better answer
+than any of the three readings offered, because it is not about placement at
+all — **the control already existed.** MORE's RESTART called `newRun()`
+unconditionally, and `newRun` LEAVES the daily by design (its own docblock says
+why: a fresh random run played while the shell still thought it was in the
+daily would be banked under today's date). So the one button that says "start
+this over" took a daily player into their own world, which is exactly the
+sentence he wrote from his phone.
+
+It branches now — `openDaily(null)` for a daily, `newRun()` for a world — and
+both doors already existed. `openDaily(null)` had exactly one caller, TRY
+AGAIN on the end screen, which is why a run in PROGRESS could not reach it.
+Pinned by `e2e/daily.spec.ts`, and the pin is worth a sentence: **the tile
+count alone cannot catch this bug**, because a world run also starts at a full
+purse. Reverting the fix fails the test on its SECOND assertion — that MORE ▸
+DAILY still resumes the board RESTART dealt — and not on the count at all.
+
+**ONE CASE YOUR SENTENCE DID NOT NAME, and it is yours if you disagree with
+what I did with it.** A shared board is neither a world nor a daily, and it is
+now not offered RESTART at all — the button is absent rather than doing
+something else. The reason is a hard invariant rather than taste: `MODES.md`
+says a detour can only be ENTERED at boot from the URL, every door states
+`detour: false`, and that is the check a sixth door cannot forget. A mid-run
+RESTART that dealt the same shared seed again would be that sixth door. The
+alternative — leaving the button to call `newRun()` — is the bug above wearing
+a different mode.
 
 **FIVE THINGS THE HUD WORKS OUT AND NEVER SAYS (2026-09-10, `pnpm sweep`'s
 first report, `LOG.md` Session 78).** One question, asked five times, and it
@@ -440,10 +527,26 @@ They are listed loudest-first.
    estimated. That is the right way to get the number and it is thrown away on
    every frame of every run.
 
-   **Why it is not just wired:** the report needs about five new sentences in
-   both languages, and the French artifact (P3) is already with you. New
-   strings now are unreviewed French on a screen. So the sequence matters:
-   say yes and they go into the next French pass, not behind it.
+   **RULED 2026-09-10, and not the way this entry asked.** Offered the toast,
+   a shorter line, or cutting `colourPotentials` outright, Marc answered with a
+   fourth thing: _"maybe a lens button where we can see actual points of all
+   board, check per color, etc."_
+
+   So the direction is a **lens PANEL, not a sentence** — a control that opens
+   a view of what the board is actually worth, per colour, with the whole
+   board's standing total. Every number it needs is already computed and
+   thrown away: `ColourPotential` carries the count, the summed worth, how
+   much of that worth the colour's own power earned, and how much is ripe now.
+   `colourPotentials` stays, and stops being waste on the day the panel reads
+   it.
+
+   **Not built, and deliberately not guessed at.** It is a new SCREEN — layout,
+   where the button lives, what it says — and `CLAUDE.md` is explicit that a
+   screen is Marc's and an eye's rather than a derivation. It also needs new
+   sentences in both languages, and the French artifact (P3) is already with
+   him, so the sequence matters: the strings want to go INTO the next French
+   pass rather than behind it. What it wants next is a sketch or a sentence
+   about the shape, not another session's guess.
 
 2. **A STANDING BOUNTY IS NOT ON THE BUTTON.** `HudView.questPays` — its own
    docblock says _"the points button wears it, because a reason to press a

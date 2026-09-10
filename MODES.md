@@ -64,6 +64,21 @@ only be ENTERED at boot, from the URL. Making each door say so is the check
 that a sixth door cannot forget — which is exactly what went wrong when the
 flag lived on the session instead.
 
+**RESTART uses two of these doors rather than being a seventh** (Marc's ruling,
+2026-09-10: _"restart should restart whats being played currently (world or
+daily, one or the other)"_). MORE's RESTART called `newRun` unconditionally,
+and `newRun` LEAVES the daily by design — so the one control that says "start
+this over" took a daily player into their own world. It now branches on
+`daily`: `openDaily(null)` deals today's board fresh, `newRun` starts the next
+expedition in this world. No new row above, because no new door.
+
+**A shared board is not offered it at all**, and that follows from the rule
+directly above rather than from taste: a mid-run RESTART that dealt the same
+shared seed again would be the seventh door, with `detour: true`, which is the
+one invariant three sessions of bugs bought. `More`'s `canRestart` is where
+that is spent, and `NEXT.md` §1 records it as the case Marc's sentence did not
+name.
+
 ## Where a world comes from
 
 Four ways, and two of them mint a world holding facts no run there earned:
