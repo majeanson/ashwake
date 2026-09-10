@@ -786,7 +786,11 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     takeOff: 'TAKE OFF',
     maxed: 'MAXED',
     buy: (name, price) => `Buy ${name} for ${price} relics`,
-    relicsHeld: (n) => `${n} relics`,
+    /* `1 relics` until 2026-09-10, found by the plural rule in `text.test.ts`
+     * rather than by anyone reading it: this is the shop's accessible name for
+     * the relic balance, so the only person it was wrong for was the one
+     * listening to it. French had the branch all along. */
+    relicsHeld: (n) => `${n} relic${plural(n, '', 's')}`,
     perksTally: (found, all) => `${found} of ${all} perks found`,
     handEmpty: 'Your hand is empty. Tap a card below to pick one up.',
     lensOn: (ground) =>

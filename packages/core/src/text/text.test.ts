@@ -413,3 +413,242 @@ describe('which language a device opens in', () => {
     expect(pickLocale([])).toBe('fr-CA');
   });
 });
+
+/**
+ * THE RULES THAT REPLACE A READING (2026-09-10, `PASS.md` P3).
+ *
+ * The plan for this item was a page: all 505 sentences, screen by screen,
+ * French large with the English beneath, for Marc to read in one sitting. He
+ * looked at it and said the true thing — *"i cant review this, its too much"* —
+ * and then asked for the better version: **"can you do it automatically with
+ * some rules? then i check when playing."**
+ *
+ * Which is this repository's own answer to every other question of the same
+ * shape. The contrast budget is not a document somebody reads, it is
+ * `theme/*.test.ts`. The rules did not move is not a promise, it is `pnpm sim`.
+ * A catalogue of six hundred sentences is exactly the kind of thing a person
+ * cannot hold and a test can, and the parts a test genuinely cannot judge —
+ * whether a sentence sounds like Marc — are the parts a phone answers better
+ * than a page ever would.
+ *
+ * So the block below is what a careful reader would have caught, mechanised.
+ * It found one bug on its first run: **`ui.relicsHeld` said "1 relics"** — the
+ * shop's accessible name for the relic balance, so the only player it was ever
+ * wrong for was the one listening to it rather than looking. French had the
+ * branch all along.
+ */
+describe('what the two catalogues owe each other', () => {
+  type Fn = (...a: unknown[]) => unknown;
+
+  /** Every leaf, paired by path, so a rule can compare the two languages. */
+  function paired(): { path: string; fr: unknown; en: unknown }[] {
+    const out: { path: string; fr: unknown; en: unknown }[] = [];
+    const walk = (fr: unknown, en: unknown, path: string): void => {
+      if (typeof fr === 'function' || typeof fr === 'string' || fr instanceof RegExp) {
+        out.push({ path, fr, en });
+        return;
+      }
+      if (Array.isArray(fr)) {
+        fr.forEach((v, i) => walk(v, (en as unknown[] | undefined)?.[i], `${path}.${i}`));
+        return;
+      }
+      if (fr !== null && typeof fr === 'object') {
+        for (const [k, v] of Object.entries(fr as Record<string, unknown>)) {
+          walk(v, (en as Record<string, unknown> | null)?.[k], path === '' ? k : `${path}.${k}`);
+        }
+      }
+    };
+    walk(STRINGS_FR, STRINGS_EN, '');
+    return out;
+  }
+
+  const bothStrings = paired().filter(
+    (l): l is { path: string; fr: string; en: string } =>
+      typeof l.fr === 'string' && typeof l.en === 'string',
+  );
+  const bothFns = paired().filter(
+    (l): l is { path: string; fr: Fn; en: Fn } =>
+      typeof l.fr === 'function' && typeof l.en === 'function',
+  );
+
+  /** The argument shapes a catalogue function takes, tried until one lands. */
+  const SHAPES: readonly unknown[] = [3, 'AAA', true];
+  function callableWith(fr: Fn, en: Fn): unknown[] | null {
+    const n = Math.max(fr.length, en.length);
+    const combos: unknown[][] = [];
+    const build = (i: number, acc: unknown[]): void => {
+      if (combos.length > 300) return;
+      if (i === n) {
+        combos.push([...acc]);
+        return;
+      }
+      for (const shape of SHAPES) build(i + 1, [...acc, shape]);
+    };
+    build(0, []);
+    for (const args of combos) {
+      try {
+        if (typeof fr(...args) === 'string' && typeof en(...args) === 'string') return args;
+      } catch {
+        // The next shape.
+      }
+    }
+    return null;
+  }
+
+  const varied = (v: unknown): unknown =>
+    typeof v === 'number' ? 8 : typeof v === 'string' ? 'ZZZ' : false;
+
+  /**
+   * A number or a name that reaches one language and not the other.
+   *
+   * The failure this catches is silent and total: a sentence that reads
+   * perfectly, in a language where the count it was supposed to carry is
+   * simply absent. `${n} tuiles` losing its `${n}` still says something, and a
+   * type cannot see it because both sides are `(n: number) => string`.
+   *
+   * Asked by VARYING one argument at a time and watching which language's
+   * output moves. Clean on 2026-09-10, over all 138 pairs.
+   */
+  it('never lets a value reach one language and not the other', () => {
+    for (const { path, fr, en } of bothFns) {
+      const args = callableWith(fr, en);
+      if (args === null) continue;
+      for (let i = 0; i < args.length; i++) {
+        const other = [...args];
+        other[i] = varied(args[i]);
+        let frMoves: boolean;
+        let enMoves: boolean;
+        try {
+          frMoves = String(fr(...args)) !== String(fr(...other));
+          enMoves = String(en(...args)) !== String(en(...other));
+        } catch {
+          continue;
+        }
+        expect(
+          frMoves,
+          `${path}: argument ${i} changes the ${enMoves ? 'English' : 'French'} and not the ${enMoves ? 'French' : 'English'}`,
+        ).toBe(enMoves);
+      }
+    }
+  });
+
+  /**
+   * A count pluralised in one language and not the other.
+   *
+   * **This is the rule that found `ui.relicsHeld`**, which said `1 relics` to
+   * every screen reader that read the shop's relic balance. `format.ts` has
+   * carried `plural()` since the catalogue was split and English simply did not
+   * reach for it there; French had `pl()` in the same sentence.
+   *
+   * Compared with the digits masked, so `1 relic` against `3 relics` is a
+   * branch and `1 tile` against `3 tile` is not.
+   */
+  const PLURAL_EXEMPT: Readonly<Record<string, string>> = {
+    'ui.perksTally':
+      'English pluralises on the WHOLE rather than on the count: "1 of 3 perks ' +
+      'found" is right because the noun belongs to the 3. French agrees with ' +
+      'the count instead ("1 atout trouvé sur 3"), so the two languages branch ' +
+      'on different words and neither is wrong.',
+  };
+
+  it('pluralises a count in both languages or in neither', () => {
+    for (const { path, fr, en } of bothFns) {
+      if (path in PLURAL_EXEMPT) continue;
+      const args = callableWith(fr, en);
+      if (args === null) continue;
+      for (let i = 0; i < args.length; i++) {
+        if (typeof args[i] !== 'number') continue;
+        const one = [...args];
+        one[i] = 1;
+        const many = [...args];
+        many[i] = 3;
+        let frBranches: boolean;
+        let enBranches: boolean;
+        try {
+          const mask = (s: unknown): string => String(s).replace(/\d+/g, '#');
+          frBranches = mask(fr(...one)) !== mask(fr(...many));
+          enBranches = mask(en(...one)) !== mask(en(...many));
+        } catch {
+          continue;
+        }
+        expect(
+          frBranches,
+          `${path}: argument ${i} is pluralised in ${enBranches ? 'English' : 'French'} only`,
+        ).toBe(enBranches);
+      }
+    }
+  });
+
+  /**
+   * The hygiene a proofreader would catch on a first pass.
+   *
+   * None of these fires today, and that is the point of writing them down: they
+   * are cheap, they are exactly what a reader would have spent the sitting on,
+   * and a catalogue this size will not stay clean by being remembered. Each is
+   * a rule the two languages already keep, held so they go on keeping it.
+   */
+  it('never doubles a space, and never pads a sentence', () => {
+    for (const { path, fr, en } of bothStrings) {
+      for (const [lang, text] of [
+        ['fr-CA', fr],
+        ['en', en],
+      ] as const) {
+        expect(text.includes('  '), `${lang} ${path}: two spaces in a row`).toBe(false);
+        expect(text, `${lang} ${path}: padded with whitespace`).toBe(text.trim());
+      }
+    }
+  });
+
+  it('writes an ellipsis as one character, never three periods', () => {
+    for (const { path, fr, en } of bothStrings) {
+      expect(fr.includes('...'), `fr-CA ${path}: three periods`).toBe(false);
+      expect(en.includes('...'), `en ${path}: three periods`).toBe(false);
+    }
+  });
+
+  /**
+   * French quotes with « », never with the double quote.
+   *
+   * `typography.sentenceEnd` already treats `»` as terminal punctuation, which
+   * is the catalogue saying French quotation is guillemets; this is the other
+   * half of that statement, held rather than implied.
+   */
+  it('never puts a double quote in a French sentence', () => {
+    for (const { path, fr } of bothStrings) {
+      expect(/["“”]/.test(fr), `fr-CA ${path}: a double quote, not guillemets`).toBe(false);
+    }
+  });
+
+  /**
+   * A thousands separator is `format.ts`'s job, in both languages.
+   *
+   * A four-digit run typed into a sentence is a number that skipped
+   * `fmtInt`, and it renders `1234` where French wants a no-break space and
+   * English wants a comma. The catalogue holds no such number today; a dial
+   * quoted into a sentence is how one would arrive.
+   */
+  it('never types a number a formatter should have written', () => {
+    for (const { path, fr, en } of bothStrings) {
+      expect(/\d{4}/.test(fr), `fr-CA ${path}: a raw four-digit number`).toBe(false);
+      expect(/\d{4}/.test(en), `en ${path}: a raw four-digit number`).toBe(false);
+    }
+  });
+
+  /**
+   * Both languages end a sentence, or neither does.
+   *
+   * A label has no full stop and a sentence has one; what goes wrong is one
+   * language treating a line as a label while the other treats it as prose, so
+   * the same row on the same screen is punctuated one way in French and
+   * another in English.
+   */
+  it('ends a sentence in both languages or in neither', () => {
+    for (const { path, fr, en } of bothStrings) {
+      const frEnds = /[.!?…»]$/.test(fr.trim());
+      const enEnds = /[.!?…]$/.test(en.trim());
+      expect(frEnds, `${path}: punctuated as prose in ${enEnds ? 'English' : 'French'} only`).toBe(
+        enEnds,
+      );
+    }
+  });
+});

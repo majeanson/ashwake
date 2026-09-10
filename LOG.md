@@ -6039,3 +6039,86 @@ backtick in double quotes instead of an escaped one, and
 `String.fromCharCode(92)` where a backslash is genuinely needed. That is the
 third entry in this log about escapes in generated edits, and the first with a
 rule general enough to stop the fourth.
+
+### Session 76 — the French, taken out of its screens (2026-09-10)
+
+**Question (written before building, `PASS.md` P3):** `fr-CA` is what a player
+sees unless they go and change it, it runs about 20% longer than English, D4
+makes it Marc's review surface, and `ROADMAP.md` S1b has said since the day it
+shipped that he has not read it. Marc chose a published artifact he annotates.
+So: **does a catalogue read as prose when it is lifted out of its screens, and
+which of the ~630 does he actually change?**
+
+**Answer: it does not, and the question was the wrong one.** The page was built
+exactly as ruled — 505 sentences by screen, French large in the game's own EB
+Garamond, English beneath, twenty screenshots inlined, a toggle that lights the
+invisible fine spaces, a filter for the sentences that run longest against
+English. It worked. Marc opened it and said the true thing: _"i cant review
+this, its too much"_.
+
+**He is right, and the shape of the mistake is worth keeping.** 505 lines is not
+a task, it is a project, and no amount of grouping or typography turns a project
+into a sitting. I optimised for completeness — every sentence placed, nothing
+left out — when the constraint was a person's attention, which completeness
+spends rather than serves.
+
+**And his second sentence was the design**: _"can you do it automatically with
+some rules? then i check when playing."_ Which is this repository's own answer
+to every question of that shape, and I had walked past it. The contrast budget
+is not a document somebody reads, it is `theme/*.test.ts`. The rules did not
+move is not a promise, it is `pnpm sim`. Québec typography was ALREADY a test —
+`text.test.ts` has held the em dash, the typographic apostrophe and the fine
+space since the catalogue was split. The item was always to extend that file,
+and I proposed a reading surface instead.
+
+**Six rules, and one found a bug in its first second.** `ui.relicsHeld` said
+**`1 relics`** — the shop's accessible name for the relic balance, put there by
+`IMPROVEMENTS.md` B3.3 because the balance had been announcing as bare digits.
+So the only player it was ever wrong for was the one listening rather than
+looking, which is the half of an interface nobody proofreads. `format.ts` has
+carried `plural()` since the split and English did not reach for it in that one
+sentence; French had `pl()` in the same line. **A reading would have had to
+notice it among 504 correct neighbours.**
+
+The rules, and what each is for:
+
+- **A value that reaches one language and not the other** — asked by varying
+  each argument and watching which language's output moves. The failure it
+  guards is silent and total: a sentence that reads perfectly with the count it
+  was meant to carry simply absent, invisible to a type because both sides are
+  `(n: number) => string`. Clean across all 138 function pairs.
+- **A count pluralised in one language only** — the one that found `1 relics`,
+  compared with the digits masked so `1 relic` against `3 relics` is a branch
+  and `1 tile` against `3 tile` is not.
+- Doubled spaces and padded sentences; three periods where an ellipsis belongs;
+  a double quote in a French sentence, where this catalogue quotes with « »; a
+  four-digit number typed in rather than passed through `fmtInt`; and both
+  languages ending a sentence or neither, so one does not treat as a label what
+  the other treats as prose.
+
+**One exemption, with its argument at the line.** `ui.perksTally` pluralises in
+French and not in English and both are right: English agrees with the whole ("1
+of 3 perks found" — the noun belongs to the 3), French agrees with the count
+("1 atout trouvé sur 3"). Two languages branching on different words is not a
+defect, and an exemption that says so is worth more than a rule that is quietly
+narrowed until it stops firing.
+
+**Everything else came back clean**, which is the argument for having spent the
+session this way: no dropped values, no doubled spaces, no typed thousands, no
+straight quotes, no punctuation disagreements. The catalogue was in good order
+and the page would have spent an evening proving it.
+
+**And the generator was deleted, all four files of it.** A runtime pair
+extractor, a reader walk that placed 503 of 505 sentences on the screen that
+prints them, a screen map, a page builder that inlined twenty screenshots. It
+worked and nothing needs it, and a generator nobody runs is precisely the dead
+weight `pnpm sweep` had spent the previous session learning to find. Deleting
+code I had just written is cheaper than the sweep finding it in a month and a
+reader having to re-derive why it was there.
+
+**The reader walk is the one thing worth remembering**, because it agreed with
+an instrument built for a different purpose: attributing sentences to screens
+went from 142 unplaced to 2 once the ancestor walk moved to lookup time, and
+both survivors — `typography.sentenceEnd` and `luckCore` — are exactly the two
+the export sweep had independently flagged as read only by tests. Two
+instruments, built a day apart for different questions, naming the same pair.

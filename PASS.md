@@ -320,46 +320,71 @@ refactor cannot move a rule), and `pnpm test:e2e` green on both projects.
 
 ---
 
-## P3 — the French, read at last (a published artifact Marc annotates)
+## P3 — the French answers to rules, not to a reading — DONE 2026-09-10
 
 `DEFAULT_LOCALE` is `fr-CA`. It is the language a player sees unless they go
-and change it, it runs ~20% longer than English, D4 makes it **Marc's review
-surface**, and `ROADMAP.md` S1b has said since the day it shipped: _"Marc has
-not read the French yet."_ That is 866 lines and roughly 630 entries, in the
-shipping default, unread.
+and change it, it runs about 20% longer than English, D4 makes it Marc’s
+review surface, and `ROADMAP.md` S1b has said since the day it shipped that he
+has not read it. 866 lines, 505 sentences, unread.
 
-Marc's ruling (2026-09-09): a **published artifact**, phone-readable, annotated
-with comment threads that come back to the session.
+**The plan was a page and the page was wrong.** It was built as ruled — a
+published artifact, phone-readable, every sentence by screen with the English
+beneath and a photograph of the screen beside it. Marc looked at it and said
+the true thing: _"i cant review this, its too much"_ — and then asked for the
+better version: **_"can you do it automatically with some rules? then i check
+when playing."_**
 
-| id   | status | statement                                                                                                           | where               |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| P3.1 | open   | the extractor — walk `fr-CA.ts` and `en.ts` through the TYPE, pair every leaf, keep the path. Reuses P1's machinery | `text/Strings.ts`   |
-| P3.2 | open   | where each sentence is READ — which screen, from the graph P1.5 walks. One with no screen is a P1 finding           | `view/`, `screens/` |
-| P3.3 | open   | the page — by screen, French in the real face at the real size, English beneath, the audit shot beside it           | `audit-shots/`      |
-| P3.4 | open   | glossary terms inked as `conceptPattern` inks them, so a term is reviewed where a player meets it                   | `view/tips.ts`      |
-| P3.5 | open   | `text.test.ts`'s Québec typography shown per line, so Marc reviews PROSE and not punctuation                        | `text/text.test.ts` |
-| P3.6 | open   | publish, watch it, and land his threads as commits — one per batch, English snapshots untouched                     | —                   |
+**Which is this repository’s own answer to every question of that shape.** The
+contrast budget is not a document somebody reads, it is `theme/*.test.ts`. The
+rules did not move is not a promise, it is `pnpm sim`. Six hundred sentences
+are exactly what a person cannot hold and a test can — and the part a test
+genuinely cannot judge, whether a sentence sounds like Marc, a phone answers
+better than a page ever would.
 
-**The corrections are the deliverable, not the page.** The artifact lives
-outside the repository, so what has to come back into it is a diff to
-`fr-CA.ts` and a line in `LOG.md`. A review that leaves no trace in git is a
-review that did not happen.
+| id   | status | statement                                                                                                  | where               |
+| ---- | ------ | ---------------------------------------------------------------------------------------------------------- | ------------------- |
+| P3.1 | done   | **a value that reaches one language and not the other** — asked by varying each argument and watching both | `text/text.test.ts` |
+| P3.2 | done   | **a count pluralised in one language only** — the rule that found `1 relics`                               | `text/text.test.ts` |
+| P3.3 | done   | doubled spaces, padded sentences, three periods for an ellipsis                                            | `text/text.test.ts` |
+| P3.4 | done   | a double quote in a French sentence, where the catalogue quotes with « »                                   | `text/text.test.ts` |
+| P3.5 | done   | a four-digit number typed into a sentence instead of going through `fmtInt`                                | `text/text.test.ts` |
+| P3.6 | done   | both languages end a sentence, or neither — a label in one and prose in the other                          | `text/text.test.ts` |
+| P3.7 | ruled  | **the review page is not built.** The generator was written, published once, and deleted                   | —                   |
 
-**Nothing about English may move.** `en.ts` is the prose exactly as it was
-before the catalogue existed, and the snapshots under `view/__snapshots__` are
-what say so. They are never re-recorded silently, and a French correction that
-touches an English snapshot is a bug in the correction.
+**What the rules found on their first run: `ui.relicsHeld` said `1 relics`.**
+It is the shop’s accessible name for the relic balance (`IMPROVEMENTS.md` B3.3
+put it there, because the balance had been announcing as bare digits), so the
+only player it was ever wrong for was the one listening to it rather than
+looking. `format.ts` has carried `plural()` since the catalogue was split and
+English simply did not reach for it in that sentence; French had `pl()` in the
+same line. **A bug a reading would have had to notice among 504 correct
+neighbours, and a rule found it in a second.**
 
-**Delivered early, on purpose.** Marc now has two things that need his eyes —
-Session A and this — and both can be in his hands while I am inside P2.
+**One exemption, with its reason at the line.** `ui.perksTally` pluralises in
+French and not in English, and both are right: English agrees with the whole
+("1 of 3 perks found" — the noun belongs to the 3), French agrees with the
+count ("1 atout trouvé sur 3"). The two languages branch on different words.
 
-> **Question:** does a catalogue read as prose when it is lifted out of its
-> screen, and which of the ~630 does he actually change?
+**And the rest of the catalogue is clean**, which is worth recording because it
+is the argument for having spent the session this way rather than on the page:
+no dropped values across all 138 function pairs, no doubled spaces, no typed
+thousands, no straight quotes, no punctuation disagreements. The existing rules
+— the em dash, the typographic apostrophe, the fine space before a colon — were
+already holding.
 
-**Verify:** `pnpm test` (the typography test is the floor), the English
-snapshots byte-identical, `pnpm test:e2e` for any screen whose text moved.
+**P3.7, stated rather than quietly dropped.** `scripts/review/` was four files:
+a runtime pair extractor, a reader-attribution walk that placed 503 of 505
+sentences on the screen that prints them, a screen map, and a page builder that
+inlined 20 screenshots. All of it worked. None of it is kept, because a
+generator nobody runs is the dead weight every sweep in this repository exists
+to find — and P1 had just spent a session proving how expensive that is. The
+published page stays where it is as a record; `git log` is the archive.
 
----
+**What is left for Marc is what he asked for**: he checks while playing. The
+audit’s French pass (`IMPROVEMENTS.md` B2.3) already photographs every screen
+in French at 320 and 390, and §5d’s six marks ended the clipping category, so
+the thing a phone is uniquely good at — does this sentence sound like me — is
+the only question left on it.
 
 ## P4 — the accessibility proof (RE-SCOPED: it is built, and unproven)
 
