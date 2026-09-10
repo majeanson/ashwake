@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
@@ -223,6 +224,125 @@ function serviceWorkerStamp(sha: string): Plugin {
   };
 }
 
+/**
+ * THE POLICY'S INLINE HASHES, COMPUTED FROM THE PAGE THAT SHIPS
+ * (`PASS.md` P8.4, 2026-09-10).
+ *
+ * `public/_headers` carried `'unsafe-inline'` in `script-src` and `style-src`
+ * and CONFESSED to it in a comment: the page runs one inline classic script
+ * (the browser-floor guard, which must parse on engines the module bundle
+ * cannot) and one inline `<style>` (the pre-JS paint), both static, both
+ * hashable — *"which is a build step this repository does not have yet"*. This
+ * is that build step.
+ *
+ * `'unsafe-inline'` is the directive worth the work, because it is the one that
+ * makes the rest of the policy decorative: with it, ANY inline `<script>` that
+ * reaches this document runs, which is the entire mechanism of the injection
+ * class `script-src` exists to stop. A hash permits exactly the block whose
+ * bytes are in the build and nothing else — and a browser given a hash IGNORES
+ * `'unsafe-inline'`, so leaving it beside them would have been a policy that
+ * reads hardened and enforces nothing.
+ *
+ * **Hashed from `dist/index.html`, not from the source page**, which is not a
+ * detail: Vite folds this page's inline `<script type="module">` — the syntax
+ * probe — into the entry chunk, so the built document has ONE inline script
+ * where the source has two. Hashing what the repository writes would have
+ * shipped a policy for a block the edge never serves, and refused the one it
+ * does. The blocks are found by shape rather than counted, so a future Vite
+ * that stops folding is handled without an edit here.
+ *
+ * Newlines are normalised because the browser normalises them: HTML character
+ * data has its CRLF collapsed during parsing, so a checkout with Windows line
+ * endings would otherwise hash bytes no engine ever sees and refuse the page's
+ * own guard.
+ *
+ * Every step throws rather than warns. A policy is a file that can be wrong in
+ * a way nothing notices — `vite preview` serves no `_headers` at all, so a
+ * wrong one is invisible until it is live. `e2e/csp.spec.ts` runs the game
+ * under the generated policy and asserts an injected inline script does NOT
+ * run; `scripts/verify-deploy.ts` proves the edge puts the header on the
+ * response.
+ */
+function contentPolicy(): Plugin {
+  const out = (name: string): string => fileURLToPath(new URL(`./dist/${name}`, import.meta.url));
+
+  /**
+   * `'sha256-…'` for every inline block one pattern finds, in document order.
+   *
+   * **HTML comments are cut first, and that is not tidiness** (found by the
+   * generated hash disagreeing with a hand-computed one, 2026-09-10). This
+   * page's comments describe the page: they quote `<style>` and
+   * `<script type="module">` in prose, and a lazy match that starts at a
+   * quoted opening tag runs on to the next REAL closing tag — hashing a span
+   * of documentation plus the block, and refusing the block the page ships.
+   * A policy wrong in exactly that way is invisible until it is live, since
+   * `vite preview` serves no `_headers`.
+   */
+  const hashesOf = (html: string, blocks: RegExp): string[] =>
+    [...html.replace(/<!--[\s\S]*?-->/g, '').matchAll(blocks)]
+      // A script with a `src` is an external file, governed by the origin part
+      // of the directive; only a block with a body of its own has a hash.
+      .filter(([, attrs]) => !/\ssrc\s*=/i.test(attrs ?? ''))
+      .map(([, , body]) => {
+        const text = (body ?? '').replace(/\r\n/g, '\n');
+        return `'sha256-${createHash('sha256').update(text, 'utf8').digest('base64')}'`;
+      });
+
+  return {
+    name: 'ashwake:content-policy',
+    apply: 'build',
+    // `closeBundle`, for `sw-stamp`'s reason: `_headers` is COPIED out of
+    // `public/` rather than passing through the bundle, so there is nothing to
+    // rewrite until the copy has happened — and `index.html`, which is what
+    // gets hashed, is written by then too.
+    closeBundle() {
+      const html = readFileSync(out('index.html'), 'utf8');
+      const file = out('_headers');
+      const source = readFileSync(file, 'utf8');
+
+      let filled = source;
+      for (const [tag, mark, blocks] of [
+        ['script', '__INLINE_SCRIPT_HASHES__', /<script(\s[^>]*)?>([\s\S]*?)<\/script>/gi],
+        ['style', '__INLINE_STYLE_HASHES__', /<style(\s[^>]*)?>([\s\S]*?)<\/style>/gi],
+      ] as const) {
+        const hashes = hashesOf(html, blocks);
+        if (hashes.length === 0) {
+          throw new Error(
+            `_headers: no inline <${tag}> in the built page to hash — ` +
+              `the policy would have named none and forbidden whatever ships`,
+          );
+        }
+        if (!filled.includes(mark)) {
+          throw new Error(`_headers has no ${mark} to fill — ${tag}-src would forbid its own page`);
+        }
+        filled = filled.replaceAll(mark, hashes.join(' '));
+      }
+
+      /*
+       * The weakness this whole plugin exists to remove, asserted at the one
+       * moment it is provably gone: a hash beside `'unsafe-inline'` is a policy
+       * that reads hardened and permits everything.
+       *
+       * The POLICY LINES only, not the file — the comment above them describes
+       * what was removed, in those words, and the first version of this check
+       * failed the build over its own explanation.
+       */
+      const directives = filled
+        .split('\n')
+        .filter((line) => line.trim().startsWith('Content-Security-Policy:'))
+        .join('\n');
+      if (directives === '') throw new Error('_headers has no Content-Security-Policy to fill');
+      if (directives.includes("'unsafe-inline'") || directives.includes("'unsafe-eval'")) {
+        throw new Error(
+          "_headers still carries 'unsafe-inline' or 'unsafe-eval' — " +
+            'a hash beside either one is ignored by the browser',
+        );
+      }
+      writeFileSync(file, filled);
+    },
+  };
+}
+
 const sha = buildSha();
 
 /**
@@ -273,6 +393,7 @@ export default defineConfig({
     versionStamp(sha),
     assetManifest(),
     serviceWorkerStamp(sha),
+    contentPolicy(),
   ],
   define: {
     // Compile-time, so it costs nothing at runtime and cannot disagree with

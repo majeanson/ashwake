@@ -815,17 +815,69 @@ measured before/after in `LOG.md`. `pnpm sim` untouched — no rule moves here.
 
 ## P8 — the three failure paths, and the header's own confession
 
-The boundary, the panel, the report and the CSP all shipped. What is left is
-three specific holes and one named weakness.
+The boundary, the panel, the report and the CSP all shipped. The named
+weakness in the header is closed (P8.4); what is left is three specific holes.
 
 | id   | status | statement                                                                                                                | where                    |
 | ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
 | P8.1 | part   | **the stale-chunk loop** — reproduced; CONTINUE fixed; the slow-line case is Marc’s, unbuilt                             | `shell/failure.ts`       |
 | P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)                    | `shell/storage.ts:318`   |
 | P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it                  | `board/gl.ts`            |
-| P8.4 | open   | **hash the two inline blocks at build time and drop `'unsafe-inline'`** — `_headers` names this exact missing build step | `public/_headers`        |
+| P8.4 | done   | **the two inline blocks are hashed at build time and `'unsafe-inline'` is gone** — the build writes the policy | `vite.config.ts`         |
 | P8.5 | open   | an offline FIRST visit, and a second visit offline, against the narrowed precache                                        | `vite.config.ts:183`     |
 | P8.6 | done   | the panel’s repeat counting, pinned under the loop that makes it move                                                    | `ui/staleChunk.test.tsx` |
+
+### P8.4, done: the build writes the policy now (2026-09-10)
+
+`'unsafe-inline'` is gone from `script-src` and `style-src`. `vite.config.ts`'s
+`contentPolicy` plugin hashes the built page's inline blocks and substitutes
+`__INLINE_SCRIPT_HASHES__` / `__INLINE_STYLE_HASHES__` into the copied
+`_headers`, throwing if a mark is missing, if the page has no inline block of a
+kind, or if `'unsafe-inline'` survives in a policy line — a browser handed a
+hash IGNORES it, so the two together are a policy that reads hardened and
+enforces nothing.
+
+**The hole was reproduced in a real browser first**, per this item's verify
+rule: under the policy served up to 2026-09-09, `e2e/csp.spec.ts`'s new test
+injects a `<script>` through the DOM and it RUNS (`Received: true`), and
+injects a `style` attribute and it APPLIES (`Received: "dotted"`). Under the
+generated policy both are refused, and the first test's "nothing was blocked"
+assertion still holds — which is the browser confirming the hashes match the
+blocks the page ships.
+
+**Three things were learned, and two of them were nearly shipped wrong.**
+
+1. **The built page has ONE inline script, not two.** Vite folds an inline
+   `<script type="module">` into the entry chunk, so the syntax probe is the
+   first statements of `assets/index-*.js` and no longer inline at all.
+   Hashing the SOURCE page would have named a block the edge never serves and
+   refused the one it does. The plugin reads `dist/index.html` and finds blocks
+   by shape rather than counting them.
+2. **A comment that quotes a tag is not a tag.** The first generated style hash
+   disagreed with a hand-computed one: this page's own comments write `<style>`
+   and `<script type="module">` in prose, and a lazy match beginning at a
+   quoted opening tag runs on to the next REAL closing tag — hashing a span of
+   documentation plus the block. It would have refused the page's own floor
+   guard and pre-JS paint, invisibly, on the deployed build only. HTML comments
+   are cut before matching, and the reason is written at the function.
+3. **A hash never covers a `style` attribute.** `style-src` could not drop
+   `'unsafe-inline'` while the floor guard wrote its sentence with inline
+   styles and the `<noscript>` did the same; hashes govern a block's text, and
+   an attribute needs `'unsafe-inline'` or `'unsafe-hashes'` whatever else the
+   policy says. Both moved into the hashed `<style>` as `.floor` — which also
+   put the ground colour literal in ONE place instead of two, and those two had
+   already drifted apart once (2026-09-02, `#0a0806` against `#14100c`).
+
+`scripts/verify-deploy.ts` gained the other half: the live CSP must carry
+`script-src 'self' 'sha256-` and `style-src 'self' 'sha256-`, and must NOT
+carry `'unsafe-inline'`, `'unsafe-eval'` or an unfilled `__INLINE_` mark — so
+an edge serving the source file rather than the built one fails the deploy
+instead of quietly handing every visitor a refused floor guard.
+
+And the build's own assertion caught its own explanation: the first version
+scanned the whole file for `'unsafe-inline'`, and the comment above the policy
+describes what was removed in exactly those words. It reads the policy lines
+now.
 
 ### P8.1, answered: the loop is mostly not reachable (2026-09-10)
 

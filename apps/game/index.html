@@ -132,6 +132,27 @@
 
       No eval, no external request, and it probes the real thing rather than a
       string that resembles it.
+
+      ## AND IN THE BUILT PAGE THE PROBE IS NOT INLINE AT ALL (2026-09-10)
+
+      Vite folds an inline module script into the entry chunk, so
+      `dist/index.html` carries no `<script type="module">` of its own — the
+      flag is set by the first statements of `assets/index-*.js`, ahead of
+      everything else in it. Found while hashing this page's inline blocks for
+      the CSP (P8.4), and it does not change what the guard measures: the flag
+      is still set only if the engine parsed the module that carries the game,
+      which is the question being asked.
+
+      ## NO STYLE ATTRIBUTES BELOW, AND THAT IS THE CSP (P8.4, 2026-09-10)
+
+      A CSP hash covers the TEXT of an inline block and nothing else; a
+      `style="..."` attribute needs `'unsafe-inline'` (or `'unsafe-hashes'`,
+      which is barely narrower) whatever else the policy says. So the two style
+      attributes this page used to carry — one here, one on the `<noscript>` —
+      moved into the hashed `<style>` below as `.floor`, and `style-src`
+      dropped `'unsafe-inline'` with them. That also puts the ground colour in
+      ONE place: it was duplicated here and in the paint, and on 2026-09-02 the
+      two copies had already drifted apart.
     -->
     <script type="module">
       // The newest syntax the shipped bundle actually uses. If this module does
@@ -150,11 +171,7 @@
         document.addEventListener('DOMContentLoaded', function () {
           if (window.__ashwakeCanRun) return;
           document.body.innerHTML =
-            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;' +
-            // The default direction's ground, like the pre-JS paint below —
-            // this said `#0a0806` (torchlit's) for the same reason it did.
-            'background:#14100c;color:#e8d6ae;font-family:Georgia,serif;padding:24px;text-align:center;">' +
-            '<p style="max-width:26em;line-height:1.6">ASHWAKE a besoin d’un navigateur plus récent : ' +
+            '<div class="floor"><p>ASHWAKE a besoin d’un navigateur plus récent : ' +
             'iOS 16.4 ou plus, ou un Chrome ou Firefox à jour. ' +
             'Rien ne cloche avec ton appareil : ce jeu s’appuie sur les fonctions les plus récentes du moteur.<br><br>' +
             'ASHWAKE needs a newer browser: iOS 16.4 or later, or an up-to-date Chrome or Firefox.</p></div>';
@@ -184,6 +201,34 @@
        * invariant is not the invariant, and it is the sentence that stops a
        * reader checking.
        */
+      /*
+       * THE ONE SCREEN THAT IS NOT THE GAME — the browser-floor guard's
+       * sentence and the `<noscript>` one, which are the same shape.
+       *
+       * Written here rather than as `style="..."` on each because a CSP hash
+       * covers a block's text and never an attribute (P8.4): with these two
+       * moved, `style-src` is `'self'` plus one hash, and nothing inline is
+       * permitted by shape any more. The colours are literals for the same
+       * reason the paint's below are, and now they are the SAME literals
+       * rather than a copy that can drift.
+       */
+      .floor {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #14100c;
+        color: #e8d6ae;
+        font-family: Georgia, serif;
+        padding: 24px;
+        text-align: center;
+        margin: 0;
+      }
+      .floor p {
+        max-width: 26em;
+        line-height: 1.6;
+        margin: 0;
+      }
       html,
       body,
       #root {
@@ -202,19 +247,7 @@
   <body>
     <div id="root"></div>
     <noscript>
-      <p
-        style="
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #e8d6ae;
-          font-family: Georgia, serif;
-          padding: 24px;
-          text-align: center;
-          margin: 0;
-        "
-      >
+      <p class="floor">
         Ashwake est un jeu, et il a besoin de JavaScript pour se jouer.<br />Ashwake is a game, and
         it needs JavaScript switched on to play.
       </p>

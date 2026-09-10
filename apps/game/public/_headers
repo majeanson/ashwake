@@ -39,20 +39,41 @@
 # scripts this still bars — and the alternative is a game whose board cannot
 # print a number.
 #
-# **`script-src` carries `'unsafe-inline'` and that is a real weakness, named
-# rather than hidden.** `index.html` runs one inline classic script — the
-# browser floor guard, which must parse on engines the module bundle cannot —
-# and one inline `<style>`, the pre-JS paint. Both are static, so both could
-# be hashed; the hashes would have to be computed at build time and written
-# here, which is a build step this repository does not have yet. Until it does,
-# the honest position is that `script-src 'self' 'unsafe-inline'` still bars
-# every EXTERNAL script, which is the vector that matters for a page with no
-# user input, no cookies and no session.
+# **`script-src` AND `style-src` CARRY HASHES, AND THE BUILD WRITES THEM
+# (2026-09-10, `PASS.md` P8.4).** This block used to say `'unsafe-inline'` and
+# confess to it: the page runs one inline classic script — the browser floor
+# guard, which must parse on engines the module bundle cannot — and one inline
+# `<style>`, the pre-JS paint, "both static, so both could be hashed; the
+# hashes would have to be computed at build time and written here, which is a
+# build step this repository does not have yet."
+#
+# It has one now. `vite.config.ts`'s `contentPolicy` plugin reads the BUILT
+# `dist/index.html`, hashes every inline block in it, and substitutes the two
+# marks below on the way out; the file in `public/` is the source and the file
+# in `dist/` is what the edge serves. It throws if a mark is missing, if the
+# built page has no inline block of a kind, or if `'unsafe-inline'` survives
+# anywhere — because a browser handed a hash IGNORES `'unsafe-inline'`, so the
+# two together are a policy that reads hardened and enforces nothing.
+#
+# Why this directive was worth a build step: `'unsafe-inline'` in `script-src`
+# means any inline `<script>` that reaches this document runs, which is the
+# whole mechanism the directive exists to stop — with it there, the rest of the
+# policy is decorative. `e2e/csp.spec.ts` now injects one and asserts it does
+# not run, under the generated policy, in a real browser.
+#
+# And `style-src` cost two edits to `index.html`, which is the part worth
+# knowing: **a hash covers the TEXT of a block and never a `style` attribute.**
+# The floor guard wrote its sentence with inline styles and so did the
+# `<noscript>`, so both moved into the hashed `<style>` as `.floor` — otherwise
+# `style-src` would have needed `'unsafe-inline'` (or `'unsafe-hashes'`, which
+# is barely narrower) no matter how many hashes it carried. Nothing in
+# `apps/game/src` writes a style attribute or a `<style>`: React sets styles
+# through the CSSOM, which no CSP governs.
 #
 # `frame-ancestors` and `X-Frame-Options` together: nobody frames this game,
 # and the second is for engines that never learned the first.
 /*
-  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://o4510241708244992.ingest.us.sentry.io; manifest-src 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' __INLINE_SCRIPT_HASHES__ blob:; style-src 'self' __INLINE_STYLE_HASHES__; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://o4510241708244992.ingest.us.sentry.io; manifest-src 'self'
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer

@@ -244,7 +244,31 @@ const CSP_MUST_CARRY: readonly string[] = [
   "worker-src 'self' blob:",
   // The promise. One consented outbound request, and nothing else.
   "connect-src 'self' https://",
+  /*
+   * THE INLINE HASHES (P8.4, 2026-09-10).
+   *
+   * `vite.config.ts`'s `contentPolicy` plugin computes these from the built
+   * page and writes them into `dist/_headers`. The hash VALUE changes with
+   * every build, so what is checked is that a hash is there at all: an edge
+   * serving the source file rather than the generated one, or a build whose
+   * plugin was dropped, would arrive here with the marks unfilled or with
+   * `'unsafe-inline'` back — and the page's own floor guard would be refused,
+   * which is a blank screen for exactly the oldest browsers it exists to
+   * speak to.
+   */
+  "script-src 'self' 'sha256-",
+  "style-src 'self' 'sha256-",
 ];
+
+/**
+ * AND WHAT IT MUST NOT SAY.
+ *
+ * A browser handed a hash IGNORES `'unsafe-inline'`, so the two together are
+ * not belt and braces — they are a policy that reads hardened and enforces
+ * nothing about inline code. `'unsafe-eval'` has never been in this policy and
+ * the browser-floor guard was rewritten (2026-09-09) to stop needing it.
+ */
+const CSP_MUST_NOT_CARRY: readonly string[] = ["'unsafe-inline'", "'unsafe-eval'", '__INLINE_'];
 
 const HEADERS_MUST_CARRY: readonly (readonly [string, string])[] = [
   ['x-content-type-options', 'nosniff'],
@@ -261,6 +285,9 @@ async function checkHeaders(base: string): Promise<void> {
   if (csp === null) throw new Error('no Content-Security-Policy on the live page');
   for (const clause of CSP_MUST_CARRY) {
     if (!csp.includes(clause)) throw new Error(`CSP is missing "${clause}": ${csp}`);
+  }
+  for (const clause of CSP_MUST_NOT_CARRY) {
+    if (csp.includes(clause)) throw new Error(`CSP still carries "${clause}": ${csp}`);
   }
   for (const [name, value] of HEADERS_MUST_CARRY) {
     const got = res.headers.get(name);

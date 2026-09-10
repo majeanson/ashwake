@@ -7020,3 +7020,81 @@ fixed, in a test that fails without the fix."_ Had I read the row and patched
 the panel, I would have shipped a hidden button and never learned that RELOAD
 already escapes — which is the actual answer to the item's question, and it
 came out of the reproduction rather than out of the fix.
+
+### Session 84 — the policy the build writes (2026-09-10)
+
+**Question (`PASS.md` P8.4):** can the two inline blocks be hashed at build
+time so `'unsafe-inline'` can leave the policy — and is that worth a generated
+file the deploy must not be able to skip?
+
+**Answer: yes, and it was worth it because `'unsafe-inline'` made the rest of
+the policy decorative.** `_headers` had CONFESSED to the weakness rather than
+hidden it — *"both static, so both could be hashed; the hashes would have to be
+computed at build time and written here, which is a build step this repository
+does not have yet"* — and the confession was accurate and load-bearing: with
+`'unsafe-inline'` in `script-src`, ANY inline `<script>` that reaches this
+document runs, which is the entire mechanism the directive exists to stop.
+`vite.config.ts`'s `contentPolicy` plugin is that build step, in
+`serviceWorkerStamp`'s shape and for its reason: `_headers` is COPIED out of
+`public/`, so there is nothing to rewrite until the copy has happened.
+
+**Reproduced in a real browser before it was fixed**, which is P8's rule.
+Under the policy served up to yesterday, an injected `<script>` RAN
+(`Received: true`) and an injected `style` attribute APPLIED
+(`Received: "dotted"`). Both are refused under the generated policy, and
+`csp.spec.ts`'s older test still ends with an empty console — the browser
+agreeing that the hashes match the blocks the page actually ships.
+
+**Two of the three findings would have shipped a broken policy, silently.**
+
+1. **A comment that quotes a tag is not a tag.** The generated style hash
+   disagreed with a hand-computed one, and the reason is that this page
+   documents itself: its comments write `<style>` and `<script type="module">`
+   in prose, and a lazy match that starts at a QUOTED opening tag runs on to
+   the next real closing tag — hashing a span of documentation plus the block.
+   That policy refuses the page's own floor guard and pre-JS paint, on the
+   deployed build only, because `vite preview` serves no `_headers`. Comments
+   are cut before matching now. It belongs to the same family as
+   `destinationAt`: **a comment is not the thing it describes**, and here it
+   was close enough to the thing to be mistaken for it by a machine.
+2. **The built page has one inline script, not two.** Vite folds an inline
+   module script into the entry chunk, so the browser-floor syntax probe is now
+   the first statements of `assets/index-*.js`. Hashing the source page — the
+   obvious thing to do — would have named a block the edge never serves and
+   refused the one it does. The plugin reads `dist/index.html`, and finds blocks
+   by shape rather than by count, so a future Vite that stops folding needs no
+   edit.
+3. **A hash never covers a `style` attribute.** `style-src` could not drop
+   `'unsafe-inline'` while the floor guard and the `<noscript>` wrote their
+   sentences with inline styles; a hash governs a block's TEXT, and an
+   attribute needs `'unsafe-inline'` (or `'unsafe-hashes'`, barely narrower)
+   whatever else the policy says. Both moved into the hashed `<style>` as
+   `.floor` — and that merged the ground-colour literal, which existed twice
+   and had already drifted once (2026-09-02: `#0a0806` under a comment saying
+   it was `#14100c`'s).
+
+**And the build's assertion caught its own explanation.** The plugin refuses to
+write a policy containing `'unsafe-inline'`; the first version scanned the
+whole file, and the comment above the policy describes what was removed in
+exactly those words, so the build failed over its own documentation. It reads
+the `Content-Security-Policy:` lines now. Every check in the plugin throws
+rather than warns, for `sw-stamp`'s reason: a wrong policy is invisible until
+it is live.
+
+`scripts/verify-deploy.ts` holds the other end — the live header must carry
+`script-src 'self' 'sha256-` and `style-src 'self' 'sha256-` and must not carry
+`'unsafe-inline'`, `'unsafe-eval'` or an unfilled `__INLINE_` mark. A test can
+prove the file is right; only a request can prove a browser will be told, and
+an edge serving the SOURCE `_headers` rather than the built one now fails the
+deploy instead of handing every visitor a refused floor guard.
+
+**Verified:** format, typecheck, lint clean; 1260 tests / 97 files; `pnpm sim`
+byte-identical; sweep 0 findings; `pnpm budget` green; **e2e 118/118 chromium
+and 46 passed / 1 skipped webkit**, including the two CSP tests. Not seen on a
+phone — and this is one of the few items where that matters less than usual,
+since `vite preview` cannot serve the header at all and the deploy check is the
+phone-side proof.
+
+**Next:** P8.2 (quota exhaustion in a browser, which shares a harness with the
+deferred P7.6 and may deserve the same treatment), P8.3 (no WebGL, and a
+context loss that never restores), P8.5 (offline first and second visits).
