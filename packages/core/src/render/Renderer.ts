@@ -131,74 +131,25 @@ export type BoardView = {
   readonly targetHex: HexKey | null;
 };
 
-export interface Renderer {
-  /** Attach to the DOM and prepare the canvas. */
-  mount(host: HTMLElement): Promise<void>;
-  /** Draw a view. Idempotent — calling it twice with the same view is a no-op visually. */
-  draw(view: BoardView): void;
-  /**
-   * The camera. Zoom multiplies (anchored at the viewport centre, clamped so 1
-   * is always the auto-fit), pan slides by screen pixels, reset returns to the
-   * fit that shows everything. The renderer owns the clamps and the maths; the
-   * UI owns which gesture or button asks for what.
-   */
-  /** Follow the OS reduced-motion setting when it changes mid-session. */
-  setReducedMotion(on: boolean): void;
-  zoomBy(factor: number): void;
-  panBy(dx: number, dy: number): void;
-  resetCamera(): void;
-  /**
-   * Pan (only — zoom is untouched) so `hex` sits at the centre of the
-   * screen. A jump to a known point rather than a step in a direction, and a
-   * no-op before anything has ever been drawn.
-   *
-   * Instant. Every move the GAME makes on the player's behalf goes through
-   * `flyToHex`/`flyToFit` instead (2026-08-20) — this stays for the moves
-   * that must land in the same frame as the state change they belong to.
-   */
-  centerOn(hex: HexKey): void;
-  /**
-   * The camera moves the game makes for you, over time rather than in one
-   * frame: fly in on a hex at `zoom`, or back out to the fit that shows
-   * everything. A drag cancels whichever is in flight — a finger on the board
-   * outranks a journey the board started on its own — and reduced motion
-   * arrives instantly, which is the setting doing exactly what it says.
-   */
-  flyToHex(hex: HexKey, zoom: number): void;
-  flyToFit(): void;
-  /**
-   * The zoom the camera is at — or, mid-flight, the one it is flying to.
-   * The settled answer on purpose: the callers are the toggle's label and
-   * the branch deciding where the next tap goes, and both would lie for
-   * the length of a tween if this read the transit frame instead.
-   */
-  zoomLevel(): number;
-
-  /**
-   * The current zoom ceiling. It RISES as the board grows, because the cap is
-   * stated in pixels-per-hex rather than as a multiple of a shrinking fit —
-   * so the UI has to ask rather than assume a constant.
-   */
-  zoomMax(): number;
-  /**
-   * Which cell is under a point, in CSS pixels relative to the host element.
-   * The renderer owns the board's placement on screen, so it is the only thing
-   * that can answer this; the alternative is the UI duplicating the layout maths
-   * and drifting out of step with what is actually drawn.
-   */
-  hitTest(x: number, y: number): HexKey | null;
-  /**
-   * A small portrait of the board, exactly as currently drawn (camera and
-   * all), as a PNG data URL — "the map at death is the run's whole story,
-   * drawn" (`ideas/endless-world.md`). `maxPx` bounds the longest side of the
-   * raster; the renderer decides how to get there. `format` defaults to PNG;
-   * `'jpeg'` is for the diary's stored thumbnail (C9, 2026-08-26), where a
-   * lossy board a third the bytes beats a crisp one that blows the storage
-   * budget. `null` wherever extraction is unavailable — nothing mounted, no
-   * 2D context to encode into — which a caller treats as "no picture this
-   * time", not an error.
-   */
-  snapshot(maxPx: number, format?: 'png' | 'jpeg'): string | null;
-  /** Release GPU resources and detach. */
-  destroy(): void;
-}
+/*
+ * `Renderer` LIVED HERE, AND IT WAS ASHWAKE 1 (deleted 2026-09-10, `PASS.md` P1.9).
+ *
+ * A seventy-line interface describing the imperative renderer of the other
+ * body — `mount(host)`, `draw(view)`, `hitTest`, `snapshot`, `destroy` — carried
+ * over with the rest of this file and implemented by nothing here. This body
+ * is React Three Fiber: the `<Canvas>` mounts once above every scene, and what
+ * the shell holds is a `BoardHandle` ref (`board/Board.tsx`), which is a
+ * different contract with different lifetimes.
+ *
+ * **It was also the only DOM type in `packages/core`.** `mount(host: HTMLElement)`
+ * — in the package whose first hard rule is that it has no DOM. That rule is
+ * enforced by `no-restricted-globals` in `eslint.config.js`, which sees a global
+ * used as a VALUE and not one used as a TYPE, so `HTMLElement` walked through
+ * unremarked for the whole of this body. It was found by `pnpm sweep` on its
+ * first run, as an export nothing reads.
+ *
+ * The types above it stayed, and they are what every board module imports from
+ * this file: `CellView` and `BoardView` are the description of WHAT is on the
+ * board, which is the boundary this file is really for. `git log` is the
+ * archive for the interface itself.
+ */

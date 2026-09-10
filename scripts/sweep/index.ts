@@ -2,8 +2,11 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ALLOW, expired, ruledOn } from './allow';
 import { order, type Finding } from './finding';
+import { argumentSweep } from './arguments';
+import { branchSweep } from './branches';
 import { fieldSweep } from './fields';
 import { moduleSweep } from './modules';
+import { optionalSweep } from './optional';
 import { ROOT, workspace } from './program';
 
 /**
@@ -27,6 +30,9 @@ import { ROOT, workspace } from './program';
 const PASSES = [
   { name: 'module', run: moduleSweep },
   { name: 'field', run: fieldSweep },
+  { name: 'branch', run: branchSweep },
+  { name: 'optional', run: optionalSweep },
+  { name: 'argument', run: argumentSweep },
 ] as const;
 
 function today(): string {
@@ -59,7 +65,8 @@ function main(): void {
   lines.push('');
   lines.push(
     `Walked **${w.files.length} files** in ${((Date.now() - started) / 1000).toFixed(1)}s, ` +
-      `over ${PASSES.length} of 6 passes. **${live.length} findings**, ` +
+      `over ${PASSES.length} passes covering the six rituals in \`CLAUDE.md\` — the catalogue ` +
+      `is the field pass taught to recurse, and \`fields.ts\` says why. **${live.length} findings**, ` +
       `${ruled.length} absorbed by \`scripts/sweep/allow.ts\` (${ALLOW.length} rulings).`,
   );
   lines.push('');
@@ -69,9 +76,17 @@ function main(): void {
     for (const r of stale) lines.push(`- \`${r.id}\` — until ${r.until ?? ''}. ${r.why}`);
     lines.push('');
   }
-  for (const pass of PASSES) {
-    const mine = live.filter((f) => f.pass === pass.name);
-    lines.push(`## ${pass.name} — ${mine.length}`);
+  /*
+   * Grouped by the pass a finding SAYS it came from, not by the list of
+   * functions above. `fieldSweep` reports the catalogue under `text`
+   * (`fields.ts` says why), and a report keyed on the runner's own names
+   * silently dropped every one of them — a section that does not exist is
+   * indistinguishable from a section with nothing in it.
+   */
+  const groups = [...new Set([...PASSES.map((p) => p.name as string), ...live.map((f) => f.pass)])];
+  for (const name of groups) {
+    const mine = live.filter((f) => f.pass === name);
+    lines.push(`## ${name} — ${mine.length}`);
     lines.push('');
     lines.push(table(mine));
   }

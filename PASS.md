@@ -135,14 +135,65 @@ already has the answer to.
 | ---- | ------ | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | P1.1 | done   | **the module sweep** — every `export` with no importer outside its own file, which is the ritual as written                      | `scripts/sweep/`        |
 | P1.2 | done   | **the field sweep** — every `readonly` property of an exported type, and whether any file reads it. The `cell.band` class        | `render/Renderer.ts`    |
-| P1.3 | open   | **the optional-input sweep** — every optional parameter and field, and whether a caller passes it. The `perkAt` class            | `view/receipts.ts`      |
-| P1.4 | open   | **the branch sweep** — union members of a consumed value no consumer compares against. The `teach.as === 'toast'` class          | `shell/teaching.ts:119` |
-| P1.5 | open   | **the catalogue sweep** — keys in `text/Strings.ts` no `view/`, `meta/` or screen reads. The `figure.hold` class                 | `text/Strings.ts`       |
-| P1.6 | open   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class | `shell/store.ts`        |
-| P1.7 | open   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file         | —                       |
+| P1.3 | done   | **the optional-input sweep** — every optional parameter and field, and whether a caller passes it. The `perkAt` class            | `view/receipts.ts`      |
+| P1.4 | done   | **the branch sweep** — union members of a consumed value no consumer compares against. The `teach.as === 'toast'` class          | `shell/teaching.ts:119` |
+| P1.5 | done   | **the catalogue sweep** — keys in `text/Strings.ts` no `view/`, `meta/` or screen reads. The `figure.hold` class                 | `text/Strings.ts`       |
+| P1.6 | done   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class | `shell/store.ts`        |
+| P1.7 | done   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file         | —                       |
 | P1.8 | done   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed           | `package.json`          |
 | P1.9 | open   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool                                   | —                       |
 
+### What the first report found (2026-09-10)
+
+**345 findings over 276 files in 117 seconds.** The tool is built; P1.9 —
+adjudicating what it says — is the half still open, and this is the queue.
+
+**Two things validate it before anything else.** It reproduced two findings
+made by hand and recorded in the ledgers (`Ring.width`, `Said.brief`,
+`Keeper.alive`, `Confirming.holdMs`), and it was RIGHT where a grep would
+have been wrong: `engine/hex.ts#disc` reports as read only by tests, and a
+text search says `meta/world.ts` uses it. Both are true and they are
+different symbols — `world.ts:440` declares a local `const disc`.
+
+**Executed this session:**
+
+- **`render/Renderer.ts#Renderer` is deleted.** A seventy-line interface for
+  Ashwake 1's imperative renderer, implemented by nothing in this body, in the
+  file every board module imports `CellView` from. **It was also the only DOM
+  type in `packages/core`** — `mount(host: HTMLElement)`, in the package whose
+  first hard rule is no DOM. `no-restricted-globals` sees a global used as a
+  VALUE, not one used as a TYPE, so it walked through a rule this repository
+  calls hard. Deleting it closes the hole; the note at the line says so.
+- **Six rulings seeded into `allow.ts`**, each with its date and its argument.
+
+**The queue, by what each finding needs:**
+
+| what                                                                                 | count | needs                                                                             |
+| ------------------------------------------------------------------------------------ | ----- | --------------------------------------------------------------------------------- |
+| **dead sentences** — `ui.dismiss`, `payout.heading`, zero readers in either language | 2     | a screen prints them or they go                                                   |
+| **one sentence spelled twice** — `luckCore`, read by a pin and re-typed in prose     | 1     | `view.ts:1691`'s own comment says they share a clause; make them share a string   |
+| **`typography.sentenceEnd`** — a language's terminal punctuation, applied by a test  | 1     | is the rule meant to run at runtime?                                              |
+| **a run's shape, stored and never shown** — six `RunDetail` fields                   | 6     | print them or stop writing them. **Feeds P7 directly** — dead weight in that blob |
+| **optional inputs nothing supplies**                                                 | 10    | each is a missing caller or dead API surface                                      |
+| **arguments that can never be anything else** — `screenOf(h)`, `runsOf`/`streamOf`   | 3     | the slot filter on the timeline readers is dead; `MODES.md` names those readers   |
+| **exported, read only by tests**                                                     | 23    | mostly the core's lift, whose surface is Ashwake 1's — rule and allowlist         |
+| **exported, read only inside its own file**                                          | 226   | `CLAUDE.md`: demote to `const`/`function`. See below                              |
+
+**The 226 are the tail, and they are not one job.** `CLAUDE.md`'s instruction
+is to demote them so the NEXT sweep's signal stays clean, and it is right — but
+the same file rules that `packages/core/src/engine` and `content` keep their
+surface because it is Ashwake 1's. So the tail splits: the game's own are
+demoted, the core's lift is allowlisted with that ruling cited, and neither is
+done by a script that cannot tell them apart. It is a batch of its own, run
+against the gate, and it is what stands between this report and a CI gate —
+`PASS.md` P1's bar for that is one clean run with an empty allowlist delta.
+
+**Two findings point at other items rather than at this one.** `RunDetail`'s
+six unread numbers are dead weight in the exact blob **P7** is about to
+compact, and `runsOf(slot)`/`streamOf(slot)` being called with `null`
+everywhere is a question about the reader table **P10** is going to assert.
+Neither is fixed here; both are written where the item that owns them will
+find them.
 **P1.6 is the one that may not work, and it says so here rather than in a
 retrospective.** The fog was a _tested, correct consumer_ handed a hard-coded
 empty list at the call site, and `CLAUDE.md`'s own conclusion is that grepping

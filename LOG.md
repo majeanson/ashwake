@@ -5960,4 +5960,82 @@ is that file's own account of **how a ritual stops being run**. So:
 **how much of the ritual is mechanical, and does the mechanical half find
 anything the four hand passes walked past?**
 
-**Answer:** _(pending — this line is replaced when the item lands.)_
+**Answer: most of it is mechanical, and the mechanical half found a hard rule
+broken.** `pnpm sweep` walks 276 files in under two minutes and answers five of
+the six rituals; the sixth — the catalogue — turned out to BE the field pass
+with recursion, which is a better answer than a sixth walk that could disagree
+with the fifth.
+
+**The thing it found that four hand passes did not: `render/Renderer.ts`'s
+`Renderer`.** Seventy lines describing Ashwake 1's imperative renderer —
+`mount(host)`, `draw`, `hitTest`, `snapshot`, `destroy` — sitting in the file
+every board module imports `CellView` from, implemented by nothing in a body
+that is React Three Fiber and a `BoardHandle` ref. **And it held the only DOM
+type in `packages/core`.** The purity rule is enforced by
+`no-restricted-globals`, which sees a global used as a VALUE and not one used
+as a TYPE, so `HTMLElement` walked through the package's first hard rule and
+stayed for the whole of this body. Deleted, and the hole is closed with it.
+
+**The strongest evidence the compiler beats a grep came on the first
+suspicious row.** `engine/hex.ts#disc` reported as read only by tests, and a
+text search says `meta/world.ts` uses it — which would have cleared it. Both
+statements are true and they are different symbols: `world.ts:440` declares a
+local `const disc`. A ritual run by hand had no way to see that, and it is the
+whole argument for `findReferences`.
+
+**Every pass had to be taught something the ritual's prose left out**, and
+each lesson cost a wrong report first:
+
+- **A write is not `isWriteAccess`.** The field pass exists to find a value
+  computed into a void — `band`, `voice.dry`, `previewColour` all HAD
+  references — so it splits reads from writes. The compiler's own flag calls a
+  React prop pulled out in a component's signature a WRITE, because a
+  BindingElement is a binding, and eighty props came back "written and never
+  read" — the exact opposite of the truth, since that destructuring is the
+  only read there will ever be. It classifies by AST now: four shapes are
+  writes, everything else is a read, conservative on purpose.
+- **A computed index hides a whole subtree**, and handling it properly
+  MECHANISED a hand finding. `s.figure[id]`, `s.ui.camera[next]`,
+  `s.ui.board.keys[id]` and `s.ui.tabs[id]` are four containers the compiler
+  cannot attribute to one property, so thirty catalogue sentences read as
+  dead. But where the index's own type is a union of string literals, the
+  reachable keys are KNOWN — and a property outside that union is unreachable
+  however many sentences it holds. That is `figure.hold` and `figure.held`,
+  found by hand on 2026-09-09, now a rule.
+- **And a direct read outranks the index.** Asking the index first said
+  `ui.board.keys.title` could not be reached, one line above `Manual.tsx:308`,
+  which prints it.
+
+**The branch pass is correct on its own founding case, which is why it reports
+nothing there.** `Teach.as` is `'card' | 'toast'` and `'toast'` is compared at
+`App.tsx:1194` — the hole was fixed on 2026-09-03. A pass that cannot show it
+would have found something anyway is a pass nobody should trust, so this is
+written down rather than left as an empty section.
+
+**What the first report is worth, beyond the tool.** 345 findings, and the
+twenty-two substantive ones are queued in `PASS.md` P1.9. Two of them belong
+to other items and are written where those items will find them: `RunDetail`
+carries six numbers — placements, popped, bigPop, bigPopAt, claims, quests —
+computed every run, encoded, decoded on read, and printed by nothing, since
+`Fame.tsx` shows four of ten fields; that is dead weight in the exact blob P7
+is about to compact. And `runsOf(slot)` and `streamOf(slot)` are called with
+`null` at every call site, so the per-slot filter on two timeline readers is
+dead — a question about the reader table `MODES.md` states and P10 will
+assert.
+
+**Two dead sentences, in both languages**: `ui.dismiss` and `payout.heading`
+have no reader anywhere. And `luckCore` is read by a pin test while
+`view.ts:1691` re-types its opening clause under a comment saying the two
+share one — a sentence spelled twice, which is the shape the RÉSERVE finding
+had two days ago.
+
+**A tooling lesson, paid for four times in one session.** A `<<'EOF'` heredoc
+with a quoted delimiter still collapses `\\` to `\` through this harness, so a
+generated `split('\\')` arrived as an unterminated string, and three later
+patches failed the same way on escaped backticks and apostrophes. The fix that
+holds is to never write a backslash into generated code at all: `sep` from
+`node:path` instead of a separator literal, a `code()` helper built from a
+backtick in double quotes instead of an escaped one, and
+`String.fromCharCode(92)` where a backslash is genuinely needed. That is the
+third entry in this log about escapes in generated edits, and the first with a
+rule general enough to stop the fourth.

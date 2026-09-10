@@ -27,6 +27,9 @@ import type { Workspace } from './program';
  * shape of four of this body's fifteen inert mechanics.
  */
 
+/** Wrap a symbol in code ticks for the report. A function rather than a
+ *  template literal, so nothing in this file has to escape one. */
+const code = (s: string): string => '`' + s + '`';
 const TEST = /\.(test|spec|audit)\.tsx?$/;
 
 /** Every property this file declares on an exported type, with its name node. */
@@ -36,11 +39,38 @@ function fieldsOf(file: ts.SourceFile): readonly { owner: string; name: ts.Ident
     ts.canHaveModifiers(node) &&
     (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 
+  /**
+   * Walk a type's members, and DOWN into the ones that are themselves
+   * type literals.
+   *
+   * The recursion is what makes P1.5 the same pass as this one. The catalogue
+   * (`text/Strings.ts`) is one exported type six levels deep — `Strings` holds
+   * `lesson`, which holds `ripe`, which holds `cardLean` — and a walk that
+   * stopped at the top would ask about eleven fields and miss the six hundred
+   * sentences underneath them. `figure.hold` and `figure.held`, the two dead
+   * catalogue entries found by hand on 2026-09-09, live exactly there.
+   *
+   * An intersection is followed too, because that is how a lesson is declared:
+   * `LessonHead & { core: string }`. Skipping it would hide every sentence in
+   * the catalogue behind the two fields every lesson shares.
+   */
   const members = (owner: string, list: ts.NodeArray<ts.TypeElement>): void => {
     for (const member of list) {
       if (!ts.isPropertySignature(member)) continue;
       if (!ts.isIdentifier(member.name)) continue;
+      const here = owner === '' ? member.name.text : `${owner}.${member.name.text}`;
       out.push({ owner, name: member.name });
+      const inner = member.type;
+      if (inner === undefined) continue;
+      if (ts.isTypeLiteralNode(inner)) {
+        members(here, inner.members);
+        continue;
+      }
+      if (ts.isIntersectionTypeNode(inner)) {
+        for (const part of inner.types) {
+          if (ts.isTypeLiteralNode(part)) members(here, part.members);
+        }
+      }
     }
   };
 
@@ -115,12 +145,87 @@ function isWrite(node: ts.Node): boolean {
   return false;
 }
 
-function uses(w: Workspace, file: ts.SourceFile, name: ts.Identifier): Uses {
+/**
+ * The references to one field, fetched ONCE.
+ *
+ * Both questions below — is it read, and is its container indexed — walk the
+ * same list, and asking the service twice doubled a fifty-second run into two
+ * minutes. The list is small and the lookup is the expensive half.
+ */
+function refsOf(
+  w: Workspace,
+  file: ts.SourceFile,
+  name: ts.Identifier,
+): readonly ts.ReferenceEntry[] {
   const found = w.service.findReferences(file.fileName, name.getStart(file));
-  const out: Uses = { reads: 0, writes: 0, testReads: 0 };
+  const out: ts.ReferenceEntry[] = [];
   for (const symbol of found ?? []) {
     for (const ref of symbol.references) {
       if (ref.isDefinition === true) continue;
+      out.push(ref);
+    }
+  }
+  return out;
+}
+/**
+ * A container read through a COMPUTED index, and which keys that index admits.
+ *
+ * The catalogue is read this way in four places — `s.figure[id]`,
+ * `s.ui.camera[next]`, `s.ui.board.keys[id]`, `s.ui.tabs[id]` — and the
+ * compiler cannot attribute an indexed access to one property, correctly: it
+ * does not know which. So a walk of references reports every sentence under
+ * those four as unread, which is thirty false findings and a report nobody
+ * opens twice.
+ *
+ * **But the right answer is better than a suppression.** Where the index's own
+ * type is a union of string literals — `FigureId` is exactly that — the set of
+ * keys that can ever be reached is KNOWN, and a property outside it is
+ * unreachable however many sentences it holds. That is `figure.hold` and
+ * `figure.held`, the two dead catalogue entries found by hand on 2026-09-09:
+ * `figureCaption` is `s.figure[id]` and `FigureId` is the six figures the
+ * manual draws, and neither was ever among them.
+ *
+ * `null` keys means the index is a plain `string` and anything under it may be
+ * reached, so nothing under it can be called dead.
+ */
+type Indexed = { readonly keys: ReadonlySet<string> | null };
+
+function indexedBy(w: Workspace, refs: readonly ts.ReferenceEntry[]): Indexed | null {
+  let keys: Set<string> | null = new Set();
+  let any = false;
+  {
+    for (const ref of refs) {
+      const at = w.program.getSourceFile(ref.fileName);
+      if (at === undefined) continue;
+      const node = nodeAt(at, ref.textSpan.start);
+      const access = node.parent;
+      if (access === undefined || !ts.isPropertyAccessExpression(access)) continue;
+      const outer = access.parent;
+      if (outer === undefined || !ts.isElementAccessExpression(outer)) continue;
+      if (outer.expression !== access) continue;
+      const arg = outer.argumentExpression;
+      // A literal index is an ordinary read of one property and the reference
+      // walk already counted it. Only a COMPUTED one hides the others.
+      if (ts.isStringLiteral(arg)) continue;
+      any = true;
+      if (keys === null) continue;
+      const type = w.checker.getTypeAtLocation(arg);
+      const parts = type.isUnion() ? type.types : [type];
+      for (const part of parts) {
+        if (part.isStringLiteral()) keys.add(part.value);
+        else keys = null;
+        if (keys === null) break;
+      }
+    }
+  }
+  if (!any) return null;
+  return { keys };
+}
+
+function uses(w: Workspace, refs: readonly ts.ReferenceEntry[]): Uses {
+  const out: Uses = { reads: 0, writes: 0, testReads: 0 };
+  {
+    for (const ref of refs) {
       const at = w.program.getSourceFile(ref.fileName);
       if (at === undefined) continue;
       if (isWrite(nodeAt(at, ref.textSpan.start))) {
@@ -140,21 +245,87 @@ function uses(w: Workspace, file: ts.SourceFile, name: ts.Identifier): Uses {
  * A field on a type declared inside a test is not asked about, and neither is
  * one whose own file is a test: a fixture's shape is the fixture's business.
  */
+/**
+ * P1.5 — the catalogue sweep is THIS pass, taught to recurse, and the
+ * decision is worth stating rather than leaving a reader to infer it.
+ *
+ * `text/Strings.ts` is one exported type six levels deep, and the question
+ * `CLAUDE.md` asks of it — a sentence the catalogue holds that no screen
+ * prints — is word for word the question this pass already asks of every
+ * field: written by `fr-CA.ts` and `en.ts`, read by nobody. A second pass
+ * would be the same walk under a different name, which is how two
+ * instruments come to disagree about one fact.
+ *
+ * What it keeps is the LABEL. A reader looking for dead sentences should
+ * find them together, so a finding in the catalogue is reported under `text`
+ * and the report groups it accordingly.
+ */
+const passFor = (path: string): string => (path.endsWith('text/Strings.ts') ? 'text' : 'field');
+
 export function fieldSweep(w: Workspace): readonly Finding[] {
   const out: Finding[] = [];
   for (const file of w.files) {
     const path = w.path(file);
     if (TEST.test(path)) continue;
 
-    for (const { owner, name } of fieldsOf(file)) {
-      const { reads, writes, testReads } = uses(w, file, name);
+    /*
+     * FIRST, which containers are read through a computed index, and which
+     * keys that index admits. A separate pass over the same list, because a
+     * child is adjudicated by what is known about its PARENT and the parent
+     * may be declared after it inside an intersection.
+     */
+    const fields = fieldsOf(file);
+    const refs = new Map<ts.Identifier, readonly ts.ReferenceEntry[]>();
+    for (const { name } of fields) refs.set(name, refsOf(w, file, name));
+    const indexed = new Map<string, Indexed>();
+    for (const { owner, name } of fields) {
+      const at = indexedBy(w, refs.get(name) ?? []);
+      if (at !== null) indexed.set(owner === '' ? name.text : owner + '.' + name.text, at);
+    }
+
+    for (const { owner, name } of fields) {
+      const { reads, writes, testReads } = uses(w, refs.get(name) ?? []);
+      // A DIRECT read settles it, whatever the parent is. `keys.title` is
+      // both spelled out in the manual's heading and a sibling of ten
+      // entries reached by index; asking the index about it first said it
+      // could not be reached, one line above the code that reads it.
       if (reads > 0) continue;
+
+      const parent = indexed.get(owner);
+      if (parent !== undefined) {
+        // Reached by an index that admits anything: nothing under it can be
+        // called dead, and saying so would be thirty rows of noise.
+        if (parent.keys === null) continue;
+        if (parent.keys.has(name.text)) continue;
+        const line = file.getLineAndCharacterOfPosition(name.getStart(file)).line + 1;
+        out.push({
+          pass: passFor(path),
+          id: path + '#' + owner + '.' + name.text,
+          file: path,
+          line,
+          grade: 'certain',
+          what:
+            code(owner + '.' + name.text) +
+            ' cannot be reached: the index that reads ' +
+            code(owner) +
+            ' admits ' +
+            String(parent.keys.size) +
+            ' keys and this is not one',
+          detail:
+            'The ' +
+            code('figure.hold') +
+            ' shape: a catalogue entry under a container read as ' +
+            code('s.x[id]') +
+            ', whose key type does not include it. Sentences nothing can print.',
+        });
+        continue;
+      }
 
       const line = file.getLineAndCharacterOfPosition(name.getStart(file)).line + 1;
       const id = `${path}#${owner}.${name.text}`;
       if (writes === 0 && testReads === 0) {
         out.push({
-          pass: 'field',
+          pass: passFor(path),
           id,
           file: path,
           line,
@@ -165,7 +336,7 @@ export function fieldSweep(w: Workspace): readonly Finding[] {
       }
       if (writes > 0) {
         out.push({
-          pass: 'field',
+          pass: passFor(path),
           id,
           file: path,
           line,
@@ -181,7 +352,7 @@ export function fieldSweep(w: Workspace): readonly Finding[] {
         continue;
       }
       out.push({
-        pass: 'field',
+        pass: passFor(path),
         id,
         file: path,
         line,
