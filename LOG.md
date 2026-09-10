@@ -6728,3 +6728,32 @@ and re-adding `card !== null` beside the call would have been the lazy answer.
 empty array was true of the three inlined statements it replaced and is not
 true of a call; the comment at the line says that rather than leaving a reader
 to wonder why a stable callback is listed.
+
+**P2.3 — the tap matrix, which is `INTERACTIONS.md`'s first table.** Eight
+branches, each doing its own work between the `if` and the `return`, so **the
+ORDER — the whole rule — could only be read by reading the effects.** It could
+not be asked what a tap on a ripe legal hex means, and that is a question with
+an answer. `tapMeans` is the order as a function with 16 tests: one per row,
+plus four for the pairs where a hex is two things at once (a ripe hex is also
+legal, and pricing wins because the player is choosing which pocket POP spends;
+remembered ground can carry a landmark, and the lens wins; touring outranks
+every one of them).
+
+That table exists to answer "did we get back what we had", and its own summary
+of this region is that four of this body's inert mechanics were controls
+rendered here and connected to nothing — three of its eight rows a silent
+no-op. Its ✓ rows have something to point at now.
+
+**The find: "put the tour down" was spelled twice.** The timeout that ends a
+trip on its own and the tap that ends one early each cleared the flag and the
+timer separately — and a flag and its timer cleared in two places are two
+things that come apart. One name now, with the board's own return left only at
+the tap, because a trip that runs its course ends itself.
+
+**And a habit of mine, caught four rows running.** `pnpm sweep` has now failed
+on my own new code in every single extraction — `Look`, `Held`, `HandOver`,
+`ShareCardText`, `BootPlan`, `Speaking`, `Tap` — always the same mistake:
+exporting the type a function returns when only that function's own file needs
+it. Four for four is not bad luck, it is a reflex, and the gate is what keeps
+it out of the report. Worth writing down so the next extraction starts by not
+doing it.

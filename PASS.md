@@ -299,17 +299,17 @@ The convention is `shell/signpost.ts`: **the pure decision leaves, the wiring
 stays thin.** B6.7's ruling holds — a docblock travels WITH the code it is
 about, it does not go to `LOG.md`.
 
-| id   | status | statement                                                                                                      | where               |
-| ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------- |
-| P2.1 | done   | the boot ladder — the only door that is not `enterRun`, and the only place `detour` can become true            | `shell/boot.ts`     |
-| P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off            | `App.tsx:1692–2111` |
-| P2.3 | open   | the board's gestures — `describe`, `onLook`, `onTap`, `onSelect`, `onHarvest`, `onLens`, `clearLens`, `onHold` | `App.tsx:2111–2409` |
-| P2.4 | done   | the voice — one speaker at a time: the receipts in the air, and the rule that was a JSX guard                  | `shell/speaking.ts` |
-| P2.5 | done   | the look — `theme`, `look`, `vignette`; the media queries stay, they are the sampling                          | `shell/look.ts`     |
-| P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix             | `App.tsx:2531–2835` |
-| P2.7 | done   | share — the fork, once, for the sentence AND the card. `importDaily` ruled: it is wiring, see below            | `shell/handOver.ts` |
-| P2.8 | ruled  | the purse — **not extracted**, and the reason is below. One docblock corrected                                 | `App.tsx`           |
-| P2.9 | done   | the world's live memory — `worldHeld`, `keepWorld`, `forgetWorld`, and the seed rule as `heldFor`              | `shell/held.ts`     |
+| id   | status | statement                                                                                           | where               |
+| ---- | ------ | --------------------------------------------------------------------------------------------------- | ------------------- |
+| P2.1 | done   | the boot ladder — the only door that is not `enterRun`, and the only place `detour` can become true | `shell/boot.ts`     |
+| P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off | `App.tsx:1692–2111` |
+| P2.3 | done   | the gestures — `INTERACTIONS.md`'s first table as a function, and the order is the rule             | `shell/tap.ts`      |
+| P2.4 | done   | the voice — one speaker at a time: the receipts in the air, and the rule that was a JSX guard       | `shell/speaking.ts` |
+| P2.5 | done   | the look — `theme`, `look`, `vignette`; the media queries stay, they are the sampling               | `shell/look.ts`     |
+| P2.6 | open   | the doors — check `shell/beginning.ts` FIRST; B6.4 took five already, and `MODES.md` is the matrix  | `App.tsx:2531–2835` |
+| P2.7 | done   | share — the fork, once, for the sentence AND the card. `importDaily` ruled: it is wiring, see below | `shell/handOver.ts` |
+| P2.8 | ruled  | the purse — **not extracted**, and the reason is below. One docblock corrected                      | `App.tsx`           |
+| P2.9 | done   | the world's live memory — `worldHeld`, `keepWorld`, `forgetWorld`, and the seed rule as `heldFor`   | `shell/held.ts`     |
 
 ### Four rows in, and the answer so far is yes (2026-09-10)
 
@@ -398,7 +398,30 @@ read. `speaking > 0` is the clause `said` cannot cover, and the test says so.
 name (`teaching`) rather than an assertion at each use. Splitting those apart
 is what the extraction was for.
 
-**Left open: P2.3, P2.6 and P2.2.** Two regions and then the item. `act` is still last, still gets its own commit and its own test
+**P2.3 took the TAP MATRIX.** `INTERACTIONS.md`'s first table is an
+eight-branch decision, and it lived as an eight-branch cascade with each branch
+doing its work between the `if` and the `return` — so **the ORDER, which is
+the whole rule, could only be read by reading the effects.** `tapMeans` is that
+order as a function, with 16 tests: one per row, plus four for the pairs where
+a hex is two things at once and the rule has to say which wins (a ripe hex is
+also legal; remembered ground can carry a landmark; touring outranks
+everything).
+
+That table is the file's answer to "did we get back what we had", and its own
+summary of this region is that four of this body's inert mechanics were
+controls rendered here and wired to nothing. **Its ✓ rows have a test to point
+at now.**
+
+**And the find: "put the tour down" was spelled twice** — the timeout that ends
+a trip on its own and the tap that ends one early each cleared the flag and its
+timer separately. A flag and its timer cleared in two places are two things
+that come apart. One name (`putTourDown`), and the board's own return stays
+only at the tap, because a trip that runs its course ends itself.
+
+Every tap path is e2e-driven, which is what makes this row's green suite mean
+something.
+
+**Left open: P2.6 and P2.2.** One region and then the item. `act` is still last, still gets its own commit and its own test
 file.
 
 **P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a

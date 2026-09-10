@@ -1,0 +1,101 @@
+import type { CellView } from '@render/Renderer';
+import type { Colour } from '@content/tuning';
+
+/**
+ * WHAT A TAP ON THE BOARD MEANS (`PASS.md` P2.3).
+ *
+ * `INTERACTIONS.md`'s first table is this decision, row by row, and it is the
+ * table that file exists for: **four of this body's inert mechanics were
+ * controls rendered here and connected to nothing** — the colour lens, the
+ * stash, the board's tap-to-describe, and unselecting a card. Its own summary
+ * of the damage is that three of the eight rows were a "silent no-op".
+ *
+ * The decision lived as an eight-branch cascade inside `App`, with each branch
+ * doing its own work between the `if` and the `return` — so the ORDER, which is
+ * the whole rule, could only be read by reading the effects. It could not be
+ * asked what a tap on a ripe legal hex means, and that is a question with an
+ * answer.
+ *
+ * **The order is the rule, and every rung is a decision somebody made:**
+ *
+ *  1. **touring** — a tap on a board that is away means "come back", and
+ *     nothing else. The board stays live through a trip (a finger outranks a
+ *     journey), so a thumb that has just pressed GOT IT was raycasting into a
+ *     board mid-flight and landing on whatever hex the camera happened to be
+ *     over. Placing is the one thing on this board that cannot be undone.
+ *  2. **ripe** before **legal**, because a ripe tile is both and pricing a
+ *     pocket is the answer a tap on one wants.
+ *  3. **legal with an empty hand** says so, rather than doing nothing.
+ *  4. **legal** places.
+ *  5. **remembered fog** works the lens: a colour you know lights up, and a
+ *     second tap puts it down. Two gestures reach the lens and this is the one
+ *     that was unreachable in this body until 2026-09-01, because
+ *     `HexField`'s raycast refused remembered ground.
+ *  6. **a landmark you have actually reached** opens the card that defines it,
+ *     as well as saying this run's numbers. Beacons and remembered ground are
+ *     excluded on purpose: a modal over every glow on the horizon is the wrong
+ *     weight for "what is that", and a young board is mostly edge.
+ *  7. **anything else** is described.
+ */
+
+/** What the shell must do about a tap. The effects stay in `App`; the choice
+ *  is here, and each is one row of `INTERACTIONS.md`'s first table. */
+type Tap =
+  /** Come back from a tour, and do nothing else with this tap. */
+  | { readonly does: 'return' }
+  /** Price this pocket and aim POP at it. */
+  | { readonly does: 'price' }
+  /** Legal, but there is nothing in hand to put down. */
+  | { readonly does: 'hand-empty' }
+  /** Place the selected card here. */
+  | { readonly does: 'place' }
+  /** Light this colour up across the board. */
+  | { readonly does: 'lens-on'; readonly colour: Colour }
+  /** Put the lens down. */
+  | { readonly does: 'lens-off' }
+  /** Open the card that defines this landmark, and say its numbers. */
+  | { readonly does: 'card' }
+  /** Say what is here. */
+  | { readonly does: 'describe' };
+
+/** What the shell knows at the moment of a tap. */
+export type Reach = {
+  /** True while the board is away on a tour. */
+  readonly touring: boolean;
+  /** How many cards are in hand. */
+  readonly inHand: number;
+  /** The colour currently held up, or null. */
+  readonly lens: Colour | null;
+  /** The colour this device remembers at that hex, or null where it knows
+   *  nothing — `rememberedNativeAt`, which reads the live world. */
+  readonly known: Colour | null;
+};
+
+/**
+ * The tap, decided.
+ *
+ * Every branch below `return` also clears the target in `App` — tapping
+ * something that cannot be built on lets the priced pocket go — and that stays
+ * an effect rather than a variant, because it is true of five rows and saying
+ * so five times is how five rows come to disagree.
+ */
+export function tapMeans(cell: CellView, reach: Reach): Tap {
+  if (reach.touring) return { does: 'return' };
+  if (cell.ripe) return { does: 'price' };
+  if (cell.legal) return reach.inHand === 0 ? { does: 'hand-empty' } : { does: 'place' };
+
+  if (cell.remembered) {
+    // A colour you know, and not the one already held up: light it. Tapping
+    // the SAME ground twice is what puts a lens down, which is the second of
+    // the two gestures that can — see `LensOff` for the third, a control.
+    if (reach.known !== null && reach.known !== reach.lens) {
+      return { does: 'lens-on', colour: reach.known };
+    }
+    if (reach.lens !== null) return { does: 'lens-off' };
+  }
+
+  if (cell.kind === 'landmark' && cell.landmark !== null && !cell.beacon && !cell.remembered) {
+    return { does: 'card' };
+  }
+  return { does: 'describe' };
+}

@@ -101,6 +101,7 @@ import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
 import { handOverOf } from './shell/handOver';
+import { tapMeans } from './shell/tap';
 import { mayTeach, useSpeaking } from './shell/speaking';
 import { bootPlan } from './shell/boot';
 import { useHeldWorld } from './shell/held';
@@ -1019,6 +1020,21 @@ function Game() {
     },
     [],
   );
+  /**
+   * THE TOUR IS OVER: the timer and the flag, together (2026-09-10).
+   *
+   * Two callers spelled this pair out — the timeout that ends a trip on its
+   * own, and a tap that ends one early — and **a flag and its timer cleared in
+   * two places are two things that come apart.** Found extracting P2.3.
+   *
+   * The BOARD's own return is deliberately not in here: a trip that runs its
+   * course ends itself, and only the tap has to ask for it.
+   */
+  const putTourDown = useCallback(() => {
+    if (touringTimer.current !== 0) clearTimeout(touringTimer.current);
+    touringTimer.current = 0;
+    setTouring(false);
+  }, []);
   const showOnBoard = useCallback(
     (id: TeachId): void => {
       const at = tourTarget(id, session.get().board);
@@ -1026,12 +1042,9 @@ function Game() {
       board.current.tour(at, TOUR_HOLD_MS);
       setTouring(true);
       if (touringTimer.current !== 0) clearTimeout(touringTimer.current);
-      touringTimer.current = setTimeout(() => {
-        touringTimer.current = 0;
-        setTouring(false);
-      }, tourMs(TOUR_HOLD_MS));
+      touringTimer.current = setTimeout(() => putTourDown(), tourMs(TOUR_HOLD_MS));
     },
-    [session],
+    [session, putTourDown],
   );
 
   const beginRun = useCallback(() => {
@@ -1965,99 +1978,85 @@ function Game() {
   const onTap = useCallback(
     (key: string, cell: CellView): void => {
       const now = session.get();
-
       /*
-       * A TAP ON A TOURING BOARD MEANS "come back", and nothing else.
+       * WHAT THE TAP MEANS is decided in `shell/tap.ts`, which carries the
+       * order and the argument for every rung of it. This is the doing.
        *
-       * The board stays live through a trip — a finger outranks a journey — so
-       * a thumb that has just pressed GOT IT and wants to place a tile was
-       * raycasting into a board mid-flight and landing on whatever hex the
-       * camera was over. **The one thing on this board that cannot be undone is
-       * a tile placed on the wrong hex**, which is the same sentence
-       * `moveCursor` is built around.
-       *
-       * So the tap ends the trip and the board comes home. Not a silent
-       * swallow, which this repository has already ruled the worst answer to a
-       * deliberate action: the camera flying back IS the reply, and it needs no
-       * sentence to say it. The next tap lands on the board they were looking
-       * at. `touring` is dropped here rather than left to its clock, so the
-       * card that was waiting arrives as soon as the board is theirs again.
+       * The order was previously readable only by reading the effects — eight
+       * `if`s each with its own work between the test and the `return` — and
+       * `INTERACTIONS.md`'s first table is that same decision written out in
+       * prose. It is one function and one table now, and the table's ✓ rows
+       * have a test to point at.
        */
-      if (touring) {
+      const tap = tapMeans(cell, {
+        touring,
+        inHand: now.hud.draft.length,
+        lens,
+        known: rememberedNativeAt(now.state, key),
+      });
+
+      if (tap.does === 'return') {
+        // The trip is ENDED rather than waited out: the board comes home and
+        // the tap is spent on bringing it there. See `showOnBoard`.
         board.current?.endTour();
-        if (touringTimer.current !== 0) clearTimeout(touringTimer.current);
-        touringTimer.current = 0;
-        setTouring(false);
+        putTourDown();
         return;
       }
 
-      if (cell.ripe) {
+      if (tap.does === 'price') {
         session.target(key);
         say(pocketNote(now.state, key, s));
         return;
       }
 
-      if (cell.legal) {
-        if (now.hud.draft.length === 0) {
-          say(s.ui.handEmpty);
-          return;
-        }
+      if (tap.does === 'hand-empty') {
+        say(s.ui.handEmpty);
+        return;
+      }
+
+      if (tap.does === 'place') {
         say(null);
         act({ type: 'PLACE', hex: key });
         return;
       }
 
-      // Nothing to build on: the target lets go, and the tap becomes help.
+      /*
+       * Nothing to build on, so the priced pocket lets go — true of every rung
+       * below this line, which is why it is here once rather than in four
+       * branches that could come to disagree.
+       */
       session.target(null);
 
-      if (cell.remembered) {
-        const known = rememberedNativeAt(now.state, key);
-        if (known !== null && known !== lens) {
-          setLens(known);
-          session.spotlight(known);
-          say(s.ui.lensOn(namesOf(theme, s.locale)[known]));
-          return;
-        }
-        if (lens !== null) {
-          setLens(null);
-          session.spotlight(null);
-          say(s.ui.lensOff);
-          return;
-        }
+      if (tap.does === 'lens-on') {
+        setLens(tap.colour);
+        session.spotlight(tap.colour);
+        say(s.ui.lensOn(namesOf(theme, s.locale)[tap.colour]));
+        return;
+      }
+
+      if (tap.does === 'lens-off') {
+        setLens(null);
+        session.spotlight(null);
+        say(s.ui.lensOff);
+        return;
       }
 
       /*
-       * A destination TAPPED opens the card that explains it.
-       *
-       * Marc, 2026-08-29: *"make sure we can click on the map for caches,
-       * shrines, etc. and we get the card explaining what it is."* Tapping one
-       * printed `describeHexOf` — what it is and what claiming pays, in this
-       * run's numbers — into the toast, and that is the right sentence for
-       * somebody who already knows what a cache IS. For anybody who does not,
-       * a line of prose over the board answers a question they could not have
-       * asked, and the manual was the only place that defined the word.
-       *
-       * Both now: the card explains the KIND, the toast carries this run's
-       * numbers and is still there when the card is dismissed. The card is the
-       * same one the glossary opens everywhere else, so a cache is defined in
-       * exactly one place however you arrive at it.
-       *
-       * **Ground the board has actually reached, only** (2026-09-01). Beacons
-       * and remembered fog answer a tap since this session, and a MODAL over
-       * every glow on the horizon is the wrong weight for the question being
-       * asked: a tap on a light two rings out means "what is that", which the
-       * sentence answers in full — it even ends "Build your chain out to it."
-       * A tap on the thing itself, standing on your own board, is the moment
-       * the definition is worth interrupting for. It also keeps a stray tap
-       * near the edge of a young board from throwing a card, and a young board
-       * is mostly edge.
+       * A destination TAPPED opens the card that explains it, AND says this
+       * run's numbers — both, because they answer different questions. Marc,
+       * 2026-08-29: *"make sure we can click on the map for caches, shrines,
+       * etc. and we get the card explaining what it is."* The toast is the
+       * right sentence for somebody who already knows what a cache IS; the
+       * card is the one that defines the word, and it is the same card the
+       * glossary opens everywhere else, so a cache is defined in one place
+       * however you arrive at it.
        */
-      if (cell.kind === 'landmark' && cell.landmark !== null && !cell.beacon && !cell.remembered) {
+      if (tap.does === 'card' && cell.landmark !== null) {
         setTerm(LESSON_FOR_REWARD[cell.landmark]);
       }
       say(describe(key));
     },
-    [act, session, s, theme, lens, describe, say, touring],
+    [act, session, s, theme, lens, describe, say, touring, putTourDown],
   );
 
   /**
