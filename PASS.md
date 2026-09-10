@@ -133,14 +133,14 @@ already has the answer to.
 
 | id   | status | statement                                                                                                                        | where                   |
 | ---- | ------ | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| P1.1 | open   | **the module sweep** — every `export` with no importer outside its own file, which is the ritual as written                      | `scripts/sweep/`        |
-| P1.2 | open   | **the field sweep** — every `readonly` property of an exported type, and whether any file reads it. The `cell.band` class        | `render/Renderer.ts`    |
+| P1.1 | done   | **the module sweep** — every `export` with no importer outside its own file, which is the ritual as written                      | `scripts/sweep/`        |
+| P1.2 | done   | **the field sweep** — every `readonly` property of an exported type, and whether any file reads it. The `cell.band` class        | `render/Renderer.ts`    |
 | P1.3 | open   | **the optional-input sweep** — every optional parameter and field, and whether a caller passes it. The `perkAt` class            | `view/receipts.ts`      |
 | P1.4 | open   | **the branch sweep** — union members of a consumed value no consumer compares against. The `teach.as === 'toast'` class          | `shell/teaching.ts:119` |
 | P1.5 | open   | **the catalogue sweep** — keys in `text/Strings.ts` no `view/`, `meta/` or screen reads. The `figure.hold` class                 | `text/Strings.ts`       |
 | P1.6 | open   | **the argument sweep** — arguments a view takes, flagged where the call site passes a literal `[]`, `null` or `0`. The FOG class | `shell/store.ts`        |
 | P1.7 | open   | **the allowlist** — `scripts/sweep/allow.ts`: id, date, reason, ruling. The report's signal is only as good as this file         | —                       |
-| P1.8 | open   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed           | `package.json`          |
+| P1.8 | done   | `pnpm sweep` writes `SWEEP.md`, header first: what it walked, what it skipped, how many entries the allowlist absorbed           | `package.json`          |
 | P1.9 | open   | run it, and adjudicate every finding — the point of the tool is the first report, not the tool                                   | —                       |
 
 **P1.6 is the one that may not work, and it says so here rather than in a

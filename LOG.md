@@ -5950,3 +5950,14 @@ rather than being copied — two lists of the same work is how one of them goes
 stale, which is the hazard three of the findings above are instances of. It has
 grown from 3,208 lines to 3,978 since that row was written, which is the row
 losing ground while it sat in a file of finished ones.
+
+### Session 75 — the ritual, as a program (2026-09-09)
+
+**Question (written before building, `PASS.md` P1):** `CLAUDE.md` carries six
+hand-run sweeps, each invented after a miss, each having found real bugs, and
+each leaving false positives the next sweep re-adjudicates from scratch — which
+is that file's own account of **how a ritual stops being run**. So:
+**how much of the ritual is mechanical, and does the mechanical half find
+anything the four hand passes walked past?**
+
+**Answer:** _(pending — this line is replaced when the item lands.)_
