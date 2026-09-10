@@ -101,6 +101,7 @@ import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
+import { feelOf, whatHappened } from './shell/happened';
 import { handOverOf } from './shell/handOver';
 import { tapMeans } from './shell/tap';
 import { mayTeach, useSpeaking } from './shell/speaking';
@@ -1491,9 +1492,6 @@ function Game() {
       // snapshot — the board view and the HUD included — and this was calling
       // it three times in six lines for three fields of one state.
       const before = session.get().state;
-      const poppedBefore = before.log.popped;
-      const claimedBefore = before.claimed.length;
-      const placementsBefore = before.placements;
       /*
        * WHAT A FIND HOLDS, handed over a beat before the receipt asks for it
        * (2026-09-02).
@@ -1524,6 +1522,20 @@ function Game() {
       });
       session.dispatch(action);
       const now = session.get();
+      /*
+       * WHAT THE ACTION DID, once — `shell/happened.ts` carries the argument.
+       *
+       * Four docblocks below say "one place knows what an action DID" and each
+       * of them then worked it out again: three facts were re-derived at nine
+       * sites in this one function, the pocket's size at three of them. None
+       * was wrong; nine places for one fact to drift is the problem, in the
+       * seam `?playtest=1` records a stranger's first minute off.
+       *
+       * It asks the STATE and never the action alone: a PLACE the rules refuse
+       * confirms nothing, and a HARVEST on a pocket that could not pop sounds
+       * nothing.
+       */
+      const did = whatHappened(action, before, now.state);
 
       /*
        * The board's voice, on the same seam the receipts use.
@@ -1534,12 +1546,9 @@ function Game() {
        * the user gesture browsers require before any audio exists at all.
        */
       if (isEnabled(features, 'ui.sound')) {
-        if (action.type === 'HARVEST' && now.state.log.popped > poppedBefore) {
-          voice.pop(theme.voice, now.state.log.harvests.at(-1)?.count ?? 1);
-        }
-        if (now.state.claimed.length > claimedBefore) {
-          const at = now.state.claimed.at(-1);
-          const cell = at === undefined ? undefined : now.state.cells[at];
+        if (did.popped) voice.pop(theme.voice, did.pocket);
+        if (did.claimedAt !== null) {
+          const cell = now.state.cells[did.claimedAt];
           if (cell?.kind === 'landmark') voice.claim(theme.voice, cell.reward);
         }
         /*
@@ -1582,17 +1591,11 @@ function Game() {
        * switch that would lie.
        */
       {
-        const feel = isEnabled(features, 'ui.haptics');
-        // A claim rides ON a placement, so the two would fire together and
-        // read as one long buzz. The claim wins: it is the rarer event and the
-        // one worth telling apart. `state.placements` rather than the action's
-        // arrival, because a PLACE the rules refuse must not confirm anything.
-        if (now.state.claimed.length > claimedBefore) buzz(feel, 'claim');
-        else if (action.type === 'HARVEST' && now.state.log.popped > poppedBefore) {
-          buzz(feel, 'pop');
-        } else if (action.type === 'PLACE' && now.state.placements > placementsBefore) {
-          buzz(feel, 'place');
-        }
+        // Which moment wins is the rule, and it lives with the facts —
+        // `feelOf`, in `shell/happened.ts`: a claim rides ON a placement, so
+        // both are true at once and the claim is the one worth telling apart.
+        const moment = feelOf(did);
+        if (moment !== null) buzz(isEnabled(features, 'ui.haptics'), moment);
       }
 
       /*
@@ -1609,11 +1612,11 @@ function Game() {
        * became a run. Unconditional: `witness` is a no-op without
        * `?playtest=1` and `mark` is once-only.
        */
-      if (action.type === 'PLACE' && now.state.placements > placementsBefore) {
+      if (did.placed) {
         startWatching();
         witness('placed');
       }
-      if (action.type === 'HARVEST' && now.state.log.popped > poppedBefore) witness('popped');
+      if (did.popped) witness('popped');
 
       /*
        * A claim is SHOWN where it happened, then the camera comes back.
@@ -1631,9 +1634,9 @@ function Game() {
        * belongs to the audio toggle. It rides the same seam the receipts and
        * the voice already use — one place knows what the action DID.
        */
-      if (now.state.claimed.length > claimedBefore) {
-        const at = now.state.claimed.at(-1);
-        if (at !== undefined) board.current?.visit(at, CLAIM_HOLD_MS);
+      if (did.claimedAt !== null) {
+        const at = did.claimedAt;
+        board.current?.visit(at, CLAIM_HOLD_MS);
 
         /*
          * A hidden FIND grants a perk, which is what a find is FOR.
@@ -1766,8 +1769,8 @@ function Game() {
       // has to be all-or-nothing.
       const shelf = ledgers.records[ONLY_WORLD];
       const first =
-        action.type === 'HARVEST' &&
-        poppedBefore === 0 &&
+        did.popped &&
+        before.log.popped === 0 &&
         (shelf?.tilesHarvests ?? 0) + (shelf?.pointsHarvests ?? 0) === 0;
       if (first) {
         /*
@@ -1793,9 +1796,7 @@ function Game() {
           text: paragraphs(s.view.harvest.firstPop, said.text, s.lesson.pop.when),
           card: true,
         };
-        const wait = reducedMotion
-          ? 0
-          : cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1);
+        const wait = reducedMotion ? 0 : cascadeMs(theme.motion, did.pocket);
         // Through `speakAfter`, so the teaching is held for the whole wait as
         // well — this is the exact card Marc watched LUCK get shown over and
         // then taken away from. See `speaking`.
@@ -1834,10 +1835,7 @@ function Game() {
        * it is accounting for.
        */
       const isPop = action.type === 'HARVEST';
-      const wait =
-        isPop && !reducedMotion
-          ? cascadeMs(theme.motion, now.state.log.harvests.at(-1)?.count ?? 1)
-          : 0;
+      const wait = isPop && !reducedMotion ? cascadeMs(theme.motion, did.pocket) : 0;
 
       /*
        * A routine POP is a LINE, and the line opens.

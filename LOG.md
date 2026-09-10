@@ -6789,3 +6789,54 @@ P2.6, with P2.7's `importDaily` a third). That is worth saying plainly: the
 answer to "does extracting a region find a bug" is turning out to be **yes,
 but the region often does not want to move.** Six of the eight rows found
 something; three of them found it while deciding NOT to extract.
+
+**P2.2 — `act`, and the item's own claim was the finding.** Four docblocks
+inside it say the same sentence — _"one place knows what an action DID, so one
+place can sound it — the alternative is a component watching for a change it
+did not cause"_ — and every one then worked it out again. **Three facts,
+re-derived at nine sites in one function**, and the pocket's size at three:
+"did a pop happen" for the voice, the buzz and the playtest sheet; "did a claim
+land" for the voice, the buzz and the camera; "did a placement land" for the
+buzz and the sheet.
+
+None of them was wrong, and that is the point. Nine places for one fact to
+drift, in the seam `?playtest=1` records a stranger's first minute off — where
+a test of `action.type` alone would credit a placement the rules refused.
+`whatHappened` answers once; `feelOf` owns the buzz's priority, which is a rule
+rather than an ordering accident (a claim rides ON a placement, so both are
+true and the claim is the rarer event).
+
+**One behaviour change, stated rather than smuggled.** The first-pop card was
+gated on `action.type === 'HARVEST'`, so a harvest that popped nothing could
+raise the card that teaches what popping does. It requires the pop now.
+
+**The test file took three drafts and I am writing all three down**, because
+two of them PASSED while asserting nothing:
+
+1. Walked "the first empty legal hex" — twenty-two placements, **zero ripe
+   tiles**. Ripening needs a tile touched on all six sides and placing outward
+   never closes a neighbourhood. The pop case took its own escape hatch and
+   passed.
+2. Drove `sim/policy#farm` and looked for a ripe TILE — none, for the opposite
+   reason: `farm` pops a pocket the moment it ripens, so a ripe tile never
+   survives to be found.
+3. Asks the policy for its OWN harvest decision, and the state it chose to make
+   it from. Which is the honest fixture for a file whose whole argument is that
+   these facts are about the state MOVING.
+
+**I only caught the first because I went looking.** The suite was green and the
+test was hollow; a one-off probe printing `STEPS 22 PLACEMENTS 22 RIPE 0` is
+what exposed it. **A test with an escape hatch out of its own subject is worse
+than no test**, and the hatch is gone — the fixture throws instead.
+
+**And the reflex, five for five.** `pnpm sweep` failed on my own new code in
+every single extraction, always the same way: exporting the type a function
+returns. `Look`, `Held`, `HandOver`, `ShareCardText`, `BootPlan`, `Speaking`,
+`Tap`, `Happened`. The gate is the only reason none of it reached the report.
+
+**P2 is complete: nine rows, five extracted and four ruled.** `App.tsx` 4,005
+→ 3,796, and the target of 1,500 was not met — nor should it have been by this
+route. The item's own words are that hitting a line count by moving comments
+out would be a fraud, and roughly half that file is the design record. What the
+nine rows actually bought is **eight findings**, and three of them came from
+deciding NOT to extract.

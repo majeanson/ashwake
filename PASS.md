@@ -302,7 +302,7 @@ about, it does not go to `LOG.md`.
 | id   | status | statement                                                                                           | where               |
 | ---- | ------ | --------------------------------------------------------------------------------------------------- | ------------------- |
 | P2.1 | done   | the boot ladder — the only door that is not `enterRun`, and the only place `detour` can become true | `shell/boot.ts`     |
-| P2.2 | open   | **`act` — 419 lines**, the seam every receipt, sound, lesson, merge and once-a-run moment hangs off | `App.tsx:1692–2111` |
+| P2.2 | done   | **`act`** — three facts were re-derived at nine sites in the seam that says "one place knows"       | `shell/happened.ts` |
 | P2.3 | done   | the gestures — `INTERACTIONS.md`'s first table as a function, and the order is the rule             | `shell/tap.ts`      |
 | P2.4 | done   | the voice — one speaker at a time: the receipts in the air, and the rule that was a JSX guard       | `shell/speaking.ts` |
 | P2.5 | done   | the look — `theme`, `look`, `vignette`; the media queries stay, they are the sampling               | `shell/look.ts`     |
@@ -447,7 +447,40 @@ game's source is the minter, a crash id, or a new second implementation of one
 of them. Named exceptions, so adding one is a decision somebody writes down.
 Verified by mutation — it names the file and the line.
 
-**Left open: P2.2.** The item. `act` is still last, still gets its own commit and its own test
+**P2.2 IS DONE, and the item's own claim was the finding.** Four docblocks
+inside `act` say the same sentence — _"one place knows what an action DID, so
+one place can sound it — the alternative is a component watching for a change
+it did not cause"_ — and every one of them then worked it out again. **Three
+facts, re-derived at nine sites in one function**, and the pocket's size at
+three of them:
+
+- _a pop happened_ — for the voice, the buzz and the playtest sheet;
+- _a claim landed_ — for the voice, the buzz and the camera's visit;
+- _a placement landed_ — for the buzz and the sheet;
+- _the pocket's size_ — once for the voice, twice for the cascade's length.
+
+None was wrong. Nine places for one fact to drift is the problem, in the seam
+`?playtest=1` records a stranger's first minute off — where a test of
+`action.type` alone would credit a placement the rules refused. `whatHappened`
+answers once and `feelOf` owns the buzz's priority, which is a rule and not an
+ordering accident: a claim rides ON a placement, so both are true and the claim
+is the one worth telling apart.
+
+**And one behaviour change, stated rather than smuggled**: the first-pop card
+now requires a pop to have actually HAPPENED. It was gated on
+`action.type === 'HARVEST'`, so a harvest that popped nothing could have raised
+the card that teaches what popping does.
+
+**The test file cost two drafts and both are written out.** The first walked
+"the first empty legal hex" and reached twenty-two placements with ZERO ripe
+tiles — ripening needs a tile touched on all six sides, and placing outward
+never closes a neighbourhood — so the pop case took its own escape hatch and
+asserted nothing. The second looked for a ripe TILE and found none for the
+opposite reason: `farm` pops a pocket the moment it ripens. The third asks the
+policy for its OWN harvest decision, which is the honest fixture for a file
+whose whole argument is that the facts are about the state MOVING.
+
+**P2 IS COMPLETE.** Nine rows: five extracted, four ruled. `act` is still last, still gets its own commit and its own test
 file.
 
 **P2.2 is the item.** `act` is where a placement becomes a receipt, a sound, a

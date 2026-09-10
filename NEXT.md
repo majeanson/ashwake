@@ -474,6 +474,23 @@ genuine suite-only flake with no diagnosis.** The three options at the top of
 this entry still stand for that one — retry the project, measure, or chase it —
 and it is a smaller decision now that it is one test rather than a pattern.
 
+**AND A THIRD SYMPTOM, ON WEBKIT THIS TIME (2026-09-10, P2.2's run).**
+`world.spec.ts:33` — "the world remembers the ground a run is walking, before
+the run ends" — failed once in a two-project suite on `world?.runs` being 1
+where a mid-run write must leave it 0: _"a run in progress counted itself as
+finished."_ Chromium passed the same spec in the same run.
+
+**Checked rather than assumed, because that spec's subject is `mergeRun` and
+P2.2 was editing the seam `mergeRun` rides:** it passes **3 of 3 alone on
+WebKit**, and the **full WebKit project passes 46 of 46 twice in a row**. The
+one behaviour change in that commit cannot reach a world's run count either —
+the first-pop card now requires a pop to have actually happened.
+
+So: three specs, three symptoms, two engines, one machine, still nothing on CI.
+It reads more and more like a machine that loses a race under load rather than
+three separate bugs, which is an argument for the retry option and against
+chasing each one — but it is still a decision and it is still yours.
+
 **~~A DAILY IN PROGRESS CANNOT BE RESTARTED~~ — RULED AND SHIPPED 2026-09-10.**
 Marc, asked where the restart lives: _"restart should restart whats being
 played currently (world or daily, one or the other)."_ Which is a better answer
