@@ -7774,3 +7774,14 @@ beside it. What guards that is that the tick is red IN PUBLIC on the same
 commit, and `verify:deploy` runs against the live site afterwards. `CLAUDE.md`
 says so too, because the line there claimed CI gates the deploy and half of CI
 no longer does.
+
+**And the artifact's second answer is the biggest thing this session found.**
+The centring test's WebKit failure is not a mis-centred board: the screenshot
+shows an EMPTY one. HUD at 22 tiles, three cards in the hand, FLAT and the
+purse drawn, the whole plane bare — while the new-world check three lines
+above it passes on the same page, so the capture works and the engine draws.
+What does not survive is the scene change into the daily with no finger
+landing after it. **That is P6.8**, and it reproduces on the runner four runs
+in five where this machine sees it once a session. It has had a better
+debugging surface for a day and nobody knew, because a check that grades a
+picture was throwing the picture away. `NEXT.md` §1 carries it.

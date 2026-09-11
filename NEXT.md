@@ -350,6 +350,23 @@ returning player's path (`taught=1`, so no teaching card to dismiss, because
 dismissing one repaints) and BEGIN pressed at one particular moment. Left alone
 it stays blank; a single tap fills it in.
 
+**AND CI REPRODUCES IT, FOUR RUNS IN FIVE (2026-09-11).** This stopped being a
+Windows-only rumour the evening main was pushed. `board.spec.ts`'s centring
+check fails on the runner's Linux WebKit with _"the daily opened on empty
+ground"_ — and the screenshot, once the artifact step existed to keep one,
+shows the answer is not a mis-centred board. **The board is EMPTY.** HUD 22
+tiles, three cards in the hand, FLAT and the purse drawn, and the whole plane
+bare. The new-world check three lines above it passes on the same page, so the
+capture works and the engine draws; what does not survive is the scene change
+into the daily with no finger landing after it.
+
+That is a better debugging surface than this bug has ever had — a second
+engine, a second operating system, and a failure four times in five rather
+than once in a session. It does not replace the phone (only Marc's Safari can
+say whether the same hole is there) but it means the NEXT attempt does not
+have to start from a rumour. The artifact is on the run; `playwright.config.ts`
+keeps a screenshot on every failure now.
+
 I could not decide from here whether it is Playwright's WebKit or Safari, and I
 will not guess: the scene, the camera, the instanced writes and the frame count
 are all identical to Chromium's, frames render after the board's one resize,
