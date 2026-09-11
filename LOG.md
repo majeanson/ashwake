@@ -7331,3 +7331,55 @@ byte-identical; sweep 0 findings; budget green; **e2e 128/128 chromium and
 iOS install offer) are the rows a phone has to answer, and they queue behind
 Session A with P6.8. In the file, that leaves P5 (performance) and P4 (the
 accessibility proof).
+
+### Session 89 — the board never rests (2026-09-10)
+
+**Question (`PASS.md` P5):** what does this board cost on a phone that is not
+this laptop, and are the two low-end defaults the right ones?
+
+**Answer: the biggest cost is a board with nothing happening on it, and one of
+the two defaults is right.** `pnpm audit:perf` writes `perf/report.md` — two
+pixel ratios × three CPU throttles × seven phases, one board, CDP metrics, and
+a staleness header so a filtered run cannot pass itself off as the record.
+
+**Five seconds of an untouched board costs 3.9 to 4.5 seconds of main-thread
+time.** The same five seconds with reduced motion on costs 44 to 207 ms: the
+ember pool and the beacon breath are not part of the idle cost, they are it.
+That is battery, and heat, and heat is the throttle that makes the rest slower.
+It is also the board's LIFE, so it went to `NEXT.md` §1 with three options and
+a lean rather than being quietly turned down — the rule this repository already
+wrote for the theme pass: where the answer lives on a screen, the finding is
+the deliverable.
+
+**The instrument lied twice before it said anything true, and both lies are
+written into it.** It printed a frame count that came back 4, then −3, then 0;
+a negative frame count is a metric read wrong, and a table with one in it
+teaches its reader to distrust the columns that are right, so the count is not
+claimed at all. And its first table said an idle board costs 3.5 s of CPU in 5,
+which read like an emergency **until `about:blank` was measured the same way on
+the same throttle and cost 1 ms**. The control is the only reason the idle row
+means anything, and it now sits in the report beside it. _A number with no
+control is a number that reads like a measurement._
+
+**B4.16's two guesses, separated at last.** They could not be graded apart
+because one constant decides both — a high pixel ratio is also an MSAA-off
+ratio — so `Board.tsx` gained `?aa=`, an override no UI turns, no store keeps
+and no default reads, for the one question that is otherwise unanswerable
+without a second canvas (which `CLAUDE.md` forbids). It says: at ratio 3,
+antialiasing costs 1.1× to 2.0× the same walk without it, so "drop MSAA above
+ratio 2" is the right way round; at ratio 2, dropping it would save 1.3× to
+2.1×, which is a look question on a device rather than a number from a
+software rasterizer. Both are upper bounds and the report says so at the rows:
+MSAA here is drawn on the CPU, and a phone's GPU pays far less.
+
+**And the first board after BEGIN** — the phase a returning player waits
+through — is 0.9 s of CPU at 1× and 2.1–2.5 s at 6×, on the engine that is
+fast. P6.1's WebKit number (2.6 s of wall at 1×) sits beside it.
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; e2e 128/128 chromium and
+116 passed / 12 skipped webkit; `perf/report.md` regenerated at 42 of 42
+phases.
+
+**Next:** P4, the accessibility proof — the last item in the file, and the one
+most likely to want changes on screens the other nine have been editing.

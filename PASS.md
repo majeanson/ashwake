@@ -614,15 +614,62 @@ happens when a number is guessed at from a session with no phone in it.
 The instrument is the screen audit's sibling, and it follows B8.6's ruling
 exactly: **a report somebody reads, not a gate.**
 
-| id   | status | statement                                                                                                  | where                        |
-| ---- | ------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| P5.1 | open   | the trace — CDP over `?place=n`'s fixed opening, so eight runs are eight measurements of ONE board         | `shell/walk.ts`              |
-| P5.2 | open   | the axes — 1× / 4× / 6× CPU throttle, at dpr 2 and 3, in the shipping direction                            | `playwright.audit.config.ts` |
-| P5.3 | open   | grade B4.16's two defaults against what they cost and what they buy                                        | `Board.tsx:426`              |
-| P5.4 | open   | the ambient load with nothing happening — the breath timer and the ember pool, which run for the whole run | `HexField.tsx:183`           |
-| P5.5 | open   | the first frame after BEGIN, and the `Board` chunk's parse cost on a throttled CPU                         | `App.tsx:247`                |
-| P5.6 | open   | `perf/report.md`, with the same staleness header the screen audit learned to write                         | —                            |
-| P5.7 | open   | whatever it names                                                                                          | —                            |
+| id   | status | statement                                                                                | where                     |
+| ---- | ------ | ---------------------------------------------------------------------------------------- | ------------------------- |
+| P5.1 | done   | the trace — CDP metrics over `?place=12`’s fixed opening, seven phases a cell            | `e2e/audit/perf.audit.ts` |
+| P5.2 | done   | the axes — 1× / 4× / 6× CPU, at ratio 2 and 3, in the shipping direction                 | `e2e/audit/perf.audit.ts` |
+| P5.3 | done   | **graded: the MSAA default is the right way round**, and `?aa=` is how it was measurable | `Board.tsx`               |
+| P5.4 | done   | **the ambient board costs 28×–138× the still one** — a look decision, in `NEXT.md` §1    | `perf/report.md`          |
+| P5.5 | done   | the first frame after BEGIN, at every throttle                                           | `perf/report.md`          |
+| P5.6 | done   | `perf/report.md`, with the staleness header and a blank-page control                     | `perf/report.md`          |
+| P5.7 | done   | what it named: the idle cost, and B4.16’s two guesses separated                          | `LOG.md` Session 89       |
+
+### P5, done: the board never rests, and one of B4.16's two guesses was right (2026-09-10)
+
+`pnpm audit:perf` writes `perf/report.md`: two pixel ratios × three CPU
+throttles × seven phases, all on one board, with the staleness header the
+screen audit taught this repository to write. Chromium only and CDP-driven —
+`Emulation.setCPUThrottlingRate` and `Performance.getMetrics` — and every
+number is a RATIO between two rows, because a desktop runner draws through a
+software path that is not a phone's.
+
+**The instrument lied twice before it said anything true, and both are written
+into it.** It reported a `Frames` column that came back 4, then −3, then 0 — a
+negative frame count is a metric read wrong, and a table with one in it teaches
+its reader to distrust the columns that are right, so the count is not claimed
+at all. And its first table said an idle board costs 3.5 s of CPU in 5, which
+read like a battery emergency **until a blank page was measured the same way on
+the same throttle**: `about:blank` costs 1–59 ms. A number with no control is a
+number that reads like a measurement.
+
+**THE FINDING: a board nobody is touching costs 28× to 138× what the same board
+costs with motion off.** Idle, five seconds: 3.9–4.5 s of main-thread time, on
+every one of the six cells. The same five seconds with `prefers-reduced-motion`
+emulated: 44–207 ms. The ember pool and the beacon breath are not part of the
+idle cost, they ARE the idle cost, and they run for the whole run whether or
+not anything is happening. On a phone that is battery and heat, and heat is
+throttling. **It is also the board's life**, which makes the fix a look
+decision — `NEXT.md` §1, with the numbers and three options, unbuilt.
+
+**P5.3, graded.** Half of B4.16 was already answered by looking (`quality.ts`,
+2026-09-05: the pixel-ratio cap is gone because Marc picked the phone's own
+ratio on the device). The MSAA half could not be measured at all, because one
+constant decides both defaults — so `Board.tsx` gained `?aa=`, a measuring
+override that no UI turns, no store keeps and no default reads. With it:
+
+- **At ratio 3, antialiasing costs 1.1× to 2.0× the CPU of the same walk
+  without it.** B4.16's "drop MSAA above ratio 2" is the right way round.
+- **At ratio 2, turning it OFF saves 1.3× to 2.1×.** So the default that keeps
+  it there is buying something real at a real price, and where the threshold
+  belongs is a LOOK question on a device, not a number from this table.
+
+Both readings are upper bounds: MSAA here is rasterized on the CPU by software,
+and a phone's GPU pays far less for it. Said in the report, at the rows.
+
+**P5.5:** BEGIN to a drawn board is 0.9 s of CPU at 1× and 2.1–2.5 s at 6×, on
+the engine that is fast — against the 2.6 s WALL that P6.1 measured on WebKit
+at 1×. The chunk parse, the shader compile and the first instanced draw all
+land in that one phase, and it is the phase a returning player waits through.
 
 **A software renderer is not a phone** — that is B8.6's own argument against
 running the screen audit in CI, and it applies double here. So the numbers this

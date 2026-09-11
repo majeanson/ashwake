@@ -25,7 +25,8 @@
     "sim": "pnpm --filter @ashwake/core sim",
     "sweep": "tsx scripts/sweep/index.ts",
     "test:e2e": "pnpm build && playwright test --project=chromium && playwright test --project=webkit",
-    "audit:screens": "pnpm build && playwright test --config playwright.audit.config.ts",
+    "audit:screens": "pnpm build && playwright test --config playwright.audit.config.ts e2e/audit/screens.audit.ts",
+    "audit:perf": "pnpm build && playwright test --config playwright.audit.config.ts e2e/audit/perf.audit.ts",
     "bake:phosphor": "tsx scripts/phosphor.ts",
     "bake:notices": "tsx scripts/notices.ts"
   },

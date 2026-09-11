@@ -287,6 +287,42 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**THE BOARD NEVER RESTS, AND THAT IS A LOOK DECISION (2026-09-10, `PASS.md`
+P5.4).** Measured, six ways, in `perf/report.md`: five seconds of a board
+nobody is touching costs **3.9–4.5 seconds of main-thread time**. The same five
+seconds with reduced motion on costs **44–207 ms** — between 28× and 138× less.
+A blank page, measured identically as the control, costs 1–59 ms.
+
+So the embers and the beacon breath are not part of what an idle board costs,
+they ARE it. On a phone that is battery, and it is heat, and heat is the
+throttle that makes everything else slower. It is also the board's life: a
+settlement that stops breathing while you think about your next tile is a
+different game, and that is why this is yours rather than mine.
+
+Three options, none built:
+
+1. **Leave it.** The board is alive, and a phone playing a game is a phone
+   spending battery. The honest version of this is that nobody has complained,
+   and the measurement is from a software renderer where the same frames are
+   far dearer than on a phone's GPU.
+2. **Sleep after a pause.** Stop the ambient loop once nothing has been touched
+   for, say, fifteen seconds, and wake it on the next input. Costs a moment of
+   stillness while you think — which is exactly when you are looking at it.
+3. **Slow the cadence.** Breathe at 15 Hz instead of every frame. Cheapest in
+   argument, and it is the change most likely to be visible as a stutter
+   rather than as calm.
+
+My lean is **2**, with a long pause: the case it saves is the phone left on the
+board for minutes, which is the case that costs real battery, and the wake is
+instant. But every one of these is a change to how the game LOOKS while you
+think, so none of them ships on a measurement alone.
+
+**And a smaller one beside it:** at ratio 2, antialiasing costs 1.3× to 2.1×
+the CPU of the same walk without it (`perf/report.md`, the `msaa` column). The
+default keeps it there and drops it above ratio 2 — which the same table says
+is the right way round at ratio 3. Whether a ratio-2 phone should keep paying
+for it is a look question on a device: `?aa=0` shows you the cheap one.
+
 **SESSION A, FIRST LINE: DOES THE BOARD DRAW BEFORE YOU TOUCH IT? (2026-09-10,
 `PASS.md` P6.8.)** On Playwright's WebKit there is a reproducible state where a
 run opens and the board is **blank until something touches it** — the ground

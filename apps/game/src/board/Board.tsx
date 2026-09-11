@@ -301,7 +301,33 @@ const round2 = (deg: number): number => Math.round(deg * 2) / 2;
  * never remount to pick up a new one.
  */
 const DENSE = typeof devicePixelRatio === 'number' && devicePixelRatio > 2;
-const GL = DENSE ? { ...GL_PROPS, antialias: false } : GL_PROPS;
+
+/**
+ * `?aa=1` / `?aa=0` — NOT a player dial, a MEASURING one (`PASS.md` P5.3).
+ *
+ * B4.16 shipped two low-end defaults together — cap the pixel ratio, drop MSAA
+ * above ratio 2 — and `perf/report.md` can measure the first by changing the
+ * ratio. It cannot measure the SECOND that way, because the ratio is what
+ * decides it: every high-ratio row is also an MSAA-off row, so the table says
+ * what the pair costs and nothing about either. One URL override separates
+ * them, at one module-scope read, and it is the only way this question is
+ * answerable without a second canvas — which `CLAUDE.md` forbids outright.
+ *
+ * It is deliberately not in `shell/look.ts` with the look dials: those reach
+ * the board as props and this one cannot, because a context flag is fixed
+ * before the first render. Nothing in the UI turns it, nothing stores it, and
+ * a device that has never been sent an `?aa=` renders exactly as before.
+ */
+const AA_OVERRIDE = ((): boolean | null => {
+  try {
+    const asked = new URLSearchParams(location.search).get('aa');
+    return asked === null || asked === '' ? null : asked !== '0';
+  } catch {
+    return null;
+  }
+})();
+
+const GL = { ...GL_PROPS, antialias: AA_OVERRIDE ?? !DENSE };
 
 export function Board(props: BoardProps) {
   const {
