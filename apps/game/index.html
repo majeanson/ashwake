@@ -167,14 +167,50 @@
       window.__ashwakeCanRun = true;
     </script>
     <script>
+      /*
+       * TWO WAYS TO HAVE NO GAME, AND THEY ARE NOT THE SAME SENTENCE
+       * (`PASS.md` P8.3, 2026-09-10).
+       *
+       * The flag being unset means only that the module did not run. Until
+       * today this script read that one fact and said "your browser is too
+       * old", which was WRONG TWICE in one week and both times in the field
+       * rather than in theory: a stale chunk after a deploy (P8.1) and an
+       * offline second visit whose cache lookup missed (P8.5). Both told an
+       * up-to-date Chromium to go and find a newer browser, which is the least
+       * actionable sentence available and sends the one player who reported it
+       * to the wrong shop.
+       *
+       * A resource that never arrived fires an `error` event AT the element —
+       * capture phase, because it does not bubble — and a module that failed to
+       * PARSE does not. That is the whole discrimination, it needs no version
+       * table, and it is ES5, which this script has to stay: an engine too old
+       * for the bundle must be able to read the sentence about being too old.
+       *
+       * Deferred scripts settle before `DOMContentLoaded`, so by the time the
+       * handler below runs, a load failure has already been recorded.
+       */
+      window.addEventListener(
+        'error',
+        function (event) {
+          var target = event.target;
+          if (target && target !== window && target.tagName === 'SCRIPT') {
+            window.__ashwakeNoLoad = true;
+          }
+        },
+        true,
+      );
       if (!window.__ashwakeCanRun) {
         document.addEventListener('DOMContentLoaded', function () {
           if (window.__ashwakeCanRun) return;
-          document.body.innerHTML =
-            '<div class="floor"><p>ASHWAKE a besoin d’un navigateur plus récent : ' +
-            'iOS 16.4 ou plus, ou un Chrome ou Firefox à jour. ' +
-            'Rien ne cloche avec ton appareil : ce jeu s’appuie sur les fonctions les plus récentes du moteur.<br><br>' +
-            'ASHWAKE needs a newer browser: iOS 16.4 or later, or an up-to-date Chrome or Firefox.</p></div>';
+          var words = window.__ashwakeNoLoad
+            ? 'ASHWAKE n’a pas pu se charger. Vérifie ta connexion, puis recharge la page. ' +
+              'Si ça persiste, ferme l’onglet et rouvre le jeu.<br><br>' +
+              'ASHWAKE could not load. Check your connection, then reload the page.'
+            : 'ASHWAKE a besoin d’un navigateur plus récent : ' +
+              'iOS 16.4 ou plus, ou un Chrome ou Firefox à jour. ' +
+              'Rien ne cloche avec ton appareil : ce jeu s’appuie sur les fonctions les plus récentes du moteur.<br><br>' +
+              'ASHWAKE needs a newer browser: iOS 16.4 or later, or an up-to-date Chrome or Firefox.';
+          document.body.innerHTML = '<div class="floor"><p>' + words + '</p></div>';
         });
       }
     </script>

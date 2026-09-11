@@ -117,7 +117,9 @@ self.addEventListener('activate', (event) => {
  * **And the way it failed is worse than the failure.** With the entry module
  * unfetched, `window.__ashwakeCanRun` is never set, so the browser-floor guard
  * in `index.html` fires and an up-to-date Chromium is told *"ASHWAKE needs a
- * newer browser"* — a second witness for the misdiagnosis noted at P8.3, and
+ * newer browser"* — which was a second witness for a misdiagnosis noted at
+ * P8.3 and fixed there the same day (the guard can tell a script that never
+ * ARRIVED from an engine that could not parse one), and
  * the exact shape of the white screen this precache was written to prevent in
  * the first place (2026-08-18).
  *

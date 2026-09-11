@@ -1,6 +1,7 @@
 import { NAME } from '@meta/identity';
 import { crashEnvelope, type CrashReport } from '@meta/report';
 import type { Strings } from '@text/Strings';
+import { bootStrings } from './locale';
 import { writeLastError } from './storage';
 
 /**
@@ -175,6 +176,53 @@ export function markBoardAlive(): void {
   boardAlive = true;
 }
 
+/**
+ * THE MESSAGE A LOST BOARD CARRIES (`PASS.md` P8.3, 2026-09-10).
+ *
+ * `board/gl.ts` asks for a lost WebGL context back and gives the browser a few
+ * seconds to return it. When it does not, the board is a blank canvas for the
+ * life of the page while the shell goes on answering taps — the run is intact,
+ * the HUD is live, and the one thing that cannot be true again is the picture.
+ *
+ * A sentinel rather than a fourth argument to `showFailure`: the panel already
+ * classifies by asking questions ABOUT the failure it was handed, and this is
+ * one more question with the same shape. `showBoardLost` is the only thing
+ * that raises it, so the string never has to be guessed at from a browser's
+ * own wording — unlike `isStaleChunk`, where the message is all there is.
+ */
+const BOARD_LOST = 'ashwake:board-lost';
+
+/** What KIND of trouble the panel is about, decided once. */
+type Trouble = 'no-webgl' | 'board-lost' | 'stale-chunk' | 'broke';
+
+/**
+ * The four, in the order they must be asked.
+ *
+ * `no-webgl` first because it is a fact about the DEVICE and outranks whatever
+ * the error says: a browser that cannot draw at all is not going to be helped
+ * by a sentence about a chunk. `board-lost` before `stale-chunk` because it is
+ * ours and exact, where the chunk test is a broad match on a message.
+ */
+function troubleOf(error: unknown): Trouble {
+  if (!boardAlive && webglMissing()) return 'no-webgl';
+  if (error instanceof Error && error.message === BOARD_LOST) return 'board-lost';
+  if (isStaleChunk(error)) return 'stale-chunk';
+  return 'broke';
+}
+
+/**
+ * The board had a context and lost it for good — raise the panel about that.
+ *
+ * Takes no strings and reads `bootStrings()` itself, because the board has
+ * none: `Board.tsx` is handed a view, a theme and a palette, and threading a
+ * catalogue through it for one sentence would put the locale in the renderer's
+ * props for the life of the file. `Boundary` resolves the same way for the
+ * same reason.
+ */
+export function showBoardLost(): void {
+  showFailure(bootStrings(), new Error(BOARD_LOST));
+}
+
 const BUTTON =
   'min-height:44px;padding:0 24px;font:inherit;color:inherit;' +
   'background:var(--panel, #262b36);border:1px solid var(--panel-edge, #3a4150);border-radius:6px;';
@@ -210,18 +258,25 @@ export function showFailure(s: Strings, error?: unknown, onContinue?: () => void
     'color:var(--ink, #e6e9f0);' +
     'font-family:var(--font-body, system-ui, sans-serif);padding:24px;text-align:center;';
 
-  // The honest split: a browser with no WebGL cannot draw the board, will not
-  // be fixed by CONTINUE, and loops on RELOAD. Telling that visitor "your run
-  // is saved" is a lie wearing a stack trace. Name the real problem instead.
-  const noWebgl = !boardAlive && webglMissing();
   /*
-   * A stale chunk cannot be continued INTO — see `isStaleChunk`. The panel
-   * still reports and still offers RELOAD, which is the exit that works.
+   * WHICH TROUBLE THIS IS, asked once and answered for both the sentence and
+   * the buttons (P8.3, 2026-09-10 — it was two ad-hoc flags before, and a
+   * third would have made three).
+   *
+   * The honest split the first one was written for still holds: a browser with
+   * no WebGL cannot draw the board, will not be fixed by CONTINUE, and loops
+   * on RELOAD. Telling that visitor "your run is saved" is a lie wearing a
+   * stack trace.
    */
-  const stale = isStaleChunk(error);
+  const trouble = troubleOf(error);
 
   const words = document.createElement('p');
-  words.textContent = noWebgl ? s.ui.crash.noWebgl : s.ui.crash.broke;
+  words.textContent =
+    trouble === 'no-webgl'
+      ? s.ui.crash.noWebgl
+      : trouble === 'board-lost'
+        ? s.ui.crash.boardLost
+        : s.ui.crash.broke;
 
   const count = document.createElement('p');
   count.id = 'boot-failure-count';
@@ -302,13 +357,21 @@ export function showFailure(s: Strings, error?: unknown, onContinue?: () => void
 
   const row = document.createElement('div');
   row.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;';
-  // A WebGL-less browser has no game underneath to continue INTO, and nothing
-  // useful to report — the message already says everything there is to say.
-  //
-  // A STALE CHUNK has a game underneath and a report worth sending; what it has
-  // no use for is CONTINUE, which provably re-enters the same cached rejection.
-  if (noWebgl) row.append(reload);
-  else if (stale) row.append(reload, send, copy);
+  /*
+   * WHO GETS A WAY BACK IN, which is the same rule three times: a button that
+   * says CONTINUE has to continue into something.
+   *
+   *   no-webgl    Nothing underneath to continue into, and nothing useful to
+   *               report — the message already says all there is to say.
+   *   stale-chunk A game underneath and a report worth sending; CONTINUE
+   *               provably re-enters the same cached rejection (P8.1).
+   *   board-lost  A live shell and a saved run underneath, so the report is
+   *               worth having — but the canvas will not draw again on this
+   *               page, and CONTINUE would hand back a black rectangle with a
+   *               working HUD on top of it (P8.3).
+   */
+  if (trouble === 'no-webgl') row.append(reload);
+  else if (trouble === 'stale-chunk' || trouble === 'board-lost') row.append(reload, send, copy);
   else row.append(go, reload, send, copy);
 
   panel.replaceChildren(words, count, shown, row);

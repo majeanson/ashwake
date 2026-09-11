@@ -822,7 +822,7 @@ weakness in the header is closed (P8.4); what is left is three specific holes.
 | ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | P8.1 | part   | **the stale-chunk loop** — reproduced; CONTINUE fixed; the slow-line case is Marc’s, unbuilt                   | `shell/failure.ts`       |
 | P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)          | `shell/storage.ts:318`   |
-| P8.3 | open   | no WebGL, and a context lost that never restores — the panel has a no-WebGL split; nothing exercises it        | `board/gl.ts`            |
+| P8.3 | done   | **a lost context becomes a sentence, and the guard stopped blaming the browser** — thirteen tests, two e2e     | `board/gl.ts`            |
 | P8.4 | done   | **the two inline blocks are hashed at build time and `'unsafe-inline'` is gone** — the build writes the policy | `vite.config.ts`         |
 | P8.5 | done   | **offline is exercised, and it was broken** — `caches.match` honoured `Vary`; four tests, one Marc trade       | `e2e/offline.spec.ts`    |
 | P8.6 | done   | the panel’s repeat counting, pinned under the loop that makes it move                                          | `ui/staleChunk.test.tsx` |
@@ -883,6 +883,55 @@ contrast to `daylight`, so the uncovered share is no longer a quarter but
 roughly half. Covering it is 301.3 KB raw, which is over `budget.json`'s
 precache bar; the fallback is graceful and measured, so this is a trade rather
 than a bug.
+
+### P8.3, done: a black board says so, and the guard stopped guessing (2026-09-10)
+
+Two halves, both reproduced before either was fixed.
+
+**A context the browser never gives back.** `board/gl.ts` has cancelled
+`webglcontextlost` since 2026-09-02 — which is what asks for a restore — and
+nothing had ever run it. When the restore does not come, the board was **a
+black rectangle for the life of the page with a live HUD over it**: taps
+answered, purse updated, score counted, no picture and not a word. `gl.ts`
+waits `RESTORE_MS` (4 s, long enough that a recoverable blink never raises a
+panel) and then calls `showBoardLost`. The callback is REQUIRED rather than
+optional, because `CLAUDE.md` already paid for the other kind: _"a hook a test
+can inject is a hook a test cannot prove is connected."_
+
+The panel has a sentence of its own for it now (`crash.boardLost`, both
+languages, French written first) and **withholds CONTINUE** — `broke` says
+_"CONTINUE if the game still works underneath"_, and here the game does work
+underneath, which is exactly why continuing is the one thing that cannot help:
+it hands back a black rectangle with a working HUD on it. Same rule as P8.1,
+third occurrence — so the panel's two ad-hoc flags became one `Trouble`
+decision with four answers and the button row derived from it.
+
+**And the floor guard stopped blaming the browser.** `index.html`'s classic
+guard could see one fact — the module never set its flag — and said _"ASHWAKE a
+besoin d'un navigateur plus récent"_. That was wrong twice in a week, both
+times found by another row of this item: a stale chunk after a deploy (P8.1)
+and an offline second visit whose cache lookup missed (P8.5). A resource that
+never ARRIVED fires an `error` event at its element (capture phase — it does
+not bubble); a module that failed to PARSE does not. That is the whole
+discrimination, it needs no version table, and it stays ES5, which this script
+must: an engine too old for the bundle has to be able to read the sentence
+about being too old.
+
+**What is still a note, and argued rather than fixed.** In a browser with
+genuinely no WebGL, a stale-chunk failure is still reported as _"this browser
+needs WebGL"_ — the panel infers it from "the board never drew" plus "no
+WebGL", and a chunk that never loaded also means the board never drew. Harmless
+in a way the other two were not: that browser cannot play either way, and the
+first sentence it is given is the one that is true about it.
+
+**Pinned by thirteen tests.** `board/gl.test.ts` (six, fake timers: the loss is
+cancelled, a restore redraws, a restore that never comes becomes a call, not a
+moment early, a second loss restarts the wait rather than stacking, and a
+teardown drops a pending one), `ui/failurePanel.test.tsx` (four, over three
+classes the suite had never exercised — the no-WebGL branch, the lost board,
+and an ordinary crash that must still get CONTINUE), and `e2e/failure.spec.ts`,
+which drives a REAL `WEBGL_lose_context` on the board's own context and aborts
+the entry chunk over the wire. Both e2e tests fail against this morning's code.
 
 ### P8.4, done: the build writes the policy now (2026-09-10)
 
@@ -971,7 +1020,10 @@ a stale-chunk failure is reported as _"this browser needs WebGL"_ — the panel
 infers that from "the board never drew" plus "no WebGL", and a chunk that never
 loaded also means the board never drew. A misdiagnosis, and a harmless one,
 since such a browser cannot play either way. Written at the test's own
-`withWebgl` helper and at P8.3 rather than fixed.
+`withWebgl` helper and at P8.3 rather than fixed. **That half is still a note**
+(P8.3 argues it: such a browser cannot play either way). The OTHER half — the
+floor guard telling an up-to-date browser it was too old whenever the bundle
+did not arrive — is fixed.
 
 **And a second witness, from P8.5 (2026-09-10):** offline, with the entry
 module unfetched, `index.html`'s browser-floor guard fires and an up-to-date

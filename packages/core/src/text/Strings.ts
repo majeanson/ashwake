@@ -1404,6 +1404,13 @@ export type Strings = {
     readonly crash: {
       readonly broke: string;
       readonly noWebgl: string;
+      /**
+       * The board had a context and the device took it back for good
+       * (`PASS.md` P8.3). Its own sentence rather than `broke`, because
+       * nothing broke: the run is intact, the shell is live, and the one thing
+       * that cannot be true again on this page is the picture.
+       */
+      readonly boardLost: string;
       readonly seen: (n: number) => string;
       readonly continue: string;
       readonly reload: string;

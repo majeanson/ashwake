@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { markBoardAlive } from '../shell/failure';
+import { markBoardAlive, showBoardLost } from '../shell/failure';
 import { FLIGHT_MS, TOUR_WIDE_HOLD_MS } from './flight';
 import {
   useCallback,
@@ -659,6 +659,11 @@ export function Board(props: BoardProps) {
             repository handled a lost context, and with `frameloop="demand"` a
             context that came back would have drawn nothing at all.
 
+            And when it does NOT come back, `showBoardLost` raises the panel
+            (P8.3, 2026-09-10): before that, a context the browser never
+            returned left a live HUD answering taps over a black rectangle,
+            for the life of the page, with nothing said about it.
+
             The subscription hangs off the renderer for the life of the page,
             which is exactly the `<Canvas>`'s own life: it is never unmounted
             (`CLAUDE.md`), so there is nowhere to hang a cleanup that would ever
@@ -666,7 +671,7 @@ export function Board(props: BoardProps) {
           */
           onCreated={(state) => {
             markBoardAlive();
-            watchContext(state.gl.domElement, state.invalidate);
+            watchContext(state.gl.domElement, state.invalidate, showBoardLost);
           }}
           camera={{ position: [0, 100, 0], zoom: 30, near: 0.1, far: 1000 }}
           style={{ width: size.width, height: size.height }}

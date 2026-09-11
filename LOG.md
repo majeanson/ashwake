@@ -7163,3 +7163,60 @@ worker as it stood this morning, which is P8's rule.
 **Next:** P8.2 (quota exhaustion in a browser) and P8.3 (no WebGL, and a
 context loss that never restores) close the item — and P8.3 now has two
 witnesses waiting for it rather than one.
+
+### Session 86 — the board can go black, and the page used to blame your phone (2026-09-10)
+
+**Question (`PASS.md` P8.3):** what does a player see when the browser takes
+the board's context and does not give it back, and when the bundle never
+arrives at all?
+
+**Answer: nothing, and a lie.**
+
+**Nothing.** `board/gl.ts` has cancelled `webglcontextlost` since 2026-09-02 —
+which is the one line that asks for a restore — and nothing had ever run it.
+When the restore does not come (a phone out of graphics memory, a driver that
+reset twice, a GPU process that will not come up), the board is **a black
+rectangle for the life of the page with a live HUD over it**: taps answered,
+purse updated, score counted, no picture and not a word about it. It waits four
+seconds now — long enough that a recoverable blink never raises a panel, short
+enough that nobody sits in front of a black rectangle wondering whether the
+game is thinking — and then says so. The give-up callback is REQUIRED, not
+optional, because this repository has already paid for the other kind:
+_"a hook a test can inject is a hook a test cannot prove is connected"_, which
+is how `receipts.ts` handed out perks nobody was ever told about.
+
+**A lie.** `index.html`'s floor guard could see exactly one fact — the module
+never set its flag — and concluded _"ASHWAKE a besoin d'un navigateur plus
+récent"_. That was wrong twice in one week and both times it was another row of
+this same item that found it: a stale chunk after a deploy (P8.1), an offline
+second visit whose cache lookup missed (P8.5). It is the least actionable
+sentence available and it sends the one player who reports it to the wrong
+shop. A resource that never ARRIVED fires an `error` event at its element —
+capture phase, because it does not bubble — and a module that failed to PARSE
+does not. That is the whole discrimination; it needs no version table and it
+stays ES5, which this script must be, since an engine too old for the bundle
+has to be able to read the sentence about being too old.
+
+**The same rule, for the third time in three sessions.** _A button that says
+CONTINUE has to continue into something._ No WebGL (Stage 4), a stale chunk
+(P8.1), and now a lost board — where the game genuinely does work underneath,
+which is exactly why continuing cannot help: it hands back a black rectangle
+with a working HUD on it. Three occurrences is a decision wanting one name, so
+the panel's two ad-hoc flags became one `Trouble` with four answers, and both
+the sentence and the button row read off it.
+
+**What was left as a note, argued rather than fixed.** A browser with genuinely
+no WebGL still reads a stale chunk as _"this browser needs WebGL"_. It is
+harmless in a way the other two were not — that browser cannot play either way,
+and the sentence it gets is true about it.
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files (ten new);
+`pnpm sim` byte-identical; sweep 0 findings; budget green; e2e 124/124 chromium
+and 46 passed / 1 skipped webkit. Both new e2e tests fail against this
+morning's code — the context one by waiting twelve seconds for a panel that
+never comes, the guard one by reading "navigateur plus récent" to an up-to-date
+Chromium.
+
+**Next:** P8.2 is the last row — quota exhaustion in a browser, all the way to
+what the player is told. It shares a harness with P7.6, which was deferred with
+a reason, so the first question is whether it deserves the same.

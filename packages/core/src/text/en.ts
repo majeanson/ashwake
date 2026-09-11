@@ -810,6 +810,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     crash: {
       broke:
         'Something broke. Your run is saved. CONTINUE if the game still works underneath, RELOAD if it does not.',
+      boardLost:
+        'The board stopped drawing. This device took its graphics memory back and did not give it up again. Your run is saved. Reload the page to get the board back.',
       noWebgl:
         'Ashwake needs WebGL to draw its board, and this browser has it missing or switched off. Try Safari or Chrome, or turn hardware acceleration back on.',
       seen: (n) => `seen ×${n}`,

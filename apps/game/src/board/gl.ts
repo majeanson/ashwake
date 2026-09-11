@@ -63,15 +63,62 @@ export const GL_PROPS = {
  * set of objects that are about to be re-uploaded anyway — on the one frame
  * where a phone has just proved it is short of memory.
  */
-export function watchContext(canvas: HTMLCanvasElement, redraw: () => void): () => void {
+/**
+ * HOW LONG A LOST CONTEXT GETS BEFORE THE PLAYER IS TOLD (P8.3, 2026-09-10).
+ *
+ * `preventDefault` above asks for the context back; it does not promise one.
+ * A phone that is genuinely out of graphics memory, a driver that reset twice,
+ * a GPU process that will not come up — any of those and `webglcontextrestored`
+ * never fires. Until today that was a **blank canvas for the life of the page
+ * with a live HUD on top of it**: taps answered, purse updated, score counted,
+ * and no picture and no word about it, ever. The board does not draw itself
+ * back and nothing was watching for the case.
+ *
+ * Four seconds because a restore that is coming arrives in well under one —
+ * `three` re-initialises on the event and re-uploads lazily from the data each
+ * object still holds (see above) — so this is long enough that a recoverable
+ * blink never raises a panel, and short enough that nobody sits in front of a
+ * black rectangle wondering whether the game is thinking.
+ */
+export const RESTORE_MS = 4000;
+
+export function watchContext(
+  canvas: HTMLCanvasElement,
+  redraw: () => void,
+  /**
+   * What to do when it does not come back — required, not optional.
+   *
+   * `CLAUDE.md`: *"a hook a test can inject is a hook a test cannot prove is
+   * connected"*, which is how `receipts.ts` handed out perks nobody was told
+   * about. An optional callback here would have let this file be complete,
+   * tested and green while the one real call site passed nothing and a player
+   * still stared at a black board.
+   */
+  onLost: () => void,
+): () => void {
+  let waiting: ReturnType<typeof setTimeout> | null = null;
+  const stopWaiting = (): void => {
+    if (waiting !== null) clearTimeout(waiting);
+    waiting = null;
+  };
+
   const lost = (event: Event): void => {
     // Ask for it back. Without this the loss is permanent.
     event.preventDefault();
+    stopWaiting();
+    waiting = setTimeout(() => {
+      waiting = null;
+      onLost();
+    }, RESTORE_MS);
   };
-  const restored = (): void => redraw();
+  const restored = (): void => {
+    stopWaiting();
+    redraw();
+  };
   canvas.addEventListener('webglcontextlost', lost);
   canvas.addEventListener('webglcontextrestored', restored);
   return () => {
+    stopWaiting();
     canvas.removeEventListener('webglcontextlost', lost);
     canvas.removeEventListener('webglcontextrestored', restored);
   };

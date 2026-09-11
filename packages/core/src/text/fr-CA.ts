@@ -815,6 +815,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     crash: {
       broke:
         'Quelque chose a brisé. Ta partie est sauvegardée. CONTINUER si le jeu fonctionne encore en dessous, RECHARGER sinon.',
+      boardLost:
+        'Le plateau a cessé de dessiner. Cet appareil a repris sa mémoire graphique et ne l’a pas rendue. Ta partie est sauvegardée. Recharge la page pour retrouver le plateau.',
       noWebgl:
         'Ashwake a besoin de WebGL pour dessiner son plateau, et ce navigateur ne l’a pas ou l’a désactivé. Essaie Safari ou Chrome, ou réactive l’accélération matérielle.',
       seen: (n) => `vu ×${n}`,
