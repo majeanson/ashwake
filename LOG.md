@@ -7785,3 +7785,23 @@ landing after it. **That is P6.8**, and it reproduces on the runner four runs
 in five where this machine sees it once a session. It has had a better
 debugging surface for a day and nobody knew, because a check that grades a
 picture was throwing the picture away. `NEXT.md` §1 carries it.
+
+**IT DEPLOYED.** The first run under the split jobs went `ci` green, `deploy`
+green, `e2e` red, which is exactly what the ruling says should happen — and
+the live entry bundle moved from `index-DwfFGbub.js` to `index-C5vOlhzW.js`,
+with the deploy job's own `verify:deploy` passing against the running site.
+Everything tonight is on the phone: the resting board, the two SETTINGS rows,
+the art-arrival fix and the first paint back at 172 KB. It was the first
+deploy since 2026-09-10.
+
+**And that run found one more, which was the helper again.** `a11y.spec.ts`
+failed on WebKit with _"Node is either not visible or not an HTMLElement"_
+from inside `boardDrawn`. The wait there is for `attached`, which is weaker
+than visible on purpose, so between the door leaving and the board host being
+laid out the canvas is in the DOM with no box — and Playwright refuses to
+photograph that. A THROW from inside a poll loop ENDS the poll: the helper
+reported a hard failure on the first hiccup rather than waiting out the
+fifteen seconds it was given. It treats an unphotographable frame as a "not
+yet" now and keeps the two endings apart, because a board that drew nothing
+and a board nothing could be drawn OF are different bugs. _Every flake this
+session has had one shape: a fact sampled once, where the contract said wait._

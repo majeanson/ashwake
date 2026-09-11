@@ -123,11 +123,44 @@ function looksLikeAPicture(bytes: Buffer): boolean {
 export async function boardDrawn(page: Page, timeoutMs = 15_000): Promise<number> {
   const canvas = page.locator('canvas');
   await canvas.waitFor({ state: 'attached' });
+
+  /**
+   * ONE LOOK AT THE CANVAS: drawn, not yet, or not photographable at all.
+   *
+   * A CANVAS THAT CANNOT BE PHOTOGRAPHED IS A "NOT YET" (2026-09-11). The wait
+   * above is for `attached`, which is deliberately weaker than visible — and
+   * between the door leaving and the board host being laid out there is a
+   * moment where the canvas is in the DOM with no box. Playwright refuses to
+   * screenshot that, with *"Node is either not visible or not an
+   * HTMLElement"*, and a THROW from inside a poll loop ends the poll: this
+   * helper reported a hard failure on the first hiccup instead of waiting out
+   * the fifteen seconds it was given. `a11y.spec.ts` hit it on CI's WebKit the
+   * first evening the browsers ran as a job of their own.
+   *
+   * The contract is "wait until the board is a picture, up to `timeoutMs`", so
+   * a frame that cannot be taken is exactly a frame that is not a picture yet.
+   * `refused` keeps the two endings apart, because they are different bugs: a
+   * board that drew nothing, and a board nothing could be drawn OF.
+   */
+  const look = async (): Promise<{ drawn: boolean; refused: string | null }> => {
+    try {
+      return { drawn: looksLikeAPicture(await canvas.screenshot()), refused: null };
+    } catch (e) {
+      const said = e instanceof Error ? e.message : String(e);
+      return { drawn: false, refused: said.split('\n')[0] ?? said };
+    }
+  };
+
   const began = Date.now();
   for (;;) {
-    if (looksLikeAPicture(await canvas.screenshot())) return Date.now() - began;
+    const { drawn, refused } = await look();
+    if (drawn) return Date.now() - began;
     if (Date.now() - began > timeoutMs) {
-      throw new Error(`the board never drew a picture in ${timeoutMs}ms`);
+      throw new Error(
+        refused === null
+          ? `the board never drew a picture in ${timeoutMs}ms`
+          : `the board could not be photographed in ${timeoutMs}ms: ${refused}`,
+      );
     }
     await page.waitForTimeout(100);
   }
