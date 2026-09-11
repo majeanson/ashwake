@@ -580,15 +580,54 @@ lesson is the reason that matters: **a role is a promise about behaviour, and
 declaring one without keeping it is worse than declaring neither.** The three
 things a screen reader was told _wrongly_ in Batch 3 were all of that shape.
 
-| id   | status | statement                                                                                                                | where              |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| P4.1 | open   | a FOURTH audit axis: `page.accessibility.snapshot()` per screen, graded — every interactive node named, every state told | `e2e/audit/`       |
-| P4.2 | done   | the board’s own tree: the role, the tab stop, and the sentence that names the arrows                                     | `e2e/a11y.spec.ts` |
-| P4.3 | done   | **a keyboard-only full run, with no pointer event dispatched at all** — both engines                                     | `e2e/a11y.spec.ts` |
-| P4.4 | done   | **four speakers, not one** — and no two of them ever speak at once, in either language                                   | `e2e/a11y.spec.ts` |
-| P4.5 | done   | a harvest is silent in the toast and TAKES the reader to a focused receipt instead                                       | `e2e/a11y.spec.ts` |
-| P4.6 | open   | both languages, at 320 and 390, because an accessible name is a STRING and French runs 20% longer                        | `e2e/audit/`       |
-| P4.7 | open   | whatever the grade names                                                                                                 | —                  |
+| id   | status | statement                                                                                   | where                |
+| ---- | ------ | ------------------------------------------------------------------------------------------- | -------------------- |
+| P4.1 | done   | **a fourth audit axis: every reachable control has a name made of words** — and it can fail | `e2e/audit/audit.ts` |
+| P4.2 | done   | the board’s own tree: the role, the tab stop, and the sentence that names the arrows        | `e2e/a11y.spec.ts`   |
+| P4.3 | done   | **a keyboard-only full run, with no pointer event dispatched at all** — both engines        | `e2e/a11y.spec.ts`   |
+| P4.4 | done   | **four speakers, not one** — and no two of them ever speak at once, in either language      | `e2e/a11y.spec.ts`   |
+| P4.5 | done   | a harvest is silent in the toast and TAKES the reader to a focused receipt instead          | `e2e/a11y.spec.ts`   |
+| P4.6 | done   | both languages, at 320 and 390 — the passes the audit already makes                         | `e2e/audit/`         |
+| P4.7 | done   | the grade named nothing once it stopped being wrong; the findings came from the keys        | `LOG.md` Session 91  |
+
+### P4.1, P4.6, P4.7, done: the fourth axis, and what it cost to trust it (2026-09-11)
+
+The screen audit grades a fourth thing now: **every control a reader can reach
+has a name made of words.** Three kinds — `unnamed-control` (announced as
+"button" and nothing else), `name-is-not-words` (announced as "22", which names
+nothing), and `focusable-but-hidden` (inside `aria-hidden`, so a keyboard can
+reach what a reader cannot hear). It rides the passes the audit already makes,
+which is P4.6 exactly: every screen at 390 in both directions, every screen
+again in fr-CA, and the crowded twelve at 320.
+
+**Computed in the page rather than from `page.accessibility.snapshot()`**,
+which the row proposed. The snapshot is a per-engine tree whose shape differs
+between Chromium and WebKit, so the same finding would mean different things in
+each — and this instrument's whole discipline is _a number with a published bar
+beside it_. The name is built the way a reader builds one, from the attributes
+the page actually sets.
+
+**The grade is zero across 126 screen-visits, and it was wrong twice before it
+was right.** The first run reported **164 false findings** against the stat row:
+a name is built from the CHILDREN, and an `<img alt="TILES">` contributes its
+alt, which `textContent` silently drops — `board.spec.ts` has asserted
+`toHaveAccessibleName(/tiles/i)` on that very button since the row was written.
+The second run reported three against the restore box, which is named by the
+`<label>` wrapped around it. Both are now sources the builder reads, and both
+are written at the line, because **a tool that reports a hundred and sixty-four
+false findings is worse than no tool: the next person to run it will not read
+the two that are real.**
+
+**And because a grade that finds nothing is indistinguishable from a grade that
+cannot find anything**, the axis is checked in both directions the way
+`pnpm sweep` is: `e2e/a11y.spec.ts` plants an unnamed button, a button named
+"42" and a focusable control inside `aria-hidden` on a real screen, and each
+must be named. That test is the only reason the zero means anything.
+
+**P4.7, what the grade named:** nothing, after the instrument stopped being
+wrong. The two real findings of this item came from the keyboard run instead —
+the board joining the tab order late, and the harvest being read by focus
+rather than by the toast.
 
 ### P4.2–P4.5, done: a run can be finished without seeing it (2026-09-10)
 
@@ -844,15 +883,22 @@ revealed, unbounded, three worlds at a time, in a 5 MB store.** The shed ladder
 exists precisely because that store fills up, and `storage.ts:254` records the
 day a version of it shed a WORLD and left its run behind.
 
-| id   | status | statement                                                                                | where                |
-| ---- | ------ | ---------------------------------------------------------------------------------------- | -------------------- |
-| P7.1 | done   | **measure first** — 24 KB at 300 runs, 2.3% of the store for three worlds and three runs | `shell/fixture.ts`   |
-| P7.2 | ruled  | the codec — **NOT BUILT**, and the measurement is the argument                           | `meta/world.ts:328`  |
-| P7.3 | ruled  | the round trip — moot with no second codec to round-trip through                         | `meta/world.test.ts` |
-| P7.4 | done   | a written argument for NO bound: 10,000 hexes is ~83 KB, three worlds 5% of the store    | `meta/world.ts:441`  |
-| P7.5 | ruled  | the ladder’s shape — moot: nothing is compacting, so no rung changes                     | `shell/shed.test.ts` |
-| P7.6 | open   | quota exhaustion end to end — DEFERRED with a reason; still worth doing                  | `e2e/`               |
-| P7.7 | open   | **six facts a saved run keeps and no screen prints** — Marc’s, in `NEXT.md` §1           | `meta/timeline.ts`   |
+| id   | status | statement                                                                                 | where                |
+| ---- | ------ | ----------------------------------------------------------------------------------------- | -------------------- |
+| P7.1 | done   | **measure first** — 24 KB at 300 runs, 2.3% of the store for three worlds and three runs  | `shell/fixture.ts`   |
+| P7.2 | ruled  | the codec — **NOT BUILT**, and the measurement is the argument                            | `meta/world.ts:328`  |
+| P7.3 | ruled  | the round trip — moot with no second codec to round-trip through                          | `meta/world.test.ts` |
+| P7.4 | done   | a written argument for NO bound: 10,000 hexes is ~83 KB, three worlds 5% of the store     | `meta/world.ts:441`  |
+| P7.5 | ruled  | the ladder’s shape — moot: nothing is compacting, so no rung changes                      | `shell/shed.test.ts` |
+| P7.6 | done   | quota exhaustion end to end — **done by P8.2**, in a real browser filled to the last byte | `e2e/quota.spec.ts`  |
+| P7.7 | open   | **six facts a saved run keeps and no screen prints** — Marc’s, in `NEXT.md` §1            | `meta/timeline.ts`   |
+
+**P7.6 was closed from the other end (2026-09-11).** It was deferred here with
+a measurement — at 4% of the store, exhaustion is far from a player — and P8.2
+drove it anyway, because P8 asks what a player is TOLD rather than how full the
+disk is: `e2e/quota.spec.ts` fills a real Chromium origin to the last byte,
+climbs the ladder, and reads the sentence each rung says. The harness the two
+rows were promised to share turned out to be four lines of `page.evaluate`.
 
 **P7.7 is P1.9's, and it is here because this is the only item allowed to
 change what a save looks like** (2026-09-10). _(It was numbered P7.4 when it

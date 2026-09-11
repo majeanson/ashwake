@@ -4,8 +4,49 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-10 — the matrices answer to tests, and the sweep is
-a CI gate.**
+Last checkpoint: **2026-09-11 — the ten-item pass is finished except for a
+phone.**
+
+`PASS.md`’s ten items are done and verified. What is left of the file is four
+rows that need a DEVICE (P6.5 the safe areas and the dynamic viewport, P6.6 the
+audio unlock, P6.7 the iOS install offer, P6.8 a board that never draws on
+WebKit until it is touched) and two that need Marc (P7.7’s six unprinted
+facts, P8.1’s slow-line reload policy). `LOG.md` Sessions 79–91.
+
+**Verified at this checkpoint:**
+
+- **`pnpm sweep`, `pnpm budget` and the golden sim are CI gates**; the screen
+  audit and `pnpm audit:perf` are reports somebody reads, each with a
+  staleness header so a partial run cannot pass itself off as the record.
+- **1270 unit tests / 99 files**, `pnpm sim` byte-identical to Ashwake 1’s,
+  and **e2e 134 chromium / 122 webkit** — WebKit runs every spec now, with
+  twelve skips that each carry the measurement that earned them.
+- **Offline is exercised and was broken**: `caches.match` honoured `Vary`, so
+  a second visit fetched nothing and the floor guard blamed the browser. Fixed
+  (P8.5), with four tests.
+- **The security header is generated**: `script-src` and `style-src` carry
+  build-time hashes and no `'unsafe-inline'`; an injected inline script is
+  refused in a real browser (P8.4).
+- **A lost WebGL context becomes a sentence** instead of a black rectangle
+  under a live HUD (P8.3), and the floor guard can tell a script that never
+  ARRIVED from an engine that cannot parse one.
+- **A full device says what it shed and keeps playing** (P8.2), measured
+  against a real quota filled to the last byte.
+- **The board costs 28×–138× more idle than still** (P5.4, `perf/report.md`)
+  and B4.16’s MSAA default is the right way round (P5.3).
+- **A whole run can be started, played, finished and restarted on keys alone**,
+  with no pointer event dispatched at all, on both engines (P4.3) — and the
+  audit grades what every screen SAYS, an axis pinned by planted defects
+  (P4.1).
+
+**Still never done on either body:** the stranger test (`PLAYTEST.md` Session
+C), and Session A on Marc’s phone — which the four device rows above are now
+waiting on.
+
+---
+
+Previous checkpoint: **2026-09-10 — the matrices answer to tests, and the
+sweep is a CI gate.**
 
 `PASS.md` P10 is DONE, and with it P1's last promise. `LOG.md` Session 79.
 **330 findings → 0, 91 rulings, nothing orphaned.**

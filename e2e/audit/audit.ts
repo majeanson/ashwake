@@ -363,5 +363,148 @@ export const AUDIT_IN_PAGE = (): Finding[] => {
     }
   }
 
+  /*
+   * 5. THE SPOKEN SCREEN (`PASS.md` P4.1, 2026-09-11).
+   *
+   * The three axes above are about a screen somebody LOOKS at. This one is
+   * about the same screen read out loud, and it is the fourth axis because
+   * `INTERACTIONS.md`'s closing lesson applies to every control on it: **a
+   * role is a promise about behaviour, and declaring one without keeping it is
+   * worse than declaring neither.** A button with no name is announced as
+   * "button", which is the interface equivalent of an unlabelled switch.
+   *
+   * Computed in the page rather than through `page.accessibility.snapshot()`,
+   * which the row suggested. Two reasons, and the second is the one that
+   * decided it: the snapshot is a per-engine tree whose shape differs between
+   * Chromium and WebKit, so a finding would mean something different in each —
+   * and this instrument's whole discipline is *a number with a published bar
+   * beside it*. The name is computed the way a reader builds one, from the
+   * attributes the page actually sets, and the bar is whether it exists.
+   *
+   * It rides the passes this audit already makes, which is what P4.6 asked
+   * for: every screen at 390 in both directions, every screen again in
+   * fr-CA, and the crowded ones at 320. An accessible name is a STRING from
+   * `text/`, so the French pass is where a name that only fits in English
+   * shows up.
+   */
+  const NAMEABLE = 'button, a[href], input, select, textarea, [role="button"], [tabindex]';
+  for (const el of Array.from(document.querySelectorAll(NAMEABLE))) {
+    if (!shown(el)) continue;
+
+    /*
+     * The name a reader would build, in the order a reader builds it. Not the
+     * full accname algorithm — no `aria-labelledby` chains through hidden
+     * subtrees, no CSS content — but every source this app actually uses.
+     */
+    const labelled = el.getAttribute('aria-labelledby');
+    const pointedAt =
+      labelled === null
+        ? ''
+        : labelled
+            .split(/\s+/)
+            .map((id) => document.getElementById(id)?.textContent ?? '')
+            .join(' ');
+    /*
+     * **A NAME IS BUILT FROM THE CHILDREN, NOT FROM `textContent`** — and the
+     * first version of this axis got that wrong, which is the whole reason this
+     * comment is long. It read `textContent` and reported 164 findings against
+     * `button.stat`, every one of them false: the stat buttons are an
+     * `<img alt="TILES">` beside the number, a reader announces them as
+     * "TILES 22", and `board.spec.ts` has asserted exactly that with
+     * `toHaveAccessibleName(/tiles/i)` since the row was written.
+     *
+     * An image contributes its `alt` to the name of the control that contains
+     * it; `textContent` drops it silently. A tool that reports a hundred and
+     * sixty-four false findings is worse than no tool, because the next person
+     * to run it will not read the two that are real.
+     */
+    const contribution = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+      if (!(node instanceof Element)) return '';
+      const own = node.getAttribute('aria-label');
+      if (own !== null && own.trim() !== '') return own;
+      if (node.tagName === 'IMG') return node.getAttribute('alt') ?? '';
+      if (node.tagName === 'svg') return node.querySelector('title')?.textContent ?? '';
+      return Array.from(node.childNodes).map(contribution).join(' ');
+    };
+    const fromChildren = Array.from(el.childNodes).map(contribution).join(' ').trim();
+    /*
+     * AND A FORM CONTROL IS NAMED BY ITS LABEL, which was the second false
+     * positive this axis produced and the second one worth writing down. It
+     * reported the restore box on the DEVICE screen as unnamed three times;
+     * the box sits inside `<label className="paste">` with the word RESTORE in
+     * it, which is how every browser names it and how a reader hears it.
+     *
+     * Both sources: an ancestor `<label>`, and a `<label for="…">` pointing
+     * at this control's id.
+     */
+    const labelText = ((): string => {
+      const wrapping = el.closest('label');
+      if (wrapping !== null) return wrapping.textContent ?? '';
+      if (el.id === '') return '';
+      return document.querySelector(`label[for="${el.id}"]`)?.textContent ?? '';
+    })();
+    const name = (
+      el.getAttribute('aria-label') ??
+      (pointedAt.trim() !== ''
+        ? pointedAt
+        : fromChildren !== ''
+          ? fromChildren
+          : labelText.trim() !== ''
+            ? labelText
+            : (el.getAttribute('title') ?? ''))
+    ).trim();
+
+    if (name === '') {
+      findings.push({
+        kind: 'unnamed-control',
+        where: nameOf(el),
+        text: '',
+        detail: 'announced as "button" and nothing else',
+        value: 0,
+        bar: 1,
+      });
+      continue;
+    }
+
+    /*
+     * A NAME THAT IS ONLY A NUMBER tells a reader nothing they can act on.
+     * "22" is a fact about something; which something is on the screen, in
+     * an icon, where a reader cannot see it. The stat row passes because its
+     * buttons are named "TILES 22" — the icon's meaning is in the name.
+     *
+     * Punctuation and marks count as nothing: a control named "·" or "✕" is
+     * the same failure wearing a glyph.
+     */
+    if (!/\p{L}{2}/u.test(name)) {
+      findings.push({
+        kind: 'name-is-not-words',
+        where: nameOf(el),
+        text: name.slice(0, 60),
+        detail: `announced as "${name}", which names nothing`,
+        value: 0,
+        bar: 1,
+      });
+    }
+
+    /*
+     * AND A CONTROL A READER CAN REACH AND CANNOT HEAR. `aria-hidden` on an
+     * ancestor removes an element from the accessibility tree while leaving it
+     * in the tab order — so a keyboard user lands on something the reader
+     * announces as nothing at all. It is the one combination in this axis that
+     * is always a mistake rather than a judgement.
+     */
+    if (el.closest('[aria-hidden="true"]') !== null) {
+      findings.push({
+        kind: 'focusable-but-hidden',
+        where: nameOf(el),
+        text: name.slice(0, 60),
+        detail: 'inside aria-hidden, so it can be focused and not announced',
+        value: 0,
+        bar: 1,
+      });
+    }
+  }
+
   return findings;
 };

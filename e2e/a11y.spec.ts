@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { AUDIT_IN_PAGE } from './audit/audit';
 import { boardDrawn, watchErrors } from './helpers';
 
 /**
@@ -461,12 +462,22 @@ test('a harvest takes the reader to its receipt', async ({ page }) => {
    * of the two has to be true; which one is the app's business.
    */
   const spoken = (await voices(page)).flat().join(' | ');
+  /*
+   * `sentence`, not `text`, and the rename is the sweep's doing.
+   *
+   * `pnpm sweep`'s field pass matches by NAME, so this local object having a
+   * `text` field made `e2e/audit/audit.ts#Finding.text` look read — and the
+   * gate failed on the ruling that says the only reader of that field is its
+   * own test, because the ruling had stopped matching anything. The subject had
+   * not changed; an unrelated field of the same name in another file had
+   * silenced it. Worth a distinct name, and worth knowing about the tool.
+   */
   const receipt = await page.evaluate(() => {
     const active = document.activeElement as HTMLElement | null;
     const card = active?.closest('.card-scrim, .card') ?? null;
     return {
       moved: card !== null,
-      text: (card?.textContent ?? '').trim(),
+      sentence: (card?.textContent ?? '').trim(),
     };
   });
 
@@ -476,10 +487,57 @@ test('a harvest takes the reader to its receipt', async ({ page }) => {
   ).toBe(true);
   if (receipt.moved) {
     expect(
-      receipt.text.length,
+      receipt.sentence.length,
       'focus moved to a card with nothing in it, which is a reader taken somewhere silent',
     ).toBeGreaterThan(20);
   }
 
   expect(errors, errors.join('\n')).toEqual([]);
+});
+
+/**
+ * AND THE AXIS THAT GRADES ALL THIS CAN FAIL (`PASS.md` P4.1, 2026-09-11).
+ *
+ * `e2e/audit/audit.ts` gained a fourth axis — every control a reader can reach
+ * has a name made of words — and it now reports **nothing** across a hundred
+ * and twenty-six screen-visits in two languages at two widths. A grade that
+ * finds nothing is indistinguishable from a grade that cannot find anything,
+ * and this one has already been wrong twice in a single afternoon: it reported
+ * 164 false findings against the stat row (a name is built from an `<img alt>`
+ * child, which `textContent` drops) and three against the restore box (a form
+ * control is named by its wrapping `<label>`).
+ *
+ * So the axis is checked in both directions, the way `pnpm sweep` is: three
+ * defects are planted in a real screen and each must be named. **This is the
+ * only reason the zero above means anything.**
+ */
+test('the spoken-screen axis catches what it claims to', async ({ page }) => {
+  await page.goto('/?seed=7&taught=1');
+  await tabTo(page, /^BUTTON .*(BEGIN|RESUME|REPRENDRE|COMMENCER)/i);
+  await page.keyboard.press('Enter');
+  await boardDrawn(page);
+
+  await page.evaluate(() => {
+    const box = 'width:60px;height:60px;font-size:16px';
+    const holder = document.createElement('div');
+    // A button with nothing in it, one named only by a number, and one a
+    // keyboard can reach inside an `aria-hidden` subtree.
+    holder.innerHTML =
+      `<button id="plant-unnamed" style="${box}"></button>` +
+      `<button id="plant-number" style="${box}">42</button>` +
+      `<div aria-hidden="true"><button id="plant-hidden" style="${box}">SETTLE</button></div>`;
+    document.body.append(holder);
+  });
+
+  const planted = (await page.evaluate(AUDIT_IN_PAGE))
+    .filter((finding) => finding.where.includes('plant-'))
+    .map((finding) => `${finding.kind} ${finding.where}`);
+
+  expect(planted, 'an unnamed button went unreported').toContain('unnamed-control #plant-unnamed');
+  expect(planted, 'a button named "42" went unreported').toContain(
+    'name-is-not-words #plant-number',
+  );
+  expect(planted, 'a focusable control inside aria-hidden went unreported').toContain(
+    'focusable-but-hidden #plant-hidden',
+  );
 });

@@ -7429,3 +7429,66 @@ byte-identical; sweep 0 findings; budget green; e2e 133/133 chromium and
 **Next:** P4.1 and P4.6 are what is left of the file — the graded accessibility
 axis in the screen audit, both languages, at 320 and 390. Everything else in
 `PASS.md` is done or is a decision waiting in `NEXT.md` §1.
+
+### Session 91 — the fourth axis, and two false findings before one true one (2026-09-11)
+
+**Question (`PASS.md` P4.1/P4.6):** can the screen audit grade what a screen
+SAYS, not just how it looks — every screen, both languages, both widths?
+
+**Yes, and the instrument was wrong twice before it was right, which is the
+whole story of this session.** The audit grades a fourth axis now: every
+control a reader can reach has a name made of words. Three kinds —
+`unnamed-control`, `name-is-not-words`, `focusable-but-hidden` — riding the
+passes the audit already makes, which is what P4.6 asked for: 38 screens × 2
+directions at 390, the same 38 in fr-CA, and the crowded twelve at 320.
+
+**164 false findings, then 3, then 0.** The first run graded every button in
+the stat row as "announced as 22, which names nothing" — and a name is built
+from the CHILDREN, where an `<img alt="TILES">` contributes its alt and
+`textContent` silently drops it. `board.spec.ts` has asserted
+`toHaveAccessibleName(/tiles/i)` on that exact button since the row was
+written, so the tool disagreed with a passing test and the tool was wrong. The
+second run graded the restore box as unnamed three times; it sits inside a
+`<label>`, which is how every browser names a form control. **A tool that
+reports a hundred and sixty-four false findings is worse than no tool, because
+the next person to run it will not read the two that are real** — the same
+lesson `pnpm sweep`'s first report taught in Session 78, relearned in a
+different room.
+
+**And a grade of zero means nothing on its own**, so the axis is checked in
+both directions the way the sweep is: `e2e/a11y.spec.ts` plants an unnamed
+button, a button named "42", and a focusable control inside `aria-hidden` on a
+real screen, and each must be named. That test is the only reason the zero is
+worth printing.
+
+**Not `page.accessibility.snapshot()`, which the row proposed.** It is a
+per-engine tree whose shape differs between Chromium and WebKit, so one
+finding would mean two things — and this instrument's discipline is a number
+with a published bar beside it. The name is computed from the attributes the
+page sets.
+
+**P7.6 closed from the other end.** It was deferred with a measurement and P8.2
+drove it anyway, because P8 asks what a player is TOLD rather than how full the
+disk is. One row, two items, one test.
+
+**And the sweep gate caught one thing, which was mine.** The field pass matches
+by NAME, so a local `{ moved, text }` in the new keyboard test made
+`e2e/audit/audit.ts#Finding.text` look read and its ruling stopped matching
+anything — the gate refused to pass until it was resolved. The subject had not
+changed; an unrelated field of the same name in another file had silenced it.
+Renamed to `sentence`, with the reason at the line: **a name-based pass can be
+quietened by a name.**
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; e2e 134/134 chromium and
+122 passed / 12 skipped webkit (one chromium run also tripped the known
+suite-only flake at `board.spec.ts:167`, which passes alone and is in
+`NEXT.md` §1); `audit-shots/report.md` regenerated at 126 of
+126 visits (168 findings, none of them on the new axis); `perf/report.md`
+unchanged.
+
+**What is left of `PASS.md`:** four rows that need a PHONE (P6.5 safe areas and
+the dynamic viewport, P6.6 the audio unlock, P6.7 the iOS install offer, P6.8
+the WebKit blank board) and two that need Marc (P7.7's six unprinted facts,
+P8.1's slow-line reload policy). Everything else in the ten items is done and
+verified.

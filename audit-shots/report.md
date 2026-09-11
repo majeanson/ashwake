@@ -1,17 +1,19 @@
 # Screen audit
 
-164 findings across 126 of 126 screen-visits:
+168 findings across 126 of 126 screen-visits:
 38 screens × 2 directions at 390×844,
 the same 38 again in fr-CA, and 12 of them at 320×568.
 
 Bars: 4.5:1 for text, 3:1 for marks, 44px for a tap target,
-no horizontal page scroll, no clipped text.
+no horizontal page scroll, no clipped text, and — since 2026-09-11 — every
+control a reader can reach has a NAME made of words (`PASS.md` P4.1).
 
 This is a report, not a gate. A number here is a thing to look at in the
 shot beside it — `audit-shots/<pass>/<screen>.png`, where a pass is a
 direction, `fr-CA`, or `320`.
 
 - **tap-target-allowed** — 164
+- **contrast** — 4
 
 | screen | pass | direction | kind | where | text | measured | bar | detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -179,3 +181,7 @@ direction, `fr-CA`, or `320`.
 | teaching-placed | 320 | settlement | tap-target-allowed | `button.stat` | 0 | 33 | 44 | 72×33px, pseudo-target included |
 | teaching-placed | 320 | settlement | tap-target-allowed | `button.stat` | 0 | 33 | 44 | 72×33px, pseudo-target included |
 | teaching-placed | 320 | settlement | tap-target-allowed | `button.stat` | 1 | 33 | 44 | 72×33px, pseudo-target included |
+| settings | 390 | settlement | contrast | `a` | Fonts and icons: the notices | 2.01 | 4.5 | rgb(0, 0, 238) on rgb(20, 16, 12) at 14.96px |
+| device | 390 | settlement | contrast | `a` | Fonts and icons: the notices | 2.01 | 4.5 | rgb(0, 0, 238) on rgb(20, 16, 12) at 14.96px |
+| settings | fr-CA | settlement | contrast | `a` | Polices et icônes : les mentions | 2.01 | 4.5 | rgb(0, 0, 238) on rgb(20, 16, 12) at 14.96px |
+| device | fr-CA | settlement | contrast | `a` | Polices et icônes : les mentions | 2.01 | 4.5 | rgb(0, 0, 238) on rgb(20, 16, 12) at 14.96px |
