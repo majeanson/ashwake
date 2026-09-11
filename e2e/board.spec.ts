@@ -1361,9 +1361,19 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
   await page.locator('[data-panel="more"] [data-go="worlds"]').click();
   await page.locator('[data-slot="2"]').click();
   await page.waitForTimeout(1400);
-  expect(await middleIsFlat(), 'a new world opened on empty ground, not on its starting tile').toBe(
-    false,
-  );
+  /*
+   * POLLED, NOT SAMPLED (2026-09-11). Each of these was one screenshot taken
+   * the instant after a wait, and on CI's Linux WebKit the daily's read came
+   * back flat in two runs out of two — 30 ms after its card was dismissed,
+   * which is the repaint P6.8 says that engine needs before a capture shows
+   * the board at all. It never failed here, on either engine. The claim is
+   * that the board IS centred, not that it is centred within a stopwatch, so
+   * the check waits for the picture the way `placeOneTile` does — and a board
+   * that is genuinely off-centre still fails, five seconds later.
+   */
+  await expect
+    .poll(middleIsFlat, { message: 'a new world opened on empty ground, not on its starting tile' })
+    .toBe(false);
 
   // TODAY’S DAILY, which is a different plane again.
   await page.mouse.move(320, 200);
@@ -1375,9 +1385,9 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
   await page.locator('[data-panel="more"] [data-go="daily"]').click();
   await page.waitForTimeout(1400);
   await clearCards(page);
-  expect(await middleIsFlat(), 'the daily opened on empty ground, not on its starting tile').toBe(
-    false,
-  );
+  await expect
+    .poll(middleIsFlat, { message: 'the daily opened on empty ground, not on its starting tile' })
+    .toBe(false);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

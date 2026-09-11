@@ -7691,3 +7691,17 @@ path never failed. The diagnostic stays in the test: on the next failure it
 prints every non-fill storage key with its size, the last-error record and
 the toast's live text, which is the evidence two failures did not leave.
 `NEXT.md` §2 carries it.
+
+**And CI had not seen the last twenty-four commits at all.** Main was pushed
+for the first time since 1ac7a57 today, so every run since Session 79's tail
+met CI's Linux WebKit in one go — and one test met it badly. `board.spec.ts`'s
+_a run opens centred on the tile it starts from_ took ONE screenshot of the
+board's middle the instant after the daily's card was dismissed, and on that
+engine it came back flat in two runs out of two, both retries, while it never
+failed here on either engine. The claim is that the board is centred, not that
+it is centred within a stopwatch; both checks poll for the picture now, the
+way `placeOneTile` does, and a genuinely off-centre board still fails five
+seconds later. Two other tests were flaky on the runner and passed on retry —
+MY VIEW's angle on Chromium, and a `?daily=` link on WebKit that logged a
+troika text-worker error (_init did not return a callable function_) on its
+first attempt only. Noted, not chased: neither reproduces here.
