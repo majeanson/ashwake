@@ -8,6 +8,7 @@ import { cellTint, previewTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
 import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
+import { useResting } from './resting';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { setMarkAnisotropy } from './marks';
@@ -72,6 +73,9 @@ type HexFieldProps = {
   readonly yaw: number;
   /** Still light, no pulse, no drift. */
   readonly reducedMotion: boolean;
+  /** How long the board goes untouched before it stops breathing;
+   *  0 never rests, which is every build before 2026-09-11. */
+  readonly restMs: number;
   /** The direction's own art, where any has loaded. */
   readonly assets: AssetBook;
   /** The shared texture cache, so the pop layer bakes nothing twice. */
@@ -93,6 +97,7 @@ export function HexField({
   materials,
   yaw,
   reducedMotion,
+  restMs,
   assets,
   textures,
   cursor,
@@ -271,13 +276,21 @@ export function HexField({
    * Writing GPU buffers outside the render loop is what the layout effect above
    * already does; `invalidate()` is what schedules the frame that shows them.
    */
+  /*
+   * AND IT RESTS WHEN NOBODY IS PLAYING (2026-09-11, Marc's ruling on P5.4's
+   * measurement: *sleep after a pause*).
+   *
+   * `resting` is what turns the timer off after fifteen untouched seconds and
+   * back on at the first touch — the whole idle cost of this board, which
+   * `perf/report.md` measured at 28× to 138× a still one. The last paint
+   * before it sleeps is `STILL_BREATH`, the same value reduced motion uses,
+   * so the board comes to rest at the brightness it is MEANT to rest at
+   * rather than freezing wherever the wave happened to be.
+   */
+  const resting = useResting(restMs);
   useEffect(() => {
     if (reducedMotion || beaconTints.size === 0) return;
-    const paint = (): void => {
-      // ONE `breath` for the whole tick. It was computed per BATCH, which is
-      // the same number two or three times and a wave that could disagree with
-      // itself across two meshes drawn in one frame.
-      const lit = breath(performance.now());
+    const settle = (lit: number): void => {
       for (const [key, rgb] of beaconTints) {
         const mesh = meshes.current.get(key);
         if (mesh === undefined) continue;
@@ -289,9 +302,19 @@ export function HexField({
       }
       invalidate();
     };
+    if (resting) {
+      settle(STILL_BREATH);
+      return;
+    }
+    const paint = (): void => {
+      // ONE `breath` for the whole tick. It was computed per BATCH, which is
+      // the same number two or three times and a wave that could disagree with
+      // itself across two meshes drawn in one frame.
+      settle(breath(performance.now()));
+    };
     const timer = setInterval(paint, BREATH_STEP_MS);
     return () => clearInterval(timer);
-  }, [beaconTints, reducedMotion, invalidate]);
+  }, [beaconTints, reducedMotion, resting, invalidate]);
 
   /**
    * What the finger meant, out of everything the ray went through.

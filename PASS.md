@@ -35,10 +35,12 @@ the six is code anybody can write from this desk:
 reasoning. The instruction at the top of this file still holds: when the last
 six close, fold the lessons into `LOG.md` and `STATUS.md` and delete the rest.
 
-**Three measured trades also came out of the pass and are waiting in
-`NEXT.md` §1** rather than here, because each is a look or a payload
-question rather than a row: the idle board’s cost (28×–138× the still one),
-the offline art a light-preferring phone does not get (301 KB), and where a
+**Three measured trades also came out of the pass and went to `NEXT.md` §1**
+rather than here, because each is a look or a payload question rather than a
+row. One is ruled and built: the idle board’s cost (28×–138× the still one) —
+Marc chose _sleep after a pause_ on 2026-09-11, `board/resting.ts` carries it,
+and what is left of it is a glance on a phone. Two are still waiting: the
+offline art a light-preferring phone does not get (301 KB), and where a
 storage message that arrives before the game is on screen belongs.
 
 ## Scale, stated plainly
@@ -736,15 +738,15 @@ happens when a number is guessed at from a session with no phone in it.
 The instrument is the screen audit's sibling, and it follows B8.6's ruling
 exactly: **a report somebody reads, not a gate.**
 
-| id   | status | statement                                                                                | where                     |
-| ---- | ------ | ---------------------------------------------------------------------------------------- | ------------------------- |
-| P5.1 | done   | the trace — CDP metrics over `?place=12`’s fixed opening, seven phases a cell            | `e2e/audit/perf.audit.ts` |
-| P5.2 | done   | the axes — 1× / 4× / 6× CPU, at ratio 2 and 3, in the shipping direction                 | `e2e/audit/perf.audit.ts` |
-| P5.3 | done   | **graded: the MSAA default is the right way round**, and `?aa=` is how it was measurable | `Board.tsx`               |
-| P5.4 | done   | **the ambient board costs 28×–138× the still one** — a look decision, in `NEXT.md` §1    | `perf/report.md`          |
-| P5.5 | done   | the first frame after BEGIN, at every throttle                                           | `perf/report.md`          |
-| P5.6 | done   | `perf/report.md`, with the staleness header and a blank-page control                     | `perf/report.md`          |
-| P5.7 | done   | what it named: the idle cost, and B4.16’s two guesses separated                          | `LOG.md` Session 89       |
+| id   | status | statement                                                                                                                     | where                     |
+| ---- | ------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| P5.1 | done   | the trace — CDP metrics over `?place=12`’s fixed opening, seven phases a cell                                                 | `e2e/audit/perf.audit.ts` |
+| P5.2 | done   | the axes — 1× / 4× / 6× CPU, at ratio 2 and 3, in the shipping direction                                                      | `e2e/audit/perf.audit.ts` |
+| P5.3 | done   | **graded: the MSAA default is the right way round**, and `?aa=` is how it was measurable                                      | `Board.tsx`               |
+| P5.4 | done   | **the ambient board costs 28×–138× the still one** — ruled _sleep after a pause_ and built 2026-09-11; asleep it costs 0–3 ms | `board/resting.ts`        |
+| P5.5 | done   | the first frame after BEGIN, at every throttle                                                                                | `perf/report.md`          |
+| P5.6 | done   | `perf/report.md`, with the staleness header and a blank-page control                                                          | `perf/report.md`          |
+| P5.7 | done   | what it named: the idle cost, and B4.16’s two guesses separated                                                               | `LOG.md` Session 89       |
 
 ### P5, done: the board never rests, and one of B4.16's two guesses was right (2026-09-10)
 
@@ -771,7 +773,10 @@ emulated: 44–207 ms. The ember pool and the beacon breath are not part of the
 idle cost, they ARE the idle cost, and they run for the whole run whether or
 not anything is happening. On a phone that is battery and heat, and heat is
 throttling. **It is also the board's life**, which makes the fix a look
-decision — `NEXT.md` §1, with the numbers and three options, unbuilt.
+decision — `NEXT.md` §1, with the numbers and three options. **Ruled
+2026-09-11: sleep after a pause.** Built as `board/resting.ts` and measured in
+the report's `rest` column, where a resting board costs 0–3 ms against the
+awake one's 2.6–4.3 s (`LOG.md` Session 93).
 
 **P5.3, graded.** Half of B4.16 was already answered by looking (`quality.ts`,
 2026-09-05: the pixel-ratio cap is gone because Marc picked the phone's own

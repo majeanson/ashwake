@@ -7549,3 +7549,67 @@ byte-identical; sweep 0 findings; budget green; e2e 134/134 chromium twice,
 **Next:** nothing in `PASS.md` or `ROADMAP.md` can move without Marc's phone —
 S6 is Session A, then the stranger. The queue in `NEXT.md` §1 is five decisions
 long and every one of them carries a measurement.
+
+### Session 93 — the board rests after a pause, and the crash skipped the lint (2026-09-11)
+
+**Question:** Marc ruled on P5.4 with the numbers in front of him — _sleep
+after a pause_. What does a resting board cost, and can the rest be turned off
+from a phone?
+
+**Answer: nothing the instrument can measure, and yes, with `?rest=0`.**
+`board/resting.ts` is the whole feature: a hook that answers `true` once
+nothing has happened for fifteen seconds and `false` the instant something
+does. `HexField` stops the breath timer while it rests and settles every beacon
+at `STILL_BREATH` — the brightness reduced motion rests at — rather than
+freezing wherever the wave happened to be, so the board comes to rest at the
+brightness it is MEANT to rest at.
+
+**What counts as playing is a short list on purpose:** a pointer going down, a
+key going down, a wheel turning, a finger landing, and the tab coming back into
+view. Pointer MOVEMENT is deliberately not on it — a cursor crossing a desktop
+board is not a player, and the device this game is for has no such event until
+a finger lands. A hidden tab rests at once without waiting out the pause, which
+is the clearest case there is. `resting.test.ts` pins each of the four events
+separately, because a list like that loses an entry in a refactor and the one
+that goes is always the one nobody tested.
+
+**The dial is in seconds in the URL and milliseconds in the board.** A player
+typing `?rest=` thinks in seconds; the shell multiplies. Zero is the off switch
+and it is DERIVED rather than stored, so turning it off mid-run wakes a board
+that had already rested instead of freezing it — a test checks that direction
+too.
+
+**The instrument had to be IN the state it measured, and the first version was
+not.** `perf.audit.ts` gained an eighth phase, _five seconds idle (resting)_,
+on a fresh page with `?rest=2` and no input afterwards. With the counters
+started immediately, the five seconds contained the two the board was still
+awake for — forty per cent of the row — and the answer came back three times
+too expensive. It waits out the dial now. And a zero in the denominator of the
+ratio column is not a missing row, it is the best result the table can report,
+so it prints as ∞ rather than as a dash that reads like an error.
+
+**The `rest` column in `perf/report.md`: 1382× to ∞.** A resting board costs
+0–3 ms of CPU in five seconds on every cell; the same board awake costs
+2.6–4.3 s. The blank-page control is 1–37 ms, so a sleeping board is
+indistinguishable from no board at all.
+
+**The session crashed after the perf run and before the ledgers, and the
+recovery is its own finding.** The working tree held everything; what the crash
+had skipped was LINT. Eight errors in the new test, all one shape:
+`act(() => vi.advanceTimersByTime(n))` returns the timers object, so
+TypeScript picks `act`'s promise overload and the call is a floating promise.
+Wrapped in blocks. And the interrupted e2e run had re-rendered `docs/shots`
+with a teaching card over some of the boards; put back, as commit 1ac7a57 did
+for the same reason — the suite re-renders them, and this change does not
+alter a picture taken two seconds after BEGIN.
+
+**Verified:** format, typecheck, lint clean; 1280 tests / 100 files; `pnpm sim`
+byte-identical; sweep 0 findings over 304 files; e2e 134/134 chromium, and
+webkit 122 passed / 12 skipped on the second run — the first had one failure,
+`board.spec.ts:706` reading a 2873-byte frame as the full board, which is
+P6.8's blank capture wearing a different test; alone it passed three of three.
+`docs/shots` re-rendered by both runs and put back both times.
+
+**Next:** Session A gains one glance — leave the board alone for twenty
+seconds, watch it settle, tap; `?rest=5` makes it quick to see. `NEXT.md` §1 is
+one decision shorter. Nothing else in `PASS.md` moves without the phone.

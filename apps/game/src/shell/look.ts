@@ -1,4 +1,5 @@
 import { AUTO_THEME_ID, pickForScheme, resolveTheme } from '@theme/index';
+import { REST_MS } from '../board/resting';
 import { rgba, type Theme, type ThemeId } from '@theme/tokens';
 
 /**
@@ -108,6 +109,20 @@ type Look = {
    * cannot carry it.
    */
   readonly playtest: boolean;
+  /**
+   * `?rest=` — SECONDS a board goes untouched before it stops breathing
+   * (2026-09-11, P5.4).
+   *
+   * A dial rather than a constant for the reason `CLAUDE.md` gives about every
+   * system: **`?rest=0` never rests**, which is exactly how every build before
+   * this one behaved, so the change can be undone from a phone without a
+   * rebuild. `?rest=2` is what `perf.audit.ts` uses to catch a sleeping board
+   * inside a five-second measurement.
+   *
+   * In seconds because a player typing it into a URL bar thinks in seconds;
+   * the board takes milliseconds, and the shell multiplies.
+   */
+  readonly rest: number;
 };
 
 /**
@@ -130,6 +145,7 @@ export function lookFrom(search: string): Look {
     vignette: dial(params, 'vignette', Number.NaN),
     ghost: dial(params, 'ghost', Number.NaN),
     playtest: dial(params, 'playtest', 0) > 0,
+    rest: dial(params, 'rest', REST_MS / 1000),
   };
 }
 

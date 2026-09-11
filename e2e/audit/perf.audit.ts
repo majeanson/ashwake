@@ -49,8 +49,9 @@ const THROTTLES = [1, 4, 6] as const;
 const RATIOS = [2, 3] as const;
 
 /** Phases per cell: boot, first board, the walk, the same walk with the MSAA
- *  default flipped, idle, idle without motion, and the blank-page control. */
-const PHASES = 7;
+ *  default flipped, idle, idle asleep, idle without motion, and the blank-page
+ *  control that makes the idle rows readable. */
+const PHASES = 8;
 
 /** How many placements the walk makes — enough to pay for several redraws. */
 const WALK_TILES = 5;
@@ -195,6 +196,34 @@ for (const ratio of RATIOS) {
         );
 
         /*
+         * AND THE SAME IDLE BOARD ASLEEP — what the rest actually buys.
+         *
+         * `?rest=2` is the dial (`board/resting.ts`), turned down so a board
+         * sleeps INSIDE a five-second phase; the shipped number is fifteen
+         * seconds, which no measurement this short could ever reach. A fresh
+         * page, because the dial is read at boot, and no input afterwards —
+         * a single tap would wake it and measure the wrong thing.
+         *
+         * Read against `five seconds idle` on the same row: that pair is the
+         * whole ruling, before and after.
+         */
+        await page.goto(`${BOARD}&rest=2`);
+        await begin(page);
+        await boardDrawn(page, 60_000);
+        await clearCards(page);
+        /*
+         * WAIT OUT THE DIAL BEFORE MEASURING, which the first version did not.
+         * With the counters started immediately, the five seconds contained the
+         * two the board was still awake for — about forty per cent of the row —
+         * and the answer came back three times too expensive. An instrument
+         * that measures a state has to be IN that state.
+         */
+        await page.waitForTimeout(2500);
+        await phase(cdp, 'five seconds idle (resting)', ratio, throttle, async () => {
+          await page.waitForTimeout(5000);
+        });
+
+        /*
          * THE SAME IDLE BOARD WITH THE MOTION TURNED OFF — P5.4's other half.
          *
          * The idle row above is the question; this is the arithmetic. `App`
@@ -259,9 +288,18 @@ test.afterAll(async () => {
     rows.find((r) => r.ratio === ratio && r.throttle === throttle && r.phase === phase)?.cpuMs ??
     null;
 
-  /** `a ÷ b`, to one decimal, or `—` if either row is missing. */
-  const times = (a: number | null, b: number | null): string =>
-    a === null || b === null || b === 0 ? '—' : `${(a / b).toFixed(1)}×`;
+  /**
+   * `a ÷ b`, to one decimal.
+   *
+   * A denominator of zero is not a missing row here, it is the BEST result
+   * this table can report — a resting board costs nothing measurable — so it
+   * prints as ∞ rather than as a dash that reads like an error.
+   */
+  const times = (a: number | null, b: number | null): string => {
+    if (a === null || b === null) return '—';
+    if (b === 0) return a === 0 ? '1.0×' : '∞';
+    return `${(a / b).toFixed(1)}×`;
+  };
 
   /*
    * The two comparisons this instrument exists to make, computed rather than
@@ -271,6 +309,7 @@ test.afterAll(async () => {
   const readings = RATIOS.flatMap((ratio) =>
     THROTTLES.map((throttle) => {
       const idle = cost(ratio, throttle, 'five seconds idle');
+      const asleep = cost(ratio, throttle, 'five seconds idle (resting)');
       const still = cost(ratio, throttle, 'five seconds idle (reduced motion)');
       const walk = cost(ratio, throttle, `${WALK_TILES} placements`);
       const flipped = cost(
@@ -279,7 +318,7 @@ test.afterAll(async () => {
         `${WALK_TILES} placements (MSAA ${ratio > 2 ? 'on' : 'off'})`,
       );
       return (
-        `| ${ratio} | ${throttle}× | ${times(idle, still)} | ` +
+        `| ${ratio} | ${throttle}× | ${times(idle, still)} | ${times(idle, asleep)} | ` +
         `${ratio > 2 ? times(flipped, walk) : times(walk, flipped)} |`
       );
     }),
@@ -317,12 +356,16 @@ test.afterAll(async () => {
     '',
     '**motion** is the idle board divided by the same board with reduced',
     'motion on — what the embers and the beacon breath cost while nobody is',
-    'touching anything. **msaa** is antialiasing on divided by off at that',
+    'touching anything. **rest** is that same idle board divided by one that',
+    'has gone to SLEEP: since 2026-09-11 the breath stops after fifteen',
+    'untouched seconds and wakes on the first touch (`board/resting.ts`), and',
+    'this row is measured with the `?rest=2` dial so a five-second phase can',
+    'contain it. **msaa** is antialiasing on divided by off at that',
     'ratio, which needs the `?aa=` override because one constant decides both',
     'defaults (`Board.tsx`).',
     '',
-    '| dpr | cpu | motion | msaa |',
-    '| --- | --- | ------ | ---- |',
+    '| dpr | cpu | motion | rest | msaa |',
+    '| --- | --- | ------ | ---- | ---- |',
     ...readings,
     '',
     '**MSAA here is drawn by a software rasterizer on the CPU**, so these',

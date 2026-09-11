@@ -1,7 +1,7 @@
 # Performance
 
-Written by `pnpm audit:perf`. 42 of 42 phases measured,
-2 pixel ratios × 3 CPU throttles × 7 phases,
+Written by `pnpm audit:perf`. 48 of 48 phases measured,
+2 pixel ratios × 3 CPU throttles × 8 phases,
 on one board (`?seed=7&place=12`) so every row is the same work.
 
 **Relative, not absolute.** A desktop runner draws through a software path
@@ -26,18 +26,22 @@ once with `?aa=` flipping the flag at context creation.
 
 **motion** is the idle board divided by the same board with reduced
 motion on — what the embers and the beacon breath cost while nobody is
-touching anything. **msaa** is antialiasing on divided by off at that
+touching anything. **rest** is that same idle board divided by one that
+has gone to SLEEP: since 2026-09-11 the breath stops after fifteen
+untouched seconds and wakes on the first touch (`board/resting.ts`), and
+this row is measured with the `?rest=2` dial so a five-second phase can
+contain it. **msaa** is antialiasing on divided by off at that
 ratio, which needs the `?aa=` override because one constant decides both
 defaults (`Board.tsx`).
 
-| dpr | cpu | motion | msaa |
-| --- | --- | ------ | ---- |
-| 2   | 1×  | 129.6× | 1.6× |
-| 2   | 4×  | 60.0×  | 1.4× |
-| 2   | 6×  | 102.1× | 1.1× |
-| 3   | 1×  | 72.0×  | 1.6× |
-| 3   | 4×  | 29.5×  | 1.2× |
-| 3   | 6×  | 48.9×  | 1.3× |
+| dpr | cpu | motion | rest    | msaa |
+| --- | --- | ------ | ------- | ---- |
+| 2   | 1×  | 146.3× | ∞       | 1.5× |
+| 2   | 4×  | 63.5×  | 4130.0× | 1.7× |
+| 2   | 6×  | 35.4×  | 3964.0× | 1.1× |
+| 3   | 1×  | 100.1× | ∞       | 1.8× |
+| 3   | 4×  | 39.7×  | 4288.0× | 1.2× |
+| 3   | 6×  | 31.9×  | 1382.0× | 1.4× |
 
 **MSAA here is drawn by a software rasterizer on the CPU**, so these
 multiples are an upper bound on what a phone GPU pays and must not be
@@ -48,45 +52,51 @@ leans, and by how much, on the same board.
 
 | dpr | cpu | phase                              | wall ms | cpu ms | script ms |
 | --- | --- | ---------------------------------- | ------- | ------ | --------- |
-| 2   | 1×  | boot to the door                   | 115     | 85     | 57        |
-| 2   | 1×  | BEGIN to a drawn board             | 923     | 546    | 171       |
-| 2   | 1×  | 5 placements                       | 5654    | 3689   | 491       |
-| 2   | 1×  | five seconds idle                  | 5012    | 2981   | 150       |
-| 2   | 1×  | 5 placements (MSAA off)            | 4876    | 2290   | 434       |
-| 2   | 1×  | five seconds idle (reduced motion) | 5010    | 23     | 2         |
-| 2   | 1×  | five seconds idle (blank page)     | 5010    | 1      | 0         |
-| 2   | 4×  | boot to the door                   | 421     | 407    | 269       |
-| 2   | 4×  | BEGIN to a drawn board             | 1678    | 1306   | 617       |
-| 2   | 4×  | 5 placements                       | 13818   | 12785  | 3244      |
-| 2   | 4×  | five seconds idle                  | 5042    | 4077   | 629       |
-| 2   | 4×  | 5 placements (MSAA off)            | 10448   | 8885   | 2873      |
-| 2   | 4×  | five seconds idle (reduced motion) | 5013    | 68     | 19        |
-| 2   | 4×  | five seconds idle (blank page)     | 5004    | 52     | 0         |
-| 2   | 6×  | boot to the door                   | 819     | 797    | 600       |
-| 2   | 6×  | BEGIN to a drawn board             | 1744    | 1625   | 754       |
-| 2   | 6×  | 5 placements                       | 18971   | 18123  | 5363      |
-| 2   | 6×  | five seconds idle                  | 5022    | 4391   | 818       |
-| 2   | 6×  | 5 placements (MSAA off)            | 17344   | 16343  | 5542      |
-| 2   | 6×  | five seconds idle (reduced motion) | 5011    | 43     | 17        |
-| 2   | 6×  | five seconds idle (blank page)     | 5007    | 54     | 0         |
-| 3   | 1×  | boot to the door                   | 112     | 85     | 52        |
-| 3   | 1×  | BEGIN to a drawn board             | 1156    | 764    | 173       |
-| 3   | 1×  | 5 placements                       | 7332    | 5915   | 551       |
-| 3   | 1×  | five seconds idle                  | 5026    | 3959   | 161       |
-| 3   | 1×  | 5 placements (MSAA on)             | 10425   | 9226   | 525       |
-| 3   | 1×  | five seconds idle (reduced motion) | 5014    | 55     | 2         |
-| 3   | 1×  | five seconds idle (blank page)     | 5012    | 7      | 0         |
-| 3   | 4×  | boot to the door                   | 409     | 395    | 277       |
-| 3   | 4×  | BEGIN to a drawn board             | 1664    | 1345   | 583       |
-| 3   | 4×  | 5 placements                       | 16883   | 16009  | 3125      |
-| 3   | 4×  | five seconds idle                  | 5033    | 4364   | 438       |
-| 3   | 4×  | 5 placements (MSAA on)             | 19612   | 18802  | 2746      |
-| 3   | 4×  | five seconds idle (reduced motion) | 5012    | 148    | 15        |
-| 3   | 4×  | five seconds idle (blank page)     | 5011    | 42     | 0         |
-| 3   | 6×  | boot to the door                   | 909     | 892    | 685       |
-| 3   | 6×  | BEGIN to a drawn board             | 1976    | 1836   | 763       |
-| 3   | 6×  | 5 placements                       | 23152   | 22436  | 4991      |
-| 3   | 6×  | five seconds idle                  | 5018    | 4495   | 593       |
-| 3   | 6×  | 5 placements (MSAA on)             | 29019   | 28349  | 4768      |
-| 3   | 6×  | five seconds idle (reduced motion) | 5006    | 92     | 23        |
-| 3   | 6×  | five seconds idle (blank page)     | 5006    | 77     | 0         |
+| 2   | 1×  | boot to the door                   | 106     | 77     | 52        |
+| 2   | 1×  | BEGIN to a drawn board             | 922     | 515    | 157       |
+| 2   | 1×  | 5 placements                       | 2873    | 1843   | 333       |
+| 2   | 1×  | five seconds idle                  | 5027    | 2633   | 128       |
+| 2   | 1×  | 5 placements (MSAA off)            | 2307    | 1262   | 319       |
+| 2   | 1×  | five seconds idle (resting)        | 5011    | 0      | 0         |
+| 2   | 1×  | five seconds idle (reduced motion) | 5010    | 18     | 2         |
+| 2   | 1×  | five seconds idle (blank page)     | 5016    | 13     | 0         |
+| 2   | 4×  | boot to the door                   | 455     | 441    | 306       |
+| 2   | 4×  | BEGIN to a drawn board             | 1578    | 1245   | 619       |
+| 2   | 4×  | 5 placements                       | 12562   | 11980  | 3252      |
+| 2   | 4×  | five seconds idle                  | 5004    | 4130   | 634       |
+| 2   | 4×  | 5 placements (MSAA off)            | 7827    | 7012   | 2488      |
+| 2   | 4×  | five seconds idle (resting)        | 5019    | 1      | 0         |
+| 2   | 4×  | five seconds idle (reduced motion) | 5014    | 65     | 12        |
+| 2   | 4×  | five seconds idle (blank page)     | 5004    | 2      | 0         |
+| 2   | 6×  | boot to the door                   | 1011    | 990    | 754       |
+| 2   | 6×  | BEGIN to a drawn board             | 2013    | 1829   | 916       |
+| 2   | 6×  | 5 placements                       | 17601   | 16997  | 5562      |
+| 2   | 6×  | five seconds idle                  | 5018    | 3964   | 823       |
+| 2   | 6×  | 5 placements (MSAA off)            | 15802   | 15300  | 5484      |
+| 2   | 6×  | five seconds idle (resting)        | 5011    | 1      | 0         |
+| 2   | 6×  | five seconds idle (reduced motion) | 5004    | 112    | 20        |
+| 2   | 6×  | five seconds idle (blank page)     | 5005    | 8      | 0         |
+| 3   | 1×  | boot to the door                   | 97      | 72     | 49        |
+| 3   | 1×  | BEGIN to a drawn board             | 1081    | 649    | 145       |
+| 3   | 1×  | 5 placements                       | 4251    | 3148   | 383       |
+| 3   | 1×  | five seconds idle                  | 5024    | 3605   | 135       |
+| 3   | 1×  | 5 placements (MSAA on)             | 6769    | 5778   | 404       |
+| 3   | 1×  | five seconds idle (resting)        | 5006    | 0      | 0         |
+| 3   | 1×  | five seconds idle (reduced motion) | 5005    | 36     | 2         |
+| 3   | 1×  | five seconds idle (blank page)     | 5006    | 1      | 0         |
+| 3   | 4×  | boot to the door                   | 469     | 454    | 321       |
+| 3   | 4×  | BEGIN to a drawn board             | 1745    | 1401   | 652       |
+| 3   | 4×  | 5 placements                       | 15403   | 14664  | 3083      |
+| 3   | 4×  | five seconds idle                  | 5012    | 4288   | 462       |
+| 3   | 4×  | 5 placements (MSAA on)             | 18699   | 17902  | 2944      |
+| 3   | 4×  | five seconds idle (resting)        | 5004    | 1      | 0         |
+| 3   | 4×  | five seconds idle (reduced motion) | 5005    | 108    | 13        |
+| 3   | 4×  | five seconds idle (blank page)     | 5006    | 6      | 0         |
+| 3   | 6×  | boot to the door                   | 1045    | 1024   | 788       |
+| 3   | 6×  | BEGIN to a drawn board             | 2367    | 2206   | 951       |
+| 3   | 6×  | 5 placements                       | 23592   | 22942  | 5616      |
+| 3   | 6×  | five seconds idle                  | 5006    | 4146   | 583       |
+| 3   | 6×  | 5 placements (MSAA on)             | 31781   | 31007  | 6008      |
+| 3   | 6×  | five seconds idle (resting)        | 5009    | 3      | 0         |
+| 3   | 6×  | five seconds idle (reduced motion) | 5016    | 130    | 20        |
+| 3   | 6×  | five seconds idle (blank page)     | 5016    | 37     | 0         |

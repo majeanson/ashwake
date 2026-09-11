@@ -287,37 +287,30 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
-**THE BOARD NEVER RESTS, AND THAT IS A LOOK DECISION (2026-09-10, `PASS.md`
-P5.4).** Measured, six ways, in `perf/report.md`: five seconds of a board
-nobody is touching costs **3.9–4.5 seconds of main-thread time**. The same five
-seconds with reduced motion on costs **44–207 ms** — between 28× and 138× less.
-A blank page, measured identically as the control, costs 1–59 ms.
+**THE BOARD RESTS AFTER A PAUSE — RULED, BUILT, MEASURED (2026-09-11,
+`PASS.md` P5.4).** The 2026-09-10 measurement (five idle seconds cost 3.9–4.5 s
+of main-thread time; the same five with reduced motion, 44–207 ms) was put to
+Marc with three options, and his ruling was the second: **sleep after a
+pause**. Not "leave it", because the case that costs real battery is a phone
+left sitting on the board for minutes; not "slow the cadence", because 15 Hz
+reads as a stutter rather than as calm.
 
-So the embers and the beacon breath are not part of what an idle board costs,
-they ARE it. On a phone that is battery, and it is heat, and heat is the
-throttle that makes everything else slower. It is also the board's life: a
-settlement that stops breathing while you think about your next tile is a
-different game, and that is why this is yours rather than mine.
+`board/resting.ts` is the whole of it: fifteen untouched seconds, then the
+breath stops at `STILL_BREATH` — the brightness reduced motion rests at, not
+wherever the wave happened to be — and the first pointer, key, wheel or touch
+wakes it. Pointer MOVEMENT deliberately does not count. `?rest=0` is every
+build before this one, so the change can be undone from a phone without a
+rebuild; `?rest=2` is how `perf.audit.ts` catches a sleeping board inside a
+five-second phase. `perf/report.md` has a `rest` column now: **a resting board
+costs 0–3 ms of CPU in five seconds where the awake one costs 2.6–4.3 s.**
 
-Three options, none built:
+**What is still yours, on the phone:** whether fifteen seconds is the right
+pause, and whether the moment the beacons stop breathing reads as calm or as a
+freeze while you are looking at your next tile. A glance, not a session: leave
+the board alone for twenty seconds, watch it settle, tap. `?rest=5` makes it
+quick to see and `?rest=0` puts the old board back.
 
-1. **Leave it.** The board is alive, and a phone playing a game is a phone
-   spending battery. The honest version of this is that nobody has complained,
-   and the measurement is from a software renderer where the same frames are
-   far dearer than on a phone's GPU.
-2. **Sleep after a pause.** Stop the ambient loop once nothing has been touched
-   for, say, fifteen seconds, and wake it on the next input. Costs a moment of
-   stillness while you think — which is exactly when you are looking at it.
-3. **Slow the cadence.** Breathe at 15 Hz instead of every frame. Cheapest in
-   argument, and it is the change most likely to be visible as a stutter
-   rather than as calm.
-
-My lean is **2**, with a long pause: the case it saves is the phone left on the
-board for minutes, which is the case that costs real battery, and the wake is
-instant. But every one of these is a change to how the game LOOKS while you
-think, so none of them ships on a measurement alone.
-
-**And a smaller one beside it:** at ratio 2, antialiasing costs 1.3× to 2.1×
+**The smaller one from the same table:** at ratio 2, antialiasing costs 1.3× to 2.1×
 the CPU of the same walk without it (`perf/report.md`, the `msaa` column). The
 default keeps it there and drops it above ratio 2 — which the same table says
 is the right way round at ratio 3. Whether a ratio-2 phone should keep paying

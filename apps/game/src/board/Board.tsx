@@ -51,6 +51,7 @@ import {
 import { cellAt, firstCursor, refreshed, stepCursor, type Cursor, type Direction } from './cursor';
 import { GL_PROPS, watchContext } from './gl';
 import { DEFAULT_RENDER_SCALE } from './quality';
+import { REST_MS } from './resting';
 import { useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
 import { Pop } from './Pop';
@@ -229,6 +230,13 @@ type BoardProps = {
    */
   readonly ghostStrength?: number;
   readonly reducedMotion?: boolean;
+  /**
+   * How long the board goes untouched before it stops breathing, in ms
+   * (2026-09-11, P5.4 — Marc's ruling on the measurement: *sleep after a
+   * pause*). `board/resting.ts` carries the argument and the numbers;
+   * `?rest=0` never rests, which is every build before this one.
+   */
+  readonly restMs?: number;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
   /** The board's accessible name, and the sentence that tells a screen reader
@@ -731,6 +739,7 @@ export function Board(props: BoardProps) {
             textures={textures}
             yaw={lean.yaw}
             reducedMotion={props.reducedMotion === true}
+            restMs={props.restMs ?? REST_MS}
             cursor={cursor?.key ?? null}
             onTap={props.onTap}
           />

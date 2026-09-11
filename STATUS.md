@@ -32,8 +32,11 @@ facts, P8.1’s slow-line reload policy). `LOG.md` Sessions 79–91.
   ARRIVED from an engine that cannot parse one.
 - **A full device says what it shed and keeps playing** (P8.2), measured
   against a real quota filled to the last byte.
-- **The board costs 28×–138× more idle than still** (P5.4, `perf/report.md`)
-  and B4.16’s MSAA default is the right way round (P5.3).
+- **The board costs 28×–138× more idle than still** (P5.4, `perf/report.md`),
+  **and since 2026-09-11 it rests after fifteen untouched seconds**
+  (`board/resting.ts`, Marc’s ruling; the report’s `rest` column measures the
+  sleeping board at 0–3 ms against 2.6–4.3 s awake, and `?rest=0` is the
+  board before). B4.16’s MSAA default is the right way round (P5.3).
 - **A whole run can be started, played, finished and restarted on keys alone**,
   with no pointer event dispatched at all, on both engines (P4.3) — and the
   audit grades what every screen SAYS, an axis pinned by planted defects

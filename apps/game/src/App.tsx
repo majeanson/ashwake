@@ -2935,6 +2935,7 @@ function Game() {
             renderScale={renderScale}
             {...(Number.isFinite(look.ghost) ? { ghostStrength: look.ghost } : {})}
             reducedMotion={reducedMotion}
+            restMs={look.rest * 1000}
             onTap={onTap}
             handle={board}
             label={s.ui.board.label}
