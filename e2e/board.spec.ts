@@ -1169,10 +1169,24 @@ test("a run is played on the device's own world, and NEW RUN stays in it", async
   expect(world, 'a fresh device minted no world at all').not.toBeNull();
   expect(world, 'every new player opened on the same board').not.toBe(1);
 
-  // One placement, because the keeper writes a run when the run moves.
+  /*
+   * One placement, because the keeper writes a run when the run moves — and
+   * POLLED, not read once (2026-09-11).
+   *
+   * The single read assumed the write happens inside the click. It does not
+   * have to: the keeper runs from an effect, so the write lands after React
+   * commits, and under load that is later than the next line of a test. It
+   * failed once in a repeat run, which is the second flake of the same family
+   * as `placeOneTile`'s own — **a test that reads a side effect immediately
+   * after the action that causes it is a test about scheduling.**
+   */
   await placeOneTile(page);
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('ashwake.run.1.v1')), {
+      message: 'the run was never saved',
+    })
+    .not.toBeNull();
   const run = await page.evaluate(() => localStorage.getItem('ashwake.run.1.v1'));
-  expect(run, 'the run was never saved').not.toBeNull();
   const played = JSON.parse(run!) as { rootSeed: number };
   expect(played.rootSeed, 'the run was played on some other planet').toBe(world);
 

@@ -262,22 +262,60 @@ export const tilesLeft = async (page: Page): Promise<number> =>
  * happened to have it.
  */
 export async function placeOneTile(page: Page): Promise<void> {
-  await page.waitForTimeout(600);
+  /*
+   * WAIT FOR THE PICTURE, NOT FOR 600 ms (2026-09-11).
+   *
+   * This slept and then clicked, and it is the suite's last flake:
+   * `board.spec.ts`'s leaned-and-turned placement failed roughly one full run
+   * in four with *"no legal hex found in the search rings"* — ninety-six taps
+   * that all missed. Reproduced deliberately with `--repeat-each=3`, which is
+   * what made it a bug rather than a rumour.
+   *
+   * A tap on this board is a RAYCAST, and an `InstancedMesh` has nothing to
+   * raycast against until its instance matrices are written — the same shape as
+   * the bounding-sphere bug `board.spec.ts` records two tests down. Under load
+   * (a hundred and thirty WebGL contexts in one process, or a repeat run) that
+   * write lands later than 600 ms, and every ray sails past a board that is
+   * genuinely there in the DOM and not yet in the scene.
+   *
+   * `boardDrawn` polls for a canvas that is a PICTURE, and on Chromium it is
+   * both stricter and faster than the sleep it replaces — 95 ms against 600.
+   *
+   * **But it may never come, and that must not fail a placement.** Waiting for
+   * it outright broke three WebKit tests with *"the board never drew a picture
+   * in 15000 ms"*, which is P6.8 arriving from a new direction: on that engine
+   * the scene is RAYCASTABLE while the capture is still blank, so a tap lands
+   * on a board no screenshot can see. That is worth knowing — it rules out a
+   * whole class of explanation for P6.8 — and it means this helper wants the
+   * picture as a HINT and never as a gate.
+   *
+   * So: wait up to three seconds for it, shrug if it does not come, and search
+   * twice. The second search is what actually retires the flake, because it
+   * costs nothing when the first one works and it is the only thing that can
+   * help when the board was simply not ready yet.
+   */
+  await boardDrawn(page, 3000).catch(() => undefined);
   const box = await page.locator('canvas').boundingBox();
   if (box === null) throw new Error('no canvas');
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
-  const before = await tilesLeft(page);
-  for (const radius of [40, 60, 80, 30, 100, 20, 120, 140]) {
-    for (let i = 0; i < 12; i++) {
-      const angle = (Math.PI / 6) * i;
-      await clearCards(page);
-      await page.mouse.click(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
-      if ((await tilesLeft(page)) < before) {
+
+  for (const attempt of [1, 2]) {
+    const before = await tilesLeft(page);
+    for (const radius of [40, 60, 80, 30, 100, 20, 120, 140]) {
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI / 6) * i;
         await clearCards(page);
-        return;
+        await page.mouse.click(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+        if ((await tilesLeft(page)) < before) {
+          await clearCards(page);
+          return;
+        }
       }
     }
+    // Ninety-six taps found nothing. Either the board is not ready or it is
+    // genuinely full — the second is a real failure and the first is a wait.
+    if (attempt === 1) await page.waitForTimeout(1000);
   }
-  throw new Error('placeOneTile: no legal hex found in the search rings');
+  throw new Error('placeOneTile: no legal hex found in the search rings, twice over');
 }

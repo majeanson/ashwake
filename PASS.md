@@ -19,6 +19,28 @@ because it is the most useful thing in this file.
 left behind — is **adopted here as P2** and struck there. Two lists of the same
 work is how one of them goes stale.
 
+## Where this stands (2026-09-11)
+
+**All ten items are worked and every row is `done` except six**, and none of
+the six is code anybody can write from this desk:
+
+- **Four need a PHONE**, and they are Session A’s: P6.5 the safe areas and the
+  dynamic viewport, P6.6 the audio unlock, P6.7 the iOS install offer, and
+  **P6.8 — a board that never draws on WebKit until it is touched**, which is
+  reproduced, not closed, and is the first line of `NEXT.md` §1.
+- **Two need Marc**: P7.7’s six facts a saved run keeps and no screen prints,
+  and P8.1’s slow-line reload policy (a third reload needs his word).
+
+`STATUS.md` carries the checkpoint; `LOG.md` Sessions 79–91 carry the
+reasoning. The instruction at the top of this file still holds: when the last
+six close, fold the lessons into `LOG.md` and `STATUS.md` and delete the rest.
+
+**Three measured trades also came out of the pass and are waiting in
+`NEXT.md` §1** rather than here, because each is a look or a payload
+question rather than a row: the idle board’s cost (28×–138× the still one),
+the offline art a light-preferring phone does not get (301 KB), and where a
+storage message that arrives before the game is on screen belongs.
+
 ## Scale, stated plainly
 
 Ten items at two to three days each is **twenty to thirty working days**. The
@@ -574,11 +596,19 @@ the only question left on it.
 
 ## P4 — the accessibility proof (RE-SCOPED: it is built, and unproven)
 
-I proposed building this. It is built — see the corrections section. What has
-never happened is anyone checking it, and `INTERACTIONS.md`'s own closing
-lesson is the reason that matters: **a role is a promise about behaviour, and
-declaring one without keeping it is worse than declaring neither.** The three
-things a screen reader was told _wrongly_ in Batch 3 were all of that shape.
+I proposed building this. It is built — see the corrections section — and as of
+2026-09-10 it is CHECKED, which is what this item was re-scoped to do.
+`INTERACTIONS.md`'s closing lesson is why it mattered: **a role is a promise
+about behaviour, and declaring one without keeping it is worse than declaring
+neither.** The three things a screen reader was told _wrongly_ in Batch 3 were
+all of that shape.
+
+The answer to the question below is **yes**: a run can be started, played,
+finished and restarted on keys alone, with no pointer event dispatched at all,
+on both engines. What the checking found was not a broken promise but two
+surprises — the board joins the tab order late, and a harvest is read by FOCUS
+rather than by the toast — plus an instrument of mine that was wrong 164 times
+before it was right.
 
 | id   | status | statement                                                                                   | where                |
 | ---- | ------ | ------------------------------------------------------------------------------------------- | -------------------- |
@@ -782,12 +812,17 @@ its measurement in `LOG.md`, and the palette and materials budgets stay green.
 
 ## P6 — the engine the phone actually runs
 
-`playwright.config.ts` runs WebKit over **six of fourteen specs**. The hard
-rule is that testing happens on a phone, in portrait — where the browser is
-Safari. Seven specs have never run on it: `board`, `cards`, `links`, `return`,
-`shots`, `steady`, `playtest`. (`csp` is chromium-only for a stated reason and
-stays that way: WebKit's own troika refusal is swallowed by the noise filter,
-so the exact console lines that test exists to catch would be invisible there.)
+**Written when `playwright.config.ts` ran WebKit over six of nineteen specs,
+and seven had never run on it at all** — `board`, `cards`, `links`, `return`,
+`shots`, `steady`, `playtest`. The hard rule is that testing happens on a
+phone, in portrait, where the browser is Safari.
+
+**As of 2026-09-10 WebKit runs every spec** (P6.1–P6.4 below), with twelve
+skips that each live in the spec that owns them and carry the measurement that
+earned them. What is left of this item is the four rows a DEVICE has to answer,
+because Playwright's WebKit draws through a software path that is not an
+iPhone's — so a green board spec here is a claim about this harness, and only a
+phone can say more.
 
 | id   | status | statement                                                                                                | where               |
 | ---- | ------ | -------------------------------------------------------------------------------------------------------- | ------------------- |

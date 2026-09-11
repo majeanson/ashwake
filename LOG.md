@@ -7492,3 +7492,60 @@ the dynamic viewport, P6.6 the audio unlock, P6.7 the iOS install offer, P6.8
 the WebKit blank board) and two that need Marc (P7.7's six unprinted facts,
 P8.1's slow-line reload policy). Everything else in the ten items is done and
 verified.
+
+### Session 92 — the last flake was a helper, and it made the suite faster (2026-09-11)
+
+**Question:** the pass is done except for a phone — what is the most useful
+thing left that does not need Marc?
+
+**Answer: the one red thing in the repository, and it took the ledgers with
+it.** `board.spec.ts:167` had failed in full-suite runs since 2026-09-10 and
+passed alone every time, which is the shape that invites a retry flag.
+`NEXT.md` §1 offered three options and Marc's standing instruction refused two
+of them (do not relax a threshold to pass; a retry hides the cause).
+
+**Reproduced on purpose**, which is what made it a bug rather than a rumour:
+`--repeat-each=3` over `board.spec.ts` fails on _"placeOneTile: no legal hex
+found in the search rings"_ — ninety-six taps, all missing.
+
+**The cause was the helper.** A tap on this board is a RAYCAST, and an
+`InstancedMesh` has nothing to raycast against until its instance matrices are
+written — the same shape as the bounding-sphere bug `board.spec.ts` records two
+tests below it. `placeOneTile` slept 600 ms and clicked; under a hundred and
+thirty WebGL contexts in one process that write lands later. It waits for the
+board to have drawn now, and searches twice before giving up.
+
+**The suite got FASTER**: `board.spec.ts` runs 2.7 minutes where it ran 3.2,
+because a drawn board answers the check in about 95 ms and the sleep always
+cost 600. A fixed wait is both slower and weaker than a fact.
+
+**A second flake of the same family came out with it.** One test read
+`localStorage` immediately after a placement and expected the keeper's write to
+be there; the keeper runs from an effect, so the write lands after React
+commits. It polls now. _A test that reads a side effect immediately after the
+action that causes it is a test about scheduling._
+
+**And the fix over-reached first, which handed P6.8 a fact.** Waiting outright
+for the picture broke three WebKit tests with _"the board never drew a picture
+in 15000 ms"_ — while those same tests place tiles perfectly well. **So on
+WebKit the scene is RAYCASTABLE while the capture is blank**: a tap lands on a
+board no screenshot can see. That rules out "the scene is empty" and "the
+camera is wrong" for the blank board, and it is why the helper now takes the
+picture as a hint and never as a gate.
+
+**Ledgers, because a stale open-list is worse than none.** P6's intro still
+said WebKit ran six of nineteen specs and seven had never run on it; P4's still
+said nobody had checked the accessibility work. Both were true when written and
+neither is now. `PASS.md` gained a dated "Where this stands" at the top — six
+rows left, four needing a phone and two needing Marc — so the next session does
+not have to reconstruct it, and `NEXT.md` §1's flake entry is answered rather
+than open.
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; e2e 134/134 chromium twice,
+122 passed / 12 skipped webkit twice, and the reproducer 108/108 at
+`--repeat-each=4`.
+
+**Next:** nothing in `PASS.md` or `ROADMAP.md` can move without Marc's phone —
+S6 is Session A, then the stranger. The queue in `NEXT.md` §1 is five decisions
+long and every one of them carries a measurement.

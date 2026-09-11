@@ -479,7 +479,12 @@ call sites and this test's last line is `expect(errors).toEqual([])`. The
 tolerance assertion simply fires first. And the shader idea is dead too: see
 below.
 
-**The decision is yours, and it is three ways:**
+**~~The decision is yours, and it is three ways~~ — ANSWERED 2026-09-11: both
+symptoms were real bugs and both are fixed. Nothing was retried, nothing was
+relaxed. The three readings are kept below because the reasoning that rejected
+options 1 and 2 is what made somebody look for the cause.**
+
+**The decision was, three ways:**
 
 1. **A retry on the chromium project.** Cheapest, and it stops a flake looking
    like a regression. It also hides the cause, and if the hypothesis above is
@@ -588,10 +593,45 @@ search rings`. That is the FIRST symptom this section recorded, back on
 - It has still never appeared on CI, which fits a Linux runner drawing through
   software WebGL.
 
-So the count now: **one of the two was a real bug and is fixed; one remains a
-genuine suite-only flake with no diagnosis.** The three options at the top of
-this entry still stand for that one — retry the project, measure, or chase it —
-and it is a smaller decision now that it is one test rather than a pattern.
+So the count now: **both were real, both are fixed, and no decision is left
+here (2026-09-11).** The second one is worth the paragraphs it cost, because
+it was never about that test:
+
+**Reproduced on purpose**, which is what made it a bug rather than a rumour:
+`playwright test --project=chromium e2e/board.spec.ts --repeat-each=3` fails
+on `placeOneTile: no legal hex found in the search rings`. Ninety-six taps,
+all missing.
+
+**The cause is the helper, not the board.** A tap is a RAYCAST, and an
+`InstancedMesh` has nothing to raycast against until its instance matrices
+are written — the same shape as the bounding-sphere bug `board.spec.ts`
+records two tests below it. `placeOneTile` slept 600 ms and then clicked, and
+under load (a hundred and thirty WebGL contexts in one process) that write
+lands later. It waits for the board to have DRAWN now, and searches twice
+before it gives up: the second search costs nothing when the first works and
+is the only thing that can help when the board was simply not ready.
+
+**The suite is faster for it.** `board.spec.ts` runs 2.7 minutes where it ran
+3.2, because a board that has already drawn answers the check in about 95 ms
+and the sleep it replaced always cost 600.
+
+**And a second flake of the same family came out with it**: one test read
+`localStorage` immediately after a placement and expected the keeper’s write
+to have happened. The keeper runs from an effect, so the write lands after
+React commits. It polls now. _A test that reads a side effect immediately
+after the action that causes it is a test about scheduling._
+
+**Held, four runs of the reproducer (108 tests) and two full suites per
+engine.**
+
+**AND IT HANDED P6.8 A FACT.** Waiting outright for the picture broke three
+WebKit tests with _"the board never drew a picture in 15000 ms"_ — while
+those same tests place tiles perfectly well. **So on WebKit the scene is
+RAYCASTABLE while the capture is still blank**: a tap lands on a board no
+screenshot can see. That rules out "the scene is empty" and "the camera is
+wrong" as explanations for the blank board, and it is why the helper takes
+the picture as a hint and never as a gate. Session A still decides whether a
+phone sees what the screenshot sees.
 
 **AND A THIRD SYMPTOM, ON WEBKIT THIS TIME (2026-09-10, P2.2's run).**
 `world.spec.ts:33` — "the world remembers the ground a run is walking, before
