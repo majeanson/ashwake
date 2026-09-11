@@ -449,7 +449,30 @@ test('the reward loop speaks: a pop pays out in words', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('lifting one finger of a pinch does not throw the board away', async ({ page }) => {
+/**
+ * TWO POINTERS ARE CHROMIUM-ONLY IN THIS HARNESS (P6.1, 2026-09-10).
+ *
+ * `page.mouse` expresses one pointer and `page.touchscreen` expresses one tap,
+ * so both of the tests below drive raw touch through a CDP session — and CDP
+ * is Chromium's protocol: on WebKit the call fails with *"CDP session is only
+ * available in Chromium"* before a finger ever lands.
+ *
+ * Skipped rather than deleted, and skipped with this sentence rather than with
+ * a `testMatch` line in the config, because the gap is worth reading where the
+ * gesture is: **the two-finger camera has never been exercised on the engine
+ * the phone runs**, and it is the gesture Marc reported a bug in from a phone
+ * (2026-08-29, "the map flies away"). Session A is what covers it until
+ * Playwright grows multi-touch for WebKit.
+ */
+const multiTouch = (browserName: string): void => {
+  test.skip(browserName !== 'chromium', 'raw touch events need CDP, which is Chromium-only');
+};
+
+test('lifting one finger of a pinch does not throw the board away', async ({
+  page,
+  browserName,
+}) => {
+  multiTouch(browserName);
   /*
    * Marc, on a phone, 2026-08-29: "when zooming in and out with pinch, the map
    * flies away at the end so we can't see anything anymore."
@@ -971,7 +994,11 @@ test('the stat row is one line on a phone, and never two', async ({ page }) => {
  * writing down, because reading it the other way silently leaves fingers on
  * the glass and every gesture after it lands on a hand with four.
  */
-test('two fingers lean and turn the board, and the cycle puts it back', async ({ page }) => {
+test('two fingers lean and turn the board, and the cycle puts it back', async ({
+  page,
+  browserName,
+}) => {
+  multiTouch(browserName);
   /**
    * The board's two-finger camera (2026-08-29, Marc: "anyway we could tilt,
    * drag cameras as we want? 3d style").

@@ -23,6 +23,10 @@ import { begin, clearCards, placeOneTile, tilesLeft } from './helpers';
  * 24 KB, and three worlds is 2.3% of the store) stands on its own reasoning and
  * this row did not need it.
  *
+ * **Both engines.** WebKit fills its quota, climbs the same ladder and says
+ * the same sentences (P6.1, 2026-09-10) — which is worth having, since the
+ * store this ladder protects is a phone's.
+ *
  * **`fr-CA`, deliberately.** Marc's phone is French, the catalogue is written
  * French-first, and the sentences are compared against `STRINGS_FR` itself
  * rather than retyped — so this is also the one test that proves a shed report
@@ -217,7 +221,28 @@ test('a device that was already full still opens the game', async ({ page }) => 
  * This test pins today's behaviour, including the silence, so the gap cannot
  * close or widen without somebody editing the sentence above.
  */
-test('a diary shed before the game is on screen goes unmentioned', async ({ page }) => {
+/**
+ * CHROMIUM-ONLY, AND WHAT WEBKIT DOES INSTEAD IS THE REASON (P6.1).
+ *
+ * Filled to the last byte the same way, WebKit's boot write SUCCEEDS: the run
+ * key already exists and rewriting a value of about its own size costs nothing
+ * there, so the ladder is never climbed and the diary this test seeds is still
+ * on the device afterwards. The three tests above pass on both engines; this
+ * one is about a write that WebKit does not make.
+ *
+ * Which is worth knowing rather than hiding: the gap it documents — a rung
+ * spent before the game is on screen says nothing — is reachable on Chromium's
+ * accounting and not on WebKit's, so whether a player meets it depends on
+ * their browser's idea of what a full disk is.
+ */
+test('a diary shed before the game is on screen goes unmentioned', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(
+    browserName !== 'chromium',
+    'WebKit rewrites the run key in place, so no rung is spent',
+  );
   await page.goto('/?seed=7&taught=1');
   await begin(page);
   await page.evaluate((key) => localStorage.setItem(key, 'x'.repeat(1024 * 1024)), TIMELINE_KEY);

@@ -287,6 +287,28 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**SESSION A, FIRST LINE: DOES THE BOARD DRAW BEFORE YOU TOUCH IT? (2026-09-10,
+`PASS.md` P6.8.)** On Playwright's WebKit there is a reproducible state where a
+run opens and the board is **blank until something touches it** — the ground
+colour, the HUD, the hand, POP, all correct, and no board. It needs the
+returning player's path (`taught=1`, so no teaching card to dismiss, because
+dismissing one repaints) and BEGIN pressed at one particular moment. Left alone
+it stays blank; a single tap fills it in.
+
+I could not decide from here whether it is Playwright's WebKit or Safari, and I
+will not guess: the scene, the camera, the instanced writes and the frame count
+are all identical to Chromium's, frames render after the board's one resize,
+and `preserveDrawingBuffer: true` still captures nothing — so it is not the
+screenshot lying. Two candidate fixes were written, measured and reverted
+because they fixed nothing.
+
+**What to do on the phone, before anything else in Session A:** open the game
+as a returning player (you have already seen the lessons), press BEGIN, and
+**look without touching**. If the board is there, this is the harness and the
+skip in `e2e/shots.spec.ts` is all it ever costs. If it is blank until your
+finger lands, it is the most important bug in the file and everything else
+waits.
+
 **A FULL DEVICE THROWS YOUR DIARY AWAY WITHOUT SAYING SO (2026-09-10,
 `PASS.md` P8.2).** The shed ladder does the right thing on a real full phone —
 measured in Chromium, not argued: it drops the diagnostic record, then the

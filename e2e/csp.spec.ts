@@ -42,6 +42,23 @@ import { begin, clearCards, placeOneTile, tilesLeft, watchErrors } from './helpe
 test.use({ viewport: { width: 390, height: 844 } });
 
 /**
+ * STILL CHROMIUM-ONLY, AND THE REASON SURVIVED THE RE-MEASURE (P6.1).
+ *
+ * When the WebKit matrix was widened (2026-09-10), this file's exclusion was
+ * re-examined with the rest. The argument holds: WebKit's troika refusal is
+ * real — the blob lines are still swallowed on a full run, counted — and this
+ * test's whole assertion is "no console errors", so on WebKit it would be
+ * grading a console the filter has already emptied. A test that cannot fail on
+ * an engine is worse than not running it there.
+ */
+test.beforeEach(({ browserName }) => {
+  test.skip(
+    browserName !== 'chromium',
+    'the noise filter would empty the console this test grades',
+  );
+});
+
+/**
  * The policy the edge will serve, read from the file the BUILD writes.
  *
  * `apps/game/dist/_headers`, not the source in `public/` — since P8.4 the

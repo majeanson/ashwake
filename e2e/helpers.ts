@@ -18,6 +18,21 @@ import type { Page } from '@playwright/test';
  * `playwright.config.ts`), and why swallowing these lines costs nothing: the
  * tests that would have cared are not here.
  *
+ * ## THAT LAST PARAGRAPH WAS WRONG, AND IT COST THE ITEM ITS SHAPE
+ * (2026-09-10, `PASS.md` P6.1)
+ *
+ * **The labels draw.** Photographed on both engines at the same seed, side by
+ * side: the numbers are on the tiles in WebKit exactly as they are in
+ * Chromium. The refusal above is still real — these lines are still swallowed,
+ * counted on a full run — but troika recovers from it, and "no labels" was an
+ * inference from a console line rather than a look at the screen. It kept
+ * seven specs off the engine the phone runs for two days.
+ *
+ * What the refusal actually costs is TIME: the first drawn frame after BEGIN
+ * is 95 ms on Chromium and 2,597 ms on WebKit, which is why `boardDrawn` polls
+ * for a picture instead of sleeping. Whether that gap is Playwright's software
+ * WebKit or Safari itself is Session A's to answer on a real phone.
+ *
  * **This list is deliberately WebKit-only, and "access control checks" is the
  * one entry broad enough to want its argument written down.** This game makes
  * no cross-origin request of any kind — it has no backend, its fonts are
@@ -74,6 +89,48 @@ export function assertLooksLikeAPicture(bytes: Buffer, label: string): void {
     throw new Error(`${label}: suspiciously small (${bytes.byteLength})`);
   if (seen.size <= 1000)
     throw new Error(`${label}: looks like a single flat colour (${seen.size})`);
+}
+
+/** Is this PNG a picture? The predicate `assertLooksLikeAPicture` throws on. */
+function looksLikeAPicture(bytes: Buffer): boolean {
+  if (bytes.byteLength <= 8000) return false;
+  const seen = new Set<string>();
+  for (let i = 0; i + 4 <= bytes.byteLength; i += 4) {
+    seen.add(bytes.subarray(i, i + 4).toString('hex'));
+  }
+  return seen.size > 1000;
+}
+
+/**
+ * WAIT UNTIL THE BOARD HAS ACTUALLY DRAWN, and say how long it took
+ * (`PASS.md` P6.1, 2026-09-10).
+ *
+ * Every spec that photographs the board used to sleep 800 ms and hope. On
+ * Chromium that is generous: the first drawn frame lands **95 ms** after
+ * BEGIN. On WebKit, measured the same way on the same machine, it is
+ * **2,597 ms** — so eighteen shots photographed an empty board and failed on
+ * "suspiciously small", which reads like a broken renderer and is a stopwatch.
+ *
+ * A fixed sleep is a claim about a machine, and this suite has two engines and
+ * runs on three kinds of hardware. So: poll for the picture, and let the
+ * timeout be the only number anybody has to argue about.
+ *
+ * The 27× gap is itself a finding rather than a harness detail to route
+ * around: `PASS.md` P6.1 and P5 both carry it, and Session A on a real phone
+ * is what settles whether it belongs to Playwright's software WebKit or to
+ * Safari.
+ */
+export async function boardDrawn(page: Page, timeoutMs = 15_000): Promise<number> {
+  const canvas = page.locator('canvas');
+  await canvas.waitFor({ state: 'attached' });
+  const began = Date.now();
+  for (;;) {
+    if (looksLikeAPicture(await canvas.screenshot())) return Date.now() - began;
+    if (Date.now() - began > timeoutMs) {
+      throw new Error(`the board never drew a picture in ${timeoutMs}ms`);
+    }
+    await page.waitForTimeout(100);
+  }
 }
 
 /**

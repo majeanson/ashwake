@@ -21,10 +21,13 @@ import { begin } from './helpers';
  *                                and both were written down as notes rather
  *                                than fixed. This is the fix.
  *
- * Chromium only, deliberately, and for `csp.spec.ts`'s reason: the first test
- * drives `WEBGL_lose_context`, and WebKit's own context behaviour under
- * Playwright is a thing this suite has never characterised — a flaky failure
- * test is worse than no failure test.
+ * **Both engines, because it was tried (P6.1, 2026-09-10).** This file was
+ * written chromium-only on the guess that WebKit's context behaviour under
+ * Playwright was uncharacterised. It is characterised now: both tests pass
+ * there — `WEBGL_lose_context` is honoured, the wait runs out, and the panel
+ * comes up with the same buttons. The guess would have kept the engine the
+ * phone runs out of the one file about what a player is shown when the board
+ * cannot draw.
  */
 
 test.use({ viewport: { width: 390, height: 844 } });

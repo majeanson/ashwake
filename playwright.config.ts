@@ -49,9 +49,9 @@ export default defineConfig({
    *     picture assertions in `board.spec.ts` and `links.spec.ts`).
    *     `troika-three-text` cannot load `/fonts/cinzel.ttf` in this build —
    *     "due to access control checks", on a SAME-ORIGIN request, which is the
-   *     tell that it is the harness rather than a rule — so board LABELS do
-   *     not draw and every screenshot comes back too plain to assert on. See
-   *     `e2e/helpers.ts`.
+   *     tell that it is the harness rather than a rule. The conclusion drawn
+   *     here — that board LABELS do not draw — was WRONG, and the correction
+   *     is the section below. See `e2e/helpers.ts`.
    *   - **3 were the two-finger gestures**, which Playwright synthesises
    *     differently per engine.
    *   - **1 was `grantPermissions(['clipboard-write'])`**, a fixture
@@ -88,6 +88,33 @@ export default defineConfig({
    * identical treatment: give the renderer room rather than teach the suite to
    * ignore a renderer error. Filtering the shader error was the other option
    * and it was refused outright: `watchErrors` exists to catch exactly that.
+   *
+   * ## THE SUBSET IS GONE: WEBKIT RUNS EVERYTHING (2026-09-10, `PASS.md` P6.1)
+   *
+   * The paragraph above was right that the failures were not bugs in the game
+   * and wrong about the biggest one. **The labels draw.** Photographed on both
+   * engines at the same seed, side by side, with the numbers on the tiles in
+   * each — so "every screenshot comes back too plain to assert on" was an
+   * inference from a console line that nobody had gone and looked at. The
+   * refusal is real and still swallowed; what it costs is TIME, and the shots
+   * were sleeping 800 ms for a first frame that takes 95 ms on Chromium and
+   * 2,597 ms on WebKit. `boardDrawn` waits for the picture now.
+   *
+   * Re-run with the subset removed: **103 of 126 passed**, and every failure
+   * was one of three named things, each now skipped where it lives with the
+   * measurement on it rather than filtered out of sight in this file —
+   * `board.spec.ts`'s two multi-touch tests (CDP is Chromium's protocol),
+   * `offline.spec.ts` (Playwright's WebKit answers an offline navigation with
+   * an internal error) and `csp.spec.ts` (its assertion is an empty console,
+   * which the noise filter would empty for it).
+   *
+   * **A skip in the spec is a fact; a `testMatch` in the config is a silence.**
+   * The old list could not say WHY `board.spec.ts` was missing, so for two days
+   * the answer was "the labels do not draw", and it was not true.
+   *
+   * The renderer caveat stands and is worth keeping: Playwright's WebKit draws
+   * through a software path that is not an iPhone's, so a green board spec here
+   * is a claim about this harness. Session A is what tests the renderer.
    */
   projects: [
     {
@@ -97,14 +124,6 @@ export default defineConfig({
     {
       name: 'webkit',
       use: { browserName: 'webkit' },
-      testMatch: [
-        'stacking.spec.ts',
-        'keyboard.spec.ts',
-        'menus.spec.ts',
-        'targets.spec.ts',
-        'type.spec.ts',
-        'world.spec.ts',
-      ],
     },
   ],
   /**

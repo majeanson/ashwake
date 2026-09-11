@@ -650,16 +650,74 @@ Safari. Seven specs have never run on it: `board`, `cards`, `links`, `return`,
 stays that way: WebKit's own troika refusal is swallowed by the noise filter,
 so the exact console lines that test exists to catch would be invisible there.)
 
-| id   | status | statement                                                                                                     | where               |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------- | ------------------- |
-| P6.1 | open   | **the blob-worker refusal, first** — WebKit refuses troika's glyph worker, so the board draws no labels there | `e2e/helpers.ts`    |
-| P6.2 | open   | `board.spec.ts` on WebKit, once P6.1 says what it may assert                                                  | `e2e/board.spec.ts` |
-| P6.3 | open   | `cards`, `links`, `return`, `steady`                                                                          | `e2e/`              |
-| P6.4 | open   | `shots` and `playtest`                                                                                        | `e2e/`              |
-| P6.5 | open   | the safe areas and the dynamic viewport — the URL bar that `steady.spec.ts` was written for                   | `ui.css`            |
-| P6.6 | open   | the audio unlock: `ui.sound`'s tap is the gesture, and WebKit's rules are its own                             | `shell/voice.ts:31` |
-| P6.7 | open   | install on iOS — there is no `beforeinstallprompt`, so `install.ts`'s offer must already know that            | `shell/install.ts`  |
-| P6.8 | open   | whatever the seven fail at                                                                                    | —                   |
+| id   | status | statement                                                                                                | where               |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------- | ------------------- |
+| P6.1 | done   | **the refusal is real and the labels draw anyway** — photographed; what it costs is 2.6 s of first frame | `e2e/helpers.ts`    |
+| P6.2 | done   | `board.spec.ts` on WebKit — all but the two CDP multi-touch tests, skipped where they live               | `e2e/board.spec.ts` |
+| P6.3 | done   | `cards`, `links`, `return`, `steady` — green on WebKit, untouched                                        | `e2e/`              |
+| P6.4 | done   | `shots` and `playtest` — green once the shots waited for the picture instead of 800 ms                   | `e2e/`              |
+| P6.5 | open   | the safe areas and the dynamic viewport — the URL bar that `steady.spec.ts` was written for              | `ui.css`            |
+| P6.6 | open   | the audio unlock: `ui.sound`'s tap is the gesture, and WebKit's rules are its own                        | `shell/voice.ts:31` |
+| P6.7 | open   | install on iOS — there is no `beforeinstallprompt`, so `install.ts`'s offer must already know that       | `shell/install.ts`  |
+| P6.8 | open   | **a board that never draws on WebKit until it is touched** — reproduced, not closed; Session A           | `NEXT.md` §1        |
+
+### P6.1–P6.4, done: WebKit runs everything, and the labels were never missing (2026-09-10)
+
+**The premise was wrong, and it had shaped the whole item.** `helpers.ts` and
+`playwright.config.ts` both said that WebKit's refusal of troika's blob worker
+means _"board LABELS do not draw"_, which is why seven specs were kept off the
+engine the phone runs. Photographed on both engines at the same seed, side by
+side: **the numbers are on the tiles in WebKit exactly as they are in
+Chromium.** The refusal is real and still swallowed — counted on a full run —
+but troika recovers from it, and the consequence was an inference from a
+console line that nobody had gone and looked at.
+
+What it actually costs is TIME. The first drawn frame after BEGIN is **95 ms on
+Chromium and 2,597 ms on WebKit** on this machine, and every board shot slept
+800 ms and then asserted on the result — so eighteen specs failed on
+"suspiciously small", which reads like a broken renderer and is a stopwatch.
+`boardDrawn` polls for the picture now; a fixed sleep is a claim about a
+machine, and this suite has two engines.
+
+**The matrix is gone: WebKit runs every spec.** 46 tests to 116, and the three
+exclusions live in the specs that know why rather than in a `testMatch` list —
+`board.spec.ts`'s two multi-touch tests (CDP is Chromium's protocol),
+`offline.spec.ts` (an offline navigation dies with _"WebKit encountered an
+internal error"_), `csp.spec.ts` (its assertion is an empty console, which the
+noise filter would empty for it). **A skip in the spec is a fact; a `testMatch`
+in the config is a silence** — the old list could not say why `board.spec.ts`
+was missing, so for two days the answer was a sentence that was not true.
+
+Two specs written chromium-only on a guess turned out to run fine on WebKit and
+now do: `failure.spec.ts` (`WEBGL_lose_context` is honoured, the panel comes up
+with the same buttons) and `quota.spec.ts` (the same ladder, the same
+sentences, on a phone-sized store).
+
+### P6.8, open and unfixed: a board that never draws on WebKit
+
+**The one thing the widened matrix found that is not a harness difference, and
+I could not close it.** `/?seed=7&taught=1`, press BEGIN at one particular
+moment — after the canvas has become visible behind the door — and the board is
+**blank for as long as it is left alone** (25 s in the harness), then appears
+the instant anything touches it. A first-time player never meets it: the
+teaching card they dismiss is itself a state change, and a state change
+repaints. It is the RETURNING player's path.
+
+Ruled out, so nobody repeats it: the scene is populated (two children, both
+visible), the camera is identical to Chromium's to the decimal, the instanced
+writes ran with their meshes registered, frames ARE rendered after the board's
+one resize (traced, 13 ms after it), a second `invalidate()` on the next
+animation frame changes nothing, retrying the instance write when a mesh
+arrives late changes nothing, and **`preserveDrawingBuffer: true` leaves the
+capture just as empty** — so it is not the screenshot lying, which was the
+comfortable answer.
+
+What is left is either a WebKit compositing behaviour after that resize under
+demand rendering, or a genuinely blank board on the engine the phone runs.
+**Only a phone tells those apart**, so it is a Session A line in `NEXT.md` §1
+and `e2e/shots.spec.ts`'s harvest shot is skipped on WebKit pointing here. Two
+speculative fixes were written, measured, and reverted rather than shipped —
+this repository's own rule about the grep finding gaps rather than answers.
 
 **P6.1 decides the size of this item.** If the blob refusal is a harness
 artifact only (it is documented as one), the board specs assert around labels

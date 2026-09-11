@@ -7274,3 +7274,60 @@ passed / 1 skipped webkit.
 **Next:** P8 is closed except for P8.1's slow-line reload policy, which is
 Marc's. The pass order says P6 — WebKit, the engine the phone runs — then P5
 (performance) and P4 (the accessibility proof).
+
+### Session 88 — the labels were drawing all along (2026-09-10)
+
+**Question (`PASS.md` P6.1):** which of the seven specs fail on the engine the
+phone actually runs, and is the label refusal a harness artifact or a bug with
+a phone in it?
+
+**Answer: none of them fail for the reason the repository believed, because the
+labels draw.** Two files said in prose that WebKit's refusal of troika's blob
+worker means board LABELS do not draw, and that sentence kept seven specs off
+WebKit for two days. I photographed the same seed on both engines and put the
+pictures side by side: the numbers are on the tiles in each. The refusal is
+real — the four noise lines are still swallowed, counted over a full run — and
+troika recovers from it. **An inference from a console line had been standing
+in for a look at the screen.**
+
+**What the refusal costs is time, and that is what broke the shots.** First
+drawn frame after BEGIN: 95 ms on Chromium, 2,597 ms on WebKit. Every board
+shot slept 800 ms and asserted; eighteen of them failed on "suspiciously
+small", which reads exactly like a broken renderer. `boardDrawn` waits for the
+picture now — a fixed sleep is a claim about a machine, and this suite has two
+engines and three kinds of hardware.
+
+**The subset is gone: WebKit runs every spec**, 46 tests to 116 with 12 skips.
+The skips live in the specs that own them, each with the measurement that
+earned it: CDP multi-touch (Chromium's protocol), offline navigation ("WebKit
+encountered an internal error"), the CSP test (its assertion is an empty
+console, which the noise filter would empty for it), one quota test (WebKit
+rewrites the run key in place, so the ladder is never climbed). **A skip in the
+spec is a fact; a `testMatch` in the config is a silence** — the old list could
+not say why `board.spec.ts` was absent, and so the answer became a sentence
+nobody had checked.
+
+**And one finding I could not close, which is why it is Marc's.** There is a
+reproducible state on WebKit where a run opens and the board is blank until
+something touches it — the returning player's path, no teaching card to
+dismiss, left alone for twenty-five seconds and still nothing, then a tap fills
+it in. I ruled out the scene (populated), the camera (identical to Chromium's
+to the decimal), the instance writes (ran, with their meshes), the frame loop
+(frames render after the board's one resize, traced 13 ms later), a second
+invalidate, a retry when a mesh arrives late, and `preserveDrawingBuffer`,
+which leaves the capture just as empty — so it is not the screenshot lying.
+**Two candidate fixes were written, measured, and reverted**, because a fix
+that changes nothing is a claim that something was understood.
+
+Whether it is Playwright's WebKit or Safari is a question only a phone
+answers, so it is the first line of Session A: open a run as a returning
+player, press BEGIN, and look without touching.
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; **e2e 128/128 chromium and
+116 passed / 12 skipped webkit** — the widest this suite has ever run.
+
+**Next:** P6.5–P6.7 (safe areas and the dynamic viewport, the audio unlock, the
+iOS install offer) are the rows a phone has to answer, and they queue behind
+Session A with P6.8. In the file, that leaves P5 (performance) and P4 (the
+accessibility proof).

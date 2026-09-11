@@ -22,12 +22,30 @@ import { begin, watchErrors } from './helpers';
  *                        bugs above were. The game must boot, walk through the
  *                        door and draw a board, out of the cache alone.
  *
- * **Chromium only**, for `csp.spec.ts`'s reason turned around: Playwright's
- * WebKit runs service workers in a way this suite has never exercised, and a
- * flaky offline test would teach exactly the wrong lesson about a feature that
- * is meant to be boring. The engine Marc plays on wants its own pass — that is
- * P6, and this file is on its list.
+ * **Chromium only**, and the skip below says what was measured on WebKit
+ * rather than what was predicted of it.
  */
+
+/**
+ * CHROMIUM-ONLY, AND MEASURED RATHER THAN ASSUMED (P6.1, 2026-09-10).
+ *
+ * The first version of this file guessed that Playwright's WebKit ran service
+ * workers "in a way this suite has never characterised". It was run: every
+ * offline navigation dies with **"WebKit encountered an internal error"**
+ * before the worker is consulted — the reload in the first two tests, and the
+ * deliberately-failing `goto` in the last, which is supposed to reject with a
+ * transport error and instead rejects with the harness falling over.
+ *
+ * So the skip stays, with the reason it earned. What is NOT covered by it:
+ * whether Safari on a phone serves this game from its cache. That is Session
+ * A's, and it is the only way to know.
+ */
+test.beforeEach(({ browserName }) => {
+  test.skip(
+    browserName !== 'chromium',
+    'Playwright WebKit answers an offline navigation with an internal error',
+  );
+});
 
 /**
  * DARK, BECAUSE THAT IS THE DIRECTION THE PRECACHE CARRIES.
