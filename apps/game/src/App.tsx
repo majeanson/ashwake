@@ -47,7 +47,9 @@ import { stringsFor } from '@text/index';
 import { parseThemeId } from '@theme/index';
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { tourMs } from './board/flight';
-import { ANTIALIAS, type BoardHandle } from './board/Board';
+import type { BoardHandle } from './board/Board';
+import { ANTIALIAS } from './board/antialias';
+import { preloadAssets } from './board/assets';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { MAX_RENDER_SCALE } from './board/quality';
@@ -768,6 +770,18 @@ function Game() {
   /* The vignette, or null where the direction authors none — `shell/look.ts`
      has the argument for it being a style rather than a stylesheet. */
   const vignette = useMemo(() => vignetteStyle(theme, look.vignette), [theme, look.vignette]);
+  /*
+   * And the direction's ART, the moment the direction is known (2026-09-11).
+   *
+   * `preloadBoard` above fetches the renderer while the door is being read;
+   * this fetches the PNGs the renderer will want beside it, rather than after
+   * it mounts — which was the second a board spent procedural before every
+   * material on it swapped at once. Same promise `useAssets` waits on, so it
+   * is a head start and never a second download. `?art=0` asks for nothing.
+   */
+  useEffect(() => {
+    if (look.art) void preloadAssets(theme.id);
+  }, [theme.id, look.art]);
 
   /*
    * THE STRANGER'S SHEET, and the door onto it (Stage 6, 2026-09-08).

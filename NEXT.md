@@ -285,6 +285,13 @@ already showed what burning a ledger entry on unshown words costs), so the
 card half runs and the manual grows again (`teaching.test.ts` pins both new
 rules). Speaking the toasts is §1's first entry.
 
+**A WEBKIT FLAKE WITH A DIAGNOSTIC WAITING (2026-09-11).** `quota.spec.ts:149`
+failed twice and passed twice in full runs after the art-arrival change
+(`LOG.md` Session 93), always as a toast that said nothing in five seconds
+after a placement that landed. The test's failure path now prints the storage
+keys, the last-error record and the toast's live text. If it fails again, read
+that line before anything else; if it never does in a week, delete this entry.
+
 ## 1. Needs Marc, and only Marc
 
 **THE BOARD RESTS AFTER A PAUSE — RULED, BUILT, MEASURED (2026-09-11,
@@ -307,7 +314,15 @@ costs 0–3 ms of CPU in five seconds where the awake one costs 2.6–4.3 s.**
 **What is still yours, on the phone:** whether fifteen seconds is the right
 pause, and whether the moment the beacons stop breathing reads as calm or as a
 freeze while you are looking at your next tile. A glance, not a session: leave
-the board alone for twenty seconds, watch it settle, tap. `?rest=5` makes it
+the board alone for twenty seconds, watch it settle, tap. **And one more glance
+beside it (2026-09-11, your _"full reload of the board when placing 1-2
+tiles"_):** that was the direction's art landing a second into the run and
+rebuilding every mesh; the art is fetched at boot now, the field waits up to
+1.5 s for it, and a late book swaps materials instead of meshes
+(`board/assets.ts`, `board/ground.ts`, `LOG.md` Session 93). On the phone the
+board should appear once, in the look it keeps. If you still see a flip, note
+whether it is a LOOK change alone or a hitch with it — the first means the line
+was slower than the cap, the second is a new bug. `?rest=5` makes it
 quick to see and `?rest=0` puts the old board back. **Since the same evening
 the undo is also a row in SETTINGS** — PLATEAU TOUJOURS ÉVEILLÉ, the
 `board.awake` flag, off by default so the shipped board rests — put there on

@@ -30,29 +30,101 @@ export type AssetBook = {
 };
 
 /** What a direction with no art loaded looks like — and the dial's zero. */
-const NO_ASSETS: AssetBook = { has: () => false, image: () => null };
+export const NO_ASSETS: AssetBook = { has: () => false, image: () => null };
 
 /**
- * Load a direction's art, once, after the first frame.
+ * HOW LONG THE BOARD WAITS FOR ITS ART BEFORE DRAWING WITHOUT IT
+ * (2026-09-11, Marc: "no way to not have the full reload of the board when
+ * placing 1-2 tiles?").
  *
- * Returns `NO_ASSETS` until something arrives, so the board draws its
- * procedural floor immediately and simply gets better. `enabled` is the
- * `?art=` dial: at zero not even the manifest is fetched, which is what keeps
- * the default session's payload to the bundle and the font.
+ * The board used to draw its procedural floor the instant it mounted and
+ * "simply get better" when the PNGs landed — and getting better meant every
+ * batch with an art slot changing key and rebuilding its mesh at once, a
+ * second or two into the run. Two things fix it. `ground.ts` keeps the mesh
+ * key stable so a late book swaps materials rather than meshes; and this
+ * number keeps the field OFF the screen for a moment so that, on any ordinary
+ * line, the board appears once, already in the look it will keep.
+ *
+ * Measured from the board's mount, which is behind the front door, and the
+ * book is asked for even earlier (`preloadAssets`, from the shell as soon as
+ * it knows the direction) — so the hold is spent while the door is being read
+ * and the only player who can see it is one who taps BEGIN inside a second.
+ * On a line slower than that the field draws procedural at the cap and the
+ * art arrives through the material swap, which is the quiet version of what
+ * every build before this one did loudly.
  */
-export function useAssets(themeId: ThemeId, enabled: boolean): AssetBook {
-  const [book, setBook] = useState<AssetBook>(NO_ASSETS);
+export const ART_HOLD_MS = 1500;
+
+/** One load per direction for the life of the page, whoever asks first. */
+const BOOKS = new Map<ThemeId, Promise<AssetBook>>();
+/** The loads that have finished, so a mount after the fact needs no render. */
+const READY = new Map<ThemeId, AssetBook>();
+
+/**
+ * Start loading a direction's art, without waiting for it.
+ *
+ * The same promise `useAssets` will wait on, so calling this from the shell
+ * at boot is a head start rather than a second download — the manifest and
+ * the PNGs fetch alongside the renderer's chunk instead of after it, which is
+ * most of the second the board used to spend procedural.
+ */
+export function preloadAssets(themeId: ThemeId): Promise<AssetBook> {
+  let pending = BOOKS.get(themeId);
+  if (pending === undefined) {
+    pending = loadBook(themeId).then((book) => {
+      READY.set(themeId, book);
+      return book;
+    });
+    BOOKS.set(themeId, pending);
+  }
+  return pending;
+}
+
+/**
+ * A direction's art, or `null` while it is still worth waiting for.
+ *
+ * Three answers, in order:
+ *   - `NO_ASSETS` when the `?art=` dial is at zero — not even the manifest is
+ *     fetched, which is what keeps the default session's payload to the
+ *     bundle and the font;
+ *   - the book, once it has loaded (at once, if `preloadAssets` finished
+ *     before this mounted);
+ *   - `null` until then, for at most `holdMs` — after which `NO_ASSETS`, so
+ *     the procedural floor draws and the book swaps in when it lands.
+ *
+ * A direction CHANGE mid-session never answers `null`: there is a board on
+ * screen, and a field that vanished for a second while a new direction's
+ * PNGs arrived would be worse than the procedural floor it draws instead.
+ */
+export function useAssets(
+  themeId: ThemeId,
+  enabled: boolean,
+  holdMs: number = ART_HOLD_MS,
+): AssetBook | null {
+  const [book, setBook] = useState<{ readonly theme: ThemeId; readonly book: AssetBook } | null>(
+    () => {
+      const ready = READY.get(themeId);
+      return ready === undefined ? null : { theme: themeId, book: ready };
+    },
+  );
+  const [waited, setWaited] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
     let alive = true;
-    void loadBook(themeId).then((loaded) => {
-      if (alive) setBook(loaded);
+    void preloadAssets(themeId).then((loaded) => {
+      if (alive) setBook({ theme: themeId, book: loaded });
     });
     return () => {
       alive = false;
     };
   }, [themeId, enabled]);
+
+  useEffect(() => {
+    if (!enabled || holdMs <= 0 || READY.has(themeId)) return;
+    const timer = setTimeout(() => setWaited(true), holdMs);
+    return () => clearTimeout(timer);
+  }, [themeId, enabled, holdMs]);
 
   /*
    * The dial's zero is DERIVED, not set (2026-09-02).
@@ -65,9 +137,11 @@ export function useAssets(themeId: ThemeId, enabled: boolean): AssetBook {
    * to make that object inline.
    *
    * "No art when the dial is at zero" is a fact about the arguments, and a
-   * fact about the arguments belongs in the return.
+   * fact about the arguments belongs in the return. So is the hold.
    */
-  return enabled ? book : NO_ASSETS;
+  if (!enabled) return NO_ASSETS;
+  if (book !== null) return book.theme === themeId ? book.book : NO_ASSETS;
+  return waited || holdMs <= 0 ? NO_ASSETS : null;
 }
 
 async function loadBook(themeId: ThemeId): Promise<AssetBook> {

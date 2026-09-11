@@ -1,6 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { markBoardAlive, showBoardLost } from '../shell/failure';
-import { readAntialias } from '../shell/storage';
 import { FLIGHT_MS, TOUR_WIDE_HOLD_MS } from './flight';
 import {
   useCallback,
@@ -50,10 +49,11 @@ import {
   type Lean,
 } from './camera';
 import { cellAt, firstCursor, refreshed, stepCursor, type Cursor, type Direction } from './cursor';
+import { ANTIALIAS } from './antialias';
 import { GL_PROPS, watchContext } from './gl';
 import { DEFAULT_RENDER_SCALE } from './quality';
 import { REST_MS } from './resting';
-import { useAssets } from './assets';
+import { NO_ASSETS, useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
 import { Pop } from './Pop';
 import { SurfaceTextures } from './surfaces';
@@ -302,55 +302,12 @@ const CURSOR_MARGIN = 72;
 const round2 = (deg: number): number => Math.round(deg * 2) / 2;
 
 /**
- * The antialiasing half of the pixel budget — see the `<Canvas>` below for the
- * argument. Read once: a phone's `devicePixelRatio` is fixed for the life of
- * the page, and this decides how the renderer is BUILT. Unlike the resolution
- * half (`props.renderScale`, `board/quality.ts`), this cannot become a player
- * dial — it is a WebGL context flag, fixed at creation, and the canvas may
- * never remount to pick up a new one.
+ * The antialiasing half of the pixel budget — decided in `board/antialias.ts`,
+ * before the first render and by nothing that needs the renderer, because the
+ * SETTINGS row reads the same answer from in front of the door. See the
+ * `<Canvas>` below for the argument; the resolution half is
+ * `props.renderScale` (`board/quality.ts`).
  */
-const DENSE = typeof devicePixelRatio === 'number' && devicePixelRatio > 2;
-
-/**
- * `?aa=1` / `?aa=0` — NOT a player dial, a MEASURING one (`PASS.md` P5.3).
- *
- * B4.16 shipped two low-end defaults together — cap the pixel ratio, drop MSAA
- * above ratio 2 — and `perf/report.md` can measure the first by changing the
- * ratio. It cannot measure the SECOND that way, because the ratio is what
- * decides it: every high-ratio row is also an MSAA-off row, so the table says
- * what the pair costs and nothing about either. One URL override separates
- * them, at one module-scope read, and it is the only way this question is
- * answerable without a second canvas — which `CLAUDE.md` forbids outright.
- *
- * It is deliberately not in `shell/look.ts` with the look dials: those reach
- * the board as props and this one cannot, because a context flag is fixed
- * before the first render. Nothing in the UI turns it, nothing stores it, and
- * a device that has never been sent an `?aa=` renders exactly as before.
- */
-const AA_OVERRIDE = ((): boolean | null => {
-  try {
-    const asked = new URLSearchParams(location.search).get('aa');
-    return asked === null || asked === '' ? null : asked !== '0';
-  } catch {
-    return null;
-  }
-})();
-
-/**
- * TEMPORARY (2026-09-11, Marc: "make the custom urls toggles in the settings
- * we can remove later"): the SETTINGS row sits between the URL and the
- * per-phone default, so `?aa=` still wins for a measurement and a device that
- * has never touched the row still renders exactly as before. Same module-scope
- * read, same reason — the flag is fixed before the first render. Exported for
- * the one row that must say what THIS canvas was built with (`App.tsx` hands
- * it to `Settings`); when the row goes, this goes back to being a local.
- */
-const STORED_AA = ((): boolean | null => {
-  const choice = readAntialias();
-  return choice === 'auto' ? null : choice === 'on';
-})();
-export const ANTIALIAS: boolean = AA_OVERRIDE ?? STORED_AA ?? !DENSE;
-
 const GL = { ...GL_PROPS, antialias: ANTIALIAS };
 
 export function Board(props: BoardProps) {
@@ -744,21 +701,31 @@ export function Board(props: BoardProps) {
             cursor={cursor?.key ?? null}
             onLeanBy={leanBy}
           />
-          <HexField
-            view={props.view}
-            ghostStrength={props.ghostStrength ?? theme.ghost.alpha}
-            theme={theme}
-            orientation={theme.orientation}
-            relief={lean.relief}
-            materials={materials}
-            assets={assets}
-            textures={textures}
-            yaw={lean.yaw}
-            reducedMotion={props.reducedMotion === true}
-            restMs={props.restMs ?? REST_MS}
-            cursor={cursor?.key ?? null}
-            onTap={props.onTap}
-          />
+          {/*
+            The field waits for its art, briefly (2026-09-11): `useAssets`
+            answers `null` for at most `ART_HOLD_MS` while the direction's PNGs
+            are on their way, and a field mounted without them would draw
+            procedural and then swap every material a second later. Nothing
+            else in the canvas waits — the rig, the light and the background
+            are the same with or without a PNG.
+          */}
+          {assets !== null && (
+            <HexField
+              view={props.view}
+              ghostStrength={props.ghostStrength ?? theme.ghost.alpha}
+              theme={theme}
+              orientation={theme.orientation}
+              relief={lean.relief}
+              materials={materials}
+              assets={assets}
+              textures={textures}
+              yaw={lean.yaw}
+              reducedMotion={props.reducedMotion === true}
+              restMs={props.restMs ?? REST_MS}
+              cursor={cursor?.key ?? null}
+              onTap={props.onTap}
+            />
+          )}
           {pop !== null && (
             <Pop
               cells={pop.cells}
@@ -768,7 +735,7 @@ export function Board(props: BoardProps) {
               layout={layout}
               relief={lean.relief}
               materials={materials}
-              assets={assets}
+              assets={assets ?? NO_ASSETS}
               textures={textures}
               reducedMotion={props.reducedMotion === true}
               onDone={donePopping}

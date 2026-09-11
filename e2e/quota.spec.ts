@@ -163,9 +163,33 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
   await recordWhatIsSaid(page);
 
   await placeOneTile(page);
-  await expect
-    .poll(() => said(page), { message: 'the diary was shed and the player was not told which' })
-    .toContain(STRINGS_FR.shed.timeline);
+  try {
+    await expect
+      .poll(() => said(page), { message: 'the diary was shed and the player was not told which' })
+      .toContain(STRINGS_FR.shed.timeline);
+  } catch (e) {
+    /*
+     * WHAT TWO FAILURES DID NOT LEAVE BEHIND (2026-09-11). This test failed in
+     * two full WebKit runs and passed in the next two, three of three alone,
+     * and with its file alone — always as a toast that said NOTHING in five
+     * seconds after a placement that landed. Nothing in `said` means nothing
+     * to read, so on the next failure this prints every non-fill storage key
+     * with its size, the last-error record (the ladder's first rung) and the
+     * toast's live text. `NEXT.md` §2 carries the entry; delete both when the
+     * flake has been explained or has not recurred in a week.
+     */
+    const diag = await page.evaluate(() => {
+      const out: Record<string, number | string | null> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i) ?? '';
+        if (!k.startsWith('fill.')) out[k] = localStorage.getItem(k)?.length ?? null;
+      }
+      out.__error = localStorage.getItem('ashwake.error.v1');
+      out.__toast = document.querySelector('.toast')?.textContent ?? null;
+      return out;
+    });
+    throw new Error(`DIAG ${JSON.stringify(diag)}\n${String(e)}`, { cause: e });
+  }
   expect(
     await page.evaluate((key) => localStorage.getItem(key), TIMELINE_KEY),
     'the diary was reported as shed and is still there',

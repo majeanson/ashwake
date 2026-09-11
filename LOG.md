@@ -7629,3 +7629,65 @@ pin was re-recorded for this, and the whole diff is the new flag's label and
 note in both languages — nothing already pinned moved. Verified again: format,
 typecheck, lint; 1280 tests / 100 files; sim byte-identical; sweep 0 findings;
 e2e 134/134 chromium and 122 passed / 12 skipped webkit, both on the first run.
+
+**Later still — "no way to not have the full reload of the board when placing
+1-2 tiles?"** It was the ART ARRIVING. The board drew its procedural floor the
+instant it mounted and the direction's PNGs loaded behind it; when the book
+landed, every batch with an art slot got a new key — the key WAS the paint's
+identity — so every one of its instanced meshes was torn down and rebuilt at
+once, every material built again and twenty textures baked in one go, a second
+or two into the run. On a phone that is the first or second placement. Not
+the service worker (it asks), not the camera (only DEFAULT re-frames).
+
+Two fixes, both built on Marc's choice of _both_:
+
+- **The mesh key ignores the art.** `GroundBatch` has two identities now:
+  `key`, which the mesh is a function of, and `paint`, which the material is.
+  `surfaceFor` reads `hasArt` in exactly one place — native ground — and that
+  answer is a function of the native colour alone, so a cell's artless surface
+  keys the mesh whether the PNG is here or not (asked once per native, not per
+  cell, because the stringify is the expensive part). `resources.ts` caches by
+  paint; a batch whose PNG has landed builds a new set and its mesh, same key,
+  still mounted, is handed the new material by the render. `ground.test.ts`
+  pins that the two partitions are identical and that only slotted batches
+  repaint.
+- **The field waits for its art, briefly.** `preloadAssets` fetches the
+  manifest and the PNGs from the shell the moment the direction is known,
+  beside the renderer's chunk rather than after it mounts; `useAssets` answers
+  `null` for at most `ART_HOLD_MS` (1.5 s from the board's mount, which is
+  behind the door) and the board gates the field on it — so on any ordinary
+  line the board appears once, already in its final look, and on a slow one it
+  draws procedural at the cap and the art arrives through the material swap.
+  A direction change never answers `null`: there is a board on screen.
+  `assets.test.ts` pins the three answers, their order, and that last promise.
+
+_A cache keyed on the thing it caches is right until the thing has a second
+reason to change._ The key was named "stable identity" in its own docblock,
+and it was stable against everything except the one event that happens on
+every first run.
+
+**And `pnpm budget` caught what the settings rows had done to the first
+paint.** `App` importing the `ANTIALIAS` VALUE from `Board.tsx` — one boolean,
+for one row — pulled three, fiber and troika into the entry chunk: 450.8 KB
+gzipped against a bar of 173.8, and it shipped in d763049 because CI never
+reached the budget step. Both of today's runs failed on the e2e step first,
+each on a different test that passes here three of three alone (`quota.spec`
+twice, the WebKit centring test once), so the deploy was skipped and the site
+still runs 1ac7a57. The decision moved to `board/antialias.ts`, which imports
+a storage read and nothing else; the first paint is 172.3 KB again. _The
+budget is a step in a job whose earlier steps are flaky, so a byte regression
+can hide behind a timing flake_ — worth its own job, or running before e2e.
+`docs/shots/s3-settings.png` is re-rendered on purpose this time: the screen
+it pictures gained two rows.
+
+**One flake, left open with its facts.** `quota.spec.ts:149` on WebKit — _a
+rung that frees enough room says which one_ — failed in the first two full
+runs after the art change and passed in the next two, passed three of three
+alone and passes with its file alone. Each failure was the same shape: the
+placement landed, and the toast said NOTHING in five seconds (`said` came
+back empty, not a different sentence). Nothing in the change touches the
+keeper, the ladder or the toast, and a run with a diagnostic in the failure
+path never failed. The diagnostic stays in the test: on the next failure it
+prints every non-fill storage key with its size, the last-error record and
+the toast's live text, which is the evidence two failures did not leave.
+`NEXT.md` §2 carries it.

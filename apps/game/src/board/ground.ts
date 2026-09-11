@@ -2,6 +2,7 @@ import type { CellView } from '@render/Renderer';
 import { place, type Layout } from '@render/layout';
 import { surfaceFor } from '@render/materials';
 import { flatPlan, paintPlan, type PaintOp } from '@render/paint';
+import type { Colour } from '@content/tuning';
 import type { AssetId, Depth, Surface, Theme } from '@theme/tokens';
 import { HEIGHT, kindOf, liftOf, type Kind } from './relief';
 
@@ -92,8 +93,23 @@ type GroundItem = {
 };
 
 export type GroundBatch = {
-  /** Stable identity: same kind, same paint, same mesh. */
+  /**
+   * MESH identity — the same before and after the direction's art loads
+   * (2026-09-11, Marc: *"no way to not have the full reload of the board when
+   * placing 1-2 tiles?"*).
+   *
+   * It was the paint's identity, and the paint changes when a PNG lands: every
+   * batch with an art slot got a new key the moment the book arrived, so every
+   * one of its instanced meshes was torn down and rebuilt at once, a second or
+   * two into the run — the "full reload" a player sees on their first or second
+   * placement. The key is now what the mesh is a function of and nothing the
+   * art can change; `paint` below is what the MATERIAL is a function of. When
+   * the art arrives the mesh keeps its buffers and swaps its material.
+   */
   readonly key: string;
+  /** PAINT identity: the key plus what art has loaded — what the material and
+   *  its baked texture are a function of (`resources.ts`). */
+  readonly paint: string;
   readonly kind: Kind;
   readonly surface: Surface;
   readonly plan: readonly PaintOp[];
@@ -113,12 +129,17 @@ type GroundOpts = {
   readonly hasArt: (asset: AssetId) => boolean;
 };
 
+/** The `hasArt` that never has any — what a mesh key is asked with. */
+const NEVER = (): boolean => false;
+
 /** Every drawn cell, bucketed by the prism it stands as and the paint it wears. */
 export function groundBatches(
   cells: readonly CellView[],
   opts: GroundOpts,
 ): readonly GroundBatch[] {
   const out = new Map<string, { batch: Omit<GroundBatch, 'items'>; items: GroundItem[] }>();
+  /** Each native colour's artless surface, stringified once per call. */
+  const artless = new Map<Colour, string>();
 
   for (const cell of cells) {
     const kind = kindOf(cell);
@@ -163,8 +184,31 @@ export function groundBatches(
      * structural key cannot forget a field, and a hand-written one is one
      * `Surface` field away from silently merging two paints.
      */
-    const key = `${kind}|${asset ?? '-'}|${art?.alpha ?? '-'}|${JSON.stringify(surface)}`;
-    let bucket = out.get(key);
+    const paintOf = JSON.stringify(surface);
+    /*
+     * THE MESH KEY IGNORES THE ART (2026-09-11) — see `GroundBatch.key`.
+     *
+     * `surfaceFor` reads `hasArt` in exactly one place: native ground, where a
+     * loaded terrain PNG turns the procedural field into a base plus a ghost.
+     * That answer is a function of the NATIVE colour alone, so a cell's
+     * artless surface — asked once per native, not once per cell, because the
+     * stringify is the expensive part — keys the mesh the same way whether the
+     * PNG is here yet or not. Every other kind's surface never changes with
+     * the art; only the `asset`/`art` parts of the paint do, and those stay
+     * out of the key by construction.
+     */
+    const stable =
+      cell.kind === 'empty' && cell.native !== null
+        ? (artless.get(cell.native) ??
+          ((): string => {
+            const s = JSON.stringify(surfaceFor(cell, opts.theme, NEVER).surface);
+            artless.set(cell.native, s);
+            return s;
+          })())
+        : paintOf;
+    const key = `${kind}|${stable}`;
+    const paint = `${key}|${asset ?? '-'}|${art?.alpha ?? '-'}|${paintOf}`;
+    let bucket = out.get(paint);
     if (bucket === undefined) {
       const plan =
         opts.materials > 0
@@ -174,8 +218,8 @@ export function groundBatches(
               ...(art === undefined ? {} : { art }),
             })
           : flatPlan(surface);
-      bucket = { batch: { key, kind, surface, plan, asset }, items: [] };
-      out.set(key, bucket);
+      bucket = { batch: { key, paint, kind, surface, plan, asset }, items: [] };
+      out.set(paint, bucket);
     }
 
     const p = place({ q: cell.q, r: cell.r }, opts.layout);

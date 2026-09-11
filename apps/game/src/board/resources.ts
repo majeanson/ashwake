@@ -126,10 +126,14 @@ export function useBatchResources(
    */
   const materials = useMemo(() => {
     const next = new Map<string, readonly Material[]>();
+    // By PAINT, not by key (2026-09-11): the key is the mesh's and survives the
+    // art arriving; the paint is what these materials are a function of, so a
+    // batch whose PNG has landed builds a new set here and its mesh — same key,
+    // still mounted — is handed the new material by the render.
     for (const batch of batches) {
-      const set = cache.get(batch.key) ?? build(batch, textures, artFor(batch));
-      cache.set(batch.key, set);
-      next.set(batch.key, set);
+      const set = cache.get(batch.paint) ?? build(batch, textures, artFor(batch));
+      cache.set(batch.paint, set);
+      next.set(batch.paint, set);
     }
     return next;
   }, [batches, textures, artFor, cache]);
@@ -154,7 +158,7 @@ export function useBatchResources(
 
   return {
     geometryFor: (kind) => prisms.get(kind),
-    materialsFor: (batch) => materials.get(batch.key),
+    materialsFor: (batch) => materials.get(batch.paint),
   };
 }
 
@@ -188,7 +192,7 @@ function build(
   };
 
   const top = withTorch(new MeshLambertMaterial(common));
-  const texture: Texture | null = textures.get(batch.key, batch.plan, art);
+  const texture: Texture | null = textures.get(batch.paint, batch.plan, art);
   if (texture !== null) top.map = texture;
 
   // The sides take the gradient's shaded end rather than the baked texture: a

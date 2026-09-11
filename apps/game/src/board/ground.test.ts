@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import type { Layout } from '@render/layout';
+import type { CellView } from '@render/Renderer';
 import { DAYLIGHT } from '@theme/themes/daylight';
 import { SETTLEMENT } from '@theme/themes/settlement';
-import type { Theme } from '@theme/tokens';
-import { gutterOf, hexRadiusOf, radiusScaleOf } from './ground';
+import { depthOf, type AssetId, type Theme } from '@theme/tokens';
+import { groundBatches, gutterOf, hexRadiusOf, radiusScaleOf, type GroundBatch } from './ground';
 
 /**
  * THE TWO GUTTERS, and the arithmetic between them (2026-09-08).
@@ -68,6 +70,95 @@ describe('a surface’s own gutter', () => {
       const shared = hexRadiusOf(theme);
       const scale = radiusScaleOf(theme, theme.empty);
       expect(scale * shared, theme.id).toBeCloseTo(shared - gutterOf(theme, theme.empty), 10);
+    }
+  });
+});
+
+/**
+ * THE MESH KEY SURVIVES THE ART (2026-09-11).
+ *
+ * The book of PNGs lands a second or two after the board first draws, and a
+ * batch whose key changed when it did was a mesh torn down and rebuilt in
+ * front of the player — the "full reload" Marc saw on his first placements.
+ * So a batch has two identities: `key`, which the mesh is a function of and
+ * the art cannot change, and `paint`, which the material is a function of and
+ * the art does. This pins both halves over every kind of cell there is.
+ */
+describe('a batch’s two identities', () => {
+  const cell = (over: Partial<CellView>): CellView => ({
+    key: '0,0',
+    q: 0,
+    r: 0,
+    kind: 'tile',
+    colour: 'green',
+    landmark: null,
+    claimed: false,
+    beacon: false,
+    remembered: false,
+    shimmer: false,
+    rarity: null,
+    native: null,
+    ripe: false,
+    dimmed: false,
+    lensed: false,
+    targeted: false,
+    worth: 0,
+    home: false,
+    light: 1,
+    band: 0,
+    legal: false,
+    preview: null,
+    previewColour: null,
+    ...over,
+  });
+
+  // One of everything the board can draw, and two natives of one colour so a
+  // batch has more than one item in it.
+  const cells: readonly CellView[] = [
+    cell({ key: '0,0', kind: 'empty', colour: null, native: 'green' }),
+    cell({ key: '1,0', q: 1, kind: 'empty', colour: null, native: 'green' }),
+    cell({ key: '2,0', q: 2, kind: 'empty', colour: null, native: 'red' }),
+    cell({ key: '0,1', r: 1, kind: 'empty', colour: null, native: null }),
+    cell({ key: '1,1', q: 1, r: 1, kind: 'tile', colour: 'red' }),
+    cell({ key: '2,1', q: 2, r: 1, kind: 'tile', colour: 'blue' }),
+    cell({ key: '0,2', r: 2, kind: 'wall', colour: null }),
+    cell({ key: '1,2', q: 1, r: 2, kind: 'landmark', colour: null, landmark: 'cache' }),
+    cell({ key: '2,2', q: 2, r: 2, kind: 'stone', colour: null }),
+  ];
+  const LAYOUT: Layout = { size: 1, originX: 0, originY: 0, orientation: 'pointy' };
+  const batchesWith = (hasArt: (id: AssetId) => boolean): readonly GroundBatch[] =>
+    groundBatches(cells, {
+      theme: SETTLEMENT,
+      layout: LAYOUT,
+      relief: 0.35,
+      materials: 1,
+      texturePx: 64,
+      depth: depthOf(SETTLEMENT),
+      hasArt,
+    });
+  const partition = (batches: readonly GroundBatch[]): Map<string, readonly string[]> =>
+    new Map(batches.map((b) => [b.key, b.items.map((i) => i.cell.key).sort()]));
+
+  it('keys the same meshes, holding the same cells, whether the art has loaded or not', () => {
+    const before = partition(batchesWith(() => false));
+    const after = partition(batchesWith(() => true));
+    expect([...after.keys()].sort()).toEqual([...before.keys()].sort());
+    for (const [key, items] of before) expect(after.get(key), key).toEqual(items);
+  });
+
+  it('paints differently once the art is here, and only where there is a slot for it', () => {
+    const before = new Map(batchesWith(() => false).map((b) => [b.key, b.paint]));
+    const after = batchesWith(() => true);
+    const changed = after.filter((b) => b.paint !== before.get(b.key));
+    expect(changed.length, 'no batch noticed the art').toBeGreaterThan(0);
+    for (const b of changed) expect(b.asset, b.key).not.toBeNull();
+    for (const b of after) if (b.asset === null) expect(b.paint, b.key).toBe(before.get(b.key));
+  });
+
+  it('never gives two batches one key in a single call', () => {
+    for (const hasArt of [(): boolean => false, (): boolean => true]) {
+      const keys = batchesWith(hasArt).map((b) => b.key);
+      expect(new Set(keys).size).toBe(keys.length);
     }
   });
 });
