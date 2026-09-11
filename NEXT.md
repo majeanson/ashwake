@@ -287,6 +287,39 @@ rules). Speaking the toasts is §1's first entry.
 
 ## 1. Needs Marc, and only Marc
 
+**A FULL DEVICE THROWS YOUR DIARY AWAY WITHOUT SAYING SO (2026-09-10,
+`PASS.md` P8.2).** The shed ladder does the right thing on a real full phone —
+measured in Chromium, not argued: it drops the diagnostic record, then the
+other worlds' receipts, then the DIARY, then every other world, retrying each
+time, and never the world being played. Each rung has its own sentence in both
+languages and the shell says it.
+
+Except when the rung is spent at BOOT. Open the game on a device that is
+already full and the first write runs the whole ladder before anything is on
+screen: the diary is gone and **the player is never told, then or later**. The
+report is made exactly like the others; there is nothing to say it with. The
+front door has no toast, and by the time the board has one the line has already
+been delivered.
+
+The ladder is right and the sentence exists. What is missing is where a storage
+message that arrives before the game is on screen belongs, and that is a screen
+question:
+
+1. **Hold it until the first board frame** and say it there, through the same
+   speaking queue every other line uses (`shell/speaking.ts` already has
+   `speakAfter` for exactly "say this when there is somewhere to say it").
+   Cheap, invisible when nothing was shed, and the player hears about their
+   diary one screen later than it happened.
+2. **Say it on the front door**, which is the only screen that is up when it
+   happens. Truthful and immediate, and it means the first thing a stranger can
+   be shown on the door is a sentence about storage — on the one screen whose
+   whole job is the first minute.
+
+I lean to **1**. A stranger's first minute is the one thing this repository
+protects hardest, and a diary nobody has written yet cannot be missed at the
+door; a returning player on a full phone is who this sentence is for, and they
+will be on the board within seconds.
+
 **HALF THE PHONES GET NO ART OFFLINE, AND COVERING THEM IS 301 KB (2026-09-10,
 `PASS.md` P8.5).** The service worker precaches ONE direction's art —
 `settlement`, the default — because `vite.config.ts` argued on 2026-09-02 that

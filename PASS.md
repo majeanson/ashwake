@@ -815,13 +815,15 @@ measured before/after in `LOG.md`. `pnpm sim` untouched — no rule moves here.
 
 ## P8 — the three failure paths, and the header's own confession
 
-The boundary, the panel, the report and the CSP all shipped. The named
-weakness in the header is closed (P8.4); what is left is three specific holes.
+The boundary, the panel, the report and the CSP all shipped. Every hole is
+reproduced and five of the six rows are closed; what is left of the item is one
+decision that is Marc’s (P8.1’s slow line) and two findings in `NEXT.md` §1
+that are screens rather than code.
 
 | id   | status | statement                                                                                                      | where                    |
 | ---- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | P8.1 | part   | **the stale-chunk loop** — reproduced; CONTINUE fixed; the slow-line case is Marc’s, unbuilt                   | `shell/failure.ts`       |
-| P8.2 | open   | quota exhaustion, in a browser, all the way to what the player is told (shares its harness with P7.6)          | `shell/storage.ts:318`   |
+| P8.2 | done   | **a real quota, filled to the last byte** — the ladder holds, and a rung spent at boot is silent               | `e2e/quota.spec.ts`      |
 | P8.3 | done   | **a lost context becomes a sentence, and the guard stopped blaming the browser** — thirteen tests, two e2e     | `board/gl.ts`            |
 | P8.4 | done   | **the two inline blocks are hashed at build time and `'unsafe-inline'` is gone** — the build writes the policy | `vite.config.ts`         |
 | P8.5 | done   | **offline is exercised, and it was broken** — `caches.match` honoured `Vary`; four tests, one Marc trade       | `e2e/offline.spec.ts`    |
@@ -883,6 +885,53 @@ contrast to `daylight`, so the uncovered share is no longer a quarter but
 roughly half. Covering it is 301.3 KB raw, which is over `budget.json`'s
 precache bar; the fallback is graceful and measured, so this is a trade rather
 than a bug.
+
+### P8.2, done: the ladder holds on a real full phone, and one line is lost (2026-09-10)
+
+**Reproduced in Chromium against a real quota**, which is what this row asked
+for and what a `localStorage` stub cannot do: the rung a browser takes is
+decided by real sizes. `e2e/quota.spec.ts` fills the origin to the last byte —
+64 K characters, then 8 K, 1 K, 128, 16, 1, each size until it throws, because
+the chunk that fails leaves its own size in headroom and **a saved run fits in
+that**. The first version called a failed 64 K write "full", the placement
+saved without a murmur, and two tests waited for a sentence about a disk with
+64 KB free on it.
+
+**Four things are pinned, three of them working:**
+
+1. A device with no room left says `shed.lost` — the outcome that was silent
+   until 2026-09-02 — **and keeps playing**. Losing the save is not losing the
+   game: the state is in memory and the board goes on answering, so a device
+   that cannot write does not become a device that cannot play.
+2. A diary big enough to matter gets shed by the rung that owns it, the player
+   is told which one, and the retry succeeds. That is the LADDER being tested
+   rather than its last rung.
+3. A device that was already full when the page opened still opens the game,
+   plays, and raises no failure panel. A quota error reaching the boundary
+   would be a full disk reported as _"something broke"_.
+4. **And the gap: a rung spent at BOOT is spent in silence.** The first write
+   on a full device runs the whole ladder before anything is on screen, so the
+   diary is dropped and the player is never told — not then, and not when the
+   board arrives. The report is made the way every other one is; there is
+   nothing to say it with, because the front door has no toast. `NEXT.md` §1,
+   two options and a lean, unbuilt: it is a screen question.
+
+**The sentences are compared against `STRINGS_FR` itself** rather than retyped,
+with the page in `fr-CA` — so this is also the only test proving a shed report
+reaches the player in the language they are reading.
+
+**And the toast had to be RECORDED rather than polled.** A rung that works
+reports once and the line clears on its own timer; an ordinary `toHaveText`
+caught it in one sample in twenty and missed it in the assertion that mattered,
+failing against code that was working. The last rung hides this — with the disk
+still full every later write reports `lost` again and the line is continuously
+refreshed — so **the outcome that is easy to observe is the one where nothing
+was saved**, which is worth knowing about any test of this ladder.
+
+**P7.6's harness, which this row was told it would share, was four lines of
+`page.evaluate`.** So that deferral (a world 300 runs deep is 24 KB; three
+worlds is 2.3% of the store) stands on its own reasoning, and nothing here
+needed it.
 
 ### P8.3, done: a black board says so, and the guard stopped guessing (2026-09-10)
 

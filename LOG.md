@@ -7220,3 +7220,57 @@ Chromium.
 **Next:** P8.2 is the last row — quota exhaustion in a browser, all the way to
 what the player is told. It shares a harness with P7.6, which was deferred with
 a reason, so the first question is whether it deserves the same.
+
+### Session 87 — a real full phone, and the one sentence that never arrives (2026-09-10)
+
+**Question (`PASS.md` P8.2):** on a device with no room left, does the shed
+ladder do what it says, and does the player find out?
+
+**Answer: it does, and mostly they do.** This is the row of P8 that found the
+code right, which is worth writing down as plainly as the two that did not: the
+ladder drops the diagnostic record, the other worlds' receipts, the diary and
+then every other world, retrying between each, never touching the world being
+played — measured in Chromium against a real 5 MB quota rather than argued
+against a stub. Each rung's own sentence reaches the screen, in the language
+the page is being read in, compared against `STRINGS_FR` itself rather than
+retyped.
+
+**Three things it also proved.** A device with no room left **keeps playing** —
+losing the save is not losing the game, and a device that cannot write must not
+become a device that cannot play. A device that was already full when the page
+opened still opens the game and raises no failure panel; a quota error reaching
+the boundary would be a full disk reported as "something broke". And the last
+rung is the one that is easy to watch, because a full disk keeps reporting
+`lost` on every later write.
+
+**The gap: a rung spent at BOOT is spent in silence.** Open the game on a phone
+that is already full and the first write runs the whole ladder before anything
+is on screen. The diary is dropped and **the player is never told, then or
+later**. The report is made exactly like every other one; there is nothing to
+say it with, because the front door has no toast and by the time the board has
+one the line has been delivered. The ladder is right and the sentence exists;
+what is missing is where a storage message that arrives before the game is on
+screen belongs. That is a screen question, so `NEXT.md` §1 has two options and
+a lean and nothing was built.
+
+**Two lessons from the harness itself, both about believing a measurement.**
+Writing 64 K chunks until one throws does NOT fill a disk — the failed chunk
+leaves its own size in headroom, and a saved run fits in it, so the first
+version of this file watched a placement save cleanly and waited for a sentence
+about a disk with 64 KB free. The sizes step down to one character now. And a
+rung that WORKS says its line once, then clears on a timer: `toHaveText` caught
+it in one sample in twenty and failed against working code, so the toast is
+recorded with a `MutationObserver` from before the write rather than polled
+after it.
+
+**P7.6's harness, which this row was promised it would share, was four lines of
+`page.evaluate`** — so that deferral stands on its own reasoning and this row
+never needed it.
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; e2e 128/128 chromium and 46
+passed / 1 skipped webkit.
+
+**Next:** P8 is closed except for P8.1's slow-line reload policy, which is
+Marc's. The pass order says P6 — WebKit, the engine the phone runs — then P5
+(performance) and P4 (the accessibility proof).
