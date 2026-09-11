@@ -95,6 +95,21 @@ export const FEATURES = [
     wired: true,
     player: true,
   },
+  // TEMPORARY (2026-09-11, Marc: "make the custom urls toggles in the
+  // settings we can remove later"). The board rests after fifteen untouched
+  // seconds since the same morning (board/resting.ts, his ruling on P5.4),
+  // and the undo was ?rest=0 — a URL, on a phone, mid-evening. This is that
+  // undo as a switch. It is phrased as AWAKE rather than as REST so that OFF
+  // is the shipped behaviour and the registry's rule (every flag defaults off)
+  // stays true without an exception. App.tsx is the only reader: on, the
+  // board's restMs is zero. Delete this entry, its two sentences in text/ and
+  // that one line when the pause has been judged on a phone.
+  {
+    id: 'board.awake',
+    defaultOn: false,
+    wired: true,
+    player: true,
+  },
 ] as const satisfies readonly FeatureDef[];
 
 /** The switches a player's SETTINGS screen offers. */

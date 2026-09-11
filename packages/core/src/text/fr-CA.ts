@@ -547,6 +547,11 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       label: 'Vibrations',
       note: 'Une brève vibration quand tu poses, récoltes et réclames.',
     },
+    // TEMPORAIRE (2026-09-11) — voir `meta/features.ts`.
+    'board.awake': {
+      label: 'Plateau toujours éveillé',
+      note: 'D’habitude, le plateau cesse de respirer après quinze secondes sans être touché, pour ménager la batterie. Allumé, il ne s’endort jamais.',
+    },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
   story: [
@@ -697,6 +702,12 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     sharpness: {
       label: 'NETTETÉ',
       note: 'Combien de l’écran le plateau dessine vraiment. Plus net, mais plus énergivore.',
+    },
+    // TEMPORAIRE (2026-09-11) — voir `Strings.ts`.
+    antialias: {
+      label: 'ANTICRÉNELAGE',
+      note: `Adoucit les bords des hexagones, et coûte du calcul. AUTO laisse le téléphone décider. Un changement prend effet au prochain lancement du jeu${D}: ferme l’onglet et rouvre-le.`,
+      now: (on) => `En ce moment${D}: ${on ? 'activé' : 'désactivé'}.`,
     },
     board: {
       label: 'Le plateau',

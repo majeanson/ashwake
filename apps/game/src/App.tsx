@@ -47,7 +47,7 @@ import { stringsFor } from '@text/index';
 import { parseThemeId } from '@theme/index';
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { tourMs } from './board/flight';
-import type { BoardHandle } from './board/Board';
+import { ANTIALIAS, type BoardHandle } from './board/Board';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { MAX_RENDER_SCALE } from './board/quality';
@@ -343,6 +343,8 @@ function Game() {
     setTheme: setStoredTheme,
     renderScale,
     setRenderScale,
+    antialias,
+    setAntialias,
     features,
     setFeature,
     progress,
@@ -2935,7 +2937,9 @@ function Game() {
             renderScale={renderScale}
             {...(Number.isFinite(look.ghost) ? { ghostStrength: look.ghost } : {})}
             reducedMotion={reducedMotion}
-            restMs={look.rest * 1000}
+            // TEMPORARY (2026-09-11): the `board.awake` switch is `?rest=0`
+            // as a row in SETTINGS — see `meta/features.ts` for the removal.
+            restMs={isEnabled(features, 'board.awake') ? 0 : look.rest * 1000}
             onTap={onTap}
             handle={board}
             label={s.ui.board.label}
@@ -3331,6 +3335,9 @@ function Game() {
           renderScale={renderScale}
           maxRenderScale={MAX_RENDER_SCALE}
           onRenderScale={setRenderScale}
+          antialias={antialias}
+          onAntialias={setAntialias}
+          antialiasNow={ANTIALIAS}
           onDevice={() => device.show()}
           /*
            * RESET TEACHING resets the TEACHING (2026-08-30).

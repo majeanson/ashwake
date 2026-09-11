@@ -539,6 +539,11 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       label: 'Vibration',
       note: 'A short buzz as you place, pop and claim.',
     },
+    // TEMPORARY (2026-09-11) — see `meta/features.ts`.
+    'board.awake': {
+      label: 'Board always awake',
+      note: 'Normally the board stops breathing after fifteen untouched seconds, to spare the battery. On, it never sleeps.',
+    },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
   story: [
@@ -689,6 +694,12 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     sharpness: {
       label: 'SHARPNESS',
       note: 'How much of the screen the board actually draws. Higher looks crisper and uses more battery.',
+    },
+    // TEMPORARY (2026-09-11) — see `Strings.ts`.
+    antialias: {
+      label: 'ANTIALIASING',
+      note: 'Smooths the edges of the hexes, at a cost in work. AUTO lets the phone decide. A change takes effect the next time the game is opened: close the tab and open it again.',
+      now: (on) => `Right now: ${on ? 'on' : 'off'}.`,
     },
     board: {
       label: 'The board',

@@ -72,6 +72,9 @@ const DEVICE = {
   /** The SHARPNESS slider's own number — device pixels per CSS pixel the
    *  canvas draws at. Unset means "the per-phone guess", not zero. */
   renderScale: `${NS}.renderScale.v1`,
+  /** TEMPORARY (2026-09-11): the ANTIALIASING choice, `on` or `off`. Unset
+   *  is AUTO — the per-phone default in `Board.tsx`. */
+  antialias: `${NS}.antialias.v1`,
   /** The teaching ledger is a DEVICE fact: you learn what RIPE means once. */
   progress: `${NS}.progress.v1`,
   /**
@@ -412,6 +415,24 @@ export const readRenderScale = (): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 export const writeRenderScale = (scale: number): void => write(DEVICE.renderScale, String(scale));
+
+/**
+ * TEMPORARY (2026-09-11, Marc: "make the custom urls toggles in the settings
+ * we can remove later") — the ANTIALIASING row's choice. `auto` is the
+ * absence of a choice and is stored as nothing, so a device that has never
+ * touched the row is exactly the device before it existed. Read at module
+ * scope by `Board.tsx`, which is why this is a plain string rather than state:
+ * a WebGL context flag is fixed before React runs.
+ */
+export type AntialiasChoice = 'auto' | 'on' | 'off';
+export const readAntialias = (): AntialiasChoice => {
+  const raw = read(DEVICE.antialias);
+  return raw === 'on' || raw === 'off' ? raw : 'auto';
+};
+export const writeAntialias = (choice: AntialiasChoice): void => {
+  if (choice === 'auto') drop(DEVICE.antialias);
+  else write(DEVICE.antialias, choice);
+};
 
 export const readProgress = (): Progress => decodeProgress(read(DEVICE.progress));
 export const writeProgress = (p: Progress): void => write(DEVICE.progress, encodeProgress(p));

@@ -7613,3 +7613,19 @@ P6.8's blank capture wearing a different test; alone it passed three of three.
 **Next:** Session A gains one glance — leave the board alone for twenty
 seconds, watch it settle, tap; `?rest=5` makes it quick to see. `NEXT.md` §1 is
 one decision shorter. Nothing else in `PASS.md` moves without the phone.
+
+**Later the same day — the two URLs became rows in SETTINGS, on Marc's ask**
+(_"make the custom urls toggles in the settings we can remove later"_). The
+rest's undo is a feature flag, `board.awake`, and it is phrased as AWAKE rather
+than REST so that OFF is the shipped behaviour and the registry's rule — every
+flag defaults off, `features.test.ts` insists — stays true without an
+exception. Antialiasing could not be a flag: a WebGL context attribute is fixed
+when the canvas is built and the canvas never remounts, so it is a stored
+AUTO / ON / OFF choice read once at module scope, between `?aa=` and the
+per-phone default, and the row prints what THIS canvas was built with beside
+what the next one will be. Every site is marked TEMPORARY and `NEXT.md` §1
+lists them for the day the two look questions are answered. The English prose
+pin was re-recorded for this, and the whole diff is the new flag's label and
+note in both languages — nothing already pinned moved. Verified again: format,
+typecheck, lint; 1280 tests / 100 files; sim byte-identical; sweep 0 findings;
+e2e 134/134 chromium and 122 passed / 12 skipped webkit, both on the first run.

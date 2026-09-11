@@ -1,5 +1,6 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { markBoardAlive, showBoardLost } from '../shell/failure';
+import { readAntialias } from '../shell/storage';
 import { FLIGHT_MS, TOUR_WIDE_HOLD_MS } from './flight';
 import {
   useCallback,
@@ -335,7 +336,22 @@ const AA_OVERRIDE = ((): boolean | null => {
   }
 })();
 
-const GL = { ...GL_PROPS, antialias: AA_OVERRIDE ?? !DENSE };
+/**
+ * TEMPORARY (2026-09-11, Marc: "make the custom urls toggles in the settings
+ * we can remove later"): the SETTINGS row sits between the URL and the
+ * per-phone default, so `?aa=` still wins for a measurement and a device that
+ * has never touched the row still renders exactly as before. Same module-scope
+ * read, same reason — the flag is fixed before the first render. Exported for
+ * the one row that must say what THIS canvas was built with (`App.tsx` hands
+ * it to `Settings`); when the row goes, this goes back to being a local.
+ */
+const STORED_AA = ((): boolean | null => {
+  const choice = readAntialias();
+  return choice === 'auto' ? null : choice === 'on';
+})();
+export const ANTIALIAS: boolean = AA_OVERRIDE ?? STORED_AA ?? !DENSE;
+
+const GL = { ...GL_PROPS, antialias: ANTIALIAS };
 
 export function Board(props: BoardProps) {
   const {

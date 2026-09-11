@@ -45,8 +45,14 @@ describe('the registry', () => {
     // buzz on place/pop/claim, carrying no information any receipt does not
     // already carry, changing nothing a shared seed would replay differently.
     // The engine cannot see it; `navigator.vibrate` cannot reach the engine.
+    //
+    // board.awake joined 2026-09-11, TEMPORARY, on Marc's ask for the URL
+    // dials as rows in SETTINGS: it is `?rest=0` as a switch — whether the
+    // idle board keeps breathing — which is presentation of ui.sound's class
+    // and nothing a shared seed would replay differently. Phrased as AWAKE so
+    // that OFF is the shipped board and the rule above keeps no exception.
     const ids = FEATURES.map((f) => f.id);
-    expect(ids).toEqual(['debug.overlay', 'ui.sound', 'ui.haptics']);
+    expect(ids).toEqual(['debug.overlay', 'ui.sound', 'ui.haptics', 'board.awake']);
   });
 
   it('describes every flag, so the registry never becomes a list of mystery ids', () => {
@@ -69,7 +75,10 @@ describe('the registry', () => {
     // has. SETTINGS still hides its ROW on a device with no `navigator.vibrate`
     // — a distinction this registry cannot make, because it is about the
     // device rather than the build. See `shell/touch.ts#canBuzz`.
-    expect(PLAYER_FEATURES.map((f) => f.id)).toEqual(['ui.sound', 'ui.haptics']);
+    // board.awake is public because being a row is the whole point of it
+    // (2026-09-11): it exists so the pause can be judged on a phone without a
+    // URL, and it goes when that judgement is made.
+    expect(PLAYER_FEATURES.map((f) => f.id)).toEqual(['ui.sound', 'ui.haptics', 'board.awake']);
     for (const f of PLAYER_FEATURES) {
       expect(f.wired).toBe(true);
       // Short enough to read at a glance, and free of the dates and names

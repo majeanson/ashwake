@@ -451,6 +451,11 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "Vibration",
       "A short buzz as you place, pop and claim.",
     ],
+    [
+      "board.awake",
+      "Board always awake",
+      "Normally the board stops breathing after fifteen untouched seconds, to spare the battery. On, it never sleeps.",
+    ],
   ],
   "goals": [
     [
@@ -1100,6 +1105,11 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "ui.haptics",
       "Vibrations",
       "Une brève vibration quand tu poses, récoltes et réclames.",
+    ],
+    [
+      "board.awake",
+      "Plateau toujours éveillé",
+      "D’habitude, le plateau cesse de respirer après quinze secondes sans être touché, pour ménager la batterie. Allumé, il ne s’endort jamais.",
     ],
   ],
   "goals": [

@@ -12,6 +12,7 @@ import {
   readFeatures,
   readLocale,
   readProgress,
+  readAntialias,
   readRenderScale,
   readTheme,
   setActiveSlot,
@@ -20,9 +21,11 @@ import {
   readShopLevels,
   readWorld,
   writeProgress,
+  writeAntialias,
   writeRenderScale,
   writeShopLevels,
   writeTheme,
+  type AntialiasChoice,
   type Slot,
 } from './storage';
 
@@ -49,6 +52,10 @@ type Device = {
   /** The SHARPNESS slider's own number, `board/quality.ts`'s scale. */
   readonly renderScale: number;
   readonly setRenderScale: (scale: number) => void;
+  /** TEMPORARY (2026-09-11): the ANTIALIASING row's CHOICE — what the next
+   *  launch will build, not what this one did. `Board.tsx` says the latter. */
+  readonly antialias: AntialiasChoice;
+  readonly setAntialias: (choice: AntialiasChoice) => void;
   readonly features: FeatureSet;
   readonly setFeature: (id: FeatureId, on: boolean) => void;
   readonly progress: Progress;
@@ -98,6 +105,7 @@ export function useDevice(opts: {
     const kept = readRenderScale();
     return kept === null ? DEFAULT_RENDER_SCALE : clampRenderScale(kept);
   });
+  const [antialias, setAntialiasState] = useState<AntialiasChoice>(readAntialias);
   /**
    * The device's flags, with `?ff=` applied (2026-09-02).
    *
@@ -321,6 +329,11 @@ export function useDevice(opts: {
     setRenderScaleState(clamped);
   }, []);
 
+  const setAntialias = useCallback((next: AntialiasChoice) => {
+    writeAntialias(next);
+    setAntialiasState(next);
+  }, []);
+
   const setFeature = useCallback((id: FeatureId, on: boolean) => {
     setFeatures((was) => {
       const next = { ...was, [id]: on };
@@ -360,6 +373,8 @@ export function useDevice(opts: {
       setTheme,
       renderScale,
       setRenderScale,
+      antialias,
+      setAntialias,
       features,
       setFeature,
       progress,
@@ -377,6 +392,8 @@ export function useDevice(opts: {
       setTheme,
       renderScale,
       setRenderScale,
+      antialias,
+      setAntialias,
       features,
       setFeature,
       progress,

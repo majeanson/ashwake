@@ -308,13 +308,24 @@ costs 0–3 ms of CPU in five seconds where the awake one costs 2.6–4.3 s.**
 pause, and whether the moment the beacons stop breathing reads as calm or as a
 freeze while you are looking at your next tile. A glance, not a session: leave
 the board alone for twenty seconds, watch it settle, tap. `?rest=5` makes it
-quick to see and `?rest=0` puts the old board back.
+quick to see and `?rest=0` puts the old board back. **Since the same evening
+the undo is also a row in SETTINGS** — PLATEAU TOUJOURS ÉVEILLÉ, the
+`board.awake` flag, off by default so the shipped board rests — put there on
+your ask (_"make the custom urls toggles in the settings we can remove
+later"_) and marked TEMPORARY at every site: the registry entry in
+`meta/features.ts`, two sentences in `text/`, one line in `App.tsx`.
 
 **The smaller one from the same table:** at ratio 2, antialiasing costs 1.3× to 2.1×
 the CPU of the same walk without it (`perf/report.md`, the `msaa` column). The
 default keeps it there and drops it above ratio 2 — which the same table says
 is the right way round at ratio 3. Whether a ratio-2 phone should keep paying
-for it is a look question on a device: `?aa=0` shows you the cheap one.
+for it is a look question on a device: `?aa=0` shows you the cheap one. **And
+so does the ANTICRÉNELAGE row in SETTINGS** (2026-09-11, temporary, same ask):
+AUTO / ON / OFF, stored, read once when the canvas is built — so it takes
+effect at the next launch, and the row says both what you chose and what this
+canvas actually has. Removal sites: the section in `Settings.tsx`, its three
+props through `App.tsx`, the `ANTIALIAS` export in `Board.tsx`, the pair in
+`shell/storage.ts` and `useDevice.ts`, and `ui.antialias` in `text/`.
 
 **SESSION A, FIRST LINE: DOES THE BOARD DRAW BEFORE YOU TOUCH IT? (2026-09-10,
 `PASS.md` P6.8.)** On Playwright's WebKit there is a reproducible state where a
