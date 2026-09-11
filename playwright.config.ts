@@ -27,7 +27,17 @@ export default defineConfig({
    */
   workers: 1,
   retries: process.env['CI'] === undefined ? 0 : 1,
-  use: { baseURL: 'http://localhost:4174' },
+  /**
+   * A FAILING TEST KEEPS ITS PICTURE (2026-09-11).
+   *
+   * `only-on-failure`, so a green run writes nothing and a red one leaves the
+   * frame it judged. Three CI runs failed in one evening on a check that reads
+   * a screenshot and reports a boolean — "the daily opened on empty ground" —
+   * and the log carried the boolean and not the ground. The engine it fails on
+   * is the runner's Linux WebKit, which this machine cannot run, so the picture
+   * is the only witness there is. `ci.yml` uploads `test-results/` on failure.
+   */
+  use: { baseURL: 'http://localhost:4174', screenshot: 'only-on-failure' },
   /**
    * TWO ENGINES (2026-09-08), because the game is not played in this one.
    *

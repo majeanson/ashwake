@@ -7705,3 +7705,26 @@ seconds later. Two other tests were flaky on the runner and passed on retry —
 MY VIEW's angle on Chromium, and a `?daily=` link on WebKit that logged a
 troika text-worker error (_init did not return a callable function_) on its
 first attempt only. Noted, not chased: neither reproduces here.
+
+**The poll did not fix it, and the reason it could not is that the test never
+ran there before.** The last green run measured 116 chromium and 47 webkit
+tests; today's measure 134 and 133, because 283467f put seven specs back into
+WebKit. So the centring check met the runner's Linux WebKit for the first time
+tonight and failed on it four times over, five seconds of polling included —
+which rules out the stopwatch and leaves either a board that genuinely opens
+off-centre on that engine or a capture that stays blank, P6.8's own shape. It
+is the DAILY half that fails and the new-world half beside it that passes, and
+that asymmetry is the fact worth having.
+
+**And it is unanswerable from a log, which is the instrument's fault.** A
+check that reads a PICTURE and reports a boolean has to hand the picture over
+when it fails; three runs failed in one evening and left a sentence each.
+`playwright.config.ts` keeps a screenshot on failure now, and `ci.yml` uploads
+`test-results/` when the step goes red.
+
+**`pnpm budget` moved ahead of the browsers in the same breath**, and this one
+is not housekeeping: it sat behind `pnpm test:e2e`, so tonight's three flaky
+e2e failures meant the budget never ran at all and the 277 KB first-paint
+regression above reached main under a red tick that said nothing about bytes.
+A byte count needs only `dist`, so it runs the moment `dist` exists. _A gate
+placed behind a flaky gate is not a gate._

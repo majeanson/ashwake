@@ -20,6 +20,30 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      # MOVED AHEAD OF THE BROWSERS (2026-09-11). It sat after `pnpm test:e2e`,
+      # which is a step that can fail on a timing flake — and on 2026-09-11 it
+      # did, three runs in a row, so the budget never ran and a 277 KB
+      # first-paint regression shipped to main under a red tick that said
+      # nothing about bytes. A byte count needs only `dist`, so it runs the
+      # moment `dist` exists: exact, reproducible, and behind nothing that can
+      # be flaky.
+      # WHAT A PHONE DOWNLOADS, against a bar (2026-09-10, `PASS.md` P9).
+      #
+      # `IMPROVEMENTS.md` B8 measured this once, in prose, and nothing
+      # re-measured any of it — while B8's own chunking ruling ends by saying
+      # the cost of `three` riding in the door's chunk "shows up immediately as
+      # the entry chunk's byte count jumping on the next build". That required a
+      # watcher and there was none.
+      #
+      # A GATE rather than a report, unlike the sweep's first pass and unlike
+      # the screen audit, and the difference is the one B8.6 itself drew: a byte
+      # count is exact, reproducible on any machine, and does not depend on a
+      # renderer. It runs AFTER the build, which produced `dist` above.
+      #
+      # It also fails on the renderer's module specifiers appearing in the entry
+      # chunk, which catches a lazy boundary breaking by NAME on the build that
+      # breaks it rather than by a byte count somebody notices later.
+      - run: pnpm budget
       # The real-browser smoke: headless Chromium over the BUILT bundle, WebGL
       # rendering for real — the canary for the renderer-crash class the unit
       # suite cannot see.
@@ -29,6 +53,28 @@ jobs:
       # which specs run where, and why, is argued in `playwright.config.ts`.
       - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm test:e2e
+      # WHAT THE FAILING BROWSER SAW (2026-09-11).
+      #
+      # Three runs failed here in one evening and every one of them left this
+      # repository nothing but a sentence: no screenshot, no page snapshot, no
+      # trace. `board.spec.ts`'s centring check reads a PICTURE and reports a
+      # boolean, so "the daily opened on empty ground" is unanswerable from a
+      # log — and it fails only on the runner's Linux WebKit, which is not a
+      # browser this machine can run. An instrument that grades a picture must
+      # hand the picture over when it fails.
+      #
+      # `if: failure()` so a green run uploads nothing, and seven days because
+      # this is evidence for the session that follows the failure, not an
+      # archive.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
       # The rules did not move: the harness in this repo must print exactly what
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from
       # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
@@ -47,23 +93,6 @@ jobs:
       # that grades its own output is not a check.
       - run: pnpm sweep
       - run: git diff --exit-code -- SWEEP.md
-      # WHAT A PHONE DOWNLOADS, against a bar (2026-09-10, `PASS.md` P9).
-      #
-      # `IMPROVEMENTS.md` B8 measured this once, in prose, and nothing
-      # re-measured any of it — while B8's own chunking ruling ends by saying
-      # the cost of `three` riding in the door's chunk "shows up immediately as
-      # the entry chunk's byte count jumping on the next build". That required a
-      # watcher and there was none.
-      #
-      # A GATE rather than a report, unlike the sweep's first pass and unlike
-      # the screen audit, and the difference is the one B8.6 itself drew: a byte
-      # count is exact, reproducible on any machine, and does not depend on a
-      # renderer. It runs AFTER the build, which produced `dist` above.
-      #
-      # It also fails on the renderer's module specifiers appearing in the entry
-      # chunk, which catches a lazy boundary breaking by NAME on the build that
-      # breaks it rather than by a byte count somebody notices later.
-      - run: pnpm budget
       # THE COMMITTED ART IS CURRENT — and this must run BEFORE the bake,
       # because the bake overwrites the very files it grades.
       #
