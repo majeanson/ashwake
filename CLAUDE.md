@@ -159,7 +159,14 @@ suspect the pass before you suspect the subject.
   never re-recorded silently; the French ones are Marc's review surface.
 - **The board host never remounts.** The R3F `<Canvas>` lives once, above
   every scene; losing it loses the WebGL context.
-- **No PR gate.** Land on `main`; CI gates the deploy.
+- **No PR gate.** Land on `main`; CI gates the deploy — the `ci` job, which
+  is every exact check there is. **`e2e` is a job beside it and gates
+  nothing** (2026-09-11, Marc: _"separate e2e and deploy jobs"_): it holds the
+  only real browsers in the repository, so it is also the only check that can
+  fail on a stopwatch, and five such failures in one evening kept six finished
+  commits off the phone they were written for. It still runs on every push and
+  still keeps its screenshots. The cost, stated rather than hidden: a renderer
+  that crashes on boot can now reach production with a red tick beside it.
 
 The stranger test (`PLAYTEST.md` Session C) is v2.0's gate and has never been
 run on either body. A stranger is a one-shot resource: nothing that changes the

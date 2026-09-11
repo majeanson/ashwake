@@ -44,37 +44,6 @@ jobs:
       # chunk, which catches a lazy boundary breaking by NAME on the build that
       # breaks it rather than by a byte count somebody notices later.
       - run: pnpm budget
-      # The real-browser smoke: headless Chromium over the BUILT bundle, WebGL
-      # rendering for real — the canary for the renderer-crash class the unit
-      # suite cannot see.
-      # TWO engines since 2026-09-08. WebKit is the one the game is actually
-      # played in — `CLAUDE.md`'s testing rule is a phone, in portrait — and
-      # every spec in this repository had run in Chromium alone. The split of
-      # which specs run where, and why, is argued in `playwright.config.ts`.
-      - run: pnpm exec playwright install --with-deps chromium webkit
-      - run: pnpm test:e2e
-      # WHAT THE FAILING BROWSER SAW (2026-09-11).
-      #
-      # Three runs failed here in one evening and every one of them left this
-      # repository nothing but a sentence: no screenshot, no page snapshot, no
-      # trace. `board.spec.ts`'s centring check reads a PICTURE and reports a
-      # boolean, so "the daily opened on empty ground" is unanswerable from a
-      # log — and it fails only on the runner's Linux WebKit, which is not a
-      # browser this machine can run. An instrument that grades a picture must
-      # hand the picture over when it fails.
-      #
-      # `if: failure()` so a green run uploads nothing, and seven days because
-      # this is evidence for the session that follows the failure, not an
-      # archive.
-      - if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-failures
-          path: |
-            test-results/
-            playwright-report/
-          retention-days: 7
-          if-no-files-found: ignore
       # The rules did not move: the harness in this repo must print exactly what
       # Ashwake 1's did. `sim.golden.txt` is that output, captured from
       # tiles@42d4da3 (v1.0.0) on 2026-08-28. A diff here is a rule that moved.
@@ -128,7 +97,75 @@ jobs:
       # it is a division of labour with the step before it.
       - run: pnpm bake
 
-  # No PR gate: land on main, and CI gates the prod deploy. Set the
+  # THE BROWSERS, IN A JOB OF THEIR OWN (2026-09-11, Marc: "separate e2e and
+  # deploy jobs").
+  #
+  # It was the tail of `ci`, so every flake in it was also a deploy that did
+  # not happen: five runs in one evening went red here and the deploy was
+  # skipped five times, while not one of the failures was the game — a picture
+  # read a frame early, and a precondition that depended on whether the browser
+  # had logged an error. Six commits sat unreleased behind two timing bugs in
+  # the instrument.
+  #
+  # So it becomes B8.6's other kind of thing: **a report somebody reads, not a
+  # gate**, which is the same ruling the screen audit and the perf report ship
+  # under. It still runs on every push, still goes red in the open, and still
+  # keeps its screenshots — what it no longer does is decide whether a build
+  # reaches a phone. What DOES decide that is everything in `ci`: the format,
+  # the types, 1288 unit tests, the golden sim, the six rituals, the byte
+  # budget and the art check, all of them exact and none of them holding a
+  # browser.
+  #
+  # The cost is stated plainly rather than hidden: this job is the only thing
+  # in the repository that renders WebGL for real, so a renderer that crashes
+  # on boot can now reach production with a red tick beside it. The guard is
+  # that it is red IN PUBLIC and on the same commit — and `verify:deploy`
+  # runs against the live site after every deploy.
+  #
+  # It installs and builds for itself because jobs share no filesystem;
+  # `pnpm test:e2e` already builds.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # TWO engines since 2026-09-08. WebKit is the one the game is actually
+      # played in — `CLAUDE.md`'s testing rule is a phone, in portrait — and
+      # every spec in this repository had run in Chromium alone. The split of
+      # which specs run where, and why, is argued in `playwright.config.ts`.
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - run: pnpm test:e2e
+      # WHAT THE FAILING BROWSER SAW (2026-09-11).
+      #
+      # Three runs failed in one evening and every one of them left this
+      # repository nothing but a sentence: no screenshot, no page snapshot, no
+      # trace. `board.spec.ts`'s centring check reads a PICTURE and reports a
+      # boolean, so "the daily opened on empty ground" is unanswerable from a
+      # log — and it failed only on the runner's Linux WebKit, which is not a
+      # browser this machine can run. An instrument that grades a picture must
+      # hand the picture over when it fails. It answered on its first red run.
+      #
+      # `if: failure()` so a green run uploads nothing, and seven days because
+      # this is evidence for the session that follows the failure, not an
+      # archive.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # No PR gate: land on main, and CI gates the prod deploy — `ci`, which is
+  # every exact check there is, and NOT `e2e`, which runs beside it as a
+  # report (see that job for the ruling and its cost). Set the
   # DEPLOY_ENABLED repository variable to 'true' to arm this job, and the
   # CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets to authorise it —
   # the same two Ashwake 1 uses; the token's scope already covers a second

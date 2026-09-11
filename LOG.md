@@ -7756,3 +7756,21 @@ flakes were a picture read one frame too early and a precondition that
 depended on whether the browser had logged an error. Both were reachable only
 because main had not been pushed in twenty-four commits, so a whole session's
 worth of specs met the runner at once.
+
+**And Marc's ruling on all of it: _"separate e2e and deploy jobs"_.** The
+browsers were the tail of the `ci` job, so every flake in them was also a
+deploy that did not happen — five red runs, five skipped deploys, and not one
+of the failures was the game. `e2e` is its own job now and `deploy` waits on
+`ci` alone: the format, the types, 1288 unit tests, the golden sim, the six
+rituals, the byte budget and the art check, all of them exact and none of them
+holding a browser.
+
+Which makes the browsers B8.6's other kind of thing — **a report somebody
+reads, not a gate** — the same ruling the screen audit and the perf report
+already ship under. The cost is written at the job rather than left to be
+discovered: this is the only thing in the repository that renders WebGL for
+real, so a renderer that crashes on boot can reach production with a red tick
+beside it. What guards that is that the tick is red IN PUBLIC on the same
+commit, and `verify:deploy` runs against the live site afterwards. `CLAUDE.md`
+says so too, because the line there claimed CI gates the deploy and half of CI
+no longer does.
