@@ -7383,3 +7383,49 @@ phases.
 
 **Next:** P4, the accessibility proof — the last item in the file, and the one
 most likely to want changes on screens the other nine have been editing.
+
+### Session 90 — a run finished without seeing it (2026-09-10)
+
+**Question (`PASS.md` P4):** the board says it can be read out — can a run be
+FINISHED without seeing it?
+
+**Yes, and on both engines.** `e2e/a11y.spec.ts` walks the arc on keys alone:
+the door, the board, twenty-eight placements, a harvest, an ending reached by
+playing rather than by `?end=1`, and out into a new run. The assertion that
+makes it worth having is the witness installed before the first byte —
+**every `pointerdown`, `mousedown` and `touchstart` is recorded and the test
+fails on one**, so a keyboard path with a click hidden in its setup cannot
+pass.
+
+**One row was asked wrongly and the right question is better.** P4.4 wanted
+proof of ONE speaker; there are four live regions, each with a docblock
+arguing for itself. Counting them proves nothing about a reader. What hurts is
+two of them holding text at the same instant, and that is what is watched now —
+across a real walk, in both languages — and it never happens.
+
+**And P4.5 found the mechanism rather than the silence.** The toast says
+nothing through a harvest: sampled every 150 ms for two seconds, not a word.
+That reads as "the loudest event in the game is silent" and it is wrong — the
+receipt is a CARD, the card takes focus, and a focused card is read for being
+focused. `ui/Card.tsx` removed that card's own `role="status"` on purpose
+(_"announcing it twice is worse than not at all"_). So the test pins the
+promise underneath — something takes the reader to the receipt — rather than
+the mechanism.
+
+**Two findings about the tab ring, and the second one was mine.** The board
+joins the tab order LATE: a moment after BEGIN it is in the DOM with
+`tabindex="0"`, not hidden and not inert, and Tab walks past it because it has
+no size yet. Measured five runs of five. And my own matcher was greedy — it
+compared the door's name against whatever had focus, WebKit focuses the BODY
+first, and the body's `textContent` is the whole page, which contains the word
+BEGIN. Four tests duly reported that WebKit cannot open its own front door. It
+can. _A name match against the document matches everything_, and the helper
+says so at its declaration now.
+
+**Verified:** format, typecheck, lint clean; 1270 tests / 99 files; `pnpm sim`
+byte-identical; sweep 0 findings; budget green; e2e 133/133 chromium and
+121 passed / 12 skipped webkit.
+
+**Next:** P4.1 and P4.6 are what is left of the file — the graded accessibility
+axis in the screen audit, both languages, at 320 and 390. Everything else in
+`PASS.md` is done or is a decision waiting in `NEXT.md` §1.

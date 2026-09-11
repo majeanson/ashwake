@@ -580,15 +580,68 @@ lesson is the reason that matters: **a role is a promise about behaviour, and
 declaring one without keeping it is worse than declaring neither.** The three
 things a screen reader was told _wrongly_ in Batch 3 were all of that shape.
 
-| id   | status | statement                                                                                                                | where           |
-| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | --------------- |
-| P4.1 | open   | a FOURTH audit axis: `page.accessibility.snapshot()` per screen, graded — every interactive node named, every state told | `e2e/audit/`    |
-| P4.2 | open   | the board's own tree: `role="application"` means the app owns the keys, so prove `board-keys` exists and says which      | `Board.tsx:595` |
-| P4.3 | open   | a keyboard-only full run: door → BEGIN → place → pop → end → new run, with no pointer event dispatched at all            | `e2e/`          |
-| P4.4 | open   | ONE speaker: `say()` drives the toast; prove nothing else announces over it, in either language                          | `App.tsx:3216`  |
-| P4.5 | open   | what a reader is told during a POP — the camera flies, the board changes, and the toast is the only witness              | `App.tsx:1692`  |
-| P4.6 | open   | both languages, at 320 and 390, because an accessible name is a STRING and French runs 20% longer                        | `e2e/audit/`    |
-| P4.7 | open   | whatever the grade names                                                                                                 | —               |
+| id   | status | statement                                                                                                                | where              |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| P4.1 | open   | a FOURTH audit axis: `page.accessibility.snapshot()` per screen, graded — every interactive node named, every state told | `e2e/audit/`       |
+| P4.2 | done   | the board’s own tree: the role, the tab stop, and the sentence that names the arrows                                     | `e2e/a11y.spec.ts` |
+| P4.3 | done   | **a keyboard-only full run, with no pointer event dispatched at all** — both engines                                     | `e2e/a11y.spec.ts` |
+| P4.4 | done   | **four speakers, not one** — and no two of them ever speak at once, in either language                                   | `e2e/a11y.spec.ts` |
+| P4.5 | done   | a harvest is silent in the toast and TAKES the reader to a focused receipt instead                                       | `e2e/a11y.spec.ts` |
+| P4.6 | open   | both languages, at 320 and 390, because an accessible name is a STRING and French runs 20% longer                        | `e2e/audit/`       |
+| P4.7 | open   | whatever the grade names                                                                                                 | —                  |
+
+### P4.2–P4.5, done: a run can be finished without seeing it (2026-09-10)
+
+> **Question:** the board says it can be read out — can a run be FINISHED
+> without seeing it?
+
+**Yes.** `e2e/a11y.spec.ts` walks the whole arc on keys alone — the door, the
+board, twenty-eight placements, a harvest, an ending reached by PLAYING rather
+than by `?end=1`, and out into a new run — **and asserts that no pointer event
+reached the page at all**. A listener installed before the first byte records
+every `pointerdown`, `mousedown` and `touchstart`; the test fails on one, so a
+keyboard path with a click hidden in its setup cannot pass. Green on both
+engines.
+
+**P4.2.** The board still declares `role="application"` and `tabindex="0"`, and
+`aria-describedby` still points at `board-keys` — checked together with the
+SENTENCE, which must name the arrows and be a description rather than a label.
+The role takes the arrow keys away from a screen reader; the description is the
+only thing that gives them back.
+
+**P4.4 was asked wrongly, and the right question passes.** There is not one
+speaker: there are FOUR live regions — the toast, the service-worker update
+line, the in-app-browser warning, and the hidden region that carries a BRIEF
+card's text — and each has a docblock arguing for itself. Counting them proves
+nothing. What would hurt a reader is two of them holding text at the same
+instant, and that is what is now watched, across a real keyboard walk, in both
+languages: it never happens.
+
+**P4.5 found the mechanism, not the silence.** The toast says nothing through a
+harvest — sampled every 150 ms for two seconds, never a word — which read as
+"the loudest event in the game is silent" and is wrong: the receipt is a CARD,
+the card TAKES FOCUS, and a focused card is read for being focused. That is
+`ui/Card.tsx`'s own ruling, which removed the card's `role="status"` because
+_"announcing it twice is worse than not at all"_. So the test pins the promise
+that ruling rests on — **something takes the reader to the receipt** — rather
+than the mechanism it happens to use today.
+
+**Two findings on the way, both about the tab ring.**
+
+1. **The board joins the tab order late.** A moment after BEGIN it is in the
+   DOM with `tabindex="0"`, not `aria-hidden`, not `inert` — and Tab walks
+   straight past it, because it has no size yet and a zero-sized element is not
+   focusable. `Board` is behind `lazy()`, so "the HUD is up" and "the board can
+   be reached by keyboard" are two different moments. Measured five runs of
+   five. The window is short and real: a keyboard player who tabs the instant
+   the stats appear finds the hand, the stats, MENU and the purse, and no
+   board.
+2. **And one that was mine.** The first version matched the door by name
+   against whatever had focus — and WebKit focuses the BODY first, whose
+   `textContent` is the whole page, which contains the word BEGIN. Four tests
+   then reported that WebKit cannot open its own front door. It can; the
+   matcher was greedy. _A name match against the document matches everything_,
+   and the helper says so now.
 
 **This one can touch the first minute**, so it lands before Marc's last clean
 pass or not at all. A fix that changes what is announced on the front door is a
