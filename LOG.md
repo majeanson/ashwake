@@ -7728,3 +7728,31 @@ e2e failures meant the budget never ran at all and the 277 KB first-paint
 regression above reached main under a red tick that said nothing about bytes.
 A byte count needs only `dist`, so it runs the moment `dist` exists. _A gate
 placed behind a flaky gate is not a gate._
+
+**And the artifact answered on its first red run.** The centring test passed
+that time — the poll was the right fix after all — and the failure moved to
+`quota.spec.ts`'s boot shed on CHROMIUM, which had also failed in tonight's
+first run. The uploaded page context settled it in one line: the diary was
+still on the device, a million characters of it, WHOLE. So the boot write had
+been satisfied before the ladder ever reached rung three.
+
+**Rung one is `lastError`, and a runner writes one where this machine does
+not** — a stale chunk, a worker that would not start, the troika error the
+WebKit run logged an hour earlier. Dropping a stack trace frees a few tens of
+kilobytes, which is plenty for a small boot write, so the ladder stopped at
+the first rung and the diary survived. The test then failed on its
+PRECONDITION rather than on its claim, which is the sentence it prints.
+
+**Reproduced here before it was fixed, which is the part worth insisting on.**
+Seeding forty thousand characters into `ashwake.error.v1` before the fill,
+with no removal, fails locally with CI's exact error; with the removal in
+place and the same seed, it passes twice. The test now empties rung one and
+tops the disk back up, so rungs one and two are empty by construction and the
+diary is the first rung that can pay. _A test about the third rung has to own
+the first two._
+
+**Five runs, five red ticks, and not one of them was tonight's code.** The two
+flakes were a picture read one frame too early and a precondition that
+depended on whether the browser had logged an error. Both were reachable only
+because main had not been pushed in twenty-four commits, so a whole session's
+worth of specs met the runner at once.

@@ -48,6 +48,15 @@ test.use({ viewport: { width: 390, height: 844 }, locale: 'fr-CA' });
 const TIMELINE_KEY = 'ashwake.timeline.v1';
 
 /**
+ * The ladder's FIRST rung, which the tests below have to be able to empty.
+ *
+ * Same reasoning as the diary's key above, and one more: a rung that frees
+ * something is a rung the ladder can stop on, so a test about a LATER rung has
+ * to know this one's name to make sure it frees nothing.
+ */
+const ERROR_KEY = 'ashwake.error.v1';
+
+/**
  * FILL THE DEVICE, DOWN TO THE LAST BYTES — and the second half is the test.
  *
  * The first version wrote 64 K-character chunks until one threw and called that
@@ -184,7 +193,7 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
         const k = localStorage.key(i) ?? '';
         if (!k.startsWith('fill.')) out[k] = localStorage.getItem(k)?.length ?? null;
       }
-      out.__error = localStorage.getItem('ashwake.error.v1');
+      out.__error = localStorage.getItem(ERROR_KEY);
       out.__toast = document.querySelector('.toast')?.textContent ?? null;
       return out;
     });
@@ -270,6 +279,25 @@ test('a diary shed before the game is on screen goes unmentioned', async ({
   await page.goto('/?seed=7&taught=1');
   await begin(page);
   await page.evaluate((key) => localStorage.setItem(key, 'x'.repeat(1024 * 1024)), TIMELINE_KEY);
+  await fillTheDisk(page);
+
+  /*
+   * AND THE FIRST RUNG MUST FREE NOTHING (2026-09-11).
+   *
+   * This test failed twice on CI and never here, and the artifact said why:
+   * the diary was still on the device, whole, so the boot write was satisfied
+   * before the ladder ever reached it. `lastError` is rung one, a runner
+   * writes one where this machine does not — a stale chunk, a worker that
+   * would not start — and dropping a stack trace frees enough for a small
+   * boot write. The ladder then stops at rung one and the diary survives,
+   * which fails the precondition rather than the claim.
+   *
+   * So the record is removed and the disk topped back up: rung one now frees
+   * nothing, rung two is a no-op in this body, and the diary is the first rung
+   * that can pay. The test is about the third rung, so the first two have to
+   * be empty by construction rather than by luck.
+   */
+  await page.evaluate((key) => localStorage.removeItem(key), ERROR_KEY);
   await fillTheDisk(page);
 
   await page.reload();
