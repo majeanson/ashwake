@@ -1,5 +1,5 @@
 import { PERK_DIALS, UPGRADE_STEPS } from '@content/goals';
-import { fmt1, ordinal, plural } from './format';
+import { fmt1, fmtPct, ordinal, plural } from './format';
 import type { Strings } from './Strings';
 
 /**
@@ -43,6 +43,8 @@ import type { Strings } from './Strings';
 const pw = (word: string): string => (word === '' ? '' : `${word}: `);
 /** A value that can carry one decimal, rounded to the nearest tenth. */
 const d1 = (n: number): string => fmt1(n, 'en');
+/** A percentage, which in English is just the number and a sign. */
+const pc = (n: number): string => fmtPct(n, 'en');
 
 const LUCK_CORE = 'LUCK is a purse, not a score.';
 const RARE_STAR =
@@ -659,6 +661,19 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       diary: 'DIARY',
       totals: 'TOTALS',
       shared: (seed) => `SHARED BOARD ${seed}`,
+      /** The run's SHAPE — five facts every finished run kept and no screen
+       *  printed, until Marc ruled to print them (2026-09-13, `PASS.md`
+       *  P7.7). `bigPop` carries two numbers because the biggest pop without
+       *  its moment is half the fact: the arc already draws it and the number
+       *  was never given. */
+      detail: {
+        placements: 'TILES PLACED',
+        popped: 'TILES POPPED',
+        bigPop: 'BIGGEST POP',
+        bigPopAt: (points, at) => `${points} · at ${pc(Math.round(at * 100))}`,
+        claims: 'DESTINATIONS',
+        quests: 'BOUNTIES',
+      },
     },
     tabGrows: 'more to come here as you play',
     language: 'LANGUAGE',

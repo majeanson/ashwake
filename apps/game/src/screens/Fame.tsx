@@ -247,11 +247,43 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
           {entry.detail.shot !== undefined && (
             <img src={entry.detail.shot} alt="" className="fame-shot" />
           )}
+          {/*
+            NINE FACTS, NOT FOUR (2026-09-13, Marc's ruling, `PASS.md` P7.7).
+
+            Every finished run has always stored nine and this row printed
+            four; the five added here are the run's SHAPE. `RunDetail`'s own
+            docblock is the argument — it quotes Marc asking for *"a 'full
+            detail' of the run"*, and *"the same facts `summariseRun` put on
+            the screen the night it happened"*.
+
+            The other option was deleting them: they are 24.5% of the diary
+            blob, which is 0.45% of a 5 MB store at three hundred runs.
+            Reclaiming half a per cent of a quota by throwing away facts Marc
+            asked for is the wrong way round, so it went to him as a screen
+            question and he ruled to print.
+
+            `bigPop` carries two numbers in one cell because the biggest pop
+            without its moment is half the fact: the arc above already DRAWS
+            where it landed and the number had never been given. The
+            composition is the catalogue's (`ui.fame.detail.bigPopAt`), never
+            this file's — a screen hands over facts and is given words (D4).
+
+            Ordered as the run happens: what it took, what it cashed, its best
+            moment, what it claimed, what it carried out.
+          */}
           <FactGrid
             facts={[
               { label: s.ui.stats.points, value: entry.score },
               { label: s.ui.atlasFarthest, value: entry.reach },
+              { label: s.ui.fame.detail.placements, value: entry.detail.placements },
               { label: s.ui.pop, value: entry.detail.harvests },
+              { label: s.ui.fame.detail.popped, value: entry.detail.popped },
+              {
+                label: s.ui.fame.detail.bigPop,
+                value: s.ui.fame.detail.bigPopAt(entry.detail.bigPop, entry.detail.bigPopAt),
+              },
+              { label: s.ui.fame.detail.claims, value: entry.detail.claims },
+              { label: s.ui.fame.detail.quests, value: entry.detail.quests },
               { label: s.lesson.relic.name, icon: 'relic', value: entry.detail.relics },
             ]}
           />

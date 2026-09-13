@@ -188,6 +188,34 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   await panel(page, 'fame').waitFor({ state: 'visible' });
   expect(await panel(page, 'fame').locator('details').count()).toBeGreaterThan(0);
 
+  /*
+   * AND THE ROW SAYS THE RUN'S SHAPE (2026-09-13, Marc's ruling, `PASS.md`
+   * P7.7).
+   *
+   * Every finished run has always stored nine facts and this row printed
+   * four; the five added are how many tiles it took, how many were cashed,
+   * the biggest single pop and where it landed, destinations claimed and
+   * bounties collected. `CLAUDE.md`: before calling a screen done, grep for a
+   * consumer of every action it can produce — and a label that exists in the
+   * catalogue and is rendered by nothing is exactly the class of fault that
+   * list was written for. So the row is OPENED here and the sentences are
+   * read off it.
+   *
+   * Counted rather than read, and that is deliberate: this spec sets no
+   * locale, so the sentences here are whichever catalogue the browser's
+   * language picked. NINE CELLS is the claim itself and it is true in both
+   * languages — comparing against `STRINGS_FR` would have been a test that
+   * passes or fails on Playwright's default locale rather than on the screen.
+   *
+   * The composed cell is checked separately because it is the only one built
+   * by a catalogue FUNCTION rather than looked up: the biggest pop carries its
+   * moment beside it, and `·` is this repository's divider in both languages.
+   */
+  const row = panel(page, 'fame').locator('details').first();
+  await row.locator('summary').click();
+  await expect(row.locator('.fact-label')).toHaveCount(9);
+  await expect(row.locator('.fact-value').filter({ hasText: '·' })).toHaveCount(1);
+
   expect(errors).toEqual([]);
 });
 

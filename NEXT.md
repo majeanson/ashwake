@@ -916,6 +916,32 @@ I lean to **2**, because it removes the state rather than adding an escape from
 it, and because `CLAUDE.md`'s two-reload rule is the sort of thing that erodes
 one exception at a time. But it is your rule and this is your call.
 
+**~~AND A SIXTH, IN A SAVED RUN RATHER THAN ON THE BOARD~~ — RULED AND BUILT
+2026-09-13.** Marc took the lean: **print them.** The expanded hall-of-fame row
+carries nine facts now instead of four — points, reach, tiles placed, pops,
+tiles popped, the biggest pop WITH the moment it landed, destinations, bounties
+and relics, in the order the run happens. Five new labels in both languages
+under `ui.fame.detail`, `LOG.md` Session 97.
+
+`bigPop` carries two numbers in one cell because the biggest pop without its
+moment is half the fact: the arc directly above it already DRAWS where it
+landed and the number had never been given. The composition is the catalogue's
+(`bigPopAt`), which takes the stored fraction and returns the percentage — a
+screen hands over facts and is given words (D4).
+
+**Nothing was deleted**, which was the version of this row the sweep handed
+over: reclaiming 0.45% of a 5 MB store by throwing away facts Marc asked for is
+the wrong way round. The 24.5% measurement stays in `PASS.md` in case the diary
+ever needs it.
+
+`e2e/menus.spec.ts` opens a real row and counts the cells, because a label that
+exists in the catalogue and is rendered by nothing is precisely the class of
+fault `CLAUDE.md`'s consumer rule was written for. Counted rather than read:
+that spec sets no locale, so nine cells is the claim that is true in both
+languages.
+
+The original finding follows.
+
 **AND A SIXTH, IN A SAVED RUN RATHER THAN ON THE BOARD (2026-09-10,
 `PASS.md` P7).** Every finished run stores nine facts about itself and the
 hall of fame's expanded row prints **four**: the epitaph, the board's

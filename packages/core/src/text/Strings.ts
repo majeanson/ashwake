@@ -752,6 +752,41 @@ export type Strings = {
        * sentence rather than beside it, the way a daily's date is.
        */
       readonly shared: (seed: number) => string;
+      /**
+       * THE RUN'S SHAPE, which every finished run kept and no screen printed
+       * (2026-09-13, Marc's ruling, `PASS.md` P7.7).
+       *
+       * `RunDetail` stores nine facts and the expanded hall-of-fame row
+       * showed four: the epitaph, the board's thumbnail, the pop count and
+       * the relics carried out. The five here are the rest — how many tiles
+       * it took, how many were cashed, the biggest single pop and where in
+       * the run it landed, destinations claimed, bounties collected.
+       *
+       * The other option was DELETING them: they are 24.5% of the timeline
+       * blob, which is 0.45% of a 5 MB store at three hundred runs. Marc
+       * ruled to print, and `RunDetail`'s own docblock is why — it quotes
+       * him asking for *"a 'full detail' of the run"*, and four of nine is
+       * not that.
+       */
+      readonly detail: {
+        readonly placements: string;
+        readonly popped: string;
+        readonly bigPop: string;
+        /**
+         * The biggest pop's points and how far through the run it landed, as
+         * one value.
+         *
+         * `at` is the FRACTION the fact is stored as — `view/view.ts`'s
+         * `biggestAt`, 0..1 of the run's placements — not a percentage. The
+         * catalogue turns it into one, which is formatting rather than
+         * deciding: the same job `fmtPct` does for every other number a
+         * player reads, and the same reason the screen hands over the stored
+         * fact rather than a prepared one (D4).
+         */
+        readonly bigPopAt: (points: number, at: number) => string;
+        readonly claims: string;
+        readonly quests: string;
+      };
     };
     readonly language: string;
     readonly languages: Readonly<Record<Locale, string>>;

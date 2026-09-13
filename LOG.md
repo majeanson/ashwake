@@ -8029,3 +8029,49 @@ meets it.
 
 Verified: format, types, lint, sweep 0 findings over 306 files, `pnpm budget`
 inside every bar, **offline 5 passed**.
+
+### Session 97 — nine facts, not four, and the count is the claim (2026-09-13)
+
+**Question:** Marc's last of four rulings — print the five facts a saved run
+keeps and no screen says, rather than delete them for a quarter of the diary.
+What does a row look like with nine?
+
+**Built, and two small decisions inside it were worth making carefully.**
+
+**The five are the run's SHAPE**: how many tiles it took, how many were cashed,
+the biggest single pop and where in the run it landed, destinations claimed,
+bounties collected. Ordered as the run happens rather than by size, so a reader
+walks it the way they played it.
+
+**`bigPop` carries two numbers in one cell**, because the biggest pop without
+its moment is half the fact: the arc drawn directly above it already SHOWS
+where it landed and the number had never been given. That is the only cell
+built by a catalogue FUNCTION rather than looked up, and the composition is the
+catalogue's — `bigPopAt` takes the stored fraction and returns the percentage,
+which is formatting rather than deciding, the same job `fmtPct` does for every
+other number a player reads. A screen hands over facts and is given words (D4);
+it does not prepare a percentage and hand that over.
+
+**And the e2e assertion is a count, not a reading.** The first version compared
+against `STRINGS_FR` — and `menus.spec.ts` sets no locale, so it would have
+passed or failed on Playwright's default language rather than on the screen.
+**Nine cells is the claim itself and it is true in both languages.** The
+composed cell is checked separately by its divider, which is `·` in both.
+
+That check exists at all because of `CLAUDE.md`'s consumer rule: a label that
+lives in the catalogue and is rendered by nothing is exactly the fault that
+list was written for, and this row is where five of them would have sat.
+
+**Nothing was deleted.** The version of this row the sweep handed over was
+"eight numbers written into a save and read by nothing", and it was the wrong
+way round: the numbers are 24.5% of the diary blob, which is 0.45% of a 5 MB
+store at three hundred runs, and `RunDetail`'s own docblock quotes Marc asking
+for _"a 'full detail' of the run"_. The measurement stays in `PASS.md` in case
+the diary ever needs it.
+
+Verified: format, types, lint, **1292 unit tests**, menus 21 passed with a real
+row opened and counted.
+
+**All four of Marc's rulings are now landed** — P8.2 the held sentence, P8.1
+the worker that declines a stale shell, P7.7 these nine facts, and P8.5 which
+needed no code. What is left of `PASS.md` is four rows that need a phone.

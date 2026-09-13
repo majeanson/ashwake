@@ -669,6 +669,28 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       diary: 'JOURNAL',
       totals: 'TOTAUX',
       shared: (seed) => `PLATEAU PARTAGÉ ${nb(seed)}`,
+      /**
+       * LA FORME DE LA PARTIE (2026-09-13, décision de Marc, `PASS.md` P7.7).
+       *
+       * Chaque partie terminée garde neuf faits et la rangée dépliée en
+       * montrait quatre. Les cinq autres sont la FORME de la partie, et son
+       * propre commentaire cite Marc : « un “plein détail” de la partie ».
+       * L’autre option était de les effacer pour récupérer 24,5 % du journal —
+       * 0,45 % d’un espace de 5 Mo à trois cents parties. Marc a tranché :
+       * on les imprime.
+       *
+       * `bigPop` porte DEUX nombres parce que le plus gros coup sans son
+       * moment n’est que la moitié du fait : l’arc le dessine déjà et le
+       * chiffre n’a jamais été dit.
+       */
+      detail: {
+        placements: 'TUILES POSÉES',
+        popped: 'TUILES RÉCOLTÉES',
+        bigPop: 'PLUS GROS COUP',
+        bigPopAt: (points, at) => `${nb(points)} · à ${pc(Math.round(at * 100))}`,
+        claims: 'DESTINATIONS',
+        quests: 'PRIMES',
+      },
     },
     tabGrows: 'il y a plus à venir ici en jouant',
     language: 'LANGUE',
