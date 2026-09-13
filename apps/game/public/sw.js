@@ -154,6 +154,47 @@ self.addEventListener('fetch', (event) => {
     const NAV_TIMEOUT_MS = 2500;
     const network = fetch(request);
 
+    /*
+     * IS THE SHELL WE WOULD FALL BACK TO STILL THE ONE THIS SITE SERVES?
+     * (2026-09-13, `PASS.md` P8.1, Marc's ruling.)
+     *
+     * The loop this closes: past `NAV_TIMEOUT_MS` the cached shell answers,
+     * naming chunks the CURRENT build does not serve; the chunk request misses
+     * the cache and 404s; the import rejects; the panel comes up; RELOAD does
+     * the same thing again until the network finally beats the timer. Marc was
+     * given that as a reload-policy question — `CLAUDE.md` allows exactly two
+     * reloads and a third needs his word — and ruled the other way: **tighten
+     * the worker, do not add an escape.** *It removes the state rather than
+     * adding a door out of it, and the two-reload rule is the sort that erodes
+     * one exception at a time.*
+     *
+     * `/version.json` is ninety bytes, is never served from cache (see the
+     * guard above — a cached answer to "which build is this" is a wrong
+     * answer), and is asked for in PARALLEL with the document rather than
+     * before it, so it costs no latency of its own. It is given the same
+     * budget as the navigation: on any line where the document is slow enough
+     * to matter, ninety bytes have long since arrived.
+     *
+     * **Offline is the case this must not break**, and it is the reason the
+     * test is for positive evidence rather than for agreement. A fetch that
+     * fails, times out, or answers something unparseable leaves `stale` false,
+     * and the cached shell answers exactly as it did before. The only new
+     * behaviour is when the site says, in writing, that it is serving a
+     * different build than the one this cache holds.
+     */
+    const staleShell = Promise.race([
+      fetch('/version.json', { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((v) => typeof v?.sha === 'string' && `ashwake-${v.sha.slice(0, 12)}` !== VERSION)
+        .catch(() => false),
+      // Bounded, and the bound is the point: this is only ever READ after the
+      // navigation timer has already fired, so the answer has had the whole
+      // `NAV_TIMEOUT_MS` to arrive. Without this race, a line that delivered
+      // the document but not the stamp would hang the fallback forever — the
+      // fallback whose entire job is to answer when the network will not.
+      new Promise((resolve) => setTimeout(() => resolve(false), NAV_TIMEOUT_MS)),
+    ]);
+
     // The cache refresh rides on waitUntil, not on the response: when the
     // timer wins, the page has already been answered from cache, and the
     // late network response must still land in the cache for next time.
@@ -173,9 +214,32 @@ self.addEventListener('fetch', (event) => {
         ]);
         if (winner !== null) return winner;
 
+        /*
+         * The shell this worker holds names this worker's chunks. If the site
+         * is serving a different build, those names are gone and serving the
+         * shell is serving a page that cannot finish loading — so wait for the
+         * document however long it takes. Slow is recoverable; a stale shell
+         * is the loop.
+         */
         const cached =
           (await caches.match(request, CACHED_ANY_QUERY)) ??
           (await caches.match('/index.html', CACHED));
+
+        /*
+         * The shell this worker holds names this worker's chunks. If the site
+         * is serving a different build those names are gone, and serving the
+         * shell is serving a page that cannot finish loading — so wait for the
+         * document however long it takes. Slow is recoverable; a stale shell
+         * is the loop.
+         *
+         * **But a network that FAILS is worse than a stale shell**, because
+         * the page then gets nothing at all — and the plug can be pulled
+         * between the stamp arriving and the document doing so. So the
+         * fallback is not removed here, it is moved to last. Without the
+         * `catch` this guard would turn a dropped connection into a white
+         * screen on exactly the devices the precache exists for.
+         */
+        if (await staleShell) return network.catch(() => cached ?? network);
         // A first visit on a line this slow has nothing cached yet, so the
         // network — however late — is the only answer left to wait for.
         return cached ?? network;

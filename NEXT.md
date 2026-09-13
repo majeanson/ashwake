@@ -448,6 +448,19 @@ protects hardest, and a diary nobody has written yet cannot be missed at the
 door; a returning player on a full phone is who this sentence is for, and they
 will be on the board within seconds.
 
+**~~HALF THE PHONES GET NO ART OFFLINE~~ — RULED 2026-09-13: LEAVE IT.** Marc
+took the lean, so nothing is built and nothing moves: the precache stays at one
+direction, `budget.json`'s 2085 KB bar stays where it is, and a
+light-preferring phone that goes offline before it has drawn `daylight` gets the
+procedural floor. That floor is what the game shipped with for weeks, it is
+honest-looking, and the case is a minority of a minority — light-preferring AND
+offline AND on a second visit. It also self-heals: the fetch handler caches the
+art opportunistically on any online visit where it is drawn.
+
+Kept rather than deleted because the measurement is the valuable part and the
+trade can be re-opened if the stranger test ever meets it. The original
+finding follows.
+
 **HALF THE PHONES GET NO ART OFFLINE, AND COVERING THEM IS 301 KB (2026-09-10,
 `PASS.md` P8.5).** The service worker precaches ONE direction's art —
 `settlement`, the default — because `vite.config.ts` argued on 2026-09-02 that
@@ -850,6 +863,38 @@ something"_) and this was the case that broke it. RELOAD and the report stay.
 That needed no ruling from you; a button that provably cannot work is worse
 than its absence, because pressing it moves the repeat counter and teaches a
 player the game is broken rather than that the page is stale.
+
+**WHAT WAS YOURS: ~~the slow-line case~~ — RULED AND BUILT 2026-09-13.** Marc
+took option 2: **tighten the worker**, not a third reload. `public/sw.js` asks
+`/version.json` in PARALLEL with every navigation — ninety bytes, never cached,
+so it costs no latency of its own — and when the timer fires it declines to
+fall back to a shell whose build the site is no longer serving, waiting for the
+document instead. The mismatch state stops existing rather than gaining a door
+out of it, and `CLAUDE.md`'s two-reload rule is untouched.
+
+**Written to fail towards today's behaviour.** A `/version.json` that fails,
+times out or answers nonsense leaves the verdict false and the cached shell
+answers exactly as before — which is what keeps offline working. And the
+decline still falls back if the NETWORK fails: `network.catch(() => cached)`,
+because a dropped connection between the stamp arriving and the document
+arriving would otherwise be a white screen on the very devices the precache
+exists for.
+
+**One half is tested and the other cannot be, and that is measured rather than
+assumed.** `e2e/offline.spec.ts` proves a slow line is still answered from the
+cache when the build matches, and all five offline tests still pass. The
+converse test — stage a deploy, delay the document, assert the shell is
+declined — was written and fails, because **Playwright's `context.route` does
+not intercept the service worker's own fetches**: instrumented, the version
+route is hit once, by the page, while the worker talks to the real server and
+correctly serves the cache. The test would have measured the harness. The
+docblock at the end of that file carries it.
+
+**So one line for Session A, or for any real deploy:** after a deploy lands,
+open the game on a phone on a slow connection and see that it comes up rather
+than looping on the failure panel. That is the only instrument there is.
+
+The original finding and both options follow.
 
 **WHAT IS YOURS: the slow-line case, and it is a reload-policy question.**
 `CLAUDE.md` allows exactly two reloads — the service-worker update and the

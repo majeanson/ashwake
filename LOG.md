@@ -7967,3 +7967,65 @@ Verified: format, types, lint, **1292 unit tests / 101 files** (up four),
 job took 12m26s instead of 1h16m. The only red left is `board.spec.ts`'s
 centring check on WebKit — P6.8, the empty board, which is Session A's first
 line and the one genuine bug in the file.
+
+### Session 96 — the worker declines a shell it can prove is stale (2026-09-13)
+
+**Question:** Marc ruled P8.1 the way that removes the state rather than adding
+a door out of it — tighten the worker, no third reload. Can it be built without
+breaking offline, and can it be proved?
+
+**Built, and proved by half. The other half is the harness again.**
+
+**The change is one parallel request.** `public/sw.js` asks `/version.json`
+alongside every navigation — ninety bytes, never cached (the worker already
+refuses to cache the file that answers "which build is this"), started in the
+same breath as the document so it costs no latency of its own. When the 2.5 s
+timer fires and the cached shell would answer, the worker first asks whether
+the site is still serving the build this cache holds. If it says otherwise, the
+shell names chunks that are gone and serving it is serving a page that cannot
+finish loading, so the document is waited for however late.
+
+**Written to fail towards today's behaviour, which is the whole of the care
+here.** The test is for POSITIVE evidence: a stamp that fails, times out or
+answers nonsense leaves the verdict false and the cache answers exactly as
+before. That is what keeps offline working, and the five offline tests are the
+witness.
+
+**And one hazard I put in and took back out.** `return network` on a stale
+shell turns a connection dropped between the stamp and the document into a
+white screen — on precisely the devices the precache exists for. The fallback
+is not removed, it is moved to last: `network.catch(() => cached ?? network)`.
+A guard that makes the bad case worse is not a guard.
+
+**The bound on the stamp is not decoration either.** Without racing it against
+`NAV_TIMEOUT_MS`, a line that delivered the document but not the ninety bytes
+would hang the fallback forever — the fallback whose entire job is to answer
+when the network will not.
+
+**What cannot be tested, and how that was established.** The test that belongs
+beside "a slow line is answered from the cache when the build still matches" is
+its converse: stage a deploy by answering `/version.json` with another sha,
+delay the document past the timeout, assert the shell is declined. It was
+written and it fails — the cached shell is served anyway. Instrumented rather
+than guessed at: the version route is hit exactly ONCE, by the page, because
+**Playwright's `context.route` does not intercept the service worker's own
+fetches.** The worker asks the real server, gets the real sha, finds it
+matches, and correctly serves the cache. The test would have measured the
+harness.
+
+Two guesses were made before that counter was added and both were wrong, which
+is the second time today the same method has been the only one that worked —
+`e2e/quota.spec.ts` and a full device this morning. _When a test and the code
+disagree, instrument until the thing that is actually happening is visible._
+
+So the decline itself and the `network.catch` are read-through-and-reason, both
+written to fail towards the old path, and `NEXT.md` §1 carries the one line a
+real deploy on a real slow line can answer.
+
+**P8.5 needed no code.** Marc took the lean — leave the offline art at one
+direction. The precache stays at 2049.3 KB raw against a 2085 KB bar, the
+measurement is kept, and the trade can be reopened if the stranger test ever
+meets it.
+
+Verified: format, types, lint, sweep 0 findings over 306 files, `pnpm budget`
+inside every bar, **offline 5 passed**.

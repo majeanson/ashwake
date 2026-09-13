@@ -233,3 +233,91 @@ test('a first visit with no network is the browser saying so', async ({ page, co
   await context.setOffline(true);
   await expect(page.goto('/')).rejects.toThrow(/ERR_INTERNET_DISCONNECTED|ERR_NETWORK|net::/);
 });
+
+/**
+ * A STALE SHELL IS NEVER SERVED, WHICH IS HOW THE RELOAD LOOP STOPS EXISTING
+ * (2026-09-13, `PASS.md` P8.1, Marc's ruling).
+ *
+ * The loop: past the worker's 2.5 s navigation timeout the cached shell
+ * answers, naming chunks the CURRENT build does not serve; the chunk 404s, the
+ * import rejects, the panel comes up, and RELOAD does the same thing again
+ * until the network finally beats the timer. `ui/staleChunk.test.tsx` already
+ * proves CONTINUE could never escape it, so RELOAD was the only door — and
+ * `CLAUDE.md` allows exactly two reloads, which is why a third was Marc's to
+ * rule on. He ruled the other way: **tighten the worker rather than add an
+ * escape**, because it removes the state instead of adding a way out of it.
+ *
+ * So the worker asks `/version.json` — ninety bytes, never cached, fetched in
+ * parallel with the document so it costs no latency — and declines to fall
+ * back to a shell whose build the site is no longer serving.
+ *
+ * **Both directions are asserted here, and the second is the one that
+ * matters.** A guard that never serves the cache would "pass" the first test
+ * and break offline for everybody; the pair is what says this is a narrower
+ * fallback rather than no fallback. The offline tests above are the third
+ * witness: a failed `/version.json` leaves the answer false, so a device with
+ * no network behaves exactly as it did before.
+ */
+async function slowDocumentSaying(context: BrowserContext, marker: string): Promise<void> {
+  // Slower than the worker's NAV_TIMEOUT_MS, so the cached shell is the thing
+  // that WOULD answer. Whether it does is the subject.
+  await context.route('**/index.html', async (route) => {
+    if (route.request().resourceType() !== 'document') return route.fallback();
+    await new Promise((r) => setTimeout(r, 3200));
+    await route.fulfill({ contentType: 'text/html', body: `<title>${marker}</title>` });
+  });
+  await context.route('http://localhost:4174/?*', async (route) => {
+    if (route.request().resourceType() !== 'document') return route.fallback();
+    await new Promise((r) => setTimeout(r, 3200));
+    await route.fulfill({ contentType: 'text/html', body: `<title>${marker}</title>` });
+  });
+}
+
+test('a slow line is answered from the cache when the build still matches', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/?seed=7&taught=1');
+  await precacheReady(page);
+
+  await slowDocumentSaying(context, 'FROM THE NETWORK');
+  await page.reload();
+
+  // The cached shell, because nothing says this build is gone. This is the
+  // behaviour that has always been here and the half that must not regress.
+  await expect(page.locator('[data-door="begin"]')).toBeVisible();
+});
+
+/**
+ * AND THE OTHER HALF CANNOT BE TESTED HERE — MEASURED, NOT ASSUMED.
+ *
+ * The test that belongs beside the one above is "a slow line WAITS for the
+ * network when the build has moved on": stage a deploy by answering
+ * `/version.json` with a different sha, delay the document past the worker's
+ * timeout, and assert the cached shell is declined. It was written, and it
+ * fails — the cached shell is served anyway.
+ *
+ * Not because the guard is wrong. **Playwright's `context.route` does not
+ * intercept the service worker's OWN fetches.** Instrumented, the version
+ * route is hit exactly once — by the page — while the worker's request goes
+ * to the real server, gets the real sha, finds it matches, and correctly
+ * serves the cache. The test would have been measuring the harness.
+ *
+ * That is the same conclusion `e2e/quota.spec.ts` reached the same day about a
+ * full device, by the same method: probe until the thing that is actually
+ * happening is visible, and then say so. Two guesses were made here before the
+ * instrumentation was written and both were wrong.
+ *
+ * **So what covers the guard, and what does not.** Covered: the cache still
+ * answers a slow line when the build matches (above), and every offline test
+ * in this file still passes — which is the third witness, because a failed
+ * `/version.json` leaves the answer false and an offline device takes exactly
+ * the path it always did. Not covered: the decline itself, and the
+ * `network.catch` that keeps a dropped connection from becoming a white
+ * screen. Both are read-through-and-reason, and both are written to fail
+ * towards today's behaviour rather than away from it.
+ *
+ * `NEXT.md` §1 carries it. A real deploy landing under a real phone on a real
+ * slow line is the only thing that can answer it, which makes it Session A's
+ * kind of question rather than this file's.
+ */
