@@ -57,6 +57,33 @@ const TIMELINE_KEY = 'ashwake.timeline.v1';
 const ERROR_KEY = 'ashwake.error.v1';
 
 /**
+ * HOW BIG THE DIARY IS, NEVER WHAT IT SAYS — and this is a hang, not a tidy-up.
+ *
+ * The two tests below seed a diary of a million characters and then assert it
+ * is GONE. Written as `expect(getItem(TIMELINE_KEY)).toBeNull()` that reads
+ * well and fails catastrophically: a failure message carries the received
+ * value, so one failing run writes a single 1,048,576-character line to
+ * stdout.
+ *
+ * On 2026-09-11 the Actions runner would not take it. `pnpm test:e2e` printed
+ * all 134 of its results at 22:57:00, reached that line, and **did not exit
+ * until 00:06:05** — sixty-nine minutes with the pipe blocked, no summary, no
+ * counts, and a log that ends mid-report on `expect(received).toBeNull()`. No
+ * other line in the whole 167 KB log is over 400 characters. The two runs
+ * either side of it failed on WebKit, whose messages are short, and finished
+ * in eleven minutes each.
+ *
+ * So the claim travels as a NUMBER. `null` still means shed, and what these
+ * two tests prove is unchanged; what they can no longer do is print the diary.
+ * It is also the better witness — `1048576` says the diary is WHOLE and the
+ * ladder never ran at all, where a truncated wall of `x` says neither.
+ *
+ * *An assertion's message is written to a pipe somebody else has to drain.*
+ */
+const diaryLength = (page: Page): Promise<number | null> =>
+  page.evaluate((key) => localStorage.getItem(key)?.length ?? null, TIMELINE_KEY);
+
+/**
  * FILL THE DEVICE, DOWN TO THE LAST BYTES — and the second half is the test.
  *
  * The first version wrote 64 K-character chunks until one threw and called that
@@ -193,15 +220,19 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
         const k = localStorage.key(i) ?? '';
         if (!k.startsWith('fill.')) out[k] = localStorage.getItem(k)?.length ?? null;
       }
-      out.__error = localStorage.getItem(ERROR_KEY);
+      // Its FIRST 200 characters, for the reason `diaryLength` above is a
+      // number: this record is a stack trace, rung one frees "a few tens of
+      // kilobytes" of it, and `JSON.stringify` puts all of that on one line.
+      out.__error = localStorage.getItem(ERROR_KEY)?.slice(0, 200) ?? null;
+      out.__errorLength = localStorage.getItem(ERROR_KEY)?.length ?? null;
       out.__toast = document.querySelector('.toast')?.textContent ?? null;
       return out;
     });
     throw new Error(`DIAG ${JSON.stringify(diag)}\n${String(e)}`, { cause: e });
   }
   expect(
-    await page.evaluate((key) => localStorage.getItem(key), TIMELINE_KEY),
-    'the diary was reported as shed and is still there',
+    await diaryLength(page),
+    'the diary was reported as shed and is still there, at this many characters',
   ).toBeNull();
 });
 
@@ -257,16 +288,27 @@ test('a device that was already full still opens the game', async ({ page }) => 
 /**
  * CHROMIUM-ONLY, AND WHAT WEBKIT DOES INSTEAD IS THE REASON (P6.1).
  *
- * Filled to the last byte the same way, WebKit's boot write SUCCEEDS: the run
- * key already exists and rewriting a value of about its own size costs nothing
- * there, so the ladder is never climbed and the diary this test seeds is still
- * on the device afterwards. The three tests above pass on both engines; this
- * one is about a write that WebKit does not make.
+ * Filled to the last byte the same way, WebKit's boot write SUCCEEDS: the
+ * ladder is never climbed and the diary this test seeds is still on the device
+ * afterwards. The three tests above pass on both engines; this one is about a
+ * write that WebKit does not make.
+ *
+ * **And the reason first written here was wrong** (2026-09-12). It said the
+ * run key already exists and rewriting a value of its own size costs nothing
+ * there — a good theory, and the precondition below now DELETES every one of
+ * those keys before reloading, so on WebKit the boot write is an allocation
+ * into a device filled to under one character of headroom. Run with the skip
+ * lifted, it still passes the boot write and the diary comes back at
+ * `1048576`: whole, untouched, the ladder never entered. So it is not about
+ * rewriting in place. WebKit simply finds room for a small write on a store
+ * this file has no way to fill any further.
  *
  * Which is worth knowing rather than hiding: the gap it documents — a rung
  * spent before the game is on screen says nothing — is reachable on Chromium's
  * accounting and not on WebKit's, so whether a player meets it depends on
- * their browser's idea of what a full disk is.
+ * their browser's idea of what a full disk is. That is a fact about Marc's
+ * engine, and it means this particular silence is one an iPhone may never
+ * reach.
  */
 test('a diary shed before the game is on screen goes unmentioned', async ({
   page,
@@ -274,7 +316,7 @@ test('a diary shed before the game is on screen goes unmentioned', async ({
 }) => {
   test.skip(
     browserName !== 'chromium',
-    'WebKit rewrites the run key in place, so no rung is spent',
+    'WebKit finds room for the boot write even on a full store, so no rung is spent',
   );
   await page.goto('/?seed=7&taught=1');
   await begin(page);
@@ -282,22 +324,55 @@ test('a diary shed before the game is on screen goes unmentioned', async ({
   await fillTheDisk(page);
 
   /*
-   * AND THE FIRST RUNG MUST FREE NOTHING (2026-09-11).
+   * AND THE BOOT WRITE MUST BE AN ALLOCATION (2026-09-12).
    *
-   * This test failed twice on CI and never here, and the artifact said why:
-   * the diary was still on the device, whole, so the boot write was satisfied
-   * before the ladder ever reached it. `lastError` is rung one, a runner
-   * writes one where this machine does not — a stale chunk, a worker that
-   * would not start — and dropping a stack trace frees enough for a small
-   * boot write. The ladder then stops at rung one and the diary survives,
-   * which fails the precondition rather than the claim.
+   * The rung-one removal below was necessary and not sufficient: the test
+   * failed a THIRD time on CI, and the artifact said the diary was still
+   * there WHOLE — a million characters, untouched — so the ladder had not run
+   * at all, not even to rung one.
    *
-   * So the record is removed and the disk topped back up: rung one now frees
-   * nothing, rung two is a no-op in this body, and the diary is the first rung
-   * that can pay. The test is about the third rung, so the first two have to
-   * be empty by construction rather than by luck.
+   * The reason is that every key the boot write touches already EXISTS on this
+   * device: the first visit above created them before the disk was filled.
+   * Rewriting a key with a value of its own size costs a full device nothing,
+   * on any accounting — it is exactly what the WebKit note above describes,
+   * and whether Chromium's boot write happens to GROW one of those values is a
+   * property of the runner rather than of the game. This machine grew one and
+   * the runner did not.
+   *
+   * So the app's keys are shrunk to a single character and the disk is topped
+   * back up. Whatever boot writes now has to allocate, because the value it is
+   * replacing is one character long. That is the ordinary case this file is
+   * about in the first place — the docblock above says so: *"a phone that has
+   * been full for a week ... every write it makes — the direction, the
+   * language, the features, the first save — is a throw before the player has
+   * touched anything."*
+   *
+   * The diary is left alone: it is what the third rung sheds. The keys are
+   * REMOVED rather than shrunk, because a device with no direction saved is a
+   * device the game knows how to open and a device whose direction is the
+   * letter `x` is a case nothing in `storage.ts` was written for; the
+   * precondition must not be the more interesting bug.
+   *
+   * This also subsumes AND THE FIRST RUNG MUST FREE NOTHING (2026-09-11),
+   * which removed `ashwake.error.v1` alone for the same reason one layer
+   * down: rung one is the last-error record, a runner writes one where this
+   * machine does not — a stale chunk, a worker that would not start — and
+   * dropping a stack trace frees enough for a small boot write, so the ladder
+   * stopped at rung one and the diary survived. That fix was necessary and
+   * assumed the boot write would throw at all. It is one key in the sweep
+   * below now, and rung one is still empty by construction.
+   *
+   * *A precondition that depends on which value happened to grow is not a
+   * precondition.*
    */
-  await page.evaluate((key) => localStorage.removeItem(key), ERROR_KEY);
+  await page.evaluate((diary) => {
+    const doomed: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i) ?? '';
+      if (!key.startsWith('fill.') && key !== diary) doomed.push(key);
+    }
+    for (const key of doomed) localStorage.removeItem(key);
+  }, TIMELINE_KEY);
   await fillTheDisk(page);
 
   await page.reload();
@@ -307,7 +382,7 @@ test('a diary shed before the game is on screen goes unmentioned', async ({
   await placeOneTile(page);
 
   expect(
-    await page.evaluate((key) => localStorage.getItem(key), TIMELINE_KEY),
+    await diaryLength(page),
     'the boot write did not run the ladder, so this test is about nothing',
   ).toBeNull();
   expect(

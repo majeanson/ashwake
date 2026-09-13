@@ -7805,3 +7805,83 @@ fifteen seconds it was given. It treats an unphotographable frame as a "not
 yet" now and keeps the two endings apart, because a board that drew nothing
 and a board nothing could be drawn OF are different bugs. _Every flake this
 session has had one shape: a fact sampled once, where the contract said wait._
+
+### Session 94 — a megabyte in an assertion message hung CI for sixty-nine minutes (2026-09-13)
+
+**Question:** `e2e` has been red on three consecutive pushes and the last run
+took 1h16m. Is the game broken, or is the instrument?
+
+**The instrument, twice, and the second one was not a flake at all.**
+
+**A step that stopped for sixty-nine minutes.** `pnpm test:e2e` printed every
+one of its 134 chromium results at 22:57:00 and did not exit until 00:06:05.
+The log ends mid-report, on `expect(received).toBeNull()`, with no summary and
+no counts — and **no line in the whole 167 KB log is over 400 characters.** The
+next thing Playwright was about to write was `Received: "xxx…"`: the full value
+of the assertion, which `quota.spec.ts` had seeded as a diary of 1,048,576
+characters. The runner would not take a line that size, stopped draining the
+pipe, and the write blocked.
+
+The two runs either side of it failed in eleven minutes each. Both failed on
+**WebKit** — the last command in `pnpm build && playwright test --project=chromium
+&& playwright test --project=webkit` — on assertions whose messages are short.
+This one failed on Chromium, on the one assertion in the repository that prints
+a megabyte. That asymmetry is the whole diagnosis, and it was sitting in the
+job timings.
+
+Ruled out first, because it was the obvious answer and it was wrong: the cost
+of FORMATTING a megabyte-long message. A standalone spec doing exactly that
+fails in 2.5 seconds. It is not the formatting, it is the pipe.
+
+**So the claim travels as a number.** `diaryLength` returns `getItem(key)
+?.length ?? null`, and both sites assert on that. `null` still means shed and
+nothing the two tests prove has changed; what they can no longer do is print
+the diary. It is also the better witness — the WebKit run below came back
+`Received: 1048576`, which says the diary is WHOLE and the ladder was never
+entered, where a truncated wall of `x` says neither. The DIAG block's
+last-error record is capped at 200 characters for the same reason, since a
+stack trace on one `JSON.stringify` line is the same fault one order down.
+
+_An assertion's message is written to a pipe somebody else has to drain._
+
+**And `timeout-minutes: 25` on the `e2e` job**, which is a backstop and not a
+fix. A green run is seven minutes and the slowest red one was fourteen. The
+2026-09-11 ruling stands — this job is a report, not a gate — but a report
+nobody has for an hour and a quarter is not one.
+
+**The second fault: a precondition that depended on which value happened to
+grow.** `a diary shed before the game is on screen goes unmentioned` had now
+failed three times on CI and never here, and Session 92's fix — empty rung one,
+because a runner writes a `lastError` where this machine does not — was
+necessary and not sufficient. The artifact said so plainly once the message was
+a number: the diary came back at 1,048,576, so the ladder had not run **at
+all**, not even to rung one.
+
+The reason is that every key the boot write touches already existed: the test's
+own first visit created them before the disk was filled, and rewriting a key
+with a value of its own size costs a full device nothing. Whether Chromium's
+boot write happens to GROW one of those values is a property of the machine.
+This one grew; the runner did not.
+
+So the app's keys are **removed** before the reload and the disk topped back
+up. Whatever boot writes must now allocate into a store with under one
+character of headroom. Removed rather than shrunk to a placeholder, because a
+device with no direction saved is a device the game knows how to open and a
+device whose direction is the letter `x` is a case nothing in `storage.ts` was
+written for — _the precondition must not be the more interesting bug._ It
+subsumes Session 92's single-key removal, which is now one entry in the sweep.
+
+**And it corrected a sentence this file had been telling itself.** The WebKit
+skip said _"WebKit rewrites the run key in place, so no rung is spent"_. Good
+theory; the precondition now deletes that key. Run with the skip lifted, WebKit
+**still** passes the boot write and the diary comes back whole. So it is not
+about rewriting in place — WebKit finds room for a small write on a store this
+file has no way to fill any further. The skip stands; its reason did not, and
+it had been standing on the wrong one for three days.
+
+Which is a fact about Marc's engine rather than about the harness: the silence
+this test pins — a rung spent before the game is on screen says nothing — is
+reachable on Chromium's accounting and may be one an iPhone never reaches.
+
+Verified: format, types, lint clean; **134 chromium e2e passed in 4.2 m**, the
+suite that has been red since 2026-09-11.

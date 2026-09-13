@@ -126,6 +126,19 @@ jobs:
   # `pnpm test:e2e` already builds.
   e2e:
     runs-on: ubuntu-latest
+    # AND A CEILING, because this job hung for sixty-nine minutes (2026-09-12).
+    #
+    # It printed all 134 chromium results at 22:57:00 and did not exit until
+    # 00:06:05. The cause is fixed where it belongs — `quota.spec.ts` wrote a
+    # 1,048,576-character assertion message to stdout and the runner stopped
+    # draining the pipe — but the CLASS of fault is "a browser suite stops
+    # making progress", which no amount of care in one spec rules out.
+    #
+    # A green run is seven minutes and the slowest red one was fourteen, so
+    # twenty-five is a ceiling no honest run can reach. This is not a gate
+    # (the ruling of 2026-09-11 stands) — it is the difference between a
+    # report that is red in fifteen minutes and one nobody has yet.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
