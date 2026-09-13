@@ -266,127 +266,58 @@ test('a device that was already full still opens the game', async ({ page }) => 
 });
 
 /**
- * AND THE ONE GAP THIS ROW FOUND: A RUNG SPENT AT BOOT IS SPENT IN SILENCE.
+ * A RUNG SPENT AT BOOT IS SAID AT THE FIRST BOARD FRAME — BUILT, AND NOT
+ * PROVABLE HERE (2026-09-13, `PASS.md` P8.2).
  *
  * Fill a device, put a diary on it, and open the game: the very first write
- * runs the ladder, the diary is dropped to make room, and **the player is never
- * told** — not then, and not afterwards. The report is made the way every other
- * one is; there is simply nothing on screen to say it with. The front door has
- * no toast, and by the time the board does, the line has been delivered to a
- * listener that could not show it.
+ * runs the ladder and the diary is dropped to make room. For four stages the
+ * player was never told. **Marc ruled: hold it until the first board frame** —
+ * not the front door, because a stranger's first minute is the thing this
+ * repository protects hardest and a diary nobody has written yet cannot be
+ * missed there. `storage.ts` keeps a report that cannot be shown (`holdShed` /
+ * `takeHeldSheds`), `App` spends it through `speakAfter` when `started` turns
+ * true, and `shell/shed.test.ts` pins all four cases.
  *
- * The ladder is right, the sentence exists in both languages, and the shell
- * subscribes. What is missing is a decision about WHERE a storage message that
- * arrives before the game is on screen belongs — which is a screen question,
- * so it is written up in `NEXT.md` §1 with two options and a lean, and nothing
- * is built for it here. `CLAUDE.md`: where the answer lives on a screen, the
- * finding is the deliverable.
+ * ## AND THIS TEST WAS NEVER TESTING WHAT IT SAID
  *
- * This test pins today's behaviour, including the silence, so the gap cannot
- * close or widen without somebody editing the sentence above.
+ * It seeded a megabyte as the diary, filled the disk, reloaded, and asserted
+ * the diary was gone — reading that as *the ladder shed it*. It is not. **A
+ * Chromium store that is at quota loses a seeded value across a reload whether
+ * or not this game is running at all.** Measured, five ways, on this machine:
+ *
+ *   - a 1 MB diary with the disk NOT filled survives the reload;
+ *   - the same diary with the disk filled is gone;
+ *   - **a 2 KB diary with the disk filled is also gone** — so it is not size;
+ *   - written AFTER the fill, into room made for it, and topped back up: gone;
+ *     written after the fill and NOT topped back up: survives. So it is the
+ *     store being at quota across the reload, and nothing else;
+ *   - and with **every script aborted by `page.route`**, so that not one line
+ *     of this game runs: still gone.
+ *
+ * The last of those is the whole argument. The game is not shedding it and the
+ * game is not losing it; the browser is. So `toBeNull()` passed for the wrong
+ * reason on this machine, and on the Linux runner — where the value survives —
+ * the same line reported `Received: 1048576` and went red three pushes running
+ * while everyone read it as a flake.
+ *
+ * **What that costs, stated rather than hidden:** there is no end-to-end proof
+ * that the held sentence reaches a real screen. The pen and the drain are unit
+ * tested; the joining of them is not, and this is the one gap in this file's
+ * opening claim that nothing had ever filled a real quota. It cannot be closed
+ * by trying harder — a diary that survives to the reload is a diary on a device
+ * with headroom, and a device with headroom spends no rung. The two conditions
+ * this test needs are mutually exclusive in Chromium.
+ *
+ * `NEXT.md` §1 carries it as a line for Session A: on a genuinely full phone,
+ * does the strip say the diary is gone once the board is up? That is a real
+ * device answering a question a harness cannot.
+ *
+ * *A test whose precondition the browser can quietly refuse is a test that
+ * reports on the browser.*
  */
-/**
- * CHROMIUM-ONLY, AND WHAT WEBKIT DOES INSTEAD IS THE REASON (P6.1).
- *
- * Filled to the last byte the same way, WebKit's boot write SUCCEEDS: the
- * ladder is never climbed and the diary this test seeds is still on the device
- * afterwards. The three tests above pass on both engines; this one is about a
- * write that WebKit does not make.
- *
- * **And the reason first written here was wrong** (2026-09-12). It said the
- * run key already exists and rewriting a value of its own size costs nothing
- * there — a good theory, and the precondition below now DELETES every one of
- * those keys before reloading, so on WebKit the boot write is an allocation
- * into a device filled to under one character of headroom. Run with the skip
- * lifted, it still passes the boot write and the diary comes back at
- * `1048576`: whole, untouched, the ladder never entered. So it is not about
- * rewriting in place. WebKit simply finds room for a small write on a store
- * this file has no way to fill any further.
- *
- * Which is worth knowing rather than hiding: the gap it documents — a rung
- * spent before the game is on screen says nothing — is reachable on Chromium's
- * accounting and not on WebKit's, so whether a player meets it depends on
- * their browser's idea of what a full disk is. That is a fact about Marc's
- * engine, and it means this particular silence is one an iPhone may never
- * reach.
- */
-test('a diary shed before the game is on screen goes unmentioned', async ({
-  page,
-  browserName,
-}) => {
-  test.skip(
-    browserName !== 'chromium',
-    'WebKit finds room for the boot write even on a full store, so no rung is spent',
-  );
-  await page.goto('/?seed=7&taught=1');
-  await begin(page);
-  await page.evaluate((key) => localStorage.setItem(key, 'x'.repeat(1024 * 1024)), TIMELINE_KEY);
-  await fillTheDisk(page);
-
-  /*
-   * AND THE BOOT WRITE MUST BE AN ALLOCATION (2026-09-12).
-   *
-   * The rung-one removal below was necessary and not sufficient: the test
-   * failed a THIRD time on CI, and the artifact said the diary was still
-   * there WHOLE — a million characters, untouched — so the ladder had not run
-   * at all, not even to rung one.
-   *
-   * The reason is that every key the boot write touches already EXISTS on this
-   * device: the first visit above created them before the disk was filled.
-   * Rewriting a key with a value of its own size costs a full device nothing,
-   * on any accounting — it is exactly what the WebKit note above describes,
-   * and whether Chromium's boot write happens to GROW one of those values is a
-   * property of the runner rather than of the game. This machine grew one and
-   * the runner did not.
-   *
-   * So the app's keys are shrunk to a single character and the disk is topped
-   * back up. Whatever boot writes now has to allocate, because the value it is
-   * replacing is one character long. That is the ordinary case this file is
-   * about in the first place — the docblock above says so: *"a phone that has
-   * been full for a week ... every write it makes — the direction, the
-   * language, the features, the first save — is a throw before the player has
-   * touched anything."*
-   *
-   * The diary is left alone: it is what the third rung sheds. The keys are
-   * REMOVED rather than shrunk, because a device with no direction saved is a
-   * device the game knows how to open and a device whose direction is the
-   * letter `x` is a case nothing in `storage.ts` was written for; the
-   * precondition must not be the more interesting bug.
-   *
-   * This also subsumes AND THE FIRST RUNG MUST FREE NOTHING (2026-09-11),
-   * which removed `ashwake.error.v1` alone for the same reason one layer
-   * down: rung one is the last-error record, a runner writes one where this
-   * machine does not — a stale chunk, a worker that would not start — and
-   * dropping a stack trace frees enough for a small boot write, so the ladder
-   * stopped at rung one and the diary survived. That fix was necessary and
-   * assumed the boot write would throw at all. It is one key in the sweep
-   * below now, and rung one is still empty by construction.
-   *
-   * *A precondition that depends on which value happened to grow is not a
-   * precondition.*
-   */
-  await page.evaluate((diary) => {
-    const doomed: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i) ?? '';
-      if (!key.startsWith('fill.') && key !== diary) doomed.push(key);
-    }
-    for (const key of doomed) localStorage.removeItem(key);
-  }, TIMELINE_KEY);
-  await fillTheDisk(page);
-
-  await page.reload();
-  await begin(page);
-  await recordWhatIsSaid(page);
-  await clearCards(page);
-  await placeOneTile(page);
-
-  expect(
-    await diaryLength(page),
-    'the boot write did not run the ladder, so this test is about nothing',
-  ).toBeNull();
-  expect(
-    await said(page),
-    'the diary is now MENTIONED — good, and this test needs rewriting',
-  ).not.toContain(STRINGS_FR.shed.timeline);
+test.skip('a diary shed before the game is on screen is said at the board', () => {
+  // Deliberately a body-less skip: there is no arrangement of `localStorage`
+  // that stages this in Chromium, so there is nothing here to repair when
+  // somebody comes back to it. The measurements are above and the behaviour
+  // is pinned in `shell/shed.test.ts`.
 });

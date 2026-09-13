@@ -381,6 +381,40 @@ skip in `e2e/shots.spec.ts` is all it ever costs. If it is blank until your
 finger lands, it is the most important bug in the file and everything else
 waits.
 
+**~~A FULL DEVICE THROWS YOUR DIARY AWAY WITHOUT SAYING SO~~ — RULED AND BUILT
+2026-09-13 (`PASS.md` P8.2).** Marc's ruling was option 1 below: **hold it
+until the first board frame.** `storage.ts` keeps a report that cannot be shown
+(`holdShed` / `takeHeldSheds`) and `App` spends it through `speakAfter` when
+`started` turns true; `shell/shed.test.ts` pins four cases and `LOG.md` Session
+95 carries the reasoning.
+
+**Two ways to lose that sentence, and the first build fixed only one.** Holding
+reports made while nobody was subscribed caught nothing at all: `App`
+subscribes in an effect and the boot write happens after that, so the watcher
+set is not empty. The report was delivered live and `say` set a note under a
+`.toast` that is rendered only while `playing`. **Being subscribed is not the
+same as having somewhere to speak** — which is what the 2026-09-10 finding said
+in the first place, and it took an e2e failure to hear it.
+
+**AND ONE LINE OF THIS IS YOURS, ON A FULL PHONE.** There is no end-to-end
+proof that the held sentence reaches a real screen, and it cannot be got:
+measured five ways, **a Chromium store at quota loses a seeded value across a
+reload whether or not this game is running at all** — with every script aborted
+by `page.route`, so not one line of Ashwake runs, the seeded diary is still
+gone. A diary that survives to the reload is a diary on a device with headroom,
+and a device with headroom spends no rung; the two conditions the test needs
+are mutually exclusive. The skip in `e2e/quota.spec.ts` carries all five
+measurements.
+
+So, on a genuinely full phone: **open the game, press BEGIN, and see whether
+the strip says your diary is gone once the board is up.** A real device
+answering a question a harness cannot. It also explains three red CI pushes
+everybody read as a flake — on the Linux runner the value SURVIVES, so the old
+assertion reported `Received: 1048576` while on this machine it passed for the
+wrong reason entirely.
+
+The original finding and its two options follow.
+
 **A FULL DEVICE THROWS YOUR DIARY AWAY WITHOUT SAYING SO (2026-09-10,
 `PASS.md` P8.2).** The shed ladder does the right thing on a real full phone —
 measured in Chromium, not argued: it drops the diagnostic record, then the

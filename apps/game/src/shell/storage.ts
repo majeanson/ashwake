@@ -241,9 +241,70 @@ export function onShed(report: (rung: ShedRungId) => void): () => void {
     shedWatchers.delete(report);
   };
 }
+/**
+ * A REPORT MADE BEFORE ANYBODY WAS LISTENING (2026-09-13, `PASS.md` P8.2).
+ *
+ * Open the game on a device that is already full and the very first write runs
+ * the whole ladder before a single pixel is on screen: the diary is dropped,
+ * `reportShed` fires into an EMPTY watcher set, and the player is never told —
+ * not then, and not later. The ladder was right, the sentence existed in both
+ * languages, and the shell subscribed a moment too late. Measured in Chromium
+ * on a real full quota, not argued (`e2e/quota.spec.ts`).
+ *
+ * Marc's ruling, given the choice between saying it on the front door and
+ * holding it: **hold it until the first board frame.** A stranger's first
+ * minute is the thing this repository protects hardest, and a diary nobody has
+ * written yet cannot be missed at the door; the returning player this sentence
+ * is FOR is on the board within seconds of pressing BEGIN.
+ *
+ * So a report that cannot be shown is KEPT rather than dropped, and `App`
+ * drains it the first time the board opens. A `Set` because the rungs are a
+ * finite union and a full device spends the same one on write after write —
+ * this must not become a queue that grows for as long as nobody is looking.
+ *
+ * ## TWO WAYS TO LOSE A SENTENCE, and only one of them is "nobody listening"
+ *
+ * The first build of this held reports made while `shedWatchers` was empty,
+ * and it caught nothing at all: the e2e test still read an empty strip. `App`
+ * subscribes in an effect and the boot write happens after that, so the
+ * watcher set is NOT empty — the report is delivered live, `say` sets the
+ * note, and the note is dropped on the floor because `.toast` is rendered
+ * under `playing` and the player is still at the front door.
+ *
+ * That is the shape the finding described from the start — *"the line has been
+ * delivered to a listener that could not show it"* — and it is the reason
+ * `holdShed` is exported rather than kept private. A listener with no screen
+ * has to be able to put a report back, and the two cases share one pen so
+ * there is one thing to drain.
+ */
+const heldSheds = new Set<ShedRungId>();
+
+/** Put a report back until there is somewhere to say it. For a listener that
+ *  is subscribed but has no screen yet — see the block above. */
+export function holdShed(rung: ShedRungId): void {
+  heldSheds.add(rung);
+}
+
 const reportShed = (rung: ShedRungId): void => {
+  if (shedWatchers.size === 0) {
+    heldSheds.add(rung);
+    return;
+  }
   for (const fn of shedWatchers) fn(rung);
 };
+
+/**
+ * Every rung spent before there was a screen to say it on, and never twice.
+ *
+ * Returned in the order they were spent, which is the order the ladder climbs:
+ * cheapest first. A caller that can only show one sentence should therefore
+ * show the LAST, because that is the deepest thing the device gave up.
+ */
+export function takeHeldSheds(): readonly ShedRungId[] {
+  const out = [...heldSheds];
+  heldSheds.clear();
+  return out;
+}
 
 /**
  * Write, and if the disk is full, MAKE room rather than lose the run.

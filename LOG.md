@@ -7885,3 +7885,85 @@ reachable on Chromium's accounting and may be one an iPhone never reaches.
 
 Verified: format, types, lint clean; **134 chromium e2e passed in 4.2 m**, the
 suite that has been red since 2026-09-11.
+
+### Session 95 — the browser was eating the diary, and the test blamed the ladder (2026-09-13)
+
+**Question:** Marc ruled on all four open decisions in one sitting. Build the
+first — a rung spent before the game is on screen is said at the first board
+frame — and prove it.
+
+**Built, and the proof is the part that did not survive contact.**
+
+**The ruling.** Given "hold it to the first board frame" against "say it on the
+front door", Marc took the first: a stranger's first minute is the thing this
+repository protects hardest, and a diary nobody has written yet cannot be
+missed at the door. `storage.ts` keeps a report that cannot be shown and `App`
+spends it through `speakAfter` when `started` turns true — through the speaking
+queue, which is the ruling's own words and is also right on its merits: the
+scene change into the board happens in that commit, and for the length of the
+wait `speaking` is non-zero so `mayTeach` holds a lesson instead of stacking it.
+
+**The first build was wrong in a way the e2e test caught and three passes of
+reading had not.** It held only reports made while `shedWatchers` was empty,
+and caught nothing: `App` subscribes in an effect and the boot write happens
+after that, so the set is NOT empty. The report went out live, `say` set a
+note, and the note went nowhere because `.toast` is rendered only while
+`playing`. **Being subscribed is not the same as having somewhere to speak** —
+which is exactly what the 2026-09-10 finding said, and it still took a red test
+to hear it. One pen, two doors into it (`holdShed` for a listener with no
+screen, the empty-set branch for no listener at all), one drain.
+
+**And then the test would not go green, and the reason is the session's real
+find.** Four theories were wrong before the probes were written, so they were
+written: a trace through `write`, `shed`, `drop` and `reportShed`, and a census
+of the store either side of the reload.
+
+`reportShed` was never called. The diary was gone before the app's first write.
+Nothing in `storage.ts` had removed it. Five measurements, in order:
+
+- a 1 MB diary with the disk NOT filled survives the reload;
+- the same diary with the disk filled is gone;
+- **a 2 KB diary with the disk filled is also gone** — so it is not size;
+- written AFTER the fill into room made for it and topped back up: gone;
+  written after the fill and not topped back up: survives;
+- and with **every script aborted by `page.route`**, so that not one line of
+  this game runs: still gone.
+
+**A Chromium store that is at quota loses a seeded value across a reload
+whether or not this game is running at all.** The game is not shedding it and
+the game is not losing it. The browser is.
+
+**Which means `a diary shed before the game is on screen goes unmentioned` was
+never testing what it claimed.** It asserted the diary was null and read that
+as _the ladder shed it_; on this machine it passed for the wrong reason, and on
+the Linux runner — where the value survives — the same line reported
+`Received: 1048576` and went red on three consecutive pushes while everybody,
+this session included, read it as a flake and fixed the precondition twice.
+
+It cannot be repaired by trying harder: a diary that survives to the reload is
+a diary on a device with headroom, and a device with headroom spends no rung.
+The two conditions are mutually exclusive. So it is a body-less `test.skip`
+carrying all five measurements, the behaviour is pinned in four unit tests, and
+**the gap is stated rather than hidden** — there is no end-to-end proof that
+the held sentence reaches a real screen, and `NEXT.md` §1 asks Session A for it
+on a genuinely full phone.
+
+_A test whose precondition the browser can quietly refuse is a test that
+reports on the browser._
+
+**One fixture bug found on the way out.** `shed.test.ts`'s third test called
+`onShed(() => undefined)` and dropped the handle, leaving a no-op listener in
+the registry for the rest of the file. Harmless while every test counted only
+its own reports, and not harmless at all the moment a test asked what happens
+when NOBODY is listening: two of the four new ones failed on the fixture rather
+than on the subject. The file's own two earlier tests carry a comment saying
+why they unsubscribe; the third had the comment's lesson and not its code.
+
+Verified: format, types, lint, **1292 unit tests / 101 files** (up four),
+`pnpm sweep` 0 findings over 306 files, quota spec 3 passed 1 skipped.
+
+**And the previous session's two fixes are confirmed on CI.** Run
+34771346984: `ci` green, `deploy` green, **134 chromium e2e passed**, and the
+job took 12m26s instead of 1h16m. The only red left is `board.spec.ts`'s
+centring check on WebKit — P6.8, the empty board, which is Session A's first
+line and the one genuine bug in the file.

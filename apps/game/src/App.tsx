@@ -92,6 +92,8 @@ import {
   freshWorldSeed,
   worldSeedFor,
   onShed,
+  holdShed,
+  takeHeldSheds,
   settleWorldInto,
   setActiveSlot,
   writeRecords,
@@ -268,6 +270,23 @@ const CLAIM_HOLD_MS = 900;
  * around it — see `BoardHandle.tour`.
  */
 const TOUR_HOLD_MS = 1200;
+
+/**
+ * How long a boot-time shed report waits for the board to exist, in ms
+ * (2026-09-13, `PASS.md` P8.2).
+ *
+ * Marc ruled that a diary shed before the game is on screen is said at the
+ * first board frame rather than at the front door. "The first board frame" is
+ * not an event this shell can subscribe to — the scene change and the plane's
+ * first draw are not the same commit — so it is a wait, and the wait only has
+ * to clear one frame. This is several, deliberately: a sentence about storage
+ * arriving in the same breath as the board reads as part of the board coming
+ * up, and it is the one line here that the player is meant to stop and read.
+ *
+ * Shorter than `CLAIM_HOLD_MS` because nothing is being shown — the board is
+ * playable throughout and this only decides when the strip speaks.
+ */
+const SHED_AT_BOARD_MS = 600;
 
 /**
  * The economy a run in this slot plays under, read off the disk.
@@ -675,8 +694,21 @@ function Game() {
     // Returns its own unsubscribe now: this effect re-runs on every language
     // change, and a registry with one slot and no cleanup quietly kept the
     // last closure registered past the life of the component that made it.
-    return onShed((rung) => say(shedNote(rung, s)));
-  }, [s, say]);
+    return onShed((rung) => {
+      /*
+       * A REPORT THAT ARRIVES BEFORE THERE IS A STRIP TO SAY IT ON IS PUT BACK
+       * (2026-09-13, `PASS.md` P8.2, Marc's ruling: hold it to the first board
+       * frame).
+       *
+       * `.toast` is rendered under `playing`, so `say` at the front door sets a
+       * note nothing displays — which is exactly how a full device's boot shed
+       * went unmentioned for four stages. Being SUBSCRIBED is not the same as
+       * having somewhere to speak, and this effect is subscribed from mount.
+       */
+      if (started) say(shedNote(rung, s));
+      else holdShed(rung);
+    });
+  }, [s, say, started]);
 
   /*
    * The device's own preferences, FOLLOWED rather than sampled.
@@ -690,6 +722,40 @@ function Game() {
   const wantsLight = useMediaQuery('(prefers-color-scheme: light)');
   const wantsContrast = useMediaQuery('(prefers-contrast: more)');
   const reducedMotion = useReducedMotion();
+
+  /*
+   * AND THE ONES SPENT BEFORE THERE WAS ANYWHERE TO SAY THEM (2026-09-13,
+   * `PASS.md` P8.2, Marc's ruling: hold it until the first board frame).
+   *
+   * A device that is already full runs the whole ladder on its first write,
+   * which happens before this component exists — so the effect above was
+   * subscribing to an event that had already fired. `storage.ts` keeps those
+   * reports instead of dropping them; this is where they are spent.
+   *
+   * Keyed on `started` rather than on mount, because mounting is the FRONT
+   * DOOR and the ruling was explicitly not to put a sentence about storage on
+   * the one screen whose whole job is a stranger's first minute. `takeHeld
+   * Sheds` empties itself, so a second BEGIN in the same page says nothing a
+   * second time.
+   *
+   * They are said in the order the ladder climbs, so if a boot spent more than
+   * one rung the line left standing is the deepest — which is the one worth
+   * reading.
+   *
+   * Through `speakAfter` rather than straight into `say`, which is the ruling's
+   * own words — *"through the same speaking queue every other line uses"* — and
+   * is right for two reasons beyond obedience. The scene change into the board
+   * happens in this commit; a sentence set in the same one is a sentence
+   * printed over a plane that has not drawn yet. And for the length of the
+   * wait `speaking` is non-zero, so `mayTeach` holds a lesson that came due on
+   * the same dispatch instead of stacking it over this one. Reduced motion
+   * takes it immediately, as everything else here does.
+   */
+  const shedWait = reducedMotion ? 0 : SHED_AT_BOARD_MS;
+  useEffect(() => {
+    if (!started) return;
+    for (const rung of takeHeldSheds()) speakAfter(shedWait, () => say(shedNote(rung, s)));
+  }, [started, s, say, speakAfter, shedWait]);
 
   const theme = useMemo(
     () => themeFor(storedTheme, wantsLight, wantsContrast),
