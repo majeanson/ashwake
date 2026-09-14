@@ -651,10 +651,15 @@ test('a card in the hand is the tile it will become, and only the chosen one has
   // an `<img>`, and it is clipped to the hexagon the board draws.
   const art = page.locator('.hand .tile-art image').first();
   await expect(art, 'no hand card carries its baked hex').toBeVisible({ timeout: 4000 });
+  // The HASH is required, not merely allowed (2026-09-14): the build names
+  // the file `terrain.<colour>.<hash8>.png` and only the manifest knows the
+  // hash, so a card that matched the plain name would be one that rebuilt the
+  // path from the id and fetched a file the deploy no longer serves. This
+  // went red on CI the push the hash landed, and it was right to.
   expect(
     await art.getAttribute('href'),
     'the card points at something other than a terrain slot',
-  ).toMatch(/\/assets\/[a-z-]+\/terrain\.(green|yellow|red|blue)\.png$/);
+  ).toMatch(/\/assets\/[a-z-]+\/terrain\.(green|yellow|red|blue)\.[0-9a-f]{8}\.png$/);
   // It LOADED: a broken picture is a card that reads as empty, which is the
   // failure Ashwake 1 caught in a screenshot rather than in a test. An SVG
   // image has no `naturalWidth`, so the file is fetched the way the browser
