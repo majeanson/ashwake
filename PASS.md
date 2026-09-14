@@ -19,21 +19,30 @@ because it is the most useful thing in this file.
 left behind — is **adopted here as P2** and struck there. Two lists of the same
 work is how one of them goes stale.
 
-## Where this stands (2026-09-11)
+## Where this stands (2026-09-14)
 
-**All ten items are worked and every row is `done` except six**, and none of
-the six is code anybody can write from this desk:
+**All ten items are worked and every row is `done` except three**, and none of
+the three is code anybody can write from this desk. Six were open on
+2026-09-11; the other three closed on 2026-09-13 and 2026-09-14.
 
-- **Four need a PHONE**, and they are Session A’s: P6.5 the safe areas and the
-  dynamic viewport, P6.6 the audio unlock, P6.7 the iOS install offer, and
-  **P6.8 — a board that never draws on WebKit until it is touched**, which is
-  reproduced, not closed, and is the first line of `NEXT.md` §1.
-- **Two need Marc**: P7.7’s six facts a saved run keeps and no screen prints,
-  and P8.1’s slow-line reload policy (a third reload needs his word).
+- **Three need a PHONE**, and they are Session A's: P6.5 the safe areas and the
+  dynamic viewport, P6.6 the audio unlock, P6.7 the iOS install offer.
+- **P6.8 is FIXED** (2026-09-14, `LOG.md` Sessions 101–103). It was never a
+  board that would not draw: the instrument put six thousand draw calls on a
+  live context behind an empty screen, a re-frame brought the board back whole,
+  and the bug was fifteen lines of camera code — **a flick that outlived the
+  run it was thrown in**, because `useFrame` claimed a throw is cancelled by
+  "a drag, a pinch, a flight" and only the drag did it. The runner that failed
+  it four times in five now passes: **134 chromium / 123 webkit, e2e green**,
+  for the first time in four days. Whether Marc's Safari had the same hole is
+  still a look on the phone, and it may now be one word.
+- **Both of Marc's two are BUILT**: P7.7's facts are printed (the hall of fame
+  carries nine, not four) and P8.1's reload policy is ruled — tighten the
+  worker, no third reload.
 
-`STATUS.md` carries the checkpoint; `LOG.md` Sessions 79–91 carry the
+`STATUS.md` carries the checkpoint; `LOG.md` Sessions 79–103 carry the
 reasoning. The instruction at the top of this file still holds: when the last
-six close, fold the lessons into `LOG.md` and `STATUS.md` and delete the rest.
+three close, fold the lessons into `LOG.md` and `STATUS.md` and delete the rest.
 
 **Three measured trades also came out of the pass and went to `NEXT.md` §1**
 rather than here, because each is a look or a payload question rather than a

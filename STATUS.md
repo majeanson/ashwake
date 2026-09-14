@@ -4,22 +4,33 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-14 — the four rulings are built, and the flash that
-outlived four fixes is closed.**
+Last checkpoint: **2026-09-14 — the four rulings are built, the flash is closed,
+and P6.8 is fixed. CI is green end to end.**
 
 Marc ruled all four open decisions in one sitting and every one is landed and
 deployed. The report that had survived five sessions — _"hard rerender and
-flash on 1st tile placement"_ — is closed on his word, _"Gone."_ What is left
-of `PASS.md` is **four rows that need a DEVICE** (P6.5 the safe areas and the
-dynamic viewport, P6.6 the audio unlock, P6.7 the iOS install offer, P6.8 a
-board that never draws on WebKit until it is touched). `LOG.md` Sessions 94–100.
+flash on 1st tile placement"_ — is closed on his word, _"Gone."_ And **P6.8 is
+fixed**, so what is left of `PASS.md` is **three rows that need a DEVICE**
+(P6.5 the safe areas and the dynamic viewport, P6.6 the audio unlock, P6.7 the
+iOS install offer). `LOG.md` Sessions 94–103.
 
 **Verified at this checkpoint:**
 
-- **1295 unit tests / 101 files**, `pnpm sim` byte-identical to Ashwake 1's,
-  `pnpm sweep` 0 findings over 306 files, `pnpm artcheck` 18 PNGs across two
-  directions, `pnpm budget` inside every bar, and **134 chromium e2e green**.
-  `e2e` is red on **P6.8 alone**, which is the one genuine bug left.
+- **`e2e` is GREEN end to end** — 134 chromium / 123 webkit on the runner, the
+  first clean run in four days — alongside **1295 unit tests / 101 files**,
+  `pnpm sim` byte-identical to Ashwake 1's, `pnpm sweep` 0 findings over 306
+  files, `pnpm artcheck` 18 PNGs across two directions and `pnpm budget` inside
+  every bar.
+- **P6.8 was a flick that outlived the run it was thrown in.** Not a renderer
+  bug and never was: the instrument put `draws=6216` on a live context behind
+  an empty screen, and a single re-frame took the canvas from `ink=6010` to
+  `15246` with a tile back in the middle. `useFrame` has always claimed a throw
+  is cancelled by _"a drag, a pinch, a flight"_ and **only the drag did it** —
+  the loop runs the glide first and the flight second, so a flight in the air
+  hides the fault entirely and then lands, clears itself, and lets the throw
+  carry the board off the tile it just centred on. Fixed in `fly` and `zoomBy`.
+  The flight half has a test that was checked to FAIL against the unfixed
+  build; the zoom half has none, and says so at its declaration.
 - **The flash was iOS's TAP HIGHLIGHT**, a property this body lost in the port:
   Ashwake 1 sets `-webkit-tap-highlight-color: transparent` on `body`, in the
   same block as the `touch-action` and `-webkit-touch-callout` that 2026-08-29
@@ -27,39 +38,35 @@ board that never draws on WebKit until it is touched). `LOG.md` Sessions 94–10
   back. `.board-view` is focusable for the keyboard marker, so the wash covered
   the whole board on the first tap that landed on it. **No instrument here can
   make that gesture**, which is why four sessions each found a different real
-  bug and the report outlived all of them. Restored on `body`.
+  bug and the report outlived all of them.
 - **The stall underneath it is 16.7 ms**, not the 99 ms first measured: that
-  number was a 6× CPU throttle. Three instruments, each correcting the last —
-  the sampling profiler blamed 98 ms of unnamed native time, the GL instrumented
-  directly reported **zero shader compiles and zero links on every placement**,
-  and the tracing timeline named the whole cost as ordinary work in the
-  mouse-release handler. Nothing rebuilds; there is nothing to move.
+  number was a 6× CPU throttle. The GL, instrumented directly, reported zero
+  shader compiles and zero links on every placement, and the tracing timeline
+  named the whole cost as ordinary work in the mouse-release handler.
 - **The art is content-addressed.** `/assets/**` ships `immutable` for a year
   and the filenames carried no hash, so a redrawn PNG could never have reached
-  anyone who had already visited. The build renames to
-  `<slot>.<hash8>.png`, the manifest carries the PATH, `decodeManifest` still
-  reads the old list shape for devices holding a cached copy of it, and
-  `serviceWorkerStamp` **asserts** every precached art file is hashed.
+  anyone who had already visited. The build renames to `<slot>.<hash8>.png`,
+  the manifest carries the PATH, `decodeManifest` still reads the old list
+  shape for devices holding a cached copy of it, and `serviceWorkerStamp`
+  **asserts** every precached art file is hashed.
 - **A rung spent before the game is on screen is said at the first board
-  frame** (Marc's ruling). `storage.ts` keeps a report that cannot be shown and
-  `App` spends it through `speakAfter` when the board opens — because being
-  SUBSCRIBED is not the same as having somewhere to speak.
-- **The worker declines a shell it can prove is stale** (Marc's ruling): it asks
-  `/version.json` in parallel with every navigation and waits for the document
-  rather than serving a shell whose build the site no longer serves. Written to
-  fail towards today's behaviour, so offline is unchanged.
-- **The hall of fame prints nine facts, not four** (Marc's ruling) — the run's
-  shape, in both languages.
+  frame** (Marc's ruling), because being SUBSCRIBED is not the same as having
+  somewhere to speak.
+- **The worker declines a shell it can prove is stale** (Marc's ruling), asking
+  `/version.json` in parallel with every navigation and written to fail towards
+  today's behaviour, so offline is unchanged.
+- **The hall of fame prints nine facts, not four** (Marc's ruling).
 - **`e2e` cannot hang for an hour any more.** A 1,048,576-character assertion
   message blocked the Actions log pipe for 69 minutes; the claim travels as a
   number now and the job carries `timeout-minutes: 25`.
 
-**Two things this checkpoint does NOT claim**, because both were measured to be
-unprovable here rather than assumed: there is no end-to-end proof that the held
-shed sentence reaches a real screen (a Chromium store at quota loses a seeded
-value across a reload with every script blocked), and none that the worker
+**Three things this checkpoint does NOT claim**, because each was measured to
+be unprovable here rather than assumed: there is no end-to-end proof that the
+held shed sentence reaches a real screen (a Chromium store at quota loses a
+seeded value across a reload with every script blocked), none that the worker
 declines a stale shell (Playwright's `context.route` does not intercept the
-service worker's own fetches). Both gaps are written at their declarations.
+service worker's own fetches), and none that a zoom cancels a throw. All three
+gaps are written at their declarations.
 
 ## The checkpoint before it
 

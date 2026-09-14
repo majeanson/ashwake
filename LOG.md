@@ -8433,3 +8433,49 @@ line of Session A, and the answer there may now simply be yes-it-is-gone.
 Verified: **28 chromium / 23 webkit** in `board.spec.ts` on this machine,
 **1295 unit tests**, `pnpm sim` byte-identical, sweep 0 findings over 306
 files, format, types, lint.
+
+### Session 104 — green end to end, and the list that has now been wrong twice (2026-09-14)
+
+**Question:** Marc: _"solidify"_. The P6.8 fix is pushed. What makes it stick?
+
+**The runner agreed: `e2e success`, 134 chromium / 123 webkit** — the first
+clean run in four days, on the job that had failed this four times in five. The
+fix is confirmed by the only thing that could confirm it.
+
+**And the audit that "solidify" actually means found the shape of the fault
+rather than another instance of it.** `useFrame`'s sentence names three things
+that cancel a throw. The other two claims in that file were checked rather than
+assumed: `panBy` clears the glide, and so does the lean effect — **and the lean
+was added to that list on 2026-09-10**, by a session that found the same list
+incomplete and patched the one item in front of it. So the sentence has now
+been wrong twice, found twice, and patched item-by-item twice, by two sessions
+neither of which checked the other clauses. _A list that has been wrong twice
+is not a list, it is a habit._ The third time it wants a test.
+
+**Two attempts at that test, both thrown away, and the reason each failed is
+worth more than the test would have been.** A zoom does not re-centre, so the
+only assertion available is that the board comes to REST. A generous wait lets
+the throw decay on its own and passes whether or not the fix is in — measured,
+with the line removed. A short wait compares two screenshots of a board whose
+BEACONS ARE BREATHING, so a perfectly still camera fails — also measured, the
+other way round. The way through is holding the breath with reduced motion, and
+`test.use` will not take `reducedMotion` in a nested `describe` here.
+
+So the zoom half ships with no test and says so at its declaration, and
+`STATUS.md` now lists THREE things this checkpoint does not claim rather than
+two. **A test that cannot fail is worse than none** — this repository relearned
+that three times in one day, and the third time was mine and cost two runs.
+
+**The ledgers now say what is true.** `PASS.md` opens on "three rows, all a
+phone's" rather than six; `STATUS.md`'s checkpoint carries the green run, the
+three fixes and the three gaps.
+
+**One correction to the record, in passing.** A `git stash push` of an
+already-committed file creates no stash, so the first "without the fix" run of
+the zoom test was a run WITH the fix and its green tick meant nothing. Caught
+by `git stash pop` saying "No stash entries found" after the result had already
+been read. _An A/B whose A and B are the same build is an experiment with one
+arm._
+
+Verified: 28 chromium / 23 webkit in `board.spec.ts`, 1295 unit tests, format,
+types, lint, and CI green on all three jobs.
