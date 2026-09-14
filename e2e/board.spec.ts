@@ -1368,6 +1368,43 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
     }
   });
 
+  /*
+   * AND THE SECOND NUMBER, now the first one has answered (2026-09-14).
+   *
+   * CI came back `draws=6150 ... contextLost=false`: **the renderer is
+   * innocent.** Six thousand draw calls went out while the daily opened and
+   * the middle of the screen is still flat, so this was never a frame nobody
+   * asked for — the camera is looking somewhere the board is not, or the board
+   * is not where the camera was told it would be.
+   *
+   * Two readings separate those, and both reuse what this file already has.
+   * **The weight of the whole canvas** says whether ANY ink is on screen: the
+   * view-cycle test below measures exactly this to prove a drag empties the
+   * frame, and its own threshold is half. **Then DEFAULT**, the one stop on
+   * the camera cycle that re-frames — if the board comes back when it is asked
+   * to fit, the board exists and the opening fly landed wrong; if it does not,
+   * the plane is genuinely bare and the fly is innocent too.
+   *
+   * Still no fix and still nothing in the bundle: this is the same move as the
+   * draw counter, one question further in.
+   */
+  const inkWeight = async (): Promise<number> =>
+    (await page.locator('canvas').screenshot()).byteLength;
+
+  const refitAndWeigh = async (): Promise<string> => {
+    const before = await inkWeight();
+    const view = page.locator('[data-action="camera"]');
+    for (let i = 0; i < 4 && (await view.getAttribute('data-view')) !== 'home'; i++) {
+      await view.click();
+      await page.waitForTimeout(400);
+    }
+    const stop = await view.getAttribute('data-view');
+    if (stop !== 'home') return `ink=${before} (no home stop on the cycle: ${stop})`;
+    await view.click();
+    await page.waitForTimeout(1200);
+    return `ink=${before} afterDEFAULT=${await inkWeight()} middleFlatAfter=${await middleIsFlat()}`;
+  };
+
   /** Draws since the last call, and whether the context is still alive. */
   const drawnSince = async (): Promise<string> =>
     page.evaluate(() => {
@@ -1455,8 +1492,11 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
     // `draws=0` means nothing was rendered and the blank is a frame nobody
     // asked for; a healthy count means the scene or the camera is wrong and
     // the renderer is innocent.
+    const polled = await drawnSince();
     throw new Error(
-      `P6.8 DIAG on opening: ${drewOnOpening}\nP6.8 DIAG after polling: ${await drawnSince()}\n${String(e)}`,
+      `P6.8 DIAG on opening: ${drewOnOpening}\n` +
+        `P6.8 DIAG after polling: ${polled}\n` +
+        `P6.8 DIAG refit: ${await refitAndWeigh()}\n${String(e)}`,
       { cause: e },
     );
   }

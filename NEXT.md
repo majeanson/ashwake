@@ -436,6 +436,26 @@ bare. The new-world check three lines above it passes on the same page, so the
 capture works and the engine draws; what does not survive is the scene change
 into the daily with no finger landing after it.
 
+**AND THE NUMBER CAME BACK: `draws=6150`, `contextLost=false`** (2026-09-14,
+`LOG.md` Session 102 — both retries agreed). **The renderer is innocent, and
+the name on this row is wrong.** Six thousand draw calls went out while the
+daily opened, on a live context at the right size, and the middle was still
+flat. It was never a frame nobody asked for; `frameloop="demand"` and the
+missing `preserveDrawingBuffer` are both real and neither is this. A board that
+draws six thousand times is not _"a board that never draws until it is
+touched"_ — the CAMERA is looking somewhere the board is not, or the board is
+not where the camera was told it would be.
+
+A second reading is now on the failure path and narrows that to one of three:
+the canvas's ink weight (does ANY of it reach the screen), and then DEFAULT,
+the one camera stop that re-frames. **Ink low and DEFAULT fixes it** means the
+board exists and the opening fly landed wrong — and `flyToHex` clamps against
+`frameRef.current` while the `App` effect that calls it depends on `[framing]`
+alone with exhaustive-deps disabled, which is where to look first. **Ink low
+and DEFAULT does not** means the plane is genuinely bare. **Ink healthy** means
+merely off-centre, a far smaller bug than this row's name. The original
+instrument note follows.
+
 **AND SINCE 2026-09-14 THE FAILURE CARRIES A NUMBER** (`LOG.md` Session 101).
 The picture says "empty" and cannot say WHICH empty, which is what both
 reverted fixes were guessing at. Read again, the artifact adds one fact: the

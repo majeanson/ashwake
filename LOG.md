@@ -8331,3 +8331,47 @@ is whole"_ and settled in one line what three sessions had argued.
 _A fifth theory is worth less than the first measurement._
 
 Verified: format, types, lint, the test green on both engines locally.
+
+### Session 102 — the renderer is innocent: six thousand draw calls and a flat middle (2026-09-14)
+
+**Question:** Session 101 gave P6.8 an instrument instead of a fifth theory.
+What did it say?
+
+**`draws=6150 lastDraw=12ms ago canvas=390x652 contextLost=false`.**
+
+Both retries agreed (6150 and 6142). So the branch this repository has believed
+for four days is **wrong**: it was never a frame nobody asked for. Six thousand
+draw calls went out while the daily opened, the context is alive, the canvas is
+the right size — and the middle of the screen is flat. `frameloop="demand"` and
+the missing `preserveDrawingBuffer` are both real and neither is this.
+
+That also retires the name. _"A board that never draws on WebKit until it is
+touched"_ is not what is happening; the board draws six thousand times. What is
+true is that the CAMERA is looking somewhere the board is not, or the board is
+not where the camera was told it would be.
+
+**And the second reading is already in**, because the first one only halved the
+question. After polling: `draws=112 lastDraw=3921ms ago` — the loop settles, as
+it should. What is missing is whether ANY ink is on screen, and whether asking
+the board to re-frame brings it back. Both reuse machinery this file already
+has: the view-cycle test three hundred lines up measures a canvas screenshot's
+weight to prove that dragging empties the frame, and DEFAULT is the one stop on
+the camera cycle that re-frames.
+
+- **ink low, DEFAULT fixes it** — the board exists and the opening fly landed
+  wrong. `flyToHex` clamps against `frameRef.current`, and the App effect that
+  calls it depends on `[framing]` alone with the exhaustive-deps rule disabled,
+  so what it reads is a closure's idea of the run. That is where to look.
+- **ink low, DEFAULT does not** — the plane is genuinely bare and the fly is
+  innocent too.
+- **ink healthy** — merely off-centre, which is a much smaller bug than the
+  name on this row.
+
+**Still no fix.** Green on both engines here with the instrument in; CI fails
+four in five. The next red run narrows it to one of three, and each of the
+three is a different piece of code.
+
+_The instrument was right to exist: one run of it moved this row further than
+two written fixes did._
+
+Verified: format, types, lint, the test green on chromium and webkit locally.
