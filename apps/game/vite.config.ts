@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
@@ -82,12 +82,68 @@ function assetManifest(): Plugin {
 
   return {
     name: 'ashwake:asset-manifest',
-    generateBundle() {
-      this.emitFile({
-        type: 'asset',
-        fileName: 'assets/manifest.json',
-        source: JSON.stringify(scan(root()), null, 2),
-      });
+    /*
+     * THE ART IS CONTENT-ADDRESSED, AND IT WAS NOT (2026-09-14, Marc's ruling).
+     *
+     * `public/_headers` serves `/assets/**` as
+     * `cache-control: public, max-age=31536000, immutable` — a year, and
+     * `immutable` tells the browser not to revalidate even on a reload. That is
+     * correct for every other asset in this build because their names carry a
+     * content hash. **The art's did not.** `terrain.green.png` was the same URL
+     * in every build ever shipped, so a redrawn PNG would never reach a device
+     * that had already visited, for up to a year, and no reload would fix it.
+     * Measured on the live site rather than read off the config.
+     *
+     * The whole premise of this pipeline is *"drop a PNG in the folder and
+     * rebuild"* (see `theme/assets.ts`), and in production that premise was
+     * false. Marc: hash the filenames.
+     *
+     * **In `closeBundle`, and that is the whole subtlety.** These files are
+     * copied verbatim out of `publicDir` by Vite, so there is nothing on disk
+     * to hash until the copy has happened — the same reason `serviceWorkerStamp`
+     * below rewrites rather than emits. Renaming here also means the precache
+     * walk in that plugin picks the hashed names up by itself, because it walks
+     * `dist`; plugin `closeBundle` hooks run in array order and this one is
+     * registered first, which is now load-bearing and says so at the array.
+     *
+     * The dev server is deliberately untouched: it serves `public/` directly,
+     * where the files keep their plain names, and `configureServer` below still
+     * answers with those. A hash in dev would buy nothing and break the one
+     * workflow this plugin exists for.
+     */
+    closeBundle() {
+      const dist = fileURLToPath(new URL('./dist/assets', import.meta.url));
+      const manifest: Record<string, Record<string, string>> = {};
+
+      let themes: string[];
+      try {
+        themes = readdirSync(dist);
+      } catch {
+        themes = [];
+      }
+      for (const themeId of themes) {
+        const dir = join(dist, themeId);
+        try {
+          if (!statSync(dir).isDirectory()) continue;
+        } catch {
+          continue;
+        }
+        for (const file of readdirSync(dir).filter((f) => f.endsWith('.png'))) {
+          const id = file.slice(0, -'.png'.length);
+          // Eight hex characters of the CONTENT, which is what makes the
+          // year-long `immutable` an honest promise rather than a trap: the
+          // bytes changing changes the URL, and nothing else can.
+          const hash = createHash('sha256')
+            .update(readFileSync(join(dir, file)))
+            .digest('hex')
+            .slice(0, 8);
+          const hashed = `${id}.${hash}.png`;
+          renameSync(join(dir, file), join(dir, hashed));
+          (manifest[themeId] ??= {})[id] = `/assets/${themeId}/${hashed}`;
+        }
+      }
+
+      writeFileSync(join(dist, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
     },
     configureServer(server) {
       server.middlewares.use('/assets/manifest.json', (_req, res) => {
@@ -96,7 +152,15 @@ function assetManifest(): Plugin {
         // one workflow this exists for require a server restart.
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Cache-Control', 'no-store');
-        res.end(JSON.stringify(scan(root())));
+        // Slot -> PATH, the same shape the build writes. Unhashed here on
+        // purpose: dev serves `public/` directly, where the files keep the
+        // names you dropped them under, and `no-store` above already makes
+        // every reload honest.
+        const out: Record<string, Record<string, string>> = {};
+        for (const [themeId, ids] of Object.entries(scan(root()))) {
+          out[themeId] = Object.fromEntries(ids.map((id) => [id, `/assets/${themeId}/${id}.png`]));
+        }
+        res.end(JSON.stringify(out));
       });
     },
   };
@@ -205,10 +269,28 @@ function serviceWorkerStamp(sha: string): Plugin {
 
       // Asserted, not assumed: a renamed direction would otherwise precache
       // nothing at all and offline would quietly lose its art.
-      if (!bundle.some((f) => f.startsWith(`/assets/${SHIPPING_DIRECTION}/`))) {
+      const shipped = bundle.filter((f) => f.startsWith(`/assets/${SHIPPING_DIRECTION}/`));
+      if (shipped.length === 0) {
         throw new Error(
           `sw.js precache has no art for '${SHIPPING_DIRECTION}' — ` +
             'the default direction was renamed and this list did not follow',
+        );
+      }
+      /*
+       * AND IT HAS TO BE THE HASHED NAME (2026-09-14).
+       *
+       * `assetManifest` renames the art before this runs, and the manifest the
+       * client reads names the hashed file. If this walk ever saw the plain
+       * name it would mean the rename had not happened — the plugins reordered,
+       * or that hook throwing somewhere this one cannot see — and the precache
+       * would hold files the page never asks for while the files it DOES ask
+       * for are absent. Offline art, silently gone, from a green build.
+       */
+      const plain = shipped.filter((f) => !/\.[0-9a-f]{8}\.png$/.test(f));
+      if (plain.length > 0) {
+        throw new Error(
+          `sw.js precache carries unhashed art (${plain[0] ?? ''}) — ` +
+            'assetManifest did not rename it, so the page will ask for a file this list does not hold',
         );
       }
 
@@ -391,6 +473,20 @@ export default defineConfig({
   plugins: [
     react({ babel: { plugins: [['babel-plugin-react-compiler', {}]] } }),
     versionStamp(sha),
+    /*
+     * ORDER IS LOAD-BEARING HERE (2026-09-14), and only between these two.
+     *
+     * `assetManifest` renames the art in `dist` to carry a content hash;
+     * `serviceWorkerStamp` walks `dist` to build the precache list. Vite runs
+     * `closeBundle` hooks in array order, so the walk sees the hashed names.
+     * Swap them and the precache would name files that no longer exist — every
+     * offline board down to the procedural floor, from a green build.
+     *
+     * The assertion inside `serviceWorkerStamp` is what makes that a failed
+     * build rather than a silent one: it requires the precache to carry art
+     * for the shipping direction, and an unhashed name can no longer satisfy
+     * it.
+     */
     assetManifest(),
     serviceWorkerStamp(sha),
     contentPolicy(),

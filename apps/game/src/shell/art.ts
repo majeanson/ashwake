@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Colour } from '@content/tuning';
 import {
-  assetPath,
+  assetSrc,
   decodeManifest,
   EMPTY_MANIFEST,
   manifestHas,
@@ -55,7 +55,11 @@ export function useArtSlot(themeId: ThemeId, slot: AssetId): string | null {
     let alive = true;
     void theManifest().then((book) => {
       if (!alive) return;
-      setUrl(manifestHas(book, themeId, slot) ? assetPath(themeId, slot) : null);
+      // `assetSrc`, not `assetPath`: a built file carries a content hash and
+      // only the manifest knows it (2026-09-14). Guarded by `manifestHas`
+      // still, because "no art in this slot" is a normal state and null is how
+      // the chrome draws its own lockup instead.
+      setUrl(manifestHas(book, themeId, slot) ? assetSrc(book, themeId, slot) : null);
     });
     return () => {
       alive = false;

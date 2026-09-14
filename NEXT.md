@@ -294,6 +294,41 @@ that line before anything else; if it never does in a week, delete this entry.
 
 ## 1. Needs Marc, and only Marc
 
+**THE FLASH ON THE FIRST TILE PLACEMENT IS STILL THERE, AND THREE CAUSES ARE
+NOW RULED OUT (2026-09-14, your _"still hard rerender and flash on 1st tile
+placement"_).** Session 93 believed this was the direction's art landing late
+and rebuilding every mesh. It is not, and neither are the two theories that
+replaced it. Each was measured rather than argued:
+
+- **Not mesh remounts.** `capacityFor` floors at 64 and a fresh run is SEVEN
+  cells, ten after the first placement. Nothing is re-keyed in the opening.
+- **Not a repaint from the core.** Every `CellView` field diffed across the
+  first placement: `light` and `band` do not move for one existing cell. Only
+  the placed cell changes, plus `previewColour` on five neighbours.
+- **Not new shader programs.** New materials DO appear (the board mounts with
+  two, the first placement adds two) — but `withTorch` sets a constant
+  `customProgramCacheKey` and colour is a uniform, so the whole opening shares
+  ONE program shape.
+- **Not the art.** Your own `?art=0` answer settles it: the flash survives with
+  no art at all. The live PNGs are also `immutable` for a year, so they are in
+  the browser's cache well before the board mounts.
+
+**What IS measured:** at a 6× CPU throttle the first placement is a **99 ms
+long task**, decaying 99 → 76 → 66 → 44 across four placements. Placement 4
+adds a material and is the CHEAPEST of the four, so it is first-run warm-up
+rather than anything rebuilding. On a phone slower than 6× that is a plainly
+visible hitch.
+
+**What is yours, and it is one sentence:** a stall is not a flash, and no
+instrument here can see the screen. **Does the board visibly go away and come
+back — everything blanking for an instant — or does it stay drawn and merely
+stutter?** The first is something unmounting and I have not found it; the
+second is the 99 ms above and the fix is to move that work off the first
+placement. They are different bugs and the answer costs you one placement.
+
+If it helps to narrow it: `?rest=0` removes the resting board, and SETTINGS ▸
+ANTICRÉNELAGE ▸ OFF removes the MSAA resolve — each takes one candidate out.
+
 **THE BOARD RESTS AFTER A PAUSE — RULED, BUILT, MEASURED (2026-09-11,
 `PASS.md` P5.4).** The 2026-09-10 measurement (five idle seconds cost 3.9–4.5 s
 of main-thread time; the same five with reduced motion, 44–207 ms) was put to

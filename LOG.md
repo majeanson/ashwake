@@ -8075,3 +8075,87 @@ row opened and counted.
 **All four of Marc's rulings are now landed** — P8.2 the held sentence, P8.1
 the worker that declines a stale shell, P7.7 these nine facts, and P8.5 which
 needed no code. What is left of `PASS.md` is four rows that need a phone.
+
+### Session 98 — the art was immutable for a year under a name that never changed (2026-09-14)
+
+**Question:** Marc, from the phone: _"still hard rerender and flash on 1st tile
+placement"_ — the thing Session 93 said it had fixed. What is it?
+
+**Not what Session 93 said, not what I said next, and not what I said after
+that.** Four theories, four measurements, three of them wrong.
+
+**Ruled out: mesh remounts.** `capacityFor` floors at 64 and a fresh run is
+SEVEN cells, ten after the first placement. The ring mesh and every batch sit
+at 64 capacity through the whole opening; nothing is re-keyed.
+
+**Ruled out: a repaint from the core.** Diffed every `CellView` field across
+the first placement. `light` and `band` do not move for a single existing cell.
+All that changes is the placed cell and `previewColour` on five neighbours.
+
+**Ruled out: new shader programs.** New materials DO appear — the board mounts
+with two and the first placement adds two more — so this looked certain. It is
+not: `withTorch` sets a constant `customProgramCacheKey` and colour is a
+uniform, so every batch in the opening shares ONE program shape. Measured, not
+reasoned.
+
+**Measured, and real:** at a 6× CPU throttle the first placement is a **99 ms
+long task**, decaying 99 → 76 → 66 → 44 over four placements. But placement 4
+ADDS a material and is the cheapest of them, so the cost is not the materials —
+it is first-run warm-up. That is a hitch worth having on the record and it is
+not yet a diagnosis of the FLASH, which is the half no instrument here can see.
+
+**And the late-art theory, which was the standing one, is weak.** The live site
+serves the PNGs `max-age=31536000, immutable`, so after one visit they are in
+the browser's own cache for a year regardless of the worker; `preloadAssets` is
+correctly wired at boot. Marc's `?art=0` answer settles it from the other side:
+the flash survives with no art at all.
+
+**Which is how the session's actual bug turned up.** That header is correct for
+every other asset in this build because their names carry a content hash.
+**The art's did not.** `terrain.green.png` was the same URL in every build ever
+shipped, and `immutable` means the browser does not revalidate — on a reload or
+otherwise. A redrawn PNG would never reach anyone who had already visited, for
+up to a year. The pipeline's whole promise is _"drop a PNG in the folder and
+rebuild"_, and in production that promise was false.
+
+Marc: hash the filenames. `assetManifest` now renames the art in `dist` to
+`<slot>.<hash8>.png` and the manifest carries the PATH rather than a list of
+ids, because only the build can know the hash.
+
+**Three things that make it safe rather than clever:**
+
+- **It runs in `closeBundle`.** These files are copied verbatim out of
+  `publicDir`, so there is nothing to hash until the copy has happened — the
+  same reason `serviceWorkerStamp` rewrites rather than emits. That also means
+  the precache walk picks the hashed names up by itself, because it walks
+  `dist`. Plugin order is now load-bearing and says so at the array, and
+  `serviceWorkerStamp` **asserts** every precached art file is hashed: reorder
+  the plugins and the build fails instead of shipping a precache full of files
+  the page never asks for.
+- **`decodeManifest` still reads a list.** The device this change is FOR is one
+  holding a cached copy of the old manifest, and a decoder that answered
+  `EMPTY_MANIFEST` would take that board down to the procedural floor — a worse
+  regression than the bug. A bare id resolves through `assetPath`, which is
+  where those files still are.
+- **A path that is not this site's own is refused**, because a manifest is
+  untrusted input and a hand-edited one should not send a player's browser
+  somewhere.
+
+**And it found a second consumer nobody would have checked.** `shell/art.ts`
+builds the DOM-side URLs — the title lockup and the end screen's hero — and
+rebuilt them from the id too. Hashing the files without it would have 404'd
+both on the two screens every run begins and ends on. `CLAUDE.md`'s consumer
+rule, one more time.
+
+`assetPath` is no longer exported: the sweep caught it the same run, and it is
+now read only inside its own file.
+
+Verified: format, types, lint, **1295 unit tests / 101 files** (up three),
+sweep 0 findings over 306 files, `pnpm artcheck` 18 PNGs across 2 directions,
+budget inside every bar, `pnpm sim` byte-identical, and **offline + shots 30
+passed** — which is the pair that proves the hashed art is both precached and
+drawn.
+
+**What is still open is the flash itself**, and it is in `NEXT.md` §1 with the
+three eliminations and the 99 ms measurement on it. A stall is not a flash, and
+what the screen actually does is the half a phone has to answer.

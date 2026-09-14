@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '@content/tuning';
-import { ASSET_SLOTS, decodeManifest, manifestHas } from './assets';
+import { ASSET_SLOTS, assetSrc, decodeManifest, manifestHas } from './assets';
 import { themeCssVars } from './css';
 import { DEFAULT_THEME_ID, parseThemeId, resolveTheme, THEMES } from './index';
 import {
@@ -345,7 +345,10 @@ describe.each(THEMES.map((t) => [t.name.en, t] as const))('%s', (_name, theme: T
     ];
     for (const s of surfaces) {
       if (s.asset === null) continue;
-      expect(decodeManifest({ [theme.id]: [s.asset] })[theme.id]).toContain(s.asset);
+      // Through the decoder, so a slot the registry has never heard of is
+      // dropped here exactly as it would be in the browser. Keyed lookup since
+      // 2026-09-14: the manifest maps id -> path, not a list of ids.
+      expect(manifestHas(decodeManifest({ [theme.id]: [s.asset] }), theme.id, s.asset)).toBe(true);
     }
   });
 
@@ -394,11 +397,66 @@ describe('the asset manifest', () => {
   });
 
   it('keeps the ids it recognises and drops the ones it does not', () => {
-    const manifest = decodeManifest({ torchlit: ['terrain.green', 'nope.gone', 'fog.hard'] });
-    expect(manifest['torchlit']).toEqual(['terrain.green', 'fog.hard']);
+    const manifest = decodeManifest({
+      torchlit: {
+        'terrain.green': '/assets/torchlit/terrain.green.abc12345.png',
+        'nope.gone': '/assets/torchlit/nope.gone.png',
+        'fog.hard': '/assets/torchlit/fog.hard.0f0f0f0f.png',
+      },
+    });
+    expect(Object.keys(manifest['torchlit'] ?? {})).toEqual(['terrain.green', 'fog.hard']);
     expect(manifestHas(manifest, 'torchlit', 'terrain.green')).toBe(true);
     expect(manifestHas(manifest, 'torchlit', 'terrain.red')).toBe(false);
     expect(manifestHas(manifest, 'cold-survey', 'terrain.green')).toBe(false);
+  });
+
+  /**
+   * THE HASH IS THE POINT (2026-09-14) — see `AssetManifest`.
+   *
+   * `/assets/**` ships `max-age=31536000, immutable`, so a URL that does not
+   * change when the bytes do is art nobody can ever be given again. The build
+   * puts the hash in the filename and the manifest carries the path; a loader
+   * that rebuilt the path from the id would quietly undo the whole thing, and
+   * it did exactly that in two places until this shape forced the issue.
+   */
+  it('hands back the path the build wrote, hash and all', () => {
+    const manifest = decodeManifest({
+      torchlit: { 'terrain.green': '/assets/torchlit/terrain.green.abc12345.png' },
+    });
+    expect(assetSrc(manifest, 'torchlit', 'terrain.green')).toBe(
+      '/assets/torchlit/terrain.green.abc12345.png',
+    );
+  });
+
+  /**
+   * AND A LIST IS STILL READ, which is not politeness.
+   *
+   * The device this change is FOR is one holding a cached copy of the old
+   * manifest — a list of bare ids. A decoder that answered `EMPTY_MANIFEST`
+   * would take that board down to the procedural floor until the file happened
+   * to be refetched, which is a worse regression than the bug being fixed.
+   */
+  it('still reads the old shape, and resolves it to where the build would have put it', () => {
+    const manifest = decodeManifest({ torchlit: ['terrain.green', 'nope.gone'] });
+    expect(manifestHas(manifest, 'torchlit', 'terrain.green')).toBe(true);
+    expect(manifestHas(manifest, 'torchlit', 'nope.gone' as never)).toBe(false);
+    expect(assetSrc(manifest, 'torchlit', 'terrain.green')).toBe(
+      '/assets/torchlit/terrain.green.png',
+    );
+  });
+
+  /**
+   * A path is untrusted input: a hand-edited file, a stale build, or a 404
+   * page that happened to parse. Anything that is not a same-origin absolute
+   * asset path falls back rather than sending a player's browser somewhere.
+   */
+  it('refuses a path that is not this site’s own', () => {
+    const manifest = decodeManifest({
+      torchlit: { 'terrain.green': 'https://elsewhere.example/evil.png' },
+    });
+    expect(assetSrc(manifest, 'torchlit', 'terrain.green')).toBe(
+      '/assets/torchlit/terrain.green.png',
+    );
   });
 });
 

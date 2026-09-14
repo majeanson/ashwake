@@ -155,39 +155,88 @@ export const ASSET_SLOTS: readonly AssetSlot[] = [
 const BY_ID = new Map(ASSET_SLOTS.map((s) => [s.id, s]));
 
 /**
- * Where a theme's art for a slot would live, relative to the site root.
+ * Where a theme's art for a slot lives when nothing else says otherwise.
  *
  * Per-theme rather than shared: two directions that both want a crypt want two
  * different crypts, and a shared folder would make swapping directions mean
  * moving files.
+ *
+ * **The manifest is what the loader actually reads** (2026-09-14): a built file
+ * carries a content hash in its name so the year-long `immutable` header is an
+ * honest promise, and only the build knows the hash. This stays as the shape
+ * the path takes and as the fallback for a manifest entry that is a bare id —
+ * see `assetSrc`.
  */
-export const assetPath = (themeId: string, id: AssetId): string => `/assets/${themeId}/${id}.png`;
+const assetPath = (themeId: string, id: AssetId): string => `/assets/${themeId}/${id}.png`;
 
 /**
- * Which `<themeId>/<slotId>` pairs actually have a file, written at build time.
+ * Which `<themeId>/<slotId>` pairs have a file, and WHERE — written at build
+ * time.
  *
  * Absent or malformed is a normal state, not an error — it means no art has been
  * dropped yet, which is where every theme starts.
+ *
+ * ## It used to be a list of ids, and that was a year-long bug (2026-09-14)
+ *
+ * The loader built `/assets/<theme>/<slot>.png` from the id, so every build
+ * ever shipped served the art at the same URL — while `public/_headers` sends
+ * `/assets/**` as `max-age=31536000, immutable`. `immutable` means the browser
+ * does not revalidate, on a reload or otherwise. A redrawn PNG would therefore
+ * never reach anyone who had already visited, for up to a year, and the
+ * pipeline's whole promise is *"drop a PNG in the folder and rebuild"*.
+ *
+ * So the manifest carries the PATH the build actually wrote, hash and all, and
+ * the id stays the key because that is what a theme points a surface at. The
+ * shape is a map rather than a list for exactly that reason: the id is what the
+ * game knows and the path is what only the build can say.
  */
-export type AssetManifest = Readonly<Record<string, readonly AssetId[]>>;
+export type AssetManifest = Readonly<Record<string, Readonly<Record<string, string>>>>;
 
 export const EMPTY_MANIFEST: AssetManifest = {};
 
-/** Untrusted input: a stale build, a hand-edited file, or a 404 page. */
+/**
+ * Untrusted input: a stale build, a hand-edited file, or a 404 page.
+ *
+ * **A LIST IS STILL ACCEPTED**, and it is not politeness. A device holding a
+ * cached copy of the OLD manifest — which is exactly the population this change
+ * is for — hands this function an array, and a decoder that answered
+ * `EMPTY_MANIFEST` would take every board that device draws down to the
+ * procedural floor until the file happened to be refetched. An id with no path
+ * resolves through `assetPath`, which is where those files still are.
+ */
 export function decodeManifest(raw: unknown): AssetManifest {
   if (typeof raw !== 'object' || raw === null) return EMPTY_MANIFEST;
 
-  const out: Record<string, AssetId[]> = {};
-  for (const [themeId, ids] of Object.entries(raw as Record<string, unknown>)) {
-    if (!Array.isArray(ids)) continue;
-    const kept = ids.filter(
-      (id): id is AssetId => typeof id === 'string' && BY_ID.has(id as AssetId),
-    );
-    if (kept.length > 0) out[themeId] = kept;
+  const out: Record<string, Record<string, string>> = {};
+  for (const [themeId, entry] of Object.entries(raw as Record<string, unknown>)) {
+    const kept: Record<string, string> = {};
+    if (Array.isArray(entry)) {
+      for (const id of entry) {
+        if (typeof id === 'string' && BY_ID.has(id as AssetId))
+          kept[id] = assetPath(themeId, id as AssetId);
+      }
+    } else if (typeof entry === 'object' && entry !== null) {
+      for (const [id, path] of Object.entries(entry as Record<string, unknown>)) {
+        if (!BY_ID.has(id as AssetId)) continue;
+        // A path has to be a same-origin absolute one. Anything else is a
+        // hand-edited file or a hostile one, and the slot falls back to where
+        // the build would have put it rather than fetching somebody's URL.
+        kept[id] =
+          typeof path === 'string' && path.startsWith('/assets/')
+            ? path
+            : assetPath(themeId, id as AssetId);
+      }
+    }
+    if (Object.keys(kept).length > 0) out[themeId] = kept;
   }
   return out;
 }
 
 export function manifestHas(manifest: AssetManifest, themeId: string, id: AssetId): boolean {
-  return manifest[themeId]?.includes(id) ?? false;
+  return manifest[themeId]?.[id] !== undefined;
+}
+
+/** Where this build actually put a slot's art, or where it would have. */
+export function assetSrc(manifest: AssetManifest, themeId: string, id: AssetId): string {
+  return manifest[themeId]?.[id] ?? assetPath(themeId, id);
 }

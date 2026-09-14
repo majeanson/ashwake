@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  assetPath,
+  assetSrc,
   decodeManifest,
   EMPTY_MANIFEST,
   manifestHas,
@@ -146,13 +146,17 @@ export function useAssets(
 
 async function loadBook(themeId: ThemeId): Promise<AssetBook> {
   const manifest = await loadManifest();
-  const slots = manifest[themeId] ?? [];
   const images = new Map<AssetId, ImageBitmap>();
 
+  // The PATH comes from the manifest, not from the id (2026-09-14): a built
+  // file's name carries a content hash, and only the build knows it. `assetSrc`
+  // falls back to where the build would have put it, which is what an old
+  // cached manifest — a list of bare ids — resolves to.
   await Promise.all(
-    slots.map(async (id) => {
-      const bitmap = await loadBitmap(assetPath(themeId, id));
-      if (bitmap !== null) images.set(id, bitmap);
+    Object.keys(manifest[themeId] ?? {}).map(async (id) => {
+      const slot = id as AssetId;
+      const bitmap = await loadBitmap(assetSrc(manifest, themeId, slot));
+      if (bitmap !== null) images.set(slot, bitmap);
     }),
   );
 
