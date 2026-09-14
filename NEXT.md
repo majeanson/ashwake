@@ -418,6 +418,40 @@ canvas actually has. Removal sites: the section in `Settings.tsx`, its three
 props through `App.tsx`, the `ANTIALIAS` export in `Board.tsx`, the pair in
 `shell/storage.ts` and `useDevice.ts`, and `ui.antialias` in `text/`.
 
+**~~SESSION A, FIRST LINE: DOES THE BOARD DRAW BEFORE YOU TOUCH IT?~~ — FOUND
+AND FIXED 2026-09-14: A THROW THAT OUTLIVED THE RUN IT WAS THROWN IN**
+(`LOG.md` Sessions 101–103). Three numbers took this from four days of theories
+to fifteen lines of camera code, and each retired a belief:
+
+- **`draws=6216`, `contextLost=false`** — the renderer is innocent, and the
+  name on this row was wrong. A board that draws six thousand times is not one
+  that "never draws until it is touched".
+- **`ink=6010` against `afterDEFAULT=15246`, `middleFlatAfter=false`** — one
+  press of the camera cycle's re-framing stop more than doubled the ink and put
+  a tile in the middle. The board was there all along; only the camera was lost.
+- **And the bug was in the code's own docblock.** `useFrame` says a flick "is
+  cancelled by anything the player does on purpose — a drag, a pinch, a
+  flight". Only the drag did it. The loop runs the glide FIRST and the flight
+  second, so a flight in the air overwrites the throw every frame and nothing
+  looks wrong — then the flight lands, clears itself, and the throw carries the
+  board off the tile it was just centred on. Reduced motion is worse, not
+  better.
+
+`glide.current = null` in `fly`, and in `zoomBy` for the same sentence's third
+clause. The regression test does not wait: it throws the board and opens a run
+with the throw still travelling, and it was checked to FAIL against the unfixed
+build before it was kept.
+
+**Why it took four days:** this machine rests the glide inside the test's
+400 ms wait, so it passed here three in three while CI's slower Linux WebKit
+failed four in five. Two fixes were written against the renderer and reverted
+because the renderer was never the problem.
+
+**Still yours, on the phone, and it may now be one word:** open the game as a
+returning player, press BEGIN, and look without touching. The harness bug is
+fixed and proved; whether Safari had the same hole is the thing only your phone
+can say. The original finding follows.
+
 **SESSION A, FIRST LINE: DOES THE BOARD DRAW BEFORE YOU TOUCH IT? (2026-09-10,
 `PASS.md` P6.8.)** On Playwright's WebKit there is a reproducible state where a
 run opens and the board is **blank until something touches it** — the ground

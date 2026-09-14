@@ -8375,3 +8375,61 @@ _The instrument was right to exist: one run of it moved this row further than
 two written fixes did._
 
 Verified: format, types, lint, the test green on chromium and webkit locally.
+
+### Session 103 — P6.8 was a throw that outlived the run it was thrown in (2026-09-14)
+
+**Question:** the second reading landed. Which of the three is it?
+
+**`ink=6010 afterDEFAULT=15246 middleFlatAfter=false`.** The board was there
+all along. One press of DEFAULT — the one camera stop that re-frames — more
+than doubled the ink on the canvas and put a tile in the middle. So: the board
+exists, the renderer drew it six thousand times, and **only the camera was
+lost**. That is branch one of three, and it named the file to read.
+
+**And the bug was written in the code's own docblock.** `useFrame`:
+
+> A flick carries the board after the finger has gone. It is cancelled by
+> anything the player does on purpose — a drag, a pinch, a flight — because a
+> finger outranks a throw exactly as it outranks a journey.
+
+Three things named. **Only the drag did it.** `panBy` clears `glide.current`;
+`fly` and `zoomBy` never have.
+
+**And the loop's own order is what hid it.** The glide runs FIRST and the
+flight second, so for the whole of a flight the flight overwrites the glide's
+work every frame and nothing looks wrong. Then the flight finishes, sets
+`flight.current = null`, and the glide — still alive — goes on panning away
+from the camera the flight just landed on. Under reduced motion it is worse:
+the camera is set at once and the throw starts eating it on the next frame.
+
+That is the whole of _"a run opens on empty ground"_. The test flicks the board
+two screens away, opens the daily 400 ms later, and on a runner slow enough for
+the throw to outlive that wait the new run's fly lands on the starting tile and
+is then carried off it. This machine rests the glide inside the wait, which is
+exactly why it passed here three in three and failed on CI four in five for
+four days, and why two fixes written against the renderer fixed nothing.
+
+**The fix is `glide.current = null` in `fly`**, and the same line in `zoomBy`,
+which is the third clause of the same sentence. Both make the code do what it
+has always said it does.
+
+**Proved rather than asserted.** The new test does not wait: it throws the
+board and opens a run with the throw still travelling — the state CI reaches by
+being slow and this machine reaches by being asked. Against the unfixed build
+it FAILS, middle flat and staying flat; with the fix it passes. Checked both
+ways, in that order, before anything was written down.
+
+**What the instrument cost and what it bought.** Two sessions and three
+numbers: `draws=6150` retired the renderer and the row's own name, `ink=6010`
+versus `afterDEFAULT=15246` retired the scene, and what was left was fifteen
+lines of camera code with a comment that had been right about the rule and
+wrong about the code for as long as both had existed. _Four days of theories
+cost more than one number would have._
+
+**P6.8 is not closed on the phone.** What is fixed is a bug the harness can
+reproduce and prove; whether Marc's Safari has the same hole is still the first
+line of Session A, and the answer there may now simply be yes-it-is-gone.
+
+Verified: **28 chromium / 23 webkit** in `board.spec.ts` on this machine,
+**1295 unit tests**, `pnpm sim` byte-identical, sweep 0 findings over 306
+files, format, types, lint.

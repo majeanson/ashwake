@@ -1701,3 +1701,70 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+/**
+ * A THROW DOES NOT SURVIVE INTO THE NEXT RUN (2026-09-14, P6.8).
+ *
+ * The board's `useFrame` has always claimed a glide is *"cancelled by anything
+ * the player does on purpose — a drag, a pinch, a flight"*, and of the three
+ * only the drag did it. The loop runs the glide first and the flight second,
+ * so a flight in the air hides the fault completely: it overwrites the glide's
+ * work every frame. Then the flight lands, clears itself, and the throw — still
+ * alive — carries the board off the tile it was just centred on.
+ *
+ * That is what "a run opens on empty ground" was. It took four days and two
+ * reverted fixes because the only reproduction was CI's Linux WebKit, where
+ * everything is slow enough for a throw to outlive the wait; on this machine
+ * the glide rests first and the bug cannot happen.
+ *
+ * So this test does not wait. It throws the board and opens a run with the
+ * throw still travelling, which is the state CI reaches by being slow and this
+ * machine reaches by being asked. Checked against the unfixed build: the middle
+ * is flat and stays flat.
+ */
+test('a flick does not carry the board out of the run it opens', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&runs=5&place=30&seed=7');
+  await begin(page);
+  await page.waitForTimeout(700);
+  await clearCards(page);
+
+  const host = page.locator('.board-host');
+  const box = await host.boundingBox();
+  if (box === null) throw new Error('no board host');
+  const middleIsFlat = async (): Promise<boolean> => {
+    const shot = await page.screenshot({
+      clip: {
+        x: box.x + box.width / 2 - 34,
+        y: box.y + box.height / 2 - 34,
+        width: 68,
+        height: 68,
+      },
+    });
+    const seen = new Set<string>();
+    for (let i = 0; i + 4 <= shot.byteLength; i += 4)
+      seen.add(shot.subarray(i, i + 4).toString('hex'));
+    return seen.size < 60;
+  };
+
+  // A hard throw, and NOT waited out: `page.mouse.up` returns the moment the
+  // finger lifts and the glide is at full speed on the very next frame.
+  await page.mouse.move(320, 200);
+  await page.mouse.down();
+  await page.mouse.move(60, 640, { steps: 4 });
+  await page.mouse.up();
+
+  // Into today's daily, while the board is still travelling.
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="daily"]').click();
+  await page.waitForTimeout(1400);
+  await clearCards(page);
+
+  await expect
+    .poll(middleIsFlat, {
+      message: 'the throw carried the board out of the run it had just opened',
+    })
+    .toBe(false);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

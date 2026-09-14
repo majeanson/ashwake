@@ -1137,6 +1137,32 @@ function Rig({
 
   const fly = useCallback(
     (to: CameraState): void => {
+      /*
+       * A FLIGHT CANCELS A THROW, WHICH THE LOOP ABOVE ALREADY CLAIMED
+       * (2026-09-14, and this is P6.8).
+       *
+       * `useFrame` says it in as many words — *"cancelled by anything the
+       * player does on purpose — a drag, a pinch, a flight"* — and of those
+       * three, only the drag did it. The loop runs the glide FIRST and the
+       * flight second, so while a flight is in the air it overwrites the
+       * glide's work every frame and nothing looks wrong. Then the flight ends
+       * (`flight.current = null`) and the glide, still alive, goes on panning
+       * away from the camera the flight just landed on.
+       *
+       * That is the whole of *"a run opens on empty ground"*: the test flicks
+       * the board two screens away, opens the daily 400 ms later, and on a
+       * runner slow enough for the throw to outlive that wait, the new run's
+       * fly lands on the starting tile and is then carried off it. This
+       * machine's engines rest the glide inside the wait, which is why it
+       * passed here three in three and failed on CI four in five for four
+       * days. Measured, not reasoned: `draws=6216` with a live context said
+       * the renderer was innocent, and `afterDEFAULT=15246` against `ink=6010`
+       * said the board was there all along and only the camera was lost.
+       *
+       * Under reduced motion it is worse rather than better: the camera is set
+       * to `to` at once and the glide starts eating it on the very next frame.
+       */
+      glide.current = null;
       wasFit.current = to.zoom <= 1.0001;
       if (reducedMotion) {
         cam.current = to;
@@ -1204,6 +1230,10 @@ function Rig({
     () => ({
       zoomBy(factor) {
         wasFit.current = false;
+        // The third clause of the same sentence `fly` above answers: a zoom is
+        // a thing the player did on purpose, so it outranks a throw. `panBy`
+        // below had this and these two did not.
+        glide.current = null;
         cam.current = zoomedBy(frameRef.current, cam.current, factor);
         flight.current = null;
         keepMine();
