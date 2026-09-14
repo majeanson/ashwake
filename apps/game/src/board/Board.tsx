@@ -1230,9 +1230,26 @@ function Rig({
     () => ({
       zoomBy(factor) {
         wasFit.current = false;
-        // The third clause of the same sentence `fly` above answers: a zoom is
-        // a thing the player did on purpose, so it outranks a throw. `panBy`
-        // below had this and these two did not.
+        /*
+         * The third clause of the same sentence `fly` above answers: a zoom is
+         * a thing the player did on purpose, so it outranks a throw. `panBy`
+         * below had this and these two did not.
+         *
+         * **AND THIS HALF IS NOT TESTED, WHICH IS A STATEMENT AND NOT AN
+         * OVERSIGHT.** The flight half is (`board.spec.ts`, checked to fail
+         * against the unfixed build). A zoom does not re-centre, so the only
+         * thing to assert is that the board comes to REST — and two attempts
+         * at that measured something else instead. A generous wait lets the
+         * throw decay on its own and passes either way; a short one compares
+         * two screenshots of a board whose beacons are breathing, so a
+         * perfectly still camera fails. Holding the breath with reduced motion
+         * is the way through and `test.use` will not take `reducedMotion` in a
+         * nested `describe` here.
+         *
+         * A test that cannot fail is worse than none, so there is none. The
+         * line stays because the rule it keeps is the one three lines above it,
+         * written before this bug existed and true of all three clauses.
+         */
         glide.current = null;
         cam.current = zoomedBy(frameRef.current, cam.current, factor);
         flight.current = null;
