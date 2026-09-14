@@ -291,10 +291,17 @@ failed twice and passed twice in full runs after the art-arrival change
 after a placement that landed. The test's failure path now prints the storage
 keys, the last-error record and the toast's live text. If it fails again, read
 that line before anything else; if it never does in a week, delete this entry.
+**It failed again on 2026-09-14, and the line could not print:** the
+diagnostic referenced `ERROR_KEY` — a constant of the spec file — from inside
+`page.evaluate`, so CI showed `ReferenceError` where the storage keys should
+have been. Fixed the same day; the next failure is the first that will say
+anything. The same run also failed `board.spec.ts:1002` once, the two-finger
+lean, with the board turned 30° for 45° — a synthesised gesture on a runner
+that had never shown it; noted here and not touched.
 
 ## 1. Needs Marc, and only Marc
 
-**~~THE FLASH ON THE FIRST TILE PLACEMENT~~ — FOUND, 2026-09-14: A TAP
+**~~THE FLASH ON THE FIRST TILE PLACEMENT~~ — CLOSED 2026-09-14, Marc: _"Gone."_ — A TAP
 HIGHLIGHT THIS BODY LOST IN THE PORT.** After the three eliminations below, two
 more with Session 58's screencast (one of which was the harness photographing
 itself — `LOG.md` Session 99), and a DOM trace that found nothing mounting, the
@@ -308,34 +315,20 @@ lands on it. Nothing in this body set `-webkit-tap-highlight-color`.
 board — the port dropped the block and got two of its four back. Restored on
 `body`, where v1 had it.
 
-**One tap on the phone says whether this is it:** place a first tile. If the
-grey wash is gone, close this. If the board still blanks, say whether it
-BLANKS or STUTTERS, because the 99 ms measured below is real and is the other
-thing. `user-select: none` is the fourth property from that v1 block and is
-still missing here; left alone because this body set `user-select: text` on
-one panel since, so it is a look call — yours if a long-press ever raises the
-loupe over a board.
-
-The eliminations and the measurement, as written this morning, follow.
-
-**~~THE FLASH ON THE FIRST TILE PLACEMENT~~ — FOUND, 2026-09-14: A TAP
-HIGHLIGHT THIS BODY LOST IN THE PORT.** After the three eliminations below, two
-more with Session 58's screencast (one of which was the harness photographing
-itself — `LOG.md` Session 99), and a DOM trace that found nothing mounting, the
-one candidate standing is the thing no instrument here runs on: **iOS paints a
-tap highlight over the box of the clickable element a finger lands on.** The
-canvas is not clickable; `.board-view` is, because it is focusable for the
-keyboard marker — so the wash covers the whole board, on the first tap that
-lands on it. Nothing in this body set `-webkit-tap-highlight-color`.
-**Ashwake 1 does, on `body` (`tiles/src/style.css:98`)**, beside the
-`touch-action` and `-webkit-touch-callout` that 2026-08-29 recovered for the
-board — the port dropped the block and got two of its four back. Restored on
-`body`, where v1 had it.
-
-**One tap on the phone says whether this is it:** place a first tile. If the
-grey wash is gone, close this. If the board still blanks, say whether it
-BLANKS or STUTTERS, because the 99 ms measured below is real and is the other
-thing. `user-select: none` is the fourth property from that v1 block and is
+**~~One tap on the phone says whether this is it~~ — it was.** Asked to place
+a first tile and say GONE, BLANKS or STUTTERS, Marc said _"Gone"_ the same
+day. The report that outlived four measured fixes was a browser gesture the
+harness cannot make, and the fix was a line the previous body already carried.
+**And the stall below is seventeen milliseconds** (`LOG.md` Session 100).
+Three instruments in a row: the sampling profiler said 98 ms of unnamed native
+time in one task; the GL, instrumented directly, said zero shader compiles and
+zero links on every placement; the tracing timeline said the first placement's
+longest task is 16.7 ms against the fourth's 6.8, all ordinary work in the
+mouse-release handler, with 4.4 ms of lazy V8 compile the only first-time-only
+piece. The 99 ms was that task under a 6× throttle. **Nothing rebuilds; there
+is nothing to move.** The one option is warming the JIT with a throwaway
+placement during the art hold, worth about four milliseconds — yours to want
+or not, and I have not built it. `user-select: none` is the fourth property from that v1 block and is
 still missing here; left alone because this body set `user-select: text` on
 one panel since, so it is a look call — yours if a long-press ever raises the
 loupe over a board.

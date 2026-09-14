@@ -214,7 +214,17 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
      * toast's live text. `NEXT.md` §2 carries the entry; delete both when the
      * flake has been explained or has not recurred in a week.
      */
-    const diag = await page.evaluate(() => {
+    /*
+     * AND THE DIAGNOSTIC HAD NEVER ONCE PRINTED (2026-09-14). `ERROR_KEY` is a
+     * constant of this FILE, and this function runs in the BROWSER — so the
+     * one time the flake fired on CI with this in place, the line that
+     * `NEXT.md` §0 says to read before anything else was
+     * `ReferenceError: Can't find variable: ERROR_KEY`. A diagnostic that
+     * throws on its own failure path is worse than none, because it looks
+     * like one. The key travels in as an argument now, the way `TIMELINE_KEY`
+     * does everywhere else in this file.
+     */
+    const diag = await page.evaluate((errorKey) => {
       const out: Record<string, number | string | null> = {};
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i) ?? '';
@@ -223,11 +233,11 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
       // Its FIRST 200 characters, for the reason `diaryLength` above is a
       // number: this record is a stack trace, rung one frees "a few tens of
       // kilobytes" of it, and `JSON.stringify` puts all of that on one line.
-      out.__error = localStorage.getItem(ERROR_KEY)?.slice(0, 200) ?? null;
-      out.__errorLength = localStorage.getItem(ERROR_KEY)?.length ?? null;
+      out.__error = localStorage.getItem(errorKey)?.slice(0, 200) ?? null;
+      out.__errorLength = localStorage.getItem(errorKey)?.length ?? null;
       out.__toast = document.querySelector('.toast')?.textContent ?? null;
       return out;
-    });
+    }, ERROR_KEY);
     throw new Error(`DIAG ${JSON.stringify(diag)}\n${String(e)}`, { cause: e });
   }
   expect(

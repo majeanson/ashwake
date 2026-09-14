@@ -8226,3 +8226,61 @@ another session, and I was the one leaving them. Killed by path, and the
 headed run that opened a window over his game was the last one of those.
 
 Verified: format, lint; the change is one CSS declaration on `body`.
+
+### Session 100 — the stall is seventeen milliseconds of ordinary work, and the flash is closed (2026-09-14)
+
+**Question:** Marc, on the tap-highlight fix: _"Gone."_ He then chose the other
+thing the morning had measured — a first placement that reads 99 ms at a 6×
+throttle, decaying to 44 by the fourth. What is it, and can it be moved off the
+placement?
+
+**It is not one thing, and the number that named it was the instrument's.**
+
+**Three instruments, in order, each correcting the last.** The V8 sampling
+profiler at 200 µs put the first placement at 18 ms of JS and **98 ms of
+`(program)` in a single 87 ms bucket** — native, unnamed, exactly the shape of
+a stall. `cloneUniforms` showed up on placement 1 and not 4, which is three
+initialising a material, which is where a shader compile would sit. So the GL
+was instrumented directly: `compileShader`, `linkProgram` (with the link forced
+to finish so its cost lands where it is counted) and the uploads, per
+placement. **Zero links, zero compiles, on every placement.** The compile
+theory is dead the same way the morning's was — measured, not reasoned — and
+the material initialisation reuses the cached program, exactly as
+`customProgramCacheKey` intends.
+
+**Then the tracing timeline, which is the instrument for task LENGTH.** With
+`devtools.timeline` and `v8` on, the first placement's longest task is
+**16.7 ms**, the fourth's 6.8 — all inside `handleMouseReleaseEvent`: the
+reducer, the two views, the React commit, the instance writes. Style, layout,
+paint and image decode are each under 3 ms. The one first-time-only line is
+`V8.CompileCode` at 4.4 ms — code the placement path runs for the first time,
+compiled lazily. There is no 87 ms task. **The sampling profiler's `(program)`
+bucket was its own overhead on cold code**, and the morning's 99 ms was
+16.7 ms under a 6× throttle.
+
+**So there is nothing to move.** Twice the fourth placement's work, in one
+task, one frame on this desktop; on a phone three times slower, perhaps three
+frames, once, then one. The only movable piece is four milliseconds of lazy
+compile, and moving it means running a throwaway placement during the art hold
+to warm the JIT — a real technique and a marginal one, put to Marc as a choice
+rather than built.
+
+_A profiler that cannot name a cost is reporting on itself. Ask a second one
+before believing the first._
+
+**The flash is closed.** `NEXT.md` §1 carries Marc's word. Five sessions, four
+real fixes, and the report outlived all of them because it was a browser
+gesture no instrument here can make — a CSS property Ashwake 1 carried on
+`body` and the port dropped.
+
+**Two instrument faults on the way.** `quota.spec.ts`'s failure diagnostic —
+the line `NEXT.md` §0 says to read before anything else — referenced a file
+constant from inside `page.evaluate`, so the first time the WebKit flake fired
+with it in place, CI printed `ReferenceError: Can't find variable: ERROR_KEY`
+instead. It had never been able to print. The key travels in as an argument
+now. And `board.spec.ts:1002`, the two-finger lean, failed once on the runner
+with the board turned 30° for 45° — a gesture the harness synthesises, on a
+runner that has never shown it before; noted, not touched.
+
+Verified: format, lint. The a11y spec 6 passed on the CSS change; nothing
+else in this session's diff is executable code.
