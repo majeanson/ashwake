@@ -436,6 +436,21 @@ bare. The new-world check three lines above it passes on the same page, so the
 capture works and the engine draws; what does not survive is the scene change
 into the daily with no finger landing after it.
 
+**AND SINCE 2026-09-14 THE FAILURE CARRIES A NUMBER** (`LOG.md` Session 101).
+The picture says "empty" and cannot say WHICH empty, which is what both
+reverted fixes were guessing at. Read again, the artifact adds one fact: the
+ground is the theme's colour, not black — so the canvas is composited and
+sized, and only the hexes are missing. That leaves two states, and the draw
+count tells them apart. **`draws=0`** means nothing was rendered and the blank
+is a frame nobody asked for: `frameloop="demand"` plus a canvas with no
+`preserveDrawingBuffer` (`Board.tsx`'s own note at `snapshot()`: _"after the
+browser composites, the drawing buffer is gone"_) is a blank board until the
+next `invalidate()` — which is exactly what a tap supplies. **A healthy count**
+means the scene or the camera is wrong and the renderer is innocent. The
+diagnostic reports the count on opening AND after polling, because a poll's
+screenshots demand frames and would otherwise be counting themselves. Nothing
+ships for it; it wraps the GL prototype from a test init script.
+
 That is a better debugging surface than this bug has ever had — a second
 engine, a second operating system, and a failure four times in five rather
 than once in a session. It does not replace the phone (only Marc's Safari can

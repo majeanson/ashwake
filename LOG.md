@@ -8284,3 +8284,50 @@ runner that has never shown it before; noted, not touched.
 
 Verified: format, lint. The a11y spec 6 passed on the CSS change; nothing
 else in this session's diff is executable code.
+
+### Session 101 — P6.8 gets an instrument instead of a fifth theory (2026-09-14)
+
+**Question:** the checkpoint is written and P6.8 is the only genuine bug left.
+Two fixes for it have been written, measured and reverted. What does a third
+attempt need that the first two did not have?
+
+**A number that tells the two empties apart.**
+
+**The picture says "empty" and cannot say which empty.** CI's artifact — kept
+since 2026-09-11 — shows the daily's plane bare with the HUD at 22 tiles, three
+cards in the hand and the purse drawn. Read again today, it says one more
+thing: **the ground is the theme's colour, not black.** So the canvas is
+composited and sized; what is missing is hexes. That rules out a lost context
+and a capture that never fired, and leaves exactly two states.
+
+1. **Nothing was drawn.** `frameloop="demand"` renders only when something
+   asks, and `Board.tsx` already records at `snapshot()` that this canvas has
+   no `preserveDrawingBuffer` — _"after the browser composites, the drawing
+   buffer is gone"_. A composite with no frame behind it is a blank canvas
+   until the next `invalidate()`. Which is what a tap supplies, and P6.8's
+   whole signature is _"a single tap fills it in"_.
+2. **Plenty was drawn** and the scene is wrong — a camera still where the
+   test's two-screen drag left it, or instances at count zero.
+
+**One number splits them, and it needs nothing from the bundle.** The draw
+calls are counted by wrapping `drawElements`, `drawArrays` and
+`drawElementsInstanced` on `WebGL2RenderingContext.prototype` in an init
+script, and the context is asked whether it is lost in the same breath —
+`getContext` hands back the one the renderer is already using. No debug
+surface, no production code, nothing that ships.
+
+**Read BEFORE the poll, which is the part that is easy to get wrong.** The
+poll screenshots repeatedly and a screenshot demands a frame on some engines,
+so a count taken after five seconds of polling would be a count of the
+instrument. The diagnostic reports both: what the daily's own scene change drew
+on opening, and what the polling added.
+
+**No fix is attempted.** Three in three passes on this machine's WebKit and on
+Chromium with the instrument in place, and CI fails four in five — so the next
+red run answers the question rather than posing it again. That is the same move
+that closed the quota precondition this morning: the artifact said _"the diary
+is whole"_ and settled in one line what three sessions had argued.
+
+_A fifth theory is worth less than the first measurement._
+
+Verified: format, types, lint, the test green on both engines locally.

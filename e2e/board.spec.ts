@@ -1329,6 +1329,58 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
    */
   const errors = watchErrors(page);
 
+  /*
+   * AND WHEN IT FAILS, SAY WHETHER THE BOARD WAS DRAWN AT ALL (2026-09-14).
+   *
+   * This is P6.8's only reproduction: CI's Linux WebKit, four runs in five,
+   * where this machine's WebKit passes three in three. Every attempt so far
+   * has read the picture — first a boolean, then, since 2026-09-11, a
+   * screenshot — and a picture of an empty plane cannot say WHICH empty it is.
+   * Two candidate fixes were written against that ambiguity and reverted
+   * because they fixed nothing.
+   *
+   * There are two empties and one number tells them apart. **Nothing was
+   * drawn**: under `frameloop="demand"` a frame is rendered only when
+   * something asks, and `Board.tsx` records at `snapshot()` that this canvas
+   * has no `preserveDrawingBuffer` — *"after the browser composites, the
+   * drawing buffer is gone"* — so a composite with no frame behind it is a
+   * blank canvas until the next `invalidate()`, which is exactly what a tap
+   * supplies. **Or plenty was drawn** and the scene is wrong: a camera left
+   * where the drag put it, or instances at count zero.
+   *
+   * So the draw calls are counted from inside the page, which needs no
+   * cooperation from the app and no debug surface in the bundle. The context
+   * is asked whether it is lost in the same breath, because `getContext`
+   * hands back the one the renderer is already using.
+   */
+  await page.addInitScript(() => {
+    const bag = window as unknown as { __draws: { n: number; lastAt: number } };
+    bag.__draws = { n: 0, lastAt: 0 };
+    for (const name of ['drawElements', 'drawArrays', 'drawElementsInstanced'] as const) {
+      const proto = WebGL2RenderingContext.prototype as unknown as Record<string, unknown>;
+      const orig = proto[name] as (...a: unknown[]) => unknown;
+      if (typeof orig !== 'function') continue;
+      proto[name] = function (this: WebGL2RenderingContext, ...a: unknown[]) {
+        bag.__draws.n += 1;
+        bag.__draws.lastAt = performance.now();
+        return orig.apply(this, a);
+      };
+    }
+  });
+
+  /** Draws since the last call, and whether the context is still alive. */
+  const drawnSince = async (): Promise<string> =>
+    page.evaluate(() => {
+      const bag = window as unknown as { __draws?: { n: number; lastAt: number } };
+      const n = bag.__draws?.n ?? -1;
+      const since =
+        bag.__draws === undefined ? -1 : Math.round(performance.now() - bag.__draws.lastAt);
+      if (bag.__draws !== undefined) bag.__draws.n = 0;
+      const canvas = document.querySelector('canvas');
+      const gl = canvas?.getContext('webgl2') as WebGL2RenderingContext | null;
+      return `draws=${n} lastDraw=${since}ms ago canvas=${canvas?.width}x${canvas?.height} contextLost=${gl?.isContextLost() ?? '?'}`;
+    });
+
   const middleIsFlat = async (): Promise<boolean> => {
     const host = page.locator('.board-host');
     const box = await host.boundingBox();
@@ -1390,9 +1442,24 @@ test('a run opens centred on the tile it starts from', async ({ page }) => {
   await page.locator('[data-panel="more"] [data-go="daily"]').click();
   await page.waitForTimeout(1400);
   await clearCards(page);
-  await expect
-    .poll(middleIsFlat, { message: 'the daily opened on empty ground, not on its starting tile' })
-    .toBe(false);
+  // Read BEFORE the poll: the poll's own screenshots demand frames on some
+  // engines, so a count taken after five seconds of polling is a count of the
+  // instrument. This is what the daily's own scene change drew.
+  const drewOnOpening = await drawnSince();
+  try {
+    await expect
+      .poll(middleIsFlat, { message: 'the daily opened on empty ground, not on its starting tile' })
+      .toBe(false);
+  } catch (e) {
+    // P6.8's whole remainder is WHICH empty this is — see `drawnSince` above.
+    // `draws=0` means nothing was rendered and the blank is a frame nobody
+    // asked for; a healthy count means the scene or the camera is wrong and
+    // the renderer is innocent.
+    throw new Error(
+      `P6.8 DIAG on opening: ${drewOnOpening}\nP6.8 DIAG after polling: ${await drawnSince()}\n${String(e)}`,
+      { cause: e },
+    );
+  }
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
