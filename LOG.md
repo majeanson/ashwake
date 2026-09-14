@@ -8159,3 +8159,70 @@ drawn.
 **What is still open is the flash itself**, and it is in `NEXT.md` §1 with the
 three eliminations and the 99 ms measurement on it. A stall is not a flash, and
 what the screen actually does is the half a phone has to answer.
+
+### Session 99 — the flash is a tap highlight, and Ashwake 1 had already turned it off (2026-09-14)
+
+**Question:** Marc: _"continue digging"_ — on a flash that four sessions had
+each closed against a real, measured cause. What is left when every instrument
+comes back clean?
+
+**The thing none of the instruments run on.**
+
+**Two more causes ruled out first, with the instrument Session 58 built.** A
+CDP screencast of every composited frame across the first placement, graded
+band by band for flatness. The first run found a frame that LOOKED like the
+flash — the HUD gone, the hand gone, the board sitting higher — and then
+looking at it with the metadata said what it was: **683×1144 where every other
+frame is 683×1477**, exactly the board host's box, with a `window.resize` that
+changed nothing. That is Playwright's element screenshot inside
+`placeOneTile` → `boardDrawn`, overriding device metrics to photograph the
+canvas. A raw `page.mouse.click` with nothing after it: three frames, all
+full-size, old board → new board, no event. **The harness photographed
+itself**, which is the trap Session 58 named and I walked into with its own
+tool. Chromium does not flash on a placement. It never did.
+
+**Then the DOM.** Every mount, unmount, class change and animation across
+placement 1, taught and untaught: six events, all of them the three hand
+tiles moving, no card, no scrim, no animation. And a 6× CPU throttle measures
+the first placement at 99 ms of long task, decaying to 44 by the fourth, with
+placement 4 adding a material and being the cheapest — first-run warm-up, a
+hitch on a slow phone, and not a flash.
+
+**So: what does a tap on iOS do that a synthesised pointer does not?** It
+paints a TAP HIGHLIGHT — a translucent grey wash — over the box of whatever
+clickable element the finger lands on, for about a hundred milliseconds. The
+canvas is not clickable. `.board-view` is, because it has been `tabIndex={0}`
+since 2026-08-29 so a keyboard can reach the marker. **The box that washes is
+the whole board.** Nothing in this body's CSS sets
+`-webkit-tap-highlight-color`. `touch-action: none` is on the host, with a
+docblock saying it was found _"auditing this body against Ashwake 1 ... It
+never showed up in Playwright, which synthesises pointer events that no
+browser gesture is competing for."_ The same sentence is true of this one, and
+it was three lines away.
+
+**And Ashwake 1 has it — `tiles/src/style.css:98`, on `body`,** beside the
+`touch-action`, `user-select: none` and `-webkit-touch-callout: none` this
+body recovered only two of, and only for the board. The port dropped four
+properties in one block. So this is not a new look and not a guess at one: it
+is the shell v1 shipped, restored on `body` where v1 had it. `user-select` is
+the one still missing and is noted in `NEXT.md` rather than changed, because
+this body deliberately set `user-select: text` on one thing since.
+
+**Why it read as "on the first placement."** The first placement is the first
+tap that lands on the board itself; every tap before it landed on a card or a
+door. Whether later taps wash too is a question for the phone — iOS suppresses
+the highlight in some pointer-handled cases and not others — and it no longer
+matters, because the property removes it for all of them.
+
+**What this cannot be, honestly:** proved from here. There is no WebKit-on-iOS
+in this harness, and Playwright's WebKit does not paint tap highlights. It is
+the one candidate left standing after every other was measured out, it is a
+property this body lost in a port, and the fix is one line the previous body
+already carried. `NEXT.md` §1 asks for one tap on the phone.
+
+**And the instrument taught one more thing.** Sixteen headless Chromium
+shells were left running after the day's probes — Marc's own rule, from
+another session, and I was the one leaving them. Killed by path, and the
+headed run that opened a window over his game was the last one of those.
+
+Verified: format, lint; the change is one CSS declaration on `body`.

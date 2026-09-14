@@ -294,6 +294,54 @@ that line before anything else; if it never does in a week, delete this entry.
 
 ## 1. Needs Marc, and only Marc
 
+**~~THE FLASH ON THE FIRST TILE PLACEMENT~~ — FOUND, 2026-09-14: A TAP
+HIGHLIGHT THIS BODY LOST IN THE PORT.** After the three eliminations below, two
+more with Session 58's screencast (one of which was the harness photographing
+itself — `LOG.md` Session 99), and a DOM trace that found nothing mounting, the
+one candidate standing is the thing no instrument here runs on: **iOS paints a
+tap highlight over the box of the clickable element a finger lands on.** The
+canvas is not clickable; `.board-view` is, because it is focusable for the
+keyboard marker — so the wash covers the whole board, on the first tap that
+lands on it. Nothing in this body set `-webkit-tap-highlight-color`.
+**Ashwake 1 does, on `body` (`tiles/src/style.css:98`)**, beside the
+`touch-action` and `-webkit-touch-callout` that 2026-08-29 recovered for the
+board — the port dropped the block and got two of its four back. Restored on
+`body`, where v1 had it.
+
+**One tap on the phone says whether this is it:** place a first tile. If the
+grey wash is gone, close this. If the board still blanks, say whether it
+BLANKS or STUTTERS, because the 99 ms measured below is real and is the other
+thing. `user-select: none` is the fourth property from that v1 block and is
+still missing here; left alone because this body set `user-select: text` on
+one panel since, so it is a look call — yours if a long-press ever raises the
+loupe over a board.
+
+The eliminations and the measurement, as written this morning, follow.
+
+**~~THE FLASH ON THE FIRST TILE PLACEMENT~~ — FOUND, 2026-09-14: A TAP
+HIGHLIGHT THIS BODY LOST IN THE PORT.** After the three eliminations below, two
+more with Session 58's screencast (one of which was the harness photographing
+itself — `LOG.md` Session 99), and a DOM trace that found nothing mounting, the
+one candidate standing is the thing no instrument here runs on: **iOS paints a
+tap highlight over the box of the clickable element a finger lands on.** The
+canvas is not clickable; `.board-view` is, because it is focusable for the
+keyboard marker — so the wash covers the whole board, on the first tap that
+lands on it. Nothing in this body set `-webkit-tap-highlight-color`.
+**Ashwake 1 does, on `body` (`tiles/src/style.css:98`)**, beside the
+`touch-action` and `-webkit-touch-callout` that 2026-08-29 recovered for the
+board — the port dropped the block and got two of its four back. Restored on
+`body`, where v1 had it.
+
+**One tap on the phone says whether this is it:** place a first tile. If the
+grey wash is gone, close this. If the board still blanks, say whether it
+BLANKS or STUTTERS, because the 99 ms measured below is real and is the other
+thing. `user-select: none` is the fourth property from that v1 block and is
+still missing here; left alone because this body set `user-select: text` on
+one panel since, so it is a look call — yours if a long-press ever raises the
+loupe over a board.
+
+The eliminations and the measurement, as written this morning, follow.
+
 **THE FLASH ON THE FIRST TILE PLACEMENT IS STILL THERE, AND THREE CAUSES ARE
 NOW RULED OUT (2026-09-14, your _"still hard rerender and flash on 1st tile
 placement"_).** Session 93 believed this was the direction's art landing late

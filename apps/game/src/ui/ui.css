@@ -211,6 +211,26 @@ body {
   font-family: var(--font-body);
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
+  /*
+   * THE FLASH ON THE FIRST TILE (2026-09-14, Marc: "still hard rerender and
+   * flash on 1st tile placement" — the fifth time, against four real fixes).
+   *
+   * iOS paints a TAP HIGHLIGHT, a translucent grey wash, over the box of the
+   * clickable element a finger lands on, for about a hundred milliseconds.
+   * The canvas is not clickable; `.board-view` is, because it has been
+   * focusable since 2026-08-29 so a keyboard can reach the marker — so the box
+   * that washes is the whole board, on the first tap that lands on it. No
+   * instrument in this repository runs on the engine that paints it, which is
+   * why four measured causes each turned out to be a different bug and this
+   * one survived them all (`LOG.md` Session 99).
+   *
+   * Ashwake 1 turned it off HERE, on `body` (`tiles/src/style.css:98`), in
+   * the same block as the `touch-action` and `-webkit-touch-callout` that
+   * `.board-host` below got back on 2026-08-29 — a block the port dropped
+   * whole. This is that line restored, at the scope it had. Not a new look:
+   * the one v1 shipped never had the wash on anything.
+   */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* The one motion language: every press ACKNOWLEDGES with colour, every arrival
