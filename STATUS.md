@@ -4,6 +4,53 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
+Last checkpoint: **2026-09-16 — Marc answered every open decision from the
+phone, and nine of them are built and deployed. CI is green end to end.**
+
+Marc played the deployed v2 a couple of times and cleared twenty-four rulings
+in one sitting (`NEXT.md` §1a, `LOG.md` Session 105). The same day, six commits
+built the nine that a desk could build, and one more stated the two findings a
+desk cannot fix (`LOG.md` Session 106). What is left of the sitting is a
+sketch (the lens panel; welcome and death sequences), a friend's uninstalled
+iPhone (P6.7), and four looks on the phone (the opening's beat and landing,
+the rest screen's depth and size, the terrain sides under `?light=`, the two
+"too quiet" doors).
+
+**Verified at this checkpoint:**
+
+- **CI green on all three jobs** — `ci`, `deploy`, `e2e` — for run
+  35109726754 on the seventh commit, alongside **1296 unit tests / 101
+  files**, `pnpm sim` byte-identical, `pnpm sweep` 0 findings over 306 files
+  (86 ruled), `pnpm artcheck` 18 PNGs current, and 37/37 on Chromium locally
+  for the four browser specs the camera and the bar can touch.
+- **Antialiasing is off from ratio 2** (`board/antialias.ts`, `DENSE >= 2`)
+  and the temporary SETTINGS row is gone with its props, storage pair and
+  catalogue entries; a device that set it has the key dropped once.
+- **The brief card is cut** — field, prop, clock, pointerdown, scrim rules,
+  live region, sweep ruling — and three e2e assertions that could no longer
+  fail now assert the card is a `dialog`.
+- **Settlement's wall is lifted 1.7× in linear light** so its shaded side
+  clears the fog floor (0.074, was 0.027); `materials.test.ts` grades wall and
+  stone sides in both directions and was checked to fail on the old palette;
+  the wall PNG is re-baked.
+- **Three HUD facts are printed**: the site glyph and a `bounty` class on POP,
+  "N pockets ready" as the bar's caption from two, and the spare purse said
+  once a run by `onceARun` in a new one-POP sentence in both languages.
+- **The opening is two legs** (`BoardHandle.open`: zoom 1 on the wake hex, a
+  700 ms beat, one glide to the frontier), and **the board draws a rest
+  screen** when it sleeps (`.board-rest`), with one rest clock in `Board`.
+- **Three ledger claims were wrong and are corrected**: `user-select: none`
+  was never missing (`index.html`, since Stage 2); the terrain-side number was
+  about a deleted direction; `PASS.md`'s P6 table said P6.8 was open two days
+  after the header said fixed.
+
+**What this checkpoint does NOT claim**: that any of the six looks reads right
+on a phone — every number chosen from the desk is named as Marc's in
+`NEXT.md` §1a — and the three unprovable gaps of the previous checkpoint
+still stand.
+
+## The checkpoint before it
+
 Last checkpoint: **2026-09-14 — the four rulings are built, the flash is closed,
 and P6.8 is fixed. CI is green end to end.**
 
@@ -67,8 +114,6 @@ seeded value across a reload with every script blocked), none that the worker
 declines a stale shell (Playwright's `context.route` does not intercept the
 service worker's own fetches), and none that a zoom cancels a throw. All three
 gaps are written at their declarations.
-
-## The checkpoint before it
 
 Last checkpoint: **2026-09-11 — the ten-item pass is finished except for a
 phone.**
