@@ -373,7 +373,14 @@ built.** `LOG.md` Session 105 is the reasoning.
 1. **Colour lens: a LENS button opens a panel.** Per colour — tiles standing,
    worth, how much of that worth its power earned, ripe now — and the whole
    board's standing total. A new screen and new sentences in both languages.
-   It changes the first minute.
+   It changes the first minute. **Placed, tentatively, the same evening**:
+   shown three drawings, Marc said _"beside luck action button maybe"_ — so
+   the button joins LUCK and the camera in the board's corner
+   (`screens/Camera`), and the panel is a sheet over the hand: STANDING and
+   the total, then one row per ground — mark, name, tiles, worth — with
+   "power +N · M ripe (worth)" under it, and "tap a ground to hold the lens"
+   at the foot. Next step is the sentences (about six, both languages) and
+   the sheet; the numbers are `HudView.colours`, lazy since today.
 2. **~~Bounty: the site glyph goes on the POP label~~ — BUILT the same day.**
    `ActionBar`'s POP takes `bounty` when `questPays`: the site glyph after the
    verb, a `bounty` class that ports v1's soft pool of accent, and the word
@@ -431,6 +438,59 @@ built.** `LOG.md` Session 105 is the reasoning.
   motion. **Yours on the phone:** whether 700 ms is the beat, and whether
   the landing reads right on a big world, where DEFAULT crops to the frontier.
 - **Welcome and death sequences** (the warm-up above).
+
+**The overlooked things, asked for and done the same evening** (Marc: _"do
+all overlooked things"_, after being offered the list; `LOG.md` Session 109):
+
+- **The colour tally costs nothing until the lens panel reads it.**
+  `HudView.colours` and `spotlight` are getters now; `colourPotentials` — two
+  passes over every live tile — ran on every placement for a panel that does
+  not exist. Same numbers, same shape, on demand.
+- **The guide line is gone from the view too.** `guideFor`, its runway alarm
+  and the seven sentences only it spoke are cut; every fact it carried has a
+  door of its own now. `view.guide` keeps the three sentences other doors read.
+- **One browser test gates the deploy.** A `smoke` job runs the boot test on
+  Chromium with retries and `deploy` needs it; the full `e2e` job still gates
+  nothing. `CLAUDE.md` records the change to the 2026-09-11 ruling.
+- **The rare sentences, for your ear.** The French you review is the French
+  you meet; these are the ones a normal run never shows, in one place so they
+  can be read once:
+  - _Storage full_ (`shed.*`): « Le stockage était plein. Un rapport de
+    diagnostic a été effacé pour que ta partie puisse être sauvegardée. » ·
+    « … Des notes de tes autres mondes ont été effacées … » · « … Ton journal
+    a été effacé …; tes mondes, tes reliques et tes atouts sont intacts. » ·
+    « … Tes AUTRES mondes ont été oubliés …; le monde où tu es est intact. »
+    · « Le stockage est plein et cette partie ne peut pas être sauvegardée.
+    Libère de l’espace sur ton appareil, ou finis la partie dans cet onglet. »
+  - _Something broke_ (`ui.crash.*`): « Quelque chose a brisé. Ta partie est
+    sauvegardée. CONTINUER si le jeu fonctionne encore en dessous, RECHARGER
+    sinon. » · « Le plateau a cessé de dessiner. Cet appareil a repris sa
+    mémoire graphique et ne l’a pas rendue. Ta partie est sauvegardée.
+    Recharge la page pour retrouver le plateau. » · « Ashwake a besoin de
+    WebGL pour dessiner son plateau, et ce navigateur ne l’a pas ou l’a
+    désactivé. Essaie Safari ou Chrome, ou réactive l’accélération
+    matérielle. » · the buttons: CONTINUER · RECHARGER · ENVOYER LE RAPPORT ·
+    ENVOI… · ENVOYÉ, merci · PAS DE CONNEXION, réessaie ou copie · COPIER LE
+    RAPPORT · SÉLECTIONNE LE TEXTE CI-DESSUS · DERNIÈRE ERREUR · « Rien n’a
+    brisé sur cet appareil. »
+  - _In somebody else's app_ (`ui.inApp`): « Tu es dans le navigateur d’une
+    autre application, et ton monde risque de ne pas être gardé ici. Ouvre
+    cette page dans Safari ou Chrome pour le garder. »
+  - _A new build underneath_ (`ui.newVersion`): « NOUVELLE VERSION · TOUCHER
+    POUR CHARGER »
+  - _The home screen_ (`ui.handInstall`, on the door now): « Ashwake sur ton
+    écran d’accueil : touche Partager dans Safari, puis Sur l’écran
+    d’accueil. » · _Back up_ (`ui.backUpNote`): « Tes mondes vivent seulement
+    sur ce téléphone. SAUVEGARDER, dans les RÉGLAGES, les met à l’abri. »
+  - _The floor before the game_ (`index.html`, not the catalogue): « ASHWAKE
+    n’a pas pu se charger. Vérifie ta connexion, puis recharge la page. Si ça
+    persiste, ferme l’onglet et rouvre le jeu. » · « ASHWAKE a besoin d’un
+    navigateur plus récent : iOS 16.4 ou plus, ou un Chrome ou Firefox à
+    jour. Rien ne cloche avec ton appareil : ce jeu s’appuie sur les fonctions
+    les plus récentes du moteur. »
+  - _The spare purse_ (`view.guide.tilesSpareSingle`, new today, once a run):
+    « Plus de tuiles que tu peux en dépenser. Seuls les points comptent
+    dorénavant. »
 
 **Session A's verdict: _"clean enough, fix the list above then freeze"_ — and
 _"carry on forward while users are playing, they are close friends of mine and

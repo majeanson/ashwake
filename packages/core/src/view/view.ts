@@ -147,14 +147,10 @@ type RenderContext = {
   readonly target: HexKey | null;
   /** The exact cells `target` pops — the board's outline. */
   readonly targetCluster: ReadonlySet<HexKey>;
-  /** What popping `target` pays. The buttons' numbers. */
+  /** What popping `target` pays. The buttons' numbers. (A `defaultValue` —
+   *  the biggest pocket's price whatever was tapped — sat beside this until
+   *  2026-09-16; its one reader was the guide line, and both are gone.) */
   readonly value: ReturnType<typeof harvestValue>;
-  /**
-   * What popping the DEFAULT (biggest) pocket pays. The guide line prices
-   * this one deliberately — its words must not change because a different
-   * pocket happens to be tapped. Same object as `value` when they coincide.
-   */
-  readonly defaultValue: ReturnType<typeof harvestValue>;
   /** Hexes a tile may go right now. Empty exactly when `canPlaceNow` is not. */
   readonly legal: ReadonlySet<HexKey>;
   /**
@@ -223,8 +219,6 @@ export function renderContext(state: GameState, asked: HexKey | null = null): Re
   );
 
   const value = harvestValue(state, target ?? undefined);
-  const defaultValue =
-    target === defaultTarget ? value : harvestValue(state, defaultTarget ?? undefined);
 
   const placeable = canPlaceNow(state);
   // The tuning rides along so WALLBREAKER's wall placements light up and
@@ -246,7 +240,6 @@ export function renderContext(state: GameState, asked: HexKey | null = null): Re
     target,
     targetCluster,
     value,
-    defaultValue,
     legal,
     previews,
     reach: reachOf(state),
@@ -735,15 +728,19 @@ export type HudView = {
    * The colour lens: each colour's standing holdings on the board, in the
    * exact unit the points formula sums — worth.
    *
-   * **NOTHING PRINTS EITHER OF THESE** (`pnpm sweep`, 2026-09-10; `NEXT.md`
-   * §1, "five things the HUD works out and never says"). The chips this used
-   * to describe are Ashwake 1's, where a long-pressed card put a five-clause
-   * report under the board. This body lights the lens and says the ground's
-   * NAME in the toast, so the board dims correctly and the numbers behind it
-   * go nowhere — and `colourPotentials` tallies every live tile twice per HUD
-   * build to work them out, because a colour's own take is MEASURED rather
-   * than estimated. Marc's, because the answer needs five new sentences in
-   * both languages and the French pass is already with him.
+   * **NOTHING PRINTS EITHER OF THESE YET** (`pnpm sweep`, 2026-09-10). The
+   * chips this used to describe are Ashwake 1's, where a long-pressed card put
+   * a five-clause report under the board. This body lights the lens and says
+   * the ground's NAME in the toast, so the numbers behind it go nowhere until
+   * the LENS PANEL Marc ruled for on 2026-09-16 (`NEXT.md` §1a) exists.
+   *
+   * **And until it does, they cost nothing** (2026-09-16). `colourPotentials`
+   * tallies every live tile TWICE — once as authored, once with the four
+   * powers switched off, because a colour's own take is measured rather than
+   * estimated — and it ran on every HUD build, on every placement, on a phone,
+   * for a panel that did not exist. Both fields are GETTERS on the view now:
+   * nothing is tallied until something reads one, and one tally serves both.
+   * A reader sees exactly the object it always saw.
    */
   readonly colours: readonly ColourPotential[];
   /** The colour currently held up, with its numbers. Null when none. Unread —
@@ -810,12 +807,6 @@ export type HudView = {
   readonly canHarvest: boolean;
 
   /**
-   * What to do right now, in one clause — the reorientation line. Always
-   * present while the run lives, so a player coming back mid-run reads one
-   * sentence instead of re-deriving the state of the board.
-   */
-  readonly guide: string | null;
-  /**
    * The nearest unclaimed destination, as one short sentence — the endless
    * world's answer to "where do I go?". Null when there is nothing to say,
    * which includes the whole bounded game.
@@ -877,7 +868,9 @@ export function toHudView(
 ): HudView {
   const target = ctx.target;
   const value = ctx.value;
-  const colours = colourPotentials(state);
+  // Lazy, and once: see `HudView.colours`.
+  let tally: readonly ColourPotential[] | null = null;
+  const colours = (): readonly ColourPotential[] => (tally ??= colourPotentials(state));
 
   return {
     tiles: state.tiles,
@@ -904,8 +897,12 @@ export function toHudView(
     holdSlots: Math.max(0, state.tuning.holdSlots),
     held: state.held.map((t) => ({ colour: t.colour, rarity: t.rarity })),
 
-    colours,
-    spotlight: colours.find((c) => c.colour === spotlight) ?? null,
+    get colours() {
+      return colours();
+    },
+    get spotlight() {
+      return colours().find((c) => c.colour === spotlight) ?? null;
+    },
 
     ripeCount: ctx.ripe.size,
     pocketsReady: ctx.pocketCount,
@@ -938,7 +935,6 @@ export function toHudView(
 
     canHarvest: state.phase === 'placing' && value.count > 0,
 
-    guide: guideFor(state, ctx, s),
     hint: hintFor(state, ctx.reach, s),
     odds: oddsFor(state, s),
 
@@ -1168,62 +1164,20 @@ function colourPotentials(state: GameState): ColourPotential[] {
   return COLOURS.map((colour) => ({ colour, ...acc.get(colour)! }));
 }
 
-/**
- * The one-clause "what now". Danger first, then the bounty being collectable
- * right now, then the harvest moment, then the default loop. Deliberately
- * never more than a sentence: this is the line a player reads to reorient,
- * not a tutorial.
+/*
+ * THE GUIDE LINE IS GONE FROM THE VIEW TOO (2026-09-16).
  *
- * "Low on tiles" is measured in RUNWAY, not in a flat tile count: how many
- * more placements the purse buys at today's cost, against how many the board
- * needs to ripen anything. Marc's first debrief said survival always felt
- * forced; a warning that fires while three comfortable placements remain is
- * a warning that teaches fear rather than danger. See `RUNWAY_ALARM`.
+ * `guideFor` composed a one-clause "what now" — the runway alarm, the bounty
+ * call, the spare purse, the pockets ready — for a line over the hand that
+ * Marc removed on 2026-08-29 (_"remove tips above hand tiles"_). It stayed
+ * computed for two and a half weeks on the argument that a coaching mode
+ * would find it built. Nobody asked for one, and every fact it carried has a
+ * door of its own now: the pockets count is the action bar's caption, the
+ * spare purse is said once a run (`shell/onceARun.ts`), the bounty is a mark
+ * on POP, and the runway is the tile count in the stat row. So the function,
+ * its runway alarm and the seven sentences only it spoke are cut; what stays
+ * of `view.guide` in the catalogue is the three sentences other doors read.
  */
-function guideFor(state: GameState, ctx: RenderContext, s: Strings): string | null {
-  if (state.phase !== 'placing') return null;
-
-  const ripe = ctx.ripe.size > 0;
-  const single = state.tuning.singlePayout;
-  const g = s.view.guide;
-  if (runwayOf(state) <= RUNWAY_ALARM) {
-    if (ripe) return single ? g.lowPopNow : g.lowPopTiles;
-    return g.lowRipen;
-  }
-  if (ripe) {
-    // The DEFAULT pocket, deliberately — this line's words must not change
-    // because a different pocket happens to be tapped. See `defaultValue`.
-    const value = ctx.defaultValue;
-    // `bountyReady`'s "as pts" names the OLD fork's second button. Under
-    // `singlePayout` (found 2026-09-04) that button is never rendered
-    // (`ActionBar.tsx`) — there is one POP, and it collects the bounty same
-    // as any other pop — so the line was pointing at a control off-screen.
-    if (value.questPays) return single ? g.bountyReadySingle : g.bountyReady;
-    // More tiles than the clock can spend: the survival half of the payout
-    // is dead and saying so is the whole job of this line. Under one POP the
-    // sentence names what is left to want, not a button that is not there.
-    if (tilesSpareIn(state)) return single ? g.tilesSpareSingle : g.tilesSpare;
-    // POP · N pockets ready: how many separate decisions are sitting on the
-    // board right now, not how many tiles — a 12-tile pocket is one of them,
-    // same as a 2-tile one. Singular wording stays where there is only one.
-    const pockets = g.pockets(ctx.pocketCount);
-    return single ? g.readySingle(pockets) : g.readyFork(pockets);
-  }
-  // No standing default any more (Marc, 2026-08-26: "remove place tiles
-  // surround one on all six sides text"). The teaching cards own that
-  // sentence's job now — RIPE fires at the first surround — and a line that
-  // sat there being true the whole run was spending a row on it. The guide
-  // still speaks when it has something situational to say: the runway
-  // alarm and the pocket-ready calls above.
-  return null;
-}
-
-/**
- * Placements the purse still buys at today's cost. The honest unit for
- * danger: ten tiles is a fortune at cost 1 and a death sentence at cost 5.
- */
-const runwayOf = (state: GameState): number =>
-  Math.floor(state.tiles / Math.max(1, costOf(state.placements, state.tuning)));
 
 /**
  * Does the purse already hold more than the clock can ever spend?
@@ -1239,17 +1193,6 @@ function tilesSpareIn(state: GameState): boolean {
   if (left === null) return false;
   return state.tiles > left * costOf(state.placements, state.tuning);
 }
-
-/**
- * Runway at which the guide line starts saying "low".
- *
- * Six placements is about one pocket's worth of building — the point at
- * which you genuinely cannot start something new and finish it. The old
- * threshold (three times the cost, i.e. three placements) fired so late it
- * was useless as a warning, while the FEELING of scarcity ran the whole
- * game; this fires when scarcity is real and stays quiet when it is not.
- */
-const RUNWAY_ALARM = 6;
 
 /**
  * The nearest unclaimed destination — revealed or beacon — found once and

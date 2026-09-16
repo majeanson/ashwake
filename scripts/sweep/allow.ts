@@ -240,10 +240,11 @@ const TIMELINE_SPINE: readonly Ruling[] = (
  * had survived four hand passes, and both survived them BECAUSE of the
  * sentence — the exact failure `CLAUDE.md` describes.
  *
- * `guide` is here for a different reason: Marc removed the line on
- * 2026-08-29 and `App.tsx` says at the empty spot that the sentence stays
- * computed on purpose, so a coaching mode finds it built. That is a RULING
- * already taken, and `tilesSpare` is the fact that went out with it.
+ * `guide` was here for a different reason — Marc removed the line on
+ * 2026-08-29 and the sentence stayed computed so a coaching mode would find
+ * it built — until 2026-09-16, when the derivation was cut: every fact it
+ * carried had a door of its own by then. The colour tally's rulings stay: the
+ * fields are GETTERS now, costing nothing until the lens panel reads them.
  */
 const HUD_UNSAID: readonly Ruling[] = (
   [
@@ -256,8 +257,8 @@ const HUD_UNSAID: readonly Ruling[] = (
     'packages/core/src/view/view.ts#ColourPotential.ripeWorth',
     // `questPays`, `pocketsReady` and `tilesSpare` left this list on
     // 2026-09-16: Marc ruled all three printed (`NEXT.md` §1a) and the action
-    // bar and `shell/onceARun.ts` read them now.
-    'packages/core/src/view/view.ts#HudView.guide',
+    // bar and `shell/onceARun.ts` read them now. `guide` left the same day,
+    // cut rather than printed.
   ] as const
 ).map((id) => ({
   id,

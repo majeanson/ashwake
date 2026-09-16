@@ -145,7 +145,14 @@ export type Said = {
 
 export type Session = {
   readonly theme: Theme;
-  readonly strings: Strings;
+  /*
+   * A `strings` getter sat beside `theme` until 2026-09-16, "so a caller that
+   * reads it after a resupply is told the truth" — and no caller ever read it
+   * except the test that proved the getter. The sweep's field pass could not
+   * see an accessor as a write until that day; the moment it could, this was
+   * its first finding. What a resupply changes is observed where it shows:
+   * the words on the HUD (`store.test.ts`, "rewrites what the HUD says").
+   */
   /**
    * Hand the session the look and the language it should speak in NOW.
    *
@@ -492,13 +499,10 @@ export function createSession(opts: {
   let detour = opts.detour === true;
 
   return {
-    // Getters, so a caller that reads them after a `resupply` is told the
+    // A getter, so a caller that reads it after a `resupply` is told the
     // truth rather than what the page booted in.
     get theme() {
       return theme;
-    },
-    get strings() {
-      return strings;
     },
     resupply(nextTheme: Theme, nextStrings: Strings) {
       if (nextTheme === theme && nextStrings === strings) return;

@@ -121,7 +121,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       expect([...out].sort()).toMatchSnapshot();
     });
 
-    it('pins the guide, hint, odds and what-still-glows lines', () => {
+    it('pins the hint, odds and what-still-glows lines', () => {
       const out: Record<string, string | null> = {};
       for (const [tName, t] of TUNINGS) {
         const fresh = newRun(5, t);
@@ -135,7 +135,6 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
           ['ended', ended],
         ] as const) {
           const hud = toHudView(run, s);
-          out[`guide · ${name} · ${tName}`] = hud.guide;
           out[`hint · ${name} · ${tName}`] = hud.hint;
           out[`odds · ${name} · ${tName}`] = hud.odds;
           out[`glows · ${name} · ${tName}`] = hud.glowBeyondEdge;

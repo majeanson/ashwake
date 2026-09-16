@@ -97,6 +97,25 @@ jobs:
       # it is a division of labour with the step before it.
       - run: pnpm bake
 
+  # ONE browser test gates the deploy (2026-09-16). The full `e2e` job below
+  # gates nothing, by Marc's ruling — it can fail on a stopwatch, and five such
+  # failures once kept six finished commits off the phone. This is the middle
+  # path: the boot test alone, on Chromium, with retries, so a renderer that
+  # crashes on boot cannot reach production with a green tick beside it.
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright test e2e/board.spec.ts --project=chromium --grep "boots, draws a board with WebGL" --retries=2
+
   # THE BROWSERS, IN A JOB OF THEIR OWN (2026-09-11, Marc: "separate e2e and
   # deploy jobs").
   #
@@ -116,11 +135,13 @@ jobs:
   # budget and the art check, all of them exact and none of them holding a
   # browser.
   #
-  # The cost is stated plainly rather than hidden: this job is the only thing
-  # in the repository that renders WebGL for real, so a renderer that crashes
-  # on boot can now reach production with a red tick beside it. The guard is
-  # that it is red IN PUBLIC and on the same commit — and `verify:deploy`
-  # runs against the live site after every deploy.
+  # The cost was stated plainly rather than hidden: this job was the only
+  # thing in the repository that rendered WebGL for real, so a renderer that
+  # crashed on boot could reach production with a red tick beside it. Since
+  # 2026-09-16 the `smoke` job above closes exactly that hole with the boot
+  # test alone; this job is still red IN PUBLIC and on the same commit for
+  # everything else, and `verify:deploy` runs against the live site after
+  # every deploy.
   #
   # It installs and builds for itself because jobs share no filesystem;
   # `pnpm test:e2e` already builds.
@@ -184,7 +205,7 @@ jobs:
   # the same two Ashwake 1 uses; the token's scope already covers a second
   # Worker on the same zone.
   deploy:
-    needs: [ci]
+    needs: [ci, smoke]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
     concurrency:
       group: deploy-prod

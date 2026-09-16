@@ -165,8 +165,11 @@ suspect the pass before you suspect the subject.
   only real browsers in the repository, so it is also the only check that can
   fail on a stopwatch, and five such failures in one evening kept six finished
   commits off the phone they were written for. It still runs on every push and
-  still keeps its screenshots. The cost, stated rather than hidden: a renderer
-  that crashes on boot can now reach production with a red tick beside it.
+  still keeps its screenshots. The cost, stated rather than hidden, was that a
+  renderer crashing on boot could reach production with a red tick beside it —
+  so since 2026-09-16 a `smoke` job gates the deploy too: ONE browser test,
+  the boot test on Chromium, with retries. Small enough not to fail on a
+  stopwatch, and the one failure the full job existed to catch.
 
 The stranger test (`PLAYTEST.md` Session C) is v2.0's gate and has never been
 run on either body. A stranger is a one-shot resource: nothing that changes the

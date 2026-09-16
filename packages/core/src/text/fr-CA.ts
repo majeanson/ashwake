@@ -224,18 +224,10 @@ export const STRINGS_FR: Strings = {
       early: 'Ta plus grosse récolte est venue tôt, et tout le reste a poussé dans son ombre.',
     },
     guide: {
-      lowPopNow: `Peu de tuiles${D}: RÉCOLTE une poche maintenant`,
-      lowPopTiles: `Peu de tuiles${D}: RÉCOLTE une poche pour des tuiles`,
-      lowRipen: `Peu de tuiles${D}: fais mûrir quelque chose à RÉCOLTER`,
-      bountyReady: `PRIME PRÊTE${D}: RÉCOLTE cette poche en pts`,
-      bountyReadySingle: `PRIME PRÊTE${D}: RÉCOLTE cette poche`,
       tilesSpare: 'Plus de tuiles que tu peux en dépenser. RÉCOLTE pour des PTS dorénavant',
       tilesSpareSingle:
         'Plus de tuiles que tu peux en dépenser. Seuls les points comptent dorénavant',
       pockets: (n) => (n > 1 ? `${n} poches prêtes` : 'Poche prête'),
-      readySingle: (pockets) =>
-        `${pockets}. Touches-en une pour l’évaluer, puis RÉCOLTE ou sacrifie-la`,
-      readyFork: (pockets) => `${pockets}. Touches-en une, puis RÉCOLTE pour des tuiles ou des pts`,
     },
     destination: {
       cache: (tiles) => `une cache de ${tiles} tuiles`,

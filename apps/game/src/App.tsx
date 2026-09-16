@@ -3227,10 +3227,11 @@ function Game() {
             the action bar already show — the pockets are outlined, POP names
             its own payout, and the tile count is in the stat row.
 
-            `hud.guide` stays computed and stays in `view/`: it is the same
-            sentence a screen reader gets from the toast when something
-            happens, and the day this game wants a coaching mode it is there
-            without being invented again.
+            `hud.guide` stayed computed in `view/` for two and a half weeks
+            after that, on the argument that a coaching mode would find it
+            built. Cut on 2026-09-16: nobody asked for one, and every fact it
+            carried has its own door now — the pockets caption on the bar, the
+            spare purse said once a run, the bounty mark on POP.
           */}
           {purseOpen && (
             <Purse

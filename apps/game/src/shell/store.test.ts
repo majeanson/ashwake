@@ -425,8 +425,11 @@ describe('the session speaks the language it is given now', () => {
     const after = s.get().hud;
 
     // The same board, a different catalogue: the numbers hold and the words move.
+    // (It compared `guide` until 2026-09-16, when that line was cut from the
+    // view; the odds line is the sentence the HUD always spells out mid-run.)
     expect(after.placements).toBe(before.placements);
-    expect(after.guide).not.toBe(before.guide);
+    expect(before.odds, 'the HUD had no odds line to reword').not.toBeNull();
+    expect(after.odds).not.toBe(before.odds);
   });
 
   it('hands back a NEW snapshot, so a subscriber is told', () => {
@@ -448,12 +451,5 @@ describe('the session speaks the language it is given now', () => {
 
     s.resupply(theme, strings);
     expect(s.get(), 'an unchanged resupply rebuilt the world').toBe(snapshot);
-  });
-
-  it('says which language it is speaking, rather than which it booted in', () => {
-    const s = createSession({ seed: 3, theme: resolveTheme(null), strings: english() });
-    const fr = french();
-    s.resupply(resolveTheme(null), fr);
-    expect(s.strings).toBe(fr);
   });
 });

@@ -8655,3 +8655,57 @@ correction was one word from him and one constant from me._
 
 Verified: typecheck, eslint, prettier; `board.spec` on Chromium against the
 built app.
+
+### Session 109 — the overlooked things, and a sentence list nobody had to meet (2026-09-16)
+
+**Question:** Marc: _"what improvements, overlooked things, cut corners or
+brand new ideas do you have in mind"_, then _"do all overlooked things"_. The
+first was a reading; this is the second.
+
+**Two tallies that ran for nothing.** `colourPotentials` walked every live
+tile twice per HUD build — measured, not estimated, which is the right way to
+get a colour's own take and the wrong time to get it — for a lens panel Marc
+has ruled for and nobody has drawn. `HudView.colours` and `spotlight` are
+getters now: same object to a reader, no work until one reads. And
+`guideFor`, the one-clause "what now" for a line Marc removed on 2026-08-29,
+had been kept computed for a coaching mode nobody asked for; every fact it
+carried has a door of its own since this morning, so the function, its runway
+alarm and the seven sentences only it spoke are cut. The prose pin snapshot
+loses its `guide` rows — **keys removed, no sentence re-recorded** — and
+`store.test`'s "the words move" now compares the odds line.
+
+**One browser test gates the deploy.** Marc ruled on 2026-09-11 that `e2e`
+gates nothing, and the stated cost was a renderer crashing on boot reaching
+production green. A `smoke` job now runs exactly the boot test on Chromium
+with two retries and `deploy` needs it. The full job is unchanged. Whether a
+one-test job can still fail on a stopwatch is what the next hundred pushes
+will say; `CLAUDE.md` carries the change to the ruling.
+
+**The rare sentences, listed.** Marc reviews French by playing, so the storage-
+full, crash, in-app, new-version and boot-floor sentences — about thirty — have
+never had his ear. They are in `NEXT.md` §1a in one place, in French, to be
+read once. Not a build; a list.
+
+**And the instrument had a blind spot, found by the ruling that stopped
+matching.** Turning `colours` into a getter made the sweep report its ruling
+as matching nothing — the field pass counted property assignments as writes
+and had never met a `get` accessor, so the field vanished from its sight
+rather than being read. `CLAUDE.md`'s own rule: suspect the pass. One clause
+in `fields.ts` (`isGetAccessorDeclaration` is a write), and the pass's first
+finding with its new eyes was `Session.strings`: a getter kept "so a caller
+after a resupply is told the truth", read by no caller, only by the test that
+proved the getter. Cut, with `RenderContext.defaultValue` beside it — the
+biggest pocket's price, whose one reader was the guide.
+
+**The lens panel has a place, tentatively.** Offered three shapes as drawings
+— a LENS button in the action bar with a sheet over the hand, four chips over
+the board, a LENS beside MENU — Marc answered with a fourth: _"beside luck
+action button maybe"_. So the button sits in the board's own corner with LUCK
+and the camera, and the sheet is the one drawn (standing total, one row per
+ground with tiles, worth, the power's share and what is ripe; tapping a row
+holds the lens). Recorded in `NEXT.md` §1a; not built — the "maybe" is his,
+and the sentences are new in both languages.
+
+Verified: 1302 unit tests / 102 files, sweep 0 findings over 308 files (85
+ruled, 0 matching nothing), typecheck (core, app, root), eslint, prettier; the
+smoke grep selects exactly one test.

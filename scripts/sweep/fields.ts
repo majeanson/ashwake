@@ -127,17 +127,27 @@ function nodeAt(file: ts.SourceFile, pos: number): ts.Node {
  * opposite of the truth: the destructuring IS the read, and it is the only one
  * there will ever be.
  *
- * Four shapes are writes and everything else is a read. Conservative on
+ * Five shapes are writes and everything else is a read. Conservative on
  * purpose: a miscounted read costs one missing finding, a miscounted write
  * costs a false one — and a report of eighty false findings is a report
  * nobody opens a second time.
+ *
+ * **The fifth was found by a ruling that stopped matching** (2026-09-16).
+ * `HudView.colours` became a `get colours() {}` in the view's object literal
+ * and this pass stopped seeing the field at all: neither written nor read, so
+ * no finding, so the ruling in `allow.ts` matched nothing — exactly the
+ * signal `CLAUDE.md` says to read as "suspect the pass". A getter DEFINES the
+ * property; it is a write, and the getter's body is not a read of it.
  */
 function isWrite(node: ts.Node): boolean {
   const parent = node.parent;
   if (parent === undefined) return false;
-  // `{ band: value }` and `{ band }` — putting a value INTO an object.
+  // `{ band: value }`, `{ band }` and `{ get band() {} }` — putting a value
+  // INTO an object.
   if (
-    (ts.isPropertyAssignment(parent) || ts.isShorthandPropertyAssignment(parent)) &&
+    (ts.isPropertyAssignment(parent) ||
+      ts.isShorthandPropertyAssignment(parent) ||
+      ts.isGetAccessorDeclaration(parent)) &&
     parent.parent !== undefined &&
     ts.isObjectLiteralExpression(parent.parent)
   ) {

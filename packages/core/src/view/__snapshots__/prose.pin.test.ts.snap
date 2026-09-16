@@ -281,7 +281,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today · en > pins the guide, hint, odds and what-still-glows lines 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · en > pins the hint, odds and what-still-glows lines 1`] = `
 {
   "glows · ended · BARE_TUNING": null,
   "glows · ended · TUNING": null,
@@ -291,14 +291,6 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
   "glows · low · TUNING": null,
   "glows · ripe · BARE_TUNING": null,
   "glows · ripe · TUNING": null,
-  "guide · ended · BARE_TUNING": "Low on tiles: POP a pocket for tiles",
-  "guide · ended · TUNING": "Low on tiles: POP a pocket now",
-  "guide · fresh · BARE_TUNING": null,
-  "guide · fresh · TUNING": null,
-  "guide · low · BARE_TUNING": "Low on tiles: POP a pocket for tiles",
-  "guide · low · TUNING": "Low on tiles: POP a pocket now",
-  "guide · ripe · BARE_TUNING": "Pocket ready. Tap one, then POP for tiles or pts",
-  "guide · ripe · TUNING": "Pocket ready. Tap one to price it, then POP or sacrifice it",
   "hint · ended · BARE_TUNING": null,
   "hint · ended · TUNING": "A territory to claim glows 5 out.",
   "hint · fresh · BARE_TUNING": null,
@@ -936,7 +928,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the guide, hint, odds and what-still-glows lines 1`] = `
+exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the hint, odds and what-still-glows lines 1`] = `
 {
   "glows · ended · BARE_TUNING": null,
   "glows · ended · TUNING": null,
@@ -946,14 +938,6 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
   "glows · low · TUNING": null,
   "glows · ripe · BARE_TUNING": null,
   "glows · ripe · TUNING": null,
-  "guide · ended · BARE_TUNING": "Peu de tuiles : RÉCOLTE une poche pour des tuiles",
-  "guide · ended · TUNING": "Peu de tuiles : RÉCOLTE une poche maintenant",
-  "guide · fresh · BARE_TUNING": null,
-  "guide · fresh · TUNING": null,
-  "guide · low · BARE_TUNING": "Peu de tuiles : RÉCOLTE une poche pour des tuiles",
-  "guide · low · TUNING": "Peu de tuiles : RÉCOLTE une poche maintenant",
-  "guide · ripe · BARE_TUNING": "Poche prête. Touches-en une, puis RÉCOLTE pour des tuiles ou des pts",
-  "guide · ripe · TUNING": "Poche prête. Touches-en une pour l’évaluer, puis RÉCOLTE ou sacrifie-la",
   "hint · ended · BARE_TUNING": null,
   "hint · ended · TUNING": "Un territoire à réclamer luit à 5 de distance.",
   "hint · fresh · BARE_TUNING": null,

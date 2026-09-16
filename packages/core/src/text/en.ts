@@ -224,16 +224,9 @@ export const STRINGS_EN: Strings = {
       early: 'Your biggest pop came early, and everything after grew in its shadow.',
     },
     guide: {
-      lowPopNow: 'Low on tiles: POP a pocket now',
-      lowPopTiles: 'Low on tiles: POP a pocket for tiles',
-      lowRipen: 'Low on tiles: ripen something to POP',
-      bountyReady: 'BOUNTY READY: POP this pocket as pts',
-      bountyReadySingle: 'BOUNTY READY: POP this pocket',
       tilesSpare: 'More tiles than you can spend. POP for PTS from here on',
       tilesSpareSingle: 'More tiles than you can spend. Only the points count from here on',
       pockets: (n) => (n > 1 ? `${n} pockets ready` : 'Pocket ready'),
-      readySingle: (pockets) => `${pockets}. Tap one to price it, then POP or sacrifice it`,
-      readyFork: (pockets) => `${pockets}. Tap one, then POP for tiles or pts`,
     },
     destination: {
       cache: (tiles) => `a cache of ${tiles} tiles`,

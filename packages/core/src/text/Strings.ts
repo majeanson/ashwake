@@ -193,18 +193,17 @@ export type Strings = {
      */
     readonly groundHead: (name: string, word: string) => string;
     readonly arc: { readonly late: string; readonly mid: string; readonly early: string };
+    /**
+     * What is left of the GUIDE LINE's sentences (2026-09-16).
+     *
+     * The line over the hand went on 2026-08-29 and its derivation
+     * (`view.ts`'s `guideFor`) went on 2026-09-16; the seven sentences only it
+     * spoke — the runway alarm in three moods, the bounty call in two, the
+     * pockets-ready call in two — went with it. These three stayed because
+     * other doors read them: `pockets` is the action bar's caption, and the
+     * two `tilesSpare` sentences are said once a run by `shell/onceARun.ts`.
+     */
     readonly guide: {
-      readonly lowPopNow: string;
-      readonly lowPopTiles: string;
-      readonly lowRipen: string;
-      /** Under the old tiles/points fork: a bounty-collecting pop is a
-       *  DIFFERENT button from the ordinary one, so the guide has to name it. */
-      readonly bountyReady: string;
-      /** Under `singlePayout` (the shipped tuning): POP FOR POINTS never
-       *  renders (`ActionBar.tsx`) — there is one POP button, and it always
-       *  collects an armed bounty, so telling the player to pop it "as pts"
-       *  points at a control that is not on the screen. */
-      readonly bountyReadySingle: string;
       /** Under the old fork: "POP for PTS" names the button the tiles half
        *  no longer earns. */
       readonly tilesSpare: string;
@@ -214,8 +213,6 @@ export type Strings = {
        *  line that carried `tilesSpare` came off the screen on 2026-08-29. */
       readonly tilesSpareSingle: string;
       readonly pockets: (n: number) => string;
-      readonly readySingle: (pockets: string) => string;
-      readonly readyFork: (pockets: string) => string;
     };
     readonly destination: {
       readonly cache: (tiles: number) => string;
