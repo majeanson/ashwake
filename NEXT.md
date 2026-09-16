@@ -317,8 +317,8 @@ built.** `LOG.md` Session 105 is the reasoning.
   whole structure, centred on the structure, and `focus` is read only when the
   board is cropped — not the throw. **Ruled: whole world, then fly in.** Show
   everything for a beat, then one glide to the frontier where play continues.
-  A new opening behaviour, not a fix: `Board.tsx`'s refit tick, `fitCamera`,
-  `fly`.
+  A new opening behaviour, not a fix — **built the same day** as
+  `BoardHandle.open` (see "New asks" below for what is left to look at).
 - **P6.5: nothing under the notch or the home indicator. Closed.**
 - **P6.6: sound plays after the toggle. Closed.**
 - **P6.7: cannot be seen from his phone** — it runs installed, so the offer
@@ -405,11 +405,22 @@ built.** `LOG.md` Session 105 is the reasoning.
 
 **New asks from the sitting:**
 
-- **A rest screen.** When the board goes still after its fifteen seconds, _"a
-  small Ashwake logo centered, dimmed light to save battery ++"_ — the board
-  dimmed, the mark in the middle. `board/resting.ts` is the hook; the look is
-  his.
-- **Whole world, then fly in** (P6.8 above).
+- **~~A rest screen~~ — BUILT the same day, and it is a LOOK to check.** When
+  the board goes still after its fifteen seconds, `.board-rest` dims it under a
+  scrim of the ground at 72% and draws the lockup at a third of the width,
+  itself dimmed, fading in over 600 ms; the first touch wakes the board AND
+  lands where it was aimed (`pointer-events: none`). The rest clock moved from
+  `HexField` to `Board`, one clock for the beacons and the screen. **Yours on
+  the phone:** the scrim's depth and the lockup's size were chosen from a desk
+  (`ui.css`, `.board-rest`); `?rest=2` shows it two seconds in.
+- **~~Whole world, then fly in~~ — BUILT the same day** (P6.8 above).
+  `BoardHandle.open` flies the one-leg opening every run had (zoom 1 on the
+  wake hex), holds `OPEN_WIDE_HOLD_MS` (700 ms, a feel number not yet felt),
+  then glides once to the frontier at HERE's zoom. Skipped where the two
+  cameras are the same (a fresh world), abandoned if a finger moved the board
+  during the beat, ended by a tap through `endTour`, one cut under reduced
+  motion. **Yours on the phone:** whether 700 ms is the beat, and whether
+  HERE's zoom is the right landing on a big world.
 - **Welcome and death sequences** (the warm-up above).
 
 **Session A's verdict: _"clean enough, fix the list above then freeze"_ — and

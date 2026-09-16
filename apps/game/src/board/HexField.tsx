@@ -8,7 +8,6 @@ import { cellTint, previewTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
 import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
-import { useResting } from './resting';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { setMarkAnisotropy } from './marks';
@@ -73,9 +72,10 @@ type HexFieldProps = {
   readonly yaw: number;
   /** Still light, no pulse, no drift. */
   readonly reducedMotion: boolean;
-  /** How long the board goes untouched before it stops breathing;
-   *  0 never rests, which is every build before 2026-09-11. */
-  readonly restMs: number;
+  /** Nobody has touched the board for a while, so the breath stops
+   *  (`board/resting.ts`). `Board` keeps the one clock, because the rest
+   *  screen it draws over the canvas has to agree with the beacons about when. */
+  readonly resting: boolean;
   /** The direction's own art, where any has loaded. */
   readonly assets: AssetBook;
   /** The shared texture cache, so the pop layer bakes nothing twice. */
@@ -97,7 +97,7 @@ export function HexField({
   materials,
   yaw,
   reducedMotion,
-  restMs,
+  resting,
   assets,
   textures,
   cursor,
@@ -285,9 +285,9 @@ export function HexField({
    * `perf/report.md` measured at 28× to 138× a still one. The last paint
    * before it sleeps is `STILL_BREATH`, the same value reduced motion uses,
    * so the board comes to rest at the brightness it is MEANT to rest at
-   * rather than freezing wherever the wave happened to be.
+   * rather than freezing wherever the wave happened to be. The clock itself
+   * is `Board`'s (`useResting`), shared with the rest screen since 2026-09-16.
    */
-  const resting = useResting(restMs);
   useEffect(() => {
     if (reducedMotion || beaconTints.size === 0) return;
     const settle = (lit: number): void => {

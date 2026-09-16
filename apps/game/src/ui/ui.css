@@ -514,6 +514,46 @@ button[disabled] {
 }
 
 /*
+ * THE BOARD AT REST (2026-09-16, Marc: "a small ashwake logo centered, dimmed
+ * light to save battery").
+ *
+ * Over the canvas, under nothing: `z-index: 1` lifts it above R3F's own
+ * positioned container, which comes later in the DOM. The scrim is the same
+ * ground the card scrim uses, at less of it — a resting board is still the
+ * board, dimmed, not a wall. The lockup takes about a third of the width and
+ * no more than the door's own lockup would at a phone's width, and it is
+ * dimmed too: the point is that fewer pixels are lit, not that a new bright
+ * thing is. The fade is the one motion, and reduced motion keeps it because a
+ * fade does not move. `pointer-events: none` is load-bearing: the touch that
+ * wakes the board is also a touch on the board.
+ */
+.board-rest {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  pointer-events: none;
+  animation: rest-in 600ms ease-out both;
+}
+
+.board-rest img {
+  width: min(34%, 14rem);
+  height: auto;
+  opacity: 0.55;
+}
+
+@keyframes rest-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
  * The board is focusable now (2026-08-29): it carries a keyboard marker, so it
  * is a control and has to be able to say it has the keys. The outline goes
  * INSIDE — a positive offset on an element pinned to `inset: 0` draws its ring

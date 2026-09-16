@@ -24,6 +24,17 @@ export const FLIGHT_MS = 320;
 export const TOUR_WIDE_HOLD_MS = 320;
 
 /**
+ * How long a run's OPENING holds the whole world before it glides in to the
+ * frontier, in ms (Marc, 2026-09-16: _"whole world, then fly in"_).
+ *
+ * Longer than the tour's wide hold, because here the wide shot IS a subject:
+ * it is a returning player's own world, and the beat is for recognising it.
+ * A FEEL number, and it has not been felt on a phone; `BoardHandle.open`
+ * carries the argument.
+ */
+export const OPEN_WIDE_HOLD_MS = 700;
+
+/**
  * How long a `tour` takes end to end, for a caller that has to wait it out.
  *
  * Three flights and two holds, stated once here rather than reassembled by

@@ -2765,16 +2765,22 @@ function Game() {
    * the wake point if this run has one, and true origin otherwise, which is
    * every save that exists today.
    *
-   * Zoom 1 is the scale at which the whole frame fits — so this is that same
-   * opening view, slid over until the tile you are about to build from is in
-   * the middle of it. Clamped like every other move (`cameraAt`).
+   * Zoom 1 is the scale at which the whole frame fits — so the first leg is
+   * that same opening view, slid over until the tile you are about to build
+   * from is in the middle of it. **And since 2026-09-16 there is a second
+   * leg** (Marc, from his phone: _"whole world, then fly in"_): a beat on the
+   * whole world, then one glide to the frontier at HERE's zoom. On a fresh
+   * world the two legs are the same camera and the second is not flown; on a
+   * returning player's world it is the difference between a picture of what
+   * they built and the hex they are about to build from. `BoardHandle.open`
+   * carries the rules — a finger during the beat wins.
    *
    * Zero is the mount, and the rig has already fitted for itself by then —
    * flying again would be the board moving on its own before the first tap.
    */
   useEffect(() => {
     if (framing === 0) return;
-    board.current?.flyToHex(snap.state.wakeAt ?? key(0, 0), 1);
+    board.current?.open(snap.state.wakeAt ?? key(0, 0));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [framing]);
 

@@ -1,6 +1,8 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { markBoardAlive, showBoardLost } from '../shell/failure';
-import { FLIGHT_MS, TOUR_WIDE_HOLD_MS } from './flight';
+import { FLIGHT_MS, OPEN_WIDE_HOLD_MS, TOUR_WIDE_HOLD_MS } from './flight';
+import { ICON_DATA_URI } from '@meta/identity';
+import { useArtSlot } from '../shell/art';
 import {
   useCallback,
   useEffect,
@@ -52,7 +54,7 @@ import { cellAt, firstCursor, refreshed, stepCursor, type Cursor, type Direction
 import { ANTIALIAS } from './antialias';
 import { GL_PROPS, watchContext } from './gl';
 import { DEFAULT_RENDER_SCALE } from './quality';
-import { REST_MS } from './resting';
+import { REST_MS, useResting } from './resting';
 import { NO_ASSETS, useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
 import { Pop } from './Pop';
@@ -89,6 +91,8 @@ type RigHandle = {
   panBy(dx: number, dy: number): void;
   flyToHex(hex: HexKey, zoom: number): void;
   flyToFit(): void;
+  /** The two-leg opening — see `BoardHandle.open`. */
+  open(wake: HexKey): void;
   /** Look at a hex, hold, then return to where the camera was. */
   visit(hex: HexKey, holdMs: number): void;
   /** Out to the whole board, in on a hex, then back to where the camera was. */
@@ -113,6 +117,27 @@ export type BoardHandle = {
   flyToFit(): void;
   zoomLevel(): number;
   zoomMax(): number;
+  /**
+   * The opening of a run, in two legs: the whole world, then the frontier
+   * (Marc, 2026-09-16, on his phone: _"whole world, then fly in"_).
+   *
+   * Until then a run opened on one leg — zoom 1, slid until the wake hex was
+   * in the middle — and on a returning player's world that is a picture of
+   * everything they have built with the tile they are about to place
+   * somewhere off-centre and small (his words: _"zoom was not zoomed much,
+   * first tile to place was not centered, but i could see my world and
+   * grounds clearly"_). He wants both: the world first, for a beat, then one
+   * glide to where play continues, at the zoom HERE stands at.
+   *
+   * The second leg is skipped where it would go nowhere — a fresh world is
+   * one tile, and `cameraAt` clamps its zoom to a ceiling the fit has already
+   * reached — and abandoned where a finger has moved the camera during the
+   * beat, by the same `stillAt` rule every excursion keeps. A tap during the
+   * beat ends it through `endTour`, so a player who starts placing at the
+   * wide shot is not flown away from the hex under their thumb. Under reduced
+   * motion the beat is dropped and the camera cuts once, to the frontier.
+   */
+  open(wake: HexKey): void;
   /**
    * Go and look at a hex, then come back to where the camera was.
    *
@@ -321,6 +346,28 @@ export function Board(props: BoardProps) {
     renderScale = DEFAULT_RENDER_SCALE,
   } = props;
   const dpr: [number, number] = [1, renderScale];
+
+  /*
+   * THE BOARD RESTS, AND SAYS SO (2026-09-16, Marc, asked whether fifteen
+   * seconds was right: _"1. and we could have a small ashwake logo centered,
+   * dimmed light to save battery ++"_).
+   *
+   * The clock is `board/resting.ts`'s, and it is one clock: `HexField` used
+   * to run its own copy to stop the beacons' breath, and two timers on the
+   * same five events would agree to within a frame and still be two places
+   * deciding one thing. It lives here now and the field is told.
+   *
+   * What resting LOOKS like is the ask: the board dimmed under a scrim and
+   * the lockup small in the middle — the same picture the front door draws,
+   * at a fraction of the size (`.board-rest`). Dimmer pixels are cheaper
+   * pixels on the screens this game is for, which is the "save battery" half
+   * of his sentence; the canvas underneath draws nothing while it rests
+   * (`frameloop="demand"`, and nothing invalidates). `pointer-events: none`
+   * so the first touch both wakes the board and lands where it was aimed.
+   * `aria-hidden`: a sleeping board is a look, not a sentence.
+   */
+  const resting = useResting(props.restMs ?? REST_MS);
+  const lockup = useArtSlot(theme.id, 'ui.logo');
 
   /*
    * The angle the player is holding the board at (2026-08-29, Marc: "anyway we
@@ -560,6 +607,7 @@ export function Board(props: BoardProps) {
       panBy: (dx, dy) => rig.current?.panBy(dx, dy),
       flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
       flyToFit: () => rig.current?.flyToFit(),
+      open: (wake) => rig.current?.open(wake),
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
       tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
       endTour: () => rig.current?.endTour(),
@@ -624,6 +672,11 @@ export function Board(props: BoardProps) {
         <p id="board-keys" className="visually-hidden">
           {props.keyHelp}
         </p>
+      )}
+      {resting && (
+        <div className="board-rest" data-hud="resting" aria-hidden="true">
+          <img src={lockup ?? ICON_DATA_URI} alt="" />
+        </div>
       )}
       {/* Once, and then never again: `size` never returns to zero — see the
           observer above for why that is a hard rule and not an optimisation. */}
@@ -721,7 +774,7 @@ export function Board(props: BoardProps) {
               textures={textures}
               yaw={lean.yaw}
               reducedMotion={props.reducedMotion === true}
-              restMs={props.restMs ?? REST_MS}
+              resting={resting}
               cursor={cursor?.key ?? null}
               onTap={props.onTap}
             />
@@ -1271,6 +1324,36 @@ function Rig({
       },
       flyToFit() {
         fly(fitCamera(frameRef.current, focusRef.current));
+      },
+      open(wake) {
+        const { q, r } = parse(wake);
+        const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+        // Zoom 1 is the scale at which the whole frame fits, slid until the
+        // wake hex is in the middle — the one-leg opening every run had until
+        // 2026-09-16, kept as the first leg.
+        const wide = cameraAt(frameRef.current, 1, p.x, p.y);
+        // Where play continues, read when the leg is flown rather than now:
+        // the frontier is a board fact and the refs are a render behind at
+        // the moment a run begins.
+        const near = (): CameraState => {
+          const f = focusRef.current;
+          return cameraAt(frameRef.current, NEAR_ZOOM, f.cx, f.cz);
+        };
+        if (visiting.current !== 0) clearTimeout(visiting.current);
+        visiting.current = 0;
+        trip.current = null;
+        if (reducedMotion) {
+          fly(near());
+          return;
+        }
+        fly(wide);
+        visiting.current = setTimeout(() => {
+          visiting.current = 0;
+          if (!stillAt(cam.current, wide)) return;
+          const to = near();
+          if (stillAt(to, wide)) return;
+          fly(to);
+        }, FLIGHT_MS + OPEN_WIDE_HOLD_MS);
       },
       /*
        * Go and look at a hex, then come back.
