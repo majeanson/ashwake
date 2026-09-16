@@ -19,7 +19,14 @@ because it is the most useful thing in this file.
 left behind — is **adopted here as P2** and struck there. Two lists of the same
 work is how one of them goes stale.
 
-## Where this stands (2026-09-14)
+## Where this stands (2026-09-16)
+
+**2026-09-16: Marc answered the three phone rows in one sitting** (`NEXT.md` §1a,
+`LOG.md` Session 105). **P6.5 and P6.6 are closed** — nothing under the notch or the
+home bar, sound plays. **P6.7 cannot be seen from his phone**, which runs installed, so
+it needs a friend's uninstalled iPhone. And P6.8's phone line is answered: no blank
+board on Safari, a whole-world frame he wants followed by a fly-in — a ruling, in
+`NEXT.md`, not a row here. **What follows is the 2026-09-14 text.**
 
 **All ten items are worked and every row is `done` except three**, and none of
 the three is code anybody can write from this desk. Six were open on
@@ -844,10 +851,10 @@ phone can say more.
 | P6.2 | done   | `board.spec.ts` on WebKit — all but the two CDP multi-touch tests, skipped where they live               | `e2e/board.spec.ts` |
 | P6.3 | done   | `cards`, `links`, `return`, `steady` — green on WebKit, untouched                                        | `e2e/`              |
 | P6.4 | done   | `shots` and `playtest` — green once the shots waited for the picture instead of 800 ms                   | `e2e/`              |
-| P6.5 | open   | the safe areas and the dynamic viewport — the URL bar that `steady.spec.ts` was written for              | `ui.css`            |
-| P6.6 | open   | the audio unlock: `ui.sound`'s tap is the gesture, and WebKit's rules are its own                        | `shell/voice.ts:31` |
-| P6.7 | open   | install on iOS — there is no `beforeinstallprompt`, so `install.ts`'s offer must already know that       | `shell/install.ts`  |
-| P6.8 | open   | **a board that never draws on WebKit until it is touched** — reproduced, not closed; Session A           | `NEXT.md` §1        |
+| P6.5 | done   | the safe areas and the dynamic viewport — nothing under the notch or the home bar (Marc, 2026-09-16)     | `ui.css`            |
+| P6.6 | done   | the audio unlock: sound plays after the toggle on Safari (Marc, 2026-09-16)                              | `shell/voice.ts:31` |
+| P6.7 | open   | install on iOS — unseen: Marc's phone runs installed, so it needs a friend's uninstalled iPhone          | `shell/install.ts`  |
+| P6.8 | done   | fixed 2026-09-14 (a throw that outlived its run); on Safari 2026-09-16, no blank board — `NEXT.md` §1a   | `NEXT.md` §1a       |
 
 ### P6.1–P6.4, done: WebKit runs everything, and the labels were never missing (2026-09-10)
 
@@ -1614,6 +1621,9 @@ file's rows go to `done` in the same commit as the work, never after.
 - **No PR gate.** Land on `main`; CI gates the deploy.
 
 ## What is left for Marc, in one list
+
+**Answered 2026-09-16, all of it, in `NEXT.md` §1a.** What remains of this list is P6.7 on
+an uninstalled iPhone and the French as he plays. The list as it stood follows.
 
 - **Session A**, on the deployed v2, on his phone, in portrait. Running now.
 - **The French**, when P3's artifact reaches him. Roughly 630 entries; the

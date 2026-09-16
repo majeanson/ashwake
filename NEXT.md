@@ -299,6 +299,107 @@ anything. The same run also failed `board.spec.ts:1002` once, the two-finger
 lean, with the board turned 30° for 45° — a synthesised gesture on a runner
 that had never shown it; noted here and not touched.
 
+## 1a. Marc's sitting, 2026-09-16 — every open decision, answered
+
+Marc had played the deployed v2 a couple of times on his phone and asked,
+through the question tool, to clear every decision and every "waiting on a
+phone" in this file and in `PASS.md` in one sitting. Twenty-four questions,
+twenty-four answers, all his. Each is recorded twice: here as the queue, and as
+a one-paragraph pointer above the entry that asked it, so a reader who lands on
+the entry finds the ruling without hunting. **Nothing in this section is
+built.** `LOG.md` Session 105 is the reasoning.
+
+**Phone facts — `PASS.md` P6, the rows that needed a device:**
+
+- **P6.8 on Safari: no blank board.** Board drawn, "my world and grounds
+  clearly" visible, the zoom wide and the first tile to place not in the
+  middle. That is `fitCamera`'s rule working as written — zoom 1 shows the
+  whole structure, centred on the structure, and `focus` is read only when the
+  board is cropped — not the throw. **Ruled: whole world, then fly in.** Show
+  everything for a beat, then one glide to the frontier where play continues.
+  A new opening behaviour, not a fix: `Board.tsx`'s refit tick, `fitCamera`,
+  `fly`.
+- **P6.5: nothing under the notch or the home indicator. Closed.**
+- **P6.6: sound plays after the toggle. Closed.**
+- **P6.7: cannot be seen from his phone** — it runs installed, so the offer
+  hides itself. **Open, and it needs an uninstalled iPhone**: a friend's, and
+  the friends are the players now.
+- **Slow line after a deploy: never saw the failure panel. Closed for now.**
+- **WALL and FIELD camera trips: both fine, keep them. Closed.**
+- **The French: fine so far.** Corrections come as he finds them; the check
+  stands.
+- **The atlas: did not notice it.** So the Session A row has its answer and it
+  is not about the atlas — **its door is too quiet.** A look finding for the
+  button, stated here.
+- **The resting board: fifteen seconds is right. Closed** — with a new ask
+  under "New asks".
+
+**Look rulings:**
+
+- **~~Antialiasing~~ — BUILT the same day.** "Hard to tell" — so OFF from ratio 2
+  (`board/antialias.ts`, `DENSE` is `>= 2` now) and the temporary SETTINGS row is
+  gone with its three props, the storage pair and the two catalogue entries; the
+  key a device may still hold is dropped once on the next boot. `?aa=` stays,
+  the measuring override it always was.
+- **Torchlit's darkest terrain side reads as a GAP.** Fix it either way —
+  lighten the darkest facet (`theme/rig.ts`, the 38% floor) or lift the board
+  off black — **whichever keeps every contrast rule green with the least
+  change**. The thresholds do not move (`theme.test.ts`).
+- **The shrine: the flat ring is fine. Closed.**
+- **Text selection: restore `user-select: none` on `body`** — _"no user action,
+  must play like an app/gameboy"_ — and keep the one panel's `text` opt-in
+  (`ui.css:2842`), the fourth property of Ashwake 1's block, recovered last.
+
+**The five HUD facts (`view/view.ts`, the sweep's first report):**
+
+1. **Colour lens: a LENS button opens a panel.** Per colour — tiles standing,
+   worth, how much of that worth its power earned, ripe now — and the whole
+   board's standing total. A new screen and new sentences in both languages.
+   It changes the first minute.
+2. **Bounty: the site glyph goes on the POP label**, as Ashwake 1 had it. A
+   mark, no sentence.
+3. **Pockets ready: yes, POP · N READY — in the free width of the action bar
+   beside POP**, not on the button. Marc also asked that _"we should know with
+   a highlight which pop will pop"_ — **that is already drawn**:
+   `targetCluster` → `cell.targeted` → `rings.ts:35` outlines it in accent
+   ink. He asked for it while looking at the board, so the outline is not
+   loud enough on a phone; a look finding, stated here.
+4. **Spare tiles: one toast when it becomes true**, once per run, over the
+   board, the way a routine pop is shown.
+5. `HudView.guide`: unchanged; 4 did not revive the guide line.
+
+**Cuts and skips:**
+
+- **`Said.brief`: cut the path** (§5c, closed). `.card-scrim.brief` and its
+  `.card` rule, `BRIEF_MS` and the pointerdown dismissal in `ui/Card.tsx`,
+  `SaidCard`'s `brief` prop, the live region `App` renders for it.
+- **The v1 → v2 bridge with a real backup: skip.** No worlds worth carrying.
+  The code and `shell/bridge.test.ts` stay; the check is struck.
+- **The JIT warm-up: yes, and not as four milliseconds.** _"Build art with
+  animations and loadings and welcome and death and such"_ — an opening
+  sequence during the art hold and an ending sequence for the run. A screen
+  and an eye, and the biggest thing on this list; it wants a sketch before a
+  session. The warm-up rides inside it.
+
+**New asks from the sitting:**
+
+- **A rest screen.** When the board goes still after its fifteen seconds, _"a
+  small Ashwake logo centered, dimmed light to save battery ++"_ — the board
+  dimmed, the mark in the middle. `board/resting.ts` is the hook; the look is
+  his.
+- **Whole world, then fly in** (P6.8 above).
+- **Welcome and death sequences** (the warm-up above).
+
+**Session A's verdict: _"clean enough, fix the list above then freeze"_ — and
+_"carry on forward while users are playing, they are close friends of mine and
+don't care about midgame updates if it ever happens."_** So the freeze in
+`CLAUDE.md` is for the stranger, not for the friends: the first minute may
+keep moving until Session A's LAST clean pass, which is owed once this list is
+built. Suggested order — the desk work first (antialiasing off and the row out,
+the brief cut, `user-select`, the torchlit side, the spare-tiles toast, the site
+glyph, the POP count), then the two camera items (the fly-in, the rest screen),
+then the two screens that want a sketch (the lens panel, welcome and death).
+
 ## 1. Needs Marc, and only Marc
 
 **~~THE FLASH ON THE FIRST TILE PLACEMENT~~ — CLOSED 2026-09-14, Marc: _"Gone."_ — A TAP
@@ -319,6 +420,9 @@ board — the port dropped the block and got two of its four back. Restored on
 a first tile and say GONE, BLANKS or STUTTERS, Marc said _"Gone"_ the same
 day. The report that outlived four measured fixes was a browser gesture the
 harness cannot make, and the fix was a line the previous body already carried.
+**RULED 2026-09-16 (§1a): the JIT warm-up is wanted, as part of a welcome and death
+sequence rather than as four milliseconds; and `user-select: none` goes back on `body`.**
+
 **And the stall below is seventeen milliseconds** (`LOG.md` Session 100).
 Three instruments in a row: the sampling profiler said 98 ms of unnamed native
 time in one task; the GL, instrumented directly, said zero shader compiles and
@@ -370,6 +474,9 @@ placement. They are different bugs and the answer costs you one placement.
 If it helps to narrow it: `?rest=0` removes the resting board, and SETTINGS ▸
 ANTICRÉNELAGE ▸ OFF removes the MSAA resolve — each takes one candidate out.
 
+**GLANCED 2026-09-16 (§1a): fifteen seconds is right. New ask: a rest SCREEN — the board
+dimmed and a small Ashwake logo centred, to save battery.**
+
 **THE BOARD RESTS AFTER A PAUSE — RULED, BUILT, MEASURED (2026-09-11,
 `PASS.md` P5.4).** The 2026-09-10 measurement (five idle seconds cost 3.9–4.5 s
 of main-thread time; the same five with reduced motion, 44–207 ms) was put to
@@ -405,6 +512,9 @@ the undo is also a row in SETTINGS** — PLATEAU TOUJOURS ÉVEILLÉ, the
 your ask (_"make the custom urls toggles in the settings we can remove
 later"_) and marked TEMPORARY at every site: the registry entry in
 `meta/features.ts`, two sentences in `text/`, one line in `App.tsx`.
+
+**RULED 2026-09-16 (§1a): "hard to tell" — ship OFF at ratio 2 and remove the SETTINGS
+row, at the removal sites listed below.**
 
 **The smaller one from the same table:** at ratio 2, antialiasing costs 1.3× to 2.1×
 the CPU of the same walk without it (`perf/report.md`, the `msaa` column). The
@@ -446,6 +556,10 @@ build before it was kept.
 400 ms wait, so it passed here three in three while CI's slower Linux WebKit
 failed four in five. Two fixes were written against the renderer and reverted
 because the renderer was never the problem.
+
+**~~Still yours, on the phone~~ — ANSWERED 2026-09-16 (§1a): no blank board. Drawn, the
+world clearly visible, zoom wide and the first tile not centred — `fitCamera`'s whole-structure
+frame, not the throw. Ruled: whole world, then fly in.**
 
 **Still yours, on the phone, and it may now be one word:** open the game as a
 returning player, press BEGIN, and look without touching. The harness bug is
@@ -907,6 +1021,10 @@ RESTART that dealt the same shared seed again would be that sixth door. The
 alternative — leaving the button to call `newRun()` — is the bug above wearing
 a different mode.
 
+**ALL FIVE RULED 2026-09-16 (§1a): 1 a LENS button opens a panel; 2 the site glyph on POP;
+3 POP · N READY in the bar's free width beside POP; 4 one toast when it becomes true; 5
+unchanged.**
+
 **FIVE THINGS THE HUD WORKS OUT AND NEVER SAYS (2026-09-10, `pnpm sweep`'s
 first report, `LOG.md` Session 78).** One question, asked five times, and it
 is the one `CLAUDE.md` says not to guess at: **does the HUD say this?** Each
@@ -1034,6 +1152,8 @@ not intercept the service worker's own fetches**: instrumented, the version
 route is hit once, by the page, while the worker talks to the real server and
 correctly serves the cache. The test would have measured the harness. The
 docblock at the end of that file carries it.
+
+**CHECKED 2026-09-16 (§1a): never saw the failure panel on the phone. Closed for now.**
 
 **So one line for Session A, or for any real deploy:** after a deploy lands,
 open the game on a phone on a slow connection and see that it comes up rather
@@ -1260,6 +1380,8 @@ ease-out. Fixed: the scrim fades up with its card. Both flashes were real, one
 report covered both, and the second was found only by screencasting every
 composited frame and grading it for flatness rather than by reading the code
 that had just been changed.
+
+**WATCHED 2026-09-16 (§1a): both fine, keep them.**
 
 **~~Does WALL and FIELD earn a camera trip?~~ — YES, both, 2026-09-08.** Put
 to Marc with the ruling against them stated in full, he chose to fly to both.
@@ -1539,6 +1661,9 @@ set them now — but the DEFAULT the board opens at is still a number and still
 yours. When you pick them they move into `Theme` beside the rest of the
 materials.
 
+**RULED 2026-09-16 (§1a): it reads as a GAP. Lighten the side or lift the board, whichever
+keeps every contrast rule green with the least change; the thresholds do not move.**
+
 **One number the tests could not settle.** At the full rig, torchlit's darkest
 terrain SIDE sits 0.070 in L* from the board and torchlit-bright's 0.072 —
 above the wall floor (0.045, "must not read as fog") and below the ground floor
@@ -1547,6 +1672,9 @@ darkest facet exposed at 0.655, a top-to-side ratio of 1.53, a board with
 almost no shading left. On a near-black board a dark terrain's shaded side and
 the board genuinely are close. **Does it read as a face or as a gap?** Only an
 eye can say.
+
+**~~Walk the v1 → v2 bridge~~ — SKIPPED by Marc 2026-09-16 (§1a): no worlds worth carrying.
+The code and its test stay.**
 
 **Walk the v1 → v2 bridge with a real backup.** `DECISIONS.md` D3 says this is
 how your Ashwake 1 worlds reach this body, and until 2026-08-29 it could not
@@ -1621,6 +1749,8 @@ reviewing the backstory against what a settlement player actually reads:
    `TORCHLIT` by name, and the tab tint and install splash are `#14100c`. The
    manifest's description had also drifted to a third wording of the tagline
    and now matches the catalogue's.
+
+**RULED 2026-09-16 (§1a): the flat ring is fine.**
 
 **The shrine, if you want it standing.** Measured this session
 (`board/landmarks.test.ts`): the shrine prop is a ring lying LEVEL, 0.88 wide
@@ -1895,7 +2025,11 @@ and these five are not findings with defaults, they are a re-tune of the whole
 board's atmosphere and line weight. The pass took every look decision that had
 one honest answer and left these, which have none until somebody looks.
 
-## 5c. Nothing sets `Said.brief` — DEFERRED by Marc, 2026-09-08
+## 5c. ~~Nothing sets `Said.brief`~~ — CUT, ruled by Marc 2026-09-16
+
+**Ruled in the 2026-09-16 sitting (§1a): cut the path.** Asked once more whether any receipt
+should show without being put down, the answer was no. The removal sites are listed in §1a; not
+yet removed. The deferral and the original section follow.
 
 **Asked and answered: leave it dead for now.** Offered the three readings —
 cut the path, wire one caller, or leave it — Marc chose to leave it. So it

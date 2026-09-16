@@ -48,7 +48,6 @@ import { parseThemeId } from '@theme/index';
 import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
 import { tourMs } from './board/flight';
 import type { BoardHandle } from './board/Board';
-import { ANTIALIAS } from './board/antialias';
 import { preloadAssets } from './board/assets';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
@@ -364,8 +363,6 @@ function Game() {
     setTheme: setStoredTheme,
     renderScale,
     setRenderScale,
-    antialias,
-    setAntialias,
     features,
     setFeature,
     progress,
@@ -3415,9 +3412,6 @@ function Game() {
           renderScale={renderScale}
           maxRenderScale={MAX_RENDER_SCALE}
           onRenderScale={setRenderScale}
-          antialias={antialias}
-          onAntialias={setAntialias}
-          antialiasNow={ANTIALIAS}
           onDevice={() => device.show()}
           /*
            * RESET TEACHING resets the TEACHING (2026-08-30).

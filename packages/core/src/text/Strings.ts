@@ -912,23 +912,6 @@ export type Strings = {
       readonly note: string;
     };
     /**
-     * ANTIALIASING, as a stored choice (TEMPORARY, 2026-09-11 — Marc: "make
-     * the custom urls toggles in the settings we can remove later").
-     *
-     * `?aa=` was a measuring override (`PASS.md` P5.3) and the question it
-     * measures — whether a ratio-2 phone should keep paying for MSAA — is a
-     * look question on a device. This row is how it gets looked at without a
-     * URL. `now` says what the canvas was actually built with, because the
-     * flag is fixed at context creation and a switch that changes nothing
-     * until the next launch must say so. AUTO / ON / OFF reuse `ui.auto` and
-     * `ui.flag`.
-     */
-    readonly antialias: {
-      readonly label: string;
-      readonly note: string;
-      readonly now: (on: boolean) => string;
-    };
-    /**
      * The board, said out loud (2026-08-29).
      *
      * Everything here exists because the board grew a KEYBOARD — a marker that

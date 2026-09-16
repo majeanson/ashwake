@@ -725,12 +725,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       label: 'NETTETÉ',
       note: 'Combien de l’écran le plateau dessine vraiment. Plus net, mais plus énergivore.',
     },
-    // TEMPORAIRE (2026-09-11) — voir `Strings.ts`.
-    antialias: {
-      label: 'ANTICRÉNELAGE',
-      note: `Adoucit les bords des hexagones, et coûte du calcul. AUTO laisse le téléphone décider. Un changement prend effet au prochain lancement du jeu${D}: ferme l’onglet et rouvre-le.`,
-      now: (on) => `En ce moment${D}: ${on ? 'activé' : 'désactivé'}.`,
-    },
     board: {
       label: 'Le plateau',
       reach:

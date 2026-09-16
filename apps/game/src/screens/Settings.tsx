@@ -6,7 +6,7 @@ import { AUTO_THEME_ID, THEMES } from '@theme/index';
 import { Fold } from '../ui/Fold';
 import { Swatch } from '../ui/Swatch';
 import { sendCrashReport } from '../shell/failure';
-import { readLastError, type AntialiasChoice } from '../shell/storage';
+import { readLastError } from '../shell/storage';
 import type { Theme, ThemeId } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
 import { Confirming } from '../ui/Confirming';
@@ -69,11 +69,6 @@ type SettingsProps = {
   readonly renderScale: number;
   readonly maxRenderScale: number;
   readonly onRenderScale: (scale: number) => void;
-  /** TEMPORARY (2026-09-11): the ANTIALIASING row — the stored choice, its
-   *  setter, and what the canvas on screen was actually built with. */
-  readonly antialias: AntialiasChoice;
-  readonly onAntialias: (choice: AntialiasChoice) => void;
-  readonly antialiasNow: boolean;
   /** The room where a tap can destroy something, one door further down. */
   readonly onDevice: () => void;
 };
@@ -91,9 +86,6 @@ export function Settings({
   renderScale,
   maxRenderScale,
   onRenderScale,
-  antialias,
-  onAntialias,
-  antialiasNow,
   onDevice,
 }: SettingsProps) {
   // Read once, when the panel opens: nothing can break while it is showing
@@ -227,44 +219,13 @@ export function Settings({
       )}
 
       {/*
-        ANTIALIASING — TEMPORARY (2026-09-11, Marc: "make the custom urls
-        toggles in the settings we can remove later").
-
-        The other half of the pixel budget, beside the half above. `?aa=` was
-        built as a measuring override and `NEXT.md` §1 carries the question it
-        measures: whether a ratio-2 phone should keep paying 1.3×–2.1× for
-        MSAA. That is a look question on a device, and this row is how it gets
-        looked at without typing a URL. Three stops rather than a switch,
-        because AUTO — the phone's own default — is a real answer and the one
-        every device starts on.
-
-        It cannot take effect until the next launch: antialiasing is a WebGL
-        context flag and the canvas never remounts (`CLAUDE.md`). So the row
-        says two things a switch usually says as one — what you chose, and
-        what this canvas was actually built with — and the note says to close
-        the tab. When the question is answered, delete this section, the three
-        props, the `ANTIALIAS` export in `Board.tsx`, the storage pair and the
-        two catalogue entries.
+        An ANTIALIASING row sat here from 2026-09-11 to 2026-09-16 — AUTO / ON /
+        OFF, stored, read once when the canvas was built — so Marc could
+        compare the two on his phone without typing `?aa=`. He did, said "hard
+        to tell", and the cheap one ships (`board/antialias.ts`). The row, its
+        three props, the storage pair and the two catalogue entries went with
+        the answer, as the row's own comment said they would.
       */}
-      <section>
-        <h2 className="fact-label">{s.ui.antialias.label}</h2>
-        <div className="panel-menu" role="group" aria-label={s.ui.antialias.label}>
-          {(['auto', 'on', 'off'] as const).map((choice) => (
-            <button
-              key={choice}
-              type="button"
-              data-antialias-pick={choice}
-              aria-pressed={antialias === choice}
-              onClick={() => onAntialias(choice)}
-            >
-              {choice === 'auto' ? s.ui.auto : choice === 'on' ? s.ui.flag.on : s.ui.flag.off}
-            </button>
-          ))}
-        </div>
-        <p className="note">
-          {s.ui.antialias.now(antialiasNow)} {s.ui.antialias.note}
-        </p>
-      </section>
 
       {/*
         THE STORY, moved in from MENU (2026-09-08).

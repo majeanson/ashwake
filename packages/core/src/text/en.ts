@@ -710,12 +710,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       label: 'SHARPNESS',
       note: 'How much of the screen the board actually draws. Higher looks crisper and uses more battery.',
     },
-    // TEMPORARY (2026-09-11) — see `Strings.ts`.
-    antialias: {
-      label: 'ANTIALIASING',
-      note: 'Smooths the edges of the hexes, at a cost in work. AUTO lets the phone decide. A change takes effect the next time the game is opened: close the tab and open it again.',
-      now: (on) => `Right now: ${on ? 'on' : 'off'}.`,
-    },
     board: {
       label: 'The board',
       reach:

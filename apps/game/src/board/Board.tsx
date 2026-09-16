@@ -303,8 +303,7 @@ const round2 = (deg: number): number => Math.round(deg * 2) / 2;
 
 /**
  * The antialiasing half of the pixel budget — decided in `board/antialias.ts`,
- * before the first render and by nothing that needs the renderer, because the
- * SETTINGS row reads the same answer from in front of the door. See the
+ * before the first render and by nothing that needs the renderer. See the
  * `<Canvas>` below for the argument; the resolution half is
  * `props.renderScale` (`board/quality.ts`).
  */
@@ -649,9 +648,10 @@ export function Board(props: BoardProps) {
 
             MSAA is a separate axis and stays where `GL` puts it, fixed for the
             canvas's life — antialiasing is a cure for a stair-step a pixel
-            wide, and at three device pixels per CSS pixel the stair-step is
-            already a third of one, but it is a WebGL context flag rather than
-            a sampler setting and cannot be re-picked without a new canvas.
+            wide, and at two device pixels per CSS pixel the stair-step is
+            already half of one (Marc, 2026-09-16, comparing on his phone:
+            "hard to tell"), but it is a WebGL context flag rather than a
+            sampler setting and cannot be re-picked without a new canvas.
           */
           dpr={dpr}
           // `flat` turns OFF tone mapping. R3F applies ACES otherwise, which

@@ -32,9 +32,10 @@ import { begin, boardDrawn, clearCards, placeOneTile } from '../helpers';
  * current phone and 2 is the one before it; 6× is roughly a five-year-old
  * mid-range phone against this laptop.
  *
- * **Ratio also decides MSAA**, because `Board.tsx`'s `DENSE` reads
- * `devicePixelRatio > 2` — so the ratio-3 rows are drawing 2.25× the fragments
- * of the ratio-2 rows AND drawing them without antialiasing. That is not a
+ * **Ratio also decides MSAA**, because `board/antialias.ts`'s `DENSE` reads
+ * `devicePixelRatio >= 2` (2026-09-16; it was `> 2`, and the `msaa` column
+ * below is what moved it) — so both ratios here draw without antialiasing, and
+ * the ratio-3 rows draw 2.25× the fragments of the ratio-2 rows. That is not a
  * flaw in the instrument, it is the shape of the decision being graded: the
  * two defaults are one constant, and nothing can separate them without a
  * second context. Said plainly in the report rather than averaged away.
@@ -181,7 +182,7 @@ for (const ratio of RATIOS) {
          * way. A fresh page, necessarily: the flag is fixed when the canvas is
          * built and the canvas may never remount.
          */
-        await page.goto(`${BOARD}&aa=${ratio > 2 ? 1 : 0}`);
+        await page.goto(`${BOARD}&aa=${ratio >= 2 ? 1 : 0}`);
         await begin(page);
         await boardDrawn(page, 60_000);
         await clearCards(page);

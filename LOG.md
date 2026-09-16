@@ -8479,3 +8479,65 @@ arm._
 
 Verified: 28 chromium / 23 webkit in `board.spec.ts`, 1295 unit tests, format,
 types, lint, and CI green on all three jobs.
+
+### Session 105 — Marc's sitting: every open decision, answered from the phone (2026-09-16)
+
+**Question:** Marc: _"lets sure we clear all decisions and 'waiting on' for the
+phone, i played it a couple times actually."_ Can a session close every ruling
+this repository was holding for him in one sitting, and what does the code say
+about the answers?
+
+**Twenty-four questions through the question tool, in six rounds of four,
+every one built from the ledgers' own wording** and checked against the code
+before it was asked. The full list is `NEXT.md` §1a; the shape of it is what
+belongs here.
+
+**The three phone rows closed differently from how they were written.** P6.5
+and P6.6 closed with one word each. P6.7 could not be answered at all — Marc's
+phone runs the game installed, so `install.ts` correctly hides the offer from
+the one person asked to look at it. And P6.8's phone line, four days of the
+previous sessions, came back as _"zoom was not zoomed much, first tile to place
+was not centered, but i could see my world and grounds clearly"_ — **not a
+blank board, and not the throw**: that is `fitCamera`'s own docblock, zoom 1
+shows the whole structure and `focus` is read only when cropped. A returning
+world that fits whole is framed on the world, not on the play. He wants both:
+whole world, then a fly-in. _The row asked "does it draw?" and the phone
+answered a different question, which is the reason the row existed._
+
+**The five HUD facts all got the same kind of answer: print it.** A LENS
+button and a panel; the site glyph on POP; POP · N READY in the bar's free
+width; one toast for spare tiles. The sweep's finding was right five times.
+And one of his asks was already true — _"we should know with a highlight which
+pop will pop"_ is `targetCluster` → `cell.targeted` → `rings.ts`, drawn in
+accent ink on every frame. **He asked for it while looking at the board**, so
+the finding is not that it is missing but that it is too quiet, and that is a
+look. Same shape as the atlas: _"did not notice it"_ is a finding about a
+door.
+
+**Three cuts, one at last.** `Said.brief`, deferred on 2026-09-08, is cut; the
+v1 bridge walk is skipped; antialiasing at ratio 2 was _"hard to tell"_, which
+is the eye saying the CPU wins, so it ships OFF and the temporary row goes.
+
+**And three new asks, each a screen.** A rest screen — the board dimmed and a
+small logo centred — on top of the fifteen seconds he confirmed. The fly-in.
+And the four-millisecond JIT warm-up answered with _"build art with animations
+and loadings and welcome and death and such"_: an opening and an ending
+sequence, the warm-up riding inside. None of the three is a derivation, so
+none is built; each is stated in §1a and waits for a sketch.
+
+**The verdict on Session A rewrites the freeze's scope without breaking it.**
+_"Clean enough, fix the list above then freeze"_ — and keep shipping while
+friends play, because _"they are close friends of mine and don't care about
+midgame updates."_ `CLAUDE.md`'s freeze was always about the stranger; the
+friends are Session A's population, not Session C's. The first minute may move
+until the list is built and a last clean pass is run.
+
+**One stale row found in passing:** `PASS.md`'s P6 table still said P6.8
+`open` two days after the file's own header said fixed. Corrected.
+
+**Nothing built this session.** Three ledgers edited: `NEXT.md` (§1a and a
+pointer above every entry it answers, §5c closed), `PASS.md` (header, the P6
+table, the list for Marc), this entry. `STATUS.md` untouched — nothing shipped
+and nothing verified.
+
+Verified: `prettier --check` on the three files.
