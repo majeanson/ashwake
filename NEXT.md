@@ -379,8 +379,13 @@ built.** `LOG.md` Session 105 is the reasoning.
    (`screens/Camera`), and the panel is a sheet over the hand: STANDING and
    the total, then one row per ground — mark, name, tiles, worth — with
    "power +N · M ripe (worth)" under it, and "tap a ground to hold the lens"
-   at the foot. Next step is the sentences (about six, both languages) and
-   the sheet; the numbers are `HudView.colours`, lazy since today.
+   at the foot. **BUILT the same night**: `screens/LensPanel`, the LENS door
+   in `screens/Camera` beside LUCK, nine sentences in both languages under
+   `ui.lensPanel`, a row holds the lens through the same two writes the
+   hand's long-press makes. **Yours on the phone**: the sheet's density and
+   whether WORTH (the unit before pocket size and distance) reads as the
+   number you wanted, or whether it should be the priced points. The word
+   LENTILLE on a corner button is also for your ear.
 2. **~~Bounty: the site glyph goes on the POP label~~ — BUILT the same day.**
    `ActionBar`'s POP takes `bounty` when `questPays`: the site glyph after the
    verb, a `bounty` class that ports v1's soft pool of accent, and the word

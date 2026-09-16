@@ -1,0 +1,97 @@
+import { COLOURS } from '@content/tuning';
+import type { Colour } from '@content/tuning';
+import { COLOUR_ICON } from '@theme/icons';
+import { hex, namesOf, type Theme } from '@theme/tokens';
+import type { Strings } from '@text/Strings';
+import type { HudView } from '@view/view';
+import { Icon } from '../ui/Icon';
+
+/**
+ * THE LENS PANEL — what the board is worth, per ground (2026-09-16).
+ *
+ * Ashwake 1 answered a long-pressed card with a five-clause report under the
+ * board: tiles standing, worth, the power's share, what is ripe. This body lit
+ * the lens and said the ground's NAME, and `HudView.colours` — the same five
+ * numbers, measured per colour by tallying the board twice — went unread for
+ * two weeks until `pnpm sweep` asked. Offered the toast, a shorter line or
+ * cutting the tally, Marc answered with a fourth thing (2026-09-10): _"maybe a
+ * lens button where we can see actual points of all board, check per color,
+ * etc."_ — and, shown three drawings on 2026-09-16, placed it: _"beside luck
+ * action button maybe."_
+ *
+ * So: a sheet over the hand, the shape the purse already has — STANDING and
+ * the board's total worth in the head, one row per ground with its mark, its
+ * name, its tiles and its worth, and under each what the power earned and
+ * what is ripe. A row is a button: pressing it holds the lens on that ground,
+ * which is the gesture the hand's long-press already makes, so the panel and
+ * the board agree by construction (`App`'s `holdLens` is the one writer).
+ *
+ * WORTH, not points. `ColourPotential.worth` is the unit the points formula
+ * sums, before the pocket size and the distance multiply it, and it is the
+ * same whether the run hides its score (`hidePoints`) or not. A panel that
+ * printed "pts" would be wrong on the one board that hides them and only
+ * approximately right on every other. It is a decimal — luck multiplies it —
+ * and the catalogue prints it the way the receipts do, with one decimal.
+ */
+
+type LensPanelProps = {
+  readonly hud: HudView;
+  readonly theme: Theme;
+  readonly s: Strings;
+  /** Hold the lens on this ground, or let it go if it is already held. */
+  readonly onHold: (colour: Colour) => void;
+};
+
+export function LensPanel({ hud, theme, s, onHold }: LensPanelProps) {
+  const names = namesOf(theme, s.locale);
+  const held = hud.spotlight?.colour ?? null;
+  const total = hud.colours.reduce((sum, c) => sum + c.worth, 0);
+
+  return (
+    <div className="drawer lens-sheet" id="lens" data-hud="lens">
+      <div className="spends-head">
+        <span className="fact-label">{s.ui.lensPanel.standing}</span>
+        <b className="spends-luck">{s.ui.lensPanel.worth(total)}</b>
+      </div>
+
+      {COLOURS.map((colour) => {
+        const c = hud.colours.find((p) => p.colour === colour);
+        if (c === undefined) return null;
+        return (
+          <button
+            key={colour}
+            type="button"
+            className="lens-row"
+            data-lens-row={colour}
+            aria-pressed={held === colour}
+            onClick={() => onHold(colour)}
+          >
+            <span
+              className="spend-swatch"
+              aria-hidden="true"
+              style={{ background: hex(theme.terrain[colour].fill) }}
+            >
+              <Icon name={COLOUR_ICON[colour]} />
+            </span>
+            <span className="lens-main">
+              <span className="spend-name">{names[colour]}</span>
+              <span className="lens-sub note">
+                {s.ui.lensPanel.power(c.bonus)}
+                {' · '}
+                {c.ripeCount > 0
+                  ? s.ui.lensPanel.ripe(c.ripeCount, c.ripeWorth)
+                  : s.ui.lensPanel.ripeNone}
+              </span>
+            </span>
+            <span className="lens-figures">
+              <span className="lens-tiles note">{s.ui.lensPanel.tiles(c.count)}</span>
+              <span className="spend-cost">{s.ui.lensPanel.worth(c.worth)}</span>
+            </span>
+          </button>
+        );
+      })}
+
+      <p className="note lens-foot">{s.ui.lensPanel.foot}</p>
+    </div>
+  );
+}

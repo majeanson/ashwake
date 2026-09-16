@@ -79,6 +79,16 @@ type CameraProps = {
   readonly canSpend: boolean;
   readonly onPurse: () => void;
   readonly purseOpen: boolean;
+  /**
+   * The LENS PANEL's door (2026-09-16; Marc, shown three drawings: _"beside
+   * luck action button maybe"_). The same shape as LUCK — a toggle for a sheet
+   * that opens over the hand, at the other end of the screen, which is what
+   * `aria-controls` is for. Present while a run is being played; the ending's
+   * board is walked without it, because what it prices is a run.
+   */
+  readonly canLens: boolean;
+  readonly onLensPanel: () => void;
+  readonly lensOpen: boolean;
 };
 
 /**
@@ -133,10 +143,34 @@ export function useCameraCycle(board: React.RefObject<BoardHandle | null>): {
   return { next, step };
 }
 
-export function Camera({ s, next, onCycle, luck, canSpend, onPurse, purseOpen }: CameraProps) {
+export function Camera({
+  s,
+  next,
+  onCycle,
+  luck,
+  canSpend,
+  onPurse,
+  purseOpen,
+  canLens,
+  onLensPanel,
+  lensOpen,
+}: CameraProps) {
   return (
     <div className="camera">
       <div className="camera-row">
+        {canLens && (
+          <button
+            type="button"
+            className="lens-toggle"
+            data-action="lens"
+            aria-expanded={lensOpen}
+            aria-controls="lens"
+            aria-label={s.ui.lensPanel.buttonLabel}
+            onClick={onLensPanel}
+          >
+            {s.ui.lensPanel.button}
+          </button>
+        )}
         {canSpend && (
           <button
             type="button"

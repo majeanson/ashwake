@@ -60,6 +60,7 @@ import { EndScreen } from './screens/EndScreen';
 import { FrontDoor } from './screens/FrontDoor';
 import { Hud } from './screens/Hud';
 import { LensOff } from './screens/Lens';
+import { LensPanel } from './screens/LensPanel';
 import { LessonCard } from './screens/LessonCard';
 import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
@@ -637,6 +638,9 @@ function Game() {
   const saidOnce = useRef<Set<OnceId>>(new Set());
 
   const [purseOpen, setPurseOpen] = useState(false);
+  /** The lens panel, over the hand — see `screens/LensPanel`. One sheet at a
+   *  time: opening this closes the purse and the purse closes this. */
+  const [lensOpen, setLensOpen] = useState(false);
   const [term, setTerm] = useState<LessonId | null>(null);
   /**
    * A new build has taken over underneath this page.
@@ -2218,6 +2222,29 @@ function Game() {
   }, [session, s, say]);
 
   /**
+   * The lens panel's door, and its rows (2026-09-16).
+   *
+   * A row holds the lens on its ground exactly as a long-press on a card does
+   * — the same two writes, `lens` and `session.spotlight` — so the panel and
+   * the hand cannot disagree about what holding means. The panel stays open
+   * while a lens is held: the board dims behind it, which is the point.
+   */
+  const onLensPanel = useCallback(() => {
+    setLensOpen((was) => {
+      if (!was) setPurseOpen(false);
+      return !was;
+    });
+  }, []);
+  const holdLens = useCallback(
+    (colour: Colour) => {
+      const next = colour === lens ? null : colour;
+      setLens(next);
+      session.spotlight(next);
+    },
+    [session, lens],
+  );
+
+  /**
    * A new run, in a world.
    *
    * **It leaves the daily**, and that is not a convenience. Today's board is
@@ -2712,6 +2739,7 @@ function Game() {
   const onPurse = useCallback(() => {
     const opening = !purseOpen;
     setPurseOpen((was) => !was);
+    if (opening) setLensOpen(false);
     /*
      * The purse teaches on the first deliberate OPEN rather than on
      * having one: a lesson about spending is no use before there is
@@ -3176,6 +3204,9 @@ function Game() {
             canSpend={playing && snap.hud.spends.length > 0}
             onPurse={onPurse}
             purseOpen={purseOpen}
+            canLens={playing}
+            onLensPanel={onLensPanel}
+            lensOpen={lensOpen}
           />
         )}
         {/*
@@ -3233,6 +3264,7 @@ function Game() {
             carried has its own door now — the pockets caption on the bar, the
             spare purse said once a run, the bounty mark on POP.
           */}
+          {lensOpen && <LensPanel hud={snap.hud} theme={theme} s={s} onHold={holdLens} />}
           {purseOpen && (
             <Purse
               hud={snap.hud}

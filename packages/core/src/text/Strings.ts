@@ -1361,6 +1361,29 @@ export type Strings = {
      */
     readonly lensClear: string;
     readonly lensClearLabel: (ground: string) => string;
+    /**
+     * THE LENS PANEL — what the board is worth, per ground (2026-09-16; Marc,
+     * 2026-09-10: "a lens button where we can see actual points of all board,
+     * check per color"). `button` is the word on the corner control beside
+     * LUCK; `buttonLabel` is what a screen reader hears it opens. `standing`
+     * heads the sheet, `worth` prints the board's total and each row's figure
+     * in the unit the points formula sums, `tiles` counts a ground's standing
+     * tiles, `power` is what its own rule earned of that worth, `ripe` what is
+     * cashable now (and `ripeNone` when nothing is), `foot` says what a row
+     * does. Worth is a decimal — luck multiplies it — and prints with one
+     * decimal through each catalogue's `d1`, exactly as the receipts print it.
+     */
+    readonly lensPanel: {
+      readonly button: string;
+      readonly buttonLabel: string;
+      readonly standing: string;
+      readonly worth: (n: number) => string;
+      readonly tiles: (n: number) => string;
+      readonly power: (n: number) => string;
+      readonly ripe: (count: number, worth: number) => string;
+      readonly ripeNone: string;
+      readonly foot: string;
+    };
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;
     /**

@@ -1767,3 +1767,42 @@ test('a flick does not carry the board out of the run it opens', async ({ page }
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('the lens panel prices every ground, and a row lights the lens', async ({ page }) => {
+  /*
+   * Marc, 2026-09-10: *"a lens button where we can see actual points of all
+   * board, check per color, etc."* — placed 2026-09-16 beside LUCK. The
+   * numbers are the view's (`view.test.ts`); this is the door and the gesture:
+   * the panel opens over the hand with four rows, a row holds the lens the
+   * same way a long-press does (the LENS OFF control appears), and pressing
+   * the same row again lets go.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=12');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  const door = page.locator('[data-action="lens"]');
+  await expect(door).toBeVisible();
+  await door.click();
+  const panel = page.locator('[data-hud="lens"]');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('[data-lens-row]')).toHaveCount(4);
+
+  await panel.locator('[data-lens-row="green"]').click();
+  await expect(
+    page.locator('[data-action="lens-off"]'),
+    'a row did not light the lens',
+  ).toBeVisible();
+  await expect(panel.locator('[data-lens-row="green"]')).toHaveAttribute('aria-pressed', 'true');
+
+  await panel.locator('[data-lens-row="green"]').click();
+  await expect(page.locator('[data-action="lens-off"]')).toHaveCount(0);
+
+  // The door closes what it opened, and the purse and the panel never stack.
+  await door.click();
+  await expect(panel).toHaveCount(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

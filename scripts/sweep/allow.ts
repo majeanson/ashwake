@@ -223,51 +223,22 @@ const TIMELINE_SPINE: readonly Ruling[] = (
     'see `TIMELINE_SPINE`. Not a gap; a screen nobody has agreed to build.',
 }));
 
-/**
- * FIVE THINGS THE HUD WORKS OUT AND NEVER SAYS — MARC'S (`NEXT.md` §1).
+/*
+ * FIVE THINGS THE HUD WORKED OUT AND NEVER SAID — a list that emptied itself
+ * (ruled 2026-09-10, closed 2026-09-16).
  *
- * The strongest class in the first report, and the one `CLAUDE.md` is most
- * explicit about: where the answer lives on a SCREEN, the finding is the
- * deliverable. Each of these is computed on every frame and read by nothing,
- * and each is either a sentence this game is missing or a number that should
- * stop being computed — which is not a question a session without a phone
- * gets to answer. `NEXT.md` §1 states all five, loudest first, and each
- * declaration in `view/view.ts` carries its own finding.
- *
- * Two of them corrected a docblock that ASSERTED its own consumer:
- * `questPays` said "the points button wears it" and no screen read it;
- * `pocketsReady` named a "POP · N READY" label nothing has ever drawn. Both
- * had survived four hand passes, and both survived them BECAUSE of the
- * sentence — the exact failure `CLAUDE.md` describes.
- *
- * `guide` was here for a different reason — Marc removed the line on
- * 2026-08-29 and the sentence stayed computed so a coaching mode would find
- * it built — until 2026-09-16, when the derivation was cut: every fact it
- * carried had a door of its own by then. The colour tally's rulings stay: the
- * fields are GETTERS now, costing nothing until the lens panel reads them.
+ * `pnpm sweep`'s first report found five facts computed on every HUD build and
+ * printed by nothing: the colour tally, the bounty, the pockets ready, the
+ * spare purse, the guide. `HUD_UNSAID` held them here so the report stopped
+ * re-asking a screen question, and `NEXT.md` §1 asked Marc. He answered on
+ * 2026-09-16 — print them — and by that evening every one had a reader
+ * (`ActionBar`, `shell/onceARun.ts`, `screens/LensPanel`) or was cut
+ * (`guide`). Two docblocks that ASSERTED their own consumer were corrected on
+ * the way: `questPays` said "the points button wears it" and `pocketsReady`
+ * named a label nothing drew — the exact failure `CLAUDE.md` describes. The
+ * list is gone because a ruling with no subject is the thing the "match
+ * nothing" section exists to catch.
  */
-const HUD_UNSAID: readonly Ruling[] = (
-  [
-    'packages/core/src/view/view.ts#HudView.colours',
-    'packages/core/src/view/view.ts#HudView.spotlight',
-    'packages/core/src/view/view.ts#ColourPotential.count',
-    'packages/core/src/view/view.ts#ColourPotential.worth',
-    'packages/core/src/view/view.ts#ColourPotential.bonus',
-    'packages/core/src/view/view.ts#ColourPotential.ripeCount',
-    'packages/core/src/view/view.ts#ColourPotential.ripeWorth',
-    // `questPays`, `pocketsReady` and `tilesSpare` left this list on
-    // 2026-09-16: Marc ruled all three printed (`NEXT.md` §1a) and the action
-    // bar and `shell/onceARun.ts` read them now. `guide` left the same day,
-    // cut rather than printed.
-  ] as const
-).map((id) => ({
-  id,
-  on: '2026-09-10',
-  why:
-    'A fact the HUD computes and no screen prints, and whether it should be ' +
-    'printed is a screen decision — `NEXT.md` §1 asks it, the declaration ' +
-    'carries it, and `HUD_UNSAID` says why a sweep does not get to answer it.',
-}));
 
 /**
  * A FIELD WHOSE ONLY READER IS THE TEST THAT PROVES IT (ruled 2026-09-10).
@@ -597,7 +568,6 @@ export const ALLOW: readonly Ruling[] = [
   ...HARNESS_RECORD,
   ...SAVED_BLOB,
   ...TIMELINE_SPINE,
-  ...HUD_UNSAID,
   ...TEST_IS_THE_READER,
   ...RULE_LIVES_IN_A_TEST,
   ...TIMELINE_SLOT_FILTER,

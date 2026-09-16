@@ -8709,3 +8709,39 @@ and the sentences are new in both languages.
 Verified: 1302 unit tests / 102 files, sweep 0 findings over 308 files (85
 ruled, 0 matching nothing), typecheck (core, app, root), eslint, prettier; the
 smoke grep selects exactly one test.
+
+### Session 110 — the lens panel, from a drawing to a door (2026-09-16)
+
+**Question:** Marc: _"continue"_, after placing the panel beside LUCK. Can the
+panel he drew a place for be built from the numbers the view already had, and
+what does the catalogue's rulebook say about the sentences?
+
+**Built as drawn.** `screens/LensPanel` is the purse's shape — a sheet over the
+hand, anchored where `.spends` anchors, one at a time with the purse because
+`App` closes one when the other opens. STANDING and the board's total worth in
+the head; one row per ground with its swatch and mark, its name, "power +N ·
+M ripe tiles (worth)" under it, and tiles and worth in a column on the right.
+A row is a button that holds the lens through the same two writes the hand's
+long-press makes (`holdLens`), so the board dims behind the sheet and LENS OFF
+appears top-left as it always has. The door is `LENS` beside LUCK in
+`screens/Camera`, in LUCK's own voice, present while a run is being played.
+
+**The numbers cost nothing until now, and now they cost what they should.**
+`HudView.colours` became a getter this afternoon (Session 109) so the tally
+would not run for a panel that did not exist; tonight the panel reads it, and
+the seven sweep rulings that held the fields go — `HUD_UNSAID` is a comment
+recording a list that emptied itself in one day.
+
+**Two things the rulebook caught before Marc could.** `ui.lensPanel.ripe`
+pluralised in French only — "3 mûres" agrees the adjective, "3 ripe" has
+nothing to agree — so both languages say "ripe tiles" now. And worth is a
+DECIMAL: luck multiplies it, and the first draft printed it through `fmtInt`,
+which the unit test caught with "worth 44.2" against "worth 44". The
+sentences take numbers and print them through each catalogue's `d1`, as the
+receipts do. Nine new sentences in both languages, for his ear.
+
+Verified: 1305 unit tests / 103 files (three new for the panel), sweep 0
+findings over 310 files (78 ruled), typecheck (core, app, root), eslint,
+prettier; on Chromium against the built app, the four corner-adjacent specs
+(board, keyboard, menus, a11y) 61/61 before the browser test was added, and
+the new lens-panel test with the purse tests after.
