@@ -3,12 +3,24 @@ import type { HudView } from '@view/view';
 import type { Strings } from '@text/Strings';
 
 /**
- * The two things a run says exactly once (Stage 5, 2026-08-29).
+ * The three things a run says exactly once (Stage 5, 2026-08-29; the third
+ * on 2026-09-16).
  *
  * Not teaching. The teaching ledger is a DEVICE fact — you learn what RIPE
  * means once and never again — and these are true afresh every run: reaching
- * new ground is worth marking each time it happens, and a unique arriving in
- * a hand is worth a reminder long after its first-contact card was read.
+ * new ground is worth marking each time it happens, a unique arriving in a
+ * hand is worth a reminder long after its first-contact card was read, and a
+ * purse that has outrun the clock is a fact about THIS run's arithmetic.
+ *
+ * **SPARE TILES is the one Marc found on the board** — 202 tiles, 167
+ * placements left, the tiles half of every POP buying nothing, and the game
+ * saying nothing (`HudView.tilesSpare`). The sentence existed in both
+ * languages and lived in the guide line he took off the screen on
+ * 2026-08-29, so the fact had no door for two weeks. Asked where it should go
+ * he said _"one toast when it becomes true"_, and this is that: once a run,
+ * over the board, on the first beat nothing louder wants. Not per placement —
+ * the state stays true for the rest of the run, and a sentence that repeats
+ * while nothing changes is the guide line he removed.
  *
  * Pure, and shaped like `teaching.ts` for the same reason: what is said is a
  * decision, and a decision belongs somewhere it can be tested without a
@@ -21,7 +33,7 @@ import type { Strings } from '@text/Strings';
  * would never fire.
  */
 
-export type OnceId = 'newGround' | 'unique';
+export type OnceId = 'newGround' | 'unique' | 'tilesSpare';
 
 type Moment = {
   readonly state: GameState;
@@ -63,6 +75,15 @@ export function onceARun(now: Moment, s: Strings): { id: OnceId; text: string } 
   }
   if (!now.said.has('unique') && now.state.draft.some((tile) => tile.rarity === 'unique')) {
     return { id: 'unique', text: s.onceARun.unique };
+  }
+  if (!now.said.has('tilesSpare') && now.hud.tilesSpare) {
+    // The guide's own sentence, and the guide's own fork: under one POP the
+    // "POP for PTS" wording points at a button that is not on the screen.
+    const g = s.view.guide;
+    return {
+      id: 'tilesSpare',
+      text: now.state.tuning.singlePayout ? g.tilesSpareSingle : g.tilesSpare,
+    };
   }
   return null;
 }

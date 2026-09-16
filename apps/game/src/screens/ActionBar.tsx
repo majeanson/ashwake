@@ -1,7 +1,7 @@
 import type { Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { HarvestChoice } from '@engine/state';
-import { CONCEPT_ICON, type IconName } from '@theme/icons';
+import { CONCEPT_ICON, LANDMARK_ICON, type IconName } from '@theme/icons';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
 import { useTerrainArt } from '../shell/art';
@@ -102,6 +102,19 @@ export function ActionBar({
                 ? `+${hud.harvestTiles} · ${hud.harvestPoints} pts`
                 : `+${hud.harvestTiles} · ×${hud.harvestDepth}`
             }
+            /*
+              THE BOUNTY, ON THE BUTTON THAT COLLECTS IT (Marc, 2026-09-16).
+
+              The figure was always right — `harvestValue` applies the
+              multiplier — but nothing said WHY it was bigger, and
+              `HudView.questPays` was computed for two weeks with no reader.
+              Ashwake 1's answer, taken as his: the site's own glyph beside the
+              verb, and a `bounty` class the stylesheet turns into the same soft
+              pool of accent v1 gave BEGIN. The word travels in the accessible
+              name too, because the glyph is `aria-hidden` and a screen reader
+              is owed the same reason.
+            */
+            bounty={hud.questPays ? s.lesson.bounty.name : null}
             onClick={() => onHarvest('tiles')}
           />
         )}
@@ -179,6 +192,27 @@ export function ActionBar({
             <span className="act-label">&nbsp;</span>
             <span className="act-value">&nbsp;</span>
           </div>
+        )}
+        {/*
+          HOW MANY DECISIONS ARE WAITING (Marc, 2026-09-16: "yes we can add
+          this. use width" — the free width of the bar, not the button).
+
+          `HudView.pocketsReady` counts separate ripe POCKETS, not ripe tiles —
+          a twelve-tile pocket is one decision, same as a two-tile one — and
+          for two weeks nothing printed it. The words are the guide line's own
+          (`guide.pockets`), so the sentence is written once in each language.
+
+          From TWO, not one: a single ready pocket is already said by POP being
+          on the bar at all, and "Pocket ready" beside a button called POP is
+          the game repeating itself. Not a button, not a live region: it is
+          the bar's caption, and `.act-note` takes only the width the buttons
+          leave — at 320px in French that is often none, and a caption that
+          vanishes is right where a button that squeezed would be wrong.
+        */}
+        {hud.canHarvest && hud.pocketsReady >= 2 && (
+          <span className="act-note" data-hud="pockets">
+            {s.view.guide.pockets(hud.pocketsReady)}
+          </span>
         )}
       </div>
 
@@ -278,20 +312,25 @@ function ActButton({
   icon,
   label,
   value,
+  bounty = null,
   onClick,
 }: {
   readonly testId: string;
   readonly icon?: IconName | undefined;
   readonly label: string;
   readonly value: string;
+  /** The word for a standing bounty this press collects, or null. Draws the
+   *  site glyph after the verb and joins the accessible name — see POP. */
+  readonly bounty?: string | null | undefined;
   readonly onClick: () => void;
 }) {
+  const name = value === '' ? label : `${label}, ${value}`;
   return (
     <button
       type="button"
-      className="act"
+      className={bounty === null ? 'act' : 'act bounty'}
       data-action={testId}
-      aria-label={value === '' ? label : `${label}, ${value}`}
+      aria-label={bounty === null ? name : `${name}, ${bounty}`}
       onClick={onClick}
     >
       <span className="act-label">
@@ -301,6 +340,11 @@ function ActButton({
           </span>
         )}
         {label}
+        {bounty !== null && (
+          <span className="act-mark act-bounty" aria-hidden="true">
+            <Icon name={LANDMARK_ICON.site} />
+          </span>
+        )}
       </span>
       {value !== '' && <span className="act-value">{value}</span>}
     </button>

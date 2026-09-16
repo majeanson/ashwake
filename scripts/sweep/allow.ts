@@ -254,9 +254,9 @@ const HUD_UNSAID: readonly Ruling[] = (
     'packages/core/src/view/view.ts#ColourPotential.bonus',
     'packages/core/src/view/view.ts#ColourPotential.ripeCount',
     'packages/core/src/view/view.ts#ColourPotential.ripeWorth',
-    'packages/core/src/view/view.ts#HudView.questPays',
-    'packages/core/src/view/view.ts#HudView.pocketsReady',
-    'packages/core/src/view/view.ts#HudView.tilesSpare',
+    // `questPays`, `pocketsReady` and `tilesSpare` left this list on
+    // 2026-09-16: Marc ruled all three printed (`NEXT.md` §1a) and the action
+    // bar and `shell/onceARun.ts` read them now.
     'packages/core/src/view/view.ts#HudView.guide',
   ] as const
 ).map((id) => ({

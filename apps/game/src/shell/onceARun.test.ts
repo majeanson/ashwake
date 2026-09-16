@@ -7,7 +7,7 @@ import { onceARun, type OnceId } from './onceARun';
 import { walk } from './walk';
 
 /**
- * The two things a run says once.
+ * The three things a run says once.
  *
  * Not teaching: the teaching ledger is a DEVICE fact, and these are true
  * afresh every run. The one that has to be right is NEW GROUND — measured
@@ -22,6 +22,26 @@ const session = () => createSession({ seed: 7, theme: resolveTheme(null), string
 const none: ReadonlySet<OnceId> = new Set();
 
 describe('once a run', () => {
+  it('says once that the purse has outrun the clock, in the shipped tuning’s words', () => {
+    // The state Marc found on the board (202 tiles, 167 placements left) is
+    // the HUD's own boolean; the helper reads it rather than re-deriving it,
+    // so the case is the flag and not a walk that happens to reach it.
+    const now = session().get();
+    const spare = { ...now.hud, tilesSpare: true };
+    const said = onceARun({ state: now.state, hud: spare, reachAtStart: 99, said: none }, s);
+    expect(said?.id).toBe('tilesSpare');
+    expect(said?.text).toBe(
+      now.state.tuning.singlePayout ? s.view.guide.tilesSpareSingle : s.view.guide.tilesSpare,
+    );
+    // And never again this run.
+    expect(
+      onceARun(
+        { state: now.state, hud: spare, reachAtStart: 99, said: new Set<OnceId>(['tilesSpare']) },
+        s,
+      ),
+    ).toBeNull();
+  });
+
   it('says nothing at all on an opening board', () => {
     const now = session().get();
     expect(

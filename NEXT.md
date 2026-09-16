@@ -367,16 +367,24 @@ built.** `LOG.md` Session 105 is the reasoning.
    worth, how much of that worth its power earned, ripe now — and the whole
    board's standing total. A new screen and new sentences in both languages.
    It changes the first minute.
-2. **Bounty: the site glyph goes on the POP label**, as Ashwake 1 had it. A
-   mark, no sentence.
-3. **Pockets ready: yes, POP · N READY — in the free width of the action bar
-   beside POP**, not on the button. Marc also asked that _"we should know with
-   a highlight which pop will pop"_ — **that is already drawn**:
-   `targetCluster` → `cell.targeted` → `rings.ts:35` outlines it in accent
-   ink. He asked for it while looking at the board, so the outline is not
-   loud enough on a phone; a look finding, stated here.
-4. **Spare tiles: one toast when it becomes true**, once per run, over the
-   board, the way a routine pop is shown.
+2. **~~Bounty: the site glyph goes on the POP label~~ — BUILT the same day.**
+   `ActionBar`'s POP takes `bounty` when `questPays`: the site glyph after the
+   verb, a `bounty` class that ports v1's soft pool of accent, and the word
+   BOUNTY in the accessible name. A mark, no new sentence.
+3. **~~Pockets ready~~ — BUILT the same day.** `.act-note` is the bar's caption
+   in the width the buttons leave, worded by `guide.pockets` ("3 pockets
+   ready"), shown from TWO — one ready pocket is already said by POP being
+   there. Marc also asked that _"we should know with a highlight which pop
+   will pop"_ — **that is already drawn**: `targetCluster` → `cell.targeted` →
+   `rings.ts:35` outlines it in accent ink. He asked for it while looking at
+   the board, so the outline is not loud enough on a phone; **a look finding,
+   still open**, stated here and at `rings.ts`.
+4. **~~Spare tiles: one toast when it becomes true~~ — BUILT the same day.**
+   `shell/onceARun.ts` says it once a run, on the first beat nothing louder
+   wants, in a new sentence for the one-POP tuning (`guide.tilesSpareSingle`,
+   both languages — the old one told you to "POP for PTS", a button that is
+   not on the screen). **One new French sentence for Marc's ear**: _"Plus de
+   tuiles que tu peux en dépenser. Seuls les points comptent dorénavant."_
 5. `HudView.guide`: unchanged; 4 did not revive the guide line.
 
 **Cuts and skips:**

@@ -666,11 +666,12 @@ export type HudView = {
    * placements left: the mechanism was working exactly as designed and the
    * game never said a word about it.
    *
-   * **AND IT STILL DOES NOT** (`pnpm sweep`, 2026-09-10; `NEXT.md` §1). The
-   * sentence exists in both languages and lives in `guide` below, which Marc
-   * removed from over the hand on 2026-08-29 — so the fix for the state he
-   * found went out with the line that carried it, and this boolean is a door
-   * with nothing on the other side of it.
+   * It did not for two weeks (`pnpm sweep`, 2026-09-10): the sentence lived
+   * in `guide` below, which Marc removed from over the hand on 2026-08-29, so
+   * the fix for the state he found went out with the line that carried it.
+   * **Said once a run now** (Marc, 2026-09-16: _"one toast when it becomes
+   * true"_) — `shell/onceARun.ts` reads this and speaks
+   * `view.guide.tilesSpareSingle` on the first beat nothing louder wants.
    */
   readonly tilesSpare: boolean;
 
@@ -754,11 +755,12 @@ export type HudView = {
    * Separate ripe pockets, not ripe tiles — a big pocket is still one
    * decision, and that is the number worth showing.
    *
-   * **THERE IS NO "POP · N READY"** (`pnpm sweep`, 2026-09-10; `NEXT.md` §1).
-   * This docblock named a label no screen has ever drawn: POP says what the
-   * priced pocket pays and never says how many decisions are waiting. Read
-   * only by `view.test.ts`, which pins the counting rule the label would have
-   * needed.
+   * There was no "POP · N READY" for two weeks (`pnpm sweep`, 2026-09-10):
+   * this docblock named a label no screen drew. **The action bar prints it
+   * now** (Marc, 2026-09-16: _"yes we can add this. use width"_) — in the free
+   * width of the bar beside POP rather than on the button, as `guide.pockets`
+   * words it, and only from two: one ready pocket is already the POP button
+   * being there. `view.test.ts` pins the counting rule.
    */
   readonly pocketsReady: number;
   /** What harvesting right now would pay, each way. Both are always shown. */
@@ -777,16 +779,16 @@ export type HudView = {
   /**
    * True when taking the priced pocket as POINTS collects the standing bounty.
    *
-   * **THE POINTS BUTTON DOES NOT WEAR IT**, and this docblock claimed it did
-   * until `pnpm sweep` asked (2026-09-10; `NEXT.md` §1). No screen reads this
-   * field. The FIGURE on the button is already right — the multiplier is
-   * applied inside `harvestValue` — so what is missing is any sign of why it
-   * is bigger. Ashwake 1 put the site glyph on the POP label and a `bounty`
-   * class on both buttons; where it goes on this body's action bar is Marc's,
-   * because it is the most-pressed control on the board.
+   * **POP wears it** (Marc, 2026-09-16, the same answer Ashwake 1 gave): the
+   * site glyph rides the POP label and the button takes a `bounty` class
+   * (`screens/ActionBar.tsx`). The FIGURE was always right — the multiplier is
+   * applied inside `harvestValue` — so the mark is the only thing that was
+   * missing: a sign of WHY it is bigger.
    *
-   * `CLAUDE.md`: a comment that asserts an invariant is not the invariant, and
-   * it is the sentence that stops a reader checking. This one stopped four.
+   * For two weeks this docblock claimed the points button wore it and no
+   * screen read the field (`pnpm sweep`, 2026-09-10). `CLAUDE.md`: a comment
+   * that asserts an invariant is not the invariant, and it is the sentence
+   * that stops a reader checking. This one stopped four.
    */
   readonly questPays: boolean;
 
@@ -1197,9 +1199,10 @@ function guideFor(state: GameState, ctx: RenderContext, s: Strings): string | nu
     // (`ActionBar.tsx`) — there is one POP, and it collects the bounty same
     // as any other pop — so the line was pointing at a control off-screen.
     if (value.questPays) return single ? g.bountyReadySingle : g.bountyReady;
-    // More tiles than the clock can spend: the survival button is dead and
-    // saying so is the whole job of this line.
-    if (tilesSpareIn(state)) return g.tilesSpare;
+    // More tiles than the clock can spend: the survival half of the payout
+    // is dead and saying so is the whole job of this line. Under one POP the
+    // sentence names what is left to want, not a button that is not there.
+    if (tilesSpareIn(state)) return single ? g.tilesSpareSingle : g.tilesSpare;
     // POP · N pockets ready: how many separate decisions are sitting on the
     // board right now, not how many tiles — a 12-tile pocket is one of them,
     // same as a 2-tile one. Singular wording stays where there is only one.

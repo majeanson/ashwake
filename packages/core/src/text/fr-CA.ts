@@ -230,6 +230,8 @@ export const STRINGS_FR: Strings = {
       bountyReady: `PRIME PRÊTE${D}: RÉCOLTE cette poche en pts`,
       bountyReadySingle: `PRIME PRÊTE${D}: RÉCOLTE cette poche`,
       tilesSpare: 'Plus de tuiles que tu peux en dépenser. RÉCOLTE pour des PTS dorénavant',
+      tilesSpareSingle:
+        'Plus de tuiles que tu peux en dépenser. Seuls les points comptent dorénavant',
       pockets: (n) => (n > 1 ? `${n} poches prêtes` : 'Poche prête'),
       readySingle: (pockets) =>
         `${pockets}. Touches-en une pour l’évaluer, puis RÉCOLTE ou sacrifie-la`,

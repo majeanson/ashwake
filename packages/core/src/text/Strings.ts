@@ -205,7 +205,14 @@ export type Strings = {
        *  collects an armed bounty, so telling the player to pop it "as pts"
        *  points at a control that is not on the screen. */
       readonly bountyReadySingle: string;
+      /** Under the old fork: "POP for PTS" names the button the tiles half
+       *  no longer earns. */
       readonly tilesSpare: string;
+      /** Under `singlePayout`: one POP pays both halves, so the sentence says
+       *  what is still worth wanting rather than which button to press. Said
+       *  once a run by the toast (`shell/onceARun.ts`, 2026-09-16); the guide
+       *  line that carried `tilesSpare` came off the screen on 2026-08-29. */
+      readonly tilesSpareSingle: string;
       readonly pockets: (n: number) => string;
       readonly readySingle: (pockets: string) => string;
       readonly readyFork: (pockets: string) => string;

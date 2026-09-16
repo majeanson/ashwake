@@ -3397,6 +3397,44 @@ h3.fact-label {
 }
 
 /*
+ * A POP that collects a standing BOUNTY (Marc, 2026-09-16).
+ *
+ * Ashwake 1's `button.bounty`: the accent-edged buttons that start or seize
+ * something — BEGIN, a card's action, a collectable bounty — sat in a soft pool
+ * of their own accent, "outer and blurred so it reads as heat under the button,
+ * never as a second border". Every action here already wears the accent, so
+ * the pool is what says this press is the one the site has been waiting for.
+ * Decoration only: no contrast budget rides on a shadow, and the site glyph
+ * beside the verb (`.act-bounty`) is the mark that carries the meaning.
+ */
+.act.bounty {
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/*
+ * How many pockets are ready, as the bar's caption (Marc, 2026-09-16).
+ *
+ * Not a button and not a wall: it takes exactly the width the buttons leave
+ * — `flex: 1 1 0` grows into free space and has nothing to give back, so a
+ * crowded French row at 320px shows the buttons whole and none of this. The
+ * ellipsis is for the widths in between. Dim ink like `.act-value`, because
+ * it is a number read second; right-aligned so it sits against the bar's far
+ * edge rather than crowding the last verb.
+ */
+.act-note {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: center;
+  text-align: end;
+  padding-inline-end: 0.2rem;
+  font-size: clamp(0.58rem, 1.8vw, 0.7rem);
+  color: var(--ink-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
  * THE WORLD YOU ARE STANDING IN (2026-09-09) — `screens/Worlds`.
  *
  * Marc: *"highlight the current world were in when were in a world playing
