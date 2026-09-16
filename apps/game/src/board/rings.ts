@@ -30,6 +30,18 @@ type PlacedRing = Ring & {
 /** How far above the ground a ring floats, so it never z-fights the top face. */
 const RING_LIFT = 0.012;
 
+/**
+ * A LOOK FINDING, STATED WHERE THE RULE IS (2026-09-16, `NEXT.md` §1a).
+ *
+ * `targeted` is the pocket POP will take — `view.ts`'s `targetCluster`, the
+ * tapped ripe tile's pocket or the biggest — and it IS drawn: the accent ring
+ * below, at the ripe edge's width. Marc, looking at his phone, asked for it
+ * anyway: *"we should know with a highlight which pop will pop."* So the ring
+ * is not missing; it is not loud enough to be read as an answer, at the width
+ * a ripe edge has and in an ink the action bar already wears. What it should
+ * be instead — wider, a fill, a breath of its own — is a screen and an eye,
+ * not a derivation, and this comment is the finding rather than a guess at it.
+ */
 export function ringOf(cell: CellView, theme: Theme): Ring | null {
   const b = theme.board;
   if (cell.targeted) return { colour: theme.ink.accent, width: b.ripeEdgeWidth };

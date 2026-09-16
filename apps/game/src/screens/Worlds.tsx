@@ -171,6 +171,15 @@ export function Worlds({
         every run played on it. Under the list rather than inside a row —
         seven facts per slot would make the list a wall, and the only world
         whose history you are about to act on is the one you are in.
+
+        A LOOK FINDING, STATED WHERE THE DOOR IS (2026-09-16, `NEXT.md` §1a).
+        Session A's sheet asked whether Marc opens the atlas more than once a
+        run, and his answer after a couple of plays was *"did not notice it"*.
+        That is not a fact about the atlas — it is a fact about THIS door:
+        MORE, then WORLDS, then below the world picker, with no word on any
+        screen a player is on that says an atlas exists. Whether it earns a
+        door of its own, a line on the end screen that names it, or nothing,
+        is a screen decision and not one this file can derive.
       */}
       {worlds[active] !== null && <Atlas world={worlds[active]} s={s} survey={survey ?? []} />}
 

@@ -8541,3 +8541,64 @@ table, the list for Marc), this entry. `STATUS.md` untouched — nothing shipped
 and nothing verified.
 
 Verified: `prettier --check` on the three files.
+
+### Session 106 — the sitting's desk work, six commits, and what is left is a sketch or an eye (2026-09-16)
+
+**Question:** Marc: _"lets continue."_ Of the twenty-four answers Session 105
+recorded, how many can a desk build before the next look on a phone, and what
+does building them find?
+
+**Nine of them, in six commits, and three of the nine were not what the ledger
+said they were.** In §1a's own order:
+
+- **Antialiasing OFF from ratio 2** and the temporary SETTINGS row gone with
+  its three props, the storage pair and two catalogue entries, as the row's
+  own comment promised; a device that pressed ON or OFF has its key dropped
+  once on the next boot. `?aa=` stays, the measuring dial it always was.
+- **`Said.brief` cut**, two weeks after it was orphaned. The field, the prop,
+  the clock, the document-level `pointerdown`, the two scrim rules, the live
+  region in the shell and the sweep ruling. Three e2e assertions that could
+  no longer fail (`not.toHaveClass(/brief/)`) now assert the thing they meant.
+- **`user-select: none` was never missing** — `index.html` has set it on
+  `body` since Stage 2. The ledger claimed for two days that it was; a comment
+  beside the tap-highlight line says where it lives. _A ruling to restore what
+  is already there costs nothing to check and a line to record._
+- **The gap was the WALL.** Torchlit does not ship, so the number the ledger
+  carried was about a deleted direction; measured on settlement, every
+  terrain side clears even the ground floor, and the wall's side sat at 0.027
+  — under the fog floor whose own sentence is about walls — because
+  `materials.test.ts` graded four terrains' sides and stopped. Lifted 1.7× in
+  linear light, the test walks wall and stone now and was checked to FAIL on
+  the old palette, the PNG is re-baked. The terrain half stays Marc's, by eye,
+  with `?light=0.7` as the dial.
+- **Three HUD facts printed**: the site glyph on POP with a `bounty` class and
+  the word in the accessible name; "3 pockets ready" as the bar's caption in
+  the width the buttons leave, from two; and the spare purse said once a run
+  by `onceARun`, in a new sentence for the one-POP tuning because the old one
+  named a button `singlePayout` never renders. One new French sentence.
+- **The opening is two legs** — `BoardHandle.open`: zoom 1 on the wake hex as
+  before, a 700 ms beat, then one glide to the frontier at HERE's zoom;
+  skipped where the two cameras are the same, abandoned by a finger, ended by
+  a tap, one cut under reduced motion. **And the board says when it rests**:
+  `.board-rest` dims it and draws the lockup small, the rest clock moved from
+  `HexField` to `Board` so the beacons and the screen share one.
+
+**What was NOT built, and why each is the right kind of not.** The lens panel
+and the welcome and death sequences are screens that want a sketch, and
+`CLAUDE.md`'s rule about look guesses from a desk is the reason the two
+`.board-rest` numbers and the 700 ms are already flagged as his. P6.7 needs an
+uninstalled iPhone. Two "too quiet" findings — the pocket POP will take is
+outlined and he asked for a highlight anyway; the atlas is three taps deep
+under WORLDS and he never noticed it — are stated at their declarations
+(`rings.ts`, `Worlds.tsx`) and in §1a, not fixed.
+
+**One instrument lesson.** The wall finding is the third time this month a
+test walked a list and stopped short of the member that mattered (the throw's
+cancel list, the HUD's readers, now the prisms' sides). The fix each time was
+the same: enumerate the WHOLE set at the assertion rather than the ones that
+came to mind.
+
+Verified: 1296 unit tests / 101 files, sweep 0 findings over 306 files (86
+ruled), artcheck 18 PNGs current, typecheck (core, app, root), eslint,
+prettier; 37/37 on Chromium for the four browser specs the camera and the bar
+can touch. CI is the witness for the rest.
