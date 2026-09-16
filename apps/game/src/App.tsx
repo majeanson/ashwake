@@ -1884,7 +1884,7 @@ function Game() {
       }
 
       /*
-       * A POP is a card — and after the first one, a BRIEF card.
+       * A POP is a card — the first one. After that it is a LINE.
        *
        * Marc, 2026-08-29: *"make sure all pop as card, no text above tiles for
        * explanations"*, and then *"and points"*. A harvest is the loudest thing
@@ -1899,9 +1899,10 @@ function Game() {
        * pop, we don't need to have the pop card appear, we can keep it briefly
        * but easy to tap out."* A modal several times a minute, each one asking
        * for a deliberate press, is the game stopping to congratulate you on the
-       * thing you came to do. So every pop after the device's first is BRIEF —
-       * same words, same place, no focus taken, any tap sends it away and it
-       * leaves on its own. See `ui/Card.tsx`.
+       * thing you came to do. So every pop after the device's first is a line
+       * in the toast strip — the receipt's own lead sentence, one tap from the
+       * whole accounting (the `show` below, and `note`'s docblock). It was a
+       * BRIEF card for one day; `ui/Card.tsx` keeps that story.
        *
        * Claims that already held the screen still do, at full weight: a shrine
        * or a crossing is a thing that happened once. Everything else — a tap
@@ -2731,8 +2732,8 @@ function Game() {
      * Through `saidCard` rather than `LessonCard`: there is no
      * `purse` lesson in `LESSONS` and there should not be — this
      * arrives with its sentences and its rows already written, which
-     * is exactly what `SaidCard` takes. Never brief: it is read once
-     * ever, and it is a list.
+     * is exactly what `SaidCard` takes. It holds the screen: read once
+     * ever, and a list is not a glance.
      */
     if (opening && !hasMet(progress, 'purse')) {
       const lesson = purseLesson(snap.state.tuning, theme, s);
@@ -3719,30 +3720,11 @@ function Game() {
         </p>
       </div>
 
-      {/*
-        WHAT A BRIEF CARD SAID (2026-09-02).
-
-        A brief card is a note over the board that goes on its own, and it used
-        to carry `role="status"` itself — on an element the shell mounts fresh
-        per utterance, keyed on the said id so a second pop is a second card.
-        A live region inserted together with its content is not reliably
-        announced, which is the rule the toast twelve hundred lines up states in
-        its own docblock and follows.
-
-        So the region lives out here, where it is on the page before there is
-        anything to put in it, and outlives every card that passes through. Only
-        the BRIEF ones: a card that holds the screen takes focus and is read for
-        being focused, and announcing it twice is worse than not at all.
-      */}
-      <p className="visually-hidden" role="status">
-        {saidCard !== null && saidCard.brief === true ? saidCard.text : ''}
-      </p>
-
       {saidCard !== null && (
         <SaidCard
-          // Keyed per utterance so a second pop is a second card: a brief one
-          // runs a clock of its own, and a reused element would inherit the
-          // remains of the previous card's.
+          // Keyed per utterance so a second utterance is a second card — a
+          // fresh focus move and a fresh Escape — rather than a reused element
+          // with the previous card's state.
           key={saidCard.id}
           text={saidCard.text}
           rows={saidCard.rows}
@@ -3753,7 +3735,6 @@ function Game() {
             setSaidCard(null);
             setCardPerk(null);
           }}
-          brief={saidCard.brief === true}
           icon={saidCard.icon}
           {...(cardPerk === null
             ? {}

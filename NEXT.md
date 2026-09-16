@@ -346,9 +346,12 @@ built.** `LOG.md` Session 105 is the reasoning.
   off black — **whichever keeps every contrast rule green with the least
   change**. The thresholds do not move (`theme.test.ts`).
 - **The shrine: the flat ring is fine. Closed.**
-- **Text selection: restore `user-select: none` on `body`** — _"no user action,
-  must play like an app/gameboy"_ — and keep the one panel's `text` opt-in
-  (`ui.css:2842`), the fourth property of Ashwake 1's block, recovered last.
+- **~~Text selection: restore `user-select: none` on `body`~~ — ALREADY TRUE,
+  found by checking.** _"No user action, must play like an app/gameboy"_ is the
+  code since Stage 2: `index.html`'s inline style sets it on `body` before this
+  sheet loads. The claim two entries down that it was "still missing" was
+  wrong; a comment beside the tap-highlight line in `ui.css` now says where it
+  lives, and `.crash-detail`'s `text` opt-in stays.
 
 **The five HUD facts (`view/view.ts`, the sweep's first report):**
 
@@ -370,9 +373,12 @@ built.** `LOG.md` Session 105 is the reasoning.
 
 **Cuts and skips:**
 
-- **`Said.brief`: cut the path** (§5c, closed). `.card-scrim.brief` and its
-  `.card` rule, `BRIEF_MS` and the pointerdown dismissal in `ui/Card.tsx`,
-  `SaidCard`'s `brief` prop, the live region `App` renders for it.
+- **~~`Said.brief`: cut the path~~ — CUT the same day** (§5c). `.card-scrim.brief`
+  and its `.card` rule, `BRIEF_MS` and the pointerdown dismissal in
+  `ui/Card.tsx`, `SaidCard`'s `brief` prop, the field on `Said`, the live
+  region `App` rendered for it, and the sweep ruling that held it. Three e2e
+  assertions that could no longer fail (`not.toHaveClass(/brief/)`) now assert
+  the thing they meant: the card is a `dialog`. `ui/Card.tsx` keeps the story.
 - **The v1 → v2 bridge with a real backup: skip.** No worlds worth carrying.
   The code and `shell/bridge.test.ts` stay; the check is struck.
 - **The JIT warm-up: yes, and not as four milliseconds.** _"Build art with
@@ -2027,9 +2033,10 @@ one honest answer and left these, which have none until somebody looks.
 
 ## 5c. ~~Nothing sets `Said.brief`~~ — CUT, ruled by Marc 2026-09-16
 
-**Ruled in the 2026-09-16 sitting (§1a): cut the path.** Asked once more whether any receipt
-should show without being put down, the answer was no. The removal sites are listed in §1a; not
-yet removed. The deferral and the original section follow.
+**Ruled in the 2026-09-16 sitting (§1a): cut the path — and cut the same day.** Asked once
+more whether any receipt should show without being put down, the answer was no. Every site
+listed below is gone; `ui/Card.tsx`'s docblock keeps the two-week story. The deferral and the
+original section follow.
 
 **Asked and answered: leave it dead for now.** Offered the three readings —
 cut the path, wire one caller, or leave it — Marc chose to leave it. So it

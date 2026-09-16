@@ -132,39 +132,12 @@ export type Said = {
    * board is the thing that popped.
    */
   readonly icon?: IconName | undefined;
-  /**
-   * Shown as a card the player does not have to dismiss: it takes no focus,
-   * any tap sends it away, and it goes on its own. Set by the SHELL, never by
-   * the reducer — whether a thing has been seen before is a device fact, not
-   * a rule (`App`'s harvest branch, and `ui/Card.tsx`).
-   *
-   * ## NOTHING SETS IT (found 2026-09-02, deliberately left — needs Marc)
-   *
-   * The harvest branch this docblock names is the branch that STOPPED setting
-   * it, on 2026-08-30, when Marc asked for a routine pop to be a line over the
-   * board instead of a card: *"i asked previously to not pop as a card
-   * everytime, just show points in the bottom and we can tap for details or
-   * tap out."* `App` now sends a routine pop to the toast and a first pop to a
-   * full card, and **no caller anywhere writes `brief: true`.**
-   *
-   * So the whole brief path is unreachable from the running game:
-   * `.card-scrim.brief` and `.card-scrim.brief .card` in `ui.css`, `BRIEF_MS`
-   * and the pointerdown dismissal in `ui/Card.tsx`, the "takes no focus" rule,
-   * and `SaidCard`'s `brief` prop. Every piece of it is correct; nothing can
-   * reach it.
-   *
-   * This is the repo's signature miss in the one shape the sweeps kept walking
-   * past — an OPTIONAL field, which is the same blind spot `receipts.ts`'s
-   * `perkAt` hid in. `CLAUDE.md`'s own rule, added the day that was found:
-   * sweep the optional inputs too, and ask who passes them.
-   *
-   * **Left in place rather than deleted, because the decision is Marc's and it
-   * is a screen decision.** "Is there any receipt this game wants to show and
-   * not make the player dismiss?" is a question about how the board should
-   * feel, not one this file can derive — and the answer decides whether this
-   * is dead weight to cut or a mode to wire back up. `NEXT.md` carries it.
+  /*
+   * A `brief` flag sat here from 2026-08-30 to 2026-09-16 — a card the player
+   * did not have to dismiss — and nothing set it after the day it was built,
+   * because a routine pop became a toast line the same evening. Cut on Marc's
+   * word (`NEXT.md` §5c); `ui/Card.tsx` keeps the story.
    */
-  readonly brief?: boolean | undefined;
   /** Distinct per utterance, so a component can tell "said again" from "still
    *  saying" — the identity trick `popped` uses for the same reason. */
   readonly id: number;

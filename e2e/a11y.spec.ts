@@ -130,11 +130,11 @@ async function look(page: Page): Promise<{
 /**
  * EVERY LIVE REGION, WATCHED FROM BEFORE THE FIRST WORD.
  *
- * P4.4 asked to prove there is ONE speaker. There are four, and each one has a
- * docblock arguing for itself: the toast (`say`), the service-worker update
- * line, the in-app-browser warning, and the hidden region that carries a BRIEF
- * card's text — which lives outside the card precisely because *a live region
- * inserted together with its content is not reliably announced*.
+ * P4.4 asked to prove there is ONE speaker. There are three, and each one has
+ * a docblock arguing for itself: the toast (`say`), the service-worker update
+ * line, and the in-app-browser warning. (A fourth carried a BRIEF card's text
+ * until 2026-09-16, outside the card because *a live region inserted together
+ * with its content is not reliably announced*; the brief card is cut.)
  *
  * So the honest question is not how many regions exist, it is whether two of
  * them ever hold text at the same moment — because that is what a reader hears

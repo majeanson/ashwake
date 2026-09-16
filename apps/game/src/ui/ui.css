@@ -231,6 +231,14 @@ body {
    * the one v1 shipped never had the wash on anything.
    */
   -webkit-tap-highlight-color: transparent;
+  /*
+   * The fourth property of that v1 block, `user-select: none`, is NOT missing
+   * — it is on `body` in `index.html`'s inline style, where it has been since
+   * Stage 2, so the boot floor has it before this sheet arrives. `NEXT.md` §1
+   * said for two days that it was missing, and Marc's ruling on 2026-09-16
+   * ("no user action, must play like an app/gameboy") was already the code.
+   * `.crash-detail` is the one opt-in, and it stays.
+   */
 }
 
 /* The one motion language: every press ACKNOWLEDGES with colour, every arrival
@@ -781,28 +789,6 @@ button[disabled] {
   padding: calc(1rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right))
     calc(1rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
   background: color-mix(in srgb, var(--bg) 94%, transparent);
-}
-
-/*
- * A brief card: the same card, over a board you can still see (2026-08-30).
- *
- * The full scrim is 94% of the ground, because a card you must dismiss should
- * have nothing behind it competing for a tap. A brief card is the opposite
- * case — it is ABOUT the board, it goes on its own, and the cascade it is
- * accounting for is still finishing behind it — so the ground stays visible
- * and the whole scrim is the dismiss target.
- */
-.card-scrim.brief {
-  background: color-mix(in srgb, var(--bg) 45%, transparent);
-  /* It is a picture, not a wall: the board underneath stays tappable, so the
-     press that sends this away is also the press that places a tile. The
-     dismissal listens on the document — see `ui/Card.tsx`. */
-  pointer-events: none;
-}
-
-/* The card itself still takes its own button's press. */
-.card-scrim.brief .card {
-  pointer-events: auto;
 }
 
 .card {

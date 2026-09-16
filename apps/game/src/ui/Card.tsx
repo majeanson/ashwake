@@ -14,39 +14,22 @@ import { Icon } from './Icon';
  * dismissed by a deliberate act. A teaching card that vanished when you tapped
  * the board would be a lesson the player never read.
  *
- * ## BRIEF: the same card, for something already learned
+ * ## There was a BRIEF kind, and it is gone (2026-08-30 → 2026-09-16)
  *
  * Marc, 2026-08-30: *"after the first pop, we don't need to have the pop card
- * appear, we can keep it briefly but easy to tap out."* A pop's accounting is
- * worth a card the first time and worth a glance every time after, and the
- * modal was charging the full price on both — a dialog, a focus move, and a
- * deliberate press, several times a minute, on a screen whose whole argument
- * is that the board gets the space.
- *
- * A brief card keeps the words and drops every claim on the player: it does
- * not take focus, it does not trap it, ANY tap sends it away, and it leaves on
- * its own if none comes. It stays a card rather than falling back to the toast
- * because the toast is the strip the eye is not on while the cascade plays —
- * which is the finding that made pops cards in the first place.
- *
- * **And the tap that dismisses it still lands.** The obvious build puts the
- * dismiss on the scrim, which means the scrim has to catch pointer events,
- * which means the first tap after every pop is EATEN — a player popping
- * steadily loses a placement's worth of tapping to a card they were not
- * reading. So the scrim passes pointers through (`pointer-events: none` in
- * `ui.css`) and the dismissal rides a document-level `pointerdown` instead:
- * tap the board and the tile goes down AND the card goes away, which is what
- * "easy to tap out" has to mean on a board you are still playing.
+ * appear, we can keep it briefly but easy to tap out."* That was built here as
+ * a card that took no focus, dismissed on any tap anywhere, and left on its
+ * own after 4.2 s. He looked at a run of them the same day and said it again,
+ * harder — *"just show points in the bottom and we can tap for details or tap
+ * out"* — and a routine pop became a LINE in the toast strip (`App`'s
+ * `note`). From that day no caller set `brief`, and the whole path — a scrim
+ * that passed pointers through, a document-level `pointerdown`, a clock, a
+ * live region in the shell — sat correct and unreachable for two weeks
+ * (`NEXT.md` §5c). Asked once more on 2026-09-16 whether any receipt should
+ * show without being put down, Marc said no, so the path is cut rather than
+ * kept for a moment that never came. This paragraph is what is left of it:
+ * every card holds the screen, and the toast is the thing that does not.
  */
-
-/**
- * How long a brief card stays.
- *
- * Long enough to read two short lines without hurrying, short enough that a
- * player popping steadily is never waiting on it. It is a FEEL number and has
- * not been felt on a phone.
- */
-const BRIEF_MS = 4200;
 
 type CardProps = {
   readonly id: string;
@@ -62,64 +45,22 @@ type CardProps = {
   readonly action?: ReactNode;
   /** Colours the name, for MAGIC and UNIQUE. */
   readonly ink?: 'ink-magic' | 'ink-unique' | undefined;
-  /**
-   * Something the player has already been taught once: it takes no focus, any
-   * tap dismisses it, and it goes on its own. Never for a card that offers an
-   * `action` — a choice must be made, not waited out.
-   */
-  readonly brief?: boolean | undefined;
 };
 
-export function Card({
-  id,
-  icon,
-  name,
-  children,
-  dismiss,
-  onDismiss,
-  action,
-  ink,
-  brief = false,
-}: CardProps) {
+export function Card({ id, icon, name, children, dismiss, onDismiss, action, ink }: CardProps) {
   const panel = useRef<HTMLDivElement>(null);
-  // The handler as of this render, without making it a dependency: the shell
-  // passes a fresh closure every time it renders, and a timer keyed on that
-  // would restart itself instead of running out.
-  const latest = useRef(onDismiss);
-  useEffect(() => {
-    latest.current = onDismiss;
-  }, [onDismiss]);
 
   useEffect(() => {
-    // A brief card must NOT take focus. It is over a board the player is still
-    // holding, and pulling focus off it would end their keyboard's place on
-    // the board to say something they did not ask about.
-    if (!brief) panel.current?.focus();
+    panel.current?.focus();
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') onDismiss();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onDismiss, brief]);
-
-  // Mounted per utterance (the shell keys on the said id), so the clock is the
-  // card's own and a second pop is a second card rather than a reset one.
-  useEffect(() => {
-    if (!brief) return;
-    const timer = setTimeout(() => latest.current(), BRIEF_MS);
-    // ANY press, anywhere, including one that is also doing something else.
-    // On the document rather than on the scrim, because the scrim deliberately
-    // does not catch pointers — see the note at the top of this file.
-    const onDown = (): void => latest.current();
-    document.addEventListener('pointerdown', onDown);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('pointerdown', onDown);
-    };
-  }, [brief]);
+  }, [onDismiss]);
 
   return (
-    <div className={brief ? 'card-scrim brief' : 'card-scrim'}>
+    <div className="card-scrim">
       <div
         ref={panel}
         className="card"
@@ -129,22 +70,10 @@ export function Card({
            lesson on screen right now" had no answer. Same `data-` convention
            as `data-action`, `data-door` and `data-stat`. */
         data-card={id}
-        /*
-         * A BRIEF CARD IS NOT A LIVE REGION (2026-09-02).
-         *
-         * It used to declare `role="status" aria-live="polite"` — and it is
-         * mounted per utterance (the shell keys it on the said id, deliberately,
-         * so a second pop is a second card). **A live region inserted together
-         * with its content is not reliably announced at all**: the rule the
-         * toast and `screens/Device` both state, broken here by the one thing
-         * that makes the card work.
-         *
-         * So the region moved to the shell, where it can outlive any one card,
-         * and this is what it always actually was: a note over the board. It
-         * takes no focus, it takes no role, and any tap sends it away.
-         */
-        {...(brief ? {} : { role: 'dialog', 'aria-modal': true, tabIndex: -1 })}
-        {...(brief || name === undefined ? {} : { 'aria-labelledby': `${id}-name` })}
+        role="dialog"
+        aria-modal
+        tabIndex={-1}
+        {...(name === undefined ? {} : { 'aria-labelledby': `${id}-name` })}
       >
         {(icon !== undefined || name !== undefined) && (
           <p className="card-lead" id={`${id}-name`}>
@@ -157,28 +86,12 @@ export function Card({
           </p>
         )}
         {children}
-        {/*
-          A BRIEF CARD HAS NO BUTTON (2026-09-02).
-
-          It had one, and it was worse than useless. It was pointless, because
-          any pointerdown anywhere dismisses a brief card — a button that does
-          what tapping anywhere already does is a control that teaches nothing,
-          which is the same argument `App`'s toast makes about its own plain
-          sentences. And it was harmful: it is focusable, it is the only
-          focusable thing inside the card, and the 4200ms clock removes it from
-          under whatever focus it is holding — dropping a keyboard player to
-          `<body>`, off the board, mid-run, for a note they never asked for.
-
-          A card that goes on its own is not a card you dismiss.
-        */}
-        {!brief && (
-          <p className="card-acts">
-            {action}
-            <button type="button" onClick={onDismiss}>
-              {dismiss}
-            </button>
-          </p>
-        )}
+        <p className="card-acts">
+          {action}
+          <button type="button" onClick={onDismiss}>
+            {dismiss}
+          </button>
+        </p>
       </div>
     </div>
   );

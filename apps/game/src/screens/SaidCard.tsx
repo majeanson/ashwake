@@ -68,11 +68,6 @@ type SaidCardProps = {
    * cannot be undone.
    */
   readonly wear?: { readonly label: string; readonly onWear: () => void } | undefined;
-  /**
-   * A receipt for something the player has already seen the card for once —
-   * a pop after their first. Goes on its own, and any tap sends it away.
-   */
-  readonly brief?: boolean | undefined;
   /** The mark this receipt happened to, where it has one. A pop has none: the
    *  board is the thing that popped. */
   readonly icon?: IconName | undefined;
@@ -87,7 +82,6 @@ export function SaidCard({
   onTerm,
   offer,
   wear,
-  brief,
   icon,
 }: SaidCardProps) {
   // The glyph and the heading are the receipt's own first line — `receipts.ts`
@@ -103,9 +97,6 @@ export function SaidCard({
       name={lead.trim()}
       dismiss={offer === undefined ? s.ui.gotIt : s.claim.stay}
       onDismiss={onDismiss}
-      // An offer has to be chosen, never waited out — so a receipt that makes
-      // one is never brief, whatever the caller asked for.
-      brief={brief === true && offer === undefined && wear === undefined}
       {...(offer !== undefined
         ? {
             action: <Confirming label={offer.label} armed={offer.armed} onConfirm={offer.onTake} />,

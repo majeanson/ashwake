@@ -465,15 +465,6 @@ export const ALLOW: readonly Ruling[] = [
       'can check the promise the file is built on. `IMPROVEMENTS.md` B9.4.',
   },
   {
-    id: 'apps/game/src/shell/store.ts#Said.brief',
-    on: '2026-09-08',
-    why:
-      'Offered the three readings — cut the path, wire one caller, leave it — ' +
-      'Marc chose to leave it. Built and unreachable until Session A or the ' +
-      'stranger names a moment that wants a receipt nobody has to put down. ' +
-      '`NEXT.md` §5c, and DEFERRED rather than settled.',
-  },
-  {
     id: 'apps/game/src/shell/storage.ts#isFreeSlot',
     on: '2026-09-09',
     why:

@@ -442,9 +442,9 @@ test('the reward loop speaks: a pop pays out in words', async ({ page }) => {
   await expect(card, 'tapping the pop line did not open its receipt').toBeVisible();
   const spoke = (await card.textContent()) ?? '';
   expect(spoke.trim().length, 'the receipt behind the line was empty').toBeGreaterThan(10);
-  // Asked for on purpose, so it is not the brief kind: a player who tapped for
+  // Asked for on purpose, so it holds the screen: a player who tapped for
   // details gets to read them.
-  await expect(page.locator('.card-scrim')).not.toHaveClass(/brief/);
+  await expect(card).toHaveAttribute('role', 'dialog');
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -542,9 +542,8 @@ test('the first pop of a device holds the screen', async ({ page }) => {
   // the board — a popped pocket turns to STONE, which surrounds but never
   // matches — and a toast is too quiet for that.
   //
-  // Every pop AFTER it is the same card gone brief (2026-08-30): same words,
-  // no focus taken, any tap sends it away. The test below is the other half of
-  // this one, and the pair is the whole rule.
+  // Every pop AFTER it is a line at the bottom (2026-08-30). The test below is
+  // the other half of this one, and the pair is the whole rule.
   const errors = watchErrors(page);
   // A virgin device, and an opening the scripted walk has NOT already
   // harvested — `walk` pops when it cannot place, so a long opening spends
@@ -565,8 +564,8 @@ test('the first pop of a device holds the screen', async ({ page }) => {
   // The stone rule, in the card that just held the screen.
   await expect(card).toContainText(/STONE|PIERRE/);
   // And it HOLDS it: a first pop is the one card here that must be dismissed
-  // on purpose, so it is not the brief kind.
-  await expect(page.locator('.card-scrim')).not.toHaveClass(/brief/);
+  // on purpose — a dialog, not a note.
+  await expect(card).toHaveAttribute('role', 'dialog');
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -900,7 +899,7 @@ test('the first time the purse opens, it says what luck buys', async ({ page }) 
     'the purse card lost its rows',
   ).toBeGreaterThanOrEqual(3);
   // It holds the screen: read once ever, and a list is not a glance.
-  await expect(page.locator('.card-scrim')).not.toHaveClass(/brief/);
+  await expect(card).toHaveAttribute('role', 'dialog');
 
   // Dismissed, and it never comes back: one lesson, one device.
   await card.getByRole('button').last().click();
