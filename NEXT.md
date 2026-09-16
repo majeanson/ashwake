@@ -323,7 +323,14 @@ built.** `LOG.md` Session 105 is the reasoning.
 - **P6.6: sound plays after the toggle. Closed.**
 - **P6.7: cannot be seen from his phone** — it runs installed, so the offer
   hides itself. **Open, and it needs an uninstalled iPhone**: a friend's, and
-  the friends are the players now.
+  the friends are the players now. **And its TIMING is ruled and built** (same
+  day, asked outright): _"right away, on the front door"_, and _"again after a
+  week"_ if the device is still in the browser, then never
+  (`shell/installDue.ts`). It came once ever on the END SCREEN before — a
+  moment a friend who closes the tab mid-run never reaches — and the iPhone
+  sentence was marked said at mount, a run before the screen that printed it,
+  so most phones spent their one showing unseen. That is a large part of why
+  the row stayed "unseen". Both paths are on the door now, marked when shown.
 - **Slow line after a deploy: never saw the failure panel. Closed for now.**
 - **WALL and FIELD camera trips: both fine, keep them. Closed.**
 - **The French: fine so far.** Corrections come as he finds them; the check

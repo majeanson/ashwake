@@ -8602,3 +8602,36 @@ Verified: 1296 unit tests / 101 files, sweep 0 findings over 306 files (86
 ruled), artcheck 18 PNGs current, typecheck (core, app, root), eslint,
 prettier; 37/37 on Chromium for the four browser specs the camera and the bar
 can touch. CI is the witness for the rest.
+
+### Session 107 — when the install offer comes, and why nobody had seen it (2026-09-16)
+
+**Question:** Marc: _"when should the instal offer come"_ — a question, so the
+deliverable was the reading, and then his ruling.
+
+**The reading found the bug before the ruling.** The offer came once ever, on
+the END SCREEN — a moment a friend who closes the tab mid-run never reaches —
+and the iPhone sentence was marked "said" in the hook's initialiser, at mount,
+a whole run before the screen that printed it. Every phone that opened the
+game and did not finish a run in that page session spent its one showing on a
+screen it never saw. _"Marked when SHOWN"_ was the comment at both ends, and
+neither end was where the marking happened. That is most of why P6.7 stayed
+"unseen".
+
+**The ruling, through the question tool: right away, on the front door; again
+after a week if the device is still in the browser; then never.** Built as
+`shell/installDue.ts`, pure, the clock handed in, with a calendar test; the
+hook takes `atDoor` so a Chrome event that fires mid-run cannot spend a showing
+on a button nobody can see, and marks at the moment the door draws it. The two
+storage keys hold a list of showings now and read the old `'1'` as one showing
+long ago, so a device that met the old offer gets its second and last. The end
+screen keeps only the BACK UP note.
+
+**One misstep worth recording.** Rewriting `platform.test.ts` from a dump that
+had its blank lines stripped, I replaced the `useToday` tests with a guess
+before checking HEAD — caught by reading the diff, restored verbatim. _A dump
+with whitespace removed is not the file, and a test rewritten from memory is a
+test of memory._
+
+Verified: 1303 unit tests / 102 files (7 new), sweep 0 findings over 308 files,
+typecheck, eslint, prettier; `return.spec` and `menus.spec` 27/27 on Chromium
+against the built app, with the exclusivity test moved to the door.

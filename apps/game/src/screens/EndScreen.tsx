@@ -160,27 +160,12 @@ type EndScreenProps = {
         readonly onImport: (slot: Slot) => void;
       }
     | undefined;
-  /**
-   * Put Ashwake on the home screen, where the browser has offered us a dialog
-   * to do it with. Absent everywhere else, which is most places: iOS never
-   * offers one, an already-installed app has nothing to offer, and a device
-   * that has been asked once is not asked again. See `shell/install.ts`.
+  /*
+   * The install offer lived here from 2026-09-02 to 2026-09-16 — Chrome's
+   * dialog as a button, the iOS gesture as a sentence, once ever. It is on the
+   * FRONT DOOR now (Marc: "right away"), where a friend who never finishes a
+   * run still meets it; `screens/FrontDoor.tsx` and `shell/installDue.ts`.
    */
-  readonly onInstall?: (() => void) | undefined;
-  /**
-   * HOW TO INSTALL, where there is no dialog to open (2026-09-09).
-   *
-   * `onInstall` is Chrome's native one-tap dialog and iOS never offers one, so
-   * on an iPhone that button could never render and **no screen in this game
-   * mentioned the home screen at all**. With no backend by ruling (D13) the
-   * icon is the only way back, which made it the largest single reason a
-   * player did not return.
-   *
-   * A sentence and not a button, because there is nothing to call: no API
-   * opens iOS's share sheet. The shell decides when (`shell/platform.ts`), the
-   * same way it decides `onInstall`.
-   */
-  readonly handInstall?: boolean | undefined;
   /**
    * THAT A WORLD CAN BE LOST, said once, when there is something to lose
    * (2026-09-09).
@@ -213,8 +198,6 @@ export function EndScreen({
   standing,
   daily,
   importDaily,
-  onInstall,
-  handInstall,
   backUp,
   fromLink,
   hud,
@@ -538,50 +521,18 @@ export function EndScreen({
       )}
 
       {/*
-        THE INSTALL OFFER, once ever, in the quietest voice on the screen
-        (2026-09-02).
+        THAT A WORLD CAN BE LOST, said once (2026-09-09).
 
-        Chrome hands the page a native one-tap install dialog and throws it away
-        if nothing catches it; this body caught nothing and offered nothing, so
-        the way to get Ashwake onto a home screen was to know your own browser's
-        menu. Ashwake 1's launch audit found the same gap and named it: where
-        the browser gave us a real dialog, a real button beats a paragraph of
-        directions.
-
-        After the actions and before the map, because it is an invitation rather
-        than a gate — and once ever, marked at the moment it is SHOWN, so a
-        player who declined it is not asked again next run.
+        After the actions because it is an invitation rather than a gate, and
+        said once ever, marked when SHOWN: a player who read an invitation has
+        been invited. The install offer that stood beside it from 2026-09-02
+        moved to the front door on 2026-09-16 (Marc: "right away") — see
+        `FrontDoor`.
       */}
-      {/*
-        THE TWO SENTENCES THAT ARE NOT BUTTONS (2026-09-09).
-
-        Beside the install offer because they answer the same question — how do
-        I get back here — and after the actions because both are invitations
-        rather than gates. Each is said once ever, marked when SHOWN, which is
-        the reading the other two once-ever notes already use: a player who
-        read an invitation has been invited.
-      */}
-      {handInstall === true && (
-        <p className="note end-install-note" data-hud="hand-install">
-          {s.ui.handInstall}
-        </p>
-      )}
-
       {backUp === true && (
         <p className="note end-install-note" data-hud="back-up">
           {s.ui.backUpNote}
         </p>
-      )}
-
-      {onInstall !== undefined && (
-        <button
-          type="button"
-          className="quiet end-install"
-          data-action="install"
-          onClick={onInstall}
-        >
-          {s.ui.install}
-        </button>
       )}
 
       <nav className="panel-menu">

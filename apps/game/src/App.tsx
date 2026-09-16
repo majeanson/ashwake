@@ -676,7 +676,7 @@ function Game() {
    * own tests instead of forty lines a reader following a placement has to
    * walk past. The arguments moved with them.
    */
-  const { inApp, dismissInApp, offerInstall, showHandInstall } = useInstallOffer();
+  const { inApp, dismissInApp, offerInstall, showHandInstall } = useInstallOffer(!started);
 
   const s = useMemo(() => stringsFor(locale), [locale]);
   /*
@@ -3352,8 +3352,6 @@ function Game() {
                   }
             }
             importDaily={importDaily}
-            onInstall={offerInstall}
-            handInstall={showHandInstall}
             /* BACK UP, once, and only when there is something to lose — the
                threshold and the once-ever mark are settled where the ending
                banks, because `markSaid` is a write. See the banking effect. */
@@ -3375,6 +3373,8 @@ function Game() {
             dailyBadge={dailyBadge(readDailyBook(), today, s)}
             mode={mode}
             day={daily === null ? undefined : dailyName(daily)}
+            onInstall={offerInstall}
+            handInstall={showHandInstall}
           />
         </div>
       )}

@@ -99,7 +99,9 @@ const DEVICE = {
    * Instagram.
    *
    * Marked when SHOWN rather than when acted on, which is the honest reading of
-   * "once ever": a player who saw the offer and declined it has been offered.
+   * an invitation: a player who saw the offer and declined it has been offered.
+   * Since 2026-09-16 the value is a list of showings rather than a flag — see
+   * `readInstallShown`.
    */
   installNudge: `${NS}.installnudge.v1`,
   inAppNote: `${NS}.inappnote.v1`,
@@ -578,11 +580,40 @@ const clearLastError = (): void => drop(DEVICE.lastError);
  * particular: a storage that keeps nothing is the very condition the sentence
  * is warning about, so the failure mode proves the point rather than hiding it.
  */
-type SaidOnce = 'installNudge' | 'inAppNote' | 'handInstall' | 'backUpNote';
+type SaidOnce = 'inAppNote' | 'backUpNote';
 
 export const wasSaid = (which: SaidOnce): boolean => read(DEVICE[which]) !== null;
 
 export const markSaid = (which: SaidOnce): void => write(DEVICE[which], '1');
+
+/**
+ * The install offer's showings, oldest first (Marc, 2026-09-16: on the front
+ * door right away, again after a week, then never — `shell/installDue.ts`).
+ *
+ * Two keys, one per path, for the reason `handInstall` gives above. The value
+ * is a JSON list of `Date.now()` stamps. **The old value was '1'** — the
+ * once-ever mark both keys held until today — and it is read as `[0]`: one
+ * showing, long ago, so such a device gets its second and last showing on its
+ * next visit rather than being asked to start over or never asked again.
+ * Anything unreadable is nothing, which is the honest fallback for a list of
+ * moments nobody can reconstruct.
+ */
+type InstallOffer = 'installNudge' | 'handInstall';
+
+export function readInstallShown(which: InstallOffer): readonly number[] {
+  const raw = read(DEVICE[which]);
+  if (raw === null) return [];
+  if (raw === '1') return [0];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.every((n) => typeof n === 'number') ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export const markInstallShown = (which: InstallOffer, now: number): void =>
+  write(DEVICE[which], JSON.stringify([...readInstallShown(which), now]));
 
 /* ---- the daily ------------------------------------------------------------ */
 

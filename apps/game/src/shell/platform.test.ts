@@ -8,8 +8,9 @@ import { useInstallOffer, useToday } from './platform';
  *
  * None of this could be asserted while they were forty lines inside a
  * three-thousand-line component: reaching them meant rendering the whole game,
- * and "the install note is offered once ever" is a claim about two mounts of
- * one hook rather than about a screen.
+ * and "the install offer comes on the door, once more a week later, then never"
+ * is a claim about several mounts of one hook across a calendar rather than
+ * about a screen.
  */
 
 vi.mock('./install', () => ({
@@ -27,6 +28,8 @@ let mockInstalled = false;
 let mockInApp = false;
 let mockHandInstall = false;
 let prompted = 0;
+const DAY = 24 * 60 * 60 * 1000;
+const T0 = 1_800_000_000_000;
 
 beforeEach(() => {
   clearEverything();
@@ -43,49 +46,64 @@ afterEach(() => {
 
 describe('the install offer', () => {
   it('offers nothing when the browser has not handed us a dialog', () => {
-    const { result } = renderHook(() => useInstallOffer());
+    const { result } = renderHook(() => useInstallOffer(true));
     expect(result.current.offerInstall).toBeUndefined();
   });
 
   it('offers nothing on a device that already installed the game', () => {
     mockCanInstall = true;
     mockInstalled = true;
-    const { result } = renderHook(() => useInstallOffer());
+    const { result } = renderHook(() => useInstallOffer(true));
     expect(result.current.offerInstall).toBeUndefined();
   });
 
-  it('offers once, and never again on this device', () => {
+  it('offers on the door, not again this week, once more after a week, then never', () => {
+    // Marc, 2026-09-16: right away on the front door, again after a week if
+    // still in the browser, then never (`installDue.ts`).
+    vi.useFakeTimers({ now: T0 });
     mockCanInstall = true;
-    const first = renderHook(() => useInstallOffer());
+    const first = renderHook(() => useInstallOffer(true));
     expect(first.result.current.offerInstall).toBeDefined();
-
-    // Marked as said at the moment it is OFFERED rather than accepted: a
-    // player who read the invitation and did not take it has been invited.
+    // Marked at the moment it is SHOWN rather than accepted: a player who read
+    // the invitation and did not take it has been invited.
     act(() => first.result.current.offerInstall?.());
     expect(prompted).toBe(1);
     expect(first.result.current.offerInstall).toBeUndefined();
+    // The next visit, the same week: nothing.
+    vi.setSystemTime(T0 + 3 * DAY);
+    expect(renderHook(() => useInstallOffer(true)).result.current.offerInstall).toBeUndefined();
+    // A week on, still in the browser: the second and last showing.
+    vi.setSystemTime(T0 + 8 * DAY);
+    expect(renderHook(() => useInstallOffer(true)).result.current.offerInstall).toBeDefined();
+    // And never a third.
+    vi.setSystemTime(T0 + 400 * DAY);
+    expect(renderHook(() => useInstallOffer(true)).result.current.offerInstall).toBeUndefined();
+  });
 
-    // A second mount is the next run, or the next visit. Still nothing.
-    const second = renderHook(() => useInstallOffer());
-    expect(second.result.current.offerInstall).toBeUndefined();
+  it('does not spend a showing on a button nobody can see', () => {
+    // Chrome's event can arrive mid-run. Off the door, nothing is offered and
+    // nothing is marked, so the next visit's door still gets the first showing.
+    mockCanInstall = true;
+    const midRun = renderHook(() => useInstallOffer(false));
+    expect(midRun.result.current.offerInstall).toBeUndefined();
+    const door = renderHook(() => useInstallOffer(true));
+    expect(door.result.current.offerInstall).toBeDefined();
   });
 
   it('raises the in-app note once ever, and lets it be put down', () => {
     mockInApp = true;
-    const first = renderHook(() => useInstallOffer());
+    const first = renderHook(() => useInstallOffer(true));
     expect(first.result.current.inApp).toBe(true);
-
     act(() => first.result.current.dismissInApp());
     expect(first.result.current.inApp).toBe(false);
-
     // Once EVER — the mark is written when it is raised, so a fresh mount on
     // the same device says nothing.
-    const second = renderHook(() => useInstallOffer());
+    const second = renderHook(() => useInstallOffer(true));
     expect(second.result.current.inApp).toBe(false);
   });
 
   it('says nothing about an in-app browser on an ordinary one', () => {
-    const { result } = renderHook(() => useInstallOffer());
+    const { result } = renderHook(() => useInstallOffer(true));
     expect(result.current.inApp).toBe(false);
   });
 });
@@ -100,40 +118,54 @@ describe('the install gesture, where there is no dialog to open', () => {
    */
   it('says nothing where the browser can install by itself', () => {
     mockCanInstall = true;
-    const { result } = renderHook(() => useInstallOffer());
+    const { result } = renderHook(() => useInstallOffer(true));
     expect(result.current.showHandInstall, 'both invitations at once').toBe(false);
   });
 
   it('names the gesture where that is the only way in', () => {
     mockHandInstall = true;
-    const { result } = renderHook(() => useInstallOffer());
+    const { result } = renderHook(() => useInstallOffer(true));
     expect(result.current.showHandInstall).toBe(true);
   });
 
-  it('says it once ever, and marks it when SHOWN', () => {
+  it('says it on the door, again a week later, and never a third time', () => {
+    vi.useFakeTimers({ now: T0 });
     mockHandInstall = true;
-    const first = renderHook(() => useInstallOffer());
-    expect(first.result.current.showHandInstall).toBe(true);
-    // A second mount is a second run, on a phone that has already been told.
-    const again = renderHook(() => useInstallOffer());
-    expect(again.result.current.showHandInstall, 'an invitation became a nag').toBe(false);
+    expect(renderHook(() => useInstallOffer(true)).result.current.showHandInstall).toBe(true);
+    // The next visit, the same week: a phone that has already been told.
+    vi.setSystemTime(T0 + 2 * DAY);
+    expect(
+      renderHook(() => useInstallOffer(true)).result.current.showHandInstall,
+      'an invitation became a nag',
+    ).toBe(false);
+    vi.setSystemTime(T0 + 7 * DAY);
+    expect(renderHook(() => useInstallOffer(true)).result.current.showHandInstall).toBe(true);
+    vi.setSystemTime(T0 + 100 * DAY);
+    expect(renderHook(() => useInstallOffer(true)).result.current.showHandInstall).toBe(false);
+  });
+
+  it('is only ever said on the door, where it is marked when shown', () => {
+    // The bug this rule replaced: marked at mount, shown a run later, so a tab
+    // closed mid-run had spent its showing on a screen it never reached.
+    mockHandInstall = true;
+    expect(renderHook(() => useInstallOffer(false)).result.current.showHandInstall).toBe(false);
+    expect(renderHook(() => useInstallOffer(true)).result.current.showHandInstall).toBe(true);
   });
 
   /*
-   * The two notes have their own marks on purpose: they are the same
+   * The two offers have their own marks on purpose: they are the same
    * invitation but not the same event, and a device that meets one and later
    * the other (a link opened on a phone, then on a laptop) must not have the
    * second silenced by the first.
    */
   it('is not silenced by the browser dialog having been offered', () => {
     mockCanInstall = true;
-    const chrome = renderHook(() => useInstallOffer());
+    const chrome = renderHook(() => useInstallOffer(true));
     act(() => chrome.result.current.offerInstall?.());
     expect(prompted).toBe(1);
-
     mockCanInstall = false;
     mockHandInstall = true;
-    const phone = renderHook(() => useInstallOffer());
+    const phone = renderHook(() => useInstallOffer(true));
     expect(phone.result.current.showHandInstall).toBe(true);
   });
 });

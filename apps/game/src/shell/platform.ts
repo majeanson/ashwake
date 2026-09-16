@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { localToday, markSaid, wasSaid } from './storage';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { localToday, markInstallShown, markSaid, readInstallShown, wasSaid } from './storage';
+import { installOfferDue } from './installDue';
 import { canInstall, inAppBrowser, isInstalled, needsHandInstall, promptInstall } from './install';
 
 /**
@@ -25,7 +26,8 @@ import { canInstall, inAppBrowser, isInstalled, needsHandInstall, promptInstall 
  */
 
 /**
- * WHERE THIS GAME IS LIVING — two notes, each said once ever (2026-09-02).
+ * WHERE THIS GAME IS LIVING — the install offer and the in-app note (2026-09-02;
+ * the offer's timing re-ruled 2026-09-16, see the function).
  *
  * `install` is offered only where all three are true: the browser actually
  * handed us a dialog, the app is not already installed, and this device has
@@ -49,71 +51,100 @@ import { canInstall, inAppBrowser, isInstalled, needsHandInstall, promptInstall 
  * exactly once for the life of the component, and the alternative is showing
  * the note twice on a device that reloads.
  */
-export function useInstallOffer(): {
+export function useInstallOffer(atDoor: boolean): {
   /** True once, on a device inside an in-app browser that has not been told. */
   readonly inApp: boolean;
   /** The note is dismissible: it arrives unannounced over a game somebody is
-   *  starting, and a sentence that cannot be put down is worse than the risk
-   *  it describes. */
+   *  trying to start, and a warning with no way to put it down is a wall. */
   readonly dismissInApp: () => void;
   /**
-   * The end screen's install offer, or nothing at all.
-   *
-   * Marked as said at the moment it is OFFERED rather than accepted: a player
-   * who read the invitation and did not take it has been invited, and asking
-   * again next run is how an invitation becomes nagging.
+   * Open the browser's own install dialog, where it has handed us one and the
+   * calendar says the offer is due (`shell/installDue.ts`). Undefined
+   * everywhere else — which is most places, and the front door renders
+   * nothing for it.
    */
   readonly offerInstall: (() => void) | undefined;
   /**
-   * The iOS install GESTURE, or nothing — the platform Chrome's dialog cannot
-   * reach (2026-09-09).
-   *
-   * True where the phone can only be installed by hand and has not been told
-   * how. It is a sentence rather than a callback because there is nothing to
-   * call: no browser API opens iOS's share sheet, so the only thing the game
-   * can do is name the two taps. See `shell/install.ts`'s `needsHandInstall`.
-   *
-   * Marked when SHOWN, like the other three, which is the honest reading of
-   * "once ever": a player who read the invitation has been invited.
+   * Say how to install by hand, on the platform with no dialog (iOS Safari),
+   * where the calendar says the offer is due.
    */
   readonly showHandInstall: boolean;
 } {
-  const [installable, setInstallable] = useState(() => canInstall() && !isInstalled());
+  /*
+   * WHEN (Marc, 2026-09-16, asked outright): **right away, on the front door,
+   * and again after a week if the device is still in the browser — then
+   * never.** `installDue.ts` is that rule; this hook samples the clock and
+   * the storage, and marks a showing at the moment the door shows it.
+   *
+   * Until today both offers came once ever on the END SCREEN, and the iPhone
+   * sentence was marked said in this initialiser — at mount — while the
+   * screen that printed it was a whole run away. A friend who closed the tab
+   * mid-run had spent their one showing on a screen they never reached, which
+   * is a large part of why the offer was "unseen" on every phone asked. The
+   * door is the screen at mount, so marking here is marking when shown; and
+   * `atDoor` keeps a Chrome event that arrives mid-run from spending a showing
+   * on a button nobody can see.
+   */
+  const [showHandInstall] = useState(() => {
+    if (!atDoor || !needsHandInstall()) return false;
+    const now = Date.now();
+    if (!installOfferDue(readInstallShown('handInstall'), now)) return false;
+    markInstallShown('handInstall', now);
+    return true;
+  });
+
   const [inApp, setInApp] = useState(() => {
     if (!inAppBrowser() || wasSaid('inAppNote')) return false;
     markSaid('inAppNote');
     return true;
   });
-  /*
-   * Read and marked in the initialiser, once, for `inApp`'s own reason: this
-   * is a fact about the device rather than about the run, so it must not be
-   * re-decided on a re-render — and an effect would mark it a frame after the
-   * screen had already shown it.
-   */
-  const [showHandInstall] = useState(() => {
-    if (!needsHandInstall() || wasSaid('handInstall')) return false;
-    markSaid('handInstall');
-    return true;
-  });
 
+  /*
+   * Chrome's dialog is OFFERED — and the showing marked — the first moment the
+   * door can draw the button: the browser's event and the door being up are
+   * both needed, and the event can come before the first render (captured at
+   * module scope, `shell/install.ts`) or after it. Two doors into the same
+   * decision: the lazy initialiser for an event that has already fired, and
+   * the listener for one that has not. Both are places React lets a decision
+   * with a side effect live; an effect that set state would not be.
+   *
+   * `atDoor` reaches the listener through a ref, synced in an effect, because
+   * the listener is installed once. An event that fires MID-RUN is declined —
+   * a showing spent on a button nobody can see is the bug this replaced — and
+   * such a device meets the offer on its next visit's door, which is where
+   * Chrome fires the event anyway: at load, after the manifest check.
+   */
+  const atDoorRef = useRef(atDoor);
   useEffect(() => {
-    // The event can arrive after mount. `beforeinstallprompt` is captured at
-    // module scope (see `shell/install.ts`); this is only the shell noticing.
-    const look = (): void => setInstallable(canInstall() && !isInstalled());
+    atDoorRef.current = atDoor;
+  }, [atDoor]);
+  const offerNow = (doorUp: boolean): boolean => {
+    if (!doorUp || !canInstall() || isInstalled()) return false;
+    const now = Date.now();
+    if (!installOfferDue(readInstallShown('installNudge'), now)) return false;
+    markInstallShown('installNudge', now);
+    return true;
+  };
+  const [offered, setOffered] = useState(() => offerNow(atDoor));
+  const [spent, setSpent] = useState(false);
+  useEffect(() => {
+    if (offered) return;
+    const look = (): void => {
+      if (offerNow(atDoorRef.current)) setOffered(true);
+    };
     window.addEventListener('beforeinstallprompt', look);
     return () => window.removeEventListener('beforeinstallprompt', look);
-  }, []);
+  }, [offered]);
 
   const offerInstall = useMemo(() => {
-    if (!installable || wasSaid('installNudge')) return undefined;
+    if (!offered || spent) return undefined;
     return () => {
-      markSaid('installNudge');
       // False means the browser withdrew the offer between render and tap. The
       // button simply goes, which is honest: there is nothing to open.
       promptInstall();
-      setInstallable(false);
+      setSpent(true);
     };
-  }, [installable]);
+  }, [offered, spent]);
 
   const dismissInApp = useCallback(() => setInApp(false), []);
   return { inApp, dismissInApp, offerInstall, showHandInstall };

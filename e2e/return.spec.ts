@@ -63,9 +63,9 @@ test('a world’s ending does not, because a world has no tomorrow', async ({ pa
  */
 test('the install invitation is one path or the other, never both', async ({ page }) => {
   const errors = watchErrors(page);
-  await page.goto('/?taught=1&end=1');
-  await begin(page);
-  await expect(page.locator('[data-hud="end"]')).toBeVisible();
+  // On the FRONT DOOR since 2026-09-16 (Marc: "right away"), not the ending.
+  await page.goto('/?taught=1');
+  await expect(page.locator('[data-door="begin"]')).toBeVisible();
 
   // Chromium here fires no `beforeinstallprompt` on localhost and is not iOS,
   // so BOTH are absent — which is the state that must not be a broken screen.
@@ -75,8 +75,8 @@ test('the install invitation is one path or the other, never both', async ({ pag
     (await button.count()) + (await note.count()),
     'the same invitation arrived twice',
   ).toBeLessThan(2);
-  // And the ending is still whole without either.
-  await expect(page.locator('[data-hud="which-run"], .end-score').first()).toBeVisible();
+  // And the door is still whole without either.
+  await expect(page.locator('[data-door="menu"]')).toBeVisible();
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

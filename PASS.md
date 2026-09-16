@@ -845,16 +845,16 @@ because Playwright's WebKit draws through a software path that is not an
 iPhone's — so a green board spec here is a claim about this harness, and only a
 phone can say more.
 
-| id   | status | statement                                                                                                | where               |
-| ---- | ------ | -------------------------------------------------------------------------------------------------------- | ------------------- |
-| P6.1 | done   | **the refusal is real and the labels draw anyway** — photographed; what it costs is 2.6 s of first frame | `e2e/helpers.ts`    |
-| P6.2 | done   | `board.spec.ts` on WebKit — all but the two CDP multi-touch tests, skipped where they live               | `e2e/board.spec.ts` |
-| P6.3 | done   | `cards`, `links`, `return`, `steady` — green on WebKit, untouched                                        | `e2e/`              |
-| P6.4 | done   | `shots` and `playtest` — green once the shots waited for the picture instead of 800 ms                   | `e2e/`              |
-| P6.5 | done   | the safe areas and the dynamic viewport — nothing under the notch or the home bar (Marc, 2026-09-16)     | `ui.css`            |
-| P6.6 | done   | the audio unlock: sound plays after the toggle on Safari (Marc, 2026-09-16)                              | `shell/voice.ts:31` |
-| P6.7 | open   | install on iOS — unseen: Marc's phone runs installed, so it needs a friend's uninstalled iPhone          | `shell/install.ts`  |
-| P6.8 | done   | fixed 2026-09-14 (a throw that outlived its run); on Safari 2026-09-16, no blank board — `NEXT.md` §1a   | `NEXT.md` §1a       |
+| id   | status | statement                                                                                                                     | where                 |
+| ---- | ------ | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| P6.1 | done   | **the refusal is real and the labels draw anyway** — photographed; what it costs is 2.6 s of first frame                      | `e2e/helpers.ts`      |
+| P6.2 | done   | `board.spec.ts` on WebKit — all but the two CDP multi-touch tests, skipped where they live                                    | `e2e/board.spec.ts`   |
+| P6.3 | done   | `cards`, `links`, `return`, `steady` — green on WebKit, untouched                                                             | `e2e/`                |
+| P6.4 | done   | `shots` and `playtest` — green once the shots waited for the picture instead of 800 ms                                        | `e2e/`                |
+| P6.5 | done   | the safe areas and the dynamic viewport — nothing under the notch or the home bar (Marc, 2026-09-16)                          | `ui.css`              |
+| P6.6 | done   | the audio unlock: sound plays after the toggle on Safari (Marc, 2026-09-16)                                                   | `shell/voice.ts:31`   |
+| P6.7 | open   | install on iOS — on the FRONT DOOR since 2026-09-16, again after a week; still needs a friend’s uninstalled iPhone to be seen | `shell/installDue.ts` |
+| P6.8 | done   | fixed 2026-09-14 (a throw that outlived its run); on Safari 2026-09-16, no blank board — `NEXT.md` §1a                        | `NEXT.md` §1a         |
 
 ### P6.1–P6.4, done: WebKit runs everything, and the labels were never missing (2026-09-10)
 

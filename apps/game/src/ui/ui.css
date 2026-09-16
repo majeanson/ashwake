@@ -2816,10 +2816,12 @@ h3.fact-label {
   max-width: min(var(--measure), 92vw);
 }
 
-/* The install invitation: the quietest thing on the ending, after the actions
-   and before the map. `.quiet` already carries that voice. */
-.end-install {
-  width: min(var(--measure), 100%);
+/* The install invitation, on the front door since 2026-09-16 (it was the
+   ending's quietest thing before that): below DAILY, above MENU, the width of
+   the door's own buttons, and `.quiet` or `.note` carries the voice. */
+.door-install {
+  width: min(20rem, 100%);
+  margin-top: 1rem;
 }
 
 /*

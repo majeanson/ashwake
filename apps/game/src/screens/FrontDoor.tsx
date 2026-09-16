@@ -60,6 +60,20 @@ type FrontDoorProps = {
   /** Which day a daily door is for, already named by the catalogue. The badge
    *  beside it is a whole standing and far too long for a button. */
   readonly day?: string | undefined;
+  /**
+   * THE INSTALL OFFER, ON THE DOOR (Marc, 2026-09-16: _"right away, on the
+   * front door"_, and again after a week, then never — `shell/installDue.ts`).
+   *
+   * It lived on the end screen, once ever, from 2026-09-02: a moment a friend
+   * who closes the tab mid-run never reaches, on the one platform this game is
+   * tested on. This game has no backend by ruling (D13) — no push, no store
+   * listing — so the home-screen icon IS the way back, and the door is the
+   * screen everybody sees. `onInstall` is Chrome's own dialog; `handInstall`
+   * is the sentence for iOS Safari, which has no dialog to open. The shell
+   * decides both (`shell/platform.ts`); at most one is ever true.
+   */
+  readonly onInstall?: (() => void) | undefined;
+  readonly handInstall?: boolean | undefined;
 };
 
 export function FrontDoor({
@@ -72,6 +86,8 @@ export function FrontDoor({
   themeId,
   mode,
   day,
+  onInstall,
+  handInstall,
 }: FrontDoorProps) {
   const lockup = useArtSlot(themeId, 'ui.logo');
   return (
@@ -150,6 +166,24 @@ export function FrontDoor({
       {mode !== 'daily' && (
         <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
           {dailyBadge}
+        </button>
+      )}
+
+      {/* The install offer — see `onInstall` in the props. Below DAILY and
+          above MENU: an invitation, not a gate, and quieter than either. */}
+      {handInstall === true && (
+        <p className="note door-install" data-hud="hand-install">
+          {s.ui.handInstall}
+        </p>
+      )}
+      {onInstall !== undefined && (
+        <button
+          type="button"
+          className="quiet door-install"
+          data-action="install"
+          onClick={onInstall}
+        >
+          {s.ui.install}
         </button>
       )}
 
