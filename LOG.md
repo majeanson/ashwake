@@ -8635,3 +8635,23 @@ test of memory._
 Verified: 1303 unit tests / 102 files (7 new), sweep 0 findings over 308 files,
 typecheck, eslint, prettier; `return.spec` and `menus.spec` 27/27 on Chromium
 against the built app, with the exclusivity test moved to the door.
+
+### Session 108 — the fly-in lands at DEFAULT, not HERE (2026-09-16)
+
+**Question:** Marc, on the first build of the two-leg opening: _"when we zoom
+in at the start, make it the default zoom, not ultra zooomed in like we
+changed."_
+
+The second leg landed at `NEAR_ZOOM` — the HERE stop's 2.4, "close enough to
+read a hex" — and on his phone that was too close. It lands now at the zoom
+the camera cycle's DEFAULT stop would choose (`fitCamera` with the frontier
+focus): the whole structure while it fits, a readable crop once it does not.
+So on a world that fits the leg is a slide from the wake hex to the frontier
+with no zoom change, and on a grown one it is DEFAULT's own crop. Five lines
+in `BoardHandle.open`, and every sentence that said "HERE's zoom" says
+DEFAULT's now. _A feel number guessed from a desk was wrong within the hour,
+which is the rule `CLAUDE.md` already states; the good part is that the
+correction was one word from him and one constant from me._
+
+Verified: typecheck, eslint, prettier; `board.spec` on Chromium against the
+built app.

@@ -2769,7 +2769,7 @@ function Game() {
    * that same opening view, slid over until the tile you are about to build
    * from is in the middle of it. **And since 2026-09-16 there is a second
    * leg** (Marc, from his phone: _"whole world, then fly in"_): a beat on the
-   * whole world, then one glide to the frontier at HERE's zoom. On a fresh
+   * whole world, then one glide to the frontier at DEFAULT's zoom. On a fresh
    * world the two legs are the same camera and the second is not flown; on a
    * returning player's world it is the difference between a picture of what
    * they built and the hex they are about to build from. `BoardHandle.open`

@@ -127,7 +127,8 @@ export type BoardHandle = {
    * somewhere off-centre and small (his words: _"zoom was not zoomed much,
    * first tile to place was not centered, but i could see my world and
    * grounds clearly"_). He wants both: the world first, for a beat, then one
-   * glide to where play continues, at the zoom HERE stands at.
+   * glide to where play continues, at the zoom DEFAULT stands at (HERE's was
+   * the first build, and it was "ultra zoomed in" — Marc, the same evening).
    *
    * The second leg is skipped where it would go nowhere — a fresh world is
    * one tile, and `cameraAt` clamps its zoom to a ceiling the fit has already
@@ -1334,10 +1335,16 @@ function Rig({
         const wide = cameraAt(frameRef.current, 1, p.x, p.y);
         // Where play continues, read when the leg is flown rather than now:
         // the frontier is a board fact and the refs are a render behind at
-        // the moment a run begins.
+        // the moment a run begins. AT DEFAULT'S ZOOM, not HERE's (Marc, the
+        // same evening, on the first build of this: "make it the default
+        // zoom, not ultra zoomed in") — the zoom the camera cycle's DEFAULT
+        // stop lands at, which is the whole structure while it fits and a
+        // readable crop once it does not; the leg re-centres from the wake
+        // hex to the frontier, and zooms only where DEFAULT itself would.
         const near = (): CameraState => {
           const f = focusRef.current;
-          return cameraAt(frameRef.current, NEAR_ZOOM, f.cx, f.cz);
+          const fit = fitCamera(frameRef.current, f);
+          return cameraAt(frameRef.current, fit.zoom, f.cx, f.cz);
         };
         if (visiting.current !== 0) clearTimeout(visiting.current);
         visiting.current = 0;

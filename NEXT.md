@@ -423,11 +423,13 @@ built.** `LOG.md` Session 105 is the reasoning.
 - **~~Whole world, then fly in~~ — BUILT the same day** (P6.8 above).
   `BoardHandle.open` flies the one-leg opening every run had (zoom 1 on the
   wake hex), holds `OPEN_WIDE_HOLD_MS` (700 ms, a feel number not yet felt),
-  then glides once to the frontier at HERE's zoom. Skipped where the two
+  then glides once to the frontier at DEFAULT's zoom (it landed at HERE's on
+  the first build; Marc, the same evening: _"make it the default zoom, not
+  ultra zoomed in"_ — corrected). Skipped where the two
   cameras are the same (a fresh world), abandoned if a finger moved the board
   during the beat, ended by a tap through `endTour`, one cut under reduced
   motion. **Yours on the phone:** whether 700 ms is the beat, and whether
-  HERE's zoom is the right landing on a big world.
+  the landing reads right on a big world, where DEFAULT crops to the frontier.
 - **Welcome and death sequences** (the warm-up above).
 
 **Session A's verdict: _"clean enough, fix the list above then freeze"_ — and
