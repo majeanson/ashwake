@@ -90,9 +90,13 @@ const FILL_DIR = unit([-0.5, 0.4, -0.35]);
  * The rig at a given strength, 0..1, always normalised.
  *
  * At 0 it is `FLAT_RIG`. At 1 the key and fill together carry 62% of a top
- * face's light and the ambient carries the rest, so the darkest facet on the
- * board sits at 38% of a lit top — enough for a prism to read as a solid, and
- * not so much that a side goes to black and takes the silhouette with it.
+ * face's light and the ambient carries the rest, so a face turned away from
+ * both lights sits at 38% of a lit top. No SIDE of a hex prism points that far
+ * away: the six facets of a pointy hex render between 0.457 and 0.806 of the
+ * top (`rig.test.ts` holds the darkest under 1/1.6 and over 0.25) — enough
+ * for a prism to read as a solid, and not so much that a side goes to black
+ * and takes the silhouette with it. The darkest facet is the number every
+ * side-clearance assertion in `render/materials.test.ts` is graded at.
  */
 export function rigFor(strength: number): Rig {
   const d = Math.min(1, Math.max(0, strength));

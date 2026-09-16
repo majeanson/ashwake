@@ -10,6 +10,7 @@ import {
   luma,
   MIN_MARK_CONTRAST,
   type Rgb,
+  type Surface,
   type Theme,
 } from '@theme/tokens';
 import { sideColour, surfaceFor } from './materials';
@@ -53,13 +54,21 @@ const DIRECTIONS = THEMES;
  * shaded side must not read as a gap between hexes", and that is the thing the
  * third dimension actually added.
  *
- * The measured margin is thin and worth knowing: at the full rig, torchlit's
- * darkest terrain side sits at 0.070 clearance and torchlit-bright's at 0.072 —
+ * The measured margin was thin and worth knowing: at the full rig, torchlit's
+ * darkest terrain side sat at 0.070 clearance and torchlit-bright's at 0.072 —
  * above the wall floor, below the ground floor. Holding sides to 0.1 would
- * require the darkest facet to be exposed at 0.655, which is a top-to-side
- * ratio of 1.53 and a board with almost no shading left. On a near-black board
- * a dark terrain's shaded side and the board are genuinely close, and that is a
- * fact about the palette, not a threshold to argue with.
+ * have required the darkest facet exposed at 0.655, a top-to-side ratio of
+ * 1.53 and a board with almost no shading left. Both directions are deleted
+ * (D12); settlement's four terrain sides sit at 0.126–0.374 and daylight's at
+ * 0.423–0.614, none of them close.
+ *
+ * **What WAS close was the wall, and this test did not grade it** (found
+ * 2026-09-16, when Marc said a shaded side on his phone "reads as a gap").
+ * The assertion walked the four terrains and stopped; the wall is a prism
+ * too, and settlement's — flat on the board at 0.098, twice the floor —
+ * rendered its side at 0.027, under the very floor whose sentence this test
+ * borrows. The sweep below now walks every surface that stands (terrains,
+ * wall, stone), and settlement's wall was lifted to clear it.
  */
 const MIN_SIDE_CLEARANCE = 0.045;
 const MIN_SEPARATION = 0.05;
@@ -115,8 +124,6 @@ const samplesOf = (theme: Theme, surface: ReturnType<typeof standingSurfaces>[nu
 
 /** The four colours a player places — what theme.test.ts grades a silhouette
  *  on, and for the same reason: stone is spent and empty ground IS the board. */
-const terrainSurfaces = (theme: Theme) => COLOURS.map((colour) => theme.terrain[colour]);
-
 describe.each(DIRECTIONS.map((t) => [t.id, t] as const))('%s, as rendered', (_id, theme) => {
   const lit = cellTint(theme, { light: 1, band: 0, remembered: false, dimmed: false });
 
@@ -219,11 +226,19 @@ describe.each(DIRECTIONS.map((t) => [t.id, t] as const))('%s, as rendered', (_id
     // background then a hex stops having a silhouette — which is exactly what
     // the flat board could not fail at, because it had no sides.
     const darkest = Math.min(...sideNormals(theme.orientation).map((n) => exposure(RIG, n)));
-    for (const surface of terrainSurfaces(theme)) {
+    // Every surface that stands, not only the four that grow: the wall and
+    // stone are prisms with the same six facets, and the wall is the darkest
+    // thing a dark direction draws — the one this floor's sentence is about.
+    const standing: [string, Surface][] = [
+      ...COLOURS.map((c) => [c, theme.terrain[c]] as [string, Surface]),
+      ['wall', theme.wall],
+      ['stone', theme.stone],
+    ];
+    for (const [name, surface] of standing) {
       const side = renders(sideColour(surface), lit, darkest);
       expect(
         clearance(side, theme.board.background),
-        `a shaded side at ${side.toString(16)} has to stay a shape against the board`,
+        `${name}'s shaded side at ${side.toString(16)} has to stay a shape against the board`,
       ).toBeGreaterThanOrEqual(MIN_SIDE_CLEARANCE);
     }
   });

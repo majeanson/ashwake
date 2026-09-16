@@ -341,10 +341,18 @@ built.** `LOG.md` Session 105 is the reasoning.
   gone with its three props, the storage pair and the two catalogue entries; the
   key a device may still hold is dropped once on the next boot. `?aa=` stays,
   the measuring override it always was.
-- **Torchlit's darkest terrain side reads as a GAP.** Fix it either way —
-  lighten the darkest facet (`theme/rig.ts`, the 38% floor) or lift the board
-  off black — **whichever keeps every contrast rule green with the least
-  change**. The thresholds do not move (`theme.test.ts`).
+- **~~Torchlit's darkest terrain side reads as a GAP~~ — MEASURED, and the gap
+  was the WALL.** Torchlit does not ship (D12), so the number this entry
+  carried was about a deleted direction. Measured on settlement: the four
+  terrain sides sit 0.126–0.374 in L* from the board, all above even the
+  ground floor. **The wall's side sat at 0.027**, under the 0.045 fog floor,
+  and `materials.test.ts` graded only the terrains' sides, so no test said so.
+  Built: the wall is lifted 1.7× in linear light (0x38302b, bands to 0x433a33;
+  side now 0.074), the test walks wall and stone sides too, and the wall art is
+  re-baked. **The terrain half is still yours by eye**, and the dial exists:
+  `?light=0.7` flattens the rig from the phone without a build. If FARM's
+  shaded side still reads as a gap at 0.126, the answer is the rig, not the
+  palette — say so and the key share moves.
 - **The shrine: the flat ring is fine. Closed.**
 - **~~Text selection: restore `user-select: none` on `body`~~ — ALREADY TRUE,
   found by checking.** _"No user action, must play like an app/gameboy"_ is the

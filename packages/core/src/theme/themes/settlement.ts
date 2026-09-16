@@ -229,8 +229,22 @@ export const SETTLEMENT: Theme = {
 
   // Blocked ground is unbuilt rock: the darkest thing on the board, and the one
   // surface here that nobody made.
-  wall: surface(0x2a2420, {
-    pattern: { kind: 'bands', angleDeg: 135, a: 0x2a2420, b: 0x332c26, width: 10 },
+  //
+  // LIFTED 2026-09-16 (Marc, on the phone: a shaded side "reads as a gap").
+  // It was 0x2a2420 with bands to 0x332c26, and flat on the board that sat
+  // 0.098 in L* from the background — twice the fog floor. But a wall is a
+  // PRISM, its side is this same fill under the rig's darkest facet (0.457 of
+  // a lit top), and that side rendered at 0x1a1613: 0.027 from the board,
+  // under the 0.045 that "blocked ground must not read as fog" sets — the one
+  // surface the third dimension had pushed through its own floor, and
+  // `render/materials.test.ts` graded only the four terrains' sides, so no
+  // test said so. Every value here is the old one at 1.7× in linear light,
+  // the smallest step of the sweep that puts the side at 0.074, about where
+  // torchlit's terrain sides sat when that margin was last measured; the wall
+  // is still the darkest standing thing by 0.07 in L* (FARM's shaded end is
+  // 0.277, this is 0.206). The test grades wall and stone sides now.
+  wall: surface(0x38302b, {
+    pattern: { kind: 'bands', angleDeg: 135, a: 0x38302b, b: 0x433a33, width: 10 },
     asset: 'terrain.wall',
   }),
 
