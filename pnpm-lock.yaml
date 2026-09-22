@@ -74,6 +74,9 @@ importers:
       three:
         specifier: ^0.183.0
         version: 0.183.2
+      troika-three-text:
+        specifier: 0.52.5
+        version: 0.52.5(three@0.183.2)
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^7.0.1

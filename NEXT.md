@@ -546,6 +546,23 @@ loupe over a board.
 
 The eliminations and the measurement, as written this morning, follow.
 
+**ANSWERED AND FIXED 2026-09-22 (`LOG.md` Session 111): the board DOES go away
+and come back, and the question below is the one that found it.** Your
+_"the map / screen seems to rerender on first tile ... it was one first
+'numbers on tile' sight"_ names the moment exactly. `drei`'s `<Text>` suspends
+on the troika font before it can draw a glyph; R3F's `Canvas` turns a
+suspension inside the scene into a suspension of the canvas COMPONENT, and the
+one `Suspense` in `App.tsx` has a `null` fallback — so React hid `.board-view`
+and the map went, with the HUD and the hand still drawn around the hole.
+Measured at **255 ms on Chromium and 328–369 ms on WebKit**, and **2,208 ms**
+when the font was held for two seconds in a route, which is the proof it is
+the font. Once per page load, which is why every instrument aimed at a
+PLACEMENT missed it; and behind the teaching card on a first run, which is why
+it is a returning player's bug. Fixed with one `Suspense` around `<Labels>`
+inside the canvas, and guarded by a test that fails on both engines without
+it. **Nothing below is wrong — every elimination it records still stands.** It
+was the fourth question in it that was the useful one.
+
 **THE FLASH ON THE FIRST TILE PLACEMENT IS STILL THERE, AND THREE CAUSES ARE
 NOW RULED OUT (2026-09-14, your _"still hard rerender and flash on 1st tile
 placement"_).** Session 93 believed this was the direction's art landing late

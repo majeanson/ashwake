@@ -1,5 +1,5 @@
 import { useThree, type ThreeEvent } from '@react-three/fiber';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { Color, Object3D, type InstancedMesh } from 'three';
 import type { HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
@@ -484,7 +484,47 @@ export function HexField({
           <meshBasicMaterial color={theme.ink.accent} toneMapped={false} depthTest={false} />
         </mesh>
       )}
-      <Labels cells={view.cells} theme={theme} layout={layout} relief={relief} yaw={yaw} />
+      {/*
+        THE LABELS SUSPEND, AND THE SUSPENSION MUST NOT LEAVE THE CANVAS
+        (2026-09-22, Marc: *"the map / screen seems to rerender on first tile
+        ... it was one first 'numbers on tile' sight"*).
+
+        `drei`'s `<Text>` calls `suspend()` on the troika font before it can
+        draw a glyph, so the FIRST number the board ever prints throws a
+        promise. Without a boundary here that promise travels all the way out
+        of the scene: R3F's `<Canvas>` wraps its children in a `Suspense` whose
+        fallback (`Block`) sets state on the OUTER Canvas component, which then
+        throws a never-resolving promise of its own into the DOM tree — up to
+        the one `Suspense` in `App.tsx`, whose fallback is `null`. React hides
+        a suspended boundary's children, so `.board-view` was given
+        `display: none` and **the whole map disappeared** for exactly as long
+        as troika took to fetch and parse `cinzel.ttf`, with the HUD, the hand
+        and the controls all still sitting there around the hole.
+
+        Measured, once per page load, on a 390×844 viewport, boot to first
+        placement: **255 ms on Chromium, 328–369 ms on this machine's WebKit**
+        — and holding the font in a Playwright route for two seconds made the
+        blank 2,208 ms, which is the causal lever rather than a correlation.
+        `PASS.md` P6.1 already had the other half of this number: a first drawn
+        frame that takes 95 ms on Chromium and 2,597 ms on WebKit, where the
+        font's own worker is refused and the parse falls back to the main
+        thread.
+
+        It hides behind the teaching card on a FIRST run — 19 of 19 blanked
+        frames were under a scrim — which is why five sessions of instruments
+        aimed at the first placement never caught it: it is a returning
+        player's bug, and a returning player is what Marc is.
+
+        A boundary HERE catches the throw one component above the thing that
+        throws it, so the board draws on time and the numbers arrive when the
+        font does. `null` rather than anything drawn: a number that is not
+        ready is a number that is not there, and for those few hundred
+        milliseconds every other channel a hex speaks in — its ground, its
+        colour, its relief, its marks — is already correct.
+      */}
+      <Suspense fallback={null}>
+        <Labels cells={view.cells} theme={theme} layout={layout} relief={relief} yaw={yaw} />
+      </Suspense>
     </group>
   );
 }

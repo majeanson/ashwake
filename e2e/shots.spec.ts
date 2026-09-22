@@ -71,6 +71,27 @@ test.use({ viewport: { width: 390, height: 844 } });
 for (const [name, query] of ANGLES) {
   test(`draws ${name}`, async ({ page }) => {
     const errors = watchErrors(page);
+    /*
+     * THE WAIT FOR THE FONT WAS ACCIDENTAL, AND IT IS EXPLICIT NOW
+     * (2026-09-22, `LOG.md` Session 111).
+     *
+     * `boardDrawn` waits for the canvas to be a PICTURE, and until today that
+     * silently waited for the font too — a `<Text>` suspending took the whole
+     * canvas off the screen, so there was nothing to photograph until troika
+     * had `cinzel.ttf`. The suspension is contained at the labels now, which
+     * is the fix for a map that disappeared on a player's first number; the
+     * side effect is that the board is a picture BEFORE its numbers are on it,
+     * and a shot of a board with no worths on it is a picture of the wrong
+     * board.
+     *
+     * Registered before the navigation, because the response it waits for can
+     * land while `begin` is still walking through the door. A shot that could
+     * not see the font at all is still worth taking — `catch` — since every
+     * one of these is also a smoke test for an angle.
+     */
+    const fontArrived = page
+      .waitForResponse((r) => r.url().includes('cinzel.ttf'), { timeout: 15_000 })
+      .catch(() => null);
     await page.goto(
       `/?seed=7&place=${name === 's2d-destinations' || name.endsWith('-deep') ? 45 : 12}&${query}`,
     );
@@ -85,6 +106,33 @@ for (const [name, query] of ANGLES) {
      * every one of these shots photographed an empty board on WebKit and
      * failed on "suspiciously small", which reads like a broken renderer and
      * was a stopwatch.
+     */
+    await fontArrived;
+    /*
+     * And then the labels have to be LAID OUT, which is troika's own work
+     * after the bytes land — a parse and an SDF per glyph, on the main thread
+     * wherever its worker is refused. One board's worth of digits, measured at
+     * a few tens of milliseconds here and given room for a slow runner.
+     *
+     * `clearCards` after it rather than before: `?place=12` walks twelve
+     * placements, and a pocket that ripens raises POP — a card `begin` cannot
+     * have cleared because it had not been raised yet. It used to be gone by
+     * the time there was anything to photograph, for the same accidental
+     * reason the font was.
+     */
+    await page.waitForTimeout(250);
+    await clearCards(page);
+    /*
+     * AND THE PICTURE POLL IS THE LAST THING BEFORE THE CAMERA (2026-09-22).
+     *
+     * It used to be the first, and moving the waits above in front of it
+     * emptied seventeen WebKit shots with *"suspiciously small"*. This canvas
+     * is `frameloop="demand"` with no `preserveDrawingBuffer` — `Board.tsx`
+     * says it at `snapshot()`: *"after the browser composites, the drawing
+     * buffer is gone"* — so a capture is only safe in the beat where a frame
+     * has just been drawn. `boardDrawn` polls until it can take one, which
+     * makes it the right neighbour for the shot and the wrong thing to put
+     * a wait after.
      */
     await boardDrawn(page);
 

@@ -8745,3 +8745,99 @@ findings over 310 files (78 ruled), typecheck (core, app, root), eslint,
 prettier; on Chromium against the built app, the four corner-adjacent specs
 (board, keyboard, menus, a11y) 61/61 before the browser test was added, and
 the new lens-panel test with the purse tests after.
+
+### Session 111 — the map was not re-rendering, it was being HIDDEN, and a font is what hid it (2026-09-22)
+
+**Question:** Marc: _"the map / screen seems to rerender on first tile happened
+last night, but it was one first 'numbers on tile' sight"_ — a sixth report of
+a thing five sessions have each closed against a real, measured cause. What is
+left when the tap highlight is gone and the stall is seventeen milliseconds?
+
+**Answer: the numbers themselves. The first `<Text>` the board ever draws
+suspends, and the suspension takes the whole canvas off the screen.**
+`NEXT.md` §1 has been asking Marc the right question since 2026-09-14 —
+_"does the board visibly go away and come back ... or does it stay drawn and
+merely stutter?"_ — and his own words name the moment: the first sight of
+numbers on a tile.
+
+**The chain, which is four components long and lives entirely in other
+people's code.** `drei`'s `<Text>` calls `suspend()` on the troika font before
+it can lay out a glyph. R3F's `<Canvas>` wraps its children in a `Suspense`
+whose fallback is `Block`, and `Block` does not draw: it sets state on the
+OUTER `Canvas` component, which then throws a never-resolving promise of its
+own into the DOM tree. The nearest boundary there is the one `Suspense` in
+`App.tsx`, whose fallback is `null` — so React hid `.board-view`, and the map
+vanished with the HUD, the hand and the controls still drawn around the hole.
+The screenshot is the whole report: a stat row saying 22 tiles, three cards, a
+selected card, and where the board should be, flat ground colour.
+
+**Measured, and then made to move.** A rAF sampler over the board host, boot to
+first placement, on a 390×844 viewport: `display: none` for **255 ms on
+Chromium, 328–369 ms on WebKit**. Then the lever that turns a correlation into
+a cause — hold `/fonts/cinzel.ttf` in a Playwright route for two seconds, and
+the blank is **2,208 ms**. The blank is the font load, exactly.
+
+**Why five sessions of instruments walked past it.** Three reasons, each
+enough on its own. It is once per PAGE — `suspend-react` caches by
+`(font, characters)`, so the second placement and every one after cannot
+reproduce it, and every instrument was aimed at a placement. It hides behind
+the teaching card on a first run: 19 of 19 blanked frames were under a scrim,
+so it is a RETURNING player's bug, which is what Marc is and what no fresh-boot
+test is. And it is not in this repository's code at all — `Labels.tsx` renders
+a `<Text>`, and nothing between there and `App.tsx` says "suspense".
+
+Session 88's leftover number belongs to this too: a first drawn frame of 95 ms
+on Chromium against 2,597 ms on WebKit, where troika's worker is refused and
+the parse falls back to the main thread. That refusal is the same one that
+makes a phone's blank longer than this desktop's.
+
+**Fixed where the throw happens, not where it lands.** One `Suspense` around
+`<Labels>` inside the canvas, `fallback={null}`: the board draws on time and
+the numbers arrive when the font does. A boundary a component above the thing
+that throws also means the next suspending child — a texture loader, a lazy
+prop — cannot take the map away either. What it costs is a few hundred
+milliseconds of board without numbers, once, during which every other channel
+a hex speaks in is already correct.
+
+**The test holds the font for two seconds on purpose.** `board.spec.ts`'s new
+test asserts the board host is never given `display: none` across boot and the
+first placement, and without the hold it would be a race against a local file
+— which is what the bug is. Checked in both directions on both engines:
+without the fix, `board-view went display:none at 298ms` on Chromium and
+`791ms` on WebKit; with it, green on both.
+
+**And the font is warmed with the renderer chunk** (Marc's call, asked
+outright): `Labels.tsx` calls troika's `preloadFont` at module scope, so the
+face starts loading when `preloadBoard()` pulls the chunk during the front
+door rather than when the first number mounts. Measured on WebKit: the `.ttf`
+is now asked for at 475 ms and the board mounts at 766 ms, where it used to be
+asked for AFTER the board was up. `troika-three-text` is `drei`'s own
+dependency, pinned to the version `drei` resolves — the renderer chunk grew
+0.1 KB gzipped, which is the check that there is one copy and not two — and it
+ships no types, so `troika.d.ts` declares the one function this app calls.
+
+**The shots were leaning on the bug, and that is the cost of the fix nobody
+would have predicted.** `shots.spec.ts` waits for the board to be a PICTURE,
+and while a suspended `<Text>` took the canvas off the screen that silently
+waited for the font as well. With the map no longer disappearing, the board is
+photographable before its numbers are on it — the first regenerated shot came
+back with a POP card over a board with no worths. So the wait is explicit now:
+the font's own response, troika's layout, then `clearCards` for a card that
+`begin` could not have cleared because twelve scripted placements had not
+raised it yet. **And the picture poll had to move to the END**, because
+reordering it first emptied seventeen WebKit shots with "suspiciously small":
+this canvas is `frameloop="demand"` with no `preserveDrawingBuffer`, so a
+capture is only safe in the beat where a frame has just been drawn. The shot
+set is regenerated in this commit, from Chromium, and every board in it now
+carries its numbers.
+
+_An instrument that watches a PLACEMENT cannot see a thing that happens once a
+page. Ask what is happening for the first time, not what was just tapped._
+
+_And a harness that waits for the right thing by accident is a harness that
+breaks when you fix the accident._
+
+Verified: 1305 unit tests / 103 files, `pnpm sim` byte-identical, sweep 0
+findings over 310 files, budget green, typecheck (core, app, root), eslint,
+prettier; the new browser test green on Chromium and WebKit and red on both
+with the fix reverted.

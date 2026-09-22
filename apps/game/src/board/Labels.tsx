@@ -1,4 +1,5 @@
 import { Billboard, Text } from '@react-three/drei';
+import { preloadFont } from 'troika-three-text';
 import { MeshBasicMaterial, PlaneGeometry, type Texture } from 'three';
 import { useMemo } from 'react';
 import type { HexKey } from '@engine/hex';
@@ -35,6 +36,34 @@ import { kindOf, topOf } from './relief';
  */
 
 const FONT = '/fonts/cinzel.ttf';
+
+/**
+ * THE FONT STARTS LOADING WITH THE CHUNK, NOT WITH THE FIRST NUMBER
+ * (2026-09-22, the other half of Session 111's fix).
+ *
+ * Fetching and parsing this face costs 255 ms on Chromium and 328–369 ms on
+ * WebKit, measured boot to first placement — and until today the board paid it
+ * by DISAPPEARING, because a `<Text>` that suspends suspends the canvas
+ * (`HexField`, where the boundary now is). With the suspension contained, the
+ * cost is instead a board that draws its ground on time and its numbers a
+ * third of a second later, once per page load.
+ *
+ * This is what removes most of even that. The whole renderer is behind
+ * `lazy()` and `preloadBoard()` asks for its chunk as soon as the shell paints
+ * (`App.tsx`), so a module-scope call here starts the font while somebody is
+ * still reading the front door — the same trade the chunk itself makes, on the
+ * same seconds, and the board typically mounts with its glyphs already there.
+ *
+ * `troika-three-text` is `drei`'s own dependency and is pinned to the version
+ * `drei` resolves, so this adds a direct edge to a module the renderer chunk
+ * already contains and not a second copy of it: `pnpm budget` is the check.
+ * DIGITS only, because digits are the whole of what a label prints — a mark is
+ * a Phosphor texture (`marks.ts`), never a glyph. And it stays a hint rather
+ * than a guarantee: `drei`'s `<Text>` will still `suspend()` on its own
+ * preload, which is why the boundary in `HexField` is the FIX and this is the
+ * head start.
+ */
+preloadFont({ font: FONT, characters: '0123456789' }, () => {});
 /** How far above the top face a label floats, so it never z-fights it. */
 const LABEL_LIFT = 0.02;
 

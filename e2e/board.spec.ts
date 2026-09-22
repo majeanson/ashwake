@@ -1806,3 +1806,66 @@ test('the lens panel prices every ground, and a row lights the lens', async ({ p
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('the first number on a tile never takes the map away', async ({ page }) => {
+  /*
+   * THE FLASH THAT OUTLIVED FIVE SESSIONS OF INSTRUMENTS (2026-09-22, Marc:
+   * *"the map / screen seems to rerender on first tile ... it was one first
+   * 'numbers on tile' sight"*).
+   *
+   * `drei`'s `<Text>` suspends on the troika font, and a suspension that
+   * escapes the canvas reaches R3F's `Block`, which suspends the `<Canvas>`
+   * component itself up to the one `Suspense` in `App.tsx` — whose `null`
+   * fallback makes React hide `.board-view`. The whole map vanished for as
+   * long as `cinzel.ttf` took to fetch and parse, once per page load, with the
+   * HUD and the hand still drawn around the hole: 255 ms on Chromium, 328 ms
+   * on this machine's WebKit, and 2,208 ms when the font was held for two
+   * seconds. `HexField` catches it at the labels now.
+   *
+   * The font is HELD here on purpose. Without the hold this test is a race
+   * against a local file, and the bug it guards is a race — the hold makes the
+   * window two seconds wide on any engine that fetches the font from the main
+   * thread (WebKit does; Chromium's troika worker is outside a page route, so
+   * there the test is simply the unheld one).
+   *
+   * `taught=1` because this is a RETURNING player's bug and that is what made
+   * it invisible: on a first run the teaching card covers the board for every
+   * blanked frame, measured 19 of 19.
+   */
+  const errors = watchErrors(page);
+  await page.addInitScript(() => {
+    const w = window as unknown as { __blanks: string[] };
+    w.__blanks = [];
+    const watch = setInterval(() => {
+      const host = document.querySelector('.board-host');
+      if (host === null) return;
+      clearInterval(watch);
+      new MutationObserver((records) => {
+        for (const record of records) {
+          const el = record.target as HTMLElement;
+          const hidesTheBoard =
+            el.style?.display === 'none' &&
+            (el.tagName === 'CANVAS' || el.querySelector('canvas') !== null);
+          if (hidesTheBoard) {
+            w.__blanks.push(
+              `${el.className || el.tagName} went display:none at ${Math.round(performance.now())}ms`,
+            );
+          }
+        }
+      }).observe(host, { attributes: true, subtree: true, attributeFilter: ['style'] });
+    }, 20);
+  });
+  await page.route('**/fonts/cinzel.ttf', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await route.continue();
+  });
+
+  await page.goto('/?seed=7&taught=1');
+  await begin(page);
+  await placeOneTile(page);
+
+  const blanks = await page.evaluate(() => (window as unknown as { __blanks: string[] }).__blanks);
+  expect(blanks, `the board host was hidden: ${blanks.join(', ')}`).toEqual([]);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
