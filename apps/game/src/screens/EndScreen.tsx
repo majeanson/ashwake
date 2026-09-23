@@ -75,6 +75,16 @@ type EndScreenProps = {
    */
   readonly onWalk: () => void;
   /**
+   * WATCH THE RUN AGAIN (2026-09-23, Marc: *"i'd like to be able to replay the
+   * pops and tile placements too"*).
+   *
+   * Absent when there is no film to play — a run whose replay could not be
+   * kept, or one finished by a build that did not record them. The door is
+   * simply not drawn then, rather than drawn and apologising, which is the
+   * same rule the import button and the crossing offer already keep.
+   */
+  readonly onWatch?: (() => void) | undefined;
+  /**
    * What this run CHANGED, as opposed to what it scored.
    *
    * Perks found and shrine unlocks woken. An ending that reports only a number
@@ -191,6 +201,7 @@ const SAID_MS = 2000;
 
 export function EndScreen({
   onWalk,
+  onWatch,
   newPerks,
   newUnlocks,
   world,
@@ -646,6 +657,19 @@ export function EndScreen({
         <span className="end-map-name">{s.ui.theMap}</span>
         <span className="end-map-note">{s.ui.walkTheMap}</span>
       </button>
+      {/*
+        AND THE RUN, PLAYED BACK (2026-09-23).
+
+        Beside the door onto the board rather than up with NEW RUN, because it
+        belongs to the same thought: those two are what you do with the run
+        that just ended, and NEW RUN is what you do next. Only drawn when a
+        film was kept — see `onWatch`.
+      */}
+      {onWatch !== undefined && (
+        <button type="button" className="end-map" data-action="watch-run" onClick={onWatch}>
+          <span className="end-map-name">{s.ui.watchRun}</span>
+        </button>
+      )}
     </div>
   );
 }

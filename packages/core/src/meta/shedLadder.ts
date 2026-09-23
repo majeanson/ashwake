@@ -31,6 +31,21 @@ export type ShedRungId =
    * nobody is waiting for on a world they are not in.
    */
   | 'otherReceipts'
+  /**
+   * THE FILMS (2026-09-23) — every kept replay, and nothing a row SAYS.
+   *
+   * Above the diary on the ladder, and the argument is the ladder's own: spend
+   * the cheapest loss first. A replay is a re-watchable performance of a run
+   * whose every fact — the score, the reach, the arc, the epitaph, the
+   * thumbnail — is still on its diary row afterwards. The diary is the facts
+   * themselves. Losing a film costs a player a thing to look at; losing the
+   * diary costs them what they did.
+   *
+   * It is also by far the biggest rung by bytes (about 7 KB a run against a
+   * whole diary's few tens of KB), which is the other half of why it is
+   * cheapest-first: the rung most likely to actually free the room.
+   */
+  | 'replays'
   /** The diary. Your worlds, relics and perks are untouched. */
   | 'timeline'
   /**
@@ -73,6 +88,7 @@ export const shedNote = (id: ShedRungId, s: Strings): string => s.shed[id];
 export const SHED_LADDER: readonly ShedRung[] = [
   { id: 'lastError' },
   { id: 'otherReceipts' },
+  { id: 'replays' },
   { id: 'timeline' },
   { id: 'otherWorlds' },
 ];

@@ -8917,3 +8917,88 @@ Verified: 1313 unit tests / 105 files (eight new), `pnpm sim` byte-identical,
 sweep 0 findings over 312 files, budget green, typecheck, eslint, prettier;
 e2e 139 Chromium and, on WebKit, 126 with one known GPU flake that passes
 alone and 48/48 on the repeated shot run.
+
+### Session 113 — the run, played back: a film is the moves, and the board already knew how to show them (2026-09-23)
+
+**Question:** Marc, offered three endings for the death sequence, asked for a
+fourth: _"i'd like to be able to replay the pops and tile placements too."_ Is
+that a feature or a fantasy, and what does it cost?
+
+**A feature, and it costs 1.6 KB of first paint, because the board already
+knows how to put on the show.**
+
+**What a film IS.** `meta/replay.ts`: the state a run opened on, and every move
+that changed it. Nothing else — no recording of what the board looked like,
+because the engine is a pure reducer with counter-based rng carried in state,
+so the same two inputs reproduce the run exactly, which is the thing `pnpm sim`
+proves on every push. The opening STATE rather than the seed, and that is the
+one decision here that could have gone wrong quietly: a run is
+`newRun(seed, tuning, territories, spentFinds, wakeAt)` and every rider after
+the seed is a fact about the world at that moment. A replay keyed on the seed
+would re-run today's economy over yesterday's moves and produce a different
+run — a film that lies.
+
+**Measured before it was designed.** Twenty simulated runs: 148 moves on
+average, 197 at the longest — 5.2 KB as JSON actions, 1.4 KB as tokens, plus
+2.4 KB for the opening state. So a run is about 7 KB, the newest fifty are
+kept (≈350 KB), and the shed ladder gained a rung ABOVE the diary: a film is
+the biggest thing per run on the device and the only one whose loss costs no
+FACT — every number it shows is still on its row.
+
+**And the projector is fifty lines** (`shell/watching.ts`), because a replay is
+a second SESSION fed the run's own moves on a clock, handed to the same
+`<Board>`. The leap, the cascade, the rings, the lit destinations and the
+camera are all drawn from a snapshot, so handing over a different snapshot IS
+the replay. It does not speak — every receipt and epitaph the film's session
+computes is thrown away, because a toast reading "+14 POINTS" over a run that
+finished ten minutes ago is the game saying something that is not happening.
+
+**Marc ruled the doors, and both are built.** _"Both: auto on a big run"_ — and
+"big" is not a second opinion invented in the shell: it is the ✦ the diary
+already computes for its own rows, so the film plays for exactly the runs the
+hall of fame thinks are worth a mark, and an ordinary run goes to its numbers
+with a button. _"Every run in the hall of fame"_ — every row whose film is
+still kept carries WATCH, the panel steps aside, and the diary comes back when
+it is over.
+
+**The sweep found five things in this session's own code on the day it was
+written, and one of them was a bug.** `clearEverything` — RESET ALL — walks a
+fixed list of keys, and a replay is keyed by the diary row it belongs to, so a
+reset device would have kept every film under rows that no longer existed.
+The other four were honest dead weight: an exported helper with one caller, a
+`Film.skip` the bar never used (SKIP ends a film rather than fast-forwarding
+it), a `replayLength` nobody called, and a `Replay.version` written five times
+and read never — the wire format's `v` is what versioning actually needs.
+
+**And one ruling in the allowlist stopped matching, which is the outcome that
+file hopes for.** `RunEntry.highlights` was ruled dead on 2026-09-10 —
+"computed and waiting for the timeline, whose spine `NEXT.md` §4 defers". The
+replay reads it now. A field waiting four weeks for a screen nobody agreed to
+build got its reader from a door nobody predicted.
+
+**Three faults of my own, each found by a test rather than by reading.** The
+board host is `inert` while a run is ended — so during a film no tap could
+reach the board, and the gesture Marc asked for could not work. A tap that
+DOES reach it only fires on a hex, so a tap on the open plain did nothing,
+which on a phone is most of the screen. And the diary's door hid the fame
+panel while leaving MORE standing over the board, swallowing the film's own
+controls; the film now leaves the whole menu stack the way `enterRun` does.
+
+**What the ending costs the suite, stated rather than hidden.** Eleven tests
+walked a run out and asked about the end screen, and now a film stands between
+them — so they tap past it, through one helper, exactly as a player does.
+`pastTheFilm` is that helper and it is silent when there is no film.
+
+**The first-paint bar moved, 178,000 → 181,000 bytes**, and `budget.json`
+carries the reason: 1.6 KB for the codec, the projector, the store and the two
+doors, in the entry chunk because SETTLE writes a film and settle is entry
+code. The alternative — importing the codec dynamically when a run ends — buys
+1.6 KB for an `await` in the one effect where a write must not be deferred.
+
+_The cheapest feature is the one whose hard part is already built. What made
+this small is that nothing about a replay is a second implementation: not the
+rules, not the animations, not the camera._
+
+Verified: 1352 unit tests / 106 files (three new files, 49 new tests),
+`pnpm sim` byte-identical, sweep 0 findings over 316 files, budget green at its
+new bar, typecheck, eslint, prettier.

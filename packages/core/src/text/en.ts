@@ -516,6 +516,8 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     lastError: 'Storage was full. A diagnostic record was cleared so your run could be saved.',
     otherReceipts:
       'Storage was full. Some notes from your other worlds were cleared so your run could be saved.',
+    replays:
+      'Storage was full. Your saved replays were cleared so your run could be saved; your diary still holds what every run did.',
     timeline:
       'Storage was full. Your diary was cleared so your run could be saved; your worlds, relics and perks are untouched.',
     otherWorlds:
@@ -689,6 +691,9 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     theMap: 'THE GROUND YOU WALKED',
     walkTheMap: 'Move around the board you left.',
     backToEnding: 'BACK TO THE ENDING',
+    watchRun: 'WATCH THIS RUN',
+    watchSkip: 'SKIP',
+    watching: (step, of) => `Replay · ${step} / ${of}`,
     expedition: {
       title: 'THE EXPEDITION',
       lines: [

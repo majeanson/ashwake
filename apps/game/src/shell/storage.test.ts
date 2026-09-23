@@ -7,6 +7,7 @@ import { createSession } from './store';
 import { dailySeed } from '@meta/daily';
 import { newRun } from '@engine/reduce';
 import { TUNING } from '@content/tuning';
+import type { Replay } from '@meta/replay';
 
 /**
  * The trust boundary, tested (2026-09-02).
@@ -45,15 +46,33 @@ class Disk {
   getItem(key: string): string | null {
     return this.items.get(key) ?? null;
   }
+  /**
+   * How many keys must be REMOVED before writes work again (2026-09-23).
+   *
+   * `full` alone is a disk that never takes another byte, which is the right
+   * fake for the ladder running out — and the wrong one for testing its ORDER,
+   * because every rung fails and the only thing reported is `lost`. A disk
+   * that comes back once room is freed is what lets a test say WHICH rung paid
+   * for the write. `Infinity` keeps every existing test exactly as it was.
+   */
+  freeAfter = Number.POSITIVE_INFINITY;
+  private removed = 0;
+
   setItem(key: string, value: string): void {
     // The probe has to keep working, or `usable()` decides there is no storage
     // at all and the ladder is never reached — which is a different failure and
     // not the one under test.
-    if (this.full && !key.endsWith('.probe')) throw new Error('QuotaExceededError');
+    if (this.full && this.removed < this.freeAfter && !key.endsWith('.probe')) {
+      throw new Error('QuotaExceededError');
+    }
     this.items.set(key, value);
   }
   removeItem(key: string): void {
-    this.items.delete(key);
+    // The usability probe writes a key and removes it again on first use, and
+    // that removal is not room being freed — counting it would mean the disk
+    // had already "recovered" before any rung of the ladder was climbed.
+    const counts = this.items.delete(key) && !key.endsWith('.probe');
+    if (counts) this.removed += 1;
   }
   clear(): void {
     this.items.clear();
@@ -298,5 +317,69 @@ describe('the run a slot has unfinished, and which door asks how (2026-09-09)', 
     const mine = s.worldSeedFor(1);
     s.writeRun(1, newRun(mine, TUNING));
     expect(s.runFor(1, mine)?.rootSeed).toBe(mine);
+  });
+});
+
+/**
+ * THE FILMS (2026-09-23) — one key per watchable run, capped, and the first
+ * thing a full disk gives up.
+ *
+ * Three claims, and each of them is a thing a player would only discover
+ * weeks later: a row can find its own film, the store cannot grow without
+ * end, and when the disk is full the films go before the diary does.
+ */
+describe('storage, keeping replays', () => {
+  const aReplay = (seed: number): Replay => ({
+    from: newRun(seed, TUNING, [], [], null),
+    moves: [],
+  });
+
+  it('files a film under the diary row it belongs to, and hands it back', async () => {
+    const s = await load();
+    expect(s.hasReplay(111)).toBe(false);
+    s.writeReplay(111, aReplay(3));
+    expect(s.hasReplay(111), 'a row could not find its own film').toBe(true);
+    expect(s.readReplay(111)?.from.rootSeed).toBe(3);
+    // And a row with no film says so rather than handing back somebody else's.
+    expect(s.readReplay(222)).toBeNull();
+  });
+
+  it('keeps the newest fifty and lets the oldest go', async () => {
+    const s = await load();
+    for (let i = 1; i <= 55; i++) s.writeReplay(i, aReplay(i));
+    expect(s.hasReplay(55), 'the newest film was not kept').toBe(true);
+    expect(s.hasReplay(6), 'the fiftieth-newest film was dropped early').toBe(true);
+    expect(s.hasReplay(5), 'an old film outlived the cap').toBe(false);
+    expect(s.hasReplay(1)).toBe(false);
+  });
+
+  /*
+   * The rung, in the order `shedLadder.ts` argues for: a film is a thing to
+   * look at and a diary row is a thing that happened, so a full disk spends
+   * every film before it spends one fact.
+   */
+  it('gives up every film before it gives up the diary', async () => {
+    const s = await load();
+    s.writeReplay(9, aReplay(1));
+    s.writeTimeline([
+      { at: 9, kind: 'run', slot: 1, worldSeed: 1, score: 10, reach: 2, arc: '', highlights: [] },
+    ]);
+    const rungs: string[] = [];
+    s.onShed((rung) => rungs.push(rung));
+
+    /*
+     * A disk that takes writes again once ONE key has gone. `lastError` and
+     * `otherReceipts` are both free on this device — nothing is stored under
+     * either — so the first rung that actually removes anything is the one
+     * being asked about, and it has to be `replays`.
+     */
+    disk.full = true;
+    disk.freeAfter = 1;
+    s.writeRun(1, aRun());
+    disk.full = false;
+
+    expect(rungs, 'a rung other than the films paid for the write').toEqual(['replays']);
+    expect(s.hasReplay(9), 'a film survived a full disk').toBe(false);
+    expect(s.readTimeline().length, 'the diary was spent before the films').toBe(1);
   });
 });

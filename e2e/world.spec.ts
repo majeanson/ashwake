@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { begin, clearCards, openMore, watchErrors } from './helpers';
+import { begin, clearCards, openMore, pastTheFilm, watchErrors } from './helpers';
 
 /**
  * The world memory, in a real browser (2026-08-30).
@@ -105,6 +105,7 @@ test('a run that gains nothing says it gained nothing', async ({ page }) => {
    */
   await page.goto('/?taught=1&runs=300&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toHaveCount(1);
 
   // The block only renders when something was gained, so its absence IS the
@@ -234,6 +235,7 @@ test('the ending says what this world has become, not only what the run scored',
   await page.goto('/?taught=1&runs=300&end=1');
   await begin(page);
 
+  await pastTheFilm(page);
   const end = page.locator('[data-hud="end"]');
   await expect(end).toHaveCount(1);
   const atlas = end.locator('.atlas');
@@ -263,6 +265,7 @@ test('a daily can be kept as a world, with its ground and none of its spoils', a
   const errors = watchErrors(page);
   await page.goto('/?daily=2026-08-26&taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
 
   await page.locator('[data-action="import-daily"]').click();
@@ -365,6 +368,7 @@ test('a SHARED board can be kept too, and its ending says so (2026-09-09)', asyn
   // A seed that is not this device's world, played to its end.
   await page.goto('/?seed=515151&taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
 
   const keep = page.locator('[data-action="import-daily"]');
@@ -393,6 +397,7 @@ test('keeping a daily over a PLAYED world asks first', async ({ page }) => {
 
   await page.goto('/?daily=2026-08-26&taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
   await page.locator('[data-action="import-daily"]').click();
 
@@ -403,6 +408,7 @@ test('keeping a daily over a PLAYED world asks first', async ({ page }) => {
   const before = (await row.textContent()) ?? '';
   await row.click();
   // ONE press must not take the world.
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]'), 'one press abandoned a world').toBeVisible();
   expect((await row.textContent()) ?? '', 'the row did not arm').not.toBe(before);
 

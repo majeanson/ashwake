@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { begin, watchErrors } from './helpers';
+import { begin, pastTheFilm, watchErrors } from './helpers';
 
 /**
  * WHY SOMEBODY COMES BACK (2026-09-09).
@@ -29,6 +29,7 @@ test('a daily’s ending says what tomorrow is for', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?daily=2026-08-26&taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
 
   const streak = page.locator('[data-hud="streak"]');
@@ -44,6 +45,7 @@ test('a world’s ending does not, because a world has no tomorrow', async ({ pa
   const errors = watchErrors(page);
   await page.goto('/?taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
   // The daily is the thing with a date. A world is there whenever you are, so
   // a "new board tomorrow" line would be false on it.
@@ -90,6 +92,7 @@ test('a world worth keeping is told it can be lost, once', async ({ page }) => {
    */
   await page.goto('/?runs=300&taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
 
   const note = page.locator('[data-hud="back-up"]');
@@ -108,6 +111,7 @@ test('a fresh device is not warned about a world it has not built', async ({ pag
   const errors = watchErrors(page);
   await page.goto('/?taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
   // One run is somebody trying the game, and a warning that arrives before
   // there is anything to warn about is noise on the screen that decides
@@ -120,6 +124,7 @@ test('a daily is not asked to protect a world it does not have', async ({ page }
   const errors = watchErrors(page);
   await page.goto('/?daily=2026-08-26&runs=300&taught=1&end=1');
   await begin(page);
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
   // The device HAS a world worth keeping; this run is not in it, and the
   // ending of a daily is not the moment to talk about keeping one.

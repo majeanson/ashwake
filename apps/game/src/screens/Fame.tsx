@@ -46,9 +46,20 @@ type FameProps = {
    * world 2. See the TOTALS block below.
    */
   readonly worlds: Readonly<Record<Slot, WorldMemory | null>>;
+  /**
+   * WATCH THIS RUN AGAIN (2026-09-23, Marc: *"every run in the hall of fame"*).
+   *
+   * Asked per row rather than handed a list, because whether a film is still
+   * kept is a fact about the DISK and this screen is a screen: `App` answers
+   * from `hasReplay`, and a row whose film has been shed — the cap, or the
+   * ladder on a full phone — simply does not draw the door. Absent entirely
+   * where nothing can be watched at all.
+   */
+  readonly onWatch?: ((at: number) => void) | undefined;
+  readonly canWatch?: ((at: number) => boolean) | undefined;
 };
 
-export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
+export function Fame({ timeline, records, s, onBack, worlds, onWatch, canWatch }: FameProps) {
   const [on, setOn] = useState<TabId>('diary');
   // `null` slot: every world. The diary is the DEVICE's story, and the
   // per-world filter chips arrive with the crossing that makes them mean
@@ -100,14 +111,30 @@ export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
         (stream.length === 0 ? (
           <p className="note">{s.view.arc.early}</p>
         ) : (
-          stream.map((entry, i) => <Row key={`${entry.at}-${i}`} entry={entry} s={s} />)
+          stream.map((entry, i) => (
+            <Row
+              key={`${entry.at}-${i}`}
+              entry={entry}
+              s={s}
+              onWatch={onWatch}
+              canWatch={canWatch}
+            />
+          ))
         ))}
 
       {on === 'daily' &&
         (dailies.length === 0 ? (
           <p className="note">{s.view.arc.early}</p>
         ) : (
-          dailies.map((entry, i) => <Row key={`${entry.at}-${i}`} entry={entry} s={s} />)
+          dailies.map((entry, i) => (
+            <Row
+              key={`${entry.at}-${i}`}
+              entry={entry}
+              s={s}
+              onWatch={onWatch}
+              canWatch={canWatch}
+            />
+          ))
         ))}
 
       {on === 'totals' && (
@@ -183,7 +210,17 @@ export function Fame({ timeline, records, s, onBack, worlds }: FameProps) {
  * The summary line is what a list needs — a score and the shape of the run —
  * and everything that makes it a memory rather than a number is inside.
  */
-function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings }) {
+function Row({
+  entry,
+  s,
+  onWatch,
+  canWatch,
+}: {
+  readonly entry: TimelineEntry;
+  readonly s: Strings;
+  readonly onWatch?: ((at: number) => void) | undefined;
+  readonly canWatch?: ((at: number) => boolean) | undefined;
+}) {
   if (entry.kind === 'world') {
     return <p className="note">{entry.event}</p>;
   }
@@ -288,6 +325,27 @@ function Row({ entry, s }: { readonly entry: TimelineEntry; readonly s: Strings 
             ]}
           />
         </>
+      )}
+      {/*
+        THE RUN, PLAYED BACK (2026-09-23, Marc: *"every run in the hall of
+        fame"*).
+
+        Inside the fold rather than on the summary line, for the reason the
+        detail block is: a row is a disclosure, and a control on a closed row
+        is a control a thumb meets while scrolling a list. Drawn only where a
+        film is actually kept — the store holds the newest fifty and the shed
+        ladder gives them up first, so an old row is a row with facts and no
+        film, and a door onto nothing is worse than no door.
+      */}
+      {onWatch !== undefined && canWatch?.(entry.at) === true && (
+        <button
+          type="button"
+          className="fame-watch"
+          data-action="watch-row"
+          onClick={() => onWatch(entry.at)}
+        >
+          {s.ui.watchRun}
+        </button>
       )}
     </Fold>
   );

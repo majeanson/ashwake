@@ -3,6 +3,8 @@ import { pickLocale } from '@content/locale';
 import { TUNING } from '@content/tuning';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
+import { key } from '@engine/hex';
+import { replayTo } from '@meta/replay';
 import { createSession } from './store';
 import { walk, walkToEnd } from './walk';
 
@@ -490,5 +492,80 @@ describe('warming the placement path', () => {
     // than reach for a placement that cannot happen.
     walkToEnd(s);
     expect(() => s.warm()).not.toThrow();
+  });
+});
+
+/**
+ * THE FILM THE SESSION RECORDS IS THE RUN THE SESSION PLAYED (2026-09-23).
+ *
+ * `meta/replay.test.ts` proves the codec and the fold against the simulator's
+ * own policies. What it cannot prove is that THIS store records the right
+ * moves — that a refused tap stays out, that a new run starts a new film, and
+ * that the film's first frame is the board the run opened on. That is what is
+ * asked here, and the assertion is always the same one: replay it and compare
+ * the run you get to the run that was played.
+ */
+describe('the film of a run', () => {
+  it('replays into the exact run that was played', () => {
+    const s = session();
+    walk(s, 12);
+    const played = s.get().state;
+    expect(replayTo(s.replay(), Number.POSITIVE_INFINITY)).toEqual(played);
+  });
+
+  it('opens on the board the run opened on', () => {
+    const s = session();
+    const opening = s.get().state;
+    walk(s, 5);
+    expect(replayTo(s.replay(), 0)).toEqual(opening);
+  });
+
+  /*
+   * A tap the rules refuse is not a move. `reduce` answers an illegal
+   * placement with the same state, and the film must not carry it: a replay
+   * folds its moves through the very same reducer, so a refused action would
+   * be a frame where nothing happens, for as many times as a player tapped a
+   * wall while thinking.
+   */
+  it('does not record a move the rules refused', () => {
+    const s = session();
+    walk(s, 4);
+    const before = s.replay().moves.length;
+    // A hex far outside anything legal: the frontier of a four-placement run
+    // does not reach the fortieth ring.
+    s.dispatch({ type: 'PLACE', hex: key(40, -40) });
+    expect(s.replay().moves.length, 'a refused tap was filmed').toBe(before);
+  });
+
+  it('starts a new film when a new run is entered', () => {
+    const s = session();
+    walk(s, 8);
+    expect(s.replay().moves.length).toBeGreaterThan(0);
+    s.restart(4242);
+    expect(s.replay().moves, 'the new run inherited the old run’s film').toEqual([]);
+    expect(replayTo(s.replay(), 0)).toEqual(s.get().state);
+  });
+
+  /* A resumed run's film starts where it was picked up — the limitation the
+     store's own docblock states, pinned so it cannot change silently. */
+  it('a resumed run is filmed from where it was picked up', () => {
+    const played = session();
+    walk(played, 6);
+    const saved = played.get().state;
+
+    const fresh = session();
+    fresh.restart(saved.rootSeed, saved);
+    expect(replayTo(fresh.replay(), 0)).toBe(saved);
+    walk(fresh, 3);
+    expect(replayTo(fresh.replay(), Number.POSITIVE_INFINITY)).toEqual(fresh.get().state);
+  });
+
+  it('hands out a copy, so a film cannot grow after the run it is of', () => {
+    const s = session();
+    walk(s, 5);
+    const film = s.replay();
+    const was = film.moves.length;
+    walk(s, 5);
+    expect(film.moves.length, 'the film kept recording after it was taken').toBe(was);
   });
 });

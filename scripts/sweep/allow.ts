@@ -190,6 +190,13 @@ const SAVED_BLOB: readonly Ruling[] = (
 /**
  * THE TIMELINE'S SPINE, DEFERRED BY RULING (`NEXT.md` §4).
  *
+ * **`RunEntry.highlights` left this list on 2026-09-23** and that is worth a
+ * line: the replay reads it. A run that earned a ✦ plays itself back before
+ * its numbers (Marc's ruling: *"both: auto on a big run"*), so the field the
+ * diary had been computing for a screen nobody agreed to build now decides
+ * something a player sees. This is the outcome the entry below was written to
+ * make visible, arriving by a door nobody predicted.
+ *
  * A run's HIGHLIGHTS — what was remarkable about it, and how much — are
  * detected, written for every run and every world event, and shown nowhere,
  * because the screen that would show them is the timeline, and the timeline's
@@ -206,7 +213,6 @@ const TIMELINE_SPINE: readonly Ruling[] = (
   [
     'packages/core/src/meta/timeline.ts#Highlight.kind',
     'packages/core/src/meta/timeline.ts#Highlight.n',
-    'packages/core/src/meta/timeline.ts#RunEntry.highlights',
     'packages/core/src/meta/timeline.ts#DailyEntry.best',
     // The three READERS of that spine, added 2026-09-10: functions that select
     // a run, a world event or a shared board out of the timeline, each with a
@@ -415,6 +421,37 @@ const LIFT_SURFACE: readonly Ruling[] = (
     'this list for the whole argument, and `CLAUDE.md` for the ruling.',
 }));
 
+/**
+ * THE FOLD THAT DEFINES A REPLAY (ruled 2026-09-23, `LOG.md` Session 113).
+ *
+ * `meta/replay#replayTo` is the sentence "a replay is its moves folded through
+ * the reducer", written as code. Nothing in the app calls it: the projector
+ * (`shell/watching.ts`) plays a film by DISPATCHING its moves into a session,
+ * because it needs the board views and the pop events that only a dispatch
+ * produces, and a fold gives it neither.
+ *
+ * It is kept, and not for tidiness. It is the ORACLE the projector is proved
+ * against — `watching.test.ts` compares the state the projector's session
+ * arrives at with the state this function computes, which is the whole claim
+ * of the feature ("the film is the run") checked along two independent paths
+ * through the same rules. Delete it and the projector's test becomes the
+ * projector agreeing with itself.
+ *
+ * The shape `CLAUDE.md` warns about is the opposite one: a value computed for
+ * a player that no screen prints. This computes nothing for anybody until a
+ * test asks, and it says so at its own declaration.
+ */
+const REPLAY_ORACLE: readonly Ruling[] = [
+  {
+    id: 'packages/core/src/meta/replay.ts#replayTo',
+    on: '2026-09-23',
+    why:
+      'The fold that DEFINES a replay, and the oracle the projector is proved ' +
+      'against — see `REPLAY_ORACLE`. The app plays a film by dispatching, ' +
+      'which is why nothing outside a test calls this.',
+  },
+];
+
 export const ALLOW: readonly Ruling[] = [
   {
     id: 'apps/game/src/board/rings.ts#Ring.width',
@@ -571,6 +608,7 @@ export const ALLOW: readonly Ruling[] = [
   ...TEST_IS_THE_READER,
   ...RULE_LIVES_IN_A_TEST,
   ...TIMELINE_SLOT_FILTER,
+  ...REPLAY_ORACLE,
 ];
 
 /** Index, so a pass can ask in one call. */

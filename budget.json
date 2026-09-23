@@ -15,7 +15,7 @@
   ],
 
   "firstPaint": {
-    "gzip": 178000,
+    "gzip": 181000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -27,7 +27,22 @@
       "So this bar is the thing that split bought, and nothing was watching it.",
       "",
       "Gzip rather than brotli because gzip is the floor every browser and",
-      "every CDN agrees on; brotli is reported too and is strictly better."
+      "every CDN agrees on; brotli is reported too and is strictly better.",
+      "",
+      "MOVED 2026-09-23, from 178,000 to 181,000, for the REPLAY (LOG.md",
+      "Session 113). Measured 175.4 KB gzipped after it, against 173.8 before:",
+      "1.6 KB for the codec that reads and writes a film (meta/replay.ts), the",
+      "projector that plays one (shell/watching.ts), the store that keeps them,",
+      "and the two doors. It is a feature Marc asked for, and it is in the",
+      "first paint because the SETTLE writes a film and settle is entry code.",
+      "",
+      "The alternative was considered and declined: the codec could be",
+      "dynamically imported at the moment a run ends, since by then the board",
+      "chunk has long since landed. That is real machinery — an await in the",
+      "banking effect, which is the one place in this app where a write must",
+      "not be deferred (keeper.ts) — bought for 1.6 KB. The bar exists to catch",
+      "the RENDERER leaking back into the door, and pnpm budget checks that by",
+      "NAME as well as by bytes, so this raise cannot hide the thing it guards."
     ]
   },
 

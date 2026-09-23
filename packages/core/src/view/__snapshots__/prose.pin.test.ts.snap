@@ -481,6 +481,10 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "Storage was full. Some notes from your other worlds were cleared so your run could be saved.",
     ],
     [
+      "replays",
+      "Storage was full. Your saved replays were cleared so your run could be saved; your diary still holds what every run did.",
+    ],
+    [
       "timeline",
       "Storage was full. Your diary was cleared so your run could be saved; your worlds, relics and perks are untouched.",
     ],
@@ -1126,6 +1130,10 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     [
       "otherReceipts",
       "Le stockage était plein. Des notes de tes autres mondes ont été effacées pour que ta partie puisse être sauvegardée.",
+    ],
+    [
+      "replays",
+      "Le stockage était plein. Les rediffusions de tes parties ont été effacées pour que ta partie puisse être sauvegardée; ton journal garde ce que chaque partie a fait.",
     ],
     [
       "timeline",

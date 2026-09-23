@@ -3,6 +3,7 @@ import sharp from 'sharp';
 import {
   assertLooksLikeAPicture,
   begin,
+  pastTheFilm,
   clearCards,
   openMore,
   placeOneTile,
@@ -1202,6 +1203,9 @@ test('NEW RUN leaves the world it was played in exactly where it was', async ({ 
   await page.goto('/?end=1');
   await begin(page);
   await clearCards(page);
+  // A run on the device's own world earns at least a best reach, so it plays
+  // itself back before its numbers now (2026-09-23) — past it, as a player is.
+  await pastTheFilm(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
 
   const worldSeed = async (): Promise<number | null> => {
@@ -1920,5 +1924,116 @@ test('?wake=0 opens the way every build before the beat did', async ({ page }) =
     await page.locator('[data-hud="waking"]').count(),
     'the dial that zeroes the beat did not zero it',
   ).toBe(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a finished run can be watched again, and the board plays it back', async ({ page }) => {
+  /*
+   * THE REPLAY (2026-09-23, Marc, asked to choose between three endings and
+   * choosing a fourth: *"i'd like to be able to replay the pops and tile
+   * placements too"*).
+   *
+   * `?end=1` walks a whole run through the reducer, which is how every ending
+   * test reaches an ending — and it is also the case that proves the film is
+   * recorded on the one seam a finger travels: the walker dispatches into the
+   * session exactly as a tap does, so a run played by the harness is filmed by
+   * the same line that films a run played by hand.
+   *
+   * What is asserted is the whole loop rather than the pretty part: the door
+   * exists on the ending, pressing it puts the board back on screen with the
+   * film's own bar over it, the bar counts, and SKIP returns to the numbers.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&end=1');
+  await begin(page);
+
+  const ending = page.locator('[data-action="new-run"]');
+  await expect(ending, 'the run never reached an ending').toBeVisible();
+
+  const watch = page.locator('[data-action="watch-run"]');
+  await expect(watch, 'a finished run offered no way to watch it').toBeVisible();
+  await watch.click();
+
+  // The ending steps aside and the board is the screen again.
+  const bar = page.locator('[data-hud="watching"]');
+  await expect(bar, 'the film never started').toBeVisible();
+  await expect(ending, 'the ending stayed over the film').toBeHidden();
+  await expect(page.locator('canvas')).toBeVisible();
+
+  /*
+   * IT ADVANCES. A film that mounted its bar and played nothing would pass
+   * every assertion above, so the count is read twice — a replay is a clock,
+   * and the only proof a clock is running is that the number moved.
+   */
+  const counted = async (): Promise<number> => {
+    const said = await bar.locator('.watching-at').textContent();
+    return Number(/(\d+)\s*\/\s*(\d+)/.exec(said ?? '')?.[1] ?? -1);
+  };
+  await expect
+    .poll(counted, { message: 'the film never advanced past its first frame' })
+    .toBeGreaterThan(0);
+
+  // And a tap on SKIP goes straight to the score, which is what Marc asked a
+  // tap to do.
+  await page.locator('[data-action="watch-skip"]').click();
+  await expect(bar).toBeHidden();
+  await expect(ending, 'skipping the film did not put the ending back').toBeVisible();
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a run that earned a mark plays itself back before the numbers', async ({ page }) => {
+  /*
+   * AUTO ON A BIG RUN (2026-09-23, Marc's ruling when offered auto, a button,
+   * or both: *"both: auto on a big run"*).
+   *
+   * "Big" is not a second opinion invented in the shell: it is the ✦ the diary
+   * already computes for its own rows (`meta/timeline.ts`'s `runHighlights` —
+   * a new best, a shrine, a perk, a goal, a territory, a camp). A first run on
+   * a device's own world earns at least a best reach, so `?end=1` with no
+   * `?seed=` reaches the case.
+   *
+   * **And the `?seed=` is deliberately absent**, which is the part worth
+   * stating: a seeded board is a DETOUR, it banks a `shared` row, and a shared
+   * row has no highlights at all — so the test that reads most naturally
+   * (`?seed=7&end=1`, like every other ending test here) is exactly the one
+   * that can never see this behaviour. It was written that way first and
+   * passed while proving nothing.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&end=1');
+  await begin(page);
+
+  const bar = page.locator('[data-hud="watching"]');
+  await expect(bar, 'a run that earned a mark went straight to its numbers').toBeVisible();
+  await expect(
+    page.locator('[data-action="new-run"]'),
+    'the ending sat over the film',
+  ).toBeHidden();
+
+  // The diary agrees about why: the row it wrote carries the marks the film
+  // was raised for. One rule, read twice, rather than two rules.
+  const marks = await page.evaluate(() => {
+    const rows = JSON.parse(localStorage.getItem('ashwake.timeline.v1') ?? '[]') as {
+      kind: string;
+      highlights?: unknown[];
+    }[];
+    return rows[0]?.kind === 'run' ? (rows[0]?.highlights?.length ?? 0) : 0;
+  });
+  expect(marks, 'the film played for a run the diary thought was ordinary').toBeGreaterThan(0);
+
+  /*
+   * A tap on the board is the other way out, and it must land on the numbers.
+   *
+   * `force` for the reason `clearCards` gives about a card mid-animation: a
+   * board with a film running on it is never "stable", so Playwright's
+   * actionability check waits for a stillness that cannot come while the thing
+   * under test is by definition moving. A finger does not wait for stability
+   * either.
+   */
+  await page.locator('canvas').click({ position: { x: 195, y: 300 }, force: true });
+  await expect(bar, 'a tap on a playing film did not end it').toBeHidden();
+  await expect(page.locator('[data-action="new-run"]')).toBeVisible();
+
   expect(errors, errors.join('\n')).toEqual([]);
 });

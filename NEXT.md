@@ -453,7 +453,19 @@ built.** `LOG.md` Session 105 is the reasoning.
   **And it uncovered a four-week-old hole:** the front door never called
   `open`, so the fly-in Marc asked for on 2026-09-16 never played on the first
   run of a page. Fixed the same hour; `LOG.md` Session 112.
-- **The death sequence is a REPLAY — RULED 2026-09-23, not yet built.** Asked
+- **~~The death sequence is a REPLAY~~ — RULED AND BUILT 2026-09-23**
+  (`LOG.md` Session 113). A film is the state a run opened on plus every move
+  that changed it (~7 KB), played back by a second session through the same
+  `<Board>` — so the leap, the cascade, the rings and the camera are the run's
+  own, not a second implementation. **Auto on a run that earned a ✦**, a button
+  on every other, and every kept row in the hall of fame carries WATCH; the
+  newest fifty films are kept and the shed ladder gives them up before the
+  diary. **Yours on the phone:** whether ~14 seconds is the right length for a
+  whole run, whether the pop beat (760 ms) reads, and whether a film after
+  every ✦ run is welcome or wears out — `watching.ts` has the two numbers, and
+  they are a look rather than a derivation.
+
+- **What the ruling looked like before it was built, kept for the argument:** Asked
   to choose between three endings, Marc asked for something else: _"i'd like to
   be able to replay the pops and tile placements too."_ Then, on two questions:
   **it plays itself on a run that earned it** — the ✦ moments

@@ -522,6 +522,8 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       'Le stockage était plein. Un rapport de diagnostic a été effacé pour que ta partie puisse être sauvegardée.',
     otherReceipts:
       'Le stockage était plein. Des notes de tes autres mondes ont été effacées pour que ta partie puisse être sauvegardée.',
+    replays:
+      'Le stockage était plein. Les rediffusions de tes parties ont été effacées pour que ta partie puisse être sauvegardée; ton journal garde ce que chaque partie a fait.',
     timeline:
       'Le stockage était plein. Ton journal a été effacé pour que ta partie puisse être sauvegardée; tes mondes, tes reliques et tes atouts sont intacts.',
     otherWorlds:
@@ -706,6 +708,9 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     theMap: 'LE SOL QUE TU AS PARCOURU',
     walkTheMap: 'Déplace-toi sur le plateau que tu as laissé.',
     backToEnding: 'RETOUR À LA FIN',
+    watchRun: 'REVOIR LA PARTIE',
+    watchSkip: 'PASSER',
+    watching: (step, of) => `Rediffusion · ${step} / ${of}`,
     expedition: {
       title: 'L’EXPÉDITION',
       lines: [

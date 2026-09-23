@@ -89,6 +89,8 @@ import {
   wasSaid,
   readProgress,
   memoryFor,
+  NO_MEMORY,
+  type RunMemory,
   freshWorldSeed,
   worldSeedFor,
   onShed,
@@ -97,6 +99,9 @@ import {
   settleWorldInto,
   setActiveSlot,
   writeRecords,
+  hasReplay,
+  readReplay,
+  writeReplay,
   writeTimeline,
   type Slot,
 } from './shell/storage';
@@ -145,6 +150,8 @@ import {
   type Session,
   type Snapshot,
 } from './shell/store';
+import { useFilm } from './shell/watching';
+import type { Replay } from '@meta/replay';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, toastLine, told } from './shell/teaching';
@@ -258,6 +265,17 @@ const preloadBoard = (): void => {
  * 320ms each, so this is the still part in the middle.
  */
 const CLAIM_HOLD_MS = 900;
+
+/**
+ * How long a finished film holds on the run's last board before the screen it
+ * came from comes back (2026-09-23).
+ *
+ * The same 900 ms a claim's trip holds above, and for the same reason: it is
+ * the beat a person needs to take in what they are looking at. A film that
+ * cut away the instant the last tile landed would be showing everything except
+ * the board the score was counted off.
+ */
+const FILM_HOLD_MS = 900;
 
 /**
  * How long the shrine tour stands at the shrine, in ms.
@@ -433,6 +451,25 @@ function Game() {
    */
   const [walking, setWalking] = useState(false);
   /**
+   * THE RUN BEING WATCHED, and where the watcher came from (2026-09-23).
+   *
+   * Two pieces of state rather than one, because a film is opened from two
+   * places and has to put the player back where they were: the end screen's
+   * own button, and a row in the hall of fame — which is a panel, closed while
+   * the film plays over the board and reopened when it is done. A film that
+   * always returned to the ending would strand somebody who was three taps
+   * into their diary.
+   *
+   * `shell/watching.ts` is the projector; `meta/replay.ts` is what a film is.
+   */
+  const [reel, setReel] = useState<{
+    readonly of: Replay;
+    readonly from: 'end' | 'fame';
+    /** The world's remembered ground, read when the film was opened — see
+     *  `useFilm`'s `ground`. */
+    readonly ground: RunMemory;
+  } | null>(null);
+  /**
    * FRAME THE BOARD A RUN OPENS ON (2026-08-30).
    *
    * Marc: *"make sure when we start a new world or daily its centered on the
@@ -542,6 +579,20 @@ function Game() {
    * has to be readable from `onShare` at a moment the settle is long past.
    */
   const endShot = useRef<string | null>(null);
+  /**
+   * THE FILM OF THE RUN THE END SCREEN IS ABOUT (2026-09-23).
+   *
+   * Taken once, at the moment a run is banked, and it describes the ENDING
+   * rather than the session — which by then has been restarted by whatever the
+   * player does next. Reading the film back off the disk here would work and
+   * would be a second source for a thing that is already in hand.
+   *
+   * State rather than a ref beside `endShot`, because the end screen draws a
+   * door from it: a ref read during render is a value React cannot see change
+   * (`react-hooks/refs`), and the door would be missing on exactly the render
+   * where the run ends.
+   */
+  const [endFilm, setEndFilm] = useState<Replay | null>(null);
   /**
    * A receipt that is holding the screen, waiting to be dismissed.
    *
@@ -1012,6 +1063,19 @@ function Game() {
   const snap = useSession(session);
 
   /**
+   * THE PROJECTOR, running whatever reel is in it (2026-09-23).
+   *
+   * `null` whenever nothing is being watched, which is almost always. What it
+   * hands back is a snapshot shaped exactly like the live session's, so the
+   * board can be handed one or the other without knowing which.
+   */
+  const film = useFilm(reel?.of ?? null, {
+    theme,
+    strings: s,
+    ...(reel === null ? {} : { ground: reel.ground }),
+  });
+
+  /**
    * STEP ONTO THE BOARD — and say what the world is paying for it (2026-09-02).
    *
    * The five doors into a run all ended in `setStarted(true)` and nothing else,
@@ -1219,6 +1283,34 @@ function Game() {
     const picture = board.current?.snapshot() ?? null;
     endShot.current = picture;
 
+    /*
+     * ONE CLOCK READING FOR THE ENDING, and the film is filed under it
+     * (2026-09-23).
+     *
+     * `Date.now()` used to be called inside each settle call, which was fine
+     * while the number only had to be A time. It is an IDENTITY now: a diary
+     * row's `at` is the only handle a row has (`meta/timeline.ts`), and it is
+     * what the row's replay is stored under — so the row and its film have to
+     * be filed under the same number, and two reads of the clock are two
+     * numbers waiting to differ by a millisecond.
+     */
+    const at = Date.now();
+    /*
+     * THE FILM, KEPT (Marc, 2026-09-23: _"i'd like to be able to replay the
+     * pops and tile placements too"_ — and, asked how far back, _"every run in
+     * the hall of fame"_).
+     *
+     * Every finished run, whichever door it was played through, because every
+     * one of them gets a diary row and a row is what a film hangs off. It is
+     * written before the settles rather than after, so a storage-full write
+     * spends the REPLAYS rung of the shed ladder — which sheds films, the
+     * cheapest thing on the device to lose — while the diary and the world are
+     * still to be written and can still take the room it freed.
+     */
+    const film = session.replay();
+    setEndFilm(film);
+    writeReplay(at, film);
+
     // A daily leaves two things behind rather than four — see `settleDaily`.
     if (daily !== null) {
       const after = settleDaily({
@@ -1228,7 +1320,7 @@ function Game() {
         ...(picture === null ? {} : { shot: picture }),
         book: readDailyBook(),
         timeline: readTimeline(),
-        at: Date.now(),
+        at,
       });
       writeDailyBook(after.book);
       writeTimeline(after.timeline);
@@ -1257,6 +1349,14 @@ function Game() {
       // number reached the diary and the share line and never the screen the
       // player is deciding on.
       setDailyTry(after.try);
+      /*
+       * A daily plays itself back when the try was a personal best for that
+       * date — which is the daily's own version of the `✦` a world run earns,
+       * and the only thing about a daily worth interrupting for.
+       */
+      // NO_MEMORY, because a daily is walled off from every world by
+      // construction: there is no remembered ground for its film to stand on.
+      if (after.isNewBest) setReel({ of: film, from: 'end', ground: NO_MEMORY });
       return;
     }
 
@@ -1273,7 +1373,7 @@ function Game() {
       records: readRecords(),
       timeline: readTimeline(),
       progress,
-      at: Date.now(),
+      at,
       ...(picture === null ? {} : { shot: picture }),
     });
 
@@ -1331,6 +1431,25 @@ function Game() {
     keeper.flush();
     writeRecords(after.records);
     writeTimeline(after.timeline);
+    /*
+     * AND A RUN THAT EARNED IT PLAYS ITSELF BACK (2026-09-23, Marc's ruling
+     * when offered auto, a button, or both: *"both: auto on a big run"*).
+     *
+     * What counts as earning it is not a second opinion invented here: it is
+     * the ✦ the diary already computes for its own rows — a new best, a shrine,
+     * a perk, a goal, a territory, a camp (`meta/timeline.ts`'s
+     * `runHighlights`). So the film plays for exactly the runs the hall of
+     * fame thinks are worth a mark, and an ordinary run goes straight to its
+     * numbers with the button there if it wants watching.
+     *
+     * Read off the entry that was just appended rather than recomputed, so the
+     * row and the interruption can never disagree about whether a run was a
+     * big one.
+     */
+    const row = after.timeline[after.timeline.length - 1];
+    if (row?.kind === 'run' && row.highlights.length > 0) {
+      setReel({ of: film, from: 'end', ground: memoryFor(slot, snap.state.rootSeed) });
+    }
     clearRun(slot);
     // The relics this run earned, onto the device — see `Settled.progress`.
     // Without this line every run ended with the shop as empty as it started.
@@ -1484,6 +1603,43 @@ function Game() {
   const more = useDoor('more');
   const shop = useDoor('shop');
   const fame = useDoor('fame');
+
+  /**
+   * A FILM ENDS BY ITSELF, after a beat on the last board.
+   *
+   * The beat is the point: a run's final board — the one the score was counted
+   * off — is the frame worth looking at, and cutting to the ending the
+   * millisecond the last tile lands would be the film hiding its own subject.
+   * A SKIP is different and does not come through here: it goes straight back,
+   * because somebody who skips has said they want the numbers.
+   */
+  /**
+   * ONE WAY OUT OF A FILM, wherever it was opened from (2026-09-23).
+   *
+   * Three things end a replay — the last move, the SKIP button, and a tap on
+   * the board — and all three have to put the player back where they were.
+   * Written once, because the first build wrote it once and skipped it in
+   * the other two: a film opened from the diary and skipped left the diary
+   * closed behind it, which is the player three taps from where they were
+   * with nothing saying so.
+   *
+   * The end screen needs no restoring: it is what is underneath already.
+   */
+  const closeReel = useCallback(() => {
+    setReel((was) => {
+      if (was?.from === 'fame') {
+        more.show();
+        fame.show();
+      }
+      return null;
+    });
+  }, [more, fame]);
+
+  useEffect(() => {
+    if (film === null || !film.done) return;
+    const done = setTimeout(closeReel, FILM_HOLD_MS);
+    return () => clearTimeout(done);
+  }, [film, closeReel]);
   const worlds = useDoor('worlds');
   // THIS DEVICE, a room off MORE since 2026-08-31 rather than a section at the
   // bottom of it — see `screens/Device`.
@@ -2083,6 +2239,19 @@ function Game() {
 
   const onTap = useCallback(
     (key: string, cell: CellView): void => {
+      /*
+       * A TAP ON A PLAYING FILM ENDS IT (2026-09-23, Marc: *"a tap skips to
+       * the score"*).
+       *
+       * First, above every other rung, because during a film the board under
+       * the finger is not the run being played: it is a picture of one that
+       * finished. Every meaning below this line — placing, pricing a pocket,
+       * describing a hex — would be acting on a board that is not there.
+       */
+      if (reel !== null) {
+        closeReel();
+        return;
+      }
       const now = session.get();
       /*
        * WHAT THE TAP MEANS is decided in `shell/tap.ts`, which carries the
@@ -2162,7 +2331,7 @@ function Game() {
       }
       say(describe(key));
     },
-    [act, session, s, theme, lens, describe, say, touring, putTourDown],
+    [act, session, s, theme, lens, describe, say, touring, putTourDown, reel, closeReel],
   );
 
   /**
@@ -3062,8 +3231,37 @@ function Game() {
       */}
       <div
         className="board-host"
+        /*
+         * ANY TAP ON THE PLAIN ENDS A FILM, not only one that lands on a hex
+         * (2026-09-23, Marc: *"a tap skips to the score"*).
+         *
+         * `onTap` is the board's CELL handler — it fires when a ray hits a
+         * tile — so a tap on the open plain beside the run being replayed did
+         * nothing at all. On a real device that is most of the screen, and the
+         * gesture Marc asked for would have worked or not depending on where a
+         * finger happened to land relative to a board it is watching rather
+         * than playing.
+         *
+         * `pointerdown` rather than click, because that is when a tap is felt,
+         * and only while a film is up: during a run this host must stay exactly
+         * as sensitive as it was.
+         */
+        {...(film === null ? {} : { onPointerDown: closeReel })}
         role="main"
-        {...(anyOpen || !started || (snap.hud.ended && !walking) ? { inert: true } : {})}
+        /*
+         * AND A FILM IS THE OTHER CASE WHERE THE BOARD IS THE THING IN USE
+         * (2026-09-23).
+         *
+         * `walking` was the one exception to "an ended run means the board is
+         * behind an opaque screen, so make it inert"; a replay is the second,
+         * and for exactly the same reason. It is also load-bearing rather than
+         * tidy: a tap on the board is how a film is meant to be skipped
+         * (`onTap`), and an inert host takes no taps at all — the gesture Marc
+         * asked for could not reach the board it was aimed at.
+         */
+        {...(anyOpen || !started || (snap.hud.ended && !walking && film === null)
+          ? { inert: true }
+          : {})}
       >
         {/*
           The one `Suspense` in the app, and it wraps the one thing that is
@@ -3076,9 +3274,21 @@ function Game() {
         */}
         <Suspense fallback={null}>
           <Board
-            view={snap.board}
+            /*
+             * THE BOARD DRAWS THE FILM WHEN THERE IS ONE (2026-09-23).
+             *
+             * One `<Board>`, two possible sources — the run being played, or
+             * the run being watched. That is the whole of what makes a replay
+             * cost so little: the leap, the cascade, the rings, the lit
+             * destinations and the camera are all drawn from a snapshot, so
+             * handing over a different snapshot IS the replay. `CLAUDE.md`'s
+             * rule that the host never remounts is what makes it safe: the
+             * canvas, its context and its materials belong to the page, not to
+             * whichever session is currently feeding it.
+             */
+            view={film?.snap.board ?? snap.board}
             theme={theme}
-            popped={snap.popped}
+            popped={film?.snap.popped ?? snap.popped}
             tilt={look.tilt}
             yaw={look.yaw}
             relief={look.relief}
@@ -3342,7 +3552,7 @@ function Game() {
         and taps reach a screen the player cannot see, which is the half of the
         stacking bug that a z-index alone does not fix.
       */}
-      {started && snap.hud.ended && walking && (
+      {started && snap.hud.ended && walking && film === null && (
         /*
          * The ending, out of the way (2026-08-30).
          *
@@ -3359,7 +3569,30 @@ function Game() {
         </div>
       )}
 
-      {started && snap.hud.ended && !walking && (
+      {/*
+        THE FILM'S OWN BAR (2026-09-23).
+
+        The same shape as the walked ending above — one row at the foot of the
+        board, over a scene that is doing the talking — because it is the same
+        idea: the chrome steps aside and the board is the screen. It says how
+        far through the run the film is, because a replay with no progress on
+        it is one a player cannot tell is nearly over, and it carries the one
+        control a film needs.
+
+        A tap on the BOARD does the same thing (`onTap`), which is what Marc
+        asked for — *"a tap skips to the score"* — and the button is what makes
+        that discoverable, and what a keyboard and a screen reader can reach.
+      */}
+      {film !== null && (
+        <div className="end-walk" data-hud="watching" {...(anyOpen ? { inert: true } : {})}>
+          <p className="watching-at">{s.ui.watching(film.step, film.of)}</p>
+          <button type="button" data-action="watch-skip" onClick={closeReel}>
+            {s.ui.watchSkip}
+          </button>
+        </div>
+      )}
+
+      {started && snap.hud.ended && !walking && film === null && (
         <div className="scene" {...(anyOpen ? { inert: true } : {})}>
           <EndScreen
             hud={snap.hud}
@@ -3386,6 +3619,22 @@ function Game() {
             onShare={onShare}
             goals={goals}
             onWalk={() => setWalking(true)}
+            /*
+             * The run, played back (2026-09-23). `endFilm` is the film of the
+             * run this screen is about, kept from the moment it was banked —
+             * so the button costs no disk read, and it is absent exactly when
+             * there was nothing to keep.
+             */
+            {...(endFilm === null
+              ? {}
+              : {
+                  onWatch: () =>
+                    setReel({
+                      of: endFilm,
+                      from: 'end',
+                      ground: memoryFor(slot, endFilm.from.rootSeed),
+                    }),
+                })}
             newPerks={gained.perks}
             newUnlocks={gained.unlocks}
             world={endWorld}
@@ -3722,6 +3971,34 @@ function Game() {
           worlds={ledgers.worlds}
           s={s}
           onBack={fame.hide}
+          /*
+           * WATCHING A ROW (2026-09-23). The panel closes, the film plays over
+           * the board, and the hall of fame comes back when it is over — which
+           * is what `reel.from` is for: a player three taps into their diary
+           * must not be handed the end screen instead.
+           *
+           * `canWatch` asks the disk per row rather than this file keeping a
+           * list: which films are still kept changes under the cap and under
+           * the shed ladder, and a list built when the panel opened would offer
+           * a door onto a film that has since gone.
+           */
+          canWatch={hasReplay}
+          onWatch={(at) => {
+            const kept = readReplay(at);
+            if (kept === null) return;
+            /*
+             * THE WHOLE STACK, not just this panel (2026-09-23).
+             *
+             * The hall of fame is opened THROUGH `more`, so hiding the diary
+             * alone leaves `more` standing over the board — a full-screen
+             * dialog between the player and the film they just asked for,
+             * swallowing the taps meant for it. `leaveMenus` is the same door
+             * `enterRun` uses when a run starts from a menu, and for the same
+             * reason: what happens next is the board.
+             */
+            leaveMenus();
+            setReel({ of: kept, from: 'fame', ground: memoryFor(slot, kept.from.rootSeed) });
+          }}
         />
       )}
 

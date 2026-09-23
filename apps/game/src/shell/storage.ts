@@ -15,6 +15,7 @@ import { decodeRecords, encodeRecords, type RecordBook } from '@meta/records';
 import { decodeRun, encodeRun } from '@meta/save';
 import { decodeTimeline, encodeTimeline, type Timeline } from '@meta/timeline';
 import { SHED_LADDER, type ShedRungId } from '@meta/shedLadder';
+import { decodeReplay, encodeReplay, type Replay } from '@meta/replay';
 import {
   decodeWorld,
   encodeWorld,
@@ -434,6 +435,11 @@ function shed(rung: ShedRungId): void {
       // ORDER is the part that was paid for, and a missing rung is how an
       // order gets quietly re-argued.
       return;
+    case 'replays':
+      // Every film. The rung above the diary, because a replay is a thing to
+      // look at and a diary row is a thing that happened — see `shedLadder.ts`.
+      clearReplays();
+      return;
     case 'timeline':
       drop(DEVICE.timeline);
       return;
@@ -498,6 +504,84 @@ export const writeRecords = (b: RecordBook): void => write(DEVICE.records, encod
 
 export const readTimeline = (): Timeline => decodeTimeline(read(DEVICE.timeline));
 export const writeTimeline = (t: Timeline): void => write(DEVICE.timeline, encodeTimeline(t));
+
+/* ---- the replays --------------------------------------------------------- */
+
+/**
+ * ONE KEY PER WATCHABLE RUN (2026-09-23, Marc: _"every run in the hall of
+ * fame"_).
+ *
+ * A key each rather than one blob holding all of them, and the reason is the
+ * write pattern: a replay is written ONCE, when its run ends, and read only
+ * when somebody taps a row. A single blob would rewrite every kept replay on
+ * every ending — hundreds of kilobytes through `localStorage`'s synchronous
+ * setter at the exact moment the end screen is trying to draw, and a quota
+ * failure there would take out the newest replay and the oldest together.
+ *
+ * The key carries the diary row's `at`, which is the only identity a timeline
+ * entry has (`meta/timeline.ts` — epoch ms, shell-supplied). So a row and its
+ * film are matched by the number already on the row, and no third ledger has
+ * to be kept in step.
+ */
+const replayKey = (at: number): string => `${NS}.replay.${at}.v1`;
+const REPLAY_PREFIX = `${NS}.replay.`;
+
+/**
+ * How many runs stay watchable, newest first.
+ *
+ * Marc's ruling was "every run in the hall of fame", and this is that ruling
+ * meeting a phone: a replay measures about 7 KB (`meta/replay.ts` has the
+ * measurement), `localStorage` is about 5 MB on the devices this game is for,
+ * and the diary, the worlds, the records and twenty board thumbnails are
+ * already in there. Fifty replays is roughly 350 KB — large enough that a
+ * player would have to finish a run a day for two months to lose their oldest
+ * film, small enough that the store cannot quietly become the biggest thing on
+ * the device. Older rows keep every fact they had; what they lose is the film.
+ *
+ * The shed ladder is the other half of this, and it comes first in an
+ * emergency: `replays` is a rung ABOVE the diary, because a film is the
+ * cheapest thing here to lose and a fact is not.
+ */
+const REPLAYS_KEPT = 50;
+
+/** Every kept replay's `at`, newest first. */
+function replayIds(): readonly number[] {
+  const d = disk();
+  if (d === null) return [];
+  const out: number[] = [];
+  try {
+    for (let i = 0; i < d.length; i++) {
+      const key = d.key(i);
+      if (key === null || !key.startsWith(REPLAY_PREFIX)) continue;
+      const at = Number(key.slice(REPLAY_PREFIX.length, -'.v1'.length));
+      if (Number.isFinite(at)) out.push(at);
+    }
+  } catch {
+    return out;
+  }
+  return out.sort((a, b) => b - a);
+}
+
+/** Whether a diary row has a film behind it — what puts WATCH on a row. */
+export const hasReplay = (at: number): boolean => read(replayKey(at)) !== null;
+
+export const readReplay = (at: number): Replay | null => decodeReplay(read(replayKey(at)));
+
+/**
+ * Keep a finished run's film, and let the oldest go once there are enough.
+ *
+ * The trim happens BEFORE the write rather than after, so the cap is what
+ * makes room for the new one instead of the shed ladder having to.
+ */
+export function writeReplay(at: number, replay: Replay): void {
+  for (const old of replayIds().slice(REPLAYS_KEPT - 1)) drop(replayKey(old));
+  write(replayKey(at), encodeReplay(replay));
+}
+
+/** Every film, gone. The shed ladder's rung, and RESET ALL's. */
+function clearReplays(): void {
+  for (const at of replayIds()) drop(replayKey(at));
+}
 
 export const readDailyBook = (): DailyBook => decodeDailyBook(read(DEVICE.daily));
 export const writeDailyBook = (b: DailyBook): void => write(DEVICE.daily, encodeDailyBook(b));
@@ -894,10 +978,32 @@ export const isFreeSlot = (slot: Slot): boolean => !hasBeenPlayed(readWorld(slot
 export function clearEverything(): void {
   for (const key of Object.values(DEVICE)) drop(key);
   for (const slot of SLOTS) clearSlot(slot);
+  /*
+   * AND THE FILMS, which are the one thing here not named by a fixed key
+   * (2026-09-23, found by `pnpm sweep` on the day they were written).
+   *
+   * Every other key this game owns is a constant in `DEVICE` or in
+   * `slotKeys`, so "everything" could be written as two loops over things
+   * already listed. A replay is keyed by the diary row it belongs to, so there
+   * is no list — and RESET ALL would have left a device's every film behind,
+   * watchable, under rows that no longer exist.
+   */
+  clearReplays();
 }
 
-/** For BACK UP: the raw blobs, so a backup is exactly what was on the device
- *  rather than a re-encoding that could quietly drop a field. */
+/**
+ * For BACK UP: the raw blobs, so a backup is exactly what was on the device
+ * rather than a re-encoding that could quietly drop a field.
+ *
+ * **The films are deliberately not in it** (2026-09-23). A backup is a file a
+ * player keeps, and fifty replays is roughly 350 KB of moves against a diary,
+ * three worlds and a records book that together are a few tens — it would be
+ * a backup that is mostly footage. What a backup exists to protect is what a
+ * device cannot regenerate: its worlds, its relics, its perks and its diary.
+ * A restored device therefore has every FACT about every run and films of
+ * none of them, which is the same trade `capShots` already makes for the
+ * diary's thumbnails.
+ */
 export function readAll(): Readonly<Record<string, string>> {
   const out: Record<string, string> = {};
   const keys = [...Object.values(DEVICE), ...SLOTS.flatMap((s) => Object.values(slotKeys(s)))];

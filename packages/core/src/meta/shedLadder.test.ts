@@ -17,6 +17,10 @@ describe('SHED_LADDER', () => {
     expect(SHED_LADDER.map((r) => r.id)).toEqual([
       'lastError',
       'otherReceipts',
+      // The films, added 2026-09-23 and placed here deliberately: a replay is
+      // the biggest thing per run on the device and the only one whose loss
+      // costs no FACT — every number it shows is still on its diary row.
+      'replays',
       'timeline',
       'otherWorlds',
     ]);

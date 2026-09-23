@@ -386,3 +386,23 @@ export async function placeOneTile(page: Page): Promise<void> {
   }
   throw new Error('placeOneTile: no legal hex found in the search rings, twice over');
 }
+
+/**
+ * PAST THE FILM, to the numbers (2026-09-23).
+ *
+ * A run that earned a ✦ plays itself back before its end screen (Marc's
+ * ruling: *"both: auto on a big run"*), so a test that walks a run out and
+ * then asks about the ending is asking while the board is still playing the
+ * run back. That is not a harness problem to route around — it is what a
+ * player meets — so this does what a player does: taps SKIP if a film is up.
+ *
+ * Silent when there is no film, which is most runs and every test that never
+ * reaches an ending. It is deliberately NOT folded into `begin`: a film starts
+ * when a run ENDS, which can be a hundred placements after the door.
+ */
+export async function pastTheFilm(page: Page): Promise<void> {
+  const skip = page.locator('[data-action="watch-skip"]');
+  if ((await skip.count()) === 0) return;
+  await skip.click();
+  await skip.waitFor({ state: 'detached' });
+}

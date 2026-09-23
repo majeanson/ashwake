@@ -490,7 +490,7 @@ export type Strings = {
   /** One sentence per rung of `meta/shedLadder`, plus `lost` — the outcome
    *  where every rung was spent and the run went anyway. */
   readonly shed: Readonly<
-    Record<'lastError' | 'otherReceipts' | 'timeline' | 'otherWorlds' | 'lost', string>
+    Record<'lastError' | 'otherReceipts' | 'replays' | 'timeline' | 'otherWorlds' | 'lost', string>
   >;
   readonly feature: Readonly<
     Record<
@@ -883,6 +883,19 @@ export type Strings = {
     readonly walkTheMap: string;
     /** And the way back out of it, to the numbers. */
     readonly backToEnding: string;
+    /**
+     * WATCHING A RUN AGAIN (2026-09-23, Marc: *"i'd like to be able to replay
+     * the pops and tile placements too"*).
+     *
+     * `watchRun` is the door — on the end screen, and on any hall-of-fame row
+     * whose film is still kept. `watchSkip` ends one; `watching` is the bar
+     * over the board while it plays, and it takes the two numbers because a
+     * film with no progress on it is a film a player cannot tell is nearly
+     * over.
+     */
+    readonly watchRun: string;
+    readonly watchSkip: string;
+    readonly watching: (step: number, of: number) => string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
     /**
      * THE VIEW BUTTON'S THREE STOPS (2026-09-08, Marc: *"Revise all 3 camera

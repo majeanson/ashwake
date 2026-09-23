@@ -18,6 +18,7 @@ import {
 } from '@view/view';
 import { claimsBetween, saidOf, spendReceipt } from '@view/receipts';
 import { unlockedBy, type WorldMemory } from '@meta/world';
+import type { Replay } from '@meta/replay';
 import type { RunMemory } from './storage';
 import type { PerkId } from '@meta/progress';
 
@@ -228,6 +229,21 @@ export type Session = {
    * path the first tap does not take.
    */
   readonly warm: () => void;
+  /**
+   * THE RUN AS A FILM — the board it opened on, and every move since
+   * (2026-09-23, Marc: _"i'd like to be able to replay the pops and tile
+   * placements too"_).
+   *
+   * A copy, taken at the moment it is asked for, because the session goes on
+   * playing: the caller is `App`'s banking effect, which writes it beside the
+   * diary row for the run that just ended, and a live array handed out there
+   * would be a film that keeps growing after the run it is of.
+   *
+   * `meta/replay.ts` is the rest of it — what a replay is, why it carries the
+   * opening STATE rather than the seed, and the fold that turns it back into
+   * boards.
+   */
+  readonly replay: () => Replay;
   /** Start again on a seed. */
   /**
    * Step into a run: a fresh one at `seed`, or `from` picked up exactly as the
@@ -393,6 +409,27 @@ export function createSession(opts: {
   let strings = opts.strings;
 
   /*
+   * THE FILM OF THE RUN IN PROGRESS (2026-09-23) — the board it opened on, and
+   * every move that has changed it since.
+   *
+   * In memory only, and that is a decision rather than an omission. Writing it
+   * to disk as it grows would mean a second debounced writer beside the keeper
+   * — the one file in this shell whose lifetime rules are load-bearing
+   * (`keeper.ts` explains what a stray write costs) — and a 7 KB `setItem` on
+   * every placement, on a device whose quota already has a ladder under it.
+   * The film is written once, when the run ends and the diary row it belongs
+   * to is created (`App`'s banking effect).
+   *
+   * **What that costs, stated plainly:** a run carried across a page reload
+   * resumes from the saved state, so its film starts where the run was picked
+   * up rather than where it began. `meta/timeline.ts` already accepts exactly
+   * this shape of limitation for its ✦ highlights, in the same words and for
+   * the same reason: what is kept is the facts, and this is the show.
+   */
+  let openedOn: GameState;
+  const moves: Action[] = [];
+
+  /*
    * ABOVE `snapshot`, and that is not cosmetic: `let snapshot = build()` runs
    * during `createSession`, and `build` reads both of these. Declared after it,
    * they are in the temporal dead zone and every session throws on creation —
@@ -400,6 +437,9 @@ export function createSession(opts: {
    */
   let memory = opts.memory;
   let state = opts.resume ?? open(opts.seed, tuning, memory, opts.wakeAt ?? null);
+  // The boot door opens a run too, and it is the one door that is not
+  // `restart` (`MODES.md`): the film starts here or a page-one run has none.
+  openedOn = state;
   let harvestAt: HexKey | null = null;
   let spotlight: Colour | null = null;
   let popped: Snapshot['popped'] = null;
@@ -566,12 +606,29 @@ export function createSession(opts: {
       }
       const next = reduce(state, action);
       if (next === state) return;
+      /*
+       * THE FILM IS RECORDED HERE, on the one line where a run actually moves
+       * (2026-09-23).
+       *
+       * After the refusal check, so a tap on an illegal hex — which `reduce`
+       * answers by handing the same state back — is not in the film. A replay
+       * is what HAPPENED, and a move the rules declined did not happen. It is
+       * also what makes the recording exact: `meta/replay.ts` folds these
+       * moves back through the same reducer, and an action that changed
+       * nothing would fold to nothing anyway, so keeping it would only make
+       * the film longer and the storage bigger.
+       *
+       * Every door into a run passes through `restart`, which starts a new
+       * film; this is the only place one grows.
+       */
+      moves.push(action);
       state = next;
       // A priced pocket that popped or ripened away is no longer a pocket.
       if (harvestAt !== null && state.cells[harvestAt]?.kind !== 'tile') harvestAt = null;
       said = whatToSay(before, next, action, cashed);
       commit();
     },
+    replay: () => ({ from: openedOn, moves: [...moves] }),
     warm() {
       /*
        * The first LEGAL hex, because the path a placement takes is the path a
@@ -611,6 +668,11 @@ export function createSession(opts: {
       // crossing into a fresh world and a reset all are.
       memory = next;
       state = from ?? open(seed, tuning, memory, wakeAt ?? null);
+      // A new run is a new film, and its first frame is the board being
+      // stepped onto — a fresh opening, or the state a saved run was picked
+      // up at. See `replay()`.
+      openedOn = state;
+      moves.length = 0;
       harvestAt = null;
       spotlight = null;
       popped = null;

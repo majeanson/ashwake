@@ -1217,3 +1217,49 @@ test('the manual tells a shared run what applies to it, and keeping now does', a
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('a row in the hall of fame plays its run back, and the diary comes back after', async ({
+  page,
+}) => {
+  /*
+   * WATCHING FROM THE DIARY (2026-09-23, Marc, asked how far back a replay
+   * should reach: *"every run in the hall of fame"*).
+   *
+   * The end screen's own button is tested in `board.spec.ts`; this is the
+   * other door, and the one with a place to return to. A player three taps
+   * into their diary who watches a run must be put back in their diary — not
+   * handed the end screen, which is what a film with one way home would do.
+   *
+   * `?end=1` with no `?seed=`: a seeded board banks a `shared` row, and a
+   * shared row is a run on somebody else's board. This is the device's own.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&end=1');
+  await begin(page);
+
+  // Past the film the run earns for itself, straight to the numbers.
+  const bar = page.locator('[data-hud="watching"]');
+  if (await bar.isVisible()) await page.locator('[data-action="watch-skip"]').click();
+
+  await page.locator('[data-door="more"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await page.locator('[data-go="fame"]').click();
+  await panel(page, 'fame').waitFor({ state: 'visible' });
+
+  const row = panel(page, 'fame').locator('details').first();
+  await row.locator('summary').click();
+  const watch = row.locator('[data-action="watch-row"]');
+  await expect(watch, 'a kept run offered no way to watch it').toBeVisible();
+  await watch.click();
+
+  // The panel steps out of the way and the board plays.
+  await expect(panel(page, 'fame'), 'the diary stayed over the film').toBeHidden();
+  await expect(bar, 'the row opened onto nothing').toBeVisible();
+
+  // And when it is over, the diary is where the player is put back.
+  await page.locator('[data-action="watch-skip"]').click();
+  await expect(bar).toBeHidden();
+  await expect(panel(page, 'fame'), 'the watcher was not put back in the diary').toBeVisible();
+
+  expect(errors).toEqual([]);
+});

@@ -1230,6 +1230,30 @@ h3.fact-label {
   border-radius: var(--radius);
 }
 
+/*
+ * WATCH THIS RUN, inside an opened diary row (2026-09-23).
+ *
+ * Full width and its own line, under the facts: the row is a disclosure and
+ * this is the one thing in it that DOES something, so it reads as the row's
+ * action rather than as another fact. The display face and the accent border
+ * are `.end-walk button`'s, which is the same control in the same voice at
+ * the other end of a run — a door onto the board.
+ *
+ * Tall enough to be tapped: `e2e/targets.spec.ts` holds every control on
+ * every screen to 44px, and a button that only appears inside an opened fold
+ * is exactly the kind that gets missed.
+ */
+.fame-watch {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--gap);
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ---- the front door ----------------------------------------------------- */
 
 /*
@@ -3624,4 +3648,33 @@ h3.fact-label {
   to {
     opacity: 0;
   }
+}
+
+/*
+ * THE FILM'S BAR (2026-09-23) — `.end-walk`'s row, with a caption in it.
+ *
+ * The bar itself is `.end-walk`: one row at the foot of the board while a
+ * scene is playing over it, and a replay is exactly that scene. What it adds
+ * is the progress caption, which sits to the LEFT of the control rather than
+ * above it — the bar is one tap target tall by measurement (`.camera` is
+ * positioned off that height), and a second line would push the corner cluster
+ * up over the board it is meant to be sitting beside.
+ *
+ * `gap` rather than `space-between`: the pair reads as one object, centred, the
+ * way the single button does when the ending steps aside.
+ */
+.end-walk {
+  gap: var(--gap);
+  align-items: center;
+}
+
+.watching-at {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+  /* A number that changes every beat must not move the button it sits beside:
+     tabular figures keep "9 / 40" and "10 / 40" the same width. */
+  font-variant-numeric: tabular-nums;
 }
