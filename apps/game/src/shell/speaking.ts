@@ -96,6 +96,8 @@ export type Floor = {
   readonly touring: boolean;
   /** Receipts still in the air — see `Speaking.speaking`. */
   readonly speaking: number;
+  /** True while a run is being WATCHED rather than played — see the clause. */
+  readonly watching: boolean;
 };
 
 /**
@@ -116,10 +118,19 @@ export type Floor = {
  *  - **`speaking`** — the same rule for a receipt that has NOT LANDED YET, and
  *    the one Marc reported: held until the board has finished saying what it is
  *    already saying.
+ *  - **`watching`** — a REPLAY is a board that is not the one the lesson is
+ *    about (2026-09-23, found by the audit pass rather than by a report). The
+ *    last placement of a run can both end it and raise a lesson, and a run
+ *    that earned a ✦ then plays itself back — so the card would sit over a
+ *    film of a finished run, and dismissing it would fire `showOnBoard`,
+ *    flying the camera to a hex in the middle of the replay. It is the
+ *    `touring` clause's argument exactly ("a lesson read over a moving map"),
+ *    arriving from the other direction.
  */
 export const mayTeach = (floor: Floor): boolean =>
   floor.card !== null &&
   floor.card !== 'story' &&
   !floor.said &&
   !floor.touring &&
+  !floor.watching &&
   floor.speaking === 0;

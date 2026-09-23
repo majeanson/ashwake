@@ -1203,9 +1203,21 @@ test('NEW RUN leaves the world it was played in exactly where it was', async ({ 
   await page.goto('/?end=1');
   await begin(page);
   await clearCards(page);
-  // A run on the device's own world earns at least a best reach, so it plays
-  // itself back before its numbers now (2026-09-23) — past it, as a player is.
+  /*
+   * A run on the device's own world earns at least a best reach, so it plays
+   * itself back before its numbers now (2026-09-23) — past it, as a player is.
+   *
+   * And CARDS AGAIN AFTER IT, which is a real consequence rather than a
+   * harness detail: a lesson that comes due as a run ends is held while the
+   * film plays (`mayTeach`'s `watching` clause, so it is not read over a
+   * moving replay) and arrives the moment the film is over — on top of the end
+   * screen. That is where such a lesson has always landed on a run with no
+   * film; what the replay changes is that it now happens reliably.
+   * `NEXT.md` §1a carries the question of whether a lesson should interrupt
+   * an ended run at all, which is Marc's to answer and not a test's.
+   */
   await pastTheFilm(page);
+  await clearCards(page);
   await expect(page.locator('[data-hud="end"]')).toBeVisible();
 
   const worldSeed = async (): Promise<number | null> => {

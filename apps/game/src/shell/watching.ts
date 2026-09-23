@@ -23,15 +23,34 @@ import type { RunMemory } from './storage';
  *
  * ## What it does NOT do, on purpose
  *
- * It does not speak. The film's session computes receipts and epitaphs exactly
- * as the live one does, and every one of them is thrown away: a toast reading
- * "+14 POINTS" over a run that finished ten minutes ago is the game telling
- * you something that is not happening. The same goes for the teaching drip,
- * the buzz and the sound — `App` gates all of them on there being no film.
+ * It does not speak, and the MECHANISM matters more than the claim — this
+ * paragraph asserted a gate that does not exist until the 2026-09-23 audit
+ * pass went looking for it, which is the exact fault `CLAUDE.md` warns about
+ * two paragraphs from the top: *a comment that asserts an invariant is not the
+ * invariant, and it is the sentence that stops a reader checking.*
  *
- * It also never touches the disk. A film's session is created with no memory
- * and its keeper is nobody: `App` holds the one keeper, and a projector that
- * could write is a projector that can overwrite the run you are about to play.
+ * What is actually true, checked rather than asserted:
+ *
+ *   - **The film's own utterances are never read.** Its session computes
+ *     receipts and epitaphs exactly as the live one does — `whatToSay` runs on
+ *     every dispatch — and `App` reads `film.snap.board` and
+ *     `film.snap.popped` and nothing else. A toast reading "+14 POINTS" over a
+ *     run that finished ten minutes ago would be the game lying about the
+ *     present, and it cannot happen because nothing is listening.
+ *   - **The live session is quiet because nothing dispatches into it.** The
+ *     teaching drip, the buzz and the sound all hang off a player's action
+ *     through `act`, and while a film is up the board's taps end the film
+ *     (`App`'s `onTap`, first rung) instead of reaching the game. There is no
+ *     timer anywhere that speaks on its own.
+ *
+ * So a future change that made anything speak on a CLOCK would need this
+ * paragraph re-checked rather than trusted.
+ *
+ * It also never touches the disk: no keeper is made for it, `App` holds the
+ * one there is, and a projector that could write is a projector that can
+ * overwrite the run you are about to play. It IS given the world's remembered
+ * ground, which is a read and not a write — see `ground` below for why a film
+ * drawn on bare plain is a film of a different board.
  */
 
 /**

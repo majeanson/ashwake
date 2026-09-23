@@ -3032,7 +3032,15 @@ function Game() {
    * block. Splitting those apart is the whole point of the extraction, so the
    * narrowing gets a name too instead of an assertion at each use.
    */
-  const teaching = mayTeach({ card, said: saidCard !== null, touring, speaking }) ? card : null;
+  const teaching = mayTeach({
+    card,
+    said: saidCard !== null,
+    touring,
+    speaking,
+    watching: film !== null,
+  })
+    ? card
+    : null;
 
   /**
    * A desktop, or anything else with a real pointer.

@@ -9002,3 +9002,75 @@ rules, not the animations, not the camera._
 Verified: 1352 unit tests / 106 files (three new files, 49 new tests),
 `pnpm sim` byte-identical, sweep 0 findings over 316 files, budget green at its
 new bar, typecheck, eslint, prettier.
+
+### Session 114 — the audit pass: two matrices seven sessions stale, and a docblock of mine that asserted a gate I never built (2026-09-23)
+
+**Question:** Marc asked for the replay AND for _"the audit pass"_ — a sweep
+over everything that landed since 2026-09-16 for mechanics that shipped inert.
+`pnpm sweep` is at zero. What does the ritual find that the tool cannot?
+
+**Four things, and one of them is a bug in code written the same day.**
+
+**1. `INTERACTIONS.md` stopped at 2026-09-10, and eight gestures landed after
+it.** The lens panel's door and its rows, the resting board, the opening beat,
+the two WATCH doors, the tap on a film and its SKIP. Each was checked the way
+`CLAUDE.md` asks — grep for a consumer of the ACTION, not for the control — and
+the section says plainly that **two of the eight were inert when written**: the
+fly-in and the opening beat were reachable from every door except the front one
+(Session 112), and a tap on a film reached nothing at all because the board host
+is `inert` while a run is ended (Session 113). A matrix that had been current
+would have asked both questions a week earlier.
+
+**2. `MODES.md` had no row for a session that is not a door.** The replay
+creates a second `Session` — the first in this app that is not a run being
+played — and the file's whole premise is that a mode is a set of flags set by
+doors. So a reader sweeping the doors would have met a session that came
+through none of them. It has a section now: what the projector is, and the four
+things it is not (it never writes, its flags are read by nothing, it does not
+speak, and it carries the world's ground as a READ).
+
+**3. A docblock I wrote yesterday asserted a gate that did not exist.**
+`watching.ts` said the teaching drip, the buzz and the sound are gated on there
+being no film — _"`App` gates all of them"_ — and `App` did no such thing. This
+is precisely the fault `CLAUDE.md` names at the top: **a comment that asserts an
+invariant is not the invariant, and it is the sentence that stops a reader
+checking.** Going and checking found the gate genuinely missing and the case
+reachable without anything unusual: the last placement of a run can both end it
+and raise a lesson, and a run that earned a ✦ then plays itself back — so the
+card sits over a film, and dismissing it fires `showOnBoard`, flying the camera
+to a hex in the middle of the replay. `mayTeach` has a `watching` clause now,
+with the argument beside the four that were already there, and two tests.
+
+**4. And the fixture that clause is tested through cannot be trusted to ask.**
+`Floor` gained a required field and `speaking.test.ts` kept compiling without
+it, because a spread of a `Partial<Floor>` satisfies the required properties of
+`Floor` as far as the checker can tell. The default floor quietly carried
+`watching: undefined`. Written out now — and worth recording because `MODES.md`
+makes the opposite claim about the `Door` table ("the compiler asks every one
+of them when a flag is added"), which is true THERE, where each door is a whole
+literal with no spread. **A fixture built by spreading is where that stops
+being true.**
+
+**What the pass did NOT find:** nothing dead. `pnpm sweep` is at 0 over 316
+files with 78 rulings, every `data-action` in the app has a handler (checked
+mechanically, two apparent misses were long docblocks between the attribute and
+its `onClick`), and the catalogue pass has no unread sentence. The tool is
+doing its half; what it cannot see is a MATRIX going stale and a SENTENCE
+making a promise.
+
+_The instrument sweeps symbols. The ritual sweeps claims._
+
+Verified: 1354 unit tests / 106 files, `pnpm sim` byte-identical, sweep 0
+findings, budget green, typecheck, eslint, prettier — and `modes.test.ts`
+caught this session's own matrix edit naming a symbol the code does not
+declare, which is the same test in the same spirit.
+
+**Addendum to Session 114, the same evening.** The `watching` clause's first
+full run turned up its own consequence, and the suite photographed it: a CACHE
+card sitting on top of "RUN 1 · 530 · NEW BEST". A lesson due on the last
+placement is held while the film plays — it must be — so it arrives the instant
+the film ends, over the end screen. That is where such a card has always
+landed on a run with no film; the replay only makes it reliable. Left as
+behaviour and written down as a question for Marc (`NEXT.md` §1a): `mayTeach`
+has four clauses for when a lesson may not interrupt and "the run is over" is
+not one of them.

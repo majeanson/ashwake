@@ -453,6 +453,20 @@ built.** `LOG.md` Session 105 is the reasoning.
   **And it uncovered a four-week-old hole:** the front door never called
   `open`, so the fly-in Marc asked for on 2026-09-16 never played on the first
   run of a page. Fixed the same hour; `LOG.md` Session 112.
+- **A LESSON CAN INTERRUPT AN ENDED RUN, and the replay made it reliable —
+  yours (2026-09-23).** A teaching card that comes due on the last placement of
+  a run is held while the film plays (it must be: a card read over a moving
+  replay is the `touring` bug, and dismissing it flies the camera mid-film),
+  so it arrives the moment the film ends — on top of the end screen, over the
+  score. **That has always been where such a card lands** on a run with no
+  film; what the replay changes is that it now happens every time rather than
+  sometimes. Seen as a photograph: a CACHE card over "RUN 1 · 530 · NEW BEST".
+  `mayTeach` has four clauses that each say when a lesson may NOT interrupt,
+  and "the run is over" is not one of them. **The question is yours**: should a
+  lesson wait for the next run instead — the ledger keeps the moment either
+  way — or is a late lesson better than none? One line in
+  `shell/speaking.ts` whichever way it goes.
+
 - **~~The death sequence is a REPLAY~~ — RULED AND BUILT 2026-09-23**
   (`LOG.md` Session 113). A film is the state a run opened on plus every move
   that changed it (~7 KB), played back by a second session through the same

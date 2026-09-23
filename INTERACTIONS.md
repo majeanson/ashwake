@@ -264,6 +264,34 @@ supersets of Ashwake 1's), every remaining core diff (D4 text extraction, no
 rule moved), `shimmer` and `native` (consumed through `render/materials.ts`,
 not by the board directly), and every key in the text catalogue.
 
+## The gestures this matrix did not have (2026-09-23, the audit pass)
+
+This file's newest entry was 2026-09-10, and seven sessions of surface landed
+after it. Listed here rather than folded into the tables above, because what a
+reader needs to know is that these are NEW — nothing below was lost and
+recovered, which is what the tables are for.
+
+Each row was checked the way `CLAUDE.md` asks: grep for a consumer of the
+action, not for the control.
+
+| Gesture                              | What it does                                                                 | Checked                                                                                  |
+| ------------------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **LENS, beside LUCK, while playing** | opens the lens panel — what the board is worth, per ground                   | ✓ `screens/Camera` → `App`'s `lens` state → `screens/LensPanel`; a row holds the lens    |
+| **A row in the lens panel**          | holds that colour's lens, the same two writes a card's long-press makes      | ✓ `holdLens`, and LENS OFF appears over the board as it always has                       |
+| **Nothing, for fifteen seconds**     | the board rests: dimmed under a scrim with the lockup on it                  | ✓ `board/resting.ts` → `.board-rest`; the first touch wakes it AND lands                 |
+| **BEGIN, on any door**               | the plain lights up, the whole world is held, then one glide to the frontier | ✓ `board/waking.ts` + `BoardHandle.open`; the front door called neither until 2026-09-23 |
+| **WATCH THIS RUN, on the ending**    | the run plays itself back over the board                                     | ✓ `EndScreen.onWatch` → `App`'s reel → `shell/watching.ts`                               |
+| **WATCH THIS RUN, in a diary row**   | the same, from the hall of fame; the diary comes back when it ends           | ✓ `Fame.onWatch` → `readReplay` → the reel, which remembers it came from the diary       |
+| **A tap anywhere on a playing film** | ends it and goes to the numbers                                              | ✓ `closeReel`, from the board host's own pointer handler and from `onTap`'s first rung   |
+| **SKIP, on the film's bar**          | the same, for a thumb that wants a control and for a keyboard                | ✓ `data-action="watch-skip"` → `closeReel`                                               |
+
+**And two of these were inert when they were written**, which is the whole
+reason the check exists rather than the list: the opening beat and the fly-in
+were reachable from every door except the front one (Session 112), and a tap
+on a film reached nothing at all, because the board host is `inert` while a run
+is ended (Session 113). Both were found by a test asking for the gesture, not
+by reading the code that implements it.
+
 ## What is still missing
 
 1. Nothing this file has ever listed as a GESTURE. The lens-clear button was

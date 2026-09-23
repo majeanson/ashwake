@@ -17,11 +17,27 @@ import { mayTeach, type Floor } from './speaking';
  * test React, not the rule.
  */
 
+/*
+ * EVERY FIELD, WRITTEN OUT — and the compiler will not ask for it (2026-09-23).
+ *
+ * `watching` was added to `Floor` on the day the replay landed, and this
+ * fixture kept compiling without it: a spread of a `Partial<Floor>` satisfies
+ * the required properties of `Floor` as far as the checker is concerned, since
+ * it cannot know which keys the spread actually carries. So the default floor
+ * quietly had `watching: undefined`, which behaves like `false` and is not the
+ * same as saying so.
+ *
+ * Worth stating because `MODES.md` makes the opposite claim about the `Door`
+ * table — "the compiler asks every one of them when a flag is added" — and
+ * that claim is true THERE, where each door is a whole literal with no spread.
+ * A fixture built by spreading is the shape where it stops being true.
+ */
 const floor = (over: Partial<Floor> = {}): Floor => ({
   card: 'luck',
   said: false,
   touring: false,
   speaking: 0,
+  watching: false,
   ...over,
 });
 
@@ -93,5 +109,27 @@ describe('may a lesson interrupt', () => {
     ]) {
       expect(mayTeach(floor(over)), JSON.stringify(over)).toBe(false);
     }
+  });
+});
+
+/**
+ * AND NOT OVER A REPLAY (2026-09-23).
+ *
+ * The clause the audit pass added, and the one case that is reachable without
+ * anybody doing anything unusual: the last placement of a run can both end it
+ * and raise a lesson, and a run that earned a ✦ then plays itself back. The
+ * card would be read over a film of a finished run — and dismissing it fires
+ * `showOnBoard`, which flies the camera to a hex in the middle of the replay.
+ *
+ * The lesson is not LOST by being refused here; `mayTeach` decides when a
+ * moment may interrupt, never whether it was true.
+ */
+describe('a lesson and a film', () => {
+  it('waits while a run is being watched', () => {
+    expect(mayTeach(floor({ watching: true }))).toBe(false);
+  });
+
+  it('and interrupts again the moment the film is over', () => {
+    expect(mayTeach(floor({ watching: false }))).toBe(true);
   });
 });

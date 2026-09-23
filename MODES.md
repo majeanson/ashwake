@@ -49,6 +49,36 @@ Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
 | **takeCrossing**                                                      | null           | false               | none (fresh world)       | `economyAt` | **true**     |
 | **RESET ALL** (direct `session.restart`)                              | null           | false (default)     | none                     | `economyAt` | —            |
 
+## A SEVENTH SESSION THAT IS NOT A DOOR — the projector (2026-09-23)
+
+The replay creates a `Session` (`shell/watching.ts`), and it is the first one
+in this app that is not a run being played. It belongs in this file for the
+reason the file exists: **a mode is a set of flags set by doors**, and a reader
+sweeping the doors would otherwise meet a session that came through none of
+them and assume it had.
+
+What it is: a second session, resumed at the film's opening state, fed the
+run's recorded moves on a clock, and drawn by the same `<Board>`.
+
+What it is NOT, and every line here is load-bearing:
+
+- **It never writes.** No keeper is made for it, and `keeper.ts` is the file
+  that explains what a stray write costs. It cannot save a run, bank a world
+  or touch the diary.
+- **Its flags are not read by anything.** `daily` and `detour` describe the
+  run the PLAYER is in; while a film plays, `App`'s own flags are still that
+  run's, and the chrome on screen is the film's bar and nothing else.
+- **It does not speak.** Every receipt, epitaph and claim its `whatToSay`
+  computes is thrown away — see `watching.ts` for why a toast about a run that
+  ended ten minutes ago is the game lying about the present.
+- **It carries the world's remembered ground**, so a run is replayed on the
+  board it was played on rather than on bare plain — read today, which is
+  later than the run, and `memoryFor` refuses a world whose seed is not the
+  film's.
+
+The one rule it shares with every door above: **the board host never
+remounts**. The film is a change of SOURCE, not of canvas.
+
 **NOT MODE FLAGS**, and this list is what makes the table above checkable:
 `Door` carries ten fields and the five columns are the five that decide what
 KIND of run this is. The other five — `resume`, `seed`, `wakeAt`, `from` and
