@@ -8841,3 +8841,79 @@ Verified: 1305 unit tests / 103 files, `pnpm sim` byte-identical, sweep 0
 findings over 310 files, budget green, typecheck (core, app, root), eslint,
 prettier; the new browser test green on Chromium and WebKit and red on both
 with the fix reverted.
+
+### Session 112 — the plain lights up, and the opening it lights was reachable from everywhere except the front door (2026-09-23)
+
+**Question:** Marc picked _"the plain lights up"_ from three drawings for the
+welcome, and answered the death question with something else entirely — _"i'd
+like to be able to replay the pops and tile placements too"_. What does the
+welcome cost, and is a replay a feature or a fantasy?
+
+**The welcome is built. The replay is a feature, and the reason is that the
+board already knows how to put on the show.**
+
+**`board/waking.ts` is the beat**, and it is `.board-rest` read backwards: the
+same 72% wash of the ground and the same lockup, fading OUT over 900 ms while
+the camera holds the whole world, then the second leg glides to the frontier
+as it already did. `?wake=0` is the dial that zeroes it, `?wake=3000` is how
+the look gets judged from a phone, and reduced motion drops the beat entirely.
+
+**It is the SCRIM that lifts, and not the rig, and that is not a shortcut.**
+The drawing says "the light rig comes up". `render/materials.test.ts` grades
+the entire palette against `theme/rig.ts` — every contrast number in this
+project is a statement about a board lit by exactly that rig — so a rig eased
+up from nothing would make the budget _a description of a board that does not
+exist_, which is the sentence this codebase already uses about tone mapping. A
+wash of the ground colour lifting off a fully lit board looks like a plain
+lighting up and is a board the tests have measured at every frame of it.
+
+**And building it found something four weeks old: THE FRONT DOOR NEVER OPENED
+A RUN.** The beat hangs off `BoardHandle.open`, `open` hangs off `App`'s
+`framing` counter, and `frameTheRun` is called by `enterRun` — which the BOOT
+door is not (`MODES.md` says so in as many words). So a page that loads and has
+BEGIN pressed called `open` never: **not the beat, and not the two-leg fly-in
+Marc asked for on 2026-09-16 and that was built, tested and deployed the same
+day.** It played on NEW RUN, on a world switch and on the daily, and not on the
+first run of a page — which is the run a stranger plays and the run Marc plays
+most mornings. The camera test could not see it, because the rig's own mount
+fit centres the board just as well; what saw it was a probe asking whether
+`open` was called at all, after the beat failed to appear and guessing was the
+alternative. One line in `beginRun` fixes it, and the beat's own e2e is now the
+only test that can tell whether that door opens.
+
+**The four milliseconds moved, as ruled.** Marc, 2026-09-16: the JIT warm-up is
+wanted _"as part of a welcome and death sequence rather than as four
+milliseconds"_. `Session.warm` runs one real placement through `reduce` and
+both views and drops all of it, on the opening beat, so the `V8.CompileCode`
+Session 100 measured under the first thumb is paid where nobody is waiting.
+Three tests ask the only question that matters about it: the run does not move,
+no listener is told, and a board with nowhere left to build declines.
+
+**The harness lost a flake it has been paying for since P6.1.** One WebKit shot
+in roughly twenty-five came back _"suspiciously small"_ — and it was two
+captures, not one: `boardDrawn` polls until it can photograph the board, the
+caller then took its OWN screenshot, and between them a composite can take the
+drawing buffer away (`frameloop="demand"`, no `preserveDrawingBuffer`).
+`boardPicture` hands back the bytes that passed the poll, so there is no window
+at all. Twenty-four shots twice over on WebKit, 48/48.
+
+**The sweep caught this session's own export** — `Waking`, read only in its own
+file — which is the ritual working on the day it was written rather than three
+weeks later.
+
+_A mechanism is reachable from a door or it is not shipped. The fly-in had a
+test, a ledger entry, a deploy and a phone confirmation, and still did not
+happen on the door every player starts at._
+
+**What is next, and Marc has ruled it:** the death sequence is a REPLAY — the
+run played back, placements and pops, **automatically on a run that earned it**
+(the ✦ moments `meta/timeline.ts` already detects) and behind a button on every
+other, with **every hall-of-fame run watchable**. The engine is a pure reducer
+and the board animates from state changes, so a recorded action list replays
+the show; what it needs is the recorder, a rung in the shed ladder for the kept
+moves, and a driver with a clock. `NEXT.md` §1a carries the ruling.
+
+Verified: 1313 unit tests / 105 files (eight new), `pnpm sim` byte-identical,
+sweep 0 findings over 312 files, budget green, typecheck, eslint, prettier;
+e2e 139 Chromium and, on WebKit, 126 with one known GPU flake that passes
+alone and 48/48 on the repeated shot run.

@@ -170,3 +170,39 @@ failing the game.
   "retune freely": it is that a change to a number now needs the thing
   the freeze was standing in for, which is EVIDENCE. Play found it, or
   the harness did. A retune argued from taste alone still does not land.
+
+## The look-pass — six answers this body is waiting on (2026-09-23)
+
+Ten minutes on **https://ashwake.marcportal.com**, on the phone, in portrait,
+after two reloads (or NEW VERSION) so the build is today's. Not a run: six
+looks, in the order that costs the fewest taps. Each one is a finding already
+written down at its declaration and in `NEXT.md` §1a — **this file does not
+repeat the reasoning, it asks the question**, so the two cannot drift.
+
+Every answer is one sentence, and "fine" is a complete answer. Where an answer
+is a number, a number is what settles it.
+
+1. **The opening beat.** BEGIN on a world you have played. The board shows the
+   WHOLE world, holds, then glides once to the frontier.
+   → Is the hold (700 ms) the right beat — too long, too short, right?
+   → Does the landing read right on a big world, or does it crop too tight?
+2. **The rest screen.** Leave the board alone for fifteen seconds. `?rest=2`
+   makes it two seconds if you would rather not wait.
+   → Is the dim deep enough, and is the lockup the right size?
+3. **The lens panel.** LENS, beside LUCK, while a run is being played.
+   → Is the sheet too dense on a phone?
+   → Does WORTH read as the number you wanted, or should it be the priced
+   points?
+   → Is LENTILLE the word for the corner button?
+4. **Which pocket will pop.** Play until POP appears with more than one ripe
+   pocket, and look at the board without tapping.
+   → Can you tell which pocket POP will take? It is outlined in accent ink
+   already — the question is whether the outline is loud enough on a phone.
+5. **The atlas door.** From the board, find the atlas the way a stranger would.
+   → Is the door too quiet, and where would you look for it first?
+6. **The terrain sides.** Open `?light=0.7`, then the same board with no flag.
+   → At 0.7 the rig is flatter. Does FARM's shaded side still read as a GAP in
+   the ground at either setting, or is it a side?
+
+**If a seventh thing is wrong, that is the most valuable line on the page.**
+Write it as you see it, not afterwards.

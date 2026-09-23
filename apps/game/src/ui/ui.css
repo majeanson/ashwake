@@ -3580,3 +3580,48 @@ h3.fact-label {
      line on the narrowest phone this game supports. */
   white-space: nowrap;
 }
+
+/*
+ * THE OPENING BEAT — the rest screen, read backwards (2026-09-23).
+ *
+ * Marc picked "the plain lights up" from three drawings: the board arrives
+ * under a wash of the ground with the lockup on it, and the wash lifts while
+ * the camera holds the whole world. Same 72% mix and same lockup as
+ * `.board-rest` above, because they are the same picture meaning the same
+ * thing at the two ends of a run — the plain, with the world not yet in your
+ * hands. What differs is the clock and the direction, and the duration is set
+ * by `board/waking.ts` on the element so `?wake=` can be judged from a phone.
+ *
+ * `pointer-events: none` for the rest screen's reason, which matters more
+ * here: a player who taps during the opening is placing a tile, and the beat
+ * must not eat the first gesture of the run it is welcoming.
+ *
+ * `forwards` rather than `both`: the element is unmounted by its own timer at
+ * the end, so the last frame it holds is the transparent one and nothing
+ * flashes back before React removes it.
+ */
+.board-wake {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  pointer-events: none;
+  animation: wake-out 900ms ease-in forwards;
+}
+
+.board-wake img {
+  width: min(34%, 14rem);
+  height: auto;
+  opacity: 0.55;
+}
+
+@keyframes wake-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

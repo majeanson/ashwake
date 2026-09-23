@@ -442,7 +442,31 @@ built.** `LOG.md` Session 105 is the reasoning.
   during the beat, ended by a tap through `endTour`, one cut under reduced
   motion. **Yours on the phone:** whether 700 ms is the beat, and whether
   the landing reads right on a big world, where DEFAULT crops to the frontier.
-- **Welcome and death sequences** (the warm-up above).
+- **~~The welcome~~ — BUILT 2026-09-23**, from three drawings: Marc picked _"the
+  plain lights up"_. `board/waking.ts` is the rest screen read backwards — the
+  same wash and lockup, lifting over 900 ms while the camera holds the whole
+  world, then the glide. The rig is NOT ramped and the docblock says why (the
+  contrast budget is graded against it). `?wake=0` zeroes it, `?wake=3000` is
+  the phone's dial, reduced motion cuts it. The warm-up moved inside it as
+  ruled (`Session.warm`). **Yours on the phone:** whether 900 ms is the beat,
+  and whether the lockup wants to be there at all on a run you are resuming.
+  **And it uncovered a four-week-old hole:** the front door never called
+  `open`, so the fly-in Marc asked for on 2026-09-16 never played on the first
+  run of a page. Fixed the same hour; `LOG.md` Session 112.
+- **The death sequence is a REPLAY — RULED 2026-09-23, not yet built.** Asked
+  to choose between three endings, Marc asked for something else: _"i'd like to
+  be able to replay the pops and tile placements too."_ Then, on two questions:
+  **it plays itself on a run that earned it** — the ✦ moments
+  `meta/timeline.ts` already detects — and is a **button on the end screen**
+  otherwise; and **every hall-of-fame run is watchable**, not just the last one.
+  What that costs, checked against the code before it was promised: the engine
+  is a pure reducer and the board's whole animation vocabulary (the leap, the
+  pop cascade, the rings, the camera) fires off state changes, so replaying a
+  recorded action list re-plays the show for nothing. What is owed is a
+  recorder on the one dispatch seam, roughly 1–3 KB of moves per kept run
+  **with a rung of its own in the shed ladder** (`meta/shedLadder.ts` — a full
+  phone must shed replays before it sheds a world), a driver with a clock and
+  a skip, and the two doors. It is the next build.
 
 **The overlooked things, asked for and done the same evening** (Marc: _"do
 all overlooked things"_, after being offered the list; `LOG.md` Session 109):

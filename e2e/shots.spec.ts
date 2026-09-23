@@ -2,7 +2,14 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
-import { assertLooksLikeAPicture, begin, boardDrawn, clearCards, watchErrors } from './helpers';
+import {
+  assertLooksLikeAPicture,
+  begin,
+  boardDrawn,
+  boardPicture,
+  clearCards,
+  watchErrors,
+} from './helpers';
 
 /**
  * The shot set (Stage 2b, 2026-08-28): one picture per camera angle, over ONE
@@ -123,22 +130,29 @@ for (const [name, query] of ANGLES) {
     await page.waitForTimeout(250);
     await clearCards(page);
     /*
-     * AND THE PICTURE POLL IS THE LAST THING BEFORE THE CAMERA (2026-09-22).
+     * THE PICTURE IS TAKEN LAST, AND IT IS TAKEN ONCE (2026-09-22, tightened
+     * 2026-09-23).
      *
-     * It used to be the first, and moving the waits above in front of it
-     * emptied seventeen WebKit shots with *"suspiciously small"*. This canvas
-     * is `frameloop="demand"` with no `preserveDrawingBuffer` — `Board.tsx`
-     * says it at `snapshot()`: *"after the browser composites, the drawing
-     * buffer is gone"* — so a capture is only safe in the beat where a frame
-     * has just been drawn. `boardDrawn` polls until it can take one, which
-     * makes it the right neighbour for the shot and the wrong thing to put
-     * a wait after.
+     * This canvas is `frameloop="demand"` with no `preserveDrawingBuffer` —
+     * `Board.tsx` says it at `snapshot()`: *"after the browser composites, the
+     * drawing buffer is gone"* — so a capture is only safe in the beat where a
+     * frame has just been drawn. Two things follow, and each was learned by
+     * emptying shots.
+     *
+     * **The poll goes last.** Moving the waits above in front of it emptied
+     * seventeen WebKit shots with *"suspiciously small"*.
+     *
+     * **And the picture it validated is the picture judged.** Polling and then
+     * taking a SECOND screenshot leaves a composite's worth of window between
+     * them, which on WebKit is an empty second capture about one shot in
+     * twenty-five — a flake that reads exactly like a broken renderer.
+     * `boardPicture` hands back the bytes that passed.
      */
-    await boardDrawn(page);
+    const picture = await boardPicture(page);
 
     // The canvas alone is what has to BE a picture; the whole phone is what
     // gets looked at, because a board is judged next to the chrome over it.
-    assertLooksLikeAPicture(await page.locator('canvas').screenshot(), name);
+    assertLooksLikeAPicture(picture.bytes, name);
     await mkdir(SHOTS, { recursive: true });
     await writeFile(join(SHOTS, `${name}.png`), await page.screenshot());
 

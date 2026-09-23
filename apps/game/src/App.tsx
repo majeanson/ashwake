@@ -1134,6 +1134,29 @@ function Game() {
 
   const beginRun = useCallback(() => {
     setStarted(true);
+    /*
+     * THE FRONT DOOR'S BEGIN IS AN OPENING TOO — and it was the one that was
+     * not (found 2026-09-23, building the welcome beat).
+     *
+     * `enterRun` frames every run it opens, and the boot door is not
+     * `enterRun` (`MODES.md`): a page that loads, fits its rig at mount and
+     * then has BEGIN pressed never called `BoardHandle.open` at all. So the
+     * opening Marc asked for on 2026-09-16 — _"whole world, then fly in"_,
+     * built the same day — has only ever played on NEW RUN, a world switch or
+     * the daily, and never on the front door. **That is the first run of every
+     * page, which is the run a stranger plays.** The beat was written, tested,
+     * shipped and unreachable from the one door that matters most.
+     *
+     * The effect on `framing` is where both the fly-in and the welcome hang,
+     * so framing here is the whole fix. It is not "the board moving on its
+     * own" that the effect's own docblock refuses: that sentence is about the
+     * MOUNT, where nobody has asked for anything. This is a person pressing
+     * BEGIN.
+     *
+     * Before the territory line's early return below, because a run that
+     * opens with a gift is still a run opening.
+     */
+    frameTheRun();
     const at = session.get();
     const from = startingPerk(at.state.tuning, at.state.claimed.length);
     if (from > 0) {
@@ -1148,7 +1171,7 @@ function Game() {
      * the one board where both are true is the story card's dismissal.
      */
     speakLesson(progress, at);
-  }, [session, s, say, progress, speakLesson]);
+  }, [session, s, say, progress, speakLesson, frameTheRun]);
   const board = useRef<BoardHandle>(null);
 
   // Every state the reducer produces is offered to the keeper, which decides
@@ -2809,6 +2832,22 @@ function Game() {
   useEffect(() => {
     if (framing === 0) return;
     board.current?.open(snap.state.wakeAt ?? key(0, 0));
+    /*
+     * AND THE FOUR MILLISECONDS GO HERE (2026-09-23, Marc's 2026-09-16 ruling:
+     * the JIT warm-up is wanted _"as part of a welcome and death sequence
+     * rather than as four milliseconds"_).
+     *
+     * `session.warm` runs one throwaway placement through the reducer and the
+     * two views and drops all of it, so the code the first tap needs is
+     * compiled during the opening beat instead of under the thumb that asked
+     * for it (`LOG.md` Session 100: 4.4 ms of `V8.CompileCode`, the only
+     * first-time-only line in a 16.7 ms first placement).
+     *
+     * Beside `open` rather than inside it, because the board knows about a
+     * camera and the session knows about a run — and this is the run's work,
+     * done on the board's beat.
+     */
+    session.warm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [framing]);
 
@@ -3052,6 +3091,7 @@ function Game() {
             // TEMPORARY (2026-09-11): the `board.awake` switch is `?rest=0`
             // as a row in SETTINGS — see `meta/features.ts` for the removal.
             restMs={isEnabled(features, 'board.awake') ? 0 : look.rest * 1000}
+            wakeMs={look.wake}
             onTap={onTap}
             handle={board}
             label={s.ui.board.label}

@@ -121,6 +121,35 @@ function looksLikeAPicture(bytes: Buffer): boolean {
  * Safari.
  */
 export async function boardDrawn(page: Page, timeoutMs = 15_000): Promise<number> {
+  return (await boardPicture(page, timeoutMs)).ms;
+}
+
+/**
+ * The same wait, HANDING BACK THE PICTURE IT VALIDATED (2026-09-23).
+ *
+ * `boardDrawn` proves a frame existed a moment ago; a caller that then takes
+ * its own screenshot needs one to exist NOW, and on WebKit those are not the
+ * same claim. This canvas is `frameloop="demand"` with no
+ * `preserveDrawingBuffer` — *"after the browser composites, the drawing buffer
+ * is gone"* (`Board.tsx`) — so between the poll's successful capture and the
+ * caller's capture the buffer can be composited away, and the second picture
+ * comes back empty. That is one shot in roughly twenty-five on this machine,
+ * it reads as *"suspiciously small"*, and it looks exactly like a renderer
+ * that failed.
+ *
+ * So the loop returns the bytes that PASSED, and the caller asserts on and
+ * keeps that same buffer. One capture, one judgement, no window between them.
+ *
+ * A caller that photographs the whole PHONE afterwards — `shots.spec.ts` does,
+ * because a board is judged next to the chrome over it — still takes a second
+ * picture and still runs the race, and that is accepted rather than hidden:
+ * the page shot is a document to look at, regenerated with every chrome
+ * change, while the canvas assertion is the gate.
+ */
+export async function boardPicture(
+  page: Page,
+  timeoutMs = 15_000,
+): Promise<{ ms: number; bytes: Buffer }> {
   const canvas = page.locator('canvas');
   await canvas.waitFor({ state: 'attached' });
 
@@ -142,19 +171,24 @@ export async function boardDrawn(page: Page, timeoutMs = 15_000): Promise<number
    * `refused` keeps the two endings apart, because they are different bugs: a
    * board that drew nothing, and a board nothing could be drawn OF.
    */
-  const look = async (): Promise<{ drawn: boolean; refused: string | null }> => {
+  const look = async (): Promise<{
+    drawn: boolean;
+    refused: string | null;
+    bytes: Buffer | null;
+  }> => {
     try {
-      return { drawn: looksLikeAPicture(await canvas.screenshot()), refused: null };
+      const bytes = await canvas.screenshot();
+      return { drawn: looksLikeAPicture(bytes), refused: null, bytes };
     } catch (e) {
       const said = e instanceof Error ? e.message : String(e);
-      return { drawn: false, refused: said.split('\n')[0] ?? said };
+      return { drawn: false, refused: said.split('\n')[0] ?? said, bytes: null };
     }
   };
 
   const began = Date.now();
   for (;;) {
-    const { drawn, refused } = await look();
-    if (drawn) return Date.now() - began;
+    const { drawn, refused, bytes } = await look();
+    if (drawn && bytes !== null) return { ms: Date.now() - began, bytes };
     if (Date.now() - began > timeoutMs) {
       throw new Error(
         refused === null

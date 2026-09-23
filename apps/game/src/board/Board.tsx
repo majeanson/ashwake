@@ -55,6 +55,7 @@ import { ANTIALIAS } from './antialias';
 import { GL_PROPS, watchContext } from './gl';
 import { DEFAULT_RENDER_SCALE } from './quality';
 import { REST_MS, useResting } from './resting';
+import { WAKE_MS, useWaking } from './waking';
 import { NO_ASSETS, useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
 import { Pop } from './Pop';
@@ -264,6 +265,13 @@ type BoardProps = {
    * `?rest=0` never rests, which is every build before this one.
    */
   readonly restMs?: number;
+  /**
+   * How long the opening beat holds the plain under its scrim, in ms
+   * (2026-09-23 — Marc's pick, "the plain lights up"). `board/waking.ts`
+   * carries the argument; `?wake=0` opens the way every build before this one
+   * did, and reduced motion drops it whatever this says.
+   */
+  readonly wakeMs?: number;
   readonly onTap: (key: HexKey, cell: CellView) => void;
   readonly handle?: Ref<BoardHandle>;
   /** The board's accessible name, and the sentence that tells a screen reader
@@ -368,6 +376,17 @@ export function Board(props: BoardProps) {
    * `aria-hidden`: a sleeping board is a look, not a sentence.
    */
   const resting = useResting(props.restMs ?? REST_MS);
+  /*
+   * THE OPENING BEAT, and it is the rest screen read backwards
+   * (2026-09-23, `board/waking.ts`).
+   *
+   * Reduced motion takes the beat to nothing here rather than inside the hook,
+   * so the dial and the preference stay separate things: `?wake=` is a number
+   * somebody is measuring with, and reduced motion is a person saying they do
+   * not want the show. The opening's second leg already cuts for the same
+   * reason and in the same words.
+   */
+  const { waking, wake } = useWaking(props.reducedMotion === true ? 0 : (props.wakeMs ?? WAKE_MS));
   const lockup = useArtSlot(theme.id, 'ui.logo');
 
   /*
@@ -608,7 +627,17 @@ export function Board(props: BoardProps) {
       panBy: (dx, dy) => rig.current?.panBy(dx, dy),
       flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
       flyToFit: () => rig.current?.flyToFit(),
-      open: (wake) => rig.current?.open(wake),
+      /*
+       * The one door a run opens through, so it is the one place the opening
+       * beat can be raised from (2026-09-23). Raised BEFORE the camera is
+       * told: the scrim wants to be on screen for the frame the first leg
+       * starts on, and a `setState` after the flight has begun would show a
+       * plain that is already moving.
+       */
+      open: (hex) => {
+        wake();
+        rig.current?.open(hex);
+      },
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
       tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
       endTour: () => rig.current?.endTour(),
@@ -624,7 +653,7 @@ export function Board(props: BoardProps) {
       cursorCell: () => (cursor === null ? null : aimAt(cursor.key)),
       focus: () => wrapper.current?.focus(),
     }),
-    [resetLean, flatten, leanBy, moveCursor, cursor, aimAt],
+    [resetLean, flatten, leanBy, moveCursor, cursor, aimAt, wake],
   );
 
   return (
@@ -676,6 +705,25 @@ export function Board(props: BoardProps) {
       )}
       {resting && (
         <div className="board-rest" data-hud="resting" aria-hidden="true">
+          <img src={lockup ?? ICON_DATA_URI} alt="" />
+        </div>
+      )}
+      {/*
+        The opening beat: the same wash and the same lockup as the rest screen,
+        with the animation running the other way (`board/waking.ts`). It is
+        drawn OVER the canvas and under the chrome, takes no pointer events, and
+        says nothing to a screen reader — a plain lighting up is a look, and the
+        run it opens is announced by the board's own name and the stat row.
+      */}
+      {waking && (
+        <div
+          className="board-wake"
+          data-hud="waking"
+          aria-hidden="true"
+          style={{
+            animationDuration: `${props.reducedMotion === true ? 0 : (props.wakeMs ?? WAKE_MS)}ms`,
+          }}
+        >
           <img src={lockup ?? ICON_DATA_URI} alt="" />
         </div>
       )}

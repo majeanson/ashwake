@@ -204,6 +204,30 @@ export type Session = {
    * never reaches the reducer and never reaches the disk.
    */
   readonly spotlight: (colour: Colour | null) => void;
+  /**
+   * RUN THE PLACEMENT PATH ONCE, AND THROW IT AWAY (2026-09-23).
+   *
+   * Session 100 took the first placement's stall apart with three instruments
+   * and found nothing to move — 16.7 ms of ordinary work against the fourth
+   * placement's 6.8 — except one first-time-only line: **4.4 ms of
+   * `V8.CompileCode`**, the placement path being compiled lazily the first
+   * time a finger asks for it. The one way to move that is to ask for it
+   * earlier, on a beat where nobody is waiting, and Marc's ruling on
+   * 2026-09-16 was that he wants it _"as part of a welcome and death sequence
+   * rather than as four milliseconds"_. The welcome is `board/waking.ts`, and
+   * this is the four milliseconds hiding inside it.
+   *
+   * **Nothing is kept.** The reducer is pure, so a placement computed here
+   * returns a state this function drops on the floor; the views built from it
+   * go the same way. The run is not touched, no listener is told, and calling
+   * it twice is the same as calling it once. That is what makes it safe to
+   * hang off an opening beat rather than off a carefully chosen moment.
+   *
+   * It warms what a REAL placement runs — `reduce`, then the two views over
+   * the state it returns — because warming anything else would be warming a
+   * path the first tap does not take.
+   */
+  readonly warm: () => void;
   /** Start again on a seed. */
   /**
    * Step into a run: a fresh one at `seed`, or `from` picked up exactly as the
@@ -547,6 +571,25 @@ export function createSession(opts: {
       if (harvestAt !== null && state.cells[harvestAt]?.kind !== 'tile') harvestAt = null;
       said = whatToSay(before, next, action, cashed);
       commit();
+    },
+    warm() {
+      /*
+       * The first LEGAL hex, because the path a placement takes is the path a
+       * REFUSED placement does not: `reduce` returns the same state for an
+       * illegal hex and never reaches the arithmetic, the riders or the log
+       * that cost the milliseconds this is here to pay early. A board with
+       * nowhere to build — a finished run, an opening still being dealt —
+       * simply warms nothing, which is correct: there is no first tap coming.
+       */
+      const legal = snapshot.board.cells.find((cell) => cell.legal);
+      if (legal === undefined) return;
+      const after = reduce(state, { type: 'PLACE', hex: legal.key });
+      if (after === state) return;
+      // Both views, over the state that placement produced, and then both are
+      // dropped. `commit()` is deliberately NOT called: nothing here happened.
+      const ctx = renderContext(after, harvestAt);
+      void toBoardView(after, harvestAt, spotlight, memory?.revealed ?? [], theme.light, ctx);
+      void toHudView(after, strings, harvestAt, spotlight, ctx);
     },
     target(hex) {
       if (hex === harvestAt) return;

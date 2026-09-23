@@ -4,7 +4,7 @@ import { TUNING } from '@content/tuning';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { createSession } from './store';
-import { walk } from './walk';
+import { walk, walkToEnd } from './walk';
 
 /**
  * Stepping into a run — the crossing the worlds panel makes (Stage 4,
@@ -451,5 +451,44 @@ describe('the session speaks the language it is given now', () => {
 
     s.resupply(theme, strings);
     expect(s.get(), 'an unchanged resupply rebuilt the world').toBe(snapshot);
+  });
+});
+
+/**
+ * THE WARM-UP TOUCHES NOTHING (2026-09-23).
+ *
+ * `warm` exists to compile the placement path on the opening beat — Marc's
+ * ruling that the four milliseconds Session 100 measured belong inside a
+ * welcome rather than under the first thumb. It runs a real placement and
+ * drops it, and the only thing that could ever go wrong with it is that one
+ * day it does not drop it. So this asks the question directly, in the two
+ * ways a leak could show: the state the run is standing on, and the listeners
+ * that would be told if it had moved.
+ */
+describe('warming the placement path', () => {
+  it('leaves the run exactly where it was', () => {
+    const s = session();
+    walk(s, 4);
+    const before = s.get();
+    s.warm();
+    expect(s.get(), 'the warm-up rebuilt the snapshot').toBe(before);
+    expect(s.get().state, 'the warm-up moved the run').toBe(before.state);
+  });
+
+  it('tells nobody, because nothing happened', () => {
+    const s = session();
+    walk(s, 4);
+    let told = 0;
+    s.subscribe(() => (told += 1));
+    s.warm();
+    expect(told, 'the warm-up woke the screens').toBe(0);
+  });
+
+  it('is safe on a board with nowhere left to build', () => {
+    const s = session();
+    // A finished run has no legal hex; the warm-up must simply decline rather
+    // than reach for a placement that cannot happen.
+    walkToEnd(s);
+    expect(() => s.warm()).not.toThrow();
   });
 });

@@ -1,5 +1,6 @@
 import { AUTO_THEME_ID, pickForScheme, resolveTheme } from '@theme/index';
 import { REST_MS } from '../board/resting';
+import { WAKE_MS } from '../board/waking';
 import { rgba, type Theme, type ThemeId } from '@theme/tokens';
 
 /**
@@ -123,6 +124,17 @@ type Look = {
    * the board takes milliseconds, and the shell multiplies.
    */
   readonly rest: number;
+  /**
+   * `?wake=` — MILLISECONDS the opening beat holds the plain under its scrim
+   * (2026-09-23, Marc's pick: "the plain lights up").
+   *
+   * Milliseconds rather than seconds, unlike `rest` above, because this one is
+   * a beat rather than a wait: it is judged against the 700 ms the opening
+   * already holds the whole world for, and nobody thinks about it in seconds.
+   * `?wake=0` opens the way every build before this one did, which is the dial
+   * `CLAUDE.md` asks every system to ship with.
+   */
+  readonly wake: number;
 };
 
 /**
@@ -146,6 +158,7 @@ export function lookFrom(search: string): Look {
     ghost: dial(params, 'ghost', Number.NaN),
     playtest: dial(params, 'playtest', 0) > 0,
     rest: dial(params, 'rest', REST_MS / 1000),
+    wake: dial(params, 'wake', WAKE_MS),
   };
 }
 

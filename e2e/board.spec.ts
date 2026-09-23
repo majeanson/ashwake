@@ -1869,3 +1869,56 @@ test('the first number on a tile never takes the map away', async ({ page }) => 
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('a run opens on the plain lighting up, over a live board', async ({ page }) => {
+  /*
+   * THE OPENING BEAT (2026-09-23, Marc's pick from three drawings: *"the plain
+   * lights up"*).
+   *
+   * `?wake=3000` widens the beat from 900 ms so the assertion is not a race
+   * against a local chunk load — the same use `?rest=2` is put to by
+   * `perf.audit.ts`, and the reason the dial exists at all.
+   *
+   * The second half is the half worth guarding: the scrim is over a LIVE
+   * board. It takes no pointer events, and the canvas under it is neither
+   * hidden nor unmounted — which is yesterday's bug arriving from a new
+   * direction (`LOG.md` Session 111), and exactly what a welcome screen would
+   * be if somebody ever reached for `display: none` to build one.
+   *
+   * **And it is the only test that can see whether the front door opens a run
+   * at all.** The beat hangs off `BoardHandle.open`, which hangs off the
+   * `framing` counter — and until 2026-09-23 the boot door never bumped it, so
+   * a page that loaded and had BEGIN pressed flew no opening: not the beat,
+   * and not the two-leg fly-in Marc asked for a week earlier. The camera test
+   * above cannot tell, because the rig's own mount fit centres the board just
+   * as well. This one fails if that door ever stops opening.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&wake=3000');
+  await begin(page);
+
+  const beat = page.locator('[data-hud="waking"]');
+  await expect(beat, 'the plain never lit up').toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible();
+  const host = page.locator('.board-view');
+  expect(
+    await host.evaluate((el) => getComputedStyle(el).display),
+    'the opening beat hid the board instead of washing over it',
+  ).not.toBe('none');
+
+  // And it ends on its own, without a tap.
+  await expect(beat, 'the beat never lifted').toBeHidden({ timeout: 8000 });
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('?wake=0 opens the way every build before the beat did', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&wake=0');
+  await begin(page);
+  await placeOneTile(page);
+  expect(
+    await page.locator('[data-hud="waking"]').count(),
+    'the dial that zeroes the beat did not zero it',
+  ).toBe(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
