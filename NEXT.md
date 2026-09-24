@@ -47,6 +47,12 @@ answer in hand has housekeeping (§5) and nothing else queued.
 
 ## 1. Marc, on the phone — one sitting
 
+**The sheet for this sitting is a published page**, _The phone sitting_ —
+https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — with a link into the live
+game for each item below, §2's P6.7, and three of §3's questions. Marc's marks
+and notes land in its `answers` collection, one document per item id; a
+session reads them with `ArtifactData` `list` before touching anything here.
+
 Each of these is a number or a look chosen at a desk and never seen on a
 device. Where a URL dial exists it is given, so the alternative can be tried
 without a build. The number lives where it says; changing it is one line.
