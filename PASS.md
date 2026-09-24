@@ -1,5 +1,12 @@
 # PASS.md — the ten, row by row
 
+**CLOSED as a checklist, 2026-09-24 (`LOG.md` Session 115). Nothing here is a
+to-do any more.** Every row is `done` except P6.7, the iOS install offer on an
+uninstalled iPhone, and that row now lives in `NEXT.md` §2 and nowhere else.
+The file is kept rather than deleted — against its own instruction below —
+because the code cites its rows (`PASS.md` P2.4 and the like) over seventy
+times, and a citation that resolves to nothing is worse than a long file.
+
 Opened 2026-09-09, on Marc's ask for _"10 ideas of 2-3 days work"_ and then
 _"plan to do all 10 thoroughly no rush no cut corners"_.
 

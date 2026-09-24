@@ -9096,3 +9096,33 @@ left to do._
 
 Verified: 1356 unit tests, `pnpm sim` byte-identical, sweep 0 findings,
 typecheck, eslint, prettier, budget.
+
+**Session 115, second half — the ledger that warned about stale ledgers.**
+`NEXT.md` had reached 2351 lines, and the first open-looking heading in its §1
+said the first-placement flash was "STILL THERE" — nine days after Marc said
+_"Gone"_, with the closing paragraph sitting directly above it. Exactly the
+hazard the file's opening paragraph names.
+
+It was not deleted, because it cannot be: the code cites `NEXT.md` §0–§5d
+well over a hundred times and `PASS.md`'s rows over seventy. So the old text
+moved whole to `NEXT-HISTORY.md` under its own section numbers, a citation
+now resolves through one stated hop, and `NEXT.md` holds only what is open —
+every item checked against the code on the way, which is what found the
+things worth writing down:
+
+- **Four "the manual does not explain" gaps from 2026-09-03 had quietly been
+  written** (the cost curve, REACH, native ground, the fog — `text/en.ts`
+  `lessons`), and the draw lean too. Nothing owed.
+- **TREASURE is still a live button** behind a shrine unlock at a price the
+  2026-09-03 audit called two orders of magnitude off, and _"dont reintroduce
+  it"_ was said about the scoring pass, never about the button. One question.
+- **The `quota.spec.ts` diagnostic entry retired itself by its own rule** — no
+  failure in the week it asked for. The one e2e red since 2026-09-14 is the
+  two-finger lean, once, 2026-09-16; it is on a watch line.
+- **The shrine-detour sentences have a delete date**, 2026-10-09, instead of
+  "a few weeks".
+
+`PASS.md` is closed as a checklist with a header saying so; P6.7 lives in
+`NEXT.md` §2 alone.
+
+_A ledger that holds its own history cannot also be the answer to "what now"._

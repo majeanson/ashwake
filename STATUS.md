@@ -4,7 +4,23 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-16 — Marc answered every open decision from the
+Last checkpoint: **2026-09-24 — Session A's list is built, and the ledgers say
+only what is open.** Everything Marc's 2026-09-16 sitting asked for has shipped
+— the lens panel (Session 110), the welcome (112), the replay (113), the audit
+pass over all of it (114) — and his ruling on the one question the replay
+raised is built: an ended run neither shows a lesson nor counts one as learned
+(115). CI green on all four jobs (`ci`, `smoke`, `e2e`, `deploy`) for run
+36000813193; 1356 unit tests; `pnpm sim` byte-identical; `pnpm sweep` 0
+findings over 316 files (78 ruled).
+
+`NEXT.md` was rewritten the same day from 2351 lines to the open items alone,
+each checked against the code; the old text is `NEXT-HISTORY.md`, whole, under
+its old section numbers. **Every `NEXT.md` §N cited in the checkpoints below
+means `NEXT-HISTORY.md` §N.** `PASS.md` is closed as a checklist; its one open
+row, P6.7, moved to `NEXT.md` §2. What is next is Session A's last clean pass,
+then the freeze, then Session C (`NEXT.md` §0).
+
+Previous checkpoint: **2026-09-16 — Marc answered every open decision from the
 phone, and nine of them are built and deployed. CI is green end to end.**
 
 Marc played the deployed v2 a couple of times and cleared twenty-four rulings
