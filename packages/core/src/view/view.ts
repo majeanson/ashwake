@@ -1124,6 +1124,21 @@ type ColourPotential = {
   readonly ripeCount: number;
   /** The worth already sitting ripe, cashable in the next pop. */
   readonly ripeWorth: number;
+  /*
+   * AND WHAT A PLAYER DECIDES WITH (Marc, 2026-09-24, of the lens panel: _"on
+   * lens color click, add the most detail you can, keep things
+   * comprehensible"_). The five numbers above say what a ground IS; these
+   * three say what it offers: how many separate ripe pockets it has (a big
+   * pocket is one decision, not many — `pocketsReady`'s rule), the best of
+   * them priced exactly as POP would price it, and how much more of the
+   * colour is on its way in the hand and the stash.
+   */
+  /** Separate ripe pockets of this colour. */
+  readonly pockets: number;
+  /** The best of them, by points, or null when nothing of it is ripe. */
+  readonly best: { readonly count: number; readonly points: number } | null;
+  /** Tiles of this colour in the hand and the stash, not yet placed. */
+  readonly inHand: number;
 };
 
 function colourPotentials(state: GameState): ColourPotential[] {
@@ -1140,6 +1155,7 @@ function colourPotentials(state: GameState): ColourPotential[] {
     Colour,
     { count: number; worth: number; bonus: number; ripeCount: number; ripeWorth: number }
   >(COLOURS.map((c) => [c, { count: 0, worth: 0, bonus: 0, ripeCount: 0, ripeWorth: 0 }]));
+  const ripe = new Map<Colour, HexKey[]>(COLOURS.map((c) => [c, []]));
   const home = homeOf(state);
   for (const [k, cell] of Object.entries(state.cells)) {
     if (cell.kind !== 'tile') continue;
@@ -1152,9 +1168,25 @@ function colourPotentials(state: GameState): ColourPotential[] {
     if (isRipe(state.cells, k)) {
       entry.ripeCount++;
       entry.ripeWorth += worth;
+      ripe.get(cell.colour)?.push(k);
     }
   }
-  return COLOURS.map((colour) => ({ colour, ...acc.get(colour)! }));
+  return COLOURS.map((colour) => {
+    // Each ripe key belongs to one pocket; price each pocket once, with the
+    // same `harvestValue` the POP button is priced by.
+    const seen = new Set<HexKey>();
+    let pockets = 0;
+    let best: { count: number; points: number } | null = null;
+    for (const k of ripe.get(colour) ?? []) {
+      if (seen.has(k)) continue;
+      const v = harvestValue(state, k);
+      for (const member of v.keys) seen.add(member);
+      pockets++;
+      if (best === null || v.points > best.points) best = { count: v.count, points: v.points };
+    }
+    const inHand = [...state.draft, ...state.held].filter((tile) => tile.colour === colour).length;
+    return { colour, ...acc.get(colour)!, pockets, best, inHand };
+  });
 }
 
 /*

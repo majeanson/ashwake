@@ -824,6 +824,12 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       ripe: (count, worth) => `${count} ripe tile${plural(count, '', 's')} (${d1(worth)})`,
       ripeNone: 'nothing ripe',
       foot: 'Tap a ground to hold the lens on it. Tap it again to let go.',
+      share: (pct) => `${pc(pct)} of the board’s worth`,
+      perTile: (worth) => `worth ${d1(worth)} a tile, on average`,
+      pockets: (n) => `${n} ripe pocket${plural(n, '', 's')}`,
+      best: (count, points) =>
+        `the best: ${count} tile${plural(count, '', 's')}${points === null ? '' : `, ${points} pts if popped now`}`,
+      inHand: (n) => (n === 0 ? 'none in your hand' : `${n} more in your hand`),
     },
     newVersion: 'NEW VERSION · TAP TO LOAD',
     install: 'INSTALL ASHWAKE',

@@ -2,7 +2,7 @@
 
 Written by `pnpm sweep`. **Do not edit by hand** — regenerate it.
 
-Walked **316 files** over 5 passes covering the six rituals in `CLAUDE.md` — the catalogue is the field pass taught to recurse, and `fields.ts` says why. **0 findings**, 79 absorbed by `scripts/sweep/allow.ts` (79 rulings). A further 88 exports are read in their own file AND by their own spec, which is not a finding — `modules.ts` carries the argument.
+Walked **316 files** over 5 passes covering the six rituals in `CLAUDE.md` — the catalogue is the field pass taught to recurse, and `fields.ts` says why. **0 findings**, 79 absorbed by `scripts/sweep/allow.ts` (79 rulings). A further 89 exports are read in their own file AND by their own spec, which is not a finding — `modules.ts` carries the argument.
 
 ## module — 0
 

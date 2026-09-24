@@ -253,7 +253,8 @@ export const STRINGS_FR: Strings = {
         (p, cost) => `L’expédition s’est dépensée${D}: ${p} poses, le prix monté à ${cost}.`,
         (p, cost) =>
           `Plus une tuile après ${p} poses. La plaine en demandait ${cost} chacune rendu là.`,
-        (p, cost) => `Les lampes ont porté ${p} poses. À ${cost} la tuile, le noir a eu la dernière.`,
+        (p, cost) =>
+          `Les lampes ont porté ${p} poses. À ${cost} la tuile, le noir a eu la dernière.`,
         (p, cost) =>
           `Chaque tuile dépensée${D}: ${p} poses, le coût à ${cost} et la bourse à rien.`,
         (p, cost) =>
@@ -835,6 +836,12 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         `${count} tuile${pl(count, '', 's')} mûre${pl(count, '', 's')} (${d1(worth)})`,
       ripeNone: 'rien de mûr',
       foot: 'Touche un sol pour tenir la lentille dessus. Touche-le encore pour lâcher.',
+      share: (pct) => `${pc(pct)} de la valeur du plateau`,
+      perTile: (worth) => `valeur ${d1(worth)} par tuile, en moyenne`,
+      pockets: (n) => `${n} poche${pl(n, '', 's')} mûre${pl(n, '', 's')}`,
+      best: (count, points) =>
+        `la meilleure${D}: ${count} tuile${pl(count, '', 's')}${points === null ? '' : `, ${nb(points)} pts si tu la récoltes maintenant`}`,
+      inHand: (n) => (n === 0 ? 'aucune dans ta main' : `${n} de plus dans ta main`),
     },
     newVersion: 'NOUVELLE VERSION · TOUCHER POUR CHARGER',
     install: 'INSTALLER ASHWAKE',

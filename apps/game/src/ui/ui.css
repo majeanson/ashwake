@@ -2454,6 +2454,24 @@ h3.fact-label {
   border-color: var(--accent);
 }
 
+/* The held ground's detail (2026-09-24): under its row, in the note voice. */
+.lens-detail {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.3rem 0.6rem 0.5rem;
+  font-size: 0.75rem;
+}
+.lens-detail .note {
+  margin: 0;
+}
+.lens-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
 .lens-main {
   display: flex;
   flex-direction: column;

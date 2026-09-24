@@ -3517,7 +3517,15 @@ function Game() {
             carried has its own door now — the pockets caption on the bar, the
             spare purse said once a run, the bounty mark on POP.
           */}
-          {lensOpen && <LensPanel hud={snap.hud} theme={theme} s={s} onHold={holdLens} />}
+          {lensOpen && (
+            <LensPanel
+              hud={snap.hud}
+              tuning={snap.state.tuning}
+              theme={theme}
+              s={s}
+              onHold={holdLens}
+            />
+          )}
           {purseOpen && (
             <Purse
               hud={snap.hud}

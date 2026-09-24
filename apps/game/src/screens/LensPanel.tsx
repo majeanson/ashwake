@@ -1,9 +1,9 @@
 import { COLOURS } from '@content/tuning';
-import type { Colour } from '@content/tuning';
+import type { Colour, Tuning } from '@content/tuning';
 import { COLOUR_ICON } from '@theme/icons';
 import { hex, namesOf, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
-import type { HudView } from '@view/view';
+import { colourLesson, type HudView } from '@view/view';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -36,13 +36,15 @@ import { Icon } from '../ui/Icon';
 
 type LensPanelProps = {
   readonly hud: HudView;
+  /** For the held ground's power sentence — the one a tapped tile speaks. */
+  readonly tuning: Tuning;
   readonly theme: Theme;
   readonly s: Strings;
   /** Hold the lens on this ground, or let it go if it is already held. */
   readonly onHold: (colour: Colour) => void;
 };
 
-export function LensPanel({ hud, theme, s, onHold }: LensPanelProps) {
+export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
   const names = namesOf(theme, s.locale);
   const held = hud.spotlight?.colour ?? null;
   const total = hud.colours.reduce((sum, c) => sum + c.worth, 0);
@@ -57,37 +59,64 @@ export function LensPanel({ hud, theme, s, onHold }: LensPanelProps) {
       {COLOURS.map((colour) => {
         const c = hud.colours.find((p) => p.colour === colour);
         if (c === undefined) return null;
+        const rule = held === colour ? colourLesson(colour, tuning, theme, s) : null;
         return (
-          <button
-            key={colour}
-            type="button"
-            className="lens-row"
-            data-lens-row={colour}
-            aria-pressed={held === colour}
-            onClick={() => onHold(colour)}
-          >
-            <span
-              className="spend-swatch"
-              aria-hidden="true"
-              style={{ background: hex(theme.terrain[colour].fill) }}
+          <div key={colour} className="lens-ground">
+            <button
+              type="button"
+              className="lens-row"
+              data-lens-row={colour}
+              aria-pressed={held === colour}
+              onClick={() => onHold(colour)}
             >
-              <Icon name={COLOUR_ICON[colour]} />
-            </span>
-            <span className="lens-main">
-              <span className="spend-name">{names[colour]}</span>
-              <span className="lens-sub note">
-                {s.ui.lensPanel.power(c.bonus)}
-                {' · '}
-                {c.ripeCount > 0
-                  ? s.ui.lensPanel.ripe(c.ripeCount, c.ripeWorth)
-                  : s.ui.lensPanel.ripeNone}
+              <span
+                className="spend-swatch"
+                aria-hidden="true"
+                style={{ background: hex(theme.terrain[colour].fill) }}
+              >
+                <Icon name={COLOUR_ICON[colour]} />
               </span>
-            </span>
-            <span className="lens-figures">
-              <span className="lens-tiles note">{s.ui.lensPanel.tiles(c.count)}</span>
-              <span className="spend-cost">{s.ui.lensPanel.worth(c.worth)}</span>
-            </span>
-          </button>
+              <span className="lens-main">
+                <span className="spend-name">{names[colour]}</span>
+                <span className="lens-sub note">
+                  {s.ui.lensPanel.power(c.bonus)}
+                  {' · '}
+                  {c.ripeCount > 0
+                    ? s.ui.lensPanel.ripe(c.ripeCount, c.ripeWorth)
+                    : s.ui.lensPanel.ripeNone}
+                </span>
+              </span>
+              <span className="lens-figures">
+                <span className="lens-tiles note">{s.ui.lensPanel.tiles(c.count)}</span>
+                <span className="spend-cost">{s.ui.lensPanel.worth(c.worth)}</span>
+              </span>
+            </button>
+            {/*
+            THE HELD GROUND, IN DETAIL (2026-09-24, Marc: _"on lens color
+            click, add the most detail you can, keep things comprehensible"_).
+            Under the row that holds the lens, and only that one: the power in
+            its own sentence, then one plain line per fact — never a table of
+            numbers. See `ui.lensPanel.share` for what each says.
+          */}
+            {held === colour && (
+              <div className="lens-detail" data-lens-detail={colour}>
+                {rule !== null && <p className="note">{rule}</p>}
+                <ul className="lens-facts">
+                  {total > 0 && (
+                    <li>{s.ui.lensPanel.share(Math.round((c.worth / total) * 100))}</li>
+                  )}
+                  {c.count > 0 && <li>{s.ui.lensPanel.perTile(c.worth / c.count)}</li>}
+                  {c.pockets > 0 && <li>{s.ui.lensPanel.pockets(c.pockets)}</li>}
+                  {c.best !== null && (
+                    <li>
+                      {s.ui.lensPanel.best(c.best.count, hud.showPoints ? c.best.points : null)}
+                    </li>
+                  )}
+                  <li>{s.ui.lensPanel.inHand(c.inHand)}</li>
+                </ul>
+              </div>
+            )}
+          </div>
         );
       })}
 

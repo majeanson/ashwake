@@ -1395,6 +1395,20 @@ export type Strings = {
       readonly ripe: (count: number, worth: number) => string;
       readonly ripeNone: string;
       readonly foot: string;
+      /**
+       * A HELD GROUND, IN DETAIL (2026-09-24, Marc: _"on lens color click, add
+       * the most detail you can, keep things comprehensible"_). One line
+       * each, under the ground's own power sentence (`colourLesson`): its
+       * share of the board, its worth a tile, its ripe pockets and the best
+       * of them priced as POP would (`points` null on a board that hides
+       * points), and how many more are in the hand. `share` is a whole
+       * percent.
+       */
+      readonly share: (pct: number) => string;
+      readonly perTile: (worth: number) => string;
+      readonly pockets: (n: number) => string;
+      readonly best: (count: number, points: number | null) => string;
+      readonly inHand: (n: number) => string;
     };
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;

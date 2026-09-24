@@ -27,7 +27,15 @@ describe('the lens panel', () => {
   it('prints one row per ground and a total that is their sum', () => {
     const sess = board();
     const hud = sess.get().hud;
-    render(<LensPanel hud={hud} theme={theme} s={s} onHold={() => {}} />);
+    render(
+      <LensPanel
+        hud={hud}
+        tuning={sess.get().state.tuning}
+        theme={theme}
+        s={s}
+        onHold={() => {}}
+      />,
+    );
     const rows = screen.getAllByRole('button');
     expect(rows).toHaveLength(4);
     const sum = hud.colours.reduce((n, c) => n + c.worth, 0);
@@ -40,14 +48,28 @@ describe('the lens panel', () => {
     const sess = board();
     const onHold = vi.fn();
     const { rerender } = render(
-      <LensPanel hud={sess.get().hud} theme={theme} s={s} onHold={onHold} />,
+      <LensPanel
+        hud={sess.get().hud}
+        tuning={sess.get().state.tuning}
+        theme={theme}
+        s={s}
+        onHold={onHold}
+      />,
     );
     fireEvent.click(screen.getAllByRole('button')[2]!);
     expect(onHold).toHaveBeenCalledWith('red');
 
     // The shell writes the spotlight; the panel reads it back as the pressed row.
     sess.spotlight('red');
-    rerender(<LensPanel hud={sess.get().hud} theme={theme} s={s} onHold={onHold} />);
+    rerender(
+      <LensPanel
+        hud={sess.get().hud}
+        tuning={sess.get().state.tuning}
+        theme={theme}
+        s={s}
+        onHold={onHold}
+      />,
+    );
     const pressed = screen.getAllByRole('button').map((b) => b.getAttribute('aria-pressed'));
     expect(pressed).toEqual(['false', 'false', 'true', 'false']);
   });
@@ -55,7 +77,56 @@ describe('the lens panel', () => {
   it('says when nothing of a ground is ripe rather than printing a zero', () => {
     const sess = createSession({ seed: 7, theme, strings: s });
     // An opening board: nothing ripe anywhere.
-    render(<LensPanel hud={sess.get().hud} theme={theme} s={s} onHold={() => {}} />);
+    render(
+      <LensPanel
+        hud={sess.get().hud}
+        tuning={sess.get().state.tuning}
+        theme={theme}
+        s={s}
+        onHold={() => {}}
+      />,
+    );
     expect(screen.getAllByText(new RegExp(s.ui.lensPanel.ripeNone))).toHaveLength(4);
+  });
+
+  /*
+   * THE HELD GROUND, IN DETAIL (2026-09-24, Marc: "on lens color click, add
+   * the most detail you can, keep things comprehensible"). Only the held row
+   * opens, it leads with the ground's own power sentence, and its lines are
+   * the view's facts in the catalogue's words.
+   */
+  it('opens the held ground, and only that one, into its detail', () => {
+    const sess = board();
+    sess.spotlight('red');
+    const hud = sess.get().hud;
+    const { container } = render(
+      <LensPanel
+        hud={hud}
+        tuning={sess.get().state.tuning}
+        theme={theme}
+        s={s}
+        onHold={() => {}}
+      />,
+    );
+    const open = container.querySelectorAll('[data-lens-detail]');
+    expect(open).toHaveLength(1);
+    expect(open[0]!.getAttribute('data-lens-detail')).toBe('red');
+
+    const red = hud.colours.find((c) => c.colour === 'red')!;
+    const text = open[0]!.textContent ?? '';
+    expect(text).toContain(s.ui.lensPanel.inHand(red.inHand));
+    if (red.count > 0) expect(text).toContain(s.ui.lensPanel.perTile(red.worth / red.count));
+    if (red.best !== null)
+      expect(text).toContain(s.ui.lensPanel.best(red.best.count, red.best.points));
+  });
+
+  it('finds a ripe pocket on a walked board, and prices the best of it', () => {
+    const sess = board();
+    const hud = sess.get().hud;
+    const ripeGround = hud.colours.find((c) => c.best !== null);
+    // A walked board has a ripe pocket somewhere, or this proves nothing.
+    expect(ripeGround, 'nothing ripe on the walked board').toBeDefined();
+    expect(ripeGround!.pockets).toBeGreaterThan(0);
+    expect(ripeGround!.best!.count).toBeGreaterThan(0);
   });
 });
