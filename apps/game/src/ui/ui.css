@@ -549,6 +549,12 @@ button[disabled] {
 }
 
 .board-rest img {
+  /* The press lands on the SCRIM, never on the lockup: a press on an <img>
+     starts the browser's image drag, and WebKit then sends no pointerup at
+     all, so the scrim's waking gesture never ended (found 2026-09-24 by the
+     release-elsewhere e2e, WebKit only). */
+  pointer-events: none;
+  -webkit-user-drag: none;
   width: min(34%, 14rem);
   height: auto;
   opacity: 0.55;

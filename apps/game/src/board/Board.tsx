@@ -816,7 +816,7 @@ export function Board(props: BoardProps) {
           aria-hidden="true"
           onPointerDown={() => setCatching(true)}
         >
-          <img src={lockup ?? ICON_DATA_URI} alt="" />
+          <img src={lockup ?? ICON_DATA_URI} alt="" draggable={false} />
         </div>
       )}
       {/*

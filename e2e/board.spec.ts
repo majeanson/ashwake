@@ -2162,8 +2162,16 @@ test('a waking press released somewhere else still lets the board go', async ({ 
   await page.mouse.move(5, 5, { steps: 4 });
   await page.mouse.up();
 
-  await expect(rest, 'the scrim stayed up after a release elsewhere').toHaveCount(0, {
-    timeout: 2000,
-  });
+  /*
+   * The stuck state is a scrim still LEAVING: awake underneath, invisible, and
+   * catching. Asked of that element rather than of any scrim, because with a
+   * two-second rest a slow runner may legitimately rest the board again before
+   * the assertion — which is a fresh rest, not this bug (the first version of
+   * this test failed on CI's WebKit for exactly that reason).
+   */
+  await expect(
+    page.locator('.board-rest.leaving'),
+    'an invisible scrim stayed up after a release elsewhere',
+  ).toHaveCount(0, { timeout: 2000 });
   expect(errors, errors.join('\n')).toEqual([]);
 });
