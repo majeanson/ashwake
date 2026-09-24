@@ -89,7 +89,6 @@ import {
   wasSaid,
   readProgress,
   memoryFor,
-  NO_MEMORY,
   type RunMemory,
   freshWorldSeed,
   worldSeedFor,
@@ -1069,10 +1068,16 @@ function Game() {
    * hands back is a snapshot shaped exactly like the live session's, so the
    * board can be handed one or the other without knowing which.
    */
+  const diveTo = useCallback((at: HexKey, holdMs: number): void => {
+    board.current?.dive(at, holdMs);
+  }, []);
   const film = useFilm(reel?.of ?? null, {
     theme,
     strings: s,
     ...(reel === null ? {} : { ground: reel.ground }),
+    // Each pop is looked at: the board dives to the pocket and comes back
+    // (`BoardHandle.dive`, Marc 2026-09-24: "replay pops don't animate").
+    onPop: diveTo,
   });
 
   /**
@@ -1352,14 +1357,7 @@ function Game() {
       // number reached the diary and the share line and never the screen the
       // player is deciding on.
       setDailyTry(after.try);
-      /*
-       * A daily plays itself back when the try was a personal best for that
-       * date — which is the daily's own version of the `✦` a world run earns,
-       * and the only thing about a daily worth interrupting for.
-       */
-      // NO_MEMORY, because a daily is walled off from every world by
-      // construction: there is no remembered ground for its film to stand on.
-      if (after.isNewBest) setReel({ of: film, from: 'end', ground: NO_MEMORY });
+      // No film plays by itself any more — see the world branch below.
       return;
     }
 
@@ -1435,24 +1433,14 @@ function Game() {
     writeRecords(after.records);
     writeTimeline(after.timeline);
     /*
-     * AND A RUN THAT EARNED IT PLAYS ITSELF BACK (2026-09-23, Marc's ruling
-     * when offered auto, a button, or both: *"both: auto on a big run"*).
+     * NO FILM PLAYS BY ITSELF (Marc, 2026-09-24: _"make sure the replay only
+     * pops once we press a REPLAY button (similar to the ground you walked)"_).
      *
-     * What counts as earning it is not a second opinion invented here: it is
-     * the ✦ the diary already computes for its own rows — a new best, a shrine,
-     * a perk, a goal, a territory, a camp (`meta/timeline.ts`'s
-     * `runHighlights`). So the film plays for exactly the runs the hall of
-     * fame thinks are worth a mark, and an ordinary run goes straight to its
-     * numbers with the button there if it wants watching.
-     *
-     * Read off the entry that was just appended rather than recomputed, so the
-     * row and the interruption can never disagree about whether a run was a
-     * big one.
+     * From 2026-09-23 to this ruling a run that earned a ✦ — and a daily
+     * that set a best — played itself back before its numbers. The ending's
+     * REPLAY door (`endFilm`, kept below) and every kept row in the hall of
+     * fame are the doors now, and the ending comes straight up.
      */
-    const row = after.timeline[after.timeline.length - 1];
-    if (row?.kind === 'run' && row.highlights.length > 0) {
-      setReel({ of: film, from: 'end', ground: memoryFor(slot, snap.state.rootSeed) });
-    }
     clearRun(slot);
     // The relics this run earned, onto the device — see `Settled.progress`.
     // Without this line every run ended with the shop as empty as it started.
@@ -3312,7 +3300,10 @@ function Game() {
             reducedMotion={reducedMotion}
             // TEMPORARY (2026-09-11): the `board.awake` switch is `?rest=0`
             // as a row in SETTINGS — see `meta/features.ts` for the removal.
-            restMs={isEnabled(features, 'board.awake') ? 0 : look.rest * 1000}
+            // And never while a film plays (2026-09-24): a replay with its
+            // dives runs past the fifteen seconds, nobody touches a film, and
+            // a board that rested mid-film dimmed the thing being watched.
+            restMs={isEnabled(features, 'board.awake') || film !== null ? 0 : look.rest * 1000}
             wakeMs={look.wake}
             onTap={onTap}
             handle={board}

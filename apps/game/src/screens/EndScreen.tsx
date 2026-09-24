@@ -668,6 +668,7 @@ export function EndScreen({
       {onWatch !== undefined && (
         <button type="button" className="end-map" data-action="watch-run" onClick={onWatch}>
           <span className="end-map-name">{s.ui.watchRun}</span>
+          <span className="end-map-note">{s.ui.replayNote}</span>
         </button>
       )}
     </div>

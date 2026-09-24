@@ -891,6 +891,8 @@ export type Strings = {
      * over.
      */
     readonly watchRun: string;
+    /** The REPLAY door's second line, as `walkTheMap` is the map door's (2026-09-24). */
+    readonly replayNote: string;
     readonly watchSkip: string;
     readonly watching: (step: number, of: number) => string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };

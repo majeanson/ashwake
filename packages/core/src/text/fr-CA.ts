@@ -704,6 +704,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     walkTheMap: 'Déplace-toi sur le plateau que tu as laissé.',
     backToEnding: 'RETOUR À LA FIN',
     watchRun: 'REVOIR LA PARTIE',
+    replayNote: 'Chaque pose et chaque récolte, encore une fois.',
     watchSkip: 'PASSER',
     watching: (step, of) => `Rediffusion · ${step} / ${of}`,
     expedition: {

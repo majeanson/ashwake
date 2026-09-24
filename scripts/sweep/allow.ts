@@ -190,12 +190,12 @@ const SAVED_BLOB: readonly Ruling[] = (
 /**
  * THE TIMELINE'S SPINE, DEFERRED BY RULING (`NEXT.md` §4).
  *
- * **`RunEntry.highlights` left this list on 2026-09-23** and that is worth a
- * line: the replay reads it. A run that earned a ✦ plays itself back before
- * its numbers (Marc's ruling: *"both: auto on a big run"*), so the field the
- * diary had been computing for a screen nobody agreed to build now decides
- * something a player sees. This is the outcome the entry below was written to
- * make visible, arriving by a door nobody predicted.
+ * **`RunEntry.highlights` left this list on 2026-09-23 and came back on
+ * 2026-09-24.** For one day the replay read it: a run that earned a ✦ played
+ * itself back before its numbers. Marc then ruled that no film plays unless
+ * REPLAY is pressed, and the field had no reader again. Showing the marks in
+ * the diary — which Ashwake 1 did — is this deferred question exactly, so it
+ * went to Marc as a question rather than onto a screen (`NEXT.md` §3).
  *
  * A run's HIGHLIGHTS — what was remarkable about it, and how much — are
  * detected, written for every run and every world event, and shown nowhere,
@@ -211,6 +211,7 @@ const SAVED_BLOB: readonly Ruling[] = (
  */
 const TIMELINE_SPINE: readonly Ruling[] = (
   [
+    'packages/core/src/meta/timeline.ts#RunEntry.highlights',
     'packages/core/src/meta/timeline.ts#Highlight.kind',
     'packages/core/src/meta/timeline.ts#Highlight.n',
     'packages/core/src/meta/timeline.ts#DailyEntry.best',

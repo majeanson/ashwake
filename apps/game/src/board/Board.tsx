@@ -96,6 +96,8 @@ type RigHandle = {
   open(wake: HexKey): void;
   /** Look at a hex, hold, then return to where the camera was. */
   visit(hex: HexKey, holdMs: number): void;
+  /** In close on a hex, hold, then back — see `BoardHandle.dive`. */
+  dive(hex: HexKey, holdMs: number): void;
   /** Out to the whole board, in on a hex, then back to where the camera was. */
   tour(hex: HexKey, holdMs: number): void;
   /** End a tour early and come home — see the implementation. */
@@ -147,6 +149,26 @@ export type BoardHandle = {
    * hexes away, and the place it happened was staying off screen.
    */
   visit(hex: HexKey, holdMs: number): void;
+  /**
+   * In close on a hex, hold, then back to where the camera was.
+   *
+   * THE FILM'S POP (Marc, 2026-09-24, of the replay: _"make the animations on
+   * tile pops"_ — and, asked, _"replay pops don't animate"_). They did: the
+   * leap mounts and plays in the film exactly as it does live, measured on
+   * both engines. What the film did not do is go and LOOK. A live pop glides
+   * the camera to the pocket first; a film holds the frame it opened at, and
+   * on a world big enough to be worth watching that frame is the whole
+   * structure at the fit's floor, sixteen pixels a hex, where a two-tile leap
+   * lasting half a second is nothing anyone sees.
+   *
+   * `NEAR_ZOOM` for the dive, which is the zoom `tour`'s dive already uses
+   * — one number for "close enough to read a hex" — and then back to exactly
+   * the camera the film had. Its own method rather than a flag on `visit`,
+   * for `tour`'s reason: a claim's trip keeps the player's zoom on purpose
+   * and nothing here should change that argument. It takes
+   * `FLIGHT_MS * 2 + holdMs`; the film's clock is the caller that waits.
+   */
+  dive(hex: HexKey, holdMs: number): void;
   /**
    * Show a hex the player has never been told about: out, in, back.
    *
@@ -639,6 +661,16 @@ export function Board(props: BoardProps) {
         rig.current?.open(hex);
       },
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
+      /*
+       * The last hex a film dived to, written onto the host so a browser test
+       * can see that `App` handed the film the real dive (`e2e/board.spec.ts`,
+       * the REPLAY test) — the one thing a hook-injecting unit test cannot
+       * prove. An attribute rather than state: nothing renders from it.
+       */
+      dive: (hex, holdMs) => {
+        wrapperEl?.setAttribute('data-dive', hex);
+        rig.current?.dive(hex, holdMs);
+      },
       tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
       endTour: () => rig.current?.endTour(),
       myView: () => rig.current?.myView(),
@@ -653,7 +685,7 @@ export function Board(props: BoardProps) {
       cursorCell: () => (cursor === null ? null : aimAt(cursor.key)),
       focus: () => wrapper.current?.focus(),
     }),
-    [resetLean, flatten, leanBy, moveCursor, cursor, aimAt, wake],
+    [resetLean, flatten, leanBy, moveCursor, cursor, aimAt, wake, wrapperEl],
   );
 
   return (
@@ -1444,6 +1476,26 @@ function Rig({
        * off, so it is the only one that can honestly be dropped rather than
        * shortened.
        */
+      dive(hex, holdMs) {
+        // Reduced motion skips it for `visit`'s reason: two cuts to show a
+        // leap that is itself reduced to a fade are motion nobody asked for.
+        if (reducedMotion) return;
+        const back = cam.current;
+        const fitBefore = wasFit.current;
+        const { q, r } = parse(hex);
+        const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+        // Never OUT: a film already watching from closer than NEAR_ZOOM stays
+        // at its own zoom and only pans.
+        const there = cameraAt(frameRef.current, Math.max(NEAR_ZOOM, cam.current.zoom), p.x, p.y);
+        fly(there);
+        if (visiting.current !== 0) clearTimeout(visiting.current);
+        visiting.current = setTimeout(() => {
+          visiting.current = 0;
+          if (!stillAt(cam.current, there)) return;
+          fly(back);
+          wasFit.current = fitBefore;
+        }, FLIGHT_MS + holdMs);
+      },
       visit(hex, holdMs) {
         if (reducedMotion) return;
         const back = cam.current;

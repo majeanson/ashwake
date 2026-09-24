@@ -687,7 +687,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     theMap: 'THE GROUND YOU WALKED',
     walkTheMap: 'Move around the board you left.',
     backToEnding: 'BACK TO THE ENDING',
-    watchRun: 'WATCH THIS RUN',
+    watchRun: 'REPLAY',
+    replayNote: 'Every placement and every pop, again.',
     watchSkip: 'SKIP',
     watching: (step, of) => `Replay · ${step} / ${of}`,
     expedition: {

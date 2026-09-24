@@ -1994,37 +1994,27 @@ test('a finished run can be watched again, and the board plays it back', async (
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('a run that earned a mark plays itself back before the numbers', async ({ page }) => {
+test('no run plays itself back, even one that earned a mark', async ({ page }) => {
   /*
-   * AUTO ON A BIG RUN (2026-09-23, Marc's ruling when offered auto, a button,
-   * or both: *"both: auto on a big run"*).
+   * REPLAY IS A DOOR, NOT AN INTERRUPTION (Marc, 2026-09-24: *"make sure the
+   * replay only pops once we press a REPLAY button (similar to the ground you
+   * walked)"*). From 2026-09-23 a run that earned a ✦ played itself back
+   * before its numbers; this test pinned that, and now pins the opposite.
    *
-   * "Big" is not a second opinion invented in the shell: it is the ✦ the diary
-   * already computes for its own rows (`meta/timeline.ts`'s `runHighlights` —
-   * a new best, a shrine, a perk, a goal, a territory, a camp). A first run on
-   * a device's own world earns at least a best reach, so `?end=1` with no
-   * `?seed=` reaches the case.
-   *
-   * **And the `?seed=` is deliberately absent**, which is the part worth
-   * stating: a seeded board is a DETOUR, it banks a `shared` row, and a shared
-   * row has no highlights at all — so the test that reads most naturally
-   * (`?seed=7&end=1`, like every other ending test here) is exactly the one
-   * that can never see this behaviour. It was written that way first and
-   * passed while proving nothing.
+   * **`?seed=` is deliberately absent**, for the reason it was absent when
+   * this test asserted the other thing: a seeded board is a DETOUR, a detour's
+   * row has no highlights, and a test on one could never have seen an
+   * automatic film in the first place. This is the run that WOULD have.
    */
   const errors = watchErrors(page);
   await page.goto('/?taught=1&end=1');
   await begin(page);
 
-  const bar = page.locator('[data-hud="watching"]');
-  await expect(bar, 'a run that earned a mark went straight to its numbers').toBeVisible();
-  await expect(
-    page.locator('[data-action="new-run"]'),
-    'the ending sat over the film',
-  ).toBeHidden();
+  const ending = page.locator('[data-action="new-run"]');
+  await expect(ending, 'the ending never came up by itself').toBeVisible();
+  await expect(page.locator('[data-hud="watching"]'), 'a film played unasked').toHaveCount(0);
 
-  // The diary agrees about why: the row it wrote carries the marks the film
-  // was raised for. One rule, read twice, rather than two rules.
+  // And it really was a run that would have earned one: the diary marked it.
   const marks = await page.evaluate(() => {
     const rows = JSON.parse(localStorage.getItem('ashwake.timeline.v1') ?? '[]') as {
       kind: string;
@@ -2032,20 +2022,38 @@ test('a run that earned a mark plays itself back before the numbers', async ({ p
     }[];
     return rows[0]?.kind === 'run' ? (rows[0]?.highlights?.length ?? 0) : 0;
   });
-  expect(marks, 'the film played for a run the diary thought was ordinary').toBeGreaterThan(0);
+  expect(marks, 'this run earned no mark, so it proves nothing').toBeGreaterThan(0);
+
+  // The door is there, with its second line, like the map's.
+  const replay = page.locator('[data-action="watch-run"]');
+  await expect(replay).toBeVisible();
+  await expect(replay.locator('.end-map-note')).toHaveCount(1);
 
   /*
-   * A tap on the board is the other way out, and it must land on the numbers.
+   * A tap on the board is the other way out of a playing film, and it must
+   * land on the numbers — carried over from the test this replaced.
    *
    * `force` for the reason `clearCards` gives about a card mid-animation: a
-   * board with a film running on it is never "stable", so Playwright's
-   * actionability check waits for a stillness that cannot come while the thing
-   * under test is by definition moving. A finger does not wait for stability
-   * either.
+   * board with a film running on it is never "stable".
    */
+  await replay.click();
+  const bar = page.locator('[data-hud="watching"]');
+  await expect(bar).toBeVisible();
+  /*
+   * AND IT GOES TO LOOK AT EACH POP (2026-09-24): the film's `onPop` is the
+   * board's `dive`, which stamps the hex it flew to on the host. A film that
+   * reaches its first pop without that stamp is a film whose hook `App`
+   * never passed — the case `watching.test.ts` cannot see.
+   */
+  await expect
+    .poll(() => page.locator('.board-view').getAttribute('data-dive'), {
+      message: 'the film popped without the camera going to look',
+      timeout: 20_000,
+    })
+    .not.toBeNull();
   await page.locator('canvas').click({ position: { x: 195, y: 300 }, force: true });
   await expect(bar, 'a tap on a playing film did not end it').toBeHidden();
-  await expect(page.locator('[data-action="new-run"]')).toBeVisible();
+  await expect(ending).toBeVisible();
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
