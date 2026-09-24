@@ -79,6 +79,18 @@ export function labelFor(cell: CellView): Label | null {
    * rounds.
    */
   if (cell.ripe && cell.worth > 0) return { text: String(Math.round(cell.worth)), faint: false };
+  /*
+   * AND UNDER THE LENS, EVERY TILE OF THAT GROUND SAYS WHAT IT IS WORTH
+   * (Marc, 2026-09-24: _"maybe show points on concerned color of each tile too
+   * while lens is on"_). Worth rather than points for the lens panel's own
+   * reason: a tile has no points until its pocket pops, and worth is the unit
+   * the points formula sums — the same number a ripe tile already prints, so
+   * the two never disagree about one hex. Only while the lens is held: a board
+   * that numbered every tile all the time would be a spreadsheet.
+   */
+  if (cell.lensed && cell.kind === 'tile' && cell.worth > 0) {
+    return { text: String(Math.round(cell.worth)), faint: false };
+  }
   if (cell.legal && cell.preview !== null && cell.preview > 0) {
     return { text: String(Math.round(cell.preview)), faint: true };
   }

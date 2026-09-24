@@ -128,3 +128,27 @@ describe('what the fog draws, and what it keeps quiet', () => {
     }
   });
 });
+
+/**
+ * UNDER THE LENS (2026-09-24, Marc: "maybe show points on concerned color of
+ * each tile too while lens is on"). A tile of the held ground prints its
+ * worth whether or not it is ripe; the same tile off the lens prints nothing
+ * until it ripens, which is what it always did.
+ */
+describe('a tile under the lens', () => {
+  const tile = (over: Partial<CellView>): CellView =>
+    cell({ kind: 'tile', colour: 'red', landmark: null, worth: 2.6, ...over });
+
+  it('prints its worth, rounded, ripe or not', () => {
+    expect(labelFor(tile({ lensed: true }))).toEqual({ text: '3', faint: false });
+    expect(labelFor(tile({ lensed: true, ripe: true }))).toEqual({ text: '3', faint: false });
+  });
+
+  it('prints nothing off the lens until it ripens', () => {
+    expect(labelFor(tile({ lensed: false }))).toBeNull();
+  });
+
+  it('prints nothing when it is worth nothing', () => {
+    expect(labelFor(tile({ lensed: true, worth: 0 }))).toBeNull();
+  });
+});
