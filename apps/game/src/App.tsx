@@ -1618,14 +1618,16 @@ function Game() {
    */
   const closeReel = useCallback(() => {
     /*
-     * AND THE CAMERA COMES BACK WHOLE (2026-09-24, Marc: "when i came back …
-     * i started a new one and my camera was misplaced"). Every way out of a
-     * film ends here — SKIP, a tap on the board, the film running out — so
-     * this is the one place that drops the follow and puts the whole board
-     * back in frame. Nothing after a film inherits where it was looking.
+     * AND THE CAMERA COMES BACK (2026-09-24, Marc: "when i came back … i
+     * started a new one and my camera was misplaced"). Every way out of a film
+     * ends here — SKIP, a tap on the board, the film running out — so this is
+     * the one place that drops the follow and gives back the camera the film
+     * started from (`BoardHandle.hold`, the effect below). It flew the whole
+     * board into frame on the first build, which the review caught throwing
+     * away a live run's zoom when a hall-of-fame film closed over it.
      */
     board.current?.follow(null);
-    board.current?.flyToFit();
+    board.current?.release();
     setReel((was) => {
       if (was?.from === 'fame') {
         more.show();
@@ -1634,6 +1636,13 @@ function Game() {
       return null;
     });
   }, [more, fame]);
+
+  // The camera a film starts from, remembered the moment one starts — before
+  // its first move has asked the board to follow anything.
+  const reeling = reel !== null;
+  useEffect(() => {
+    if (reeling) board.current?.hold();
+  }, [reeling]);
 
   useEffect(() => {
     if (film === null || !film.done) return;
@@ -1648,14 +1657,6 @@ function Game() {
   // ended. Anything else leaves the disk alone.
   const ledgers = useLedgers(`${fame.open}${shop.open}${worlds.open}${snap.hud.ended}`);
   const virgin = ledgers.timeline.length === 0 && progress.relics === 0;
-  /**
-   * Whether this world can be begun at its camp, and how far out that is.
-   *
-   * Read off the ledgers the WORLDS panel is already built from, so opening
-   * that panel is what refreshes it — a shrine woken this run makes the button
-   * appear the next time the panel is opened, which is also the first moment
-   * anybody could press it.
-   */
   /*
    * THE SURVEY, finally readable (2026-09-02) — and read by the hall of fame's
    * ATLAS since 2026-09-24, where the atlas moved (Marc: _"put it in hall of
@@ -1674,6 +1675,14 @@ function Game() {
       ? []
       : metGoalIds(world, withWorldPerks(progress, world.perks, world.worn ?? null));
   }, [ledgers.worlds, slot, progress]);
+  /**
+   * Whether this world can be begun at its camp, and how far out that is.
+   *
+   * Read off the ledgers the WORLDS panel is already built from, so opening
+   * that panel is what refreshes it — a shrine woken this run makes the button
+   * appear the next time the panel is opened, which is also the first moment
+   * anybody could press it.
+   */
   const campHere = useMemo(() => {
     const at = campFor(ledgers.worlds[slot]);
     return at === null ? null : { at, ring: distance(parse(at), { q: 0, r: 0 }) };

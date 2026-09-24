@@ -104,6 +104,9 @@ type RigHandle = {
   visit(hex: HexKey, holdMs: number): void;
   /** Ease toward a hex and keep easing — see `BoardHandle.follow`. */
   follow(hex: HexKey | null): void;
+  /** Remember the camera, and fly back to it — see `BoardHandle.hold`. */
+  hold(): void;
+  release(): void;
   /** Out to the whole board, in on a hex, then back to where the camera was. */
   tour(hex: HexKey, holdMs: number): void;
   /** End a tour early and come home — see the implementation. */
@@ -190,6 +193,17 @@ export type BoardHandle = {
    * Under reduced motion it does nothing: the film plays where the camera is.
    */
   follow(hex: HexKey | null): void;
+  /**
+   * Remember the camera as it is, and later fly back to exactly it (the
+   * 2026-09-24 review). A film is watched from the ending OR from the hall of
+   * fame in the middle of a live run, and closing one used to fly the whole
+   * board into frame either way — throwing away the zoom a player had chosen
+   * for their own run. `App` holds when a film starts and releases when it
+   * closes; under reduced motion the film never moved the camera, so the
+   * release has nothing to do.
+   */
+  hold(): void;
+  release(): void;
   /**
    * Show a hex the player has never been told about: out, in, back.
    *
@@ -434,11 +448,27 @@ export function Board(props: BoardProps) {
    * and its click land on the board under it, which is the bug again.
    */
   const [catching, setCatching] = useState(false);
-  const releaseCatch = useCallback(() => {
-    // After the click the release is followed by, not before it: a timer runs
-    // after the task that dispatched both.
-    setTimeout(() => setCatching(false), CATCH_TAIL_MS);
-  }, []);
+  /*
+   * The release is heard on the WINDOW, wherever it lands (the 2026-09-24
+   * review): a press on the scrim released over a HUD button never reached the
+   * scrim, so `catching` stayed true and an invisible scrim ate the next tap.
+   * The tail runs after the click the release is followed by, not before it —
+   * a timer runs after the task that dispatched both.
+   */
+  useEffect(() => {
+    if (!catching) return;
+    let tail: ReturnType<typeof setTimeout> | null = null;
+    const end = (): void => {
+      tail = setTimeout(() => setCatching(false), CATCH_TAIL_MS);
+    };
+    window.addEventListener('pointerup', end, { once: true });
+    window.addEventListener('pointercancel', end, { once: true });
+    return () => {
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+      if (tail !== null) clearTimeout(tail);
+    };
+  }, [catching]);
   /*
    * THE OPENING BEAT, and it is the rest screen read backwards
    * (2026-09-23, `board/waking.ts`).
@@ -708,6 +738,8 @@ export function Board(props: BoardProps) {
        * the REPLAY test) — the one thing a hook-injecting unit test cannot
        * prove. An attribute rather than state: nothing renders from it.
        */
+      hold: () => rig.current?.hold(),
+      release: () => rig.current?.release(),
       follow: (hex) => {
         if (hex === null) wrapperEl?.removeAttribute('data-follow');
         else wrapperEl?.setAttribute('data-follow', hex);
@@ -783,8 +815,6 @@ export function Board(props: BoardProps) {
           data-hud="resting"
           aria-hidden="true"
           onPointerDown={() => setCatching(true)}
-          onPointerUp={releaseCatch}
-          onPointerCancel={releaseCatch}
         >
           <img src={lockup ?? ICON_DATA_URI} alt="" />
         </div>
@@ -1330,6 +1360,8 @@ function Rig({
     apply();
   });
 
+  /** The camera a film started from, to be given back when it ends. */
+  const held = useRef<{ readonly cam: CameraState; readonly fit: boolean } | null>(null);
   /** Where the follow camera is easing to, and when it last stepped. */
   const chase = useRef<CameraState | null>(null);
   const chasedAt = useRef(0);
@@ -1560,6 +1592,16 @@ function Rig({
           wasFit.current = fitBefore;
         }, FLIGHT_MS + holdMs);
       },
+      hold() {
+        held.current = { cam: cam.current, fit: wasFit.current };
+      },
+      release() {
+        const h = held.current;
+        held.current = null;
+        if (h === null) return;
+        if (!stillAt(cam.current, h.cam)) fly(h.cam);
+        wasFit.current = h.fit;
+      },
       follow(hex) {
         if (hex === null) {
           chase.current = null;
@@ -1579,7 +1621,10 @@ function Rig({
           was === null
             ? aim
             : { zoom: aim.zoom, cx: (was.cx + aim.cx) / 2, cz: (was.cz + aim.cz) / 2 };
-        if (was === null) chasedAt.current = performance.now();
+        // A chase that had settled stopped asking for frames, so its clock is
+        // stale: restart it, or the first frame's step is clamped at 64 ms and
+        // the camera hops (the 2026-09-24 review).
+        if (was === null || stillAt(cam.current, was)) chasedAt.current = performance.now();
         glide.current = null;
         flight.current = null;
         wasFit.current = false;
@@ -1919,7 +1964,18 @@ function Rig({
      */
     let orbiting = false;
 
+    /*
+     * A gesture that starts on the rest scrim only wakes the board (Marc,
+     * 2026-09-24: "just wakes up") — and the scrim sits inside this element,
+     * so without this the waking drag still panned and a wheel still zoomed
+     * (the 2026-09-24 review). `move` and `up` act only on a pointer `down`
+     * registered, so refusing it here refuses the whole gesture.
+     */
+    const onScrim = (e: Event): boolean =>
+      e.target instanceof Element && e.target.closest('.board-rest') !== null;
+
     const down = (e: PointerEvent): void => {
+      if (onScrim(e)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 1) {
         last = { x: e.clientX, y: e.clientY };
@@ -2067,6 +2123,7 @@ function Rig({
     const menu = (e: MouseEvent): void => e.preventDefault();
     const wheel = (e: WheelEvent): void => {
       e.preventDefault();
+      if (onScrim(e)) return;
       wasFit.current = false;
       flight.current = null;
       glide.current = null;

@@ -5,6 +5,7 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { createSession } from '../shell/store';
 import { walk } from '../shell/walk';
+import { harvestValue, ripeClusters } from '@engine/rules';
 import { LensPanel } from './LensPanel';
 
 /**
@@ -128,5 +129,38 @@ describe('the lens panel', () => {
     expect(ripeGround, 'nothing ripe on the walked board').toBeDefined();
     expect(ripeGround!.pockets).toBeGreaterThan(0);
     expect(ripeGround!.best!.count).toBeGreaterThan(0);
+  });
+});
+
+/*
+ * A POCKET IS EVERY RIPE TILE JOINED TO ANOTHER, WHATEVER ITS COLOUR (the
+ * 2026-09-24 review). The first build counted a mixed pocket under each of its
+ * colours by walking clusters per colour, and priced only as far as it walked.
+ * The count per ground must be the engine's own pockets that hold that ground,
+ * and the best must be one of those pockets, whole.
+ */
+describe('a ground and its pockets', () => {
+  it('counts the pockets it is in, and prices the best of them whole', () => {
+    const sess = board();
+    const state = sess.get().state;
+    const clusters = ripeClusters(state.cells);
+    expect(clusters.length, 'nothing ripe on the walked board').toBeGreaterThan(0);
+    for (const c of sess.get().hud.colours) {
+      const holding = clusters.filter((keys) =>
+        keys.some((k) => {
+          const cell = state.cells[k];
+          return cell?.kind === 'tile' && cell.colour === c.colour;
+        }),
+      );
+      expect(c.pockets, `${c.colour}: pockets`).toBe(holding.length);
+      if (holding.length === 0) {
+        expect(c.best).toBeNull();
+        continue;
+      }
+      const prices = holding.map((keys) => harvestValue(state, keys[0]));
+      const top = Math.max(...prices.map((v) => v.points));
+      expect(c.best?.points, `${c.colour}: best points`).toBe(top);
+      expect(prices.some((v) => v.count === c.best?.count && v.points === top)).toBe(true);
+    }
   });
 });

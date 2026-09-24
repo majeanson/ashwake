@@ -38,6 +38,15 @@ export function breath(clock: number): number {
  * slower"_. 1500 ms keeps it clearly apart from a beacon's 2600.
  */
 export const TARGET_PULSE_MS = 1500;
+
+/**
+ * How often the flash is repainted — half the breath's rate (the 2026-09-24
+ * review). A pocket is targeted for most of a mid-game, often with no beacon
+ * breathing, so this timer alone was asking for thirty frames a second on a
+ * board nobody was touching: the idle cost `resting.ts` exists to cut. A wave
+ * this slow reads smoothly at fifteen.
+ */
+export const PULSE_STEP_MS = 66;
 export function targetPulse(clock: number): number {
   const wave = 0.5 + 0.5 * Math.cos((clock / TARGET_PULSE_MS) * Math.PI * 2);
   return 0.25 + 0.75 * wave;

@@ -7,7 +7,7 @@ import type { Layout } from '@render/layout';
 import { cellTint, previewTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
-import { breath, BREATH_STEP_MS, STILL_BREATH, targetPulse } from './ambient';
+import { breath, BREATH_STEP_MS, PULSE_STEP_MS, STILL_BREATH, targetPulse } from './ambient';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { setMarkAnisotropy } from './marks';
@@ -153,6 +153,8 @@ export function HexField({
 
   const meshes = useRef(new Map<string, InstancedMesh>());
   const ringMesh = useRef<InstancedMesh | null>(null);
+  /** The ring list the mesh holds right now — see the flash below. */
+  const ringsDrawn = useRef<typeof rings>(rings);
 
   // Write every instance's matrix and tint. Runs after each render of the view;
   // the leap animation only touches the popped tiles' Y.
@@ -215,6 +217,7 @@ export function HexField({
         rm.setColorAt(i, scratchColor);
       });
       commitInstances(rm, rings.length);
+      ringsDrawn.current = rings;
     }
     invalidate();
   }, [batches, rings, theme, ghostStrength, invalidate]);
@@ -336,6 +339,11 @@ export function HexField({
     if (rm === null || which.length === 0) return;
     const ground = new Color(theme.board.background);
     const paint = (lit: number): void => {
+      // A tick that fires after a new ring list was written, and before this
+      // effect's cleanup has run, must not paint the OLD indices onto the NEW
+      // rings (the 2026-09-24 review): the mesh is only this effect's while
+      // it still holds the list the effect was made for.
+      if (ringsDrawn.current !== rings) return;
       for (const i of which) {
         scratchColor.set(rings[i]!.colour).lerp(ground, 1 - lit);
         rm.setColorAt(i, scratchColor);
@@ -347,7 +355,7 @@ export function HexField({
       paint(1);
       return;
     }
-    const timer = setInterval(() => paint(targetPulse(performance.now())), BREATH_STEP_MS);
+    const timer = setInterval(() => paint(targetPulse(performance.now())), PULSE_STEP_MS);
     // No repaint on the way out: a new ring list is written whole by the
     // layout effect above BEFORE this cleanup runs, so repainting the old
     // indices here would put stale colours on whichever rings now hold them.

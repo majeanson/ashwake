@@ -2141,3 +2141,29 @@ async function boardSettled(page: Page): Promise<void> {
   await expect(page.locator('canvas')).toBeVisible();
   await page.waitForTimeout(1500);
 }
+
+test('a waking press released somewhere else still lets the board go', async ({ page }) => {
+  /*
+   * The 2026-09-24 review: the scrim that swallows the waking tap cleared
+   * itself only on a release over ITSELF. A press on the resting board
+   * released over the HUD left an invisible scrim up, eating the next tap.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&wake=0&rest=2');
+  await begin(page);
+  const rest = page.locator('[data-hud="resting"]');
+  await expect(rest, 'the board never rested').toBeVisible({ timeout: 8000 });
+
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  // Off the board entirely, then let go.
+  await page.mouse.move(5, 5, { steps: 4 });
+  await page.mouse.up();
+
+  await expect(rest, 'the scrim stayed up after a release elsewhere').toHaveCount(0, {
+    timeout: 2000,
+  });
+  expect(errors, errors.join('\n')).toEqual([]);
+});

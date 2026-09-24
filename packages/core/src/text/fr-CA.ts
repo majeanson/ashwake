@@ -840,7 +840,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       foot: 'Touche un sol pour tenir la lentille dessus. Touche-le encore pour lâcher.',
       share: (pct) => `${pc(pct)} de la valeur du plateau`,
       perTile: (worth) => `valeur ${d1(worth)} par tuile, en moyenne`,
-      pockets: (n) => `${n} poche${pl(n, '', 's')} mûre${pl(n, '', 's')}`,
+      pockets: (n) => `dans ${n} poche${pl(n, '', 's')} mûre${pl(n, '', 's')}`,
       best: (count, points) =>
         `la meilleure${D}: ${count} tuile${pl(count, '', 's')}${points === null ? '' : `, ${nb(points)} pts si tu la récoltes maintenant`}`,
       inHand: (n) => (n === 0 ? 'aucune dans ta main' : `${n} de plus dans ta main`),

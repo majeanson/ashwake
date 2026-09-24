@@ -13,6 +13,7 @@ import {
   placementsLeft,
   previewWorth,
   reachOf,
+  ripeClusters,
   ripeKeys,
   scoreOf,
   territoryPaysAt,
@@ -1133,9 +1134,15 @@ type ColourPotential = {
    * them priced exactly as POP would price it, and how much more of the
    * colour is on its way in the hand and the stash.
    */
-  /** Separate ripe pockets of this colour. */
+  /**
+   * The ripe pockets this colour is IN. A pocket is every ripe tile joined to
+   * another, whatever its colour (`ripeClusterAt`), so one mixed pocket counts
+   * for each colour in it — the question a held ground answers is "what could
+   * I pop that has this in it", not a share of a total.
+   */
   readonly pockets: number;
-  /** The best of them, by points, or null when nothing of it is ripe. */
+  /** The best of those pockets, WHOLE — its size and its price as POP would
+   *  pay it — or null when no pocket holds this colour. */
   readonly best: { readonly count: number; readonly points: number } | null;
   /** Tiles of this colour in the hand and the stash, not yet placed. */
   readonly inHand: number;
@@ -1155,7 +1162,6 @@ function colourPotentials(state: GameState): ColourPotential[] {
     Colour,
     { count: number; worth: number; bonus: number; ripeCount: number; ripeWorth: number }
   >(COLOURS.map((c) => [c, { count: 0, worth: 0, bonus: 0, ripeCount: 0, ripeWorth: 0 }]));
-  const ripe = new Map<Colour, HexKey[]>(COLOURS.map((c) => [c, []]));
   const home = homeOf(state);
   for (const [k, cell] of Object.entries(state.cells)) {
     if (cell.kind !== 'tile') continue;
@@ -1168,22 +1174,28 @@ function colourPotentials(state: GameState): ColourPotential[] {
     if (isRipe(state.cells, k)) {
       entry.ripeCount++;
       entry.ripeWorth += worth;
-      ripe.get(cell.colour)?.push(k);
     }
   }
-  return COLOURS.map((colour) => {
-    // Each ripe key belongs to one pocket; price each pocket once, with the
-    // same `harvestValue` the POP button is priced by.
-    const seen = new Set<HexKey>();
-    let pockets = 0;
-    let best: { count: number; points: number } | null = null;
-    for (const k of ripe.get(colour) ?? []) {
-      if (seen.has(k)) continue;
-      const v = harvestValue(state, k);
-      for (const member of v.keys) seen.add(member);
-      pockets++;
-      if (best === null || v.points > best.points) best = { count: v.count, points: v.points };
+  // Every pocket on the board once, from the engine's own enumeration, each
+  // priced once with the `harvestValue` the POP button is priced by — then
+  // handed to every colour it holds. (The first build walked the clusters
+  // again per colour, and counted a mixed pocket's other colours as its own.)
+  const priced = ripeClusters(state.cells).map((keys) => {
+    const v = harvestValue(state, keys[0]);
+    const holds = new Set<Colour>();
+    for (const k of keys) {
+      const c = state.cells[k];
+      if (c?.kind === 'tile') holds.add(c.colour);
     }
+    return { holds, count: v.count, points: v.points };
+  });
+  return COLOURS.map((colour) => {
+    const mine = priced.filter((p) => p.holds.has(colour));
+    const best = mine.reduce<{ count: number; points: number } | null>(
+      (b, p) => (b === null || p.points > b.points ? { count: p.count, points: p.points } : b),
+      null,
+    );
+    const pockets = mine.length;
     const inHand = [...state.draft, ...state.held].filter((tile) => tile.colour === colour).length;
     return { colour, ...acc.get(colour)!, pockets, best, inHand };
   });
