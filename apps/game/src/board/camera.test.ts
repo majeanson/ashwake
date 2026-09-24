@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { disc } from '@engine/hex';
 import { corners, place } from '@render/layout';
 import {
+  chased,
+  FOLLOW_TAU_MS,
   cameraAt,
   clampTilt,
   dragOrbit,
@@ -350,5 +352,36 @@ describe('the desktop s second finger', () => {
     // the horizon away.
     expect(dragOrbit(0, -60).lean).toBeGreaterThan(0);
     expect(dragOrbit(0, 60).lean).toBeLessThan(0);
+  });
+});
+
+describe('the follow camera', () => {
+  const from = { zoom: 1, cx: 0, cz: 0 };
+  const to = { zoom: 2, cx: 10, cz: -10 };
+
+  it('closes about 63% of the way in one time constant, and never overshoots', () => {
+    const one = chased(from, to, FOLLOW_TAU_MS);
+    expect(one.cx).toBeCloseTo(10 * (1 - Math.exp(-1)), 6);
+    let c = from;
+    for (let i = 0; i < 500; i++) {
+      c = chased(c, to, 16);
+      expect(c.cx).toBeLessThanOrEqual(to.cx);
+    }
+    expect(c.cx).toBeCloseTo(to.cx, 1);
+  });
+
+  it('is the same curve at any frame rate', () => {
+    let fast = from;
+    for (let i = 0; i < 60; i++) fast = chased(fast, to, 1000 / 60);
+    let slow = from;
+    for (let i = 0; i < 30; i++) slow = chased(slow, to, 1000 / 30);
+    expect(fast.cx).toBeCloseTo(slow.cx, 6);
+  });
+
+  it('bends toward a new target instead of restarting', () => {
+    const halfway = chased(from, to, FOLLOW_TAU_MS);
+    const turned = chased(halfway, { ...to, cx: -10 }, 16);
+    // It keeps its position and starts easing the other way — no jump.
+    expect(Math.abs(turned.cx - halfway.cx)).toBeLessThan(1);
   });
 });

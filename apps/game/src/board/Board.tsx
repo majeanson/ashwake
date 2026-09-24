@@ -32,6 +32,8 @@ import {
   glidedBy,
   isFlick,
   isResting,
+  chased,
+  FOLLOW_ZOOM,
   LEAN_DEADZONE,
   NEAR_ZOOM,
   TAP_SLOP,
@@ -100,8 +102,8 @@ type RigHandle = {
   open(wake: HexKey): void;
   /** Look at a hex, hold, then return to where the camera was. */
   visit(hex: HexKey, holdMs: number): void;
-  /** In close on a hex, hold, then back — see `BoardHandle.dive`. */
-  dive(hex: HexKey, holdMs: number): void;
+  /** Ease toward a hex and keep easing — see `BoardHandle.follow`. */
+  follow(hex: HexKey | null): void;
   /** Out to the whole board, in on a hex, then back to where the camera was. */
   tour(hex: HexKey, holdMs: number): void;
   /** End a tour early and come home — see the implementation. */
@@ -154,7 +156,27 @@ export type BoardHandle = {
    */
   visit(hex: HexKey, holdMs: number): void;
   /**
-   * In close on a hex, hold, then back to where the camera was.
+   * FOLLOW THE ACTION — the film's camera (2026-09-24), or `null` to stop.
+   *
+   * Marc, of the first replay camera: _"not the right one. make it more
+   * fluid, less step-y"_. That one dived in to every pop and back out — a
+   * 320 ms flight in, a hold, a flight out, with placements stepping between —
+   * and a tap during a dive left the camera parked at an old pop, which is
+   * the likeliest reading of his other note: _"when i came back … i started
+   * a new one and my camera was misplaced"_. It is gone; what replaced it is
+   * the text below the rule.
+   *
+   * A film now hands the board every move's hex, and the camera EASES toward
+   * it continuously at `FOLLOW_ZOOM` (`camera.ts`'s `chased`), each new
+   * target blended halfway into the last so the camera drifts to where the run
+   * is happening instead of hopping between hexes. Anything the player does —
+   * a drag, a pinch, a wheel — and any flight, including a new run's opening,
+   * drops the chase, so nothing that follows a film can inherit it.
+   *
+   * The history of the dive, kept because the reasoning is still true: the
+   * leap always played in a film (measured on both engines); from a frame
+   * holding a whole world it was sixteen pixels a hex and nobody saw it.
+   * Following at `FOLLOW_ZOOM` answers that without leaving the frame.
    *
    * THE FILM'S POP (Marc, 2026-09-24, of the replay: _"make the animations on
    * tile pops"_ — and, asked, _"replay pops don't animate"_). They did: the
@@ -165,14 +187,9 @@ export type BoardHandle = {
    * structure at the fit's floor, sixteen pixels a hex, where a two-tile leap
    * lasting half a second is nothing anyone sees.
    *
-   * `NEAR_ZOOM` for the dive, which is the zoom `tour`'s dive already uses
-   * — one number for "close enough to read a hex" — and then back to exactly
-   * the camera the film had. Its own method rather than a flag on `visit`,
-   * for `tour`'s reason: a claim's trip keeps the player's zoom on purpose
-   * and nothing here should change that argument. It takes
-   * `FLIGHT_MS * 2 + holdMs`; the film's clock is the caller that waits.
+   * Under reduced motion it does nothing: the film plays where the camera is.
    */
-  dive(hex: HexKey, holdMs: number): void;
+  follow(hex: HexKey | null): void;
   /**
    * Show a hex the player has never been told about: out, in, back.
    *
@@ -686,14 +703,15 @@ export function Board(props: BoardProps) {
       },
       visit: (hex, holdMs) => rig.current?.visit(hex, holdMs),
       /*
-       * The last hex a film dived to, written onto the host so a browser test
-       * can see that `App` handed the film the real dive (`e2e/board.spec.ts`,
+       * The last hex a film followed, written onto the host so a browser test
+       * can see that `App` handed the film the real camera (`e2e/board.spec.ts`,
        * the REPLAY test) — the one thing a hook-injecting unit test cannot
        * prove. An attribute rather than state: nothing renders from it.
        */
-      dive: (hex, holdMs) => {
-        wrapperEl?.setAttribute('data-dive', hex);
-        rig.current?.dive(hex, holdMs);
+      follow: (hex) => {
+        if (hex === null) wrapperEl?.removeAttribute('data-follow');
+        else wrapperEl?.setAttribute('data-follow', hex);
+        rig.current?.follow(hex);
       },
       tour: (hex, holdMs) => rig.current?.tour(hex, holdMs),
       endTour: () => rig.current?.endTour(),
@@ -1139,6 +1157,7 @@ function Rig({
      * this is the one place that already knows the angle is changing.
      */
     glide.current = null;
+    chase.current = null;
     leanNow.current = { tilt, yaw, relief };
     if (!orbited.current) return;
     orbited.current = false;
@@ -1297,8 +1316,23 @@ function Rig({
         flight.current = null;
       } else invalidate();
     }
+
+    // The follow camera (a film): always easing toward its target, so a new
+    // target bends the path instead of restarting it — see `chased`.
+    const ch = chase.current;
+    if (ch !== null && flight.current === null) {
+      const now = performance.now();
+      const dt = Math.min(64, Math.max(1, now - chasedAt.current));
+      chasedAt.current = now;
+      cam.current = chased(cam.current, ch, dt);
+      if (!stillAt(cam.current, ch)) invalidate();
+    }
     apply();
   });
+
+  /** Where the follow camera is easing to, and when it last stepped. */
+  const chase = useRef<CameraState | null>(null);
+  const chasedAt = useRef(0);
 
   const fly = useCallback(
     (to: CameraState): void => {
@@ -1328,6 +1362,7 @@ function Rig({
        * to `to` at once and the glide starts eating it on the very next frame.
        */
       glide.current = null;
+      chase.current = null;
       wasFit.current = to.zoom <= 1.0001;
       if (reducedMotion) {
         cam.current = to;
@@ -1416,6 +1451,7 @@ function Rig({
          * written before this bug existed and true of all three clauses.
          */
         glide.current = null;
+        chase.current = null;
         cam.current = zoomedBy(frameRef.current, cam.current, factor);
         flight.current = null;
         keepMine();
@@ -1425,6 +1461,7 @@ function Rig({
         wasFit.current = false;
         flight.current = null;
         glide.current = null;
+        chase.current = null;
         cam.current = pannedBy(frameRef.current, cam.current, dx, dy);
         keepMine();
         invalidate();
@@ -1507,26 +1544,6 @@ function Rig({
        * off, so it is the only one that can honestly be dropped rather than
        * shortened.
        */
-      dive(hex, holdMs) {
-        // Reduced motion skips it for `visit`'s reason: two cuts to show a
-        // leap that is itself reduced to a fade are motion nobody asked for.
-        if (reducedMotion) return;
-        const back = cam.current;
-        const fitBefore = wasFit.current;
-        const { q, r } = parse(hex);
-        const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
-        // Never OUT: a film already watching from closer than NEAR_ZOOM stays
-        // at its own zoom and only pans.
-        const there = cameraAt(frameRef.current, Math.max(NEAR_ZOOM, cam.current.zoom), p.x, p.y);
-        fly(there);
-        if (visiting.current !== 0) clearTimeout(visiting.current);
-        visiting.current = setTimeout(() => {
-          visiting.current = 0;
-          if (!stillAt(cam.current, there)) return;
-          fly(back);
-          wasFit.current = fitBefore;
-        }, FLIGHT_MS + holdMs);
-      },
       visit(hex, holdMs) {
         if (reducedMotion) return;
         const back = cam.current;
@@ -1542,6 +1559,31 @@ function Rig({
           fly(back);
           wasFit.current = fitBefore;
         }, FLIGHT_MS + holdMs);
+      },
+      follow(hex) {
+        if (hex === null) {
+          chase.current = null;
+          return;
+        }
+        // Reduced motion: the film plays where the camera already is. A camera
+        // that drifts on its own for a whole film is motion nobody asked for.
+        if (reducedMotion) return;
+        const { q, r } = parse(hex);
+        const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+        const aim = cameraAt(frameRef.current, FOLLOW_ZOOM, p.x, p.y);
+        // Halfway from where it was already heading: two moves at opposite
+        // ends of a pocket pull the camera to the middle rather than swinging
+        // it back and forth.
+        const was = chase.current;
+        chase.current =
+          was === null
+            ? aim
+            : { zoom: aim.zoom, cx: (was.cx + aim.cx) / 2, cz: (was.cz + aim.cz) / 2 };
+        if (was === null) chasedAt.current = performance.now();
+        glide.current = null;
+        flight.current = null;
+        wasFit.current = false;
+        invalidate();
       },
       /*
        * OUT, IN, BACK — the three legs, and why each one is there.
@@ -1735,6 +1777,7 @@ function Rig({
     wasFit.current = false;
     flight.current = null;
     glide.current = null;
+    chase.current = null;
     cam.current = next;
     invalidate();
   }, [cursor, theme.orientation, invalidate]);
@@ -1838,6 +1881,7 @@ function Rig({
       if (on.zoom || on.turn || on.lean) {
         flight.current = null;
         glide.current = null;
+        chase.current = null;
       }
       if (on.zoom) {
         wasFit.current = false;
@@ -1926,11 +1970,13 @@ function Rig({
         moved = true;
         flight.current = null;
         glide.current = null;
+        chase.current = null;
         last = { x: e.clientX, y: e.clientY };
         return;
       }
       flight.current = null;
       glide.current = null;
+      chase.current = null;
       if (orbiting) {
         // Out to React, like the two fingers': the angle is read by the fit,
         // the light rig and the labels, and only one of them is this camera.
@@ -2024,6 +2070,7 @@ function Rig({
       wasFit.current = false;
       flight.current = null;
       glide.current = null;
+      chase.current = null;
       cam.current = zoomedBy(frameRef.current, cam.current, e.deltaY < 0 ? 1.15 : 1 / 1.15);
       keepMine();
       invalidate();

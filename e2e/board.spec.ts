@@ -2040,20 +2040,27 @@ test('no run plays itself back, even one that earned a mark', async ({ page }) =
   const bar = page.locator('[data-hud="watching"]');
   await expect(bar).toBeVisible();
   /*
-   * AND IT GOES TO LOOK AT EACH POP (2026-09-24): the film's `onPop` is the
-   * board's `dive`, which stamps the hex it flew to on the host. A film that
-   * reaches its first pop without that stamp is a film whose hook `App`
-   * never passed — the case `watching.test.ts` cannot see.
+   * AND THE CAMERA FOLLOWS IT (2026-09-24): the film's `onMove` is the
+   * board's `follow`, which stamps the hex it is easing toward on the host.
+   * A film that plays without that stamp is a film whose hook `App` never
+   * passed — the case `watching.test.ts` cannot see.
    */
+  const host = page.locator('.board-view');
   await expect
-    .poll(() => page.locator('.board-view').getAttribute('data-dive'), {
-      message: 'the film popped without the camera going to look',
+    .poll(() => host.getAttribute('data-follow'), {
+      message: 'the film played without the camera following it',
       timeout: 20_000,
     })
     .not.toBeNull();
   await page.locator('canvas').click({ position: { x: 195, y: 300 }, force: true });
   await expect(bar, 'a tap on a playing film did not end it').toBeHidden();
   await expect(ending).toBeVisible();
+  // And nothing after a film inherits where it was looking: closing it drops
+  // the follow (Marc, 2026-09-24: "my camera was misplaced").
+  await expect(host, 'the camera went on following a film that had ended').not.toHaveAttribute(
+    'data-follow',
+    /.+/,
+  );
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

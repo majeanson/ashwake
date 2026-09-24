@@ -6,7 +6,6 @@ import { resolveTheme } from '@theme/index';
 import { replayTo, type Replay } from '@meta/replay';
 import { createSession } from './store';
 import { walk } from './walk';
-import { FLIGHT_MS } from '../board/flight';
 import { useFilm } from './watching';
 
 /**
@@ -107,58 +106,64 @@ describe('watching a run', () => {
 });
 
 /**
- * AND IT GOES TO LOOK AT EACH POP (2026-09-24, Marc: _"replay pops don't
- * animate"_ — they did, from a frame too wide to see them).
+ * AND THE CAMERA FOLLOWS IT (2026-09-24, Marc: _"more fluid, less step-y"_).
  *
- * `onPop` is a hook, and `CLAUDE.md` is plain about hooks: a hook a test can
+ * `onMove` is a hook, and `CLAUDE.md` is plain about hooks: a hook a test can
  * inject is a hook a test cannot prove is connected. These prove the clock's
- * half — each pop announced once, at its own pocket, BEFORE the board is told
- * it happened — and `e2e/board.spec.ts`'s REPLAY test proves `App` passes the
- * real one (`data-dive` on the board host).
+ * half — every visible move handed over once, in order, at its own hex, BEFORE
+ * the board is told it happened — and `e2e/board.spec.ts`'s REPLAY test proves
+ * `App` passes the real one (`data-follow` on the board host).
  */
-describe('a film looks at its pops', () => {
+describe('a film hands the camera every move', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it('announces every pop once, at its pocket', () => {
+  it('names every placement and every pop, once each, in order', () => {
     const replay = filmed(120);
-    const pops = replay.moves.filter((m) => m.type === 'HARVEST');
-    expect(pops.length, 'this film has no pops, so it proves nothing').toBeGreaterThan(0);
+    const visible = replay.moves.filter((m) => m.type === 'PLACE' || m.type === 'HARVEST');
+    expect(
+      visible.some((m) => m.type === 'HARVEST'),
+      'no pops, so this proves half',
+    ).toBe(true);
 
     const seen: string[] = [];
-    const { result } = renderHook(() => useFilm(replay, { ...opts, onPop: (at) => seen.push(at) }));
+    const { result } = renderHook(() =>
+      useFilm(replay, { ...opts, onMove: (at) => seen.push(at) }),
+    );
     act(() => {
       vi.advanceTimersByTime(120_000);
     });
-    expect(seen).toEqual(pops.map((m) => (m.type === 'HARVEST' ? m.at : undefined)));
+    expect(seen).toEqual(
+      visible.map((m) => (m.type === 'PLACE' ? m.hex : m.type === 'HARVEST' ? m.at : '')),
+    );
     expect(result.current?.done).toBe(true);
   });
 
-  it('plays a pop only once the camera has had its flight to get there', () => {
+  it('tells the camera before the board, so it is already moving when the tile lands', () => {
     const replay = filmed(120);
-    const seen: string[] = [];
-    const { result } = renderHook(() => useFilm(replay, { ...opts, onPop: (at) => seen.push(at) }));
-    // Walk the clock a millisecond at a time up to the first announcement.
-    for (let ms = 0; seen.length === 0 && ms < 120_000; ms += 1) {
-      act(() => {
-        vi.advanceTimersByTime(1);
-      });
-    }
-    expect(seen.length, 'the film never reached a pop').toBe(1);
-    expect(result.current?.snap.popped, 'the pop landed before the camera left').toBeNull();
+    const placedWhenTold: number[] = [];
+    let read: () => number = () => 0;
+    const { result } = renderHook(() =>
+      useFilm(replay, { ...opts, onMove: () => placedWhenTold.push(read()) }),
+    );
+    read = () => result.current?.snap.state.placements ?? 0;
     act(() => {
-      vi.advanceTimersByTime(FLIGHT_MS);
+      vi.advanceTimersByTime(BEAT_PROBE_MS);
     });
-    expect(result.current?.snap.popped?.id, 'the pop never landed after the flight').toBe(1);
+    // The first move is announced on a board that has not placed it yet.
+    expect(placedWhenTold[0]).toBe(replay.from.placements);
   });
 
   it('still reaches the end of the run it is a film of', () => {
-    const replay = filmed(120);
+    const replay = filmed();
     const ended = replayTo(replay, replay.moves.length);
-    const { result } = renderHook(() => useFilm(replay, { ...opts, onPop: () => {} }));
+    const { result } = renderHook(() => useFilm(replay, { ...opts, onMove: () => {} }));
     act(() => {
       vi.advanceTimersByTime(120_000);
     });
     expect(result.current?.snap.state).toEqual(ended);
   });
 });
+
+/** Long enough for the first beat and no more (a beat is at most 180 ms). */
+const BEAT_PROBE_MS = 200;

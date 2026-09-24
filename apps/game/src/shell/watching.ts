@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HexKey } from '@engine/hex';
 import type { Replay } from '@meta/replay';
-import { FLIGHT_MS } from '../board/flight';
 import type { Strings } from '@text/Strings';
 import type { Theme } from '@theme/tokens';
 import { createSession, useSession, type Session, type Snapshot } from './store';
@@ -81,14 +80,14 @@ const BEAT_MAX = 180;
 const POP_MS = 760;
 
 /*
- * AND THE CAMERA GOES TO LOOK AT IT (2026-09-24, Marc: _"replay pops don't
- * animate"_). The leap always played; from a frame holding a whole world it
- * was sixteen pixels a hex and nobody could see it. So a pop is announced
- * before it is played — `onPop` dives the camera in (`BoardHandle.dive`),
- * the pop lands once the camera has arrived, and the next move waits for the
- * camera to come back. `POP_MS` is the hold at the pocket; the two flights
- * are the board's own `FLIGHT_MS`, read from where it is declared rather
- * than restated.
+ * AND THE CAMERA FOLLOWS IT (2026-09-24). Marc first: _"replay pops don't
+ * animate"_ — the leap always played, from a frame holding a whole world at
+ * sixteen pixels a hex. The answer that afternoon was a dive to every pop, and
+ * his answer to THAT was _"not the right one. make it more fluid, less
+ * step-y"_. So the film no longer steers the camera at all: it hands the board
+ * each visible move's hex (`onMove`) and the board's follow camera eases
+ * toward it (`BoardHandle.follow`). The film's own clock is back to beats
+ * and `POP_MS`, with nothing waiting on a flight.
  */
 
 /** A move with nothing to watch rides along with the next one that has. */
@@ -144,13 +143,13 @@ export function useFilm(
      */
     readonly ground?: RunMemory | undefined;
     /**
-     * A pop is about to be played at `at`: go and look at it, and hold for
-     * `holdMs`. `App` passes the board's `dive` — and it is the caller the
-     * film is judged by, because a projector that pops where nobody is
-     * looking is the bug this option was written for (see `POP_MS`). Absent,
-     * the film still plays; it simply does not move the camera.
+     * A visible move is about to be played at `at` — a placement's hex or a
+     * pop's pocket. `App` passes the board's `follow`, and it is the caller
+     * the film is judged by: a projector that plays where nobody is looking is
+     * the bug this option was written for (see the note above `isVisible`).
+     * Absent, the film still plays; the camera simply stays put.
      */
-    readonly onPop?: ((at: HexKey, holdMs: number) => void) | undefined;
+    readonly onMove?: ((at: HexKey) => void) | undefined;
   },
 ): Film | null {
   /*
@@ -225,20 +224,16 @@ export function useFilm(
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Read through a ref so a new callback on a re-render does not restart the
   // projector: the clock belongs to the film, not to the render.
-  const onPop = useRef(opts.onPop);
+  const onMove = useRef(opts.onMove);
   useEffect(() => {
-    onPop.current = opts.onPop;
-  }, [opts.onPop]);
+    onMove.current = opts.onMove;
+  }, [opts.onMove]);
 
   useEffect(() => {
     if (replay === null) return;
     cursor.current = 0;
 
     const beat = Math.min(BEAT_MAX, Math.max(BEAT_MIN, Math.round(TARGET_MS / Math.max(1, of))));
-
-    // The pop whose dive has been flown, so the next tick plays it rather
-    // than announcing it a second time.
-    let announced = -1;
 
     const next = (): void => {
       // Every move up to and including the next VISIBLE one, in one go: the
@@ -247,21 +242,15 @@ export function useFilm(
       let played = false;
       while (cursor.current < replay.moves.length && !played) {
         const move = replay.moves[cursor.current]!;
-        // A pop is looked at before it is played: the camera flies in, and the
-        // same move is dispatched on the tick after, once it has arrived.
-        if (
-          move.type === 'HARVEST' &&
-          announced !== cursor.current &&
-          onPop.current !== undefined
-        ) {
-          const at = move.at ?? session.get().hud.harvestAt;
-          if (at !== null) {
-            announced = cursor.current;
-            onPop.current(at, POP_MS);
-            timer.current = setTimeout(next, FLIGHT_MS);
-            return;
-          }
-        }
+        // The camera is told where BEFORE the board is: it is always easing, so
+        // it is already on its way when the tile lands or the pocket leaps.
+        const at =
+          move.type === 'PLACE'
+            ? move.hex
+            : move.type === 'HARVEST'
+              ? (move.at ?? session.get().hud.harvestAt)
+              : null;
+        if (at !== null) onMove.current?.(at);
         session.dispatch(move);
         cursor.current += 1;
         played = isVisible(move.type);
@@ -276,10 +265,7 @@ export function useFilm(
        */
       if (!played) return;
       advance();
-      const popped = replay.moves[cursor.current - 1]?.type === 'HARVEST';
-      // After a pop the camera is still on its way back when the hold ends;
-      // the next placement waits for it, or it lands under a moving board.
-      const wait = popped ? POP_MS + (announced === cursor.current - 1 ? FLIGHT_MS : 0) : beat;
+      const wait = replay.moves[cursor.current - 1]?.type === 'HARVEST' ? POP_MS : beat;
       timer.current = setTimeout(next, wait);
     };
 

@@ -409,6 +409,42 @@ export function eyeOf(lean: Lean, distance: number): Eye {
 /** Ease-out, for the flights the game makes on the player's behalf. */
 const easeOut = (t: number): number => 1 - (1 - t) * (1 - t);
 
+/**
+ * THE FOLLOW CAMERA'S STEP (2026-09-24, Marc, of the replay: _"the replay
+ * camera is not the right one. make it more fluid, less step-y."_).
+ *
+ * A flight is a fixed 320 ms ease from A to B, and a film that aimed a flight
+ * at every move restarted that ease every beat — which is exactly a camera
+ * that steps. This is the other shape: a camera that is always easing toward
+ * a target, where a new target bends the path rather than restarting it.
+ * Exponential, so it is the same curve whatever the frame rate: after
+ * `tauMs` the camera has closed about 63% of the distance, and a target that
+ * keeps moving is followed smoothly rather than chased in hops.
+ */
+export const FOLLOW_TAU_MS = 650;
+export function chased(
+  from: CameraState,
+  to: CameraState,
+  dtMs: number,
+  tauMs = FOLLOW_TAU_MS,
+): CameraState {
+  const k = 1 - Math.exp(-Math.max(0, dtMs) / tauMs);
+  return {
+    zoom: from.zoom + (to.zoom - from.zoom) * k,
+    cx: from.cx + (to.cx - from.cx) * k,
+    cz: from.cz + (to.cz - from.cz) * k,
+  };
+}
+
+/**
+ * How close a film watches (2026-09-24). Between the fit (1) and HERE
+ * (`NEAR_ZOOM`, which Marc called _"ultra zoomed in"_ for a camera that
+ * rests there): close enough that a pop's leap is a thing you see, far enough
+ * that the board around it is still the board. A look number — the phone is
+ * the judge — and `cameraAt` clamps it on a board whose ceiling is lower.
+ */
+export const FOLLOW_ZOOM = 1.8;
+
 export function lerpCamera(from: CameraState, to: CameraState, t: number): CameraState {
   const k = easeOut(clamp(t, 0, 1));
   return {

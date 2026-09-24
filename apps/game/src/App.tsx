@@ -1068,16 +1068,16 @@ function Game() {
    * hands back is a snapshot shaped exactly like the live session's, so the
    * board can be handed one or the other without knowing which.
    */
-  const diveTo = useCallback((at: HexKey, holdMs: number): void => {
-    board.current?.dive(at, holdMs);
+  const followTo = useCallback((at: HexKey): void => {
+    board.current?.follow(at);
   }, []);
   const film = useFilm(reel?.of ?? null, {
     theme,
     strings: s,
     ...(reel === null ? {} : { ground: reel.ground }),
-    // Each pop is looked at: the board dives to the pocket and comes back
-    // (`BoardHandle.dive`, Marc 2026-09-24: "replay pops don't animate").
-    onPop: diveTo,
+    // The camera follows the run as it is played back — eased, never stepped
+    // (`BoardHandle.follow`, Marc 2026-09-24: "more fluid, less step-y").
+    onMove: followTo,
   });
 
   /**
@@ -1617,6 +1617,15 @@ function Game() {
    * The end screen needs no restoring: it is what is underneath already.
    */
   const closeReel = useCallback(() => {
+    /*
+     * AND THE CAMERA COMES BACK WHOLE (2026-09-24, Marc: "when i came back …
+     * i started a new one and my camera was misplaced"). Every way out of a
+     * film ends here — SKIP, a tap on the board, the film running out — so
+     * this is the one place that drops the follow and puts the whole board
+     * back in frame. Nothing after a film inherits where it was looking.
+     */
+    board.current?.follow(null);
+    board.current?.flyToFit();
     setReel((was) => {
       if (was?.from === 'fame') {
         more.show();
