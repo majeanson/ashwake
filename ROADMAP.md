@@ -122,8 +122,10 @@ sessions; S2 and S3 are the fat ones.
   the reducer and never travels `act`. _Question: can the sheet be a
   transcript rather than a memory? Yes for three facts of four, and the
   fourth needed a rule rather than an observation._ **What is left is the
-  part no code can do:** Session A re-run against the deployed v2, the
-  fixes it names, then Session C.
+  part no code can do:** ~~Session A re-run against the deployed v2, the
+  fixes it names~~ — **clean on 2026-09-24**, and its six fixes landed the
+  same day (`LOG.md` Session 115); the first minute is frozen from there.
+  Then Session C.
 
 ## Deploy
 

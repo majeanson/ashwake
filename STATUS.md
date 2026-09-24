@@ -4,7 +4,15 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-24 — Session A's list is built, and the ledgers say
+Last checkpoint: **2026-09-24, evening — Session A is clean, and the first
+minute is frozen until Session C.** Marc answered the published phone sheet;
+the six changes it asked for (TREASURE retired, the replay a door that dives
+to its pops, the waking tap swallowed, the chosen pocket flashing, the lens
+panel's detail, the lamps epitaph) all landed and deployed the same day
+(`LOG.md` Session 115). P6.7 is closed; the last row of `PASS.md` with it.
+What is left for v2.0 is Session C, then D22 and D23 (`NEXT.md` §0).
+
+Earlier the same day: **Session A's list is built, and the ledgers say
 only what is open.** Everything Marc's 2026-09-16 sitting asked for has shipped
 — the lens panel (Session 110), the welcome (112), the replay (113), the audit
 pass over all of it (114) — and his ruling on the one question the replay

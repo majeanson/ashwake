@@ -16,90 +16,75 @@ Where the rest lives:
 - `LOG.md` — the per-session record and its reasoning.
 - `NEXT-HISTORY.md` — everything this file used to hold, whole, under its
   old section numbers. **Code that cites `NEXT.md` §0–§5d means that file.**
-- `PASS.md` and `IMPROVEMENTS.md` — the records of two finished passes. Their
-  one open row (P6.7) is §2 below and nowhere else.
+- `PASS.md` and `IMPROVEMENTS.md` — the records of two finished passes. Every
+  row in both is closed; the last one, P6.7, closed on 2026-09-24 (§2).
 - `PLAYTEST.md` — the phone scripts, Session A and Session C.
 
 ---
 
 ## 0. Where it stands
 
-**Session A's list is built.** Marc's verdict on 2026-09-16 was _"clean enough,
-fix the list above then freeze"_, and every item on that list has shipped: the
-desk fixes, the fly-in, the rest screen, the lens panel, the welcome and the
-replay (`NEXT-HISTORY.md` §1a). The late-lesson question the replay raised was
-ruled and built on 2026-09-24.
+**Session A passed clean on 2026-09-24**, on the phone sheet (§1), and the
+first minute is **frozen from today until Session C has run.** The same
+sitting asked for six changes and all six landed the same day as the pass's
+own fixes — TREASURE retired, the replay a door that dives to its pops, the
+waking tap swallowed, the chosen pocket flashing, the lens panel's detail, the
+lamps epitaph (`LOG.md` Session 115). **Nothing else that changes the first
+minute ships before Session C.** A stranger is a one-shot resource.
 
-So the road to v2.0 is three steps, in this order:
+So the road to v2.0 is now:
 
-1. **Session A's last clean pass** (§1). The friends keep playing through it —
-   Marc: _"carry on forward while users are playing … don't care about midgame
-   updates"_.
-2. **The freeze.** From that pass on, nothing that changes the first minute
-   ships until Session C has run. A stranger is a one-shot resource.
-3. **Session C**, the stranger test, `PLAYTEST.md`. v2.0's gate, never run on
-   either body. D23 (§3) waits for it on purpose.
+1. **Session C**, the stranger test, `PLAYTEST.md`. v2.0's gate, never run on
+   either body.
+2. **Then D22 and D23** (§3), both ruled to wait for it.
 
-**Nothing on this list can be done from a desk alone.** A session with no phone
-answer in hand has housekeeping (§5) and nothing else queued.
+The friends keep playing through all of it — Marc: _"carry on forward while
+users are playing … don't care about midgame updates"_. Work that does not
+touch the first minute (the hall of fame, the atlas, the end screen's later
+doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — one sitting
+## 1. Marc, on the phone — what landed on 2026-09-24
 
-**The sheet for this sitting is a published page**, _The phone sitting_ —
-https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — with a link into the live
-game for each item below, §2's P6.7, and three of §3's questions. Marc's marks
-and notes land in its `answers` collection, one document per item id; a
-session reads them with `ArtifactData` `list` before touching anything here.
+**The sheet is a published page**, _The phone sitting_ —
+https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
+the page's `answers` collection, one document per item id. A session reads
+them with `ArtifactData` `list` before touching anything here. Round one was
+answered on 2026-09-24: the welcome, the fly-in and the terrain sides are
+right as they are; Session A is clean; the rest became the builds below.
 
-Each of these is a number or a look chosen at a desk and never seen on a
-device. Where a URL dial exists it is given, so the alternative can be tried
-without a build. The number lives where it says; changing it is one line.
+Each of these was built from a desk the same afternoon and has not been seen
+on a phone:
 
-1. **The welcome** — the wash and lockup lifting as a run opens. Is 900 ms the
-   beat, and should the lockup appear at all when you are RESUMING a run?
-   `board/waking.ts` `WAKE_MS`; `?wake=3000` slows it down to look at,
-   `?wake=0` removes it.
-2. **The fly-in** — whole world, a hold, then one glide to the frontier. Is the
-   700 ms hold right, and does the landing read on a BIG world, where DEFAULT's
-   zoom crops to the frontier? `board/flight.ts` `OPEN_WIDE_HOLD_MS`. No dial.
-3. **The rest screen** — after fifteen still seconds the board dims under a
-   72% scrim with the lockup at a third of the width. Scrim depth and lockup
-   size are desk guesses. `ui.css` `.board-rest`; `?rest=2` rests after two
-   seconds.
-4. **The replay** — a whole run in about 14 s, 760 ms on each pop, playing
-   itself after every run that earned a ✦. Is 14 s the length, does the pop
-   beat read, and does an automatic film after every ✦ run stay welcome or wear
-   out? `shell/watching.ts` `TARGET_MS`, `POP_MS`.
-5. **The lens panel** — its density, and whether WORTH (before pocket size and
-   distance) is the number you wanted or it should be the priced points. Also
-   the word LENTILLE on a corner button, for your ear. `screens/LensPanel`.
-6. **The pocket POP will take** is outlined in accent ink
-   (`board/rings.ts`), and you asked for it while looking straight at it — so
-   on a phone it is not loud enough. How loud is a look.
-7. **The atlas's door is too quiet** — you did not notice the atlas existed.
-   Where its button lives and how it is marked is a look.
-8. **Settlement's shaded terrain sides** sit 0.126–0.374 L\* from the board.
-   The wall's gap was measured and fixed; whether FARM's shaded side still reads
-   as a gap is an eye. `?light=0.7` flattens the rig; if that fixes it, the
-   answer is the rig, not the palette.
-9. **One new French sentence**, the spare purse, once a run: « Plus de tuiles
-   que tu peux en dépenser. Seuls les points comptent dorénavant. »
-10. **Then Session A's last clean pass**, `PLAYTEST.md`. It starts the freeze.
-
-The French in general stays where it is: _"fine so far"_, corrections as you
-meet them.
+1. **The replay** — no film plays by itself; the ending's door is REPLAY, and
+   a film now dives the camera to each pop at `NEAR_ZOOM` (`BoardHandle.dive`)
+   and comes back. Every pop costs the film about 1.4 s more than it did. Is
+   the dive the right closeness, and is a film with ten pops too long now?
+   `shell/watching.ts`, `board/Board.tsx`.
+2. **The chosen pocket flashes** — its accent ring fades toward the ground and
+   back every 900 ms, never below a quarter (`board/ambient.ts`
+   `targetPulse`). Enough to tell two pockets apart, or too much?
+3. **The lens panel's held ground** opens into its detail: the power sentence,
+   then its share, worth a tile, ripe pockets, the best priced as POP would,
+   and what is in the hand. Readable, or too much?
+4. **The waking tap** only wakes; the scrim stays 250 ms after the release
+   (`CATCH_TAIL_MS`). Does a quick second tap ever feel eaten?
+5. **New French**, for your ear: « Chaque pose et chaque récolte, encore une
+   fois. » (the REPLAY door) · « Les lampes ont porté N poses. » (the
+   epitaph) · the lens lines: « 22 % de la valeur du plateau » · « valeur 3
+   par tuile, en moyenne » · « 1 poche mûre » · « la meilleure : 2 tuiles,
+   17 pts si tu la récoltes maintenant » · « aucune dans ta main ».
 
 ---
 
 ## 2. Somebody else's device
 
-- **P6.7, the iOS install offer.** It hides itself on an installed copy, so
-  your phone cannot show it. It needs a friend's iPhone where the game is NOT
-  on the home screen: open the front door and see the offer; its timing is
-  ruled and built (`shell/installDue.ts` — at once, then again after a week,
-  then never).
+- **~~P6.7, the iOS install offer~~ — CLOSED 2026-09-24.** Marc: it shows
+  _"only in incognito, seems fine for new users"_ — the friend's own Safari
+  had spent its showings on an earlier visit, which is the rule working
+  (`shell/installDue.ts`). Confirmed from the desk the same day: a fresh
+  iPhone-Safari WebKit page shows the line under DAILY.
 - **A genuinely full phone**, if one ever turns up: open the game, press BEGIN,
   and see whether the strip says the diary was shed once the board is up. No
   harness can stage it (`e2e/quota.spec.ts`'s skip carries five measurements
@@ -109,49 +94,56 @@ meet them.
 
 ## 3. Decisions still open
 
-- **D22 — collecting play data, and the privacy line.** SETTINGS says
-  _"Nothing leaves your phone: no account, no analytics, no server."_ The two
-  honest options are keep the line and take nothing, or amend the line in the
-  same commit that adds collection. `ROADMAP.md` counts it in v2.0's definition
-  of done. Ashwake 1's `DECISIONS.md` D22 has the whole argument.
+- **The ✦ marks in the diary — yours (2026-09-24).** Every diary row stores
+  what made its run worth remembering (a best, a shrine, a perk, a goal, a
+  territory, a camp) and no screen shows it; Ashwake 1 put "✦ N" on the row
+  and listed the marks when it opened. For one day the automatic replay was
+  its only reader; when that went, `pnpm sweep` flagged it, and showing them
+  is exactly Ashwake 1's parked _"spine-vs-✦"_ question (§7), so it was not
+  built. Bring the marks back to the diary, or leave them stored?
+- **The atlas — yours (2026-09-24).** Asked whether its door is too quiet,
+  Marc wrote _"what is it"_. It is the WORLDS panel's record of the world you
+  are standing in — its runs, best, farthest reach, known ground, territories
+  and the survey — and it is also on the end screen. Nothing on it says what
+  it is. Give it a line that says so, move it, or cut it?
+- **D22 — collecting play data, and the privacy line.** Marc, 2026-09-24:
+  **after Session C.** SETTINGS still says _"Nothing leaves your phone: no
+  account, no analytics, no server."_; the two honest options are unchanged.
+  Still in `ROADMAP.md`'s definition of done.
 - **D23 — the first-run acknowledgement.** Sequenced AFTER Session C, on
   purpose: shipped before it, a stranger who starts a second run tells us
   nothing about the game.
-- **TREASURE's price.** Reachable through a shrine unlock
-  (`content/tuning.ts` `treasureNeed`), and it forfeits a pocket's tiles AND
-  points for one rare tile: a 20-tile harvest averages ~1,467 points in the
-  sim, and the rare tile pays back +5 to +15 worth once. Three directions were
-  raised on 2026-09-03 and none was ruled — keep the tiles and forfeit only
-  points, make the rare tile do more, or lower `treasureNeed`. Marc said
-  _"dont reintroduce it"_ of TREASURE during the 2026-09-04 scoring pass
-  (`LOG.md` Session 51), which kept it out of that rebalance; whether he also
-  meant the button should go was never asked. One question settles it.
 - **The board's fit ignores how tall a tile stands.** `screenOf` gets height
   `0` at every production site (`board/camera.ts`, `board/cursor.ts`), so the
   fit measures the ground while relief lifts a hex up to ~0.55 radii (about
-  20 px at the top edge). `0` is correct for the drag; whether the FIT should
-  include lift is a framing change on the first screen. Cheap either way —
-  and inside the freeze once Session A passes.
-- **One epitaph says "The torch carried N placements out"** (`text/en.ts`,
-  `text/fr-CA.ts`, the epitaph pool). Settlement has lamps, not a torch.
-  Reword it, or accept it.
+  20 px at the top edge). A framing change on the first screen, so **frozen
+  until Session C** with the rest of the first minute.
+- **~~TREASURE's price~~ — RETIRED 2026-09-24.** Marc: _"i never used that
+  option get rid of the whole concept."_ `treasureNeed` is 0 and every
+  surface is gone (`content/tuning.ts` says what stays and why).
+- **~~The torch epitaph~~ — REWORDED 2026-09-24**: the lamps.
 
 ---
 
 ## 4. Watching — no action unless it happens again
 
+- **`quota.spec.ts:185` on WebKit — back on this list the day it was taken
+  off.** Retired on the morning of 2026-09-24 by its own rule (no failure
+  since 2026-09-14), it failed CI's `e2e` job that evening on `0941f5e`,
+  retry included: `DIAG {"ashwake.world.1.v1":157,"ashwake.run.1.v1":2553,
+"__error":null,"__errorLength":null,"__toast":""}` — the diary WAS shed and
+  the toast was empty. `30c027e`, one commit earlier with the same app code,
+  passed it; the commit between them touched only `board.spec.ts`. So a
+  flake, with a clean diagnostic now: the shed happened and the sentence did
+  not reach `.toast`. If it fails again, start from that.
 - **`board.spec.ts` "two fingers lean and turn the board"** failed CI's `e2e`
   job once on 2026-09-16, retry included (`toHaveAttribute` at line 1138), and
-  has passed on every push since. First noted 2026-09-14 as a synthesised
-  gesture on a runner that had never shown it. If it fails again, read the
-  screenshot before touching the spec; `e2e` gates nothing, `smoke` does.
+  has passed on every push since. If it fails again, read the screenshot
+  before touching the spec; `e2e` gates nothing, `smoke` does.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the
   theory was disproved (`e2e/stacking.spec.ts` asks the engine). Nothing to do
   unless a control is reported drawn over another one again.
-- **Retired 2026-09-24:** the `quota.spec.ts` WebKit diagnostic entry. It said
-  _"if it never fails in a week, delete this entry"_; it has not failed since
-  2026-09-14.
 
 ---
 

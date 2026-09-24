@@ -9126,3 +9126,55 @@ things worth writing down:
 `NEXT.md` §2 alone.
 
 _A ledger that holds its own history cannot also be the answer to "what now"._
+
+**Session 115, the afternoon — the phone sheet came back, and Session A is
+clean.** Marc answered all fourteen items on the published sheet. Kept as they
+are: the welcome's 900 ms, the fly-in, the terrain sides. **Session A: clean**,
+so the first minute is frozen from here until Session C. And six changes, all
+built and deployed the same afternoon as the pass's own fixes:
+
+- **TREASURE retired** (_"i never used that option get rid of the whole
+  concept"_). `treasureNeed` 0 — the repository's way to retire a system —
+  and every surface gone. `pnpm sim` did not move: no bot ever chose it.
+- **The replay is a door**, and it dives to its pops. _"Replay pops don't
+  animate"_ turned out not to be true in the harness — instrumented, the leap
+  mounted and played in every film on both engines — and true on a phone,
+  because a film holds the whole-world frame, where a two-tile leap at the
+  fit's floor is sixteen pixels a hex for half a second. So the film now
+  announces each pop, the board dives to it (`BoardHandle.dive`), and the pop
+  lands once the camera has. The board no longer rests mid-film.
+- **The waking tap only wakes.** The scrim takes the touch and stays, fading,
+  for the rest of the gesture. The test finds a point that places on a board
+  that never rests, then taps exactly there on a fresh resting one — and it
+  was checked to fail against the old scrim.
+- **The chosen pocket flashes**, faster than a beacon's breath.
+- **The lens panel's held ground opens into its detail**, with three new
+  facts computed in the view: ripe pockets, the best priced as POP would, and
+  what is in the hand.
+- **The torch epitaph carries the lamps.**
+
+**What the afternoon found that nobody asked about.** Removing the automatic
+film left `RunEntry.highlights` — every run's ✦ marks — with no reader, and
+the sweep said so. Ashwake 1 showed them in the diary, so the obvious move was
+to port that; it was built, and then **reverted before it shipped**, because
+showing them is Ashwake 1's parked _spine-vs-✦_ question, which `NEXT.md` §7
+says not to reopen. It went to Marc as a question instead. The sweep's own
+ruling for it said as much; the ruling had only been lifted for the one day
+the replay read the field.
+
+**And two of my own faults, both caught by the tools.** `30c027e` was
+committed and pushed with a typecheck error, because the checks ran in a
+chain that did not stop the commit — fixed in `0941f5e`, and every commit
+since is gated by `&&`. And the morning's ledger pass retired the
+`quota.spec.ts` watch entry by its own "a week without failing" rule; it
+failed that evening. It is back on `NEXT.md` §4 with the first clean
+diagnostic it has ever produced: the shed happened and the sentence did not
+reach the toast.
+
+_A ruling written in a sweep's allowlist is a ruling too: read it before
+building the thing it deferred._
+
+Verified: 1365 unit tests, `pnpm sim` byte-identical, sweep 0 findings over
+316 files (79 ruled), typecheck, eslint, prettier; the full browser suite on
+both engines before the pocket flash landed (143 chromium, 131 webkit, 13
+skipped).
