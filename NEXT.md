@@ -135,8 +135,11 @@ Each was built from a desk that evening and has not been seen on a phone:
   flake, with a clean diagnostic now: the shed happened and the sentence did
   not reach `.toast`. If it fails again, start from that.
 - **`board.spec.ts` "two fingers lean and turn the board"** failed CI's `e2e`
-  job once on 2026-09-16, retry included (`toHaveAttribute` at line 1138), and
-  has passed on every push since. If it fails again, read the screenshot
+  job on 2026-09-16, retry included (`toHaveAttribute` at line 1138), and
+  **again on 2026-09-24** on Chromium, on `5e7bc07` — a commit that changed
+  only the pocket flash's period, which that test cannot see; the four pushes
+  around it passed it. Twice in eight days is still a flake, but it is the
+  first one here with a second data point. If it fails again, read the screenshot
   before touching the spec; `e2e` gates nothing, `smoke` does.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the
