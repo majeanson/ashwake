@@ -55,6 +55,10 @@ import { ANTIALIAS } from './antialias';
 import { GL_PROPS, watchContext } from './gl';
 import { DEFAULT_RENDER_SCALE } from './quality';
 import { REST_MS, useResting } from './resting';
+
+/** How long the waking scrim outlives the release — long enough for the click
+ *  a release is followed by, short enough that nobody can aim a second tap. */
+const CATCH_TAIL_MS = 250;
 import { WAKE_MS, useWaking } from './waking';
 import { NO_ASSETS, useAssets } from './assets';
 import { HexField, UNIT } from './HexField';
@@ -393,11 +397,31 @@ export function Board(props: BoardProps) {
    * at a fraction of the size (`.board-rest`). Dimmer pixels are cheaper
    * pixels on the screens this game is for, which is the "save battery" half
    * of his sentence; the canvas underneath draws nothing while it rests
-   * (`frameloop="demand"`, and nothing invalidates). `pointer-events: none`
-   * so the first touch both wakes the board and lands where it was aimed.
+   * (`frameloop="demand"`, and nothing invalidates). The first touch only
+   * wakes it — see `catching` below for why that changed on 2026-09-24.
    * `aria-hidden`: a sleeping board is a look, not a sentence.
    */
   const resting = useResting(props.restMs ?? REST_MS);
+  /*
+   * THE TOUCH THAT WAKES THE BOARD ONLY WAKES IT (Marc, 2026-09-24: _"make
+   * sure on click (when we come back) the click is not registered on any
+   * action, it just wakes up"_).
+   *
+   * It used to land where it was aimed — the scrim took no pointer events, so
+   * a finger coming back to a dimmed board placed a tile on a board it could
+   * not quite see. The scrim takes the touch now. The window's listener still
+   * hears it and wakes the board (`useResting`), and the tap cannot reach a
+   * hex because a board tap is a click on the canvas's own layer, which the
+   * scrim is in front of. `catching` keeps the scrim up — fading — until the
+   * gesture that woke it is over: pull it away on the press and the release
+   * and its click land on the board under it, which is the bug again.
+   */
+  const [catching, setCatching] = useState(false);
+  const releaseCatch = useCallback(() => {
+    // After the click the release is followed by, not before it: a timer runs
+    // after the task that dispatched both.
+    setTimeout(() => setCatching(false), CATCH_TAIL_MS);
+  }, []);
   /*
    * THE OPENING BEAT, and it is the rest screen read backwards
    * (2026-09-23, `board/waking.ts`).
@@ -735,8 +759,15 @@ export function Board(props: BoardProps) {
           {props.keyHelp}
         </p>
       )}
-      {resting && (
-        <div className="board-rest" data-hud="resting" aria-hidden="true">
+      {(resting || catching) && (
+        <div
+          className={resting ? 'board-rest' : 'board-rest leaving'}
+          data-hud="resting"
+          aria-hidden="true"
+          onPointerDown={() => setCatching(true)}
+          onPointerUp={releaseCatch}
+          onPointerCancel={releaseCatch}
+        >
           <img src={lockup ?? ICON_DATA_URI} alt="" />
         </div>
       )}

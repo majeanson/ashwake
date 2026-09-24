@@ -2057,3 +2057,78 @@ test('no run plays itself back, even one that earned a mark', async ({ page }) =
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('the touch that wakes a resting board only wakes it', async ({ page, browser }) => {
+  /*
+   * Marc, 2026-09-24, on the rest screen: *"make sure on click (when we come
+   * back) the click is not registered on any action, it just wakes up."* Until
+   * then the scrim took no pointer events and a finger coming back to a
+   * dimmed board placed a tile on it.
+   *
+   * The test needs a point that WOULD place, or a swallowed tap proves
+   * nothing. The seed and the viewport are fixed, so it finds one first on a
+   * board that never rests, then opens the same board fresh, lets it rest,
+   * and taps exactly there: once to wake (nothing placed), and once more to
+   * prove the point was legal all along.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&wake=0&rest=0');
+  await begin(page);
+  await boardSettled(page);
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const start = await tilesLeft(page);
+  let aim: { x: number; y: number } | null = null;
+  search: for (const radius of [40, 60, 80, 30, 100, 20]) {
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI / 6) * i;
+      const at = {
+        x: box.x + box.width / 2 + radius * Math.cos(angle),
+        y: box.y + box.height / 2 + radius * Math.sin(angle),
+      };
+      await page.mouse.click(at.x, at.y);
+      if ((await tilesLeft(page)) < start) {
+        aim = at;
+        break search;
+      }
+    }
+  }
+  if (aim === null) throw new Error('no legal hex found to aim at');
+
+  /*
+   * The same board, FRESH, with a two-second rest — in a new browser context.
+   * Clearing storage and reloading is not fresh: the page saves its run on
+   * the way out, after the clear, and the board comes back with the tile the
+   * search just placed sitting on the aimed hex.
+   */
+  const context = await browser.newContext();
+  const fresh = await context.newPage();
+  const freshErrors = watchErrors(fresh);
+  await fresh.goto('/?seed=7&taught=1&wake=0&rest=2');
+  await begin(fresh);
+  await boardSettled(fresh);
+  const rest = fresh.locator('[data-hud="resting"]');
+  await expect(rest, 'the board never rested').toBeVisible({ timeout: 8000 });
+
+  const before = await tilesLeft(fresh);
+  await fresh.mouse.click(aim.x, aim.y);
+  await expect(rest, 'the tap did not wake the board').toBeHidden();
+  expect(await tilesLeft(fresh), 'the waking tap placed a tile').toBe(before);
+
+  // And the point was a real placement all along — after the scrim's short
+  // tail (`CATCH_TAIL_MS`), which is there to swallow the rest of the gesture
+  // that woke it and nothing after.
+  await fresh.waitForTimeout(600);
+  await fresh.mouse.click(aim.x, aim.y);
+  await expect
+    .poll(() => tilesLeft(fresh), { message: 'the aimed point was not a legal hex' })
+    .toBeLessThan(before);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+/** The board has drawn, and the opening camera has had time to land. */
+async function boardSettled(page: Page): Promise<void> {
+  await expect(page.locator('canvas')).toBeVisible();
+  await page.waitForTimeout(1500);
+}

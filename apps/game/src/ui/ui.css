@@ -524,8 +524,8 @@ button[disabled] {
  * no more than the door's own lockup would at a phone's width, and it is
  * dimmed too: the point is that fewer pixels are lit, not that a new bright
  * thing is. The fade is the one motion, and reduced motion keeps it because a
- * fade does not move. `pointer-events: none` is load-bearing: the touch that
- * wakes the board is also a touch on the board.
+ * fade does not move. It takes the touch that wakes the board, and that touch
+ * does nothing else (Marc, 2026-09-24) — `catching` in `Board` says how.
  */
 .board-rest {
   position: absolute;
@@ -534,8 +534,18 @@ button[disabled] {
   display: grid;
   place-items: center;
   background: color-mix(in srgb, var(--bg) 72%, transparent);
-  pointer-events: none;
+  /* It takes the touch that wakes the board, so that touch does nothing else
+     (2026-09-24) — see `catching` in `Board`. */
+  touch-action: none;
   animation: rest-in 600ms ease-out both;
+}
+
+/* Awake already, and only still here to finish swallowing the gesture that
+   woke it: gone to the eye at once. */
+.board-rest.leaving {
+  animation: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
 }
 
 .board-rest img {
