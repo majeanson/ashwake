@@ -9214,3 +9214,19 @@ the time. Its processes were left alone — stopping them would be the exact
 harm `CLAUDE.md` warns about — and CI's clean runner judged WebKit instead.
 
 _A camera told where to GO steps. A camera told where to LOOK follows._
+
+**Session 115, last — a review of the whole day (`39ac404..HEAD`).** Ten
+findings, each checked against the code before it was acted on; eight fixed
+(`8ae7663`), one left with its reason, one a comment moved. The two that
+mattered: the lens panel counted a mixed pocket under every colour in it and
+priced only part of it (a ripe pocket joins ripe tiles of ANY colour — it now
+uses the engine's own `ripeClusters`), and the waking scrim could stick. The
+fix for the second was itself wrong on WebKit, and the test written for it
+said so on CI: a press on the scrim's lockup IMAGE starts a native image
+drag, and WebKit then sends no pointer event at all, so the gesture never
+ended (`25e15f4`). Found by logging window pointer events on both engines —
+Chromium answered the same press with a `pointercancel`, which is why it
+passed there.
+
+_A test that fails on one engine only is usually telling the truth about
+that engine._
