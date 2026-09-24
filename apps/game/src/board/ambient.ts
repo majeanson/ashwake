@@ -33,8 +33,11 @@ export function breath(clock: number): number {
  * "somewhere to go", this says "THIS one", and the two must not read as the
  * same signal — and floored so the ring never vanishes: at its low it is a
  * quarter of the accent, still an outline, never a gap.
+ *
+ * 900 ms on the first build; Marc, on the phone the same evening: _"flash
+ * slower"_. 1500 ms keeps it clearly apart from a beacon's 2600.
  */
-export const TARGET_PULSE_MS = 900;
+export const TARGET_PULSE_MS = 1500;
 export function targetPulse(clock: number): number {
   const wave = 0.5 + 0.5 * Math.cos((clock / TARGET_PULSE_MS) * Math.PI * 2);
   return 0.25 + 0.75 * wave;

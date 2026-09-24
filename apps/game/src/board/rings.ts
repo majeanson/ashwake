@@ -46,7 +46,8 @@ const RING_LIFT = 0.012;
  *
  * **Answered 2026-09-24**, on the phone sheet: _"it was hard to know between
  * two pops, make sure the selected one flashes or something."_ So the ring
- * keeps its ink and width and FLASHES — `pulse` below, `targetPulse` for the
+ * keeps its ink and width and FLASHES (every 1.5 s since the same evening:
+ * _"flash slower"_) — `pulse` below, `targetPulse` for the
  * wave, `HexField` for the clock.
  */
 export function ringOf(cell: CellView, theme: Theme): Ring | null {
