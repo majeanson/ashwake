@@ -653,6 +653,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       diary: 'DIARY',
       totals: 'TOTALS',
       shared: (seed) => `SHARED BOARD ${seed}`,
+      atlas: 'ATLAS',
+      atlasNote: 'The world you are in, across every run played on it.',
       /** The run's SHAPE — five facts every finished run kept and no screen
        *  printed, until Marc ruled to print them (2026-09-13, `PASS.md`
        *  P7.7). `bigPop` carries two numbers because the biggest pop without

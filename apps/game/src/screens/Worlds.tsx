@@ -1,7 +1,5 @@
 import type { WorldMemory } from '@meta/world';
-import type { GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
-import { Atlas } from './Atlas';
 import { Confirming } from '../ui/Confirming';
 import { Panel, PanelMenu } from '../ui/Panel';
 import { SLOTS, type Slot } from '../shell/storage';
@@ -27,8 +25,8 @@ import { SLOTS, type Slot } from '../shell/storage';
 type WorldsProps = {
   readonly s: Strings;
   /**
-   * The slot this panel is ABOUT — whose atlas it draws and whose ground the
-   * abandon control would clear. Always a world, even on a daily, because
+   * The slot this panel is ABOUT — whose ground the abandon control would
+   * clear (and whose atlas it drew, until the atlas moved to the hall of fame). Always a world, even on a daily, because
    * that is the world the player will step back into.
    */
   readonly active: Slot;
@@ -62,28 +60,9 @@ type WorldsProps = {
    * it is a way INTO this world, and this panel is the list of those.
    */
   readonly camp?: { readonly ring: number; readonly onBegin: () => void } | null;
-  /**
-   * Which of the five world goals the ACTIVE world has met.
-   *
-   * Computed by the shell rather than here: the answer depends on the device's
-   * perk shelf as well as on the world (`metGoalIds` takes both), and a panel
-   * that read `progress` to decide a rule would be a second place for that rule
-   * to be wrong. See `Atlas`'s `survey`.
-   */
-  readonly survey?: readonly GoalId[];
 };
 
-export function Worlds({
-  s,
-  active,
-  here,
-  worlds,
-  onBack,
-  onOpen,
-  onAbandon,
-  camp,
-  survey,
-}: WorldsProps) {
+export function Worlds({ s, active, here, worlds, onBack, onOpen, onAbandon, camp }: WorldsProps) {
   return (
     <Panel
       id="worlds"
@@ -167,21 +146,12 @@ export function Worlds({
       </PanelMenu>
 
       {/*
-        The ATLAS of the world you are standing in: what it has become across
-        every run played on it. Under the list rather than inside a row —
-        seven facts per slot would make the list a wall, and the only world
-        whose history you are about to act on is the one you are in.
-
-        A LOOK FINDING, STATED WHERE THE DOOR IS (2026-09-16, `NEXT.md` §1a).
-        Session A's sheet asked whether Marc opens the atlas more than once a
-        run, and his answer after a couple of plays was *"did not notice it"*.
-        That is not a fact about the atlas — it is a fact about THIS door:
-        MORE, then WORLDS, then below the world picker, with no word on any
-        screen a player is on that says an atlas exists. Whether it earns a
-        door of its own, a line on the end screen that names it, or nothing,
-        is a screen decision and not one this file can derive.
+        The ATLAS lived here, under the world list, until 2026-09-24: MORE, then
+        WORLDS, then below the picker, and Marc, asked whether its door was too
+        quiet, answered "what is it". It is the hall of fame's ATLAS tab now
+        (his ruling: "put it in hall of fame somehow"), beside the diary it
+        summarises. This panel is for going somewhere.
       */}
-      {worlds[active] !== null && <Atlas world={worlds[active]} s={s} survey={survey ?? []} />}
 
       {worlds[active] !== null && (
         <section>

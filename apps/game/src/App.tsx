@@ -1656,6 +1656,24 @@ function Game() {
    * appear the next time the panel is opened, which is also the first moment
    * anybody could press it.
    */
+  /*
+   * THE SURVEY, finally readable (2026-09-02) — and read by the hall of fame's
+   * ATLAS since 2026-09-24, where the atlas moved (Marc: _"put it in hall of
+   * fame somehow"_).
+   *
+   * Computed here rather than in a panel because it takes BOTH the world and
+   * the device's perk shelf — `withWorldPerks` is what makes `perksAll` true,
+   * and Ashwake 1's own note says a survey reports the world while the paid
+   * ledger underneath it is an accounting detail. So this asks what is TRUE,
+   * not what has been PAID: a shelf finished on world 1 shows as met on world
+   * 2 the day it is settled.
+   */
+  const survey = useMemo(() => {
+    const world = ledgers.worlds[slot];
+    return world === null
+      ? []
+      : metGoalIds(world, withWorldPerks(progress, world.perks, world.worn ?? null));
+  }, [ledgers.worlds, slot, progress]);
   const campHere = useMemo(() => {
     const at = campFor(ledgers.worlds[slot]);
     return at === null ? null : { at, ring: distance(parse(at), { q: 0, r: 0 }) };
@@ -3948,28 +3966,6 @@ function Game() {
             enterWorld(which);
           }}
           camp={campHere === null ? null : { ring: campHere.ring, onBegin: beginAtCamp }}
-          /*
-           * THE SURVEY, finally readable (2026-09-02).
-           *
-           * Computed here rather than in the panel because it takes BOTH the
-           * world and the device's perk shelf — `withWorldPerks` is what makes
-           * `perksAll` true, and Ashwake 1's own note says a survey reports the
-           * world while the paid ledger underneath it is an accounting detail.
-           * So this asks what is TRUE, not what has been PAID: a shelf finished
-           * on world 1 shows as met on world 2 the day it is settled.
-           */
-          survey={
-            ledgers.worlds[slot] === null
-              ? []
-              : metGoalIds(
-                  ledgers.worlds[slot],
-                  withWorldPerks(
-                    progress,
-                    ledgers.worlds[slot].perks,
-                    ledgers.worlds[slot].worn ?? null,
-                  ),
-                )
-          }
         />
       )}
 
@@ -3989,6 +3985,7 @@ function Game() {
           timeline={ledgers.timeline}
           records={ledgers.records}
           worlds={ledgers.worlds}
+          atlas={ledgers.worlds[slot] === null ? null : { world: ledgers.worlds[slot], survey }}
           s={s}
           onBack={fame.hide}
           /*

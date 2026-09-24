@@ -163,6 +163,7 @@ describe('the catalogues', () => {
  */
 const SAME_IN_BOTH: readonly string[] = [
   // Québec French writes these words exactly as English does.
+  'ATLAS',
   'AUTO',
   'CACHE',
   'DESTINATIONS',

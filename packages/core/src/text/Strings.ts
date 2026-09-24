@@ -753,6 +753,9 @@ export type Strings = {
        * sentence rather than beside it, the way a daily's date is.
        */
       readonly shared: (seed: number) => string;
+      /** The ATLAS tab (2026-09-24), and the line that says what it is. */
+      readonly atlas: string;
+      readonly atlasNote: string;
       /**
        * THE RUN'S SHAPE, which every finished run kept and no screen printed
        * (2026-09-13, Marc's ruling, `PASS.md` P7.7).

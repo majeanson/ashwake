@@ -909,7 +909,7 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   expect(errors).toEqual([]);
 });
 
-test('the worlds panel shows what this world has become', async ({ page }) => {
+test('the hall of fame shows what this world has become', async ({ page }) => {
   // A world outlives every run played on it, and the only thing the game said
   // about one was a single line in the list. `knownFraction` and `unlockedBy`
   // were both written, tested, and called by nobody.
@@ -919,9 +919,12 @@ test('the worlds panel shows what this world has become', async ({ page }) => {
   // Bank a run, so the world has a history to show.
   await page.locator('[data-hud="end"]').waitFor({ state: 'visible' });
 
+  // In the hall of fame since 2026-09-24 (Marc: "put it in hall of fame
+  // somehow"), as its own tab, after WORLDS hid it below the picker.
   await page.locator('[data-door="more"]').click();
-  await page.locator('[data-go="worlds"]').click();
-  await panel(page, 'worlds').waitFor({ state: 'visible' });
+  await page.locator('[data-go="fame"]').click();
+  await panel(page, 'fame').waitFor({ state: 'visible' });
+  await page.locator('[data-tab="atlas"]').click();
 
   const atlas = page.locator('.atlas');
   await atlas.waitFor({ state: 'visible' });

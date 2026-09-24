@@ -661,6 +661,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       diary: 'JOURNAL',
       totals: 'TOTAUX',
       shared: (seed) => `PLATEAU PARTAGÉ ${nb(seed)}`,
+      atlas: 'ATLAS',
+      atlasNote: 'Le monde où tu es, à travers toutes les parties jouées dessus.',
       /**
        * LA FORME DE LA PARTIE (2026-09-13, décision de Marc, `PASS.md` P7.7).
        *

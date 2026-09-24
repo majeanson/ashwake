@@ -5,8 +5,10 @@ import { dailiesOf, runsOf, streamOf, type TimelineEntry } from '@meta/timeline'
 import type { RecordBook } from '@meta/records';
 import { ONLY_WORLD } from '@meta/records';
 import { perkText } from '@meta/progress';
+import type { GoalId } from '@content/goals';
 import type { WorldMemory } from '@meta/world';
 import { FactGrid } from '../ui/FactGrid';
+import { Atlas } from './Atlas';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
@@ -30,7 +32,7 @@ import { SLOTS, type Slot } from '../shell/storage';
  * nothing and reads as something broken.
  */
 
-type TabId = 'diary' | 'daily' | 'totals';
+type TabId = 'diary' | 'daily' | 'totals' | 'atlas';
 
 type FameProps = {
   readonly timeline: readonly TimelineEntry[];
@@ -57,9 +59,28 @@ type FameProps = {
    */
   readonly onWatch?: ((at: number) => void) | undefined;
   readonly canWatch?: ((at: number) => boolean) | undefined;
+  /**
+   * THE ATLAS of the world the player is in, and its survey (2026-09-24).
+   *
+   * It lived in WORLDS, under the picker, where Marc never found it — asked
+   * whether its door was too quiet, he wrote _"what is it"_, and then _"put it
+   * in hall of fame somehow"_. So it is a tab here, beside the diary it
+   * summarises, and it opens with one line saying what it is. Null on a device
+   * with no world yet: no tab.
+   */
+  readonly atlas: { readonly world: WorldMemory; readonly survey: readonly GoalId[] } | null;
 };
 
-export function Fame({ timeline, records, s, onBack, worlds, onWatch, canWatch }: FameProps) {
+export function Fame({
+  timeline,
+  records,
+  s,
+  onBack,
+  worlds,
+  onWatch,
+  canWatch,
+  atlas,
+}: FameProps) {
   const [on, setOn] = useState<TabId>('diary');
   // `null` slot: every world. The diary is the DEVICE's story, and the
   // per-world filter chips arrive with the crossing that makes them mean
@@ -101,12 +122,19 @@ export function Fame({ timeline, records, s, onBack, worlds, onWatch, canWatch }
             { id: 'diary', label: s.ui.fame.diary },
             { id: 'daily', label: s.ui.daily },
             { id: 'totals', label: s.ui.fame.totals },
+            ...(atlas === null ? [] : [{ id: 'atlas' as const, label: s.ui.fame.atlas }]),
           ]}
           on={on}
           onPick={setOn}
         />
       }
     >
+      {on === 'atlas' && atlas !== null && (
+        <>
+          <p className="note">{s.ui.fame.atlasNote}</p>
+          <Atlas world={atlas.world} s={s} survey={atlas.survey} />
+        </>
+      )}
       {on === 'diary' &&
         (stream.length === 0 ? (
           <p className="note">{s.view.arc.early}</p>
