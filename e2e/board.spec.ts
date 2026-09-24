@@ -2124,7 +2124,9 @@ test('the touch that wakes a resting board only wakes it', async ({ page, browse
     .poll(() => tilesLeft(fresh), { message: 'the aimed point was not a legal hex' })
     .toBeLessThan(before);
 
+  await context.close();
   expect(errors, errors.join('\n')).toEqual([]);
+  expect(freshErrors, freshErrors.join('\n')).toEqual([]);
 });
 
 /** The board has drawn, and the opening camera has had time to land. */
