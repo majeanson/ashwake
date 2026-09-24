@@ -1117,6 +1117,9 @@ function Game() {
    */
   const speakLesson = useCallback(
     (after: Progress, at: Snapshot): boolean => {
+      // An ended run teaches nothing and marks nothing told — `mayTeach`'s
+      // `ended` clause, for the half that does not go through it.
+      if (at.hud.ended) return false;
       const moment = { board: at.board, hud: at.hud, placed: at.hud.placements > 0 };
       const due = nextLesson(moment, after);
       if (due === null || due.as !== 'toast') return false;
@@ -3038,6 +3041,7 @@ function Game() {
     touring,
     speaking,
     watching: film !== null,
+    ended: snap.hud.ended,
   })
     ? card
     : null;

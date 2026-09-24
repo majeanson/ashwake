@@ -9074,3 +9074,25 @@ landed on a run with no film; the replay only makes it reliable. Left as
 behaviour and written down as a question for Marc (`NEXT.md` §1a): `mayTeach`
 has four clauses for when a lesson may not interrupt and "the run is over" is
 not one of them.
+
+### Session 115 — a lesson is for a run being played (2026-09-24)
+
+**Question:** Session 114 left one line for Marc — a lesson due on a run's
+last placement is held through the film and then lands over the end screen.
+Should it wait for the next run, or is a late lesson better than none?
+
+**Marc: _"dont show and dont count as learned."_** So `mayTeach` has a fifth
+clause, `ended`, beside `watching`, and `App` passes `snap.hud.ended`. The
+"not counted" half needed no code for cards — a card is told only when it is
+dismissed, and a card never raised is never dismissed — but it DID for the
+toast half: `speakLesson` marks a toast told the moment it speaks, and it runs
+on the quiet beat after a dispatch, which includes the one that ended the run.
+It refuses an ended run now too. The purse lesson is left alone on purpose:
+its moment is a tap on the purse, a thing the player did, not a thing the run
+noticed.
+
+_A lesson is about something the player could do; an ended run has nothing
+left to do._
+
+Verified: 1356 unit tests, `pnpm sim` byte-identical, sweep 0 findings,
+typecheck, eslint, prettier, budget.

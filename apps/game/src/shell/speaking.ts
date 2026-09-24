@@ -98,6 +98,8 @@ export type Floor = {
   readonly speaking: number;
   /** True while a run is being WATCHED rather than played — see the clause. */
   readonly watching: boolean;
+  /** True once the run on the board is over — see the clause. */
+  readonly ended: boolean;
 };
 
 /**
@@ -126,6 +128,15 @@ export type Floor = {
  *    flying the camera to a hex in the middle of the replay. It is the
  *    `touring` clause's argument exactly ("a lesson read over a moving map"),
  *    arriving from the other direction.
+ *  - **`ended`** — A LESSON IS FOR A RUN BEING PLAYED (Marc, 2026-09-24:
+ *    _"dont show and dont count as learned"_). The `watching` clause held a
+ *    card due on the last placement until the film ended, and it then landed
+ *    over the end screen — a CACHE card over "RUN 1 · 530 · NEW BEST", every
+ *    ✦ run. A lesson is about something the player could DO, and on an ended
+ *    run there is nothing left to do. Refused rather than delayed: a card is
+ *    marked told only when it is dismissed, so one that never shows is never
+ *    counted, and it comes due again the next time its moment is true on a
+ *    live board. `App`'s `speakLesson` holds the toast half to the same rule.
  */
 export const mayTeach = (floor: Floor): boolean =>
   floor.card !== null &&
@@ -133,4 +144,5 @@ export const mayTeach = (floor: Floor): boolean =>
   !floor.said &&
   !floor.touring &&
   !floor.watching &&
+  !floor.ended &&
   floor.speaking === 0;

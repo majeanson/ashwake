@@ -453,7 +453,13 @@ built.** `LOG.md` Session 105 is the reasoning.
   **And it uncovered a four-week-old hole:** the front door never called
   `open`, so the fly-in Marc asked for on 2026-09-16 never played on the first
   run of a page. Fixed the same hour; `LOG.md` Session 112.
-- **A LESSON CAN INTERRUPT AN ENDED RUN, and the replay made it reliable —
+- **~~A lesson can interrupt an ended run~~ — RULED AND BUILT 2026-09-24.**
+  Marc: _"dont show and dont count as learned"_. `mayTeach` has a fifth
+  clause, `ended`, and `speakLesson` refuses the toast half on the same
+  fact, so an ended run neither raises a card nor spends a ledger entry; the
+  lesson comes due again the next time its moment is true on a live board.
+  The question as it was asked:
+  **A LESSON CAN INTERRUPT AN ENDED RUN, and the replay made it reliable —
   yours (2026-09-23).** A teaching card that comes due on the last placement of
   a run is held while the film plays (it must be: a card read over a moving
   replay is the `touring` bug, and dismissing it flies the camera mid-film),

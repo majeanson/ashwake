@@ -38,6 +38,7 @@ const floor = (over: Partial<Floor> = {}): Floor => ({
   touring: false,
   speaking: 0,
   watching: false,
+  ended: false,
   ...over,
 });
 
@@ -106,6 +107,8 @@ describe('may a lesson interrupt', () => {
       { said: true },
       { touring: true },
       { speaking: 1 },
+      { watching: true },
+      { ended: true },
     ]) {
       expect(mayTeach(floor(over)), JSON.stringify(over)).toBe(false);
     }
@@ -131,5 +134,24 @@ describe('a lesson and a film', () => {
 
   it('and interrupts again the moment the film is over', () => {
     expect(mayTeach(floor({ watching: false }))).toBe(true);
+  });
+});
+
+/**
+ * AND NOT ON AN ENDED RUN (Marc, 2026-09-24: _"dont show and dont count as
+ * learned"_).
+ *
+ * The `watching` clause held a card due on the last placement until the film
+ * was over, and it then landed on the end screen, over the score. Refused
+ * outright now; the "not counted" half needs no code here, because a card is
+ * told only when it is dismissed and a card never raised is never dismissed.
+ */
+describe('a lesson and an ended run', () => {
+  it('is refused once the run is over', () => {
+    expect(mayTeach(floor({ ended: true }))).toBe(false);
+  });
+
+  it('including after the film, which is where it used to land', () => {
+    expect(mayTeach(floor({ watching: false, ended: true }))).toBe(false);
   });
 });
