@@ -290,7 +290,6 @@ export const STRINGS_EN: Strings = {
         return `The score: ${bounty === null ? product : added === '' ? `${product} × bounty ${bounty}` : `(${product}) × bounty ${bounty}`}.`;
       },
       bar: (count, cap) => `POCKET ${count}/${cap}`,
-      treasure: (rarity) => `POP for treasure: a ${rarity.toUpperCase()} tile.`,
       bounty: (bonus) => `This pocket collects the bounty: ×${bonus} on its score.`,
       rares: (n) => `${n} rare tile${plural(n, '', 's')} in here will be spent by popping it.`,
     },
@@ -319,8 +318,6 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       },
       luck: (gained, oddsRose) =>
         `Luck +${gained}.${oddsRose ? ' Your rare-tile odds just rose.' : ''}`,
-      treasure: (rarity) =>
-        `A ${rarity.toUpperCase()} tile goes to your stash. No tiles, no points.`,
       points: (pts, worth, count, sizeBonus, cap, multiplier, bounty, placedRate, rare) => {
         const added =
           (placedRate === null ? '' : ` + worth ${d1(worth)} × ${d1(placedRate)} for the placing`) +
@@ -643,7 +640,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     holdNothing: 'Nothing in hand to stash. Tap a card first.',
     holdTrades: 'Tap a card in your hand first: the stash trades, it does not deal.',
     pop: 'POP',
-    take: 'TAKE',
     sacrifice: 'SACRIFICE',
     relicsPaid: (n) => `${n} relic${plural(n, '', 's')}`,
     luckPaid: (n) => `+${n} luck`,
@@ -872,7 +868,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     byRarity: 'BY RARITY',
     bySource: 'BY SOURCE',
     rarity: { common: 'COMMON', magic: 'MAGIC', unique: 'UNIQUE' },
-    treasureCount: (n, rarity) => `${n} ${rarity}`,
     source: {
       matches: 'MATCHES',
       power: 'COLOUR POWER',

@@ -47,8 +47,8 @@ import { Icon } from '../ui/Icon';
  * Round-tripped once already (see "ONE button again" above: out of this
  * corner, onto the action bar, because *"the accented button should be with
  * the luck buttons"*), and asked back out: *"make it live outside the hand
- * next to camera button."* The bar is where SPENDING a pocket lives — POP,
- * TAKE, SACRIFICE — and the purse spends a different currency entirely, the
+ * next to camera button."* The bar is where SPENDING a pocket lives — POP and
+ * SACRIFICE — and the purse spends a different currency entirely, the
  * one that follows a run rather than a pocket, which is closer to VIEW than to
  * the hand it used to sit beside. `onPurse` and `purseOpen` still live in
  * `App`, unchanged — only where the button that calls them is drawn moved.

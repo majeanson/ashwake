@@ -253,7 +253,6 @@ export type Strings = {
         rare: { readonly worth: number; readonly rate: number } | null,
       ) => string;
       readonly bar: (count: number, cap: number) => string;
-      readonly treasure: (rarity: string) => string;
       readonly bounty: (bonus: number) => string;
       readonly rares: (n: number) => string;
     };
@@ -310,7 +309,6 @@ export type Strings = {
         rare: { readonly worth: number; readonly rate: number } | null,
       ) => string;
       readonly luck: (gained: number, oddsRose: boolean) => string;
-      readonly treasure: (rarity: string) => string;
       readonly points: (
         pts: number,
         worth: number,
@@ -693,13 +691,12 @@ export type Strings = {
     /**
      * The other two ways to cash a pocket.
      *
-     * Four harvest choices exist in the rules; this body offered two. TAKE
-     * spends a pocket for a rare tile, SACRIFICE burns it for relics or luck —
-     * both were unreachable from the screen until 2026-08-29, with
-     * `harvestTreasure` and `harvestBurn` computed in the view and read by
-     * nobody.
+     * Four harvest choices exist in the rules; this body offered two.
+     * SACRIFICE burns a pocket for relics or luck — unreachable from the screen
+     * until 2026-08-29, with `harvestBurn` computed in the view and read by
+     * nobody. TAKE, the treasure payout, went the other way on 2026-09-24:
+     * retired on Marc's ruling, with its label.
      */
-    readonly take: string;
     readonly sacrifice: string;
     /** What a burn pays, worded for whichever currency it pays in. */
     readonly relicsPaid: (n: number) => string;
@@ -1519,20 +1516,6 @@ export type Strings = {
     readonly byRarity: string;
     readonly bySource: string;
     readonly rarity: Readonly<Record<Rarity, string>>;
-    /**
-     * A COUNT of rare tiles, as a phrase (2026-09-02).
-     *
-     * TAKE's value read `` `1 ${s.payout.rarity[…]}` `` — a number glued to a
-     * noun in a component, which is safe at one and is the exact shape that
-     * breaks the day a pocket can hand over two: English needs a plural, French
-     * needs a plural AND an agreement, and neither is a screen's decision (D4).
-     *
-     * The treasure is always one today. That is what makes this the right
-     * moment to move it: the sentence is a phrase now rather than a
-     * concatenation, so the day the number varies the catalogue is already the
-     * thing that decides how it reads.
-     */
-    readonly treasureCount: (n: number, rarity: string) => string;
     readonly source: Readonly<Record<PointSource, string>>;
     /** Points paid for claiming sites outright, which no pop split contains. */
     readonly sites: string;

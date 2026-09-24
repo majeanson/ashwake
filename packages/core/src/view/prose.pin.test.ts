@@ -93,7 +93,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
         const at = ripe[0]!;
         out[`pocket · ${tName}`] = pocketNote(run, at, s);
         const value = harvestValue(run, at);
-        const choices: readonly HarvestChoice[] = ['tiles', 'points', 'treasure', 'burn'];
+        const choices: readonly HarvestChoice[] = ['tiles', 'points', 'burn'];
         for (const choice of choices) {
           out[`harvest · ${choice} · ${tName}`] = harvestNote(run, choice, value, s);
         }

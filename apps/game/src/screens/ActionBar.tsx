@@ -128,21 +128,6 @@ export function ActionBar({
           />
         )}
         {/*
-          TAKE — spend the pocket for a rare tile instead of for its payout.
-          Offered only when the pocket actually earns one, which is what
-          `harvestTreasure` answers.
-        */}
-        {hud.canHarvest && hud.harvestTreasure !== null && (
-          <ActButton
-            testId="pop-treasure"
-            label={s.ui.take}
-            // `s.payout.rarity` already names all three, for the end
-            // screen's breakdown. One word per rarity, in one place.
-            value={s.payout.treasureCount(1, s.payout.rarity[hud.harvestTreasure])}
-            onClick={() => onHarvest('treasure')}
-          />
-        )}
-        {/*
           SACRIFICE — burn the pocket for relics, or for luck where relics are
           not the currency yet.
 
@@ -304,8 +289,8 @@ export function ActionBar({
  *
  * `aria-hidden`, because the label says the same thing in words and a screen
  * reader that reads both is reading a decoration aloud. And optional, because
- * TAKE has no mark: it appears on one button, only when a pocket earns a
- * treasure, and the registry's rule is a mark only for an idea that recurs.
+ * a button whose idea appears nowhere else gets no mark: the registry's rule
+ * is a mark only for an idea that recurs.
  */
 function ActButton({
   testId,

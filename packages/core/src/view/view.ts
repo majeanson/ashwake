@@ -789,12 +789,6 @@ export type HudView = {
    */
   readonly questPays: boolean;
 
-  /**
-   * The rare tile the priced pocket would yield as TREASURE, or null when it
-   * is too small or the third payout is not unlocked. The button only exists
-   * when this does.
-   */
-  readonly harvestTreasure: Rarity | null;
   /** Luck a BURN would pay for the priced pocket; 0 where burning is off. */
   readonly harvestBurn: number;
   /**
@@ -920,7 +914,6 @@ export function toHudView(
     harvestAt: target,
 
     questPays: value.questPays,
-    harvestTreasure: value.treasure,
     // The sacrifice pays RELICS now: the between-runs currency, and the only
     // thing on this screen that is not about staying alive.
     harvestBurn:
@@ -1422,7 +1415,6 @@ export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
   // Always showing "1/20" is noise nobody reads twice; 2+ is the point a
   // pocket has started becoming a decision rather than a single tile.
   if (t.harvestSizeCap > 0 && value.count >= 2) lines.push(p.bar(value.count, t.harvestSizeCap));
-  if (value.treasure !== null) lines.push(p.treasure(value.treasure));
   if (value.questPays)
     // Every pop scores under the single payout, so the bounty rides on any
     // of them — this rider named a button that no longer exists.
@@ -1518,9 +1510,6 @@ export function harvestNote(
           )}`
         : '';
     return `${head}\n${h.tiles(value.tiles, t.tilesPerPop, t.worthPerExtraTile, rings > 0 ? rings : null)}${scored}${luck}${bounty}`;
-  }
-  if (choice === 'treasure') {
-    return `${head}\n${h.treasure(String(value.treasure))}`;
   }
 
   return (

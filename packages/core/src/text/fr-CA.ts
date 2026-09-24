@@ -289,8 +289,6 @@ export const STRINGS_FR: Strings = {
         return `Le score${D}: ${bounty === null ? product : added === '' ? `${product} × prime ${bounty}` : `(${product}) × prime ${bounty}`}.`;
       },
       bar: (count, cap) => `POCHE ${count}/${cap}`,
-      treasure: (rarity) =>
-        `RÉCOLTER pour le trésor${D}: une tuile ${rarity.toLocaleUpperCase('fr-CA')}.`,
       bounty: (bonus) => `Cette poche encaisse la prime${D}: ×${bonus} sur son score.`,
       rares: (n) =>
         `${n} tuile${pl(n, '', 's')} rare${pl(n, '', 's')} là-dedans ser${pl(n, 'a', 'ont')} dépensée${pl(n, '', 's')} par la récolte.`,
@@ -320,8 +318,6 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       },
       luck: (gained, oddsRose) =>
         `Chance +${gained}.${oddsRose ? ' Tes chances de tuile rare viennent de monter.' : ''}`,
-      treasure: (rarity) =>
-        `Une tuile ${rarity.toLocaleUpperCase('fr-CA')} va dans ta réserve. Pas de tuiles, pas de points.`,
       points: (pts, worth, count, sizeBonus, cap, multiplier, bounty, placedRate, rare) => {
         const added =
           (placedRate === null ? '' : ` + valeur ${d1(worth)} × ${d1(placedRate)} pour la pose`) +
@@ -651,7 +647,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     holdNothing: 'Rien en main à mettre en réserve. Touche d’abord une carte.',
     holdTrades: `Touche d’abord une carte${D}: la réserve échange, elle ne distribue pas.`,
     pop: 'RÉCOLTER',
-    take: 'PRENDRE',
     sacrifice: 'SACRIFIER',
     relicsPaid: (n) => `${nb(n)} relique${pl(n, '', 's')}`,
     luckPaid: (n) => `+${nb(n)} chance`,
@@ -884,7 +879,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     byRarity: 'PAR RARETÉ',
     bySource: 'PAR SOURCE',
     rarity: { common: 'COMMUNE', magic: 'MAGIQUE', unique: 'UNIQUE' },
-    treasureCount: (n, rarity) => `${nb(n)} ${rarity}`,
     source: {
       matches: 'VOISINES PAREILLES',
       power: 'POUVOIR DE COULEUR',

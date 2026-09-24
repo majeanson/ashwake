@@ -353,6 +353,15 @@ export type Tuning = {
    * it is a real cost every time, and it is the only way to CHOOSE a rare
    * tile rather than wait for one. 0 leaves the option unbuilt, which is
    * what every pre-M3 build had.
+   *
+   * **And 0 is what ships again, on Marc's ruling (2026-09-24):** _"i never
+   * used that option get rid of the whole concept."_ The screen, the view's
+   * `harvestTreasure`, the pocket rider and every sentence about it are gone;
+   * the rule stays here, zeroed, because this is Ashwake 1's lift and the
+   * repository's way to retire a system is a dial at 0 (`pnpm sim` is
+   * byte-identical either way — no bot ever chose it). With the dial at 0,
+   * `treasureFor` is always null and `harvest` refuses a treasure choice
+   * outright, so no run can produce one.
    */
   readonly treasureNeed: number;
   readonly treasureUnique: number;
@@ -915,13 +924,10 @@ const PLANE: Tuning = {
   territoryTiles: 6,
   territoryTilesCap: 24,
 
-  // A treasure needs a pocket of 10 — bigger than the bounty's 8, so the two
-  // goals pull in the same direction without collapsing into one — and pays
-  // unique at 20, the size cap, where points are at their best. Choosing
-  // treasure there is giving up the best points harvest in the game for a
-  // tile, which is exactly the weight this option should carry.
-  treasureNeed: 10,
-  treasureUnique: 20,
+  // Treasure is retired (Marc, 2026-09-24) — see `treasureNeed`. It was
+  // 10 and 20: a pocket of 10 for a magic tile, 20 for a unique.
+  treasureNeed: 0,
+  treasureUnique: 0,
 };
 
 /** The four tile colours. Named for what they are — art direction is undecided. */

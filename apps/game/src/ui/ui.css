@@ -2173,7 +2173,7 @@ h3.fact-label {
  * That was measured on a row of five, and the row cannot be five any more: the
  * purse left and came back, and `singlePayout` is TRUE in the shipped tuning,
  * so POP FOR POINTS never renders at all. The ordinary late row is POP,
- * SACRIFICE and the purse, with TAKE when a pocket earns one. The rule stands
+ * SACRIFICE and the purse (TAKE, the treasure payout, was retired 2026-09-24). The rule stands
  * anyway — a dial can turn `singlePayout` off, and the row should not discover
  * its own limit on a phone.
  */
@@ -2181,8 +2181,8 @@ h3.fact-label {
  * And it is an ACTION, and says so (2026-08-30).
  *
  * Marc: *"add pop and sacrifice as action buttons"*, the day after LUCK became
- * one: *"luck button is another colour more like an action one."* These four —
- * POP, POP for points, TAKE, SACRIFICE — are the only controls in the game
+ * one: *"luck button is another colour more like an action one."* These —
+ * POP, POP for points, SACRIFICE (and TAKE, until 2026-09-24) — are the only controls in the game
  * that SPEND the pocket you are looking at, and they were drawn in exactly the
  * ink of the HOLD slot beside them, which does nothing at all until a card is
  * picked up.

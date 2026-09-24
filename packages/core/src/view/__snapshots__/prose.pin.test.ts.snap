@@ -329,10 +329,6 @@ Luck +1.",
 +1 tiles: 1 per tile, +1 more per 2 worth.
 +1 pts = worth 1 × size bonus 1 for 1 tile × distance 1 + worth 1 × 1 for the placing, at 35% per pop.
 Luck +10.",
-  "harvest · treasure · BARE_TUNING": "POPPED 1, total worth 1
-A NULL tile goes to your stash. No tiles, no points.",
-  "harvest · treasure · TUNING": "POPPED 1, total worth 1
-A NULL tile goes to your stash. No tiles, no points.",
   "pocket · BARE_TUNING": "POCKET OF 1, total worth 1.
 POP pays +1 tiles and 1 pts.
 The score: worth 1 × size bonus 1 × distance 1.",
@@ -980,10 +976,6 @@ Chance +1.",
 +1 tuiles : 1 par tuile, +1 de plus par 2 de valeur.
 +1 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1 + valeur 1 × 1 pour la pose, à 35 % par récolte.
 Chance +10.",
-  "harvest · treasure · BARE_TUNING": "RÉCOLTÉ 1, valeur totale 1
-Une tuile NULL va dans ta réserve. Pas de tuiles, pas de points.",
-  "harvest · treasure · TUNING": "RÉCOLTÉ 1, valeur totale 1
-Une tuile NULL va dans ta réserve. Pas de tuiles, pas de points.",
   "pocket · BARE_TUNING": "POCHE DE 1, valeur totale 1.
 RÉCOLTER paie +1 tuiles et 1 pts.
 Le score : valeur 1 × bonus de taille 1 × distance 1.",

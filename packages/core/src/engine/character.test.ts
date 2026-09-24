@@ -217,7 +217,18 @@ describe('territory perks', () => {
 });
 
 describe('the treasure payout', () => {
-  const T = { ...TUNING, worldWalls: 0 };
+  /*
+   * RETIRED from the game on 2026-09-24 (Marc: "get rid of the whole
+   * concept") — `TUNING` ships it at 0. The rule stays in the lift, zeroed,
+   * so these tests turn it back on at the numbers it last shipped with and
+   * go on proving the rule; the first one proves nobody is offered it.
+   */
+  const T = { ...TUNING, worldWalls: 0, treasureNeed: 10, treasureUnique: 20 };
+
+  it('is offered by no pocket of any size in the shipped game', () => {
+    expect(TUNING.treasureNeed).toBe(0);
+    for (const size of [1, 10, 20, 50]) expect(treasureFor(size, TUNING)).toBeNull();
+  });
 
   /** A ripe green row of `size`, walled in stone, on a bare board. */
   const pocket = (state: GameState, size: number): GameState => {

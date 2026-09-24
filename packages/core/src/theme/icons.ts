@@ -229,10 +229,7 @@ export const CONCEPT_ICON = {
   // Both earn a place by the registry's own rule — a mark only for an idea
   // that RECURS across screens. POP is the action bar, the manual's own POP
   // section and the receipt every harvest leaves; SACRIFICE is the bar, its
-  // manual section, and the receipt a burn leaves. TAKE is deliberately not
-  // here: it appears on one button, only when a pocket earns a treasure, and
-  // a mark for a thing seen in one place is vocabulary nobody has room to
-  // learn.
+  // manual section, and the receipt a burn leaves.
   pop: 'pop',
   sacrifice: 'sacrifice',
 } as const satisfies Readonly<
