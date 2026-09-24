@@ -7,7 +7,7 @@ import type { Layout } from '@render/layout';
 import { cellTint, previewTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
-import { breath, BREATH_STEP_MS, STILL_BREATH } from './ambient';
+import { breath, BREATH_STEP_MS, STILL_BREATH, targetPulse } from './ambient';
 import { TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { setMarkAnisotropy } from './marks';
@@ -315,6 +315,45 @@ export function HexField({
     const timer = setInterval(paint, BREATH_STEP_MS);
     return () => clearInterval(timer);
   }, [beaconTints, reducedMotion, resting, invalidate]);
+
+  /*
+   * THE CHOSEN POCKET FLASHES (Marc, 2026-09-24: _"it was hard to know between
+   * two pops, make sure the selected one flashes or something"_).
+   *
+   * The beacons' shape exactly: a timer on the breath's step, only while
+   * there is something to flash, off under reduced motion and while the board
+   * rests — and a still board shows the pocket at its full accent, the way it
+   * always did. It fades the ring
+   * toward the board's ground rather than toward white, so it reads as the
+   * same ring breathing, not a second colour arriving.
+   */
+  useEffect(() => {
+    const rm = ringMesh.current;
+    const which: number[] = [];
+    rings.forEach((ring, i) => {
+      if (ring.pulse === true) which.push(i);
+    });
+    if (rm === null || which.length === 0) return;
+    const ground = new Color(theme.board.background);
+    const paint = (lit: number): void => {
+      for (const i of which) {
+        scratchColor.set(rings[i]!.colour).lerp(ground, 1 - lit);
+        rm.setColorAt(i, scratchColor);
+      }
+      if (rm.instanceColor !== null) rm.instanceColor.needsUpdate = true;
+      invalidate();
+    };
+    if (reducedMotion || resting) {
+      paint(1);
+      return;
+    }
+    const timer = setInterval(() => paint(targetPulse(performance.now())), BREATH_STEP_MS);
+    // No repaint on the way out: a new ring list is written whole by the
+    // layout effect above BEFORE this cleanup runs, so repainting the old
+    // indices here would put stale colours on whichever rings now hold them.
+    // Every other way out lands in the branch above, which paints full accent.
+    return () => clearInterval(timer);
+  }, [rings, theme, reducedMotion, resting, invalidate]);
 
   /**
    * What the finger meant, out of everything the ray went through.

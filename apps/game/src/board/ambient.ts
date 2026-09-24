@@ -24,6 +24,22 @@ export function breath(clock: number): number {
   return 0.35 + 0.65 * wave;
 }
 
+/**
+ * The pocket POP will take, flashing (Marc, 2026-09-24: _"it was hard to know
+ * between two pops, make sure the selected one flashes or something"_).
+ *
+ * How much of the accent the chosen pocket's ring shows, 0..1, against the
+ * board's own ground. Faster than a beacon's breath on purpose — a beacon says
+ * "somewhere to go", this says "THIS one", and the two must not read as the
+ * same signal — and floored so the ring never vanishes: at its low it is a
+ * quarter of the accent, still an outline, never a gap.
+ */
+export const TARGET_PULSE_MS = 900;
+export function targetPulse(clock: number): number {
+  const wave = 0.5 + 0.5 * Math.cos((clock / TARGET_PULSE_MS) * Math.PI * 2);
+  return 0.25 + 0.75 * wave;
+}
+
 /** Still, under reduced motion — the same light, no pulse. */
 export const STILL_BREATH = 0.8;
 

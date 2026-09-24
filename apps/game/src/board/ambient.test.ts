@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { resolveTheme } from '@theme/index';
-import { breath, BREATH_MS, embersFor, emberPhase, STILL_BREATH } from './ambient';
+import {
+  breath,
+  BREATH_MS,
+  embersFor,
+  emberPhase,
+  STILL_BREATH,
+  targetPulse,
+  TARGET_PULSE_MS,
+} from './ambient';
 import { glided, GLIDE_FLOOR, glidedBy, isFlick, isResting, type Glide } from './camera';
 
 /**
@@ -123,5 +131,27 @@ describe('a flick', () => {
     const moved = glidedBy({ zoom: 1, cx: 0, cz: 0 }, 0.5, -0.25);
     expect(moved.cx).toBeCloseTo(-0.5, 9);
     expect(moved.cz).toBeCloseTo(0.25, 9);
+  });
+});
+
+describe('the chosen pocket flashes', () => {
+  it('runs from full accent down to a quarter and back, never to nothing', () => {
+    let low = 1;
+    let high = 0;
+    for (let t = 0; t < TARGET_PULSE_MS; t += 5) {
+      const v = targetPulse(t);
+      low = Math.min(low, v);
+      high = Math.max(high, v);
+    }
+    expect(high).toBeCloseTo(1, 3);
+    expect(low).toBeCloseTo(0.25, 3);
+  });
+
+  it('starts at full accent, so a pocket just chosen is lit the moment it is', () => {
+    expect(targetPulse(0)).toBe(1);
+  });
+
+  it('is faster than a beacon, so the two signals never read as one', () => {
+    expect(TARGET_PULSE_MS).toBeLessThan(BREATH_MS / 2);
   });
 });

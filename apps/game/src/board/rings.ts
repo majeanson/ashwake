@@ -18,6 +18,8 @@ import { kindOf, topOf } from './relief';
 type Ring = {
   readonly colour: number;
   readonly width: number;
+  /** The pocket POP will take: its ring flashes (`targetPulse`, 2026-09-24). */
+  readonly pulse?: true;
 };
 
 type PlacedRing = Ring & {
@@ -41,10 +43,15 @@ const RING_LIFT = 0.012;
  * a ripe edge has and in an ink the action bar already wears. What it should
  * be instead — wider, a fill, a breath of its own — is a screen and an eye,
  * not a derivation, and this comment is the finding rather than a guess at it.
+ *
+ * **Answered 2026-09-24**, on the phone sheet: _"it was hard to know between
+ * two pops, make sure the selected one flashes or something."_ So the ring
+ * keeps its ink and width and FLASHES — `pulse` below, `targetPulse` for the
+ * wave, `HexField` for the clock.
  */
 export function ringOf(cell: CellView, theme: Theme): Ring | null {
   const b = theme.board;
-  if (cell.targeted) return { colour: theme.ink.accent, width: b.ripeEdgeWidth };
+  if (cell.targeted) return { colour: theme.ink.accent, width: b.ripeEdgeWidth, pulse: true };
   if (cell.ripe) return { colour: b.ripeEdge, width: b.ripeEdgeWidth };
   if (cell.kind === 'landmark' && !cell.claimed) {
     return { colour: theme.ink.lit, width: b.ripeEdgeWidth * 0.8 };
