@@ -45,36 +45,37 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — what landed on 2026-09-24
+## 1. Marc, on the phone — what landed on the evening of 2026-09-24
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
-them with `ArtifactData` `list` before touching anything here. Round one was
-answered on 2026-09-24: the welcome, the fly-in and the terrain sides are
-right as they are; Session A is clean; the rest became the builds below.
+them with `ArtifactData` `list` before touching anything here. Rounds one and
+two were answered on 2026-09-24 and every change they asked for is built:
+round two kept the waking tap and the new French as they are, and asked for
+the five builds below — plus one bug from Marc's own play (item 1).
 
-Each of these was built from a desk the same afternoon and has not been seen
-on a phone:
+Each was built from a desk that evening and has not been seen on a phone:
 
-1. **The replay** — no film plays by itself; the ending's door is REPLAY, and
-   a film now dives the camera to each pop at `NEAR_ZOOM` (`BoardHandle.dive`)
-   and comes back. Every pop costs the film about 1.4 s more than it did. Is
-   the dive the right closeness, and is a film with ten pops too long now?
-   `shell/watching.ts`, `board/Board.tsx`.
-2. **The chosen pocket flashes** — its accent ring fades toward the ground and
-   back every 900 ms, never below a quarter (`board/ambient.ts`
-   `targetPulse`). Enough to tell two pockets apart, or too much?
-3. **The lens panel's held ground** opens into its detail: the power sentence,
-   then its share, worth a tile, ripe pockets, the best priced as POP would,
-   and what is in the hand. Readable, or too much?
-4. **The waking tap** only wakes; the scrim stays 250 ms after the release
-   (`CATCH_TAIL_MS`). Does a quick second tap ever feel eaten?
-5. **New French**, for your ear: « Chaque pose et chaque récolte, encore une
-   fois. » (the REPLAY door) · « Les lampes ont porté N poses. » (the
-   epitaph) · the lens lines: « 22 % de la valeur du plateau » · « valeur 3
-   par tuile, en moyenne » · « 1 poche mûre » · « la meilleure : 2 tuiles,
-   17 pts si tu la récoltes maintenant » · « aucune dans ta main ».
+1. **The replay camera FOLLOWS** (_"not the right one. make it more fluid,
+   less step-y"_). The dive per pop is gone: the camera eases continuously
+   toward each move at `FOLLOW_ZOOM` (1.8, `board/camera.ts`), and closing a
+   film by any door drops the follow and flies the whole board back. That
+   last part answers _"when i came back … i started a new one and my camera
+   was misplaced"_ — which the harness could not reproduce; the likeliest
+   cause (a tap during a dive parking the camera at an old pop) no longer
+   exists. **Is 1.8 the closeness, and is the easing (`FOLLOW_TAU_MS`, 650)
+   smooth without lagging?**
+2. **The chosen pocket flashes slower** — every 1.5 s (_"flash slower"_).
+3. **Under the lens, every tile of that ground prints its worth** (_"show
+   points on concerned color of each tile too while lens is on"_) — worth,
+   the unit the panel speaks, since a tile has no points until it pops.
+4. **The atlas is the hall of fame's ATLAS tab** (_"put it in hall of fame
+   somehow"_), opening on one line that says what it is. With four tabs the
+   French tab strip scrolls at a phone's width — JOURNAL is cut off while
+   ATLAS is open. A look.
+5. **New French**: « Le monde où tu es, à travers toutes les parties jouées
+   dessus. » (the ATLAS tab's line).
 
 ---
 
@@ -100,12 +101,9 @@ on a phone:
   and listed the marks when it opened. For one day the automatic replay was
   its only reader; when that went, `pnpm sweep` flagged it, and showing them
   is exactly Ashwake 1's parked _"spine-vs-✦"_ question (§7), so it was not
-  built. Bring the marks back to the diary, or leave them stored?
-- **The atlas — yours (2026-09-24).** Asked whether its door is too quiet,
-  Marc wrote _"what is it"_. It is the WORLDS panel's record of the world you
-  are standing in — its runs, best, farthest reach, known ground, territories
-  and the survey — and it is also on the end screen. Nothing on it says what
-  it is. Give it a line that says so, move it, or cut it?
+  built. Bring the marks back to the diary, or leave them stored? **Asked
+  twice on the phone sheet (round two) and left unanswered**, so still open.
+- **~~The atlas~~ — MOVED 2026-09-24** to the hall of fame (§1, item 4).
 - **D22 — collecting play data, and the privacy line.** Marc, 2026-09-24:
   **after Session C.** SETTINGS still says _"Nothing leaves your phone: no
   account, no analytics, no server."_; the two honest options are unchanged.

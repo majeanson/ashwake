@@ -9178,3 +9178,39 @@ Verified: 1365 unit tests, `pnpm sim` byte-identical, sweep 0 findings over
 316 files (79 ruled), typecheck, eslint, prettier; the full browser suite on
 both engines before the pocket flash landed (143 chromium, 131 webkit, 13
 skipped).
+
+**Session 115, the evening — round two.** The phone sheet's second round and
+one note from Marc's own play came back, and all of it is built: the replay
+camera follows instead of diving (_"more fluid, less step-y"_), a film leaves
+the camera whole when it closes (_"my camera was misplaced"_), the pocket
+flashes every 1.5 s (_"flash slower"_), a lensed tile prints its worth, and
+the atlas is the hall of fame's ATLAS tab (_"put it in hall of fame
+somehow"_). The ✦ marks were asked twice and left unanswered, so they stay
+parked.
+
+**The dive was the wrong shape, and the reason is worth keeping.** A flight is
+a fixed ease from A to B; a film that aims one at every move restarts that
+ease every beat, which is a camera that steps however short the flights are.
+The follow camera is an exponential ease toward a target that moves
+(`chased`), so a new target bends the path rather than restarting it — the
+same curve at any frame rate, pinned by a test that runs it at 30 and 60 fps.
+And a camera that is ALWAYS following has to be dropped by everything that is
+not the film: it is cancelled at the nine sites that already cancel a throw,
+which is how a new run's opening takes over from it, and `closeReel` — the one
+way out of every film — drops it and flies the board whole.
+
+**The misplacement was not reproduced**, and that is said rather than
+smoothed over: instrumented on both a shared seed and an own world, a new run
+after a film opened exactly where one without a film did. What was removed is
+the one state that could leave the camera somewhere odd — a tap ending a film
+mid-dive, which cancels the dive's return and parks the camera at an old pop.
+Whether that was Marc's case is his to say on the phone.
+
+**And a local WebKit failure that was not the code.** The view-cycle test
+failed four in four on WebKit tonight; bisected back to `3896aae`, whose code
+passed the same suite that morning and passes on CI. A sibling session was
+running another project's e2e suite and a `wrangler dev` on the machine at
+the time. Its processes were left alone — stopping them would be the exact
+harm `CLAUDE.md` warns about — and CI's clean runner judged WebKit instead.
+
+_A camera told where to GO steps. A camera told where to LOOK follows._

@@ -10,7 +10,9 @@ the six changes it asked for (TREASURE retired, the replay a door that dives
 to its pops, the waking tap swallowed, the chosen pocket flashing, the lens
 panel's detail, the lamps epitaph) all landed and deployed the same day
 (`LOG.md` Session 115). P6.7 is closed; the last row of `PASS.md` with it.
-What is left for v2.0 is Session C, then D22 and D23 (`NEXT.md` §0).
+What is left for v2.0 is Session C, then D22 and D23 (`NEXT.md` §0). Round two of the sheet, the same evening: the replay camera follows
+rather than dives, a film leaves the camera whole, the flash is slower, a
+lensed tile prints its worth, and the atlas is a hall-of-fame tab.
 
 Earlier the same day: **Session A's list is built, and the ledgers say
 only what is open.** Everything Marc's 2026-09-16 sitting asked for has shipped
