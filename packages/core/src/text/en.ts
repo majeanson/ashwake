@@ -253,7 +253,7 @@ export const STRINGS_EN: Strings = {
         (p, cost) =>
           `No tiles left after ${p} placements. The plane was charging ${cost} each by then.`,
         (p, cost) =>
-          `The torch carried ${p} placements out. At ${cost} a tile, the dark had the last one.`,
+          `The lamps carried ${p} placements out. At ${cost} a tile, the dark had the last one.`,
         (p, cost) =>
           `Every tile spent: ${p} placements, the cost at ${cost} and the purse at nothing.`,
         (p, cost) =>

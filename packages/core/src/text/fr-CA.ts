@@ -253,7 +253,7 @@ export const STRINGS_FR: Strings = {
         (p, cost) => `L’expédition s’est dépensée${D}: ${p} poses, le prix monté à ${cost}.`,
         (p, cost) =>
           `Plus une tuile après ${p} poses. La plaine en demandait ${cost} chacune rendu là.`,
-        (p, cost) => `La torche a porté ${p} poses. À ${cost} la tuile, le noir a eu la dernière.`,
+        (p, cost) => `Les lampes ont porté ${p} poses. À ${cost} la tuile, le noir a eu la dernière.`,
         (p, cost) =>
           `Chaque tuile dépensée${D}: ${p} poses, le coût à ${cost} et la bourse à rien.`,
         (p, cost) =>
