@@ -265,5 +265,13 @@ describe('a held ground, explained', () => {
     expect(container.querySelectorAll('.tip-hint')).toHaveLength(1);
     fireEvent.click(rows[1]!);
     expect(container.querySelectorAll('.tip-hint')).toHaveLength(0);
+
+    // And the ✕ on an open hint closes it (Marc, 2026-09-25: "add a small X
+    // to remove hint too").
+    fireEvent.click(rows[2]!);
+    expect(container.querySelectorAll('.tip-hint')).toHaveLength(1);
+    fireEvent.click(container.querySelector('.tip-hint-close')!);
+    expect(container.querySelectorAll('.tip-hint')).toHaveLength(0);
+    expect(rows[2]!.getAttribute('aria-expanded')).toBe('false');
   });
 });

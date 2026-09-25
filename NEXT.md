@@ -44,8 +44,9 @@ minute ships before Session C.** A stranger is a one-shot resource.
 
 Both change the first minute after the clean pass, on purpose and by the
 owner. Round six saw them on the phone and asked for more (the cluster's marks,
-a hold on a tile), so **round seven was Session A's pass for the board the stranger meets**
-(§1), and it came back clean: that build is the one Session C runs on.
+a hold on a tile), so round seven was Session A's pass, and came back clean at `8e77420` —
+until the taste round asked for four more changes the stranger would see, built
+and re-frozen the same evening. **Round eight is the pass now** (§1).
 
 So the road to v2.0 is now:
 
@@ -60,19 +61,25 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — nothing waiting
+## 1. Marc, on the phone — round eight, four looks
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
 them with `ArtifactData` `list` before touching anything here.
 
-**Seven rounds, all answered, all built.** Round seven (2026-09-25) kept the
-eye and magnifier, the lens's two tabs, the clean replay and the Québec comma,
-and set the tile hold to **250 ms** (`r7-hold`), which is Marc's own number
-and needs no further look. So **round seven is the clean pass that names
-Session C's build** (§0, `PLAYTEST.md`). The next thing that needs a phone is
-a stranger's.
+**Seven rounds and the taste round, all answered.** Round seven froze the
+first minute at `8e77420`; the taste round (2026-09-25) then asked for four
+changes that touch what a stranger sees, and Marc chose to **build them and
+re-freeze** rather than hold them: MENU in the header and LUCK out of the stat
+row (`t-corner`), the cluster's actions as marks and values without words
+(`t-accent`), a ✕ on an open hint (`t-details`), and the ending's picture as
+the door onto the finished board with REPLAY inside it (`t-walked`). Kept as
+they were: the camera numbers; not cared about: the marks at 16 px and the
+keyboard.
+
+**Round eight** is those four, and **it is now what names Session C's build**
+(§0, `PLAYTEST.md`).
 
 ---
 
@@ -161,20 +168,14 @@ a stranger's.
 
 ---
 
-## 5c. The cutover — prepared, not run
+## 5c. The cutover — prepared, decided, not run
 
-`CUTOVER.md` (2026-09-25) is tiles.marcportal.com becoming Ashwake 2: how
-both workers are bound today, what a phone's saves and service worker do on the
-day, the steps with a check and an undo for each, and **three decisions for
-Marc before it**:
-
-1. **Bring v1 worlds over automatically?** v2 never reads `tiles.*` keys by
-   itself, and once v2 loads on that origin v1's BACK UP button is gone: a v1
-   player who did not back up keeps worlds no screen can reach. A one-time
-   offer on boot would fix it, built after Session C.
-2. **Warn v1 players first?** A last v1 deploy would break its freeze.
-3. **What becomes of ashwake.marcportal.com?** A second domain, a 301, or
-   dropped — the last two strand the saves made there, Marc's included.
+`CUTOVER.md` (2026-09-25) is tiles.marcportal.com becoming Ashwake 2, after
+Session C. Marc's decisions the same day: **no automatic bring-over** of v1
+worlds, **no warning** to v1 players, and **ashwake.marcportal.com redirected
+or dropped** (which of the two is left for the day). Both strand the saves made
+there, so the runbook's step 0a is a backup and restore by Marc and every
+tester.
 
 ---
 

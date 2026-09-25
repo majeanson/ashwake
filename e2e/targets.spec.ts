@@ -98,7 +98,14 @@ async function assertAllThumbable(page: Page, screen: string): Promise<void> {
    *     exemption in the build — small, and silent about it — which is the
    *     state this marker exists to make impossible.
    */
-  const ARGUED = ['button.stat', 'button.term'];
+  /*
+   *   - `button.tip-row` and `button.tip-hint-close` — a priced table's row
+   *     that opens its one-line hint, and the ✕ that closes it (2026-09-25).
+   *     They only ever explain, and seven rows at tap size would be a third of
+   *     the screen; the row is the larger target for the same thing the ✕
+   *     does.
+   */
+  const ARGUED = ['button.stat', 'button.term', 'button.tip-row', 'button.tip-hint-close'];
   const exempt = [
     ...new Set(targets.filter((t) => t.argued).map((t) => t.where.split(' "')[0] ?? '')),
   ];

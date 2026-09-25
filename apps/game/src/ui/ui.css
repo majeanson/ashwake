@@ -1119,7 +1119,26 @@ button[disabled] {
   text-decoration-color: var(--ink-dim);
   text-underline-offset: 2px;
 }
+/* The ✕ sits at the line's end. Small, like the row it closes, and allowed
+   under the 44px floor for the same reason: it only ever puts an explanation
+   away, and the row itself is the larger target for the same thing. */
+.tip-hint-close {
+  flex: none;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-dim);
+  font-size: 0.7rem;
+  display: inline-grid;
+  place-items: center;
+}
 .tip-line > .tip-hint.note {
+  display: flex;
+  align-items: start;
+  gap: 0.4rem;
+  justify-content: space-between;
   margin: 0.1rem 0 0.3rem 2.1rem;
   font-size: 0.75rem;
 }
@@ -1579,6 +1598,26 @@ a:visited {
   padding: 0.35rem var(--gap);
   background: var(--bg);
   border-bottom: 1px solid var(--panel-edge);
+}
+
+/*
+ * MENU IN THE HEADER (Marc, 2026-09-25: "place it with the header"). A flex
+ * row once MENU is in it, so the stats share what is left and MENU keeps its
+ * own width. MENU is a control, so it keeps the 44px floor the stats are
+ * excused from, and the row is that much taller.
+ */
+.hud:has(.board-menu) {
+  display: flex;
+  align-items: stretch;
+}
+.hud:has(.board-menu) > .stat {
+  flex: 1 1 0;
+  max-width: 7rem;
+}
+.hud > .board-menu {
+  position: static;
+  flex: none;
+  margin-inline-start: auto;
 }
 
 /* A stat is a button because every number can be asked about — but it should
@@ -3466,6 +3505,35 @@ a:visited {
      of buttons that all carry `--radius`. A frame is a frame. */
   border-radius: var(--radius);
   background: var(--panel);
+}
+
+/*
+ * The ending's picture as a door (2026-09-25): the image, unframed, with the
+ * eye in its corner saying it opens. A button reset so it reads as the
+ * picture it always was.
+ */
+.end-door {
+  position: relative;
+  width: 100%;
+  max-width: var(--measure);
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+}
+.end-door-mark {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.75rem;
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  line-height: 1;
 }
 
 .end-map-name {

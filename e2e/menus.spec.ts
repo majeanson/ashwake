@@ -1018,8 +1018,8 @@ test('the ending hands the screen back to the board it ended on', async ({ page 
     'the board was reachable under the end screen',
   ).toHaveAttribute('inert', '');
 
-  // No picture of the board on the ending — a door onto it.
-  expect(await page.locator('.end-map img').count(), 'the ending still draws a snapshot').toBe(0);
+  // No snapshot of the board on the ending — its picture is a door onto the
+  // real one (2026-09-25).
   await page.locator('[data-action="walk-map"]').click();
 
   await expect(end, 'the ending did not step aside').toHaveCount(0);

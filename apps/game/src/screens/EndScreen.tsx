@@ -7,6 +7,7 @@ import { GOALS, type GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Icon } from '../ui/Icon';
+import { CHROME_ICON } from '@theme/icons';
 import { Prose } from '../ui/Prose';
 import { useEffect, useRef, useState } from 'react';
 import type { Standing } from '../shell/settle';
@@ -74,16 +75,6 @@ type EndScreenProps = {
    * IS the right answer.
    */
   readonly onWalk: () => void;
-  /**
-   * WATCH THE RUN AGAIN (2026-09-23, Marc: *"i'd like to be able to replay the
-   * pops and tile placements too"*).
-   *
-   * Absent when there is no film to play — a run whose replay could not be
-   * kept, or one finished by a build that did not record them. The door is
-   * simply not drawn then, rather than drawn and apologising, which is the
-   * same rule the import button and the crossing offer already keep.
-   */
-  readonly onWatch?: (() => void) | undefined;
   /**
    * What this run CHANGED, as opposed to what it scored.
    *
@@ -201,7 +192,6 @@ const SAID_MS = 2000;
 
 export function EndScreen({
   onWalk,
-  onWatch,
   newPerks,
   newUnlocks,
   world,
@@ -297,7 +287,33 @@ export function EndScreen({
      * (`App.tsx`), so the two never compete for the one `role="main"`.
      */
     <div className="end" data-hud="end" role="main">
-      {hero !== null && <img className="end-hero" src={hero} alt="" width={876} height={330} />}
+      {/*
+        THE BOARD YOU LEFT, AT THE TOP, AND IT IS A DOOR (Marc, 2026-09-25, of
+        THE GROUND YOU WALKED and REPLAY at the foot of this screen:
+        "agglomerate with replay with buttons inside replay. make it a top
+        feature"). The picture opens the finished board; the board's own bar
+        holds REPLAY and the way back to these numbers (`App`'s `end-walk`).
+        Without the picture — its art not loaded — the door is a plain one, in
+        the same place.
+      */}
+      <button
+        type="button"
+        className={hero === null ? 'end-map' : 'end-door'}
+        data-action="walk-map"
+        aria-label={s.ui.theMap}
+        onClick={onWalk}
+      >
+        {hero === null ? (
+          <span className="end-map-name">{s.ui.theMap}</span>
+        ) : (
+          <>
+            <img className="end-hero" src={hero} alt="" width={876} height={330} />
+            <span className="end-door-mark" aria-hidden="true">
+              <Icon name={CHROME_ICON.view} />
+            </span>
+          </>
+        )}
+      </button>
 
       {/*
         WHICH RUN THIS WAS, over the score (2026-09-02).
@@ -638,39 +654,6 @@ export function EndScreen({
         reason and called it the cheapest growth in the game.
       */}
       {fromLink === true && <p className="note">{s.ui.cameByLink}</p>}
-
-      {/*
-        THE MAP, last: the run you just walked, and you can walk it again.
-
-        Marc: *"in the end screen i loved having my real map to check it back
-        again."* It sits under everything because it is the thing you scroll
-        BACK to — the numbers answer "how did I do", and this answers "what did
-        it look like", which is the question you ask second and the one that
-        makes a run memorable.
-
-        It was a PNG of the board and is a DOOR onto the board (2026-08-30) —
-        see `onWalk`. Nothing is drawn in the slot, deliberately: a thumbnail
-        beside a button that opens the real thing is the ugly picture again, at
-        a smaller size.
-      */}
-      <button type="button" className="end-map" data-action="walk-map" onClick={onWalk}>
-        <span className="end-map-name">{s.ui.theMap}</span>
-        <span className="end-map-note">{s.ui.walkTheMap}</span>
-      </button>
-      {/*
-        AND THE RUN, PLAYED BACK (2026-09-23).
-
-        Beside the door onto the board rather than up with NEW RUN, because it
-        belongs to the same thought: those two are what you do with the run
-        that just ended, and NEW RUN is what you do next. Only drawn when a
-        film was kept — see `onWatch`.
-      */}
-      {onWatch !== undefined && (
-        <button type="button" className="end-map" data-action="watch-run" onClick={onWatch}>
-          <span className="end-map-name">{s.ui.watchRun}</span>
-          <span className="end-map-note">{s.ui.replayNote}</span>
-        </button>
-      )}
     </div>
   );
 }

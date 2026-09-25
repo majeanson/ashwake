@@ -2024,6 +2024,9 @@ test('a finished run can be watched again, and the board plays it back', async (
   const ending = page.locator('[data-action="new-run"]');
   await expect(ending, 'the run never reached an ending').toBeVisible();
 
+  // REPLAY lives on the finished board since 2026-09-25 (Marc: "agglomerate
+  // with replay with buttons inside replay"): the ending's picture opens it.
+  await page.locator('[data-action="walk-map"]').click();
   const watch = page.locator('[data-action="watch-run"]');
   await expect(watch, 'a finished run offered no way to watch it').toBeVisible();
   await watch.click();
@@ -2047,11 +2050,14 @@ test('a finished run can be watched again, and the board plays it back', async (
     .poll(counted, { message: 'the film never advanced past its first frame' })
     .toBeGreaterThan(0);
 
-  // And a tap on SKIP goes straight to the score, which is what Marc asked a
-  // tap to do.
+  // And SKIP puts the finished board back, the place the film was started
+  // from; its bar's way back is one press from the score.
   await page.locator('[data-action="watch-skip"]').click();
   await expect(bar).toBeHidden();
-  await expect(ending, 'skipping the film did not put the ending back').toBeVisible();
+  const walkBar = page.locator('[data-hud="end-walk"]');
+  await expect(walkBar, 'skipping the film did not put the finished board back').toBeVisible();
+  await page.locator('[data-action="end-back"]').click();
+  await expect(ending, 'the way back did not reach the ending').toBeVisible();
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -2086,10 +2092,10 @@ test('no run plays itself back, even one that earned a mark', async ({ page }) =
   });
   expect(marks, 'this run earned no mark, so it proves nothing').toBeGreaterThan(0);
 
-  // The door is there, with its second line, like the map's.
+  // The door is on the finished board, which the ending's picture opens.
+  await page.locator('[data-action="walk-map"]').click();
   const replay = page.locator('[data-action="watch-run"]');
   await expect(replay).toBeVisible();
-  await expect(replay.locator('.end-map-note')).toHaveCount(1);
 
   /*
    * A tap on the board is the other way out of a playing film, and it must
@@ -2116,6 +2122,8 @@ test('no run plays itself back, even one that earned a mark', async ({ page }) =
     .not.toBeNull();
   await page.locator('canvas').click({ position: { x: 195, y: 300 }, force: true });
   await expect(bar, 'a tap on a playing film did not end it').toBeHidden();
+  await expect(page.locator('[data-hud="end-walk"]')).toBeVisible();
+  await page.locator('[data-action="end-back"]').click();
   await expect(ending).toBeVisible();
   // And nothing after a film inherits where it was looking: closing it drops
   // the follow (Marc, 2026-09-24: "my camera was misplaced").

@@ -895,8 +895,6 @@ export type Strings = {
      * around."* So it is a door now, and the same words open it.
      */
     readonly theMap: string;
-    /** What is behind that door, said once under it. */
-    readonly walkTheMap: string;
     /** And the way back out of it, to the numbers. */
     readonly backToEnding: string;
     /**
@@ -910,8 +908,6 @@ export type Strings = {
      * over.
      */
     readonly watchRun: string;
-    /** The REPLAY door's second line, as `walkTheMap` is the map door's (2026-09-24). */
-    readonly replayNote: string;
     readonly watchSkip: string;
     readonly watching: (step: number, of: number) => string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
@@ -1409,6 +1405,9 @@ export type Strings = {
      * does. Worth is a decimal — luck multiplies it — and prints with one
      * decimal through each catalogue's `d1`, exactly as the receipts print it.
      */
+    /** The ✕ on a row's open hint (Marc, 2026-09-25: "add a small X to
+     *  remove hint too"): its accessible name. */
+    readonly hintClose: string;
     readonly lensPanel: {
       readonly buttonLabel: string;
       readonly standing: string;

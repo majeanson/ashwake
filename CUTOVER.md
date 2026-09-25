@@ -42,33 +42,34 @@ says **inferred**.
 - **Shared links keep working**: `?seed=` and `?daily=` parse the same in both,
   and v2 builds new ones from `location.origin` (`share.ts`).
 
-## Decisions for Marc, before the day
+## Decisions — Marc, 2026-09-25
 
-1. **Bring v1 worlds over automatically?** A one-time offer on boot, on
-   tiles.marcportal.com only, when `tiles.*` keys exist and `ashwake.*` do not:
-   _"Bring your Ashwake 1 worlds over?"_, reusing `migrateLegacy`. A stranger
-   has no `tiles.*` keys, so it cannot touch their first minute; it is still a
-   new screen, so it is built after Session C. Without it, every v1 player who
-   did not back up loses their worlds, daily book and records.
-2. **Warn v1 players first?** A last v1 deploy saying "back up now" would break
-   the `v1.0.0` freeze. Unneeded if decision 1 is yes.
-3. **What becomes of ashwake.marcportal.com?** Keep it as a second domain (two
-   origins, each with its own saves), or 301 it to tiles through a zone
-   Redirect Rule (the worker has no `main` to do it), or drop it. Either of the
-   last two strands the saves made there — Marc's own and every tester's — so
-   they back up and restore first.
+1. **No automatic bring-over.** v1 worlds stay where they are; the only
+   bridge is D3's manual BACK UP in v1 and RESTORE in v2, and after the
+   cutover v1's BACK UP is gone from tiles.marcportal.com. A v1 player who did
+   not back up before the day keeps worlds no screen reaches. Accepted.
+2. **No warning to v1 players.** The `v1.0.0` freeze holds.
+3. **ashwake.marcportal.com is redirected or dropped** — which of the two is
+   still open, and it only matters on the day. Either way its saves are
+   stranded, so **step 0a is Marc's and every tester's backup.** A redirect is
+   a zone Redirect Rule (301 to https://tiles.marcportal.com, path and query
+   kept, so a shared `?seed=` link still lands); dropping it is removing the
+   hostname from `wrangler.toml`'s `routes`.
 
 ## The steps
 
+**0a. Back up what lives on ashwake.marcportal.com.** Marc and any tester:
+SETTINGS → BACK UP on ashwake.marcportal.com, and RESTORE on
+tiles.marcportal.com once step 3 is done. Nothing else carries those saves
+across (decision 3).
+
 **0. Prepare, and do not push.**
 
-- `wrangler.toml`: the route becomes `tiles.marcportal.com` (plus
-  ashwake.marcportal.com if decision 3 keeps it).
+- `wrangler.toml`: the route becomes `tiles.marcportal.com` alone (decision 3).
 - `apps/game/index.html`: the canonical link, `og:url`, `og:image` and
   `twitter:image`.
 - `packages/core/src/meta/identity.ts`: `SITE`.
 - `scripts/verify-deploy.ts`: the default `BASE`.
-- Decision 1's offer, if yes.
 - In `../tiles`: remove the `routes` line and keep `workers_dev`, or any later
   tiles deploy tries to take the hostname back.
 

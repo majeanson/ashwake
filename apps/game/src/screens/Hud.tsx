@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { TUNING } from '@content/tuning';
 import { STAT_ICON } from '@theme/icons';
 import { Icon } from '../ui/Icon';
@@ -22,25 +22,29 @@ type HudProps = {
   readonly hud: HudView;
   readonly s: Strings;
   readonly onNote: (text: string) => void;
+  /**
+   * MENU, at the row's end (Marc, 2026-09-25, of MENU alone in the board's
+   * top-right corner: "place it with the header"). The shell's own button,
+   * handed in so the row does not learn what it opens.
+   */
+  readonly menu?: ReactNode;
 };
 
 /** The ids `statNote` answers to, in the order Ashwake 1 laid them out. */
-const STATS = ['tiles', 'points', 'luck', 'map', 'cost', 'left'] as const;
+/*
+ * LUCK LEFT THE ROW (Marc, 2026-09-25: "remove luck since we have a luck
+ * button at the bottom above tiles"). The purse's own button in the cluster
+ * shows the same number and opens what it buys, so the row said it twice.
+ */
+const STATS = ['tiles', 'points', 'map', 'cost', 'left'] as const;
 
 type StatId = (typeof STATS)[number];
 
-export function Hud({ hud, s, onNote }: HudProps) {
+export function Hud({ hud, s, onNote, menu }: HudProps) {
   const [rose, setRose] = useState<StatId | null>(null);
 
   return (
-    <div
-      className="hud"
-      /* Below the 44px floor on purpose — see `.stat` in ui.css. A stat is an
-         explanation, never an action, and the row would eat a third of the
-         screen at tap size. Stated here so the audit counts it as decided. */
-      data-audit-compact=""
-      data-hud="stats"
-    >
+    <div className="hud" data-hud="stats">
       {STATS.map((id) => {
         const shown = valueOf(id, hud);
         if (shown === null) return null;
@@ -51,16 +55,18 @@ export function Hud({ hud, s, onNote }: HudProps) {
             className="stat"
             data-stat={id}
             /*
-             * The 44px exemption is declared on the ROW, not here.
+             * The 44px exemption, declared HERE, on each stat (2026-09-25).
              *
-             * `data-audit-compact` on `.hud` above is the convention this
-             * repo already had, and `e2e/targets.spec.ts` reads the same
-             * attribute — a second marker meaning the same thing is how two
-             * checks come to disagree about which controls are allowed to be
-             * small. A stat explains rather than acts: `statNote` costs a
-             * sentence on a mis-tap, and holding the row to tap size would
-             * spend a third of the screen on six things nobody presses.
+             * It sat on the ROW until MENU joined the row that day: a control
+             * that acts and keeps the floor, which the row's marker declared
+             * compact too, and `e2e/targets.spec.ts` caught it. It is the same
+             * attribute the audit and that test both read — a second marker
+             * meaning the same thing is how two checks come to disagree. A
+             * stat explains rather than acts: `statNote` costs a sentence on a
+             * mis-tap, and holding the row to tap size would spend a third of
+             * the screen on things nobody presses.
              */
+            data-audit-compact=""
             onClick={() => {
               onNote(statNote(id, hud, TUNING, s));
               setRose(id);
@@ -86,6 +92,7 @@ export function Hud({ hud, s, onNote }: HudProps) {
           </button>
         );
       })}
+      {menu}
     </div>
   );
 }
@@ -97,8 +104,6 @@ function valueOf(id: StatId, hud: HudView): number | null {
     case 'points':
       // Where the economy hides score mid-run, the slot goes to the purse.
       return hud.showPoints ? hud.points : null;
-    case 'luck':
-      return hud.showPoints && hud.luck === 0 ? null : hud.luck;
     case 'map':
       return hud.depthValue;
     case 'cost':
@@ -143,12 +148,8 @@ function valueOf(id: StatId, hud: HudView): number | null {
  * function was the single place a screen decided what a word is in a language.
  * D4 exists so that a missing sentence is a type error rather than a branch
  * nobody wrote; a ternary is exactly the branch nobody wrote. See `s.ui.stats`.
- *
- * LUCK stays different, and stays here: it is one of the concept registry's
- * seven ideas, so the row asks the LESSON for its name rather than inventing a
- * fifth word for a thing the board, the purse and the shop already agree on.
  */
 export function statLabel(id: StatId, s: Strings): string {
   // Drawn as the icon; this is its accessible name and its fallback.
-  return id === 'luck' ? s.lesson.luck.name : s.ui.stats[id];
+  return s.ui.stats[id];
 }

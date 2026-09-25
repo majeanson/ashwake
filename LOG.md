@@ -9482,3 +9482,40 @@ round.** Marc chose three things that do not touch the first minute.
   checked against today's code before it was asked — the harvest row no longer
   exists, so its question is asked of the cluster; the keyboard's arrows walk a
   marker rather than pan; LE SOL QUE TU AS PARCOURU is the French label.
+
+**Session 116, the taste round — built, and the first minute re-frozen.** Marc
+answered the seven: keep the camera; don't care about the marks at 16 px or
+the keyboard; and four changes. Asked whether to hold them for Session C, he
+chose to build now and re-freeze.
+
+- **MENU in the header, LUCK out of it** (_"place it with the header, remove
+  luck since we have a luck button at the bottom above tiles"_). `Hud` takes
+  a `menu` and draws it at the row's end; the row becomes a flex row when it
+  has one, and MENU keeps the 44 px floor the stats are excused from. The
+  walked ending has no header, so there MENU keeps its corner.
+- **The actions as marks** (_"make sure we use symbols for all actions, they
+  stand out enough"_), asked and answered as _mark and value, no word_: the
+  word is visually hidden and stays the accessible name, so every test that
+  finds POP by name still does. NEW RUN, the one action without a mark, has
+  Phosphor's bold counter-clockwise arrow.
+- **A ✕ on an open hint** (_"add a small X to remove hint too"_), under the
+  44 px floor with the row it closes, both declared `data-audit-compact`.
+- **The ending's picture is the door** (_"agglomerate with replay with
+  buttons inside replay. make it a top feature"_), with the eye in its corner;
+  the two doors at the foot of the end screen are gone, with the two sentences
+  under them. REPLAY is on the finished board's bar beside RETOUR À LA FIN,
+  and a film started there closes back onto that board. The picture is the
+  direction's end-of-run art, not a snapshot; without it the door is a plain
+  one in the same place.
+- **And the taste round's own page was empty when it was published** — items
+  are appended to the element whose id is their group, and the new `taste`
+  group had no element, so the first item threw. Marc pasted the empty page
+  back. Found by reading the script, fixed, and this time the page was loaded
+  in a browser before publishing (7 items, 21 answers, no errors).
+
+_And the header's own exemption._ `e2e/targets.spec.ts` failed on both
+engines with _"the board: a NEW compact control"_: `data-audit-compact` sat on
+the stat ROW, so MENU, moved into that row and a 44 px control that acts, was
+declared compact along with the stats. The marker is on each stat now. The
+hint's row and ✕ are argued in that test's pinned list, with their reason,
+rather than slipped under the marker unannounced.

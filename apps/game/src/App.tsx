@@ -3299,7 +3299,20 @@ function Game() {
       anything.
     */
     <div className="shell">
-      {playing && <Hud hud={snap.hud} s={s} onNote={say} />}
+      {playing && (
+        <Hud
+          hud={snap.hud}
+          s={s}
+          onNote={say}
+          menu={
+            <MenuButton
+              s={s}
+              open={more.open}
+              onToggle={() => (more.open ? more.hide() : more.show())}
+            />
+          }
+        />
+      )}
 
       {/*
         Reachable only while it is the thing on screen.
@@ -3531,7 +3544,12 @@ function Game() {
           Both survive the run, because the ending's board is walked with the
           same two controls — see `walking`.
         */}
-        {(playing || (walking && film === null)) && (
+        {/*
+          In the HEADER while a run is played (Marc, 2026-09-25: "place it
+          with the header") — see `Hud`'s `menu`. The walked ending has no
+          header, so there it keeps the corner.
+        */}
+        {walking && film === null && !playing && (
           <MenuButton
             s={s}
             open={more.open}
@@ -3702,6 +3720,30 @@ function Game() {
           <button type="button" data-action="end-back" onClick={() => setWalking(false)}>
             {s.ui.backToEnding}
           </button>
+          {/*
+            REPLAY, INSIDE THE BOARD IT REPLAYS (Marc, 2026-09-25: "with
+            buttons inside replay"). It was a second door at the foot of the
+            end screen; the picture at the top opens this board now, and the
+            film is played from here. `endFilm` is the film of the run this
+            ending is about, kept when it was banked, so the button costs no
+            disk read and is absent exactly when there was nothing to keep. The
+            film closes back onto this board: `walking` is still set.
+          */}
+          {endFilm !== null && (
+            <button
+              type="button"
+              data-action="watch-run"
+              onClick={() =>
+                setReel({
+                  of: endFilm,
+                  from: 'end',
+                  ground: memoryFor(slot, endFilm.from.rootSeed),
+                })
+              }
+            >
+              {s.ui.watchRun}
+            </button>
+          )}
         </div>
       )}
 
@@ -3755,22 +3797,7 @@ function Game() {
             onShare={onShare}
             goals={goals}
             onWalk={() => setWalking(true)}
-            /*
-             * The run, played back (2026-09-23). `endFilm` is the film of the
-             * run this screen is about, kept from the moment it was banked —
-             * so the button costs no disk read, and it is absent exactly when
-             * there was nothing to keep.
-             */
-            {...(endFilm === null
-              ? {}
-              : {
-                  onWatch: () =>
-                    setReel({
-                      of: endFilm,
-                      from: 'end',
-                      ground: memoryFor(slot, endFilm.from.rootSeed),
-                    }),
-                })}
+
             newPerks={gained.perks}
             newUnlocks={gained.unlocks}
             world={endWorld}

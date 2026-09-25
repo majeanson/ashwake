@@ -1,7 +1,7 @@
 import type { Theme } from '@theme/tokens';
 import type { HudView } from '@view/view';
 import type { HarvestChoice } from '@engine/state';
-import { CONCEPT_ICON, LANDMARK_ICON, type IconName } from '@theme/icons';
+import { CHROME_ICON, CONCEPT_ICON, LANDMARK_ICON, type IconName } from '@theme/icons';
 import type { Strings } from '@text/Strings';
 import { handColumns, handSpacers, stashSlots } from './hand';
 import { useTerrainArt } from '../shell/art';
@@ -184,7 +184,13 @@ function ActButton({
             <Icon name={icon} />
           </span>
         )}
-        {label}
+        {/*
+          THE MARK, NOT THE WORD (Marc, 2026-09-25: "make sure we use symbols
+          for all actions, they stand out enough"). The word is the button's
+          accessible name above, and the manual's section head; on the button
+          the mark and the value carry it.
+        */}
+        <span className="visually-hidden">{label}</span>
         {bounty !== null && (
           <span className="act-mark act-bounty" aria-hidden="true">
             <Icon name={LANDMARK_ICON.site} />
@@ -291,7 +297,15 @@ export function PocketActions({
           onClick={() => onHarvest('burn')}
         />
       )}
-      {hud.ended && <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />}
+      {hud.ended && (
+        <ActButton
+          testId="new-run"
+          icon={CHROME_ICON.newRun}
+          label={s.ui.newRun}
+          value=""
+          onClick={onNewRun}
+        />
+      )}
     </>
   );
 }

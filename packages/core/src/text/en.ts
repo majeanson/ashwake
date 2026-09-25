@@ -685,10 +685,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     perkFound: (name) => `A FIND: you carry ${name} now.`,
     woke: (what) => `WOKE: ${what}`,
     theMap: 'THE GROUND YOU WALKED',
-    walkTheMap: 'Move around the board you left.',
     backToEnding: 'BACK TO THE ENDING',
     watchRun: 'REPLAY',
-    replayNote: 'Every placement and every pop, again.',
     watchSkip: 'SKIP',
     watching: (step, of) => `Replay · ${step} / ${of}`,
     expedition: {
@@ -816,6 +814,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     lensOff: 'The lens is off.',
     lensClear: 'LENS OFF',
     lensClearLabel: (ground) => `Turn the ${ground} lens off`,
+    hintClose: 'Close this explanation',
     lensPanel: {
       buttonLabel: 'What the board is worth, per ground',
       standing: 'STANDING',
