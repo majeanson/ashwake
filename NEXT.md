@@ -36,10 +36,11 @@ minute ships before Session C.** A stranger is a one-shot resource.
 
 - POP left the row above the hand for the cluster over the board — _"pop,
   luck, lens, camera"_ — and the footer is only the hand (`cc6c1ee`).
-- A tap on a placed tile opens the lens panel on its ground — _"make it pop
-  the lens for that color"_ — where it used to say the tile's one-line
-  description; and the purse and lens sheets now sit above the cluster's real
-  height (`5cd33b1`).
+- A tap on a placed tile lights its ground on the board — _"make it pop the
+  lens for that color"_ (`5cd33b1`), then, the same day, _"dont open lens
+  when we click on the board, just the map is updated"_ — where it used to say
+  the tile's one-line description; and the purse and lens sheets now sit above
+  the cluster's real height.
 
 Both change the first minute after the clean pass, on purpose and by the
 owner. Neither had been seen on a phone when it landed, so they are round six
@@ -73,9 +74,12 @@ _ok_).
 **Round six, published 2026-09-25**, is the two first-minute changes (§0):
 `r6-pop` (does POP over the board read as the button to press?), `r6-cover`
 (does the floating cluster, two lines tall in French, ever hide a tile you
-want?), `r6-tiletap` (does a tap on a tile opening the lens help or get in the
-way in the first placements?), and `r6-sheets` (do the purse and the lens clear
-the two-line cluster?). After it, the next thing that needs Marc's phone is a
+want?), `r6-tiletap2` (a tile tap lights its ground and opens nothing —
+replacing `r6-tiletap`, which Marc answered in words before marking it),
+`r6-sheets` (do the purse and the lens clear the two-line cluster?),
+`r6-explain` (the lens's power sentence, its always-up price table, and a
+hint on every row, the pop receipt's included) and `r6-replay` (a replay from
+the hall of fame, from the front door). After it, the next thing that needs Marc's phone is a
 stranger's — Session C (§0).
 
 ---
@@ -162,6 +166,18 @@ stranger's — Session C (§0).
   are reachable only by a `?seed=` run saved before 2026-09-09 and resumed
   after, and a month is generous. Left past that, the next dead-text sweep
   re-adjudicates them from scratch.
+
+---
+
+## 5b. Found, not fixed — Marc's call
+
+- **French decimals print with a point.** `fmt1` (`text/format.ts`) writes
+  `2.8` and `× 1.5` in both languages, while `fmtPct` beside it already
+  turns the point into a comma for fr-CA. Québec writes `2,8`. The lens's old
+  docblock said "a French comma is a French comma", and it was not true.
+  Fixing it is one line and moves every French decimal in the game —
+  receipts, the lens, the snapshots that are Marc's review surface — so it
+  waits for a yes (found 2026-09-25, `LOG.md` Session 116).
 
 ---
 

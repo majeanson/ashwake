@@ -1434,10 +1434,30 @@ export type Strings = {
       };
       readonly share: (pct: number) => string;
       readonly best: (count: number, points: number | null) => string;
+      /**
+       * WHAT EACH ROW MEANS, one line a tap reveals under it (Marc,
+       * 2026-09-25: _"hints on each so we can learn more about the
+       * calculation"_). They were a list in a fold until that morning; they are
+       * the rows' own now, in the stat sheet and the price table alike.
+       */
+      readonly hints: {
+        readonly share: string;
+        readonly perTile: string;
+        readonly pockets: string;
+        readonly best: string;
+        readonly inHand: string;
+      };
       readonly sum: {
         readonly title: string;
+        /** The table's title while nothing of the ground is ripe: the formula
+         *  with its numbers unknown. */
+        readonly none: string;
+        /** A term the table cannot price yet. */
+        readonly unknown: string;
         readonly worth: string;
         readonly size: (count: number) => string;
+        /** The size row's label with no pocket to count. */
+        readonly sizeAny: string;
         readonly distance: string;
         readonly placing: string;
         readonly jackpot: string;
@@ -1445,6 +1465,22 @@ export type Strings = {
         /** The scaling every scoring pop is paid at — `pointsPerPop`. */
         readonly perPop: string;
         readonly points: string;
+        /**
+         * One per row, with the live tuning's numbers: `size` takes the bonus
+         * per tile as a whole percent and the cap (0 for none); `distance` the
+         * rings per step and the cap (0 for none); `placing` a whole percent;
+         * `jackpot` the rate; `perPop` a whole percent.
+         */
+        readonly hints: {
+          readonly worth: string;
+          readonly size: (pct: number, cap: number) => string;
+          readonly distance: (step: number, cap: number) => string;
+          readonly placing: (pct: number) => string;
+          readonly jackpot: (rate: number) => string;
+          readonly bounty: string;
+          readonly perPop: (pct: number) => string;
+          readonly points: string;
+        };
       };
       readonly equals: (n: number) => string;
     };

@@ -145,22 +145,22 @@ describe('the order, where a hex is two things at once', () => {
 });
 
 /*
- * A PLACED TILE OPENS THE LENS ON ITS GROUND (Marc, 2026-09-25: "when we click
- * on a tile on the map (farm, quarry, etc.) make it pop the lens for that
- * color"). A ripe one still prices its pocket, and the ground already held
- * puts the lens down.
+ * A PLACED TILE LIGHTS ITS GROUND ON THE BOARD (Marc, 2026-09-25: "make it pop
+ * the lens for that color", then "dont open lens when we click on the board,
+ * just the map is updated"). Never the panel. A ripe one still prices its
+ * pocket, and the ground already held puts the lens down.
  */
 describe('a tap on a placed tile', () => {
   const tile = (over: Partial<CellView> = {}): CellView =>
     plain({ kind: 'tile', colour: 'red', ...over });
 
-  it('opens the lens panel on its ground', () => {
-    expect(tapMeans(tile(), reach())).toEqual({ does: 'lens-panel', colour: 'red' });
+  it('lights its ground, and opens no panel', () => {
+    expect(tapMeans(tile(), reach())).toEqual({ does: 'lens-on', colour: 'red' });
   });
 
   it('switches the lens to its ground when another is held', () => {
     expect(tapMeans(tile(), reach({ lens: 'blue' }))).toEqual({
-      does: 'lens-panel',
+      does: 'lens-on',
       colour: 'red',
     });
   });

@@ -51,9 +51,6 @@ type Tap =
   | { readonly does: 'place' }
   /** Light this colour up across the board. */
   | { readonly does: 'lens-on'; readonly colour: Colour }
-  /** Hold this ground up AND open the lens panel on it — a placed tile
-   *  (2026-09-25). */
-  | { readonly does: 'lens-panel'; readonly colour: Colour }
   /** Put the lens down. */
   | { readonly does: 'lens-off' }
   /** Open the card that defines this landmark, and say its numbers. */
@@ -98,18 +95,20 @@ export function tapMeans(cell: CellView, reach: Reach): Tap {
   }
 
   /*
-   * A PLACED TILE OPENS THE LENS ON ITS GROUND (Marc, 2026-09-25: "when we
-   * click on a tile on the map (farm, quarry, etc.) make it pop the lens for
-   * that color"). It said its one-line description before; the lens panel is
-   * that ground in full — its tiles lit, its worth, its pockets, its best
-   * price. A tile of the ground already held puts the lens down, the same
-   * second-tap rule remembered ground keeps. A RIPE tile still prices its
-   * pocket (above): that is the tap POP is aimed with.
+   * A PLACED TILE LIGHTS ITS GROUND (Marc, 2026-09-25: "when we click on a
+   * tile on the map (farm, quarry, etc.) make it pop the lens for that
+   * color", then, the same day: "dont open lens when we click on the board,
+   * just the map is updated"). So a tap is the lens on the BOARD and never
+   * the panel: the same `lens-on` remembered ground answers with. An open
+   * panel follows it, because the panel reads the held ground. A tile of the
+   * ground already held puts the lens down, the second-tap rule remembered
+   * ground keeps. A RIPE tile still prices its pocket (above): that is the
+   * tap POP is aimed with.
    */
   if (cell.kind === 'tile' && cell.colour !== null && !cell.remembered) {
     return cell.colour === reach.lens
       ? { does: 'lens-off' }
-      : { does: 'lens-panel', colour: cell.colour };
+      : { does: 'lens-on', colour: cell.colour };
   }
 
   if (cell.kind === 'landmark' && cell.landmark !== null && !cell.beacon && !cell.remembered) {

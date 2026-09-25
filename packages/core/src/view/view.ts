@@ -1627,6 +1627,15 @@ export type TipRow = {
    * column. Absent on a prose row, which is every row before today.
    */
   readonly value?: string;
+  /**
+   * What the row means, one line a tap on the row reveals (2026-09-25, Marc:
+   * _"hints on each so we can learn more about the calculation"_). Set on the
+   * lens's stat sheet and on every price table, the receipt's included.
+   */
+  readonly hint?: string;
+  /** The row a price table adds up to, set apart under a rule. Only
+   *  `priceRows` sets it: a stat sheet's last row is not a sum. */
+  readonly total?: boolean;
   /** A ground, drawn as its own swatch. */
   readonly colour?: Colour;
   /** An icon from the registry, for a row that is not a ground. */
@@ -2069,32 +2078,126 @@ export function debugLine(state: GameState, worn: string | null): string {
  * table, which is how it could say 17 pts beside a POP button saying 5.
  * The operators are arithmetic rather than words, so they are composed here;
  * every label and the total come from the catalogue.
+ *
+ * **Every row carries its hint** (2026-09-25, Marc: _"hints on each so we can
+ * learn more about the calculation"_), with the live tuning's numbers in it.
+ *
+ * **And `null` is the formula with nothing to price** (the same day: _"the
+ * price table, always"_). A held ground with no ripe pocket still shows how a
+ * pocket is paid, its terms unknown, rather than a table that is not there or
+ * a pocket this function would have had to invent. The optional terms are
+ * shown when their dial is on (placing, jackpot), because they WOULD apply;
+ * the bounty is not, because whether one is collected is a fact about a
+ * particular pocket.
  */
-export function priceRows(p: PriceTerms, t: Tuning, s: Strings): TipRow[] {
+export function priceRows(p: PriceTerms | null, t: Tuning, s: Strings): TipRow[] {
   const sum = s.ui.lensPanel.sum;
+  const h = sum.hints;
   const n = (x: number): string => fmt1(x, s.locale);
+  const pct = (x: number): number => Math.round(x * 100);
+  const or = (value: string): string => (p === null ? sum.unknown : value);
+  const placingRate = Math.max(0, t.identityBonusRate);
+  const jackpotRate = Math.max(0, t.rareBonusRate);
   const rows: TipRow[] = [
-    { icon: LENS_ICON.worth, text: sum.worth, value: n(p.worth) },
-    { icon: LENS_ICON.size, text: sum.size(p.count), value: `× ${n(p.sizeBonus)}` },
-    { icon: LENS_ICON.distance, text: sum.distance, value: `× ${n(p.multiplier)}` },
+    { icon: LENS_ICON.worth, text: sum.worth, value: or(n(p?.worth ?? 0)), hint: h.worth },
+    {
+      icon: LENS_ICON.size,
+      text: p === null ? sum.sizeAny : sum.size(p.count),
+      value: or(`× ${n(p?.sizeBonus ?? 1)}`),
+      hint: h.size(pct(t.harvestSizeBonus), t.harvestSizeCap),
+    },
+    {
+      icon: LENS_ICON.distance,
+      text: sum.distance,
+      value: or(`× ${n(p?.multiplier ?? 1)}`),
+      hint: h.distance(t.distanceStep, t.distanceMultiplierCap),
+    },
   ];
-  if (p.placing > 0)
-    rows.push({ icon: LENS_ICON.placing, text: sum.placing, value: `+ ${n(p.placing)}` });
-  if (p.jackpot > 0)
-    rows.push({ icon: LENS_ICON.jackpot, text: sum.jackpot, value: `+ ${n(p.jackpot)}` });
-  if (p.bounty > 1)
-    rows.push({ icon: LENS_ICON.bounty, text: sum.bounty, value: `× ${n(p.bounty)}` });
+  if (p === null ? placingRate > 0 : p.placing > 0)
+    rows.push({
+      icon: LENS_ICON.placing,
+      text: sum.placing,
+      value: or(`+ ${n(p?.placing ?? 0)}`),
+      hint: h.placing(pct(placingRate)),
+    });
+  if (p === null ? jackpotRate > 0 : p.jackpot > 0)
+    rows.push({
+      icon: LENS_ICON.jackpot,
+      text: sum.jackpot,
+      value: or(`+ ${n(p?.jackpot ?? 0)}`),
+      hint: h.jackpot(jackpotRate),
+    });
+  if (p !== null && p.bounty > 1)
+    rows.push({
+      icon: LENS_ICON.bounty,
+      text: sum.bounty,
+      value: `× ${n(p.bounty)}`,
+      hint: h.bounty,
+    });
   if (t.singlePayout && t.pointsPerPop > 0) {
     rows.push({
       icon: LENS_ICON.perPop,
       text: sum.perPop,
-      value: `× ${fmtPct(Math.round(t.pointsPerPop * 100), s.locale)}`,
+      value: `× ${fmtPct(pct(t.pointsPerPop), s.locale)}`,
+      hint: h.perPop(pct(t.pointsPerPop)),
     });
   }
   rows.push({
     icon: LENS_ICON.points,
     text: sum.points,
-    value: s.ui.lensPanel.equals(scoreOf(p.points, t)),
+    value: p === null ? sum.unknown : s.ui.lensPanel.equals(scoreOf(p.points, t)),
+    hint: h.points,
+    total: true,
+  });
+  return rows;
+}
+
+/**
+ * A HELD GROUND, AS A STAT SHEET (2026-09-24; its rows moved here from the
+ * panel on 2026-09-25 so they carry hints like the price table's, and the
+ * screen draws both with one component). The facts are `ColourPotential`'s;
+ * which rows appear is decided here, and the catalogue only words them.
+ */
+export function groundRows(
+  c: ColourPotential,
+  total: number,
+  showPoints: boolean,
+  s: Strings,
+): TipRow[] {
+  const l = s.ui.lensPanel;
+  const rows: TipRow[] = [];
+  if (total > 0)
+    rows.push({
+      icon: LENS_ICON.share,
+      text: l.rows.share,
+      value: l.share(Math.round((c.worth / total) * 100)),
+      hint: l.hints.share,
+    });
+  if (c.count > 0)
+    rows.push({
+      icon: LENS_ICON.perTile,
+      text: l.rows.perTile,
+      value: fmt1(c.worth / c.count, s.locale),
+      hint: l.hints.perTile,
+    });
+  rows.push({
+    icon: LENS_ICON.pockets,
+    text: l.rows.pockets,
+    value: String(c.pockets),
+    hint: l.hints.pockets,
+  });
+  if (c.best !== null)
+    rows.push({
+      icon: LENS_ICON.best,
+      text: l.rows.best,
+      value: l.best(c.best.count, showPoints ? c.best.paid : null),
+      hint: l.hints.best,
+    });
+  rows.push({
+    icon: LENS_ICON.inHand,
+    text: l.rows.inHand,
+    value: String(c.inHand),
+    hint: l.hints.inHand,
   });
   return rows;
 }

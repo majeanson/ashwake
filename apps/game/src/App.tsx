@@ -2336,19 +2336,9 @@ function Game() {
         return;
       }
 
-      if (tap.does === 'lens-panel') {
-        setLens(tap.colour);
-        session.spotlight(tap.colour);
-        setPurseOpen(false);
-        setLensOpen(true);
-        say(null);
-        return;
-      }
-
       if (tap.does === 'lens-off') {
         setLens(null);
         session.spotlight(null);
-        setLensOpen(false);
         say(s.ui.lensOff);
         return;
       }
@@ -3305,7 +3295,12 @@ function Game() {
          * (`onTap`), and an inert host takes no taps at all — the gesture Marc
          * asked for could not reach the board it was aimed at.
          */
-        {...(anyOpen || !started || (snap.hud.ended && !walking && film === null)
+        /*
+         * And a film opened from the FRONT DOOR (the hall of fame, reached
+         * through MORE before any run has begun) is the board in use as well,
+         * though `started` is false: see the front door below.
+         */
+        {...(anyOpen || (!started && film === null) || (snap.hud.ended && !walking && film === null)
           ? { inert: true }
           : {})}
       >
@@ -3768,7 +3763,18 @@ function Game() {
         </div>
       )}
 
-      {!started && (
+      {/*
+        THE FRONT DOOR STEPS ASIDE FOR A FILM (2026-09-25, Marc: "replays from
+        hall of fame dont work, they get me to the main menu, then get me back
+        to the hall of fame after a while"). The hall is reachable from here,
+        through MORE, before any run has begun; its REPLAY closed the panels
+        and started the film under this opaque, full-screen door, SKIP and the
+        board's tap included, and `closeReel` brought the hall back when the
+        film ran out. It had been so since replays began (2026-09-23): the
+        end screen's REPLAY, the one every test pressed, is only reachable with
+        `started` already true. The door comes back when the film closes.
+      */}
+      {!started && film === null && (
         <div className="scene" {...(anyOpen ? { inert: true } : {})}>
           <FrontDoor
             s={s}

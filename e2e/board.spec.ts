@@ -344,14 +344,9 @@ test('every tap on the board answers, even the ones that cannot build', async ({
       await page.mouse.click(cx + r * Math.cos(a), cy + r * Math.sin(a));
       const text = (await toast.textContent())?.trim() ?? '';
       if (text !== '') said.add(text);
-      // A placed tile answers by opening the lens on its ground (Marc,
-      // 2026-09-25) rather than with a sentence. That is an answer too; the
-      // panel is closed again so it does not cover the rest of the sweep.
-      const lens = page.locator('[data-hud="lens"]');
-      if (await lens.isVisible()) {
-        said.add('[the lens panel]');
-        await page.locator('[data-action="lens"]').click();
-      }
+      // A placed tile lights its ground and says so; it never opens the lens
+      // panel (Marc, 2026-09-25: "just the map is updated").
+      await expect(page.locator('[data-hud="lens"]')).toHaveCount(0);
     }
   }
 

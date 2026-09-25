@@ -9371,3 +9371,45 @@ with that sentence on it: if it fails again, the theory was wrong.
 **Answer:** not yet, but the only thing left is one look on the phone. The
 console is fixed and tested, the script names the URL and the build, and
 round six is the look that remains.
+
+**Session 116, second half — the lens explains itself, a tile tap stays on
+the board, and the hall's replay was playing behind the front door.** Marc:
+_"you removed some information in lens (i wanted you to remove only the expand
+button + most of the text info inside but not the points detail.) make sure
+all those tabs we present have unified components and hints on each so we can
+learn more about hte calculation. also dont open lens when we click on the
+board, just the map is updated"_. Asked which "points detail" he meant, he
+chose all three: the ground's power sentence, the hint per row, and the price
+table always; and a row's hint revealed by tapping the row.
+
+- **One row component.** The lens's stat sheet had its own `Stat`; the price
+  table and the pop receipt used `TipRows`. Now all three are `TipRows`, and
+  a `TipRow` with a `hint` is a button that opens one line under it, one at a
+  time. The rows are computed in the view (`groundRows`, `priceRows`) and
+  every hint is the catalogue's, in both languages, with the live tuning's
+  numbers in it — checked against `harvestValue` and `tallyWorth` before
+  writing: luck is not in a tile's worth (only under ROOTBOUND), standing on
+  native ground is, and "home" is where the run woke.
+- **The price table with nothing ripe** is the same table, its terms `?`
+  (the house style forbids a dash), under _"Nothing of this ground is ripe.
+  This is how a pocket is priced:"_ — the formula, not an invented pocket.
+- **A table's total is marked, not inferred.** The first screenshot drew IN
+  YOUR HAND as a sum, because the CSS set apart every table's last row and
+  the stat sheet had become a table. `TipRow.total` now says which row is one.
+- **A tile tap is `lens-on`**, the remembered fog's answer. `lens-panel` is
+  gone from `Tap`, and so is the panel closing on `lens-off`, which came with
+  it; the tap sweep now asserts no panel ever opens.
+- **The hall's REPLAY from the front door** — _"they get me to the main menu,
+  then get me back to the hall of fame after a while"_. The front door is
+  opaque and full-screen and rendered whenever `started` is false; the hall
+  is reachable from it through MORE; a film opened there played underneath,
+  SKIP and the board's tap covered, and `closeReel` reopened the hall when it
+  ran out. So since replays began (`4e2e59f`). The one test of that door
+  reached the hall from the end screen, where `started` is true, and asserted
+  `toBeVisible()` — which an element under another passes. The door now
+  steps aside while a film plays and the board is not inert for it; the new
+  test checks what a finger reaches, and fails on the old code with _"the
+  front door stayed over the film"_.
+
+**Found, not fixed:** French decimals print with a point (`fmt1`); one line,
+but it moves every French decimal, so `NEXT.md` §5b asks.

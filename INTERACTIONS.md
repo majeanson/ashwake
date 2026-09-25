@@ -16,28 +16,28 @@ deliberately absent in both.
 
 ## 1. The board
 
-| Gesture                                              | Ashwake 1                                                                     | Ashwake 2                                             |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Tap a **legal empty hex** with a card                | places                                                                        | ✓                                                     |
-| Tap a **legal hex, hand empty**                      | _"Your hand is empty — tap a card below to pick one up."_                     | → was a **silent no-op**                              |
-| Tap a **ripe tile**                                  | prices that pocket, outlines it, and prints the whole `pocketNote` arithmetic | → priced, but **said nothing**                        |
-| Tap a **cache / site / shrine / territory / find**   | `describeHexOf` — what it is, what claiming pays, in this run's numbers       | → was a **silent no-op**                              |
-| Tap a **shrine**, in particular                      | names the unlock the NEXT one gives, or offers the crossing                   | → **said "a system" on every world until 2026-09-01** |
-| Tap a **beacon** (a landmark glowing off-board)      | its line + _"Build your chain out to it."_                                    | → **refused a raycast until 2026-09-01**              |
-| Tap a **wall**                                       | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`                                 |
-| Tap **spent stone**                                  | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`                                 |
-| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → **opens the lens panel on its ground** (2026-09-25) |
-| Tap **native ground**                                | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`                                 |
-| Tap **remembered fog** (the biome lens)              | lights every known patch of that colour; the same tap lets go                 | → **the fog was not drawn at all until 2026-09-01**   |
-| Tap **outside the map**                              | nothing at all                                                                | ✓                                                     |
-| Drag                                                 | pan, cancels a camera flight                                                  | ✓ (plus momentum, which v1 had not)                   |
-| Pinch                                                | zoom                                                                          | ✓                                                     |
-| Wheel                                                | zoom                                                                          | ✓                                                     |
-| `touch-action: none` on the board                    | yes, since Stage 2                                                            | → **was missing entirely**                            |
-| Refuse the 28px iOS edge swipe                       | yes                                                                           | → **was missing entirely**                            |
-| Double-tap to zoom · drag-and-drop a card            | —                                                                             | —                                                     |
-| **Right-drag / Shift-drag** to turn and lean         | —                                                                             | → the desktop's two fingers                           |
-| Right-click raises the browser's menu over the board | yes                                                                           | → refused, because the button turns                   |
+| Gesture                                              | Ashwake 1                                                                     | Ashwake 2                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Tap a **legal empty hex** with a card                | places                                                                        | ✓                                                                  |
+| Tap a **legal hex, hand empty**                      | _"Your hand is empty — tap a card below to pick one up."_                     | → was a **silent no-op**                                           |
+| Tap a **ripe tile**                                  | prices that pocket, outlines it, and prints the whole `pocketNote` arithmetic | → priced, but **said nothing**                                     |
+| Tap a **cache / site / shrine / territory / find**   | `describeHexOf` — what it is, what claiming pays, in this run's numbers       | → was a **silent no-op**                                           |
+| Tap a **shrine**, in particular                      | names the unlock the NEXT one gives, or offers the crossing                   | → **said "a system" on every world until 2026-09-01**              |
+| Tap a **beacon** (a landmark glowing off-board)      | its line + _"Build your chain out to it."_                                    | → **refused a raycast until 2026-09-01**                           |
+| Tap a **wall**                                       | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`                                              |
+| Tap **spent stone**                                  | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`                                              |
+| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → **lights its ground on the board**; never the panel (2026-09-25) |
+| Tap **native ground**                                | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`                                              |
+| Tap **remembered fog** (the biome lens)              | lights every known patch of that colour; the same tap lets go                 | → **the fog was not drawn at all until 2026-09-01**                |
+| Tap **outside the map**                              | nothing at all                                                                | ✓                                                                  |
+| Drag                                                 | pan, cancels a camera flight                                                  | ✓ (plus momentum, which v1 had not)                                |
+| Pinch                                                | zoom                                                                          | ✓                                                                  |
+| Wheel                                                | zoom                                                                          | ✓                                                                  |
+| `touch-action: none` on the board                    | yes, since Stage 2                                                            | → **was missing entirely**                                         |
+| Refuse the 28px iOS edge swipe                       | yes                                                                           | → **was missing entirely**                                         |
+| Double-tap to zoom · drag-and-drop a card            | —                                                                             | —                                                                  |
+| **Right-drag / Shift-drag** to turn and lean         | —                                                                             | → the desktop's two fingers                                        |
+| Right-click raises the browser's menu over the board | yes                                                                           | → refused, because the button turns                                |
 
 ## 2. The hand
 

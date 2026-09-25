@@ -1267,6 +1267,62 @@ test('a row in the hall of fame plays its run back, and the diary comes back aft
   expect(errors).toEqual([]);
 });
 
+test('a hall-of-fame film opened from the front door plays on the board', async ({ page }) => {
+  /*
+   * Marc, 2026-09-25: *"replays from hall of fame dont work, they get me to
+   * the main menu, then get me back to the hall of fame after a while"*.
+   *
+   * The test above reaches the diary from the END screen, where `started` is
+   * already true — and there it worked. From the FRONT DOOR the film played
+   * under the door: an opaque, full-screen scene painted over the film's bar
+   * and SKIP, over an inert board. `toBeVisible()` passes for an element
+   * another one covers, so the checks here are the ones a finger makes: the
+   * door is gone, the board takes taps, and what is under SKIP's centre is
+   * SKIP.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&end=1');
+  await begin(page);
+  const bar = page.locator('[data-hud="watching"]');
+  if (await bar.isVisible()) await page.locator('[data-action="watch-skip"]').click();
+
+  // Back to the front door, then into the diary from there.
+  await page.locator('[data-door="main"]').click();
+  const door = page.locator('.front-door');
+  await expect(door).toBeVisible();
+  await door.locator('[data-door="menu"]').click();
+  await panel(page, 'more').waitFor({ state: 'visible' });
+  await page.locator('[data-go="fame"]').click();
+  await panel(page, 'fame').waitFor({ state: 'visible' });
+
+  const row = panel(page, 'fame').locator('details').first();
+  await row.locator('summary').click();
+  await row.locator('[data-action="watch-row"]').click();
+
+  await expect(bar, 'the row opened onto nothing').toBeVisible();
+  await expect(door, 'the front door stayed over the film').toHaveCount(0);
+  await expect(page.locator('.board-host'), 'the board takes no taps').not.toHaveAttribute(
+    'inert',
+    /.*/,
+  );
+  const skip = page.locator('[data-action="watch-skip"]');
+  const b = await skip.boundingBox();
+  if (b === null) throw new Error('SKIP has no box');
+  const reached = await page.evaluate(
+    ([x, y]) => document.elementFromPoint(x, y)?.closest('[data-action="watch-skip"]') != null,
+    [b.x + b.width / 2, b.y + b.height / 2] as const,
+  );
+  expect(reached, 'something is drawn over SKIP').toBe(true);
+
+  // And SKIP puts the player back in the diary, over the front door.
+  await skip.click();
+  await expect(bar).toBeHidden();
+  await expect(panel(page, 'fame'), 'the watcher was not put back in the diary').toBeVisible();
+  await expect(door, 'the front door did not come back under the diary').toHaveCount(1);
+
+  expect(errors).toEqual([]);
+});
+
 test('a run that earned marks carries them in the diary, like Ashwake 1', async ({ page }) => {
   /*
    * Marc, 2026-09-24: "show them like ashwake 1". Every run stores what made

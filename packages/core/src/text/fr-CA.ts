@@ -847,16 +847,42 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       share: (pct) => pc(pct),
       best: (count, points) =>
         `${count} tuile${pl(count, '', 's')}${points === null ? '' : ` · ${nb(points)} pts`}`,
+      hints: {
+        share: 'Ce que ce sol pèse dans tout ce qui tient sur le plateau.',
+        perTile: `Sa valeur, répartie sur ses tuiles${D}: ce qu’une d’elles ajoute à une poche.`,
+        pockets: 'Les poches mûres où ce sol se trouve. Une poche peut mêler les sols.',
+        best: 'La meilleure de ces poches, entière, au prix que RÉCOLTER paierait maintenant.',
+        inHand: 'Les tuiles de ce sol dans ta main et ta réserve, pas encore posées.',
+      },
       sum: {
         title: 'La meilleure poche, si tu la récoltes maintenant',
+        none: `Rien de mûr sur ce sol. Voici comment une poche se paie${D}:`,
+        unknown: '?',
         worth: 'Valeur',
         size: (count) => `Bonus de taille, ${count} tuile${pl(count, '', 's')}`,
+        sizeAny: 'Bonus de taille',
         distance: 'Distance',
         placing: 'Pour la pose',
         jackpot: 'Gros lot rare',
         bounty: 'Prime',
         perPop: 'Payé par récolte',
         points: 'Points',
+        hints: {
+          worth:
+            'La valeur de chaque tuile de la poche, additionnée. Une tuile gagne 1 par voisine de son sol, plus le pouvoir de son sol, et davantage si elle est rare ou posée sur son propre terrain.',
+          size: (pct, cap) =>
+            `${pc(pct)} de plus pour chaque tuile après la première.${cap > 0 ? ` Compté jusqu’à ${cap} tuiles.` : ''}`,
+          distance: (step, cap) =>
+            `×${D}1, plus 1 tous les ${step} anneaux entre la poche et l’endroit où la partie a commencé, en moyenne.${cap > 0 ? ` Au plus ×${D}${cap}.` : ''}`,
+          placing: (pct) =>
+            `${pc(pct)} de la valeur, payée en plus. Ni la taille ni la distance ne la multiplient.`,
+          jackpot: (rate) =>
+            `La valeur des tuiles magiques et uniques de la poche, ×${D}${d1(rate)}.`,
+          bounty:
+            'La prime en cours, touchée, parce que cette poche est assez grande et assez proche.',
+          perPop: (pct) => `Chaque récolte paie ${pc(pct)} du prix calculé au-dessus.`,
+          points: 'Ce que RÉCOLTER paie pour cette poche, arrondi vers le bas.',
+        },
       },
       equals: (n) => `= ${nb(n)} pts`,
     },

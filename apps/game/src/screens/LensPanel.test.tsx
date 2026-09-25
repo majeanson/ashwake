@@ -6,7 +6,7 @@ import { resolveTheme } from '@theme/index';
 import { createSession } from '../shell/store';
 import { walk } from '../shell/walk';
 import { harvestValue, ripeClusters, scoreOf } from '@engine/rules';
-import { priceRows } from '@view/view';
+import { colourLesson, priceRows } from '@view/view';
 import { LensPanel } from './LensPanel';
 
 /**
@@ -178,5 +178,72 @@ describe('a ground and its pockets', () => {
       expect(c.best?.points, `${c.colour}: best points`).toBe(top);
       expect(prices.some((v) => v.count === c.best?.count && v.points === top)).toBe(true);
     }
+  });
+});
+
+/*
+ * THE HELD GROUND EXPLAINS ITSELF (Marc, 2026-09-25: "i wanted you to remove
+ * only the expand button + most of the text info inside but not the points
+ * detail", and "hints on each so we can learn more about the calculation").
+ * The ground's power sentence is up, the price table is up even with nothing
+ * ripe, and every row opens its own hint on a tap, one at a time.
+ */
+describe('a held ground, explained', () => {
+  const panelFor = (sess: ReturnType<typeof createSession>) =>
+    render(
+      <LensPanel
+        hud={sess.get().hud}
+        tuning={sess.get().state.tuning}
+        theme={theme}
+        s={s}
+        onHold={() => {}}
+      />,
+    );
+
+  it("leads with the ground's power, in words", () => {
+    const sess = board();
+    sess.spotlight('green');
+    const { container } = panelFor(sess);
+    const rule = colourLesson('green', sess.get().state.tuning, theme, s);
+    expect(rule, 'green has no power sentence at this tuning').not.toBeNull();
+    expect(container.querySelector('.lens-rule')?.textContent).toBe(rule);
+  });
+
+  it('shows the price table with nothing ripe, its terms unknown', () => {
+    const sess = createSession({ seed: 7, theme, strings: s });
+    walk(sess, 2);
+    const hud0 = sess.get().hud;
+    const bare = hud0.colours.find((c) => c.best === null && c.count > 0);
+    expect(bare, 'no placed, unripe ground on the opening board').toBeDefined();
+    sess.spotlight(bare!.colour);
+    const { container } = panelFor(sess);
+    expect(sess.get().hud.showPoints, 'this board hides its points').toBe(true);
+    expect(container.textContent).toContain(s.ui.lensPanel.sum.none);
+    const table = container.querySelector(`[data-lens-sum="${bare!.colour}"]`);
+    expect(table, 'no price table with nothing ripe').not.toBeNull();
+    const values = [...table!.querySelectorAll('.tip-value')].map((v) => v.textContent);
+    expect(values.at(-1)).toBe(s.ui.lensPanel.sum.unknown);
+    expect(values[0]).toBe(s.ui.lensPanel.sum.unknown);
+  });
+
+  it('opens one hint at a time, under the row that was tapped', () => {
+    const sess = board();
+    sess.spotlight('red');
+    const { container } = panelFor(sess);
+    const rows = [...container.querySelectorAll<HTMLButtonElement>('.tip-hinted')];
+    // The stat sheet's rows and the price table's, all hinted.
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    expect(container.querySelectorAll('.tip-hint')).toHaveLength(0);
+
+    fireEvent.click(rows[0]!);
+    expect(rows[0]!.getAttribute('aria-expanded')).toBe('true');
+    expect(container.querySelectorAll('.tip-hint')).toHaveLength(1);
+
+    // Another row in the same table takes over; the same row again closes it.
+    fireEvent.click(rows[1]!);
+    expect(rows[0]!.getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelectorAll('.tip-hint')).toHaveLength(1);
+    fireEvent.click(rows[1]!);
+    expect(container.querySelectorAll('.tip-hint')).toHaveLength(0);
   });
 });

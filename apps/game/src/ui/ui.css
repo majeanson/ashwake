@@ -1081,11 +1081,47 @@ button[disabled] {
   grid-template-columns: 1.6rem 1fr auto;
   align-items: baseline;
 }
-/* The last priced row is the total — set apart, as the lens sets its own. */
-.tip-table > .tip-row:last-child {
+/* The total — set apart. Marked by the row (`TipRow.total`), not by being
+   last: the lens's stat sheet is a table too, and its last row is no sum. */
+.tip-row.total {
   border-top: 1px solid var(--panel-edge);
   padding-top: 0.25rem;
   font-weight: 600;
+}
+
+/*
+ * A ROW THAT EXPLAINS ITSELF (2026-09-25): a hinted row is a button whose tap
+ * opens one line under it. It must read as the table's row, not as a control,
+ * so it wears none of a button's chrome, and it sits under the 44px floor on
+ * purpose — the same allowance `.stat` has, for the same reason: the tap only
+ * ever explains, and seven rows at tap size would be a third of the screen.
+ * 1.8rem is still above WCAG's 24px minimum.
+ */
+.tip-hinted {
+  width: 100%;
+  min-height: 1.8rem;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+/* The open row is marked at its edge rather than filled: a fill would put the
+   row's ink on a colour the contrast budget never measured it against. */
+.tip-hinted[aria-expanded='true'] {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.tip-hinted > span:nth-child(2) {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--ink-dim);
+  text-underline-offset: 2px;
+}
+.tip-line > .tip-hint.note {
+  margin: 0.1rem 0 0.3rem 2.1rem;
+  font-size: 0.75rem;
 }
 .tip-value {
   font-variant-numeric: tabular-nums;
@@ -2534,45 +2570,23 @@ h3.fact-label {
 .lens-detail .note {
   margin: 0;
 }
-.lens-stats {
-  display: grid;
-  gap: 0.15rem;
-  margin: 0;
-}
-.lens-stat {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-.lens-stat dt {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-width: 0;
-}
-.lens-stat dd {
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 /* The mark on a small tile of the ground's own colour, in ink — the row's
    swatch in miniature. Tinting the mark itself was the first build, and a
-   pale ground (MARKET on daylight) drew it nearly invisible on the panel. */
-.lens-stat-icon {
-  display: inline-grid;
-  place-items: center;
+   pale ground (MARKET on daylight) drew it nearly invisible on the panel.
+   The rows are `TipRows` since 2026-09-25, the receipt's own component; this
+   is the one thing the lens adds to them. */
+.lens-detail .tip-mark {
+  justify-self: start;
   width: 1.15rem;
   height: 1.15rem;
+  min-height: 0;
   border-radius: var(--radius-sm);
   background: var(--ground, var(--accent));
   color: var(--ink);
   font-size: 0.7rem;
 }
-.lens-stat.total {
-  border-top: 1px solid var(--panel-edge);
-  padding-top: 0.2rem;
-  font-weight: 600;
+.lens-rule {
+  font-size: 0.75rem;
 }
 
 .lens-main {

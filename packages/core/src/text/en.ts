@@ -834,16 +834,41 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       share: (pct) => pc(pct),
       best: (count, points) =>
         `${count} tile${plural(count, '', 's')}${points === null ? '' : ` · ${points} pts`}`,
+      hints: {
+        share: 'How much of everything standing on the board this ground is.',
+        perTile: 'Its worth, spread over its tiles: what one of them adds to a pocket.',
+        pockets: 'Ripe pockets with this ground in them. A pocket can mix grounds.',
+        best: 'The best of those pockets, whole, priced as POP would pay it now.',
+        inHand: 'Tiles of this ground in your hand and stash, not placed yet.',
+      },
       sum: {
         title: 'The best pocket, if you pop it now',
+        none: 'Nothing of this ground is ripe. This is how a pocket is priced:',
+        unknown: '?',
         worth: 'Worth',
         size: (count) => `Size bonus, ${count} tile${plural(count, '', 's')}`,
+        sizeAny: 'Size bonus',
         distance: 'Distance',
         placing: 'For the placing',
         jackpot: 'Rare jackpot',
         bounty: 'Bounty',
         perPop: 'Paid per pop',
         points: 'Points',
+        hints: {
+          worth:
+            "Every tile in the pocket, its worth added up. A tile earns 1 for each neighbour of its own ground, plus its ground's power, and more when it is rare or stands on its own terrain.",
+          size: (pct, cap) =>
+            `${pc(pct)} more for every tile after the first.${cap > 0 ? ` Counted up to ${cap} tiles.` : ''}`,
+          distance: (step, cap) =>
+            `×1, plus 1 for every ${step} rings between the pocket and where this run began, on average.${cap > 0 ? ` At most ×${cap}.` : ''}`,
+          placing: (pct) =>
+            `${pc(pct)} of the worth, paid on top. Neither size nor distance multiplies it.`,
+          jackpot: (rate) => `The worth of the pocket's magic and unique tiles, ×${d1(rate)}.`,
+          bounty:
+            'The standing bounty, collected, because this pocket is big enough and near enough.',
+          perPop: (pct) => `Every pop pays ${pc(pct)} of the price worked out above.`,
+          points: 'What POP pays for this pocket, rounded down.',
+        },
       },
       equals: (n) => `= ${n} pts`,
     },

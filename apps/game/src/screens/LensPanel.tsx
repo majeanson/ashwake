@@ -1,12 +1,12 @@
 import type { CSSProperties } from 'react';
 import { COLOURS } from '@content/tuning';
 import type { Colour, Tuning } from '@content/tuning';
-import { COLOUR_ICON, LENS_ICON, type IconName } from '@theme/icons';
+import { COLOUR_ICON } from '@theme/icons';
 import { hex, namesOf, type Theme } from '@theme/tokens';
-import { fmt1 } from '@text/index';
 import type { Strings } from '@text/Strings';
-import { priceRows, type HudView } from '@view/view';
+import { colourLesson, groundRows, priceRows, type HudView } from '@view/view';
 import { Icon } from '../ui/Icon';
+import { TipRows } from '../ui/TipRows';
 
 /**
  * THE LENS PANEL — what the board is worth, per ground (2026-09-16).
@@ -68,6 +68,7 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
          * come back.
          */
         if (held !== null && held !== colour) return null;
+        const rule = held === colour ? colourLesson(colour, tuning, theme, s) : null;
         return (
           <div key={colour} className="lens-ground">
             <button
@@ -114,60 +115,33 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
                 data-lens-detail={colour}
                 style={{ '--ground': hex(theme.terrain[colour].fill) } as CSSProperties}
               >
-                <dl className="lens-stats">
-                  {total > 0 && (
-                    <Stat
-                      icon={LENS_ICON.share}
-                      label={s.ui.lensPanel.rows.share}
-                      value={s.ui.lensPanel.share(Math.round((c.worth / total) * 100))}
-                    />
-                  )}
-                  {c.count > 0 && (
-                    <Stat
-                      icon={LENS_ICON.perTile}
-                      label={s.ui.lensPanel.rows.perTile}
-                      value={dec(s, c.worth / c.count)}
-                    />
-                  )}
-                  <Stat
-                    icon={LENS_ICON.pockets}
-                    label={s.ui.lensPanel.rows.pockets}
-                    value={String(c.pockets)}
-                  />
-                  {c.best !== null && (
-                    <Stat
-                      icon={LENS_ICON.best}
-                      label={s.ui.lensPanel.rows.best}
-                      value={s.ui.lensPanel.best(c.best.count, hud.showPoints ? c.best.paid : null)}
-                    />
-                  )}
-                  <Stat
-                    icon={LENS_ICON.inHand}
-                    label={s.ui.lensPanel.rows.inHand}
-                    value={String(c.inHand)}
-                  />
-                </dl>
                 {/*
-                  THE BEST POCKET'S PRICE, ALWAYS UP (Marc, 2026-09-25: "remove
-                  how it adds up expand, but keep the best pocket stats always
-                  up right under"). The fold that held it, with a hint per row
-                  and the ground's power, is gone; the table stays, under the
-                  rows, whenever there is a ripe pocket to price.
+                  THE GROUND'S POWER, IN WORDS (back 2026-09-25: Marc, of the
+                  morning's cut, "not the points detail"). The sentence the
+                  fold used to open with, its numbers from the live tuning;
+                  null when the personalities are off.
                 */}
-                {c.best !== null && hud.showPoints && (
+                {rule !== null && <p className="note lens-rule">{rule}</p>}
+                <div data-lens-stats={colour}>
+                  <TipRows rows={groundRows(c, total, hud.showPoints, s)} theme={theme} s={s} />
+                </div>
+                {/*
+                  THE PRICE, ALWAYS (Marc, 2026-09-25: "keep the best pocket
+                  stats always up right under", then "the price table,
+                  always"). The best pocket priced whole when there is one;
+                  otherwise the same table with its terms unknown, so the
+                  formula is on the screen before the first pocket ripens.
+                  Every row explains itself on a tap, as the receipt's do:
+                  they are one component, `TipRows`.
+                */}
+                {hud.showPoints && (
                   <>
-                    <p className="fact-label">{s.ui.lensPanel.sum.title}</p>
-                    <dl className="lens-stats lens-sum" data-lens-sum={colour}>
-                      {priceRows(c.best, tuning, s).map((row, i, all) => (
-                        <Stat
-                          key={row.text}
-                          icon={row.icon ?? LENS_ICON.points}
-                          label={row.text}
-                          value={row.value ?? ''}
-                          {...(i === all.length - 1 ? { total: true } : {})}
-                        />
-                      ))}
-                    </dl>
+                    <p className="fact-label">
+                      {c.best === null ? s.ui.lensPanel.sum.none : s.ui.lensPanel.sum.title}
+                    </p>
+                    <div data-lens-sum={colour}>
+                      <TipRows rows={priceRows(c.best, tuning, s)} theme={theme} s={s} />
+                    </div>
                   </>
                 )}
               </div>
@@ -180,32 +154,3 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
     </div>
   );
 }
-
-/** One row of the sheet: the mark in the ground's colour, the label, the number. */
-function Stat({
-  icon,
-  label,
-  value,
-  total,
-}: {
-  readonly icon: IconName;
-  readonly label: string;
-  readonly value: string;
-  readonly total?: boolean;
-}) {
-  return (
-    <div className={total === true ? 'lens-stat total' : 'lens-stat'}>
-      <dt>
-        <span className="lens-stat-icon" aria-hidden="true">
-          <Icon name={icon} />
-        </span>
-        {label}
-      </dt>
-      <dd>{value}</dd>
-    </div>
-  );
-}
-
-/** A worth to one decimal, through the catalogue's own locale formatter —
- *  a French comma is a French comma. */
-const dec = (s: Strings, n: number): string => fmt1(n, s.locale);
