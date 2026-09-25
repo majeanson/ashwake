@@ -45,29 +45,17 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — what landed early on 2026-09-25
+## 1. Marc, on the phone — nothing waiting
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
-them with `ArtifactData` `list` before touching anything here. Four rounds
-are answered and everything they asked for is built; round four kept all four
-of its items (the 2 s flash, the follow at 1.5, the diary marks, the lens
-sheet).
+them with `ArtifactData` `list` before touching anything here.
 
-Two more came from Marc's own screenshots the same night, and neither has
-been seen on a phone:
-
-1. **The diary's picture is sharp** (_"summary is pixelated"_). The shot was
-   the whole canvas at 240 px, stretched across the panel; it is now cropped
-   to the board and taken as large as the same stored cap allows (480 px on a
-   desktop, 320 on a tall phone board), and never drawn bigger than it was
-   taken. **Only new runs get the new picture** — an old row keeps its
-   240 px shot, no longer stretched; there is no board left to re-shoot.
-2. **A pop's receipt prices the pocket as a table** (_"this table still needs
-   work"_) — the same rows as the lens (`priceRows`), ending at what POP
-   pays. That fixed the lens too: its table stopped before the 35 % per-pop
-   scaling, so it could say 17 pts beside a POP button saying 5.
+**Five rounds, all answered, all built, and the last one kept everything**
+(2026-09-25: the sharp diary picture and the pop receipt's table, both
+_ok_). There is no look on this list that has not been seen on the phone.
+The next thing that needs Marc's phone is a stranger's — Session C (§0).
 
 ---
 
