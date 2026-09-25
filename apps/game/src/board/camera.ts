@@ -678,5 +678,8 @@ export const TAP_SLOP = 5;
  * it easily discoverable too"). Under the half second at which iOS starts its
  * own long-press behaviour, and long enough that a tap never gets there by
  * accident. `shell/tap#holdMeans` says what a hold means.
+ *
+ * 350 as built, 250 on Marc's phone the same evening (round seven, `r7-hold`:
+ * "250 ms"). His number, felt on the phone; the e2e holds well past it.
  */
-export const HOLD_MS = 350;
+export const HOLD_MS = 250;

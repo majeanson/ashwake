@@ -44,9 +44,8 @@ minute ships before Session C.** A stranger is a one-shot resource.
 
 Both change the first minute after the clean pass, on purpose and by the
 owner. Round six saw them on the phone and asked for more (the cluster's marks,
-a hold on a tile), so **round seven is now Session A's pass for the board the
-stranger meets** (§1): once it comes back clean, that build is the one Session
-C runs on.
+a hold on a tile), so **round seven was Session A's pass for the board the stranger meets**
+(§1), and it came back clean: that build is the one Session C runs on.
 
 So the road to v2.0 is now:
 
@@ -61,25 +60,19 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — round seven, five looks
+## 1. Marc, on the phone — nothing waiting
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
 them with `ArtifactData` `list` before touching anything here.
 
-**Six rounds, all answered, all built.** Round six (2026-09-25) kept POP over
-the board and the tile tap that only lights the map, and asked for five
-changes, all built the same evening (`LOG.md` Session 116, third part): the
-view and lens buttons as an eye and a magnifier, the lens's held ground in two
-tabs, a replay that is the board alone, a HOLD on a tile to light its ground
-(with a quick tap saying so), and the Québec decimal comma.
-
-**Round seven** is those five: `r7-icons`, `r7-tabs`, `r7-replay`, `r7-hold`
-(is ~350 ms the right length, and did the hint make it findable?) and
-`r7-comma`. Two of them change the first minute (the cluster's marks and the
-hold), so **round seven coming back clean is now what names Session C's
-build** (§0, `PLAYTEST.md`).
+**Seven rounds, all answered, all built.** Round seven (2026-09-25) kept the
+eye and magnifier, the lens's two tabs, the clean replay and the Québec comma,
+and set the tile hold to **250 ms** (`r7-hold`), which is Marc's own number
+and needs no further look. So **round seven is the clean pass that names
+Session C's build** (§0, `PLAYTEST.md`). The next thing that needs a phone is
+a stranger's.
 
 ---
 

@@ -9453,3 +9453,10 @@ easily discoverable too"_. And yes to the decimal comma.
   (`lensTile`).
 - **`fmt1` writes `2,8` in Québec French.** No test had held a French decimal;
   `text.test.ts` does now. `NEXT.md` §5b is closed by it.
+
+**Session 116, last — round seven comes back, and the first minute is frozen
+again.** Four _ok_ (the marks, the tabs, the clean replay, the comma) and the
+hold at _"250 ms"_: `HOLD_MS` is 250. That was the last look the first
+minute was waiting for, so the build that carries it is Session C's, written
+into `PLAYTEST.md`, and **nothing that changes the first minute ships again
+before the stranger has played.**
