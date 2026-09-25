@@ -98,7 +98,7 @@ tiles. Session A passed on this body on 2026-09-24 (the phone sheet, `LOG.md`
 Session 115); the first-minute changes Marc made after it — POP in the
 cluster over the board, the cluster's marks, and a HOLD on a tile to light its
 ground (a quick tap says so) — are rounds six and seven on that sheet, and
-**the round that comes back clean is what names the build a stranger plays.** Round seven came back clean at `8e77420`; the taste round then changed four things a stranger sees (MENU in the header, the actions as marks, the hint ✕, the ending's picture as the door), so round eight named it, and came back clean with one ✕ added: **the stranger plays `8e7785d`** or a later commit that changes nothing in the first minute.
+**the round that comes back clean is what names the build a stranger plays.** Round seven came back clean at `8e77420`; the taste round then changed four things a stranger sees (MENU in the header, the actions as marks, the hint ✕, the ending's picture as the door), so round eight named it, and came back clean with one ✕ added: `8e7785d` was the build until the header was enlarged the same evening; **round nine's one look names it now**: `________`.
 
 Before they arrive, on the phone they will play on:
 

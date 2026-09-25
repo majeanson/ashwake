@@ -62,20 +62,19 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — nothing waiting
+## 1. Marc, on the phone — round nine, one look
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
 them with `ArtifactData` `list` before touching anything here.
 
-**Eight rounds and the taste round, all answered, all built.** Round eight
-(2026-09-25) kept all four of the taste round's changes — MENU in the header,
-the actions as marks, the hint's ✕, the ending's picture as the door — and
-added one of Marc's own: _"i also want the X on the pop result"_, built the
-same evening. **That was the clean pass: the build carrying the pop's ✕ is
-Session C's** (`PLAYTEST.md`), and the first minute is frozen again. The next
-thing that needs a phone is a stranger's.
+**Eight rounds and the taste round, all answered, all built**; round eight
+came back clean at `8e7785d`. Then Marc, the same evening: _"make sure the
+header in game uses all height available (with menu in it changed) and make
+sure symbols and points occupy maximum size so its easy to read"_ — built, and
+it is the first row of the first minute, so **round nine is that one look
+(`r9-header`), and its _ok_ names Session C's build.**
 
 ---
 

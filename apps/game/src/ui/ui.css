@@ -1610,9 +1610,57 @@ a:visited {
   display: flex;
   align-items: stretch;
 }
+/*
+ * EVERY PIXEL OF THE ROW (Marc, 2026-09-25: "make sure the header in game uses
+ * all height available (with menu in it changed) and make sure symbols and
+ * points occupy maximum size so its easy to read"). MENU sets the row's height
+ * at the tap floor; the stats stretch to it and share the whole width, with no
+ * 7rem cap leaving the row's ends empty. Inside, the mark and the number are
+ * sized to that box — see `.stat-label` and `.stat-value`.
+ */
+.hud:has(.board-menu) {
+  gap: 0.25rem;
+  padding-inline: 0.4rem;
+}
 .hud:has(.board-menu) > .stat {
-  flex: 1 1 0;
-  max-width: 7rem;
+  /* Width follows the digits: a five-digit score gets the room a single "8"
+     does not need, so every number can be drawn at the same size. `--len` is
+     set on the stat by `Hud`; the 2 is the mark's share. */
+  flex: calc(var(--len, 2) + 2) 1 0;
+  align-items: center;
+  padding: 0 0.25rem;
+  gap: 0.3rem;
+  /* Each stat is its own size container, so what is inside is sized to THIS
+     box rather than to the screen: four stats beside MENU are 61px each at
+     320 and 79 at 390. */
+  container-type: inline-size;
+  --mark: clamp(17px, 30cqi, 22px);
+}
+/* The mark, now that the row is marks rather than words (2026-09-08): it was
+   sized as a WORD at 9.6-11.5px, and a word's rules no longer apply to it. */
+.hud:has(.board-menu) .stat-label {
+  font-size: var(--mark);
+  display: inline-flex;
+  overflow: visible;
+}
+/*
+ * The number, as large as its own box allows, and never larger than 1.35rem.
+ *
+ * The number is the half that must survive, and a SCORE is the widest thing
+ * in the row: the first build sized it by the viewport alone and at 320px a
+ * five-digit score ran under its own sigma, reading "5517". So the size is the
+ * box's inner width (`cqi` is already inside the padding), less the mark and
+ * the gap, shared among `--len` digits at 0.55em each — Cinzel's are 0.49em,
+ * measured, and the rest is room for its widest ones. With the widths weighted
+ * by `--len` above, every number in the row lands on the same size.
+ */
+.hud:has(.board-menu) .stat-value {
+  font-size: clamp(
+    0.7rem,
+    calc((100cqi - var(--mark) - 0.35rem) / (var(--len, 2) * 0.55)),
+    1.35rem
+  );
+  line-height: 1;
 }
 .hud > .board-menu {
   position: static;

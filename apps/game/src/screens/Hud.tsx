@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { TUNING } from '@content/tuning';
 import { STAT_ICON } from '@theme/icons';
 import { Icon } from '../ui/Icon';
@@ -67,6 +67,9 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
              * the screen on things nobody presses.
              */
             data-audit-compact=""
+            // How many characters the number is: the row weights each stat's
+            // width by it and sizes the number to fit — see `.stat-value`.
+            style={{ '--len': String(shown).length } as CSSProperties}
             onClick={() => {
               onNote(statNote(id, hud, TUNING, s));
               setRose(id);

@@ -9527,3 +9527,18 @@ DÉTAILS: a full-size control that closes the line and does not open the
 details (`e2e/board.spec.ts` pins both halves). Only the pop's line, the one
 with something behind it, as asked. The build that carries it is Session C's,
 and the first minute is frozen from here.
+
+**Session 116, the header, sized to its box.** Marc: _"make sure the header in
+game uses all height available (with menu in it changed) and make sure symbols
+and points occupy maximum size so its easy to read"_. The stats stretch to
+MENU's 44 px and share the whole width, and each is a size container: the mark
+is 30% of its box (17-22 px), and the number is the largest the box allows
+beside it, up to 1.35rem. **The first build sized the number by the viewport**,
+and at 320 px a five-digit score ran under its own sigma and read "5517" — a
+probe that compared the number only with the box's edge called it fine; the
+one that compared it with the MARK did not. So the size is the box's inner
+width less the mark and the gap, over the digits at 0.55em each (Cinzel's are
+0.49em, measured), and each stat's width is weighted by its digit count, so a
+five-digit score takes the room a single "8" does not need. Measured: every
+number 23.8 px at 360 and 390, 20-22 px at 320, nothing overlapping. It is the
+first row of the first minute, so round nine is that one look.
