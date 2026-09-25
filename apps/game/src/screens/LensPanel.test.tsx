@@ -72,8 +72,11 @@ describe('the lens panel', () => {
         onHold={onHold}
       />,
     );
-    const pressed = screen.getAllByRole('button').map((b) => b.getAttribute('aria-pressed'));
-    expect(pressed).toEqual(['false', 'false', 'true', 'false']);
+    // Focused on one (Marc, 2026-09-25: 'remove other colors when were
+    // focused on one'): only the held ground's row is left, pressed.
+    const rows = screen.getAllByRole('button').filter((b) => b.hasAttribute('data-lens-row'));
+    expect(rows.map((b) => b.getAttribute('data-lens-row'))).toEqual(['red']);
+    expect(rows[0]!.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('says when nothing of a ground is ripe rather than printing a zero', () => {

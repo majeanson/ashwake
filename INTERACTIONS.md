@@ -26,7 +26,7 @@ deliberately absent in both.
 | Tap a **beacon** (a landmark glowing off-board)      | its line + _"Build your chain out to it."_                                    | → **refused a raycast until 2026-09-01**              |
 | Tap a **wall**                                       | _"▲ Wall — cannot be built on."_ + why it still helps things ripen            | → via `describeHexOf`                                 |
 | Tap **spent stone**                                  | _"● Spent ground … except for {RED}, which feeds on it."_                     | → via `describeHexOf`                                 |
-| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → via `describeHexOf`                                 |
+| Tap a **tile not yet ripe**                          | its worth, the ripening rule, its colour's power, its rarity line             | → **opens the lens panel on its ground** (2026-09-25) |
 | Tap **native ground**                                | _"Ground native to {NAME} — a {NAME} tile here is worth one more."_           | → via `describeHexOf`                                 |
 | Tap **remembered fog** (the biome lens)              | lights every known patch of that colour; the same tap lets go                 | → **the fog was not drawn at all until 2026-09-01**   |
 | Tap **outside the map**                              | nothing at all                                                                | ✓                                                     |

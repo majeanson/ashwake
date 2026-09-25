@@ -1432,16 +1432,8 @@ export type Strings = {
         readonly best: string;
         readonly inHand: string;
       };
-      readonly hints: {
-        readonly share: string;
-        readonly perTile: string;
-        readonly pockets: string;
-        readonly best: string;
-        readonly inHand: string;
-      };
       readonly share: (pct: number) => string;
       readonly best: (count: number, points: number | null) => string;
-      readonly why: string;
       readonly sum: {
         readonly title: string;
         readonly worth: string;

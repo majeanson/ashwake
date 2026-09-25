@@ -844,17 +844,9 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         best: 'Meilleure poche',
         inHand: 'Dans ta main',
       },
-      hints: {
-        share: 'Ce que ce sol pèse dans tout ce qui tient sur le plateau.',
-        perTile: `Sa valeur, répartie sur ses tuiles${D}: ce qu’une d’elles ajoute à une poche.`,
-        pockets: 'Les poches mûres où ce sol se trouve. Une poche peut mêler les sols.',
-        best: 'La meilleure de ces poches, entière, au prix que RÉCOLTER paierait maintenant.',
-        inHand: 'Les tuiles de ce sol dans ta main et ta réserve, pas encore posées.',
-      },
       share: (pct) => pc(pct),
       best: (count, points) =>
         `${count} tuile${pl(count, '', 's')}${points === null ? '' : ` · ${nb(points)} pts`}`,
-      why: 'LE DÉTAIL DU CALCUL',
       sum: {
         title: 'La meilleure poche, si tu la récoltes maintenant',
         worth: 'Valeur',

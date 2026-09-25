@@ -5,8 +5,7 @@ import { COLOUR_ICON, LENS_ICON, type IconName } from '@theme/icons';
 import { hex, namesOf, type Theme } from '@theme/tokens';
 import { fmt1 } from '@text/index';
 import type { Strings } from '@text/Strings';
-import { colourLesson, priceRows, type HudView } from '@view/view';
-import { Fold } from '../ui/Fold';
+import { priceRows, type HudView } from '@view/view';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -62,7 +61,13 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
       {COLOURS.map((colour) => {
         const c = hud.colours.find((p) => p.colour === colour);
         if (c === undefined) return null;
-        const rule = held === colour ? colourLesson(colour, tuning, theme, s) : null;
+        /*
+         * FOCUSED ON ONE (Marc, 2026-09-25: "remove other colors when were
+         * focused on one"). While a ground is held, the panel is about that
+         * ground and nothing else; tapping its row again lets go and the four
+         * come back.
+         */
+        if (held !== null && held !== colour) return null;
         return (
           <div key={colour} className="lens-ground">
             <button
@@ -142,32 +147,29 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
                     value={String(c.inHand)}
                   />
                 </dl>
-                <Fold summary={s.ui.lensPanel.why}>
-                  {rule !== null && <p className="note">{rule}</p>}
-                  <ul className="lens-hints note">
-                    {total > 0 && <li>{s.ui.lensPanel.hints.share}</li>}
-                    {c.count > 0 && <li>{s.ui.lensPanel.hints.perTile}</li>}
-                    <li>{s.ui.lensPanel.hints.pockets}</li>
-                    {c.best !== null && <li>{s.ui.lensPanel.hints.best}</li>}
-                    <li>{s.ui.lensPanel.hints.inHand}</li>
-                  </ul>
-                  {c.best !== null && hud.showPoints && (
-                    <>
-                      <p className="fact-label">{s.ui.lensPanel.sum.title}</p>
-                      <dl className="lens-stats lens-sum" data-lens-sum={colour}>
-                        {priceRows(c.best, tuning, s).map((row, i, all) => (
-                          <Stat
-                            key={row.text}
-                            icon={row.icon ?? LENS_ICON.points}
-                            label={row.text}
-                            value={row.value ?? ''}
-                            {...(i === all.length - 1 ? { total: true } : {})}
-                          />
-                        ))}
-                      </dl>
-                    </>
-                  )}
-                </Fold>
+                {/*
+                  THE BEST POCKET'S PRICE, ALWAYS UP (Marc, 2026-09-25: "remove
+                  how it adds up expand, but keep the best pocket stats always
+                  up right under"). The fold that held it, with a hint per row
+                  and the ground's power, is gone; the table stays, under the
+                  rows, whenever there is a ripe pocket to price.
+                */}
+                {c.best !== null && hud.showPoints && (
+                  <>
+                    <p className="fact-label">{s.ui.lensPanel.sum.title}</p>
+                    <dl className="lens-stats lens-sum" data-lens-sum={colour}>
+                      {priceRows(c.best, tuning, s).map((row, i, all) => (
+                        <Stat
+                          key={row.text}
+                          icon={row.icon ?? LENS_ICON.points}
+                          label={row.text}
+                          value={row.value ?? ''}
+                          {...(i === all.length - 1 ? { total: true } : {})}
+                        />
+                      ))}
+                    </dl>
+                  </>
+                )}
               </div>
             )}
           </div>

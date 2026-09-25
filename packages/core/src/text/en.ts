@@ -831,17 +831,9 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         best: 'Best pocket',
         inHand: 'In your hand',
       },
-      hints: {
-        share: 'How much of everything standing on the board this ground is.',
-        perTile: 'Its worth, spread over its tiles: what one of them adds to a pocket.',
-        pockets: 'Ripe pockets with this ground in them. A pocket can mix grounds.',
-        best: 'The best of those pockets, whole, priced as POP would pay it now.',
-        inHand: 'Tiles of this ground in your hand and stash, not placed yet.',
-      },
       share: (pct) => pc(pct),
       best: (count, points) =>
         `${count} tile${plural(count, '', 's')}${points === null ? '' : ` · ${points} pts`}`,
-      why: 'HOW IT ADDS UP',
       sum: {
         title: 'The best pocket, if you pop it now',
         worth: 'Worth',

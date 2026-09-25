@@ -143,3 +143,33 @@ describe('the order, where a hex is two things at once', () => {
     expect(tapMeans(cell, reach({ touring: true, known: 'blue' })).does).toBe('return');
   });
 });
+
+/*
+ * A PLACED TILE OPENS THE LENS ON ITS GROUND (Marc, 2026-09-25: "when we click
+ * on a tile on the map (farm, quarry, etc.) make it pop the lens for that
+ * color"). A ripe one still prices its pocket, and the ground already held
+ * puts the lens down.
+ */
+describe('a tap on a placed tile', () => {
+  const tile = (over: Partial<CellView> = {}): CellView =>
+    plain({ kind: 'tile', colour: 'red', ...over });
+
+  it('opens the lens panel on its ground', () => {
+    expect(tapMeans(tile(), reach())).toEqual({ does: 'lens-panel', colour: 'red' });
+  });
+
+  it('switches the lens to its ground when another is held', () => {
+    expect(tapMeans(tile(), reach({ lens: 'blue' }))).toEqual({
+      does: 'lens-panel',
+      colour: 'red',
+    });
+  });
+
+  it('puts the lens down when its ground is the one held', () => {
+    expect(tapMeans(tile(), reach({ lens: 'red' })).does).toBe('lens-off');
+  });
+
+  it('still prices its pocket when it is ripe', () => {
+    expect(tapMeans(tile({ ripe: true }), reach()).does).toBe('price');
+  });
+});

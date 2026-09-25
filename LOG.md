@@ -9300,3 +9300,17 @@ was the row's caption rides inside POP. At a French phone's width the four
 buttons wrap onto two lines, in his order. It changes the first minute after
 Session A's clean pass, by the owner, on purpose, and `NEXT.md` §0 says so.
 Full Chromium suite: 145 passed.
+
+**Session 115, and the lens once more — focused, and a tap away.** Marc:
+_"remove how it adds up expand, but keep the best pocket stats always up
+right under. remove other colors when were focused on one"_, then _"when we
+click on a tile on the map (farm, quarry, etc.) make it pop the lens for that
+color"_. The fold is gone (its hints and label with it, from both
+catalogues); the best pocket's price table is always under the rows; a held
+ground hides the other three; and a tap on a placed tile is a new `tapMeans`
+answer, `lens-panel`, that holds its ground and opens the panel — a second tap
+on the same ground puts it down, a ripe tile still prices its pocket. **And
+POP's move from an hour earlier had covered the sheets**: the purse and the
+lens open a fixed one-button height above the hand, and the cluster is now up
+to two rows tall. `Camera` publishes its real height as `--camera-h` and both
+sheets sit above it. The tap-sweep e2e counts an opened panel as an answer.

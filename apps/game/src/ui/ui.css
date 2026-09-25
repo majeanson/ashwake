@@ -2480,7 +2480,10 @@ h3.fact-label {
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-drawer);
-  margin: 0 0 calc(var(--tap) + var(--gap) + var(--gap-sm));
+  /* Above the camera cluster, whatever its height: POP joined it on
+     2026-09-25 and it can be two rows tall, so `Camera` publishes its real
+     height as --camera-h instead of this rule assuming one button. */
+  margin: 0 0 calc(var(--camera-h, var(--tap)) + var(--gap) + var(--gap-sm));
 }
 
 /*
@@ -2496,7 +2499,10 @@ h3.fact-label {
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-drawer);
-  margin: 0 0 calc(var(--tap) + var(--gap) + var(--gap-sm));
+  /* Above the camera cluster, whatever its height: POP joined it on
+     2026-09-25 and it can be two rows tall, so `Camera` publishes its real
+     height as --camera-h instead of this rule assuming one button. */
+  margin: 0 0 calc(var(--camera-h, var(--tap)) + var(--gap) + var(--gap-sm));
 }
 
 .lens-row {
@@ -2567,12 +2573,6 @@ h3.fact-label {
   border-top: 1px solid var(--panel-edge);
   padding-top: 0.2rem;
   font-weight: 600;
-}
-.lens-hints {
-  margin: 0;
-  padding-left: 1rem;
-  display: grid;
-  gap: 0.15rem;
 }
 
 .lens-main {

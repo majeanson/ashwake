@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Strings } from '@text/Strings';
 import type { BoardHandle } from '../board/Board';
 import { Icon } from '../ui/Icon';
@@ -158,8 +158,28 @@ export function Camera({
   lensOpen,
   actions,
 }: CameraProps) {
+  /*
+   * THE CLUSTER SAYS HOW TALL IT IS (2026-09-25). The purse and the lens
+   * sheet open above it, and since POP joined the row it is one or two rows
+   * tall depending on the pocket and the width — a fixed margin covered the
+   * sheet's foot. Published on the root as --camera-h, read by both sheets.
+   */
+  const cluster = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const el = cluster.current;
+    if (el === null) return;
+    const root = document.documentElement;
+    const say = (): void => root.style.setProperty('--camera-h', `${el.offsetHeight}px`);
+    say();
+    const watch = new ResizeObserver(say);
+    watch.observe(el);
+    return () => {
+      watch.disconnect();
+      root.style.removeProperty('--camera-h');
+    };
+  }, []);
   return (
-    <div className="camera">
+    <div className="camera" ref={cluster}>
       <div className="camera-row">
         {/* POP, LUCK, LENS, then the camera — Marc's order, 2026-09-25. */}
         {actions}

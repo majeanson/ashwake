@@ -2336,9 +2336,19 @@ function Game() {
         return;
       }
 
+      if (tap.does === 'lens-panel') {
+        setLens(tap.colour);
+        session.spotlight(tap.colour);
+        setPurseOpen(false);
+        setLensOpen(true);
+        say(null);
+        return;
+      }
+
       if (tap.does === 'lens-off') {
         setLens(null);
         session.spotlight(null);
+        setLensOpen(false);
         say(s.ui.lensOff);
         return;
       }
