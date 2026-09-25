@@ -1108,6 +1108,18 @@ export function arcNote(summary: NonNullable<HudView['summary']>, s: Strings): s
  * term a colour owns. The split into ripe and still-growing says how much of
  * that potential is cashable right now versus still being set up.
  */
+/** A pocket's size, its price, and the terms of that price — see `harvestValue`. */
+type PocketPrice = {
+  readonly count: number;
+  readonly points: number;
+  readonly worth: number;
+  readonly sizeBonus: number;
+  readonly multiplier: number;
+  readonly placing: number;
+  readonly jackpot: number;
+  readonly bounty: number;
+};
+
 type ColourPotential = {
   readonly colour: Colour;
   /** Live tiles of this colour on the board. */
@@ -1143,7 +1155,7 @@ type ColourPotential = {
   readonly pockets: number;
   /** The best of those pockets, WHOLE — its size and its price as POP would
    *  pay it — or null when no pocket holds this colour. */
-  readonly best: { readonly count: number; readonly points: number } | null;
+  readonly best: PocketPrice | null;
   /** Tiles of this colour in the hand and the stash, not yet placed. */
   readonly inHand: number;
 };
@@ -1187,12 +1199,22 @@ function colourPotentials(state: GameState): ColourPotential[] {
       const c = state.cells[k];
       if (c?.kind === 'tile') holds.add(c.colour);
     }
-    return { holds, count: v.count, points: v.points };
+    const price: PocketPrice = {
+      count: v.count,
+      points: v.points,
+      worth: v.worth,
+      sizeBonus: v.sizeBonus,
+      multiplier: v.multiplier,
+      placing: v.placing,
+      jackpot: v.jackpot,
+      bounty: v.bounty,
+    };
+    return { holds, price };
   });
   return COLOURS.map((colour) => {
     const mine = priced.filter((p) => p.holds.has(colour));
-    const best = mine.reduce<{ count: number; points: number } | null>(
-      (b, p) => (b === null || p.points > b.points ? { count: p.count, points: p.points } : b),
+    const best = mine.reduce<PocketPrice | null>(
+      (b, p) => (b === null || p.price.points > b.points ? p.price : b),
       null,
     );
     const pockets = mine.length;

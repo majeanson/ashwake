@@ -1,9 +1,12 @@
+import type { CSSProperties } from 'react';
 import { COLOURS } from '@content/tuning';
 import type { Colour, Tuning } from '@content/tuning';
-import { COLOUR_ICON } from '@theme/icons';
+import { COLOUR_ICON, LENS_ICON, type IconName } from '@theme/icons';
 import { hex, namesOf, type Theme } from '@theme/tokens';
+import { fmt1 } from '@text/index';
 import type { Strings } from '@text/Strings';
 import { colourLesson, type HudView } from '@view/view';
+import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 
 /**
@@ -92,28 +95,115 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
               </span>
             </button>
             {/*
-            THE HELD GROUND, IN DETAIL (2026-09-24, Marc: _"on lens color
-            click, add the most detail you can, keep things comprehensible"_).
-            Under the row that holds the lens, and only that one: the power in
-            its own sentence, then one plain line per fact — never a table of
-            numbers. See `ui.lensPanel.share` for what each says.
-          */}
+              THE HELD GROUND, IN DETAIL — a stat sheet (2026-09-24). Marc,
+              planning it: an ICON, a LABEL and a NUMBER per stat, the icons in
+              the ground's own colour; the hints, the ground's power and the
+              pop's arithmetic "on expand", the arithmetic "as a table like the
+              1st". Under the row that holds the lens, and only that one. The
+              table's terms are `harvestValue`'s own, so it adds up to the
+              price POP pays.
+            */}
             {held === colour && (
-              <div className="lens-detail" data-lens-detail={colour}>
-                {rule !== null && <p className="note">{rule}</p>}
-                <ul className="lens-facts">
+              <div
+                className="lens-detail"
+                data-lens-detail={colour}
+                style={{ '--ground': hex(theme.terrain[colour].fill) } as CSSProperties}
+              >
+                <dl className="lens-stats">
                   {total > 0 && (
-                    <li>{s.ui.lensPanel.share(Math.round((c.worth / total) * 100))}</li>
+                    <Stat
+                      icon={LENS_ICON.share}
+                      label={s.ui.lensPanel.rows.share}
+                      value={s.ui.lensPanel.share(Math.round((c.worth / total) * 100))}
+                    />
                   )}
-                  {c.count > 0 && <li>{s.ui.lensPanel.perTile(c.worth / c.count)}</li>}
-                  {c.pockets > 0 && <li>{s.ui.lensPanel.pockets(c.pockets)}</li>}
+                  {c.count > 0 && (
+                    <Stat
+                      icon={LENS_ICON.perTile}
+                      label={s.ui.lensPanel.rows.perTile}
+                      value={dec(s, c.worth / c.count)}
+                    />
+                  )}
+                  <Stat
+                    icon={LENS_ICON.pockets}
+                    label={s.ui.lensPanel.rows.pockets}
+                    value={String(c.pockets)}
+                  />
                   {c.best !== null && (
-                    <li>
-                      {s.ui.lensPanel.best(c.best.count, hud.showPoints ? c.best.points : null)}
-                    </li>
+                    <Stat
+                      icon={LENS_ICON.best}
+                      label={s.ui.lensPanel.rows.best}
+                      value={s.ui.lensPanel.best(
+                        c.best.count,
+                        hud.showPoints ? c.best.points : null,
+                      )}
+                    />
                   )}
-                  <li>{s.ui.lensPanel.inHand(c.inHand)}</li>
-                </ul>
+                  <Stat
+                    icon={LENS_ICON.inHand}
+                    label={s.ui.lensPanel.rows.inHand}
+                    value={String(c.inHand)}
+                  />
+                </dl>
+                <Fold summary={s.ui.lensPanel.why}>
+                  {rule !== null && <p className="note">{rule}</p>}
+                  <ul className="lens-hints note">
+                    {total > 0 && <li>{s.ui.lensPanel.hints.share}</li>}
+                    {c.count > 0 && <li>{s.ui.lensPanel.hints.perTile}</li>}
+                    <li>{s.ui.lensPanel.hints.pockets}</li>
+                    {c.best !== null && <li>{s.ui.lensPanel.hints.best}</li>}
+                    <li>{s.ui.lensPanel.hints.inHand}</li>
+                  </ul>
+                  {c.best !== null && hud.showPoints && (
+                    <>
+                      <p className="fact-label">{s.ui.lensPanel.sum.title}</p>
+                      <dl className="lens-stats lens-sum" data-lens-sum={colour}>
+                        <Stat
+                          icon={LENS_ICON.worth}
+                          label={s.ui.lensPanel.sum.worth}
+                          value={dec(s, c.best.worth)}
+                        />
+                        <Stat
+                          icon={LENS_ICON.size}
+                          label={s.ui.lensPanel.sum.size(c.best.count)}
+                          value={op('×', dec(s, c.best.sizeBonus))}
+                        />
+                        <Stat
+                          icon={LENS_ICON.distance}
+                          label={s.ui.lensPanel.sum.distance}
+                          value={op('×', dec(s, c.best.multiplier))}
+                        />
+                        {c.best.placing > 0 && (
+                          <Stat
+                            icon={LENS_ICON.placing}
+                            label={s.ui.lensPanel.sum.placing}
+                            value={op('+', dec(s, c.best.placing))}
+                          />
+                        )}
+                        {c.best.jackpot > 0 && (
+                          <Stat
+                            icon={LENS_ICON.jackpot}
+                            label={s.ui.lensPanel.sum.jackpot}
+                            value={op('+', dec(s, c.best.jackpot))}
+                          />
+                        )}
+                        {c.best.bounty > 1 && (
+                          <Stat
+                            icon={LENS_ICON.bounty}
+                            label={s.ui.lensPanel.sum.bounty}
+                            value={op('×', dec(s, c.best.bounty))}
+                          />
+                        )}
+                        <Stat
+                          icon={LENS_ICON.points}
+                          label={s.ui.lensPanel.sum.points}
+                          value={s.ui.lensPanel.equals(c.best.points)}
+                          total
+                        />
+                      </dl>
+                    </>
+                  )}
+                </Fold>
               </div>
             )}
           </div>
@@ -124,3 +214,40 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
     </div>
   );
 }
+
+/** One row of the sheet: the mark in the ground's colour, the label, the number. */
+function Stat({
+  icon,
+  label,
+  value,
+  total,
+}: {
+  readonly icon: IconName;
+  readonly label: string;
+  readonly value: string;
+  readonly total?: boolean;
+}) {
+  return (
+    <div className={total === true ? 'lens-stat total' : 'lens-stat'}>
+      <dt>
+        <span className="lens-stat-icon" aria-hidden="true">
+          <Icon name={icon} />
+        </span>
+        {label}
+      </dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+
+/**
+ * An operator in front of a catalogue number. The operators are the table's
+ * arithmetic, not words in either language, so they are not the catalogue's
+ * to hold (`text.test.ts` rightly read a pure-symbol formatter as an
+ * untranslated string); the number beside them always comes through it.
+ */
+const op = (sign: '×' | '+', value: string): string => `${sign} ${value}`;
+
+/** A worth to one decimal, through the catalogue's own locale formatter —
+ *  a French comma is a French comma. */
+const dec = (s: Strings, n: number): string => fmt1(n, s.locale);

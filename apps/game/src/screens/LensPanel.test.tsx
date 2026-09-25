@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { pickLocale } from '@content/locale';
-import { stringsFor } from '@text/index';
+import { fmt1, stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { createSession } from '../shell/store';
 import { walk } from '../shell/walk';
@@ -115,8 +115,8 @@ describe('the lens panel', () => {
 
     const red = hud.colours.find((c) => c.colour === 'red')!;
     const text = open[0]!.textContent ?? '';
-    expect(text).toContain(s.ui.lensPanel.inHand(red.inHand));
-    if (red.count > 0) expect(text).toContain(s.ui.lensPanel.perTile(red.worth / red.count));
+    expect(text).toContain(s.ui.lensPanel.rows.inHand);
+    if (red.count > 0) expect(text).toContain(fmt1(red.worth / red.count, s.locale));
     if (red.best !== null)
       expect(text).toContain(s.ui.lensPanel.best(red.best.count, red.best.points));
   });
@@ -129,6 +129,12 @@ describe('the lens panel', () => {
     expect(ripeGround, 'nothing ripe on the walked board').toBeDefined();
     expect(ripeGround!.pockets).toBeGreaterThan(0);
     expect(ripeGround!.best!.count).toBeGreaterThan(0);
+    // The table's terms are the price's own (Marc: the pop's arithmetic 'as a
+    // table'), so they must add up to exactly what POP pays.
+    const b = ripeGround!.best!;
+    expect(
+      Math.floor((b.worth * b.sizeBonus * b.multiplier + b.placing + b.jackpot) * b.bounty + 1e-9),
+    ).toBe(b.points);
   });
 });
 

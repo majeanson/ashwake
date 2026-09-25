@@ -313,6 +313,11 @@ describe('harvest value', () => {
       sizeBonus: 1,
       rareWorth: 0,
       questPays: false,
+      worth: 0,
+      multiplier: 1,
+      placing: 0,
+      jackpot: 0,
+      bounty: 1,
       treasure: null,
     });
   });

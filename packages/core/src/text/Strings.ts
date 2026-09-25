@@ -1419,19 +1419,44 @@ export type Strings = {
       readonly ripeNone: string;
       readonly foot: string;
       /**
-       * A HELD GROUND, IN DETAIL (2026-09-24, Marc: _"on lens color click, add
-       * the most detail you can, keep things comprehensible"_). One line
-       * each, under the ground's own power sentence (`colourLesson`): its
-       * share of the board, its worth a tile, its ripe pockets and the best
-       * of them priced as POP would (`points` null on a board that hides
-       * points), and how many more are in the hand. `share` is a whole
-       * percent.
+       * A HELD GROUND, IN DETAIL — a stat sheet (2026-09-24). Marc, first:
+       * _"on lens color click, add the most detail you can, keep things
+       * comprehensible"_; then, planning it: each stat an ICON, a LABEL and a
+       * NUMBER, the icons in the ground's own colour, and the hints and the
+       * pop's arithmetic _"on expand"_, the arithmetic _"as a table like the
+       * 1st"_. `rows` are the labels, `hints` what each means, `sum` the
+       * table's labels; the value formatters take numbers and decide nothing.
+       * `share` is a whole percent; `best`'s points are null on a board that
+       * hides them.
        */
+      readonly rows: {
+        readonly share: string;
+        readonly perTile: string;
+        readonly pockets: string;
+        readonly best: string;
+        readonly inHand: string;
+      };
+      readonly hints: {
+        readonly share: string;
+        readonly perTile: string;
+        readonly pockets: string;
+        readonly best: string;
+        readonly inHand: string;
+      };
       readonly share: (pct: number) => string;
-      readonly perTile: (worth: number) => string;
-      readonly pockets: (n: number) => string;
       readonly best: (count: number, points: number | null) => string;
-      readonly inHand: (n: number) => string;
+      readonly why: string;
+      readonly sum: {
+        readonly title: string;
+        readonly worth: string;
+        readonly size: (count: number) => string;
+        readonly distance: string;
+        readonly placing: string;
+        readonly jackpot: string;
+        readonly bounty: string;
+        readonly points: string;
+      };
+      readonly equals: (n: number) => string;
     };
     /** A new build is already downloaded; the tap is the reload. */
     readonly newVersion: string;

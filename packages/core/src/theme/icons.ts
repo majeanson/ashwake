@@ -70,6 +70,15 @@ export type IconName =
   // receipt the pop leaves behind.
   | 'pop'
   | 'sacrifice'
+  // The lens panel's rows (2026-09-24, Marc: "give symbols … to each stat").
+  // Each names a quantity the receipts already speak — a share, a hand, the
+  // size bonus, the rare jackpot, the placing — so a row and the sentence
+  // that prices the same thing can wear one mark.
+  | 'share'
+  | 'hand'
+  | 'size'
+  | 'jackpot'
+  | 'placing'
   // The chrome's own affordances, which say something about the SCREEN rather
   // than about the plane. Nothing on the board may ever be one of these.
   | 'back'
@@ -125,6 +134,17 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
    */
   pop: 'fill/hand-grabbing-fill.svg',
   sacrifice: 'fill/flame-fill.svg',
+
+  // The lens panel's rows (2026-09-24). A pie for a share of the whole, an
+  // open hand for what is held (`pop` is a hand TAKING), outward arrows for
+  // a bonus that grows with size, a pin for where a tile was placed. The
+  // jackpot is a SPARKLE of four points and `find` is `sparkle` too, so it
+  // takes the star-four instead — no two marks here may share a silhouette.
+  share: 'fill/chart-pie-fill.svg',
+  hand: 'fill/hand-fill.svg',
+  size: 'fill/arrows-out-fill.svg',
+  jackpot: 'fill/star-four-fill.svg',
+  placing: 'fill/push-pin-fill.svg',
 
   relic: 'fill/coins-fill.svg',
   luck: 'fill/clover-fill.svg',
@@ -204,6 +224,28 @@ export const TILE_ICON: IconName = 'tile';
  * `tiles` reuses `tile`: the stat is tiles, and the game's own voice is
  * already a hex.
  */
+/**
+ * THE LENS PANEL'S MARKS (2026-09-24, Marc: "give symbols … to each stat").
+ * One per row of a held ground's sheet and of its price table, picked here so
+ * the registry stays the only thing that picks a mark. Where a row prices a
+ * thing the game already has a mark for — a tile, a pop, the reach, a site's
+ * bounty, the points sum — it wears that one.
+ */
+export const LENS_ICON = {
+  share: 'share',
+  perTile: 'tile',
+  pockets: 'pop',
+  best: 'fame',
+  inHand: 'hand',
+  worth: 'tile',
+  size: 'size',
+  distance: 'reach',
+  placing: 'placing',
+  jackpot: 'jackpot',
+  bounty: 'site',
+  points: 'points',
+} as const satisfies Readonly<Record<string, IconName>>;
+
 export const STAT_ICON = {
   tiles: 'tile',
   points: 'points',

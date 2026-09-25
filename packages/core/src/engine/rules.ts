@@ -544,6 +544,19 @@ export function harvestValue(
   rareWorth: number;
   /** True when taking THIS pocket as points collects the bounty. */
   questPays: boolean;
+  /**
+   * THE PRICE, TAKEN APART, for a screen that shows the sum (2026-09-24, the
+   * lens panel's table — Marc: _"total points detail when popping … as a
+   * table"_). `points` below stays the one expression it always was, so
+   * `pnpm sim` cannot move; these are its terms, read off the same locals:
+   * `points === floor((worth × sizeBonus × multiplier + placing + jackpot) ×
+   * bounty)` up to float rounding.
+   */
+  worth: number;
+  multiplier: number;
+  placing: number;
+  jackpot: number;
+  bounty: number;
   /** The rare tile this pocket would yield as treasure, if big enough. */
   treasure: Rarity | null;
 } {
@@ -598,6 +611,11 @@ export function harvestValue(
     sizeBonus,
     rareWorth,
     questPays,
+    worth: sumWorth,
+    multiplier: mult,
+    placing: sumWorth * dial(t.identityBonusRate),
+    jackpot: rareWorth * dial(t.rareBonusRate),
+    bounty,
     treasure: treasureFor(pops.length, t),
   };
 }

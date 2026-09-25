@@ -168,7 +168,9 @@ const SAME_IN_BOTH: readonly string[] = [
   'CACHE',
   'DESTINATIONS',
   'DISTANCE',
+  'Distance',
   'MENU',
+  'Points',
   'PTS',
   'SITE',
   'TOTAL',
@@ -176,8 +178,9 @@ const SAME_IN_BOTH: readonly string[] = [
   // A language picker says each language in that language.
   'ENGLISH',
   'FRANÇAIS',
-  // "3 pts" is the abbreviation in both.
+  // "3 pts" is the abbreviation in both — and so is the lens table's total.
   '3 pts',
+  '= 3 pts',
 ];
 
 /**

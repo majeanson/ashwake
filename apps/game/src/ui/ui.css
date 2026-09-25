@@ -2479,22 +2479,66 @@ h3.fact-label {
   border-color: var(--accent);
 }
 
-/* The held ground's detail (2026-09-24): under its row, in the note voice. */
+/*
+ * The held ground's detail, a stat sheet (2026-09-24, Marc: an icon, a label
+ * and a number per stat, the icons in the ground's own colour). `--ground`
+ * is set on the block by `LensPanel` from the theme — the only colour here
+ * that is not a token, because it IS the ground's token, chosen per row.
+ */
 .lens-detail {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.35rem;
   padding: 0.3rem 0.6rem 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 .lens-detail .note {
   margin: 0;
 }
-.lens-facts {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.lens-stats {
   display: grid;
-  gap: 0.1rem;
+  gap: 0.15rem;
+  margin: 0;
+}
+.lens-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.lens-stat dt {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.lens-stat dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* The mark on a small tile of the ground's own colour, in ink — the row's
+   swatch in miniature. Tinting the mark itself was the first build, and a
+   pale ground (MARKET on daylight) drew it nearly invisible on the panel. */
+.lens-stat-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: var(--radius-sm);
+  background: var(--ground, var(--accent));
+  color: var(--ink);
+  font-size: 0.7rem;
+}
+.lens-stat.total {
+  border-top: 1px solid var(--panel-edge);
+  padding-top: 0.2rem;
+  font-weight: 600;
+}
+.lens-hints {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.15rem;
 }
 
 .lens-main {
