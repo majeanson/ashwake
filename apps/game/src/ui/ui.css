@@ -1258,10 +1258,15 @@ h3.fact-label {
   color: var(--accent);
 }
 
+/* Never drawn bigger than it was taken (2026-09-25, Marc: "summary is
+   pixelated"): a 240 px shot stretched across a desktop panel was the
+   pixelation. Shrinks to fit a phone, stays its own size on anything wider. */
 .fame-shot {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: auto;
+  margin: 0 auto;
   border-radius: var(--radius);
 }
 

@@ -1777,19 +1777,39 @@ function Rig({
           gl.render(scene, camera);
           const source = gl.domElement;
           if (source.width === 0 || source.height === 0) return null;
-          const wide = 240;
-          const tall = Math.max(1, Math.round((source.height / source.width) * wide));
-          const flat = document.createElement('canvas');
-          flat.width = wide;
-          flat.height = tall;
-          const ctx = flat.getContext('2d');
-          if (ctx === null) return null;
-          ctx.drawImage(source, 0, 0, wide, tall);
-          const shot = flat.toDataURL('image/webp', 0.6);
-          // A browser without webp answers with a PNG, which can be larger
-          // than the cap — better no picture than a diary row that refuses to
-          // save the run it belongs to.
-          return shot.length <= SHOT_CHAR_MAX ? shot : null;
+          /*
+           * THE BOARD, NOT THE ROOM AROUND IT (2026-09-25, Marc, of a diary
+           * picture: "summary is pixelated"). The shot was the WHOLE canvas at
+           * 240 px — on a wide screen mostly empty ground — and the diary drew
+           * it at the panel's full width, seven times its size. The bytes are
+           * the same cap as ever (`SHOT_CHAR_MAX`); what changed is what they
+           * are spent on. Crop to what is drawn, then take the largest width
+           * and the best quality that still fit, stepping down until one does.
+           */
+          const crop = drawnBounds(source);
+          const tries: readonly (readonly [number, number])[] = [
+            [480, 0.72],
+            [480, 0.55],
+            [400, 0.55],
+            [320, 0.55],
+            [240, 0.6],
+          ];
+          for (const [widest, quality] of tries) {
+            const wide = Math.min(widest, crop.w);
+            const tall = Math.max(1, Math.round((crop.h / crop.w) * wide));
+            const flat = document.createElement('canvas');
+            flat.width = wide;
+            flat.height = tall;
+            const ctx = flat.getContext('2d');
+            if (ctx === null) return null;
+            ctx.drawImage(source, crop.x, crop.y, crop.w, crop.h, 0, 0, wide, tall);
+            const shot = flat.toDataURL('image/webp', quality);
+            // A browser without webp answers with a PNG, which can be larger
+            // than the cap — better no picture than a diary row that refuses
+            // to save the run it belongs to.
+            if (shot.length <= SHOT_CHAR_MAX) return shot;
+          }
+          return null;
         } catch {
           // A lost context, a tainted canvas, a browser that refuses the
           // export. A memento is never worth an exception on the one screen
@@ -2169,4 +2189,49 @@ function Rig({
   }, [wrapper, invalidate, reducedMotion, onLeanBy]);
 
   return null;
+}
+
+/**
+ * The part of a rendered board that is not empty ground, with a margin — the
+ * diary shot's frame (2026-09-25). Read off a small copy, so it costs one tiny
+ * readback: the corner pixel is the ground, and anything clearly different
+ * from it is the board. Falls back to the whole canvas whenever it cannot
+ * tell, because a shot of too much is better than a shot of nothing.
+ */
+function drawnBounds(source: HTMLCanvasElement): { x: number; y: number; w: number; h: number } {
+  const whole = { x: 0, y: 0, w: source.width, h: source.height };
+  const probeW = 96;
+  const probeH = Math.max(1, Math.round((source.height / source.width) * probeW));
+  const probe = document.createElement('canvas');
+  probe.width = probeW;
+  probe.height = probeH;
+  const ctx = probe.getContext('2d', { willReadFrequently: true });
+  if (ctx === null) return whole;
+  ctx.drawImage(source, 0, 0, probeW, probeH);
+  const px = ctx.getImageData(0, 0, probeW, probeH).data;
+  const [r0, g0, b0] = [px[0]!, px[1]!, px[2]!];
+  let minX = probeW;
+  let minY = probeH;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < probeH; y++) {
+    for (let x = 0; x < probeW; x++) {
+      const i = (y * probeW + x) * 4;
+      const d = Math.abs(px[i]! - r0) + Math.abs(px[i + 1]! - g0) + Math.abs(px[i + 2]! - b0);
+      if (d < 36) continue;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (maxX < minX || maxY < minY) return whole;
+  const sx = source.width / probeW;
+  const sy = source.height / probeH;
+  const pad = 2;
+  const x = Math.max(0, Math.floor((minX - pad) * sx));
+  const y = Math.max(0, Math.floor((minY - pad) * sy));
+  const w = Math.min(source.width - x, Math.ceil((maxX - minX + 1 + 2 * pad) * sx));
+  const h = Math.min(source.height - y, Math.ceil((maxY - minY + 1 + 2 * pad) * sy));
+  return w > 0 && h > 0 ? { x, y, w, h } : whole;
 }
