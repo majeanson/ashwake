@@ -98,7 +98,7 @@ tiles. Session A passed on this body on 2026-09-24 (the phone sheet, `LOG.md`
 Session 115); the first-minute changes Marc made after it — POP in the
 cluster over the board, the cluster's marks, and a HOLD on a tile to light its
 ground (a quick tap says so) — are rounds six and seven on that sheet, and
-**the round that comes back clean is what names the build a stranger plays.** Write its commit here when it does: `________`.
+**the round that comes back clean is what names the build a stranger plays.** That round is seven (2026-09-25), and **the stranger plays `8e77420`** or a later commit that changes nothing in the first minute.
 
 Before they arrive, on the phone they will play on:
 
