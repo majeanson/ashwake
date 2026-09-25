@@ -45,37 +45,29 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — what landed on the evening of 2026-09-24
+## 1. Marc, on the phone — what landed on the night of 2026-09-24
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
-them with `ArtifactData` `list` before touching anything here. Rounds one and
-two were answered on 2026-09-24 and every change they asked for is built:
-round two kept the waking tap and the new French as they are, and asked for
-the five builds below — plus one bug from Marc's own play (item 1).
+them with `ArtifactData` `list` before touching anything here. Three rounds
+were answered on 2026-09-24 and every change they asked for is built; round
+three kept the new-run camera and the atlas tab, and asked for the four below.
 
-Each was built from a desk that evening and has not been seen on a phone:
+Each was built that night and has not been seen on a phone:
 
-1. **The replay camera FOLLOWS** (_"not the right one. make it more fluid,
-   less step-y"_). The dive per pop is gone: the camera eases continuously
-   toward each move at `FOLLOW_ZOOM` (1.8, `board/camera.ts`), and closing a
-   film by any door drops the follow and flies the whole board back. That
-   last part answers _"when i came back … i started a new one and my camera
-   was misplaced"_ — which the harness could not reproduce; the likeliest
-   cause (a tap during a dive parking the camera at an old pop) no longer
-   exists. **Is 1.8 the closeness, and is the easing (`FOLLOW_TAU_MS`, 650)
-   smooth without lagging?**
-2. **The chosen pocket flashes slower** — every 1.5 s (_"flash slower"_).
-3. **Under the lens, every tile of that ground prints its worth** (_"show
-   points on concerned color of each tile too while lens is on"_) — worth,
-   the unit the panel speaks, since a tile has no points until it pops.
-4. **The atlas is the hall of fame's ATLAS tab** (_"put it in hall of fame
-   somehow"_), opening on one line that says what it is. With four tabs the
-   French tab strip scrolls at a phone's width — JOURNAL is cut off while
-   ATLAS is open. A look.
-5. **New French**: « Le monde où tu es, à travers toutes les parties jouées
-   dessus. » (the ATLAS tab's line).
+1. **The flash every 2 s** (_"go 2000"_, `board/ambient.ts`).
+2. **The replay's follow camera further out** (_"zoom out a bit"_):
+   `FOLLOW_ZOOM` 1.8 → 1.5 (`board/camera.ts`).
+3. **The ✦ marks in the diary, like Ashwake 1** (_"show them like ashwake
+   1"_ — his ruling on the parked spine-vs-✦ question): the fame mark and the
+   count on a run's row, each mark in words when it opens.
+4. **The lens panel's held ground is a stat sheet**, planned with Marc: an
+   icon, a label and a number per stat, each mark on a small tile of the
+   ground's colour; LE DÉTAIL DU CALCUL folds open the ground's power, a hint
+   per row, and the best pocket's price as a table whose terms add up to what
+   POP pays. **The look is yours**: the tile size, whether the hints read,
+   and whether the table is the arithmetic you wanted.
 
 ---
 
@@ -95,14 +87,7 @@ Each was built from a desk that evening and has not been seen on a phone:
 
 ## 3. Decisions still open
 
-- **The ✦ marks in the diary — yours (2026-09-24).** Every diary row stores
-  what made its run worth remembering (a best, a shrine, a perk, a goal, a
-  territory, a camp) and no screen shows it; Ashwake 1 put "✦ N" on the row
-  and listed the marks when it opened. For one day the automatic replay was
-  its only reader; when that went, `pnpm sweep` flagged it, and showing them
-  is exactly Ashwake 1's parked _"spine-vs-✦"_ question (§7), so it was not
-  built. Bring the marks back to the diary, or leave them stored? **Asked
-  twice on the phone sheet (round two) and left unanswered**, so still open.
+- **~~The ✦ marks in the diary~~ — SHOWN 2026-09-24**, like Ashwake 1 (§1, item 3).
 - **~~The atlas~~ — MOVED 2026-09-24** to the hall of fame (§1, item 4).
 - **D22 — collecting play data, and the privacy line.** Marc, 2026-09-24:
   **after Session C.** SETTINGS still says _"Nothing leaves your phone: no
@@ -186,5 +171,6 @@ original argument for each is in `NEXT-HISTORY.md` §1.
 Ashwake 1's parking lot carries over unchanged: Tier-1 uniques, sound's written
 question, a leaderboard (needs a backend, D13), store wrappers, the
 waypoint-perk earn, world mood, ground-feeds-draft, storage compaction, the
-timeline's spine question, and pop-vs-burn-vs-wait (answered over weeks of
+timeline's spine question (its ✦ half answered 2026-09-24: Marc had the
+marks shown in the diary, like Ashwake 1 — the spine itself stays parked), and pop-vs-burn-vs-wait (answered over weeks of
 play, not before a tag).

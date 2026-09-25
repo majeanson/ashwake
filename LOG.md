@@ -9230,3 +9230,27 @@ passed there.
 
 _A test that fails on one engine only is usually telling the truth about
 that engine._
+
+**Session 115, past midnight — round three, and the lens planned together.**
+Round three kept the new-run camera and the atlas tab. It asked for the flash
+at 2 s and the follow camera further out (1.5), and **it ruled the parked
+✦ question: _"show them like ashwake 1"_** — so the marks are in the diary,
+the fame mark and the count on a run's row, each mark in words inside it.
+That is the first half of Ashwake 1's "spine-vs-✦" question answered; the
+spine itself stays parked.
+
+The lens was planned with Marc rather than guessed, through three drawn
+options: an icon, a label and a number per stat; the ground's colour on the
+marks; the hints and the arithmetic behind an expand, the arithmetic as a
+table. Two things the build learned. **A mark tinted in a ground's fill
+vanishes on a pale ground** — MARKET on the daylight board was nearly
+invisible — so each mark sits on a small tile of the ground's colour, in ink,
+the row's own swatch in miniature. And **the table had to be the price's own
+terms, not a restatement of the formula**: `harvestValue` now returns them,
+its price expression untouched (the sim is byte-identical), and a test pins
+that the table adds up to exactly what POP pays. The catalogue test also
+refused two formatters that held no words — an operator and a bare decimal —
+which is right: an operator is arithmetic, not language, so the screen holds
+it, and the number goes through the catalogue's own `fmt1`.
+
+_A table of a price is only honest if its rows are the price's own terms._
