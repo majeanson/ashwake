@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { Strings } from '@text/Strings';
 import type { BoardHandle } from '../board/Board';
 import { Icon } from '../ui/Icon';
@@ -89,6 +89,8 @@ type CameraProps = {
   readonly canLens: boolean;
   readonly onLensPanel: () => void;
   readonly lensOpen: boolean;
+  /** A pocket's buttons, first in the row — see `PocketActions` (2026-09-25). */
+  readonly actions?: ReactNode;
 };
 
 /**
@@ -154,23 +156,13 @@ export function Camera({
   canLens,
   onLensPanel,
   lensOpen,
+  actions,
 }: CameraProps) {
   return (
     <div className="camera">
       <div className="camera-row">
-        {canLens && (
-          <button
-            type="button"
-            className="lens-toggle"
-            data-action="lens"
-            aria-expanded={lensOpen}
-            aria-controls="lens"
-            aria-label={s.ui.lensPanel.buttonLabel}
-            onClick={onLensPanel}
-          >
-            {s.ui.lensPanel.button}
-          </button>
-        )}
+        {/* POP, LUCK, LENS, then the camera — Marc's order, 2026-09-25. */}
+        {actions}
         {canSpend && (
           <button
             type="button"
@@ -187,6 +179,19 @@ export function Camera({
             onClick={onPurse}
           >
             <Icon name="luck" /> {luck}
+          </button>
+        )}
+        {canLens && (
+          <button
+            type="button"
+            className="lens-toggle"
+            data-action="lens"
+            aria-expanded={lensOpen}
+            aria-controls="lens"
+            aria-label={s.ui.lensPanel.buttonLabel}
+            onClick={onLensPanel}
+          >
+            {s.ui.lensPanel.button}
           </button>
         )}
         <button type="button" data-action="camera" data-view={next} onClick={onCycle}>

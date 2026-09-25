@@ -1846,6 +1846,17 @@ h3.fact-label {
 .camera-row {
   display: flex;
   gap: 0.35rem;
+  /* POP and SACRIFICE joined the row on 2026-09-25 (Marc: "pop, luck, lens,
+     camera"): every button takes the row's height, and a French row too wide
+     for a small phone wraps onto a second line from the right rather than
+     running off the screen. */
+  align-items: stretch;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.camera {
+  max-width: calc(100% - 2 * var(--gap));
 }
 
 .camera button {
@@ -2217,12 +2228,6 @@ h3.fact-label {
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
   font-size: 0.7rem;
-}
-
-.action-bar {
-  display: flex;
-  gap: 0.35rem;
-  align-items: stretch;
 }
 
 /*
@@ -3687,11 +3692,8 @@ h3.fact-label {
  * edge rather than crowding the last verb.
  */
 .act-note {
-  flex: 1 1 0;
-  min-width: 0;
-  align-self: center;
-  text-align: end;
-  padding-inline-end: 0.2rem;
+  /* Inside POP since 2026-09-25, a third line under the value. */
+  text-align: center;
   font-size: clamp(0.58rem, 1.8vw, 0.7rem);
   color: var(--ink-dim);
   white-space: nowrap;

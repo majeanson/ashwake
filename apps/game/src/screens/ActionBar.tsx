@@ -47,160 +47,17 @@ type ActionBarProps = {
   readonly onLens: (index: number | null) => void;
   /** Tap a stash slot. The index travels: THIS card trades with THIS slot. */
   readonly onHold: (slot: number) => void;
-  readonly onHarvest: (choice: HarvestChoice) => void;
-  /** Whether the device has met relics — the gate on offering a burn. */
-  readonly knowsRelics: boolean;
-  readonly onNewRun: () => void;
 };
 
-export function ActionBar({
-  hud,
-  theme,
-  s,
-  onSelect,
-  onLens,
-  onHold,
-  onHarvest,
-  knowsRelics,
-  onNewRun,
-}: ActionBarProps) {
+export function ActionBar({ hud, theme, s, onSelect, onLens, onHold }: ActionBarProps) {
   // The baked hex per ground, so a card in the hand is the tile it will
   // become. Asked for once here rather than once per card: four slots, one
   // shared manifest, and the answer is the same for every card of a colour.
   const art = useTerrainArt(theme.id);
   const stash = stashSlots(hud.canHold, hud.holdSlots);
-  // See SACRIFICE below: a burn is only offered once relics mean something.
-  const burnKnown = !hud.burnPaysRelics || knowsRelics || hud.relics > 0;
-  const burn = hud.canHarvest && burnKnown ? hud.harvestBurn : 0;
-  /** Whether the bar has anything at all in it — the one thing the reserved
-   *  row below needs to know. Every button in it is conditional. */
-  const anyAction = hud.canHarvest || burn > 0 || hud.ended;
 
   return (
     <div className="controls">
-      {/*
-        THE ACTIONS FIRST, THE HAND LAST (2026-08-30).
-
-        Marc: *"tiles hand always footer but in finger zone, accessible."* The
-        hand was above the bar, so the row a player touches most — every
-        placement starts with picking a card up, and a run is fifty of them —
-        sat furthest from the thumb, with four buttons pressed once a pocket
-        between it and the bottom of the phone. The hand is the footer now.
-
-        Source order, not `order: -1`. Tab has to walk the screen the way an
-        eye does, and a CSS-only swap leaves a keyboard reaching the bar first
-        while a finger reaches the hand first — one screen with two orders.
-      */}
-      <div className="action-bar" data-hud="actions">
-        {hud.canHarvest && (
-          <ActButton
-            testId="pop"
-            icon={CONCEPT_ICON.pop}
-            label={s.ui.pop}
-            value={
-              hud.showPoints
-                ? `+${hud.harvestTiles} · ${hud.harvestPoints} pts`
-                : `+${hud.harvestTiles} · ×${hud.harvestDepth}`
-            }
-            /*
-              THE BOUNTY, ON THE BUTTON THAT COLLECTS IT (Marc, 2026-09-16).
-
-              The figure was always right — `harvestValue` applies the
-              multiplier — but nothing said WHY it was bigger, and
-              `HudView.questPays` was computed for two weeks with no reader.
-              Ashwake 1's answer, taken as his: the site's own glyph beside the
-              verb, and a `bounty` class the stylesheet turns into the same soft
-              pool of accent v1 gave BEGIN. The word travels in the accessible
-              name too, because the glyph is `aria-hidden` and a screen reader
-              is owed the same reason.
-            */
-            bounty={hud.questPays ? s.lesson.bounty.name : null}
-            onClick={() => onHarvest('tiles')}
-          />
-        )}
-        {hud.canHarvest && !hud.singlePayout && hud.showPoints && (
-          <ActButton
-            testId="pop-points"
-            icon={CONCEPT_ICON.pop}
-            label={s.ui.pop}
-            value={`${hud.harvestPoints} pts`}
-            onClick={() => onHarvest('points')}
-          />
-        )}
-        {/*
-          SACRIFICE — burn the pocket for relics, or for luck where relics are
-          not the currency yet.
-
-          Gated on the player having MET relics or holding some (Ashwake 1's
-          `burnKnown`): offering to trade a pocket for a thing the game has not
-          introduced is a button whose value is a mystery, and a mystery on the
-          one action that destroys a pocket is the wrong place for one.
-        */}
-        {burn > 0 && (
-          <ActButton
-            testId="pop-burn"
-            icon={CONCEPT_ICON.sacrifice}
-            label={s.ui.sacrifice}
-            value={hud.burnPaysRelics ? s.ui.relicsPaid(burn) : s.ui.luckPaid(burn)}
-            onClick={() => onHarvest('burn')}
-          />
-        )}
-        {hud.ended && (
-          <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />
-        )}
-        {/*
-          THE ROW IS RESERVED FOR THE WHOLE RUN (2026-09-08, Marc's answer).
-
-          Every button above is conditional, so this bar was EMPTY for most of
-          an opening and grew the first time a pocket ripened — `.controls` 85px
-          to 145px, and `.board-host` is `flex: 1`, so the WebGL canvas's
-          backing store was reallocated under it. The flash that caused was
-          fixed in Session 56 by repainting in the same task; the RESIZE was
-          not, and it is the third instance of one disease — `ui.css` already
-          records the stat row ("the board resizes because the score went from
-          99 to 100") and the purse drawer, both fixed by stopping the resize
-          rather than absorbing it.
-
-          Asked whether 60px of board on every phone for every run was worth a
-          map that never moves, Marc said yes.
-
-          **A spacer shaped like a button, not a `min-height`.** The bar's
-          height is content — icon, label and value at whatever the root font
-          is — so a magic number in the stylesheet would be right until a label
-          wrapped or the root moved, and wrong silently. This is the same
-          answer the hand already gives with its `tile gap` spacers, for the
-          same reason. `visibility: hidden` keeps the box and drops the ink,
-          the focus and the accessible name all at once.
-        */}
-        {!anyAction && (
-          <div className="act gap" aria-hidden="true">
-            <span className="act-label">&nbsp;</span>
-            <span className="act-value">&nbsp;</span>
-          </div>
-        )}
-        {/*
-          HOW MANY DECISIONS ARE WAITING (Marc, 2026-09-16: "yes we can add
-          this. use width" — the free width of the bar, not the button).
-
-          `HudView.pocketsReady` counts separate ripe POCKETS, not ripe tiles —
-          a twelve-tile pocket is one decision, same as a two-tile one — and
-          for two weeks nothing printed it. The words are the guide line's own
-          (`guide.pockets`), so the sentence is written once in each language.
-
-          From TWO, not one: a single ready pocket is already said by POP being
-          on the bar at all, and "Pocket ready" beside a button called POP is
-          the game repeating itself. Not a button, not a live region: it is
-          the bar's caption, and `.act-note` takes only the width the buttons
-          leave — at 320px in French that is often none, and a caption that
-          vanishes is right where a button that squeezed would be wrong.
-        */}
-        {hud.canHarvest && hud.pocketsReady >= 2 && (
-          <span className="act-note" data-hud="pockets">
-            {s.view.guide.pockets(hud.pocketsReady)}
-          </span>
-        )}
-      </div>
-
       <div
         className="hand"
         data-hud="hand"
@@ -298,6 +155,7 @@ function ActButton({
   label,
   value,
   bounty = null,
+  note = null,
   onClick,
 }: {
   readonly testId: string;
@@ -307,6 +165,8 @@ function ActButton({
   /** The word for a standing bounty this press collects, or null. Draws the
    *  site glyph after the verb and joins the accessible name — see POP. */
   readonly bounty?: string | null | undefined;
+  /** A third, dim line under the value — POP's pocket count. */
+  readonly note?: string | null | undefined;
   readonly onClick: () => void;
 }) {
   const name = value === '' ? label : `${label}, ${value}`;
@@ -332,6 +192,106 @@ function ActButton({
         )}
       </span>
       {value !== '' && <span className="act-value">{value}</span>}
+      {note !== null && (
+        <span className="act-note" data-hud="pockets">
+          {note}
+        </span>
+      )}
     </button>
+  );
+}
+
+/**
+ * A POCKET'S BUTTONS, OFF THE HAND (Marc, 2026-09-25: _"move pop button out of
+ * tile hands, only tiles remain, pop goes next to lens and other buttons,
+ * reorder them so its pop, luck, lens, camera"_).
+ *
+ * POP, SACRIFICE — and NEW RUN on an ended board — were the row above the
+ * hand, and that row was RESERVED for the whole run so the board would not
+ * resize the first time a pocket ripened (2026-09-08). In the camera cluster
+ * they float over the board, so there is nothing to reserve: the row and its
+ * spacer are gone, and the board has that height back. The pocket count that
+ * was the row's caption rides inside POP. SACRIFICE sits beside POP because
+ * it spends the same pocket; Marc's order named the four he looks at.
+ */
+export function PocketActions({
+  hud,
+  s,
+  onHarvest,
+  knowsRelics,
+  onNewRun,
+}: {
+  readonly hud: HudView;
+  readonly s: Strings;
+  readonly onHarvest: (choice: HarvestChoice) => void;
+  readonly knowsRelics: boolean;
+  readonly onNewRun: () => void;
+}) {
+  // See SACRIFICE below: a burn is only offered once relics mean something.
+  const burnKnown = !hud.burnPaysRelics || knowsRelics || hud.relics > 0;
+  const burn = hud.canHarvest && burnKnown ? hud.harvestBurn : 0;
+  return (
+    <>
+      {hud.canHarvest && (
+        <ActButton
+          testId="pop"
+          icon={CONCEPT_ICON.pop}
+          label={s.ui.pop}
+          value={
+            hud.showPoints
+              ? `+${hud.harvestTiles} · ${hud.harvestPoints} pts`
+              : `+${hud.harvestTiles} · ×${hud.harvestDepth}`
+          }
+          /*
+          THE BOUNTY, ON THE BUTTON THAT COLLECTS IT (Marc, 2026-09-16).
+
+          The figure was always right — `harvestValue` applies the
+          multiplier — but nothing said WHY it was bigger, and
+          `HudView.questPays` was computed for two weeks with no reader.
+          Ashwake 1's answer, taken as his: the site's own glyph beside the
+          verb, and a `bounty` class the stylesheet turns into the same soft
+          pool of accent v1 gave BEGIN. The word travels in the accessible
+          name too, because the glyph is `aria-hidden` and a screen reader
+          is owed the same reason.
+        */
+          bounty={hud.questPays ? s.lesson.bounty.name : null}
+          /*
+          HOW MANY DECISIONS ARE WAITING (Marc, 2026-09-16) — the bar's
+          caption until the bar went (2026-09-25), inside the button now.
+          From TWO: one ready pocket is already said by POP being here.
+        */
+          note={hud.pocketsReady >= 2 ? s.view.guide.pockets(hud.pocketsReady) : null}
+          onClick={() => onHarvest('tiles')}
+        />
+      )}
+      {hud.canHarvest && !hud.singlePayout && hud.showPoints && (
+        <ActButton
+          testId="pop-points"
+          icon={CONCEPT_ICON.pop}
+          label={s.ui.pop}
+          value={`${hud.harvestPoints} pts`}
+          onClick={() => onHarvest('points')}
+        />
+      )}
+      {/*
+      SACRIFICE — burn the pocket for relics, or for luck where relics are
+      not the currency yet.
+
+      Gated on the player having MET relics or holding some (Ashwake 1's
+      `burnKnown`): offering to trade a pocket for a thing the game has not
+      introduced is a button whose value is a mystery, and a mystery on the
+      one action that destroys a pocket is the wrong place for one.
+    */}
+      {burn > 0 && (
+        <ActButton
+          testId="pop-burn"
+          icon={CONCEPT_ICON.sacrifice}
+          label={s.ui.sacrifice}
+          value={hud.burnPaysRelics ? s.ui.relicsPaid(burn) : s.ui.luckPaid(burn)}
+          onClick={() => onHarvest('burn')}
+        />
+      )}
+      {hud.ended && <ActButton testId="new-run" label={s.ui.newRun} value="" onClick={onNewRun} />}
+    </>
   );
 }

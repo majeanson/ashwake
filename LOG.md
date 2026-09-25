@@ -9287,3 +9287,16 @@ adds up to what POP pays" had pinned it to the wrong number. It pins
 
 _A test that pins a total is only as good as the total it was told was
 right._
+
+**Session 115, the last ask — POP leaves the hand.** Marc: _"move pop button
+out of tile hands, only tiles remain, pop goes next to lens and other
+buttons, reorder them so its pop, luck, lens, camera."_ The pocket's buttons
+are `PocketActions` now, first in the camera cluster; the footer is the hand
+alone. The row that was reserved above the hand for the whole run — so the
+board would not resize the day a pocket first ripened (2026-09-08) — went
+with the buttons: the cluster floats over the board, so there is nothing
+left to reserve, and the board has that height back. The pocket count that
+was the row's caption rides inside POP. At a French phone's width the four
+buttons wrap onto two lines, in his order. It changes the first minute after
+Session A's clean pass, by the owner, on purpose, and `NEXT.md` §0 says so.
+Full Chromium suite: 145 passed.

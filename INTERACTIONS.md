@@ -55,6 +55,16 @@ deliberately absent in both.
 
 ## 3. Action bar, purse, stats
 
+**Since 2026-09-25 there is no action bar.** Marc: _"move pop button out of
+tile hands, only tiles remain, pop goes next to lens and other buttons, reorder
+them so its pop, luck, lens, camera"_. POP (with the pocket count inside it),
+SACRIFICE and NEW RUN are the first buttons of the camera cluster over the
+board (`PocketActions` in `screens/ActionBar.tsx`), then LUCK, LENS and the
+camera; the footer is the hand alone. The row reserved above the hand so the
+board would not resize is gone with it — the cluster floats, so there is
+nothing to reserve. Every gesture below still reaches the same handler; only
+where the buttons sit moved. The history that follows is kept as it was.
+
 Since 2026-08-30 POP and SACRIFICE wear MARKS — a hand taking and a flame — and
 the same two shapes head their own sections in HOW TO PLAY and lead the receipt
 each action leaves. TAKE has none: it appears on one button, only when a pocket

@@ -32,6 +32,13 @@ waking tap swallowed, the chosen pocket flashing, the lens panel's detail, the
 lamps epitaph (`LOG.md` Session 115). **Nothing else that changes the first
 minute ships before Session C.** A stranger is a one-shot resource.
 
+**One deliberate exception since, Marc's own (2026-09-25):** POP left the row
+above the hand for the cluster over the board — _"pop, luck, lens, camera"_ —
+and the footer is only the hand. That changes the first minute after the
+clean pass, on purpose and by the owner; if Session A's pass is to cover the
+board the stranger meets, the one thing worth re-checking on the phone is that
+POP reads as the button to press when a pocket ripens.
+
 So the road to v2.0 is now:
 
 1. **Session C**, the stranger test, `PLAYTEST.md`. v2.0's gate, never run on

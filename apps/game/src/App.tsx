@@ -52,7 +52,7 @@ import { preloadAssets } from './board/assets';
 import { commandFor, focusKindOf, takesKey, PAN_STEP, ZOOM_STEP } from './board/keys';
 import { cascadeMs } from './board/leap';
 import { MAX_RENDER_SCALE } from './board/quality';
-import { ActionBar } from './screens/ActionBar';
+import { ActionBar, PocketActions } from './screens/ActionBar';
 import { Camera, useCameraCycle } from './screens/Camera';
 import { MenuButton } from './screens/Menu';
 import { Directions } from './screens/Directions';
@@ -3496,6 +3496,21 @@ function Game() {
             canLens={playing}
             onLensPanel={onLensPanel}
             lensOpen={lensOpen}
+            /*
+             * A POCKET'S BUTTONS, first in the cluster (Marc, 2026-09-25: "pop,
+             * luck, lens, camera"). They left the row above the hand — see
+             * `PocketActions`. The burn is only offered once relics mean
+             * something, as it always was.
+             */
+            actions={
+              <PocketActions
+                hud={snap.hud}
+                s={s}
+                knowsRelics={hasMet(progress, 'relic')}
+                onHarvest={onHarvest}
+                onNewRun={newRun}
+              />
+            }
           />
         )}
         {/*
@@ -3583,11 +3598,6 @@ function Game() {
             onSelect={onSelect}
             onLens={onLens}
             onHold={onHold}
-            // The burn is only offered once relics mean something — see
-            // SACRIFICE in `ActionBar`.
-            knowsRelics={hasMet(progress, 'relic')}
-            onHarvest={onHarvest}
-            onNewRun={newRun}
           />
         </div>
       )}
