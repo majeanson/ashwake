@@ -1267,6 +1267,18 @@ h3.fact-label {
   color: var(--danger);
 }
 
+/*
+ * A LINK (2026-09-25). There is one — the third-party notices under SETTINGS
+ * — and it was drawn in the browser's own blue, 2.01:1 on settlement's dark
+ * panel where text must reach 4.5 (`pnpm audit:screens`). It wears the
+ * accent, visited or not, as a term does.
+ */
+a,
+a:visited {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+
 .term {
   border: 0;
   padding: 0;
@@ -1305,6 +1317,9 @@ h3.fact-label {
  */
 .fame-marked {
   color: var(--accent);
+  white-space: nowrap;
+}
+.fame-tail {
   white-space: nowrap;
 }
 .fame-marks {

@@ -161,12 +161,33 @@ a stranger's.
 
 ---
 
+## 5c. The cutover — prepared, not run
+
+`CUTOVER.md` (2026-09-25) is tiles.marcportal.com becoming Ashwake 2: how
+both workers are bound today, what a phone's saves and service worker do on the
+day, the steps with a check and an undo for each, and **three decisions for
+Marc before it**:
+
+1. **Bring v1 worlds over automatically?** v2 never reads `tiles.*` keys by
+   itself, and once v2 loads on that origin v1's BACK UP button is gone: a v1
+   player who did not back up keeps worlds no screen can reach. A one-time
+   offer on boot would fix it, built after Session C.
+2. **Warn v1 players first?** A last v1 deploy would break its freeze.
+3. **What becomes of ashwake.marcportal.com?** A second domain, a 301, or
+   dropped — the last two strand the saves made there, Marc's included.
+
+---
+
 ## 6. Taste, never ruled, no defect under it
 
 Questions from late August and early September that were put as "by feel" and
 never answered, because nothing went wrong. Listed once so they are not lost;
 **none needs an answer unless something bothers you on the phone.** The
-original argument for each is in `NEXT-HISTORY.md` §1.
+original argument for each is in `NEXT-HISTORY.md` §1. **Seven of them are the
+sheet's taste round (2026-09-25)**, `t-corner`, `t-marks`, `t-accent` (the
+harvest row's question, asked of the cluster POP moved into), `t-details`,
+`t-walked`, `t-camera` and `t-keys`; the stat row's is Session C's to answer.
+A _change_ there that touches the first minute waits for Session C.
 
 - The two corners: MENU top-right is out of a thumb's reach one-handed on a big
   phone, deliberately.

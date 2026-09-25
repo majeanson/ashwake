@@ -314,13 +314,22 @@ function Row({
         marked.length === 0 ? (
           summary
         ) : (
-          <>
-            {summary}
-            {' · '}
-            <span className="fame-marked" aria-label={s.ui.fame.marks(marked.length)}>
-              <Icon name={CONCEPT_ICON.fame} /> {marked.length}
+          /*
+            ONE INLINE RUN, and the separator bound to the mark (2026-09-25,
+            `pnpm audit:screens`). `summary` is a flex row, so the text and
+            the `·` made one anonymous item and the mark another: a French
+            row too long for one line wrapped INSIDE the text's item and left
+            the `·` alone on a second line under the date.
+          */
+          <span>
+            {summary}{' '}
+            <span className="fame-tail">
+              {'· '}
+              <span className="fame-marked" aria-label={s.ui.fame.marks(marked.length)}>
+                <Icon name={CONCEPT_ICON.fame} /> {marked.length}
+              </span>
             </span>
-          </>
+          </span>
         )
       }
     >

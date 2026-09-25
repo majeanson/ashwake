@@ -9460,3 +9460,25 @@ hold at _"250 ms"_: `HOLD_MS` is 250. That was the last look the first
 minute was waiting for, so the build that carries it is Session C's, written
 into `PLAYTEST.md`, and **nothing that changes the first minute ships again
 before the stranger has played.**
+
+**Session 116, after the freeze — the later rooms, the cutover, the taste
+round.** Marc chose three things that do not touch the first minute.
+
+- **`pnpm audit:screens`, all 126 visits.** 168 findings: 164 are the stat
+  row's allowed 33 px, and four were one real bug — the third-party notices
+  link under SETTINGS and DEVICE drew in the browser's own blue, 2.01:1 on
+  settlement's dark panel. It wears the accent now, the only `a` in the app.
+  The measurements cannot see a separator, so the pictures were read too: the
+  hall of fame's marked rows left a lone `·` on a second line in French,
+  because `summary` is a flex row and the text and its `·` were one
+  anonymous item that wrapped by itself. The separator is bound to the mark
+  now. Two pictures that shrank by half were read rather than trusted: WORLDS
+  was whole, and daylight's thirty-run board was caught in the opening beat's
+  wide hold, which is harness timing and not a defect.
+- **`CUTOVER.md`**, researched read-only by an agent and spot-checked: the
+  main finding is that v2 on tiles.marcportal.com is safe for v1's saves and
+  cannot reach them, which is decision 1 in `NEXT.md` §5c.
+- **The taste round** on the sheet: seven of §6's never-ruled questions, each
+  checked against today's code before it was asked — the harvest row no longer
+  exists, so its question is asked of the cluster; the keyboard's arrows walk a
+  marker rather than pan; LE SOL QUE TU AS PARCOURU is the French label.
