@@ -1829,6 +1829,17 @@ a:visited {
   border-color: var(--panel-edge-active);
 }
 
+/* The ✕ beside a pop's result (2026-09-25): the same panel face as the line
+   it closes, a full tap target, and a gap so a thumb meant for DÉTAILS does
+   not land on it. */
+.toast-close {
+  margin-inline-start: 0.5rem;
+  background: var(--panel);
+  border-color: var(--panel-edge-active);
+  color: var(--ink-dim);
+  vertical-align: middle;
+}
+
 /* What the second half of the tap is for. Faint on purpose: the points are
    the message and this is the footnote saying there is more of it. */
 .toast-more {

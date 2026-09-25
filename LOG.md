@@ -9519,3 +9519,11 @@ the stat ROW, so MENU, moved into that row and a 44 px control that acts, was
 declared compact along with the stats. The marker is on each stat now. The
 hint's row and ✕ are argued in that test's pinned list, with their reason,
 rather than slipped under the marker unannounced.
+
+**Session 116, round eight — clean, and the last thing before the stranger.**
+All four of the taste round's changes _ok_ on the phone, and one more: _"i
+also want the X on the pop result"_. A pop's result line has a ✕ now, beside
+DÉTAILS: a full-size control that closes the line and does not open the
+details (`e2e/board.spec.ts` pins both halves). Only the pop's line, the one
+with something behind it, as asked. The build that carries it is Session C's,
+and the first minute is frozen from here.

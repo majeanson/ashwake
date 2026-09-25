@@ -815,6 +815,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     lensClear: 'LENS OFF',
     lensClearLabel: (ground) => `Turn the ${ground} lens off`,
     hintClose: 'Close this explanation',
+    popClose: 'Close this result',
     lensPanel: {
       buttonLabel: 'What the board is worth, per ground',
       standing: 'STANDING',

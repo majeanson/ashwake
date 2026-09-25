@@ -155,6 +155,8 @@ import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import { nextLesson, toastLine, told } from './shell/teaching';
 import { walk, walkToEnd } from './shell/walk';
+import { CHROME_ICON } from '@theme/icons';
+import { Icon } from './ui/Icon';
 import { Boundary } from './ui/Boundary';
 import { DialogStack, useAnyDialogOpen, useDialogStack, useDoor } from './ui/dialog';
 import { useDocumentLocale, useThemeVars } from './ui/theme';
@@ -3504,6 +3506,26 @@ function Game() {
               >
                 {note.text}
                 <span className="toast-more">{s.ui.details}</span>
+              </button>
+            )}
+            {/*
+              AND A ✕ ON A POP'S RESULT (Marc, 2026-09-25: "i also want the X on
+              the pop result", after the hints got one). A tap anywhere on the
+              line has always put it away; the ✕ is the control that says so.
+              Only on a pop's line, the one with DÉTAILS behind it.
+            */}
+            {note !== null && note.more !== null && (
+              <button
+                type="button"
+                className="toast-close"
+                data-action="pop-close"
+                aria-label={s.ui.popClose}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  say(null);
+                }}
+              >
+                <Icon name={CHROME_ICON.close} />
               </button>
             )}
           </p>

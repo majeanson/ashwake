@@ -1408,6 +1408,9 @@ export type Strings = {
     /** The ✕ on a row's open hint (Marc, 2026-09-25: "add a small X to
      *  remove hint too"): its accessible name. */
     readonly hintClose: string;
+    /** The ✕ on a pop's result line (Marc, 2026-09-25: "i also want the X on
+     *  the pop result"): its accessible name. */
+    readonly popClose: string;
     readonly lensPanel: {
       readonly buttonLabel: string;
       readonly standing: string;

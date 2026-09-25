@@ -689,6 +689,35 @@ test('a pop after the first is a line at the bottom, and it taps out', async ({ 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('a pop result has a ✕ that closes it and opens nothing', async ({ page }) => {
+  /*
+   * Marc, 2026-09-25: "i also want the X on the pop result", after the hints
+   * got one. A tap anywhere on the line put it away already; the ✕ is the
+   * control that says so, and it must not also open DÉTAILS beside it.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&runs=1&place=24');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  await page
+    .getByRole('button', { name: /POP|RÉCOLT/ })
+    .first()
+    .click();
+  const line = page.locator('[data-action="pop-details"]');
+  await expect(line, 'a pop said nothing').toBeVisible({ timeout: 4000 });
+  const close = page.locator('[data-action="pop-close"]');
+  await expect(close, 'the pop result has no ✕').toBeVisible();
+
+  await close.click();
+  await expect(line, 'the ✕ did not close the pop result').toHaveCount(0);
+  await expect(close).toHaveCount(0);
+  await expect(page.locator('.card-scrim'), 'the ✕ opened the details too').toHaveCount(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('a card in the hand is the tile it will become, and only the chosen one has a box', async ({
   page,
 }) => {

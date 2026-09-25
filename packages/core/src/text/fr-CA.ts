@@ -828,6 +828,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     lensClear: 'ÉTEINDRE',
     lensClearLabel: (ground) => `Éteindre la lentille ${ground}`,
     hintClose: 'Fermer cette explication',
+    popClose: 'Fermer ce résultat',
     lensPanel: {
       buttonLabel: 'Ce que vaut le plateau, sol par sol',
       standing: 'EN PLACE',

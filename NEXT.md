@@ -46,7 +46,8 @@ Both change the first minute after the clean pass, on purpose and by the
 owner. Round six saw them on the phone and asked for more (the cluster's marks,
 a hold on a tile), so round seven was Session A's pass, and came back clean at `8e77420` —
 until the taste round asked for four more changes the stranger would see, built
-and re-frozen the same evening. **Round eight is the pass now** (§1).
+and re-frozen the same evening. **Round eight came back clean**, with one small
+addition of Marc's (a ✕ on a pop's result), and that build is Session C's (§1).
 
 So the road to v2.0 is now:
 
@@ -61,25 +62,20 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — round eight, four looks
+## 1. Marc, on the phone — nothing waiting
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
 them with `ArtifactData` `list` before touching anything here.
 
-**Seven rounds and the taste round, all answered.** Round seven froze the
-first minute at `8e77420`; the taste round (2026-09-25) then asked for four
-changes that touch what a stranger sees, and Marc chose to **build them and
-re-freeze** rather than hold them: MENU in the header and LUCK out of the stat
-row (`t-corner`), the cluster's actions as marks and values without words
-(`t-accent`), a ✕ on an open hint (`t-details`), and the ending's picture as
-the door onto the finished board with REPLAY inside it (`t-walked`). Kept as
-they were: the camera numbers; not cared about: the marks at 16 px and the
-keyboard.
-
-**Round eight** is those four, and **it is now what names Session C's build**
-(§0, `PLAYTEST.md`).
+**Eight rounds and the taste round, all answered, all built.** Round eight
+(2026-09-25) kept all four of the taste round's changes — MENU in the header,
+the actions as marks, the hint's ✕, the ending's picture as the door — and
+added one of Marc's own: _"i also want the X on the pop result"_, built the
+same evening. **That was the clean pass: the build carrying the pop's ✕ is
+Session C's** (`PLAYTEST.md`), and the first minute is frozen again. The next
+thing that needs a phone is a stranger's.
 
 ---
 
