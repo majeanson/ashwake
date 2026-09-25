@@ -823,11 +823,13 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     handEmpty: 'Ta main est vide. Touche une carte en bas pour en prendre une.',
     lensOn: (ground) =>
       `Sol ${ground} dont on se souvient${D}: chaque parcelle connue est éclairée. Touche encore le brouillard pour lâcher.`,
+    lensTile: (ground) =>
+      `Chaque tuile ${ground} est éclairée. Garde le doigt sur l’une d’elles pour lâcher.`,
+    holdHint: (ground) => `Garde le doigt sur une tuile pour éclairer chaque tuile ${ground}.`,
     lensOff: 'La lentille est éteinte.',
     lensClear: 'ÉTEINDRE',
     lensClearLabel: (ground) => `Éteindre la lentille ${ground}`,
     lensPanel: {
-      button: 'LENTILLE',
       buttonLabel: 'Ce que vaut le plateau, sol par sol',
       standing: 'EN PLACE',
       worth: (n) => `valeur ${d1(n)}`,
@@ -847,6 +849,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       share: (pct) => pc(pct),
       best: (count, points) =>
         `${count} tuile${pl(count, '', 's')}${points === null ? '' : ` · ${nb(points)} pts`}`,
+      tabs: { label: 'Ce sol', ground: 'LE SOL', price: 'LE PRIX' },
       hints: {
         share: 'Ce que ce sol pèse dans tout ce qui tient sur le plateau.',
         perTile: `Sa valeur, répartie sur ses tuiles${D}: ce qu’une d’elles ajoute à une poche.`,

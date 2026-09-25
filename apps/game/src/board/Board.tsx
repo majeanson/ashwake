@@ -330,6 +330,8 @@ type BoardProps = {
    */
   readonly wakeMs?: number;
   readonly onTap: (key: HexKey, cell: CellView) => void;
+  /** A finger held on a hex — see `HexField`. True when it was answered. */
+  readonly onHold?: (key: HexKey, cell: CellView) => boolean;
   readonly handle?: Ref<BoardHandle>;
   /** The board's accessible name, and the sentence that tells a screen reader
    *  it can be walked. Both the catalogue's — see `s.ui.board`. */
@@ -960,6 +962,7 @@ export function Board(props: BoardProps) {
               resting={resting}
               cursor={cursor?.key ?? null}
               onTap={props.onTap}
+              onHold={props.onHold}
             />
           )}
           {pop !== null && (

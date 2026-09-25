@@ -43,9 +43,10 @@ minute ships before Session C.** A stranger is a one-shot resource.
   the cluster's real height.
 
 Both change the first minute after the clean pass, on purpose and by the
-owner. Neither had been seen on a phone when it landed, so they are round six
-on the sheet (§1). **Round six is Session A's pass for the board the stranger
-meets**: once it comes back clean, that build is the one Session C runs on.
+owner. Round six saw them on the phone and asked for more (the cluster's marks,
+a hold on a tile), so **round seven is now Session A's pass for the board the
+stranger meets** (§1): once it comes back clean, that build is the one Session
+C runs on.
 
 So the road to v2.0 is now:
 
@@ -60,27 +61,25 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — round six, four looks
+## 1. Marc, on the phone — round seven, five looks
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
 them with `ArtifactData` `list` before touching anything here.
 
-**Five rounds, all answered, all built, and the fifth kept everything**
-(2026-09-25: the sharp diary picture and the pop receipt's table, both
-_ok_).
+**Six rounds, all answered, all built.** Round six (2026-09-25) kept POP over
+the board and the tile tap that only lights the map, and asked for five
+changes, all built the same evening (`LOG.md` Session 116, third part): the
+view and lens buttons as an eye and a magnifier, the lens's held ground in two
+tabs, a replay that is the board alone, a HOLD on a tile to light its ground
+(with a quick tap saying so), and the Québec decimal comma.
 
-**Round six, published 2026-09-25**, is the two first-minute changes (§0):
-`r6-pop` (does POP over the board read as the button to press?), `r6-cover`
-(does the floating cluster, two lines tall in French, ever hide a tile you
-want?), `r6-tiletap2` (a tile tap lights its ground and opens nothing —
-replacing `r6-tiletap`, which Marc answered in words before marking it),
-`r6-sheets` (do the purse and the lens clear the two-line cluster?),
-`r6-explain` (the lens's power sentence, its always-up price table, and a
-hint on every row, the pop receipt's included) and `r6-replay` (a replay from
-the hall of fame, from the front door). After it, the next thing that needs Marc's phone is a
-stranger's — Session C (§0).
+**Round seven** is those five: `r7-icons`, `r7-tabs`, `r7-replay`, `r7-hold`
+(is ~350 ms the right length, and did the hint make it findable?) and
+`r7-comma`. Two of them change the first minute (the cluster's marks and the
+hold), so **round seven coming back clean is now what names Session C's
+build** (§0, `PLAYTEST.md`).
 
 ---
 
@@ -166,18 +165,6 @@ stranger's — Session C (§0).
   are reachable only by a `?seed=` run saved before 2026-09-09 and resumed
   after, and a month is generous. Left past that, the next dead-text sweep
   re-adjudicates them from scratch.
-
----
-
-## 5b. Found, not fixed — Marc's call
-
-- **French decimals print with a point.** `fmt1` (`text/format.ts`) writes
-  `2.8` and `× 1.5` in both languages, while `fmtPct` beside it already
-  turns the point into a comma for fr-CA. Québec writes `2,8`. The lens's old
-  docblock said "a French comma is a French comma", and it was not true.
-  Fixing it is one line and moves every French decimal in the game —
-  receipts, the lens, the snapshots that are Marc's review surface — so it
-  waits for a yes (found 2026-09-25, `LOG.md` Session 116).
 
 ---
 

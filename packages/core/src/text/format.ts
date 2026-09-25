@@ -34,13 +34,18 @@ export function fmtInt(n: number, locale: Locale): string {
  * bonus. Rounded to the nearest tenth so float drift (`9.100000000000001`,
  * the sum of many tiles' worth) never reaches the screen, and trimmed to a
  * bare integer wherever the tenth is exactly zero — which is most of the
- * time, since most worths land on a whole number.
+ * time, since most worths land on a whole number. The mark is the
+ * language's: `2.8` in English, `2,8` in Québec French.
  */
 export function fmt1(n: number, locale: Locale): string {
   const rounded = Math.round(n * 10) / 10;
   const whole = Math.trunc(rounded);
   const tenths = Math.round(Math.abs(rounded - whole) * 10);
-  return tenths === 0 ? fmtInt(whole, locale) : `${fmtInt(whole, locale)}.${tenths}`;
+  if (tenths === 0) return fmtInt(whole, locale);
+  // Québec writes the decimal with a COMMA (Marc, 2026-09-25: yes). It printed
+  // a point in both languages until then, while `fmtPct` below already made
+  // the comma, so a French receipt read `2.8` beside `35 %`.
+  return `${fmtInt(whole, locale)}${locale === 'en' ? '.' : ','}${tenths}`;
 }
 
 /**

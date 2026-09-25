@@ -1267,6 +1267,53 @@ test('a row in the hall of fame plays its run back, and the diary comes back aft
   expect(errors).toEqual([]);
 });
 
+test('a film opened in the middle of a run is the board alone', async ({ page }) => {
+  /*
+   * Marc, 2026-09-25: "make sure we go into a replay view where we see tiles,
+   * map, but no message or anythgng can pop". MENU is on the board during a
+   * run, so the hall — and its REPLAY — is reachable mid-run, and a film
+   * played there under the run's whole chrome: the stats, the hand, the
+   * cluster, the toast. Only the film's own bar may be on screen, and the run
+   * is all back when it closes.
+   */
+  const errors = watchErrors(page);
+  // One banked run to watch, then a new run being played.
+  await page.goto('/?taught=1&end=1');
+  await begin(page);
+  const bar = page.locator('[data-hud="watching"]');
+  if (await bar.isVisible()) await page.locator('[data-action="watch-skip"]').click();
+  await page.locator('[data-action="new-run"]').first().click();
+  const stats = page.locator('[data-hud="stats"]');
+  await expect(stats, 'NEW RUN did not start a run').toBeVisible();
+
+  await openMore(page);
+  await page.locator('[data-go="fame"]').click();
+  await panel(page, 'fame').waitFor({ state: 'visible' });
+  const row = panel(page, 'fame').locator('details').first();
+  await row.locator('summary').click();
+  await row.locator('[data-action="watch-row"]').click();
+
+  await expect(bar, 'the row opened onto nothing').toBeVisible();
+  for (const [what, sel] of [
+    ['the stats', '[data-hud="stats"]'],
+    ['the hand', '[data-hud="hand"]'],
+    ['the camera cluster', '.camera'],
+    ['the toast', '.toast'],
+    ['a card', '.card'],
+  ] as const) {
+    await expect(page.locator(sel), `${what} showed over the film`).toHaveCount(0);
+  }
+  await expect(page.locator('.notices')).toBeHidden();
+
+  await page.locator('[data-action="watch-skip"]').click();
+  await expect(bar).toBeHidden();
+  // Back in the diary, and under it, the run as it was.
+  await expect(panel(page, 'fame')).toBeVisible();
+  await expect(stats, 'the run did not come back after the film').toHaveCount(1);
+
+  expect(errors).toEqual([]);
+});
+
 test('a hall-of-fame film opened from the front door plays on the board', async ({ page }) => {
   /*
    * Marc, 2026-09-25: *"replays from hall of fame dont work, they get me to

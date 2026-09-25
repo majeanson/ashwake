@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CellView } from '@render/Renderer';
-import { tapMeans, type Reach } from './tap';
+import { holdMeans, tapMeans, type Reach } from './tap';
 
 /**
  * `INTERACTIONS.md`'S FIRST TABLE, ROW BY ROW (`PASS.md` P2.3).
@@ -34,6 +34,7 @@ const reach = (over: Partial<Reach> = {}): Reach => ({
   inHand: 3,
   lens: null,
   known: null,
+  held: false,
   ...over,
 });
 
@@ -145,31 +146,48 @@ describe('the order, where a hex is two things at once', () => {
 });
 
 /*
- * A PLACED TILE LIGHTS ITS GROUND ON THE BOARD (Marc, 2026-09-25: "make it pop
- * the lens for that color", then "dont open lens when we click on the board,
- * just the map is updated"). Never the panel. A ripe one still prices its
- * pocket, and the ground already held puts the lens down.
+ * A PLACED TILE: A TAP SAYS HOW, A HOLD LIGHTS ITS GROUND (Marc, 2026-09-25:
+ * "make it pop the lens for that color", then "dont open lens when we click
+ * on the board, just the map is updated", then "longer tap … but not so long.
+ * make it easily discoverable too"). Never the panel. A ripe one still prices
+ * its pocket on a tap, and the ground already held puts the lens down.
  */
 describe('a tap on a placed tile', () => {
   const tile = (over: Partial<CellView> = {}): CellView =>
     plain({ kind: 'tile', colour: 'red', ...over });
 
-  it('lights its ground, and opens no panel', () => {
-    expect(tapMeans(tile(), reach())).toEqual({ does: 'lens-on', colour: 'red' });
+  it('says to hold it, and lights nothing', () => {
+    expect(tapMeans(tile(), reach())).toEqual({ does: 'hold-hint', colour: 'red' });
   });
 
-  it('switches the lens to its ground when another is held', () => {
-    expect(tapMeans(tile(), reach({ lens: 'blue' }))).toEqual({
-      does: 'lens-on',
-      colour: 'red',
-    });
+  it('lights its ground from the keyboard, which cannot hold', () => {
+    expect(tapMeans(tile(), reach({ held: true }))).toEqual({ does: 'lens-on', colour: 'red' });
+    expect(tapMeans(tile(), reach({ held: true, lens: 'red' })).does).toBe('lens-off');
   });
 
-  it('puts the lens down when its ground is the one held', () => {
-    expect(tapMeans(tile(), reach({ lens: 'red' })).does).toBe('lens-off');
-  });
-
-  it('still prices its pocket when it is ripe', () => {
+  it('still prices its pocket when it is ripe, held or not', () => {
     expect(tapMeans(tile({ ripe: true }), reach()).does).toBe('price');
+    expect(tapMeans(tile({ ripe: true }), reach({ held: true })).does).toBe('price');
+  });
+});
+
+describe('a finger held on the board', () => {
+  const tile = (over: Partial<CellView> = {}): CellView =>
+    plain({ kind: 'tile', colour: 'red', ...over });
+
+  it('lights a placed tile’s ground, ripe or not', () => {
+    expect(holdMeans(tile(), reach())).toEqual({ does: 'lens-on', colour: 'red' });
+    expect(holdMeans(tile({ ripe: true }), reach())).toEqual({ does: 'lens-on', colour: 'red' });
+  });
+
+  it('switches to its ground, or lets go of the one already held', () => {
+    expect(holdMeans(tile(), reach({ lens: 'blue' }))).toEqual({ does: 'lens-on', colour: 'red' });
+    expect(holdMeans(tile(), reach({ lens: 'red' }))?.does).toBe('lens-off');
+  });
+
+  it('means nothing anywhere else, so the release is an ordinary tap', () => {
+    expect(holdMeans(plain({ legal: true }), reach())).toBeNull();
+    expect(holdMeans(plain({ remembered: true }), reach({ known: 'blue' }))).toBeNull();
+    expect(holdMeans(tile(), reach({ touring: true }))).toBeNull();
   });
 });

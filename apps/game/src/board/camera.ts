@@ -671,3 +671,12 @@ export const ZOOM_DEADZONE = 0.06;
  * It is a FEEL number and has not been felt on a phone.
  */
 export const TAP_SLOP = 5;
+
+/**
+ * How long a finger stays on a hex, without travelling past `TAP_SLOP`,
+ * before it is a HOLD (Marc, 2026-09-25: "longer tap … but not so long. make
+ * it easily discoverable too"). Under the half second at which iOS starts its
+ * own long-press behaviour, and long enough that a tap never gets there by
+ * accident. `shell/tap#holdMeans` says what a hold means.
+ */
+export const HOLD_MS = 350;

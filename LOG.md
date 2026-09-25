@@ -9413,3 +9413,43 @@ table always; and a row's hint revealed by tapping the row.
 
 **Found, not fixed:** French decimals print with a point (`fmt1`); one line,
 but it moves every French decimal, so `NEXT.md` §5b asks.
+
+**Session 116, third part — round six, answered and built.** On the phone
+sheet: POP over the board _ok_; the tile tap that only lights the map _ok_;
+then _"change LENTILLE / FLAT / etc. button to an Eye icon. for lens, a
+magnifier"_, _"put it in 2 tabs otherwise its too much height"_, _"make sure we
+go into a replay view where we see tiles, map, but no message or anythgng can
+pop"_ and, of the tile tap, _"longer tap"_ — asked, _"but not so long. make it
+easily discoverable too"_. And yes to the decimal comma.
+
+- **Marks, not words, in the cluster.** `view` (Phosphor's bold eye) and
+  `lens` (the magnifier), in the chrome's BOLD set. The view button's next
+  stop is its accessible name and title now, and `data-view` is what the
+  view-cycle tests read instead of the word. `lensPanel.button` is gone from
+  both catalogues. A 360 px French cluster is one line again.
+- **The held ground in two tabs**, LE SOL and LE PRIX, on the shared `Tabs`
+  (a real tablist, arrow keys and all). The tab stays put across grounds. A
+  board that hides its points has no price and so no tabs.
+- **A film is the board alone.** `playing` excludes a film, which takes the
+  whole run's chrome — stats, hand, cluster, toast, the run's keys — off it
+  in one place; the walked ending's cluster, the notices and the three cards
+  that are not gated on `playing` are gated on the film too. The run is all
+  there when the film closes. A new test opens the hall mid-run and fails on
+  the old `playing` with _"the stats showed over the film"_.
+- **A hold, timed from the press.** `HexField` starts a `HOLD_MS` (350) timer
+  on pointerdown, called off by a move past `TAP_SLOP`, a second finger or
+  the release; when it fires, `App`'s `onHoldHex` asks `shell/tap#holdMeans`,
+  and a hold that was answered swallows the click its release makes. Timed
+  rather than measured at the release so the ground lights under the finger,
+  and because iOS does not always follow a long touch with a click. A quick
+  tap on a placed tile is `hold-hint`: _"Hold a tile to light every FARM
+  tile."_ The keyboard's Enter counts as a hold, since a key cannot be held
+  down for this. The e2e finds a tile by tapping until the hint appears, then
+  holds it; unwired, it fails with _"holding the tile did not light its
+  ground"_.
+- **And a wrong sentence, mine, from the second part:** a tile lit through
+  `lens-on` said the REMEMBERED FOG's line — _"Remembered FARM ground … Tap
+  the fog again to let go"_ — over a placed tile. Tiles have their own now
+  (`lensTile`).
+- **`fmt1` writes `2,8` in Québec French.** No test had held a French decimal;
+  `text.test.ts` does now. `NEXT.md` §5b is closed by it.

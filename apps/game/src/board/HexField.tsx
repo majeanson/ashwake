@@ -8,7 +8,7 @@ import { cellTint, previewTint } from '@theme/torch';
 import { depthOf, type AssetId, type Theme } from '@theme/tokens';
 import type { AssetBook } from './assets';
 import { breath, BREATH_STEP_MS, PULSE_STEP_MS, STILL_BREATH, targetPulse } from './ambient';
-import { TAP_SLOP } from './camera';
+import { HOLD_MS, TAP_SLOP } from './camera';
 import { markerAt } from './cursor';
 import { setMarkAnisotropy } from './marks';
 import {
@@ -87,6 +87,9 @@ type HexFieldProps = {
    *  direction's own `ghost.alpha`, or `?ghost=`. Zero draws none. */
   readonly ghostStrength: number;
   readonly onTap: (key: HexKey, cell: CellView) => void;
+  /** A finger held on a hex for `HOLD_MS` without travelling. True when it
+   *  was answered, so the release is not also a tap. */
+  readonly onHold?: ((key: HexKey, cell: CellView) => boolean) | undefined;
 };
 
 export function HexField({
@@ -103,6 +106,7 @@ export function HexField({
   cursor,
   ghostStrength,
   onTap,
+  onHold,
 }: HexFieldProps) {
   const layout = useMemo<Layout>(() => ({ ...UNIT, orientation }), [orientation]);
   const hexRadius = hexRadiusOf(theme);
@@ -385,17 +389,13 @@ export function HexField({
    * handlers. The handler does not depend on which mesh it is attached to: it
    * resolves GLOBALLY over the whole ray.
    */
-  const tap = useCallback(
-    (event: ThreeEvent<MouseEvent>) => {
-      // A tap is a lift that never travelled: R3F reports how far the pointer
-      // moved between down and up, and past the slop this was a drag.
-      if (event.delta > TAP_SLOP) return;
-      // The secondary button and Shift are the desktop's turn-and-lean gesture
-      // (`Board`), and a gesture that ends without travelling far enough to
-      // register must not fall through into a PLACEMENT — the one action on
-      // this board that cannot be undone.
-      if (event.button !== 0 || event.shiftKey) return;
-
+  /**
+   * The hex a ray is pointing at, by the rank rule above — the ONE resolution
+   * a tap and a hold both use, so a press and its release cannot disagree
+   * about which hex was meant.
+   */
+  const pick = useCallback(
+    (event: ThreeEvent<MouseEvent> | ThreeEvent<PointerEvent>): CellView | null => {
       const byMesh = new Map<InstancedMesh, GroundBatch>();
       for (const b of batches) {
         const mesh = meshes.current.get(b.key);
@@ -410,27 +410,95 @@ export function HexField({
         const item = hit.instanceId === undefined ? undefined : batch.items[hit.instanceId];
         if (item === undefined) continue;
         const rank = RAY_RANK[batch.kind];
-        if (rank === 0) {
-          // Nothing behind it can outrank live ground, so the ray stops here.
-          event.stopPropagation();
-          onTap(item.cell.key, item.cell);
-          return;
-        }
+        // Nothing behind it can outrank live ground, so the ray stops here.
+        if (rank === 0) return item.cell;
         // Nearest first, so the first hit at a rank is the nearest at that rank.
         if (rank < bestRank) {
           bestRank = rank;
           best = item.cell;
         }
       }
-
       // No live ground anywhere along the ray, so the best of what is left is
       // genuinely what was pointed at and gets to say its line.
-      if (best !== null) {
+      return best;
+    },
+    [batches],
+  );
+
+  /*
+   * A HOLD (2026-09-25, Marc: "longer tap … but not so long. make it easily
+   * discoverable too"). Timed from the press rather than measured at the
+   * release, so the ground lights UNDER the finger — and because a touch held
+   * long enough on iOS is not always followed by a click at all. A move past
+   * the slop, a second finger (a pinch) or the release before `HOLD_MS` all
+   * call it off; a hold that was answered swallows the click its release
+   * makes, so one press never does two things.
+   */
+  const press = useRef<{ fired: boolean; stop: () => void } | null>(null);
+  useEffect(() => () => press.current?.stop(), []);
+  const down = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      press.current?.stop();
+      press.current = null;
+      if (onHold === undefined) return;
+      const native = event.nativeEvent;
+      if (native.button !== 0 || native.shiftKey) return;
+      const cell = pick(event);
+      if (cell === null) return;
+      const id = native.pointerId;
+      const x0 = native.clientX;
+      const y0 = native.clientY;
+      const move = (e: PointerEvent): void => {
+        if (e.pointerId === id && Math.hypot(e.clientX - x0, e.clientY - y0) > TAP_SLOP) stop();
+      };
+      const other = (e: PointerEvent): void => {
+        if (e.pointerId !== id) stop();
+      };
+      const stop = (): void => {
+        clearTimeout(timer);
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerdown', other);
+        window.removeEventListener('pointerup', stop);
+        window.removeEventListener('pointercancel', stop);
+      };
+      const held = { fired: false, stop };
+      const timer = setTimeout(() => {
+        stop();
+        held.fired = onHold(cell.key, cell);
+      }, HOLD_MS);
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerdown', other);
+      window.addEventListener('pointerup', stop);
+      window.addEventListener('pointercancel', stop);
+      press.current = held;
+    },
+    [onHold, pick],
+  );
+
+  const tap = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      // The release of a hold that was answered: the hold was the whole of it.
+      if (press.current?.fired === true) {
+        press.current = null;
         event.stopPropagation();
-        onTap(best.key, best);
+        return;
+      }
+      // A tap is a lift that never travelled: R3F reports how far the pointer
+      // moved between down and up, and past the slop this was a drag.
+      if (event.delta > TAP_SLOP) return;
+      // The secondary button and Shift are the desktop's turn-and-lean gesture
+      // (`Board`), and a gesture that ends without travelling far enough to
+      // register must not fall through into a PLACEMENT — the one action on
+      // this board that cannot be undone.
+      if (event.button !== 0 || event.shiftKey) return;
+
+      const cell = pick(event);
+      if (cell !== null) {
+        event.stopPropagation();
+        onTap(cell.key, cell);
       }
     },
-    [batches, onTap],
+    [pick, onTap],
   );
 
   const capacity = capacityFor(view.cells.length);
@@ -476,6 +544,7 @@ export function HexField({
             material={material}
             frustumCulled={false}
             onClick={tap}
+            onPointerDown={down}
           />
         );
       })}

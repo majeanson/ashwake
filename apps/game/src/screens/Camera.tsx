@@ -2,6 +2,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode
 import type { Strings } from '@text/Strings';
 import type { BoardHandle } from '../board/Board';
 import { Icon } from '../ui/Icon';
+import { CHROME_ICON } from '@theme/icons';
 
 /**
  * The board's own corner (Stage 3, 2026-08-29).
@@ -209,13 +210,28 @@ export function Camera({
             aria-expanded={lensOpen}
             aria-controls="lens"
             aria-label={s.ui.lensPanel.buttonLabel}
+            title={s.ui.lensPanel.buttonLabel}
             onClick={onLensPanel}
           >
-            {s.ui.lensPanel.button}
+            <Icon name={CHROME_ICON.lens} />
           </button>
         )}
-        <button type="button" data-action="camera" data-view={next} onClick={onCycle}>
-          {s.ui.camera[next]}
+        {/*
+          MARKS, NOT WORDS (Marc, 2026-09-25: "change LENTILLE / FLAT / etc.
+          button to an Eye icon. for lens, a magnifier"). The words were most
+          of the cluster's width, and a French row of four wrapped to two
+          lines over the board. The stop a press goes to is still the button's
+          name for a screen reader and a long-press, and `data-view` for tests.
+        */}
+        <button
+          type="button"
+          data-action="camera"
+          data-view={next}
+          aria-label={s.ui.camera[next]}
+          title={s.ui.camera[next]}
+          onClick={onCycle}
+        >
+          <Icon name={CHROME_ICON.view} />
         </button>
       </div>
     </div>

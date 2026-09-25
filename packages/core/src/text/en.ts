@@ -811,11 +811,12 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     handEmpty: 'Your hand is empty. Tap a card below to pick one up.',
     lensOn: (ground) =>
       `Remembered ${ground} ground: every known patch of it is lit. Tap the fog again to let go.`,
+    lensTile: (ground) => `Every ${ground} tile is lit. Hold one again to let go.`,
+    holdHint: (ground) => `Hold a tile to light every ${ground} tile.`,
     lensOff: 'The lens is off.',
     lensClear: 'LENS OFF',
     lensClearLabel: (ground) => `Turn the ${ground} lens off`,
     lensPanel: {
-      button: 'LENS',
       buttonLabel: 'What the board is worth, per ground',
       standing: 'STANDING',
       worth: (n) => `worth ${d1(n)}`,
@@ -834,6 +835,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       share: (pct) => pc(pct),
       best: (count, points) =>
         `${count} tile${plural(count, '', 's')}${points === null ? '' : ` · ${points} pts`}`,
+      tabs: { label: 'This ground', ground: 'THE GROUND', price: 'THE PRICE' },
       hints: {
         share: 'How much of everything standing on the board this ground is.',
         perTile: 'Its worth, spread over its tiles: what one of them adds to a pocket.',

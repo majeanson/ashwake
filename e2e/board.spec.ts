@@ -356,6 +356,65 @@ test('every tap on the board answers, even the ones that cannot build', async ({
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('a tap on a placed tile says to hold it, and a hold lights its ground', async ({ page }) => {
+  /*
+   * Marc, 2026-09-25, on the phone: "longer tap … but not so long. make it
+   * easily discoverable too". A quick tap on a placed tile changes nothing
+   * and says how; a finger held there lights the ground WHILE it is still
+   * down (`HexField`'s timer), and its release is not a second tap.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7&taught=1&place=20');
+  await begin(page);
+  await page.waitForTimeout(600);
+  await clearCards(page);
+
+  const toast = page.locator('.toast');
+  const off = page.locator('[data-action="lens-off"]');
+  const box = await page.locator('canvas').boundingBox();
+  if (box === null) throw new Error('no canvas');
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+
+  // Find a placed tile the way a player would: tap until one says to hold it.
+  const hint = /^Hold a tile to light every /;
+  let at: { x: number; y: number } | null = null;
+  search: for (const r of [0, 30, 55, 80, 110]) {
+    for (let i = 0; i < 8; i++) {
+      const p = {
+        x: cx + r * Math.cos((Math.PI / 4) * i),
+        y: cy + r * Math.sin((Math.PI / 4) * i),
+      };
+      await page.mouse.click(p.x, p.y);
+      if (hint.test((await toast.textContent())?.trim() ?? '')) {
+        at = p;
+        break search;
+      }
+    }
+  }
+  expect(at, 'no tap on the board ever landed on a placed tile').not.toBeNull();
+  await expect(off, 'a quick tap lit the lens').toHaveCount(0);
+
+  // Now hold the same tile: the ground lights before the finger lifts.
+  await page.mouse.move(at!.x, at!.y);
+  await page.mouse.down();
+  await expect(off, 'holding the tile did not light its ground').toBeVisible();
+  await page.mouse.up();
+  await expect(toast).toContainText('Hold one again to let go');
+  // The release was not also a tap: the lens stays lit, and no hint replaced
+  // the sentence the hold said.
+  await page.waitForTimeout(300);
+  await expect(off).toBeVisible();
+  await expect(toast).not.toHaveText(hint);
+
+  // Holding it again lets go.
+  await page.mouse.down();
+  await expect(off, 'a second hold did not put the lens down').toHaveCount(0);
+  await page.mouse.up();
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('an empty hand says so rather than doing nothing', async ({ page }) => {
   const errors = watchErrors(page);
   // `?end=1` runs a whole run out; a finished run has no cards left to place,
@@ -1096,14 +1155,14 @@ test('two fingers lean and turn the board, and the cycle puts it back', async ({
    * board photographed from above and not a map.
    */
   for (let i = 0; i < 6; i++) {
-    if ((await view.textContent())?.trim() === 'FLAT') break;
+    if ((await view.getAttribute('data-view')) === 'flat') break;
     await view.click();
   }
   await view.click();
   await expect(host, 'FLAT is not 2D').toHaveAttribute('data-lean', '0,0,0');
 
   for (let i = 0; i < 6; i++) {
-    if ((await view.textContent())?.trim() === 'DEFAULT') break;
+    if ((await view.getAttribute('data-view')) === 'home') break;
     await view.click();
   }
   await view.click();
@@ -1135,7 +1194,7 @@ test('two fingers lean and turn the board, and the cycle puts it back', async ({
   const mineWanted = orbited;
   expect(mineWanted, 'the gestures above left the board at its opening angle').not.toBe(opened);
   for (let i = 0; i < 6; i++) {
-    if ((await view.textContent())?.trim() === 'MY VIEW') break;
+    if ((await view.getAttribute('data-view')) === 'mine') break;
     await view.click();
   }
   await view.click();

@@ -1375,6 +1375,11 @@ export type Strings = {
      */
     readonly handEmpty: string;
     readonly lensOn: (ground: string) => string;
+    /** A placed tile HELD (2026-09-25): its ground is lit across the board. */
+    readonly lensTile: (ground: string) => string;
+    /** A placed tile TAPPED: how to light its ground. The line that makes the
+     *  hold findable (Marc: "make it easily discoverable too"). */
+    readonly holdHint: (ground: string) => string;
     readonly lensOff: string;
     /**
      * The lens's own way out, as a control (2026-09-01).
@@ -1405,7 +1410,6 @@ export type Strings = {
      * decimal through each catalogue's `d1`, exactly as the receipts print it.
      */
     readonly lensPanel: {
-      readonly button: string;
       readonly buttonLabel: string;
       readonly standing: string;
       readonly worth: (n: number) => string;
@@ -1434,6 +1438,13 @@ export type Strings = {
       };
       readonly share: (pct: number) => string;
       readonly best: (count: number, points: number | null) => string;
+      /** A held ground's two tabs (Marc, 2026-09-25: "put it in 2 tabs
+       *  otherwise its too much height"), and the tablist's name. */
+      readonly tabs: {
+        readonly label: string;
+        readonly ground: string;
+        readonly price: string;
+      };
       /**
        * WHAT EACH ROW MEANS, one line a tap reveals under it (Marc,
        * 2026-09-25: _"hints on each so we can learn more about the

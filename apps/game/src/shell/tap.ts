@@ -35,7 +35,9 @@ import type { Colour } from '@content/tuning';
  *     as well as saying this run's numbers. Beacons and remembered ground are
  *     excluded on purpose: a modal over every glow on the horizon is the wrong
  *     weight for "what is that", and a young board is mostly edge.
- *  7. **anything else** is described.
+ *  7. **a placed tile** says to HOLD it (2026-09-25); a hold, or Enter from
+ *     the keyboard, lights its ground — see `holdMeans`.
+ *  8. **anything else** is described.
  */
 
 /** What the shell must do about a tap. The effects stay in `App`; the choice
@@ -51,6 +53,8 @@ type Tap =
   | { readonly does: 'place' }
   /** Light this colour up across the board. */
   | { readonly does: 'lens-on'; readonly colour: Colour }
+  /** A quick tap on a placed tile: say that holding it lights its ground. */
+  | { readonly does: 'hold-hint'; readonly colour: Colour }
   /** Put the lens down. */
   | { readonly does: 'lens-off' }
   /** Open the card that defines this landmark, and say its numbers. */
@@ -69,6 +73,10 @@ export type Reach = {
   /** The colour this device remembers at that hex, or null where it knows
    *  nothing — `rememberedNativeAt`, which reads the live world. */
   readonly known: Colour | null;
+  /** The press is one that LIGHTS a placed tile's ground rather than asking
+   *  about it: the keyboard's Enter, which has no way to hold. A finger's hold
+   *  never reaches `tapMeans` — it is `holdMeans`, on a timer. */
+  readonly held: boolean;
 };
 
 /**
@@ -106,6 +114,13 @@ export function tapMeans(cell: CellView, reach: Reach): Tap {
    * tap POP is aimed with.
    */
   if (cell.kind === 'tile' && cell.colour !== null && !cell.remembered) {
+    /*
+     * AND A HOLD, NOT A TAP (Marc, the same evening, on the phone: "longer
+     * tap"). A quick tap while building is the commonest touch on this board,
+     * and it was changing the lens under the thumb. So a quick tap says how
+     * it is done, which is what makes it findable, and a hold does it.
+     */
+    if (!reach.held) return { does: 'hold-hint', colour: cell.colour };
     return cell.colour === reach.lens
       ? { does: 'lens-off' }
       : { does: 'lens-on', colour: cell.colour };
@@ -115,4 +130,19 @@ export function tapMeans(cell: CellView, reach: Reach): Tap {
     return { does: 'card' };
   }
   return { does: 'describe' };
+}
+
+/**
+ * What a finger HELD on the board means, or null for "nothing: let the tap
+ * happen". Only a placed tile answers a hold — ripe or not, since a ripe one's
+ * quick tap is already POP's aim — by lighting its ground, or putting the lens
+ * down if that ground is the one held. A board away on a tour answers nothing:
+ * the release will bring it home, as any tap does.
+ */
+export function holdMeans(cell: CellView, reach: Reach): Tap | null {
+  if (reach.touring) return null;
+  if (cell.kind !== 'tile' || cell.colour === null || cell.remembered) return null;
+  return cell.colour === reach.lens
+    ? { does: 'lens-off' }
+    : { does: 'lens-on', colour: cell.colour };
 }

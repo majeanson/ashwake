@@ -189,6 +189,24 @@ describe('a ground and its pockets', () => {
  * ripe, and every row opens its own hint on a tap, one at a time.
  */
 describe('a held ground, explained', () => {
+  it('shows the ground first, and the price on its own tab', () => {
+    const sess = board();
+    sess.spotlight('red');
+    const { container } = panelFor(sess);
+    expect(container.querySelector('[data-lens-stats="red"]')).not.toBeNull();
+    expect(container.querySelector('[data-lens-sum="red"]')).toBeNull();
+    fireEvent.click(container.querySelector('[data-tab="price"]')!);
+    expect(container.querySelector('[data-lens-stats="red"]')).toBeNull();
+    expect(container.querySelector('[data-lens-sum="red"]')).not.toBeNull();
+    expect(container.querySelector('[role="tabpanel"]')?.id).toBe('lens-tabpanel-price');
+    expect(container.querySelector('[data-tab="price"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(container.querySelector('[data-tab="ground"]')?.getAttribute('aria-selected')).toBe(
+      'false',
+    );
+  });
+
   const panelFor = (sess: ReturnType<typeof createSession>) =>
     render(
       <LensPanel
@@ -218,6 +236,8 @@ describe('a held ground, explained', () => {
     sess.spotlight(bare!.colour);
     const { container } = panelFor(sess);
     expect(sess.get().hud.showPoints, 'this board hides its points').toBe(true);
+    // The price is the second of the held ground's two tabs.
+    fireEvent.click(container.querySelector('[data-tab="price"]')!);
     expect(container.textContent).toContain(s.ui.lensPanel.sum.none);
     const table = container.querySelector(`[data-lens-sum="${bare!.colour}"]`);
     expect(table, 'no price table with nothing ripe').not.toBeNull();
@@ -231,8 +251,8 @@ describe('a held ground, explained', () => {
     sess.spotlight('red');
     const { container } = panelFor(sess);
     const rows = [...container.querySelectorAll<HTMLButtonElement>('.tip-hinted')];
-    // The stat sheet's rows and the price table's, all hinted.
-    expect(rows.length).toBeGreaterThanOrEqual(5);
+    // The ground tab's stat rows, every one hinted.
+    expect(rows.length).toBeGreaterThanOrEqual(3);
     expect(container.querySelectorAll('.tip-hint')).toHaveLength(0);
 
     fireEvent.click(rows[0]!);

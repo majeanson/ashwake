@@ -87,7 +87,11 @@ export type IconName =
   | 'menu'
   | 'help'
   | 'soundOn'
-  | 'soundOff';
+  | 'soundOff'
+  // The camera cluster's two words, marks since 2026-09-25 (Marc: "change
+  // LENTILLE / FLAT / etc. button to an Eye icon. for lens, a magnifier").
+  | 'view'
+  | 'lens';
 
 /**
  * Which Phosphor file each name is cut from.
@@ -181,6 +185,10 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
   help: 'bold/question-bold.svg',
   soundOn: 'bold/speaker-high-bold.svg',
   soundOff: 'bold/speaker-slash-bold.svg',
+  // The view cycle is an EYE — how you are looking at the board — and the
+  // lens a MAGNIFIER, which is what the word always meant. Chrome, so BOLD.
+  view: 'bold/eye-bold.svg',
+  lens: 'bold/magnifying-glass-bold.svg',
 };
 
 /** The four grounds, by the colour the rules call them. */
@@ -308,6 +316,12 @@ export const CHROME_ICON = {
   help: 'help',
   soundOn: 'soundOn',
   soundOff: 'soundOff',
+  // The camera cluster's view cycle and lens (2026-09-25).
+  view: 'view',
+  lens: 'lens',
 } as const satisfies Readonly<
-  Record<'back' | 'close' | 'more' | 'menu' | 'help' | 'soundOn' | 'soundOff', IconName>
+  Record<
+    'back' | 'close' | 'more' | 'menu' | 'help' | 'soundOn' | 'soundOff' | 'view' | 'lens',
+    IconName
+  >
 >;

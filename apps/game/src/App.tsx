@@ -111,7 +111,7 @@ import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
 import { signpostFor } from './shell/signpost';
 import { feelOf, whatHappened } from './shell/happened';
 import { handOverOf } from './shell/handOver';
-import { tapMeans } from './shell/tap';
+import { holdMeans, tapMeans } from './shell/tap';
 import { mayTeach, useSpeaking } from './shell/speaking';
 import { bootPlan } from './shell/boot';
 import { useHeldWorld } from './shell/held';
@@ -2265,7 +2265,9 @@ function Game() {
   );
 
   const onTap = useCallback(
-    (key: string, cell: CellView): void => {
+    /** `held` is a press that lights a placed tile's ground rather than asking
+     *  about it — the keyboard's Enter, which cannot hold (see `shell/tap`). */
+    (key: string, cell: CellView, held = false): void => {
       /*
        * A TAP ON A PLAYING FILM ENDS IT (2026-09-23, Marc: *"a tap skips to
        * the score"*).
@@ -2295,6 +2297,7 @@ function Game() {
         inHand: now.hud.draft.length,
         lens,
         known: rememberedNativeAt(now.state, key),
+        held,
       });
 
       if (tap.does === 'return') {
@@ -2332,7 +2335,15 @@ function Game() {
       if (tap.does === 'lens-on') {
         setLens(tap.colour);
         session.spotlight(tap.colour);
-        say(s.ui.lensOn(namesOf(theme, s.locale)[tap.colour]));
+        const ground = namesOf(theme, s.locale)[tap.colour];
+        // A tile's ground and remembered fog are lit the same way and let go
+        // differently, so each says its own way back.
+        say(cell.kind === 'tile' ? s.ui.lensTile(ground) : s.ui.lensOn(ground));
+        return;
+      }
+
+      if (tap.does === 'hold-hint') {
+        say(s.ui.holdHint(namesOf(theme, s.locale)[tap.colour]));
         return;
       }
 
@@ -2359,6 +2370,40 @@ function Game() {
       say(describe(key));
     },
     [act, session, s, theme, lens, describe, say, touring, putTourDown, reel, closeReel],
+  );
+
+  /**
+   * A FINGER HELD ON THE BOARD (2026-09-25, Marc: "longer tap … but not so
+   * long. make it easily discoverable too"). `HexField` calls this once the
+   * press has lasted `HOLD_MS` without travelling, WHILE the finger is still
+   * down, so the ground lights under it. True means it was answered and the
+   * release must not also be a tap; false lets the release be one.
+   */
+  const onHoldHex = useCallback(
+    (key: string, cell: CellView): boolean => {
+      if (reel !== null) return false;
+      const now = session.get();
+      const hold = holdMeans(cell, {
+        touring,
+        inHand: now.hud.draft.length,
+        lens,
+        known: rememberedNativeAt(now.state, key),
+        held: true,
+      });
+      if (hold === null) return false;
+      session.target(null);
+      if (hold.does === 'lens-on') {
+        setLens(hold.colour);
+        session.spotlight(hold.colour);
+        say(s.ui.lensTile(namesOf(theme, s.locale)[hold.colour]));
+      } else {
+        setLens(null);
+        session.spotlight(null);
+        say(s.ui.lensOff);
+      }
+      return true;
+    },
+    [session, s, theme, lens, say, touring, reel],
   );
 
   /**
@@ -3047,7 +3092,16 @@ function Game() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [framing]);
 
-  const playing = started && !snap.hud.ended;
+  /*
+   * A RUN BEING PLAYED — and not while a film is up (Marc, 2026-09-25, of the
+   * replay: "make sure we go into a replay view where we see tiles, map, but
+   * no message or anythgng can pop"). A film opened from the hall of fame in
+   * the middle of a run left the whole run's chrome over it — the stats, the
+   * hand, the cluster, the toast — and its keys live under it. Every one of
+   * those is gated on this, so the film is the board and its own bar, and
+   * the run comes back exactly as it was when the film closes.
+   */
+  const playing = started && !snap.hud.ended && film === null;
 
   /**
    * The lesson allowed to interrupt right now, or null.
@@ -3145,7 +3199,8 @@ function Game() {
         case 'act': {
           const aim = b?.cursorCell() ?? null;
           if (aim !== null) {
-            onTap(aim.key, aim.cell);
+            // Enter is the keyboard's tap AND its hold: it cannot press long.
+            onTap(aim.key, aim.cell, true);
             return;
           }
           // No marker yet, so this press is the one that summons it. It does
@@ -3347,6 +3402,7 @@ function Game() {
             restMs={isEnabled(features, 'board.awake') || film !== null ? 0 : look.rest * 1000}
             wakeMs={look.wake}
             onTap={onTap}
+            onHold={onHoldHex}
             handle={board}
             label={s.ui.board.label}
             keyHelp={s.ui.board.reach}
@@ -3475,7 +3531,7 @@ function Game() {
           Both survive the run, because the ending's board is walked with the
           same two controls — see `walking`.
         */}
-        {(playing || walking) && (
+        {(playing || (walking && film === null)) && (
           <MenuButton
             s={s}
             open={more.open}
@@ -3486,7 +3542,7 @@ function Game() {
             onToggle={() => (more.open ? more.hide() : more.show())}
           />
         )}
-        {(playing || walking) && (
+        {(playing || (walking && film === null)) && (
           <Camera
             s={s}
             next={nextView}
@@ -3525,7 +3581,7 @@ function Game() {
           reason MENU and the camera do: the ending's board is walked with the
           same controls, and a lens lit during a run is still lit on it.
         */}
-        {(playing || walking) && lens !== null && (
+        {(playing || (walking && film === null)) && lens !== null && (
           <LensOff s={s} colour={lens} name={namesOf(theme, s.locale)[lens]} onClear={clearLens} />
         )}
         {/*
@@ -4084,7 +4140,9 @@ function Game() {
         `.toast:empty` keeps an empty one out of the layout, which is the same
         trick the toast uses.
       */}
-      <div className="notices">
+      {/* Nothing pops over a film, a notice included; it waits, and is there
+          again when the film closes. */}
+      <div className="notices" {...(film === null ? {} : { hidden: true })}>
         <p className="notice-line update" aria-live="polite">
           {updated && (
             <button
@@ -4135,7 +4193,7 @@ function Game() {
         </p>
       </div>
 
-      {saidCard !== null && (
+      {saidCard !== null && film === null && (
         <SaidCard
           // Keyed per utterance so a second utterance is a second card — a
           // fresh focus move and a fresh Escape — rather than a reused element
@@ -4184,7 +4242,7 @@ function Game() {
         to drift. Ahead of every other card by construction (`shell/teaching`'s
         `ORDER`), so it is the first thing a stranger's first run says.
       */}
-      {card === 'story' && saidCard === null && (
+      {card === 'story' && saidCard === null && film === null && (
         <SaidCard
           text={`${s.ui.theStory}\n${s.story.join('\n')}`}
           theme={theme}
@@ -4260,7 +4318,7 @@ function Game() {
         />
       )}
 
-      {term !== null && (
+      {term !== null && film === null && (
         <LessonCard
           id={term}
           theme={theme}

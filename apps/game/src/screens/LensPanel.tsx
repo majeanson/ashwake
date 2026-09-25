@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { COLOURS } from '@content/tuning';
 import type { Colour, Tuning } from '@content/tuning';
 import { COLOUR_ICON } from '@theme/icons';
@@ -6,6 +6,7 @@ import { hex, namesOf, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
 import { colourLesson, groundRows, priceRows, type HudView } from '@view/view';
 import { Icon } from '../ui/Icon';
+import { panelOf, tabOf, Tabs } from '../ui/Tabs';
 import { TipRows } from '../ui/TipRows';
 
 /**
@@ -50,6 +51,9 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
   const names = namesOf(theme, s.locale);
   const held = hud.spotlight?.colour ?? null;
   const total = hud.colours.reduce((sum, c) => sum + c.worth, 0);
+  // Which half of a held ground is showing. It stays put when the ground
+  // changes, so a player comparing prices across grounds stays on the price.
+  const [tab, setTab] = useState<'ground' | 'price'>('ground');
 
   return (
     <div className="drawer lens-sheet" id="lens" data-hud="lens">
@@ -116,34 +120,70 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
                 style={{ '--ground': hex(theme.terrain[colour].fill) } as CSSProperties}
               >
                 {/*
-                  THE GROUND'S POWER, IN WORDS (back 2026-09-25: Marc, of the
-                  morning's cut, "not the points detail"). The sentence the
-                  fold used to open with, its numbers from the live tuning;
-                  null when the personalities are off.
-                */}
-                {rule !== null && <p className="note lens-rule">{rule}</p>}
-                <div data-lens-stats={colour}>
-                  <TipRows rows={groundRows(c, total, hud.showPoints, s)} theme={theme} s={s} />
-                </div>
-                {/*
-                  THE PRICE, ALWAYS (Marc, 2026-09-25: "keep the best pocket
-                  stats always up right under", then "the price table,
-                  always"). The best pocket priced whole when there is one;
-                  otherwise the same table with its terms unknown, so the
-                  formula is on the screen before the first pocket ripens.
-                  Every row explains itself on a tap, as the receipt's do:
-                  they are one component, `TipRows`.
+                  TWO TABS (Marc, 2026-09-25: "put it in 2 tabs otherwise its
+                  too much height"): the ground — its power sentence and its
+                  stats — and the price — the best pocket's table, or the
+                  formula with nothing ripe. A board that hides its points has
+                  no price to show, so it has no tabs and shows the ground.
                 */}
                 {hud.showPoints && (
-                  <>
-                    <p className="fact-label">
-                      {c.best === null ? s.ui.lensPanel.sum.none : s.ui.lensPanel.sum.title}
-                    </p>
-                    <div data-lens-sum={colour}>
-                      <TipRows rows={priceRows(c.best, tuning, s)} theme={theme} s={s} />
-                    </div>
-                  </>
+                  <Tabs
+                    base="lens"
+                    label={s.ui.lensPanel.tabs.label}
+                    tabs={[
+                      { id: 'ground', label: s.ui.lensPanel.tabs.ground },
+                      { id: 'price', label: s.ui.lensPanel.tabs.price },
+                    ]}
+                    on={tab}
+                    onPick={setTab}
+                    growsNote={s.ui.tabGrows}
+                  />
                 )}
+                <div
+                  {...(hud.showPoints
+                    ? {
+                        role: 'tabpanel',
+                        id: panelOf('lens', tab),
+                        'aria-labelledby': tabOf('lens', tab),
+                      }
+                    : {})}
+                >
+                  {tab === 'ground' || !hud.showPoints ? (
+                    <>
+                      {/*
+                        THE GROUND'S POWER, IN WORDS (back 2026-09-25: Marc,
+                        of the morning's cut, "not the points detail"). Its
+                        numbers from the live tuning; null when the
+                        personalities are off.
+                      */}
+                      {rule !== null && <p className="note lens-rule">{rule}</p>}
+                      <div data-lens-stats={colour}>
+                        <TipRows
+                          rows={groundRows(c, total, hud.showPoints, s)}
+                          theme={theme}
+                          s={s}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/*
+                        THE PRICE, ALWAYS (Marc, 2026-09-25: "the price table,
+                        always"). The best pocket priced whole when there is
+                        one; otherwise the same table with its terms unknown,
+                        so the formula is on the screen before the first
+                        pocket ripens. Every row explains itself on a tap, as
+                        the receipt's do: they are one component, `TipRows`.
+                      */}
+                      <p className="fact-label">
+                        {c.best === null ? s.ui.lensPanel.sum.none : s.ui.lensPanel.sum.title}
+                      </p>
+                      <div data-lens-sum={colour}>
+                        <TipRows rows={priceRows(c.best, tuning, s)} theme={theme} s={s} />
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>

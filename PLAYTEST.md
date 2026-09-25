@@ -95,10 +95,10 @@ One long home-world run, two questions:
 **On this body (2026-09-25), it is v2.0's gate, and the header of this file
 is Ashwake 1's.** The game is **https://ashwake.marcportal.com**, not
 tiles. Session A passed on this body on 2026-09-24 (the phone sheet, `LOG.md`
-Session 115); the two first-minute changes Marc made after it — POP in the
-cluster over the board, a tap on a tile opening the lens — are round six on
-that sheet, and **round six coming back clean is what names the build a
-stranger plays.** Write its commit here when it does: `________`.
+Session 115); the first-minute changes Marc made after it — POP in the
+cluster over the board, the cluster's marks, and a HOLD on a tile to light its
+ground (a quick tap says so) — are rounds six and seven on that sheet, and
+**the round that comes back clean is what names the build a stranger plays.** Write its commit here when it does: `________`.
 
 Before they arrive, on the phone they will play on:
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LOCALES, pickLocale } from '@content/locale';
 import { STRINGS_EN } from './en';
 import { STRINGS_FR } from './fr-CA';
-import { fmtInt, fmtPct, NNBSP, ordinal } from './format';
+import { fmt1, fmtInt, fmtPct, NNBSP, ordinal } from './format';
 import { stringsFor } from './index';
 import type { Strings } from './Strings';
 import { SETTLEMENT } from '@theme/themes/settlement';
@@ -389,6 +389,13 @@ describe('the formats', () => {
     expect(fmtPct(1.2, 'en')).toBe('1.2%');
     expect(fmtPct(12, 'fr-CA')).toBe(`12${NNBSP}%`);
     expect(fmtPct(1.2, 'fr-CA')).toBe(`1,2${NNBSP}%`);
+  });
+
+  it('writes a decimal each language’s way (2026-09-25: the Québec comma)', () => {
+    expect(fmt1(2.8, 'en')).toBe('2.8');
+    expect(fmt1(2.8, 'fr-CA')).toBe('2,8');
+    expect(fmt1(3, 'fr-CA')).toBe('3');
+    expect(fmt1(12345.6, 'fr-CA')).toBe(`12${NNBSP}345,6`);
   });
 
   it('counts retries each language’s way', () => {
