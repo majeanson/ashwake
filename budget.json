@@ -15,7 +15,7 @@
   ],
 
   "firstPaint": {
-    "gzip": 181000,
+    "gzip": 186000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -42,7 +42,16 @@
       "banking effect, which is the one place in this app where a write must",
       "not be deferred (keeper.ts) — bought for 1.6 KB. The bar exists to catch",
       "the RENDERER leaking back into the door, and pnpm budget checks that by",
-      "NAME as well as by bytes, so this raise cannot hide the thing it guards."
+      "NAME as well as by bytes, so this raise cannot hide the thing it guards.",
+      "",
+      "RAISED AGAIN 2026-09-25, 181000 -> 186000 (LOG.md Session 115): about",
+      "1.7 KB for the night of Marc's phone sheet — five vendored marks for the",
+      "lens panel's stat sheet (their Phosphor paths live in icons.gen.ts, which",
+      "every screen imports), the sheet's labels, hints and table in both",
+      "languages, and the diary's marks. All asked for by name. Splitting the",
+      "icon table so the lens's five load later was the alternative: a second",
+      "icon path for 1.7 KB, declined for the same reason as the codec above.",
+      "The renderer-by-name check is untouched."
     ]
   },
 

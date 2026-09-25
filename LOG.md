@@ -9254,3 +9254,17 @@ which is right: an operator is arithmetic, not language, so the screen holds
 it, and the number goes through the catalogue's own `fmt1`.
 
 _A table of a price is only honest if its rows are the price's own terms._
+
+**And the payload bar moved, with its reason (`budget.json`).** The diary
+marks' commit failed CI's `pnpm budget` — first paint over its 181000-byte
+bar by a few bytes, then by 1.7 KB once the lens sheet landed — so neither
+had deployed. The growth is the night's features by name: five vendored marks
+for the stat sheet (their paths ship in `icons.gen.ts`, which every screen
+imports), the sheet's labels, hints and table in both languages, and the
+diary's marks. The bar is now 186000, argued at the bar the way the replay
+codec's raise was: splitting the icon table so five marks load later is real
+machinery for 1.7 KB. The check that the renderer never leaks into the door
+is by NAME as well as bytes, and it is untouched. **And the lesson for this
+session's process:** `pnpm budget` was not in the chain the commits ran
+before pushing — typecheck, lint, tests, sim, sweep were — and it is a CI
+gate on `deploy`. It is in the chain from here.
