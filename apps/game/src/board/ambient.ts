@@ -35,9 +35,10 @@ export function breath(clock: number): number {
  * quarter of the accent, still an outline, never a gap.
  *
  * 900 ms on the first build; Marc, on the phone the same evening: _"flash
- * slower"_. 1500 ms keeps it clearly apart from a beacon's 2600.
+ * slower"_; 1500, and then, from the phone again, _"go 2000"_. Still quicker
+ * than a beacon's 2600, which is the one thing that must hold.
  */
-export const TARGET_PULSE_MS = 1500;
+export const TARGET_PULSE_MS = 2000;
 
 /**
  * How often the flash is repainted — half the breath's rate (the 2026-09-24

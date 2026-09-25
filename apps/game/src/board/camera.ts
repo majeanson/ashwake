@@ -441,9 +441,10 @@ export function chased(
  * (`NEAR_ZOOM`, which Marc called _"ultra zoomed in"_ for a camera that
  * rests there): close enough that a pop's leap is a thing you see, far enough
  * that the board around it is still the board. A look number — the phone is
- * the judge — and `cameraAt` clamps it on a board whose ceiling is lower.
+ * the judge, and it judged: 1.8 on the first build, _"zoom out a bit"_ the
+ * same night — and `cameraAt` clamps it on a board whose ceiling is lower.
  */
-export const FOLLOW_ZOOM = 1.8;
+export const FOLLOW_ZOOM = 1.5;
 
 export function lerpCamera(from: CameraState, to: CameraState, t: number): CameraState {
   const k = easeOut(clamp(t, 0, 1));

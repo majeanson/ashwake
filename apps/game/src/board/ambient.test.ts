@@ -152,8 +152,9 @@ describe('the chosen pocket flashes', () => {
   });
 
   // Half a beacon was the first build's own rule; Marc asked for it slower
-  // (2026-09-24), and what must hold is only that the two stay distinct.
+  // twice (2026-09-24, 1500 then 2000), and what must hold is only that it
+  // stays quicker than a beacon's breath.
   it('is faster than a beacon, so the two signals never read as one', () => {
-    expect(TARGET_PULSE_MS).toBeLessThan(BREATH_MS * 0.6);
+    expect(TARGET_PULSE_MS).toBeLessThan(BREATH_MS);
   });
 });
