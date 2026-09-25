@@ -37,7 +37,8 @@ import {
   terrainAt,
 } from '@engine/world';
 import { brightness, namesOf, powersOf, type Light, type Theme } from '@theme/tokens';
-import type { IconName } from '@theme/icons';
+import { LENS_ICON, type IconName } from '@theme/icons';
+import { fmt1, fmtPct } from '@text/format';
 import type { BoardView, CellKind, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
 
@@ -1108,9 +1109,13 @@ export function arcNote(summary: NonNullable<HudView['summary']>, s: Strings): s
  * term a colour owns. The split into ripe and still-growing says how much of
  * that potential is cashable right now versus still being set up.
  */
-/** A pocket's size, its price, and the terms of that price — see `harvestValue`. */
-type PocketPrice = {
+/**
+ * The terms of a pocket's price, as `harvestValue` computed them — what
+ * `priceRows` sets out as a table, for the receipt and the lens alike.
+ */
+type PriceTerms = {
   readonly count: number;
+  /** `harvestValue`'s points, before the per-pop scaling. */
   readonly points: number;
   readonly worth: number;
   readonly sizeBonus: number;
@@ -1119,6 +1124,9 @@ type PocketPrice = {
   readonly jackpot: number;
   readonly bounty: number;
 };
+
+/** A pocket's price terms, and what POP actually pays for it — `scoreOf`. */
+type PocketPrice = PriceTerms & { readonly paid: number };
 
 type ColourPotential = {
   readonly colour: Colour;
@@ -1202,6 +1210,7 @@ function colourPotentials(state: GameState): ColourPotential[] {
     const price: PocketPrice = {
       count: v.count,
       points: v.points,
+      paid: scoreOf(v.points, state.tuning),
       worth: v.worth,
       sizeBonus: v.sizeBonus,
       multiplier: v.multiplier,
@@ -1561,20 +1570,7 @@ export function harvestNote(
     // where it stops), the distance multiplier, the bounty, and `pointsPerPop`
     // last, which is the scaling no surface in either body has ever named.
     const scored =
-      t.singlePayout && t.pointsPerPop > 0
-        ? `\n${h.scored(
-            scoreOf(value.points, t),
-            worth,
-            countedOf(value.count, t),
-            value.sizeBonus,
-            cappedAt(value.count, t),
-            multiplier,
-            value.questPays ? (before.quest?.bonus ?? null) : null,
-            Math.round(t.pointsPerPop * 100),
-            placedRateOf(t),
-            rareTermOf(value.rareWorth, t),
-          )}`
-        : '';
+      t.singlePayout && t.pointsPerPop > 0 ? `\n${h.scored(scoreOf(value.points, t))}` : '';
     return `${head}\n${h.tiles(value.tiles, t.tilesPerPop, t.worthPerExtraTile, rings > 0 ? rings : null)}${scored}${luck}${bounty}`;
   }
 
@@ -1626,6 +1622,11 @@ const cappedAt = (count: number, t: Tuning): number | null =>
  */
 export type TipRow = {
   readonly text: string;
+  /**
+   * A number set to the right of the row (2026-09-25) — a price table's
+   * column. Absent on a prose row, which is every row before today.
+   */
+  readonly value?: string;
   /** A ground, drawn as its own swatch. */
   readonly colour?: Colour;
   /** An icon from the registry, for a row that is not a ground. */
@@ -2055,4 +2056,45 @@ export function debugLine(state: GameState, worn: string | null): string {
     ` · relics${state.relics} · perk:${worn ?? '-'} · sense${state.tuning.findSense} · ` +
     `claims${claims}`
   );
+}
+
+/**
+ * A POCKET'S PRICE AS A TABLE — one per pop, the same for the receipt and the
+ * lens (2026-09-25, Marc, of the receipt's one-sentence recipe: "this table
+ * still needs work", after planning the lens's table "like the 1st").
+ *
+ * Every row is a term `harvestValue` actually computed, in the order the
+ * price is built, and the last is `scoreOf` — what POP pays, not the raw sum
+ * before the per-pop scaling. That row was missing from the lens's first
+ * table, which is how it could say 17 pts beside a POP button saying 5.
+ * The operators are arithmetic rather than words, so they are composed here;
+ * every label and the total come from the catalogue.
+ */
+export function priceRows(p: PriceTerms, t: Tuning, s: Strings): TipRow[] {
+  const sum = s.ui.lensPanel.sum;
+  const n = (x: number): string => fmt1(x, s.locale);
+  const rows: TipRow[] = [
+    { icon: LENS_ICON.worth, text: sum.worth, value: n(p.worth) },
+    { icon: LENS_ICON.size, text: sum.size(p.count), value: `× ${n(p.sizeBonus)}` },
+    { icon: LENS_ICON.distance, text: sum.distance, value: `× ${n(p.multiplier)}` },
+  ];
+  if (p.placing > 0)
+    rows.push({ icon: LENS_ICON.placing, text: sum.placing, value: `+ ${n(p.placing)}` });
+  if (p.jackpot > 0)
+    rows.push({ icon: LENS_ICON.jackpot, text: sum.jackpot, value: `+ ${n(p.jackpot)}` });
+  if (p.bounty > 1)
+    rows.push({ icon: LENS_ICON.bounty, text: sum.bounty, value: `× ${n(p.bounty)}` });
+  if (t.singlePayout && t.pointsPerPop > 0) {
+    rows.push({
+      icon: LENS_ICON.perPop,
+      text: sum.perPop,
+      value: `× ${fmtPct(Math.round(t.pointsPerPop * 100), s.locale)}`,
+    });
+  }
+  rows.push({
+    icon: LENS_ICON.points,
+    text: sum.points,
+    value: s.ui.lensPanel.equals(scoreOf(p.points, t)),
+  });
+  return rows;
 }

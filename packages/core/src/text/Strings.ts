@@ -296,18 +296,14 @@ export type Strings = {
        * is scaled before it is banked, which is why no product of the numbers
        * a player could see ever reached the total.
        */
-      readonly scored: (
-        pts: number,
-        worth: number,
-        count: number,
-        sizeBonus: number,
-        cap: number | null,
-        multiplier: number,
-        bounty: number | null,
-        rate: number,
-        placedRate: number | null,
-        rare: { readonly worth: number; readonly rate: number } | null,
-      ) => string;
+      /**
+       * The points a scoring pop paid, as the line the receipt's table sits
+       * under (2026-09-25, Marc, of the one-sentence recipe: "this table
+       * still needs work"). The terms themselves are `priceRows` — the same
+       * rows the lens panel draws — so the receipt and the lens can never
+       * price one pocket two ways.
+       */
+      readonly scored: (pts: number) => string;
       readonly luck: (gained: number, oddsRose: boolean) => string;
       readonly points: (
         pts: number,
@@ -1454,6 +1450,8 @@ export type Strings = {
         readonly placing: string;
         readonly jackpot: string;
         readonly bounty: string;
+        /** The scaling every scoring pop is paid at — `pointsPerPop`. */
+        readonly perPop: string;
         readonly points: string;
       };
       readonly equals: (n: number) => string;

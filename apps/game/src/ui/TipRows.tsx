@@ -29,7 +29,8 @@ export function TipRows({
   readonly s: Strings;
   readonly onTerm?: ((id: LessonId) => void) | undefined;
 }) {
-  return (
+  const priced = rows.some((row) => row.value !== undefined);
+  const list = (
     <>
       {rows.map((row, i) => (
         <p className="tip-row" key={i}>
@@ -48,8 +49,13 @@ export function TipRows({
           <span>
             <Prose text={row.text} s={s} onTerm={onTerm} />
           </span>
+          {row.value !== undefined && <span className="tip-value">{row.value}</span>}
         </p>
       ))}
     </>
   );
+  // A priced list is a TABLE (2026-09-25): its own box, so its rows sit close
+  // and its last row — the total — can be set apart. Prose rows stay loose,
+  // as every row list before today was.
+  return priced ? <div className="tip-table">{list}</div> : list;
 }

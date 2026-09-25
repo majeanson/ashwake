@@ -327,7 +327,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
 Luck +1.",
   "harvest · tiles · TUNING": "POPPED 1, total worth 1
 +1 tiles: 1 per tile, +1 more per 2 worth.
-+1 pts = worth 1 × size bonus 1 for 1 tile × distance 1 + worth 1 × 1 for the placing, at 35% per pop.
++1 pts
 Luck +10.",
   "pocket · BARE_TUNING": "POCKET OF 1, total worth 1.
 POP pays +1 tiles and 1 pts.
@@ -974,7 +974,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
 Chance +1.",
   "harvest · tiles · TUNING": "RÉCOLTÉ 1, valeur totale 1
 +1 tuiles : 1 par tuile, +1 de plus par 2 de valeur.
-+1 pts = valeur 1 × bonus de taille 1 pour 1 tuile × distance 1 + valeur 1 × 1 pour la pose, à 35 % par récolte.
++1 pts
 Chance +10.",
   "pocket · BARE_TUNING": "POCHE DE 1, valeur totale 1.
 RÉCOLTER paie +1 tuiles et 1 pts.

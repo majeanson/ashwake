@@ -304,19 +304,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `Prime ×${bonus}${D}: manquée (+0). Récolte ${need} tuiles ou plus à ${radius} du site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tuiles${D}: ${perTile} par tuile, +1 de plus par ${worthPerExtra} de valeur${depthRings === null ? '' : `, +${depthRings} pour la profondeur`}.`,
-      scored: (pts, worth, count, sizeBonus, cap, multiplier, bounty, rate, placedRate, rare) => {
-        const added =
-          (placedRate === null ? '' : ` + valeur ${d1(worth)} × ${d1(placedRate)} pour la pose`) +
-          (rare === null ? '' : ` + valeur rare ${d1(rare.worth)} × ${d1(rare.rate)} en gros lot`);
-        const product = `valeur ${d1(worth)} × bonus de taille ${d1(sizeBonus)} pour ${count} tuile${pl(count, '', 's')}${cap === null ? '' : ` (arrêté à ${cap})`} × distance ${multiplier}${added}`;
-        const whole =
-          bounty === null
-            ? product
-            : added === ''
-              ? `${product} × PRIME ${bounty}`
-              : `(${product}) × PRIME ${bounty}`;
-        return `+${nb(pts)} pts = ${whole}, à ${pc(rate)} par récolte.`;
-      },
+      scored: (pts) => `+${nb(pts)} pts`,
       luck: (gained, oddsRose) =>
         `Chance +${gained}.${oddsRose ? ' Tes chances de tuile rare viennent de monter.' : ''}`,
       points: (pts, worth, count, sizeBonus, cap, multiplier, bounty, placedRate, rare) => {
@@ -875,6 +863,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         placing: 'Pour la pose',
         jackpot: 'Gros lot rare',
         bounty: 'Prime',
+        perPop: 'Payé par récolte',
         points: 'Points',
       },
       equals: (n) => `= ${nb(n)} pts`,

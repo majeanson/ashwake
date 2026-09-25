@@ -15,6 +15,7 @@ import {
   toHudView,
   type HudView,
   type TipRow,
+  priceRows,
 } from '@view/view';
 import { claimsBetween, saidOf, spendReceipt } from '@view/receipts';
 import { unlockedBy, type WorldMemory } from '@meta/world';
@@ -500,6 +501,15 @@ export function createSession(opts: {
        * that — this only fills the case that had nothing.
        */
       icon = action.choice === 'burn' ? CONCEPT_ICON.sacrifice : CONCEPT_ICON.pop;
+      // And a scoring pop's price as a table under it (2026-09-25) — the
+      // lens's rows, from the one function that builds both.
+      if (
+        action.choice !== 'burn' &&
+        before.tuning.singlePayout &&
+        before.tuning.pointsPerPop > 0
+      ) {
+        rows = priceRows(cashed, before.tuning, strings);
+      }
     }
 
     if (action.type === 'SPEND') {
@@ -530,7 +540,8 @@ export function createSession(opts: {
     if (claims !== null) {
       lines.push(claims.text);
       card = claims.card;
-      rows = claims.rows;
+      // A claim's own rows follow the price's, rather than replacing them.
+      if (claims.rows !== undefined) rows = [...(rows ?? []), ...claims.rows];
       icon = claims.icon;
       offers = claims.offers;
       // An offer always holds the screen: it is a choice, and a choice that

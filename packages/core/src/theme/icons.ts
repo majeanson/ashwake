@@ -243,6 +243,7 @@ export const LENS_ICON = {
   placing: 'placing',
   jackpot: 'jackpot',
   bounty: 'site',
+  perPop: 'pop',
   points: 'points',
 } as const satisfies Readonly<Record<string, IconName>>;
 

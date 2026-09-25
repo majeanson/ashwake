@@ -303,19 +303,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         `Bounty ×${bonus}: missed (+0). Pop ${need}+ tiles within ${radius} of the site.`,
       tiles: (tiles, perTile, worthPerExtra, depthRings) =>
         `+${tiles} tiles: ${perTile} per tile, +1 more per ${worthPerExtra} worth${depthRings === null ? '' : `, +${depthRings} for the depth`}.`,
-      scored: (pts, worth, count, sizeBonus, cap, multiplier, bounty, rate, placedRate, rare) => {
-        const added =
-          (placedRate === null ? '' : ` + worth ${d1(worth)} × ${d1(placedRate)} for the placing`) +
-          (rare === null ? '' : ` + rare worth ${d1(rare.worth)} × ${d1(rare.rate)} as jackpot`);
-        const product = `worth ${d1(worth)} × size bonus ${d1(sizeBonus)} for ${count} tile${plural(count, '', 's')}${cap === null ? '' : ` (capped at ${cap})`} × distance ${multiplier}${added}`;
-        const whole =
-          bounty === null
-            ? product
-            : added === ''
-              ? `${product} × BOUNTY ${bounty}`
-              : `(${product}) × BOUNTY ${bounty}`;
-        return `+${pts} pts = ${whole}, at ${rate}% per pop.`;
-      },
+      scored: (pts) => `+${pts} pts`,
       luck: (gained, oddsRose) =>
         `Luck +${gained}.${oddsRose ? ' Your rare-tile odds just rose.' : ''}`,
       points: (pts, worth, count, sizeBonus, cap, multiplier, bounty, placedRate, rare) => {
@@ -862,6 +850,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         placing: 'For the placing',
         jackpot: 'Rare jackpot',
         bounty: 'Bounty',
+        perPop: 'Paid per pop',
         points: 'Points',
       },
       equals: (n) => `= ${n} pts`,

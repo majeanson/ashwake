@@ -181,6 +181,7 @@ const SAME_IN_BOTH: readonly string[] = [
   // "3 pts" is the abbreviation in both — and so is the lens table's total.
   '3 pts',
   '= 3 pts',
+  '+3 pts',
 ];
 
 /**

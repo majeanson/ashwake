@@ -1068,6 +1068,30 @@ button[disabled] {
   align-items: start;
 }
 
+/* A row that prices something carries its number on the right (2026-09-25):
+   the receipt's table and the lens's are the same rows. */
+.tip-table {
+  display: grid;
+  gap: 0.2rem;
+}
+.tip-table > .tip-row {
+  margin: 0;
+}
+.tip-row:has(.tip-value) {
+  grid-template-columns: 1.6rem 1fr auto;
+  align-items: baseline;
+}
+/* The last priced row is the total — set apart, as the lens sets its own. */
+.tip-table > .tip-row:last-child {
+  border-top: 1px solid var(--panel-edge);
+  padding-top: 0.25rem;
+  font-weight: 600;
+}
+.tip-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .tip-mark {
   display: grid;
   place-items: center;

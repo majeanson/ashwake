@@ -5,7 +5,7 @@ import { COLOUR_ICON, LENS_ICON, type IconName } from '@theme/icons';
 import { hex, namesOf, type Theme } from '@theme/tokens';
 import { fmt1 } from '@text/index';
 import type { Strings } from '@text/Strings';
-import { colourLesson, type HudView } from '@view/view';
+import { colourLesson, priceRows, type HudView } from '@view/view';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 
@@ -133,10 +133,7 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
                     <Stat
                       icon={LENS_ICON.best}
                       label={s.ui.lensPanel.rows.best}
-                      value={s.ui.lensPanel.best(
-                        c.best.count,
-                        hud.showPoints ? c.best.points : null,
-                      )}
+                      value={s.ui.lensPanel.best(c.best.count, hud.showPoints ? c.best.paid : null)}
                     />
                   )}
                   <Stat
@@ -158,48 +155,15 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
                     <>
                       <p className="fact-label">{s.ui.lensPanel.sum.title}</p>
                       <dl className="lens-stats lens-sum" data-lens-sum={colour}>
-                        <Stat
-                          icon={LENS_ICON.worth}
-                          label={s.ui.lensPanel.sum.worth}
-                          value={dec(s, c.best.worth)}
-                        />
-                        <Stat
-                          icon={LENS_ICON.size}
-                          label={s.ui.lensPanel.sum.size(c.best.count)}
-                          value={op('×', dec(s, c.best.sizeBonus))}
-                        />
-                        <Stat
-                          icon={LENS_ICON.distance}
-                          label={s.ui.lensPanel.sum.distance}
-                          value={op('×', dec(s, c.best.multiplier))}
-                        />
-                        {c.best.placing > 0 && (
+                        {priceRows(c.best, tuning, s).map((row, i, all) => (
                           <Stat
-                            icon={LENS_ICON.placing}
-                            label={s.ui.lensPanel.sum.placing}
-                            value={op('+', dec(s, c.best.placing))}
+                            key={row.text}
+                            icon={row.icon ?? LENS_ICON.points}
+                            label={row.text}
+                            value={row.value ?? ''}
+                            {...(i === all.length - 1 ? { total: true } : {})}
                           />
-                        )}
-                        {c.best.jackpot > 0 && (
-                          <Stat
-                            icon={LENS_ICON.jackpot}
-                            label={s.ui.lensPanel.sum.jackpot}
-                            value={op('+', dec(s, c.best.jackpot))}
-                          />
-                        )}
-                        {c.best.bounty > 1 && (
-                          <Stat
-                            icon={LENS_ICON.bounty}
-                            label={s.ui.lensPanel.sum.bounty}
-                            value={op('×', dec(s, c.best.bounty))}
-                          />
-                        )}
-                        <Stat
-                          icon={LENS_ICON.points}
-                          label={s.ui.lensPanel.sum.points}
-                          value={s.ui.lensPanel.equals(c.best.points)}
-                          total
-                        />
+                        ))}
                       </dl>
                     </>
                   )}
@@ -239,14 +203,6 @@ function Stat({
     </div>
   );
 }
-
-/**
- * An operator in front of a catalogue number. The operators are the table's
- * arithmetic, not words in either language, so they are not the catalogue's
- * to hold (`text.test.ts` rightly read a pure-symbol formatter as an
- * untranslated string); the number beside them always comes through it.
- */
-const op = (sign: '×' | '+', value: string): string => `${sign} ${value}`;
 
 /** A worth to one decimal, through the catalogue's own locale formatter —
  *  a French comma is a French comma. */

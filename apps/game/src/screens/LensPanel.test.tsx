@@ -5,7 +5,8 @@ import { fmt1, stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { createSession } from '../shell/store';
 import { walk } from '../shell/walk';
-import { harvestValue, ripeClusters } from '@engine/rules';
+import { harvestValue, ripeClusters, scoreOf } from '@engine/rules';
+import { priceRows } from '@view/view';
 import { LensPanel } from './LensPanel';
 
 /**
@@ -118,7 +119,7 @@ describe('the lens panel', () => {
     expect(text).toContain(s.ui.lensPanel.rows.inHand);
     if (red.count > 0) expect(text).toContain(fmt1(red.worth / red.count, s.locale));
     if (red.best !== null)
-      expect(text).toContain(s.ui.lensPanel.best(red.best.count, red.best.points));
+      expect(text).toContain(s.ui.lensPanel.best(red.best.count, red.best.paid));
   });
 
   it('finds a ripe pocket on a walked board, and prices the best of it', () => {
@@ -130,11 +131,17 @@ describe('the lens panel', () => {
     expect(ripeGround!.pockets).toBeGreaterThan(0);
     expect(ripeGround!.best!.count).toBeGreaterThan(0);
     // The table's terms are the price's own (Marc: the pop's arithmetic 'as a
-    // table'), so they must add up to exactly what POP pays.
+    // table'), so they add up to the raw points — and the table ends at what
+    // POP PAYS, which is the per-pop scaling of those (the row the first
+    // table was missing: it said 17 beside a POP button saying 5).
     const b = ripeGround!.best!;
     expect(
       Math.floor((b.worth * b.sizeBonus * b.multiplier + b.placing + b.jackpot) * b.bounty + 1e-9),
     ).toBe(b.points);
+    const state = sess.get().state;
+    expect(b.paid).toBe(scoreOf(b.points, state.tuning));
+    const rows = priceRows(b, state.tuning, s);
+    expect(rows.at(-1)?.value).toBe(s.ui.lensPanel.equals(b.paid));
   });
 });
 
