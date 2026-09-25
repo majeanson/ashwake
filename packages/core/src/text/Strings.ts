@@ -753,6 +753,26 @@ export type Strings = {
        * sentence rather than beside it, the way a daily's date is.
        */
       readonly shared: (seed: number) => string;
+      /**
+       * A RUN'S MARKS, shown the way Ashwake 1 showed them (Marc, 2026-09-24,
+       * on the phone sheet: _"show them like ashwake 1"_ — his ruling on the
+       * parked spine-vs-✦ question). `runHighlights` works out what made a run
+       * worth remembering and `settle` stores it on every row; no screen read
+       * it. The row's summary carries the fame mark and the count — the mark is
+       * an icon, never a character in a sentence — and `marks` is what a
+       * screen reader hears for it. `mark` is one line per kind for the opened
+       * row; the screen picks by kind and the catalogue decides nothing (D4).
+       */
+      readonly marks: (n: number) => string;
+      readonly mark: {
+        readonly bestScore: (score: number) => string;
+        readonly bestReach: (reach: number) => string;
+        readonly shrine: (n: number) => string;
+        readonly perk: (n: number) => string;
+        readonly goal: (n: number) => string;
+        readonly territory: (n: number) => string;
+        readonly camp: string;
+      };
       /** The ATLAS tab (2026-09-24), and the line that says what it is. */
       readonly atlas: string;
       readonly atlasNote: string;

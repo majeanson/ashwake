@@ -653,6 +653,16 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       diary: 'DIARY',
       totals: 'TOTALS',
       shared: (seed) => `SHARED BOARD ${seed}`,
+      marks: (n) => `${n} highlight${plural(n, '', 's')}`,
+      mark: {
+        bestScore: (score) => `NEW BEST · ${score} pts`,
+        bestReach: (reach) => `FARTHEST YET · reach ${reach}`,
+        shrine: (n) => (n === 1 ? 'A shrine woken' : `${n} shrines woken`),
+        perk: (n) => (n === 1 ? 'A perk found' : `${n} perks found`),
+        goal: (n) => (n === 1 ? 'A survey goal met' : `${n} survey goals met`),
+        territory: (n) => (n === 1 ? 'A territory claimed' : `${n} territories claimed`),
+        camp: 'Began at camp',
+      },
       atlas: 'ATLAS',
       atlasNote: 'The world you are in, across every run played on it.',
       /** The run's SHAPE — five facts every finished run kept and no screen

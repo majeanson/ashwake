@@ -190,8 +190,10 @@ const SAVED_BLOB: readonly Ruling[] = (
 /**
  * THE TIMELINE'S SPINE, DEFERRED BY RULING (`NEXT.md` §4).
  *
- * **`RunEntry.highlights` left this list on 2026-09-23 and came back on
- * 2026-09-24.** For one day the replay read it: a run that earned a ✦ played
+ * **`RunEntry.highlights`, `Highlight.kind` and `Highlight.n` left this
+ * list for good on 2026-09-24**, when Marc ruled the marks shown in the diary
+ * "like ashwake 1" — the hall of fame reads all three. Before that, the field
+ * left this list on 2026-09-23 and came back on 2026-09-24. For one day the replay read it: a run that earned a ✦ played
  * itself back before its numbers. Marc then ruled that no film plays unless
  * REPLAY is pressed, and the field had no reader again. Showing the marks in
  * the diary — which Ashwake 1 did — is this deferred question exactly, so it
@@ -211,9 +213,6 @@ const SAVED_BLOB: readonly Ruling[] = (
  */
 const TIMELINE_SPINE: readonly Ruling[] = (
   [
-    'packages/core/src/meta/timeline.ts#RunEntry.highlights',
-    'packages/core/src/meta/timeline.ts#Highlight.kind',
-    'packages/core/src/meta/timeline.ts#Highlight.n',
     'packages/core/src/meta/timeline.ts#DailyEntry.best',
     // The three READERS of that spine, added 2026-09-10: functions that select
     // a run, a world event or a shared board out of the timeline, each with a

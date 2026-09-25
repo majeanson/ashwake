@@ -1239,6 +1239,25 @@ h3.fact-label {
  * `display: block` because an inline image sits on a text baseline and carries
  * the descender gap with it, which reads as a crooked row inside a fold.
  */
+/*
+ * A run's marks (2026-09-24, Marc: "show them like ashwake 1"): the count on
+ * the row in the accent, and one line per mark in the opened row.
+ */
+.fame-marked {
+  color: var(--accent);
+  white-space: nowrap;
+}
+.fame-marks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: calc(var(--gap) / 2);
+}
+.fame-marks .icon {
+  color: var(--accent);
+}
+
 .fame-shot {
   display: block;
   width: 100%;

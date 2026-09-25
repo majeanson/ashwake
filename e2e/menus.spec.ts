@@ -1266,3 +1266,31 @@ test('a row in the hall of fame plays its run back, and the diary comes back aft
 
   expect(errors).toEqual([]);
 });
+
+test('a run that earned marks carries them in the diary, like Ashwake 1', async ({ page }) => {
+  /*
+   * Marc, 2026-09-24: "show them like ashwake 1". Every run stores what made
+   * it worth remembering and, until today, no screen showed it. A first run on
+   * a device's own world earns at least a best, so its row carries the mark
+   * and the count, and opening it lists them in words. No `?seed=`: a shared
+   * board's row has no marks at all.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1&end=1');
+  await begin(page);
+  await page.locator('[data-hud="end"]').waitFor({ state: 'visible' });
+
+  await page.locator('[data-door="more"]').click();
+  await page.locator('[data-go="fame"]').click();
+  await panel(page, 'fame').waitFor({ state: 'visible' });
+
+  const marked = page.locator('.fame-marked').first();
+  await expect(marked, 'the row did not carry its marks').toBeVisible();
+  await expect(marked).toHaveAttribute('aria-label', /\d/);
+
+  await page.locator('.fold summary').filter({ has: marked }).click();
+  const lines = page.locator('.fame-marks li');
+  expect(await lines.count(), 'the opened row did not list its marks').toBeGreaterThan(0);
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});

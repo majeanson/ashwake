@@ -21,7 +21,8 @@ export function Fold({
   children,
   open,
 }: {
-  readonly summary: string;
+  /** Text, or text with a mark in it — the diary's ✦ count (2026-09-24). */
+  readonly summary: ReactNode;
   readonly children: ReactNode;
   readonly open?: boolean;
 }) {

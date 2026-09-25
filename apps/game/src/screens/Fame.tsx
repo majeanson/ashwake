@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { ordinal } from '@text/index';
 import type { Strings } from '@text/Strings';
-import { dailiesOf, runsOf, streamOf, type TimelineEntry } from '@meta/timeline';
+import { CONCEPT_ICON } from '@theme/icons';
+import { dailiesOf, runsOf, streamOf, type RunEntry, type TimelineEntry } from '@meta/timeline';
 import type { RecordBook } from '@meta/records';
 import { ONLY_WORLD } from '@meta/records';
 import { perkText } from '@meta/progress';
@@ -300,9 +301,38 @@ function Row({
       : entry.kind === 'shared'
         ? `${s.ui.fame.shared(entry.seed)} · ${entry.score} · ${entry.arc} · ${when}`
         : `${entry.score} · ${entry.arc} · ${when}`;
+  /*
+   * AND A RUN'S MARKS, like Ashwake 1 (Marc, 2026-09-24: "show them like
+   * ashwake 1"). The count rides on the summary line after the fame mark; the
+   * words for each are in the opened row. See `ui.fame.marks`.
+   */
+  const marked = entry.kind === 'run' ? entry.highlights : [];
 
   return (
-    <Fold summary={summary}>
+    <Fold
+      summary={
+        marked.length === 0 ? (
+          summary
+        ) : (
+          <>
+            {summary}
+            {' · '}
+            <span className="fame-marked" aria-label={s.ui.fame.marks(marked.length)}>
+              <Icon name={CONCEPT_ICON.fame} /> {marked.length}
+            </span>
+          </>
+        )
+      }
+    >
+      {entry.kind === 'run' && marked.length > 0 && (
+        <ul className="fame-marks">
+          {marked.map((h) => (
+            <li key={h.kind}>
+              <Icon name={CONCEPT_ICON.fame} /> {markWords(h, entry, s)}
+            </li>
+          ))}
+        </ul>
+      )}
       {entry.detail !== undefined && (
         <>
           {entry.detail.epitaph !== '' && <p className="note">{entry.detail.epitaph}</p>}
@@ -377,4 +407,27 @@ function Row({
       )}
     </Fold>
   );
+}
+
+/** One mark as its sentence: the screen picks the sentence by kind and hands
+ *  over the numbers; the words are the catalogue's (D4). */
+function markWords(h: RunEntry['highlights'][number], e: RunEntry, s: Strings): string {
+  const n = h.n ?? 1;
+  const m = s.ui.fame.mark;
+  switch (h.kind) {
+    case 'best-score':
+      return m.bestScore(e.score);
+    case 'best-reach':
+      return m.bestReach(e.reach);
+    case 'shrine':
+      return m.shrine(n);
+    case 'perk':
+      return m.perk(n);
+    case 'goal':
+      return m.goal(n);
+    case 'territory':
+      return m.territory(n);
+    case 'camp':
+      return m.camp;
+  }
 }

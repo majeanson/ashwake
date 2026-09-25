@@ -661,6 +661,17 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       diary: 'JOURNAL',
       totals: 'TOTAUX',
       shared: (seed) => `PLATEAU PARTAGÉ ${nb(seed)}`,
+      marks: (n) => `${nb(n)} fait${pl(n, '', 's')} marquant${pl(n, '', 's')}`,
+      mark: {
+        bestScore: (score) => `NOUVEAU RECORD · ${nb(score)} pts`,
+        bestReach: (reach) => `LE PLUS LOIN À CE JOUR · portée ${nb(reach)}`,
+        shrine: (n) => (n === 1 ? 'Un sanctuaire éveillé' : `${nb(n)} sanctuaires éveillés`),
+        perk: (n) => (n === 1 ? 'Un atout trouvé' : `${nb(n)} atouts trouvés`),
+        goal: (n) =>
+          n === 1 ? 'Un objectif d’arpentage atteint' : `${nb(n)} objectifs d’arpentage atteints`,
+        territory: (n) => (n === 1 ? 'Un territoire réclamé' : `${nb(n)} territoires réclamés`),
+        camp: 'Partie commencée au camp',
+      },
       atlas: 'ATLAS',
       atlasNote: 'Le monde où tu es, à travers toutes les parties jouées dessus.',
       /**
