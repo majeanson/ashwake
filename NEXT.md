@@ -45,29 +45,29 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — what landed on the night of 2026-09-24
+## 1. Marc, on the phone — what landed early on 2026-09-25
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
-them with `ArtifactData` `list` before touching anything here. Three rounds
-were answered on 2026-09-24 and every change they asked for is built; round
-three kept the new-run camera and the atlas tab, and asked for the four below.
+them with `ArtifactData` `list` before touching anything here. Four rounds
+are answered and everything they asked for is built; round four kept all four
+of its items (the 2 s flash, the follow at 1.5, the diary marks, the lens
+sheet).
 
-Each was built that night and has not been seen on a phone:
+Two more came from Marc's own screenshots the same night, and neither has
+been seen on a phone:
 
-1. **The flash every 2 s** (_"go 2000"_, `board/ambient.ts`).
-2. **The replay's follow camera further out** (_"zoom out a bit"_):
-   `FOLLOW_ZOOM` 1.8 → 1.5 (`board/camera.ts`).
-3. **The ✦ marks in the diary, like Ashwake 1** (_"show them like ashwake
-   1"_ — his ruling on the parked spine-vs-✦ question): the fame mark and the
-   count on a run's row, each mark in words when it opens.
-4. **The lens panel's held ground is a stat sheet**, planned with Marc: an
-   icon, a label and a number per stat, each mark on a small tile of the
-   ground's colour; LE DÉTAIL DU CALCUL folds open the ground's power, a hint
-   per row, and the best pocket's price as a table whose terms add up to what
-   POP pays. **The look is yours**: the tile size, whether the hints read,
-   and whether the table is the arithmetic you wanted.
+1. **The diary's picture is sharp** (_"summary is pixelated"_). The shot was
+   the whole canvas at 240 px, stretched across the panel; it is now cropped
+   to the board and taken as large as the same stored cap allows (480 px on a
+   desktop, 320 on a tall phone board), and never drawn bigger than it was
+   taken. **Only new runs get the new picture** — an old row keeps its
+   240 px shot, no longer stretched; there is no board left to re-shoot.
+2. **A pop's receipt prices the pocket as a table** (_"this table still needs
+   work"_) — the same rows as the lens (`priceRows`), ending at what POP
+   pays. That fixed the lens too: its table stopped before the 35 % per-pop
+   scaling, so it could say 17 pts beside a POP button saying 5.
 
 ---
 
@@ -124,7 +124,12 @@ Each was built that night and has not been seen on a phone:
   **again on 2026-09-24** on Chromium, on `5e7bc07` — a commit that changed
   only the pocket flash's period, which that test cannot see; the four pushes
   around it passed it. Twice in eight days is still a flake, but it is the
-  first one here with a second data point. If it fails again, read the screenshot
+  first one here with a second data point. **A third on 2026-09-25**, on
+  `7353e35` (a `budget.json` bar move), _"MY VIEW did not give back the angle
+  the hands made"_ — three in nine days, two of them after the follow camera
+  landed. The follow is dropped by every lean change, so it should not be the
+  cause, but that is now worth proving rather than assuming: next time, run
+  the spec with `--repeat-each=20` before and after `b72e6b4`. If it fails again, read the screenshot
   before touching the spec; `e2e` gates nothing, `smoke` does.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the

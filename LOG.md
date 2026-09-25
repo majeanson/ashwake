@@ -9268,3 +9268,22 @@ is by NAME as well as bytes, and it is untouched. **And the lesson for this
 session's process:** `pnpm budget` was not in the chain the commits ran
 before pushing — typecheck, lint, tests, sim, sweep were — and it is a CI
 gate on `deploy`. It is in the chain from here.
+
+**Session 115, the small hours — two screenshots.** Marc sent a diary row
+whose picture was a smear and a receipt whose price was one long sentence.
+The picture: the shot was the whole canvas at 240 px and the diary stretched
+it seven times over on a desktop. Same stored cap; the bytes now go on the
+board — cropped to what is drawn, the largest width and quality that fit.
+Proving it needed a real ending on a drawn board, which no `?end=1` run has
+(it is finished by script before the board mounts), so it was checked by
+calling the board's own `snapshot()` through a hook added for the probe and
+taken straight back out. The receipt: `priceRows` now builds a price as rows
+for both the receipt and the lens — and writing it found that **the lens's
+table, built a few hours earlier, ended one row short**: it summed to the raw
+points and never applied the 35 % every scoring pop is paid at, so the panel
+could say 17 beside a POP button saying 5. The test that pinned "the table
+adds up to what POP pays" had pinned it to the wrong number. It pins
+`scoreOf` now.
+
+_A test that pins a total is only as good as the total it was told was
+right._
