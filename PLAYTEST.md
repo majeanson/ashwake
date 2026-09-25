@@ -1,7 +1,8 @@
 <!-- Carried over from ../tiles/PLAYTEST.md on 2026-08-28. Sessions A and B were
-played on Ashwake 1 (2026-08-28, clean). On THIS body none has been run: Session A
-is owed against the deployed v2 before Session C, which is the v2.0 gate
-(DECISIONS.md D1). The scripts below are unchanged. -->
+played on Ashwake 1 (2026-08-28, clean). On THIS body, Session A passed on
+2026-09-24 on the phone sheet (LOG.md Session 115); Session C, the v2.0 gate
+(DECISIONS.md D1), has not been run — its section below opens with what is
+different here. The scripts below are otherwise unchanged. -->
 
 # PLAYTEST.md — the launch-week phone script
 
@@ -90,6 +91,24 @@ One long home-world run, two questions:
   feel like they earn?
 
 ## Session C — the stranger test (Day 4, the v1.0 gate)
+
+**On this body (2026-09-25), it is v2.0's gate, and the header of this file
+is Ashwake 1's.** The game is **https://ashwake.marcportal.com**, not
+tiles. Session A passed on this body on 2026-09-24 (the phone sheet, `LOG.md`
+Session 115); the two first-minute changes Marc made after it — POP in the
+cluster over the board, a tap on a tile opening the lens — are round six on
+that sheet, and **round six coming back clean is what names the build a
+stranger plays.** Write its commit here when it does: `________`.
+
+Before they arrive, on the phone they will play on:
+
+- Open `https://ashwake.marcportal.com/?playtest=1`, reload twice (or NEW
+  VERSION), and check WATCHING · 0 is on the board's left edge, above the
+  button cluster. It is over the board and never over the hand since
+  2026-09-25 (`e2e/playtest.spec.ts` measures it on a small French phone).
+- A fresh phone is the honest one: no teaching seen, no world. A phone that
+  has played already wants SETTINGS ▸ RESET TEACHING, and still carries its
+  worlds.
 
 **A and B are paid as of 2026-08-28. This is the only thing left.**
 

@@ -9314,3 +9314,60 @@ POP's move from an hour earlier had covered the sheets**: the purse and the
 lens open a fixed one-button height above the hand, and the cluster is now up
 to two rows tall. `Camera` publishes its real height as `--camera-h` and both
 sheets sit above it. The tap-sweep e2e counts an opened panel as an answer.
+
+### Session 116 — the stranger's instrument, measured on the board the stranger will meet (2026-09-25)
+
+**Question:** after two first-minute changes landed past Session A's clean
+pass, is the build a stranger will play — and the console that records them —
+ready for Session C?
+
+**Ledger first.** `NEXT.md` §0 recorded POP's move as the one exception to the
+freeze and not the second: `5cd33b1` made a tap on a placed tile open the lens
+panel where it used to describe the tile. Both are recorded now, and neither
+had been seen on a phone, so the sheet has a **round six** — `r6-pop`,
+`r6-cover`, `r6-tiletap`, `r6-sheets` — and round six coming back clean is
+what names Session C's build (`PLAYTEST.md`, which also said nothing about
+this body's URL: its header is Ashwake 1's, and says tiles).
+
+**The console's door sat on the hand.** `?playtest=1`'s WATCHING button was a
+child of `.shell`, so `bottom: var(--gap); left: var(--gap)` was the SCREEN's
+corner — on a 360 px French phone, over CARRIÈRE and CHEMINS, the hand's first
+two cards, and drawn above them. On the night, a stranger's first tap on the
+first card would have opened Marc's console. It has been so since the door
+was built (2026-09-08); nothing measured it because nothing measured the door
+against anything. It lives in `.board-host` now, beside the cluster, and
+clears the cluster's real height (`--camera-h`) as the sheets do.
+
+_How it was found is the lesson._ The first version of the test measured the
+door against the cluster only — the risk that POP's move made — and passed.
+Moved squarely under the cluster by a mutation, **it still passed**, which is
+what sent me to a screenshot: the door was nowhere near the cluster, because
+it was not in the board at all. The test now measures it against every hand
+and cluster button, fails on the old position with the two cards' names, and
+passes on Chromium and WebKit.
+
+**The two-finger flake, run and read.** 20 of 20 on `b72e6b4^` and 20 of 20
+on `b72e6b4` (a detached worktree, Chromium, no retries) — then **1 of 20 on
+HEAD**, with CI's own message, and the screenshot's numbers said what the
+message did not: the hands left the board at yaw 45 and MY VIEW gave back
+**30, the second-to-last move's angle.** So not the follow camera. The lean
+half of MY VIEW was stamped by an effect gated on `orbited`, a boolean the
+gesture set and the effect cleared — and a passive effect runs after paint.
+A move that lands between the 30° render and its effect finds the flag
+already set; React flushes the stale effect before rendering 45, which stamps
+30 and clears the flag, and the 45° render stamps nothing. The same flag had a
+second hole: a lean against the 55° ceiling changes no state, renders
+nothing, leaves the flag up, and the next FLAT would have stamped MY VIEW
+flat. `hands` now travels WITH the angle in the lean state (`leanBy`), so each
+render stamps exactly the angle it draws, and FLAT, DEFAULT and MY VIEW's own
+restore say `hands: false`.
+
+_What the repeats can and cannot say._ 60 of 60 with the fix — and 60 of 60
+without it, as a control, so today's local rate is one in 140 and no number of
+green runs here separates the two. The fix stands on the mechanism, which is
+the only one that produces 30 from a twist to 45. It stays on the watch list
+with that sentence on it: if it fails again, the theory was wrong.
+
+**Answer:** not yet, but the only thing left is one look on the phone. The
+console is fixed and tested, the script names the URL and the build, and
+round six is the look that remains.

@@ -3515,7 +3515,10 @@ h3.fact-label {
 .playtest-open {
   position: absolute;
   left: var(--gap);
-  bottom: var(--gap);
+  /* Over the BOARD, never the hand (2026-09-25): it is a child of
+     `.board-host`, and it clears the cluster's real height, which wraps to two
+     lines at a French phone's width and reaches the left edge doing it. */
+  bottom: calc(var(--camera-h, var(--tap)) + var(--gap) + var(--gap-sm));
   /* Above the board and under a panel: it is a door, and a door that could
      paint over an open dialog is the bug `stacking.spec.ts` exists for. */
   z-index: var(--z-chrome);

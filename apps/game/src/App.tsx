@@ -3533,6 +3533,24 @@ function Game() {
         {(playing || walking) && lens !== null && (
           <LensOff s={s} colour={lens} name={namesOf(theme, s.locale)[lens]} onClear={clearLens} />
         )}
+        {/*
+          The stranger console's door — see THE STRANGER CONSOLE further down.
+          It lives HERE, in the board's box, since 2026-09-25: as a child of
+          `.shell` its bottom-left corner was the SCREEN's, which is the hand's
+          first card — the card a stranger taps first, under a button drawn
+          over it. It sits above the cluster's real height, as the sheets do.
+        */}
+        {watching && !playtest.open && (
+          <button
+            type="button"
+            className="playtest-open"
+            data-playtest="open"
+            onClick={() => playtest.show()}
+            aria-haspopup="dialog"
+          >
+            WATCHING · {sheet.notes.length}
+          </button>
+        )}
       </div>
 
       {playing && (
@@ -3906,17 +3924,6 @@ function Game() {
         query string and every dial there defaults off, so a shared `?seed=`
         link carries nothing.
       */}
-      {watching && !playtest.open && (
-        <button
-          type="button"
-          className="playtest-open"
-          data-playtest="open"
-          onClick={() => playtest.show()}
-          aria-haspopup="dialog"
-        >
-          WATCHING · {sheet.notes.length}
-        </button>
-      )}
       {watching && playtest.open && (
         <Playtest
           sheet={sheet}

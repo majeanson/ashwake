@@ -123,3 +123,64 @@ test('COPY SHEET puts the whole sheet on the clipboard', async ({ page, browserN
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+/*
+ * THE DOOR IS OVER THE BOARD, NOT OVER THE GAME'S CONTROLS (2026-09-25).
+ *
+ * The door was a child of `.shell`, so its bottom-left corner was the
+ * SCREEN's — the hand's first card, the one a stranger taps first, under a
+ * button drawn on top of it. Found with a screenshot while checking that it
+ * cleared the cluster; that first version of this test measured only the
+ * cluster, and it passed with the door moved squarely under it, because the
+ * door was not in the board at all.
+ *
+ * Measured at the widest the first minute gets: a small French phone with a
+ * pocket ripe, where the cluster wraps to two lines and reaches the left edge
+ * (SACRIFICE waits for relics).
+ */
+test.describe('at a small French phone', () => {
+  test.use({ viewport: { width: 360, height: 740 }, locale: 'fr-CA' });
+
+  test('the console door covers neither the hand nor the cluster', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('/?playtest=1&seed=7&taught=1&place=12');
+    await begin(page);
+
+    const pop = page.locator('[data-action="pop"]');
+    for (let i = 0; i < 30 && !(await pop.isVisible()); i++) await placeOneTile(page);
+    await expect(
+      pop,
+      'the board never ripened, so the cluster was never at its widest',
+    ).toBeVisible();
+
+    const d = await page.locator('[data-playtest="open"]').boundingBox();
+    if (d === null) throw new Error('the console door has no box');
+    const controls = await page.locator('.camera button, .hand button').evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          name: el.getAttribute('aria-label') ?? el.textContent ?? '',
+          l: r.left,
+          r: r.right,
+          t: r.top,
+          b: r.bottom,
+        };
+      }),
+    );
+    expect(controls.length, 'no hand or cluster buttons were found to measure').toBeGreaterThan(3);
+    const covered = controls
+      .filter(
+        (c) => c.r > c.l && c.l < d.x + d.width && c.r > d.x && c.t < d.y + d.height && c.b > d.y,
+      )
+      .map((c) => c.name);
+    expect(covered, 'the console door sits over a control the stranger uses').toEqual([]);
+
+    // And the door is what a finger on it actually reaches.
+    const hit = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest('[data-playtest="open"]') != null,
+      [d.x + d.width / 2, d.y + d.height / 2] as const,
+    );
+    expect(hit, 'something is drawn over the console door').toBe(true);
+    expect(errors, errors.join('\n')).toEqual([]);
+  });
+});

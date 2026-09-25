@@ -502,7 +502,12 @@ export function Board(props: BoardProps) {
    * take an angle away from the hands that chose it. The camera cluster's cycle
    * carries FLAT and DEFAULT, which are the two ways back.
    */
-  const [lean, setLean] = useState({ tilt, yaw, relief });
+  const [lean, setLean] = useState<LeanSet & { readonly hands: boolean }>({
+    tilt,
+    yaw,
+    relief,
+    hands: false,
+  });
 
   /**
    * A tick the rig re-frames on (2026-08-30).
@@ -523,7 +528,7 @@ export function Board(props: BoardProps) {
   const reframe = useCallback(() => setRefit((n) => n + 1), []);
 
   const resetLean = useCallback(() => {
-    setLean({ tilt, yaw, relief });
+    setLean({ tilt, yaw, relief, hands: false });
     reframe();
   }, [tilt, yaw, relief, reframe]);
   /**
@@ -547,10 +552,21 @@ export function Board(props: BoardProps) {
    * brings a lost board back, and it is one press away.
    */
   const flatten = useCallback(() => {
-    setLean(FLAT_LEAN);
+    setLean({ ...FLAT_LEAN, hands: false });
   }, []);
+  /**
+   * `hands` says the angle is the one the FINGERS made, and it travels WITH
+   * the angle (2026-09-25) — so the rig stamps MY VIEW with exactly the angle
+   * each render draws. It was a flag on the rig that whichever effect ran
+   * first consumed: a move landing between a render and its passive effect
+   * let the STALE effect take it, and the next angle — the one the hands
+   * actually left — stamped nothing. MY VIEW gave back 30° after a twist to
+   * 45°; the view-cycle e2e's "two fingers" flake, three times on CI, once in
+   * twenty locally. The keyboard's turns and leans are not hands here, as
+   * they never were: only the gestures made MY VIEW's angle.
+   */
   const leanBy = useCallback(
-    (turn: number, back: number) =>
+    (turn: number, back: number, hands = false) =>
       setLean((was) => ({
         ...was,
         // Quantised to a half degree: two fingers are never still, and a frame
@@ -558,9 +574,15 @@ export function Board(props: BoardProps) {
         // a whole re-fit) bought for something no eye can see.
         tilt: round2(clampTilt(was.tilt + back)),
         yaw: round2(wrapYaw(was.yaw + turn)),
+        hands,
       })),
     [],
   );
+  const leanByHands = useCallback(
+    (turn: number, back: number) => leanBy(turn, back, true),
+    [leanBy],
+  );
+  const leanTo = useCallback((to: LeanSet) => setLean({ ...to, hands: false }), []);
 
   /*
    * The keyboard's marker (2026-08-29).
@@ -906,13 +928,14 @@ export function Board(props: BoardProps) {
             tilt={lean.tilt}
             yaw={lean.yaw}
             relief={lean.relief}
+            byHands={lean.hands}
             refit={refit}
             reducedMotion={props.reducedMotion === true}
             handle={rig}
-            onLeanTo={setLean}
+            onLeanTo={leanTo}
             wrapper={wrapperEl}
             cursor={cursor?.key ?? null}
-            onLeanBy={leanBy}
+            onLeanBy={leanByHands}
           />
           {/*
             The field waits for its art, briefly (2026-09-11): `useAssets`
@@ -968,6 +991,8 @@ type RigProps = {
   readonly tilt: number;
   readonly yaw: number;
   readonly relief: number;
+  /** The angle above is the one the fingers made — MY VIEW takes it. */
+  readonly byHands: boolean;
   /** Bumped when the board's angle was changed on purpose: re-frame. */
   readonly refit: number;
   readonly reducedMotion: boolean;
@@ -994,6 +1019,7 @@ function Rig({
   tilt,
   yaw,
   relief,
+  byHands,
   refit,
   reducedMotion,
   handle,
@@ -1159,9 +1185,6 @@ function Rig({
    */
   const mine = useRef<{ readonly cam: CameraState; readonly lean: LeanSet } | null>(null);
   const leanNow = useRef<LeanSet>({ tilt, yaw, relief });
-  /** A turn or a lean the FINGERS asked for, waiting for the render that lands
-   *  it — see `mine`. Cleared by the effect that stamps it. */
-  const orbited = useRef(false);
   useEffect(() => {
     /*
      * A CHANGE OF ANGLE CANCELS A THROW (2026-09-10).
@@ -1189,10 +1212,9 @@ function Rig({
     glide.current = null;
     chase.current = null;
     leanNow.current = { tilt, yaw, relief };
-    if (!orbited.current) return;
-    orbited.current = false;
-    mine.current = { cam: cam.current, lean: { tilt, yaw, relief } };
-  }, [tilt, yaw, relief]);
+    // The hands' own angle, as THIS render draws it — see `leanBy`'s `hands`.
+    if (byHands) mine.current = { cam: cam.current, lean: { tilt, yaw, relief } };
+  }, [tilt, yaw, relief, byHands]);
   /**
    * The board is now where the player's own hands put it.
    *
@@ -1959,7 +1981,6 @@ function Rig({
       // through it: the frame effect re-fits on every lean, which is what keeps
       // a tilting board from walking off its own edge.
       if (on.turn || on.lean) {
-        orbited.current = true;
         onLeanBy(on.turn ? g.turn : 0, on.lean ? g.lean : 0);
       }
       pair = now;
@@ -2057,7 +2078,6 @@ function Rig({
         // Out to React, like the two fingers': the angle is read by the fit,
         // the light rig and the labels, and only one of them is this camera.
         const spun = dragOrbit(dx, dy);
-        orbited.current = true;
         onLeanBy(spun.turn, spun.lean);
         last = { x: e.clientX, y: e.clientY };
         return;

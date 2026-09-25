@@ -32,12 +32,19 @@ waking tap swallowed, the chosen pocket flashing, the lens panel's detail, the
 lamps epitaph (`LOG.md` Session 115). **Nothing else that changes the first
 minute ships before Session C.** A stranger is a one-shot resource.
 
-**One deliberate exception since, Marc's own (2026-09-25):** POP left the row
-above the hand for the cluster over the board — _"pop, luck, lens, camera"_ —
-and the footer is only the hand. That changes the first minute after the
-clean pass, on purpose and by the owner; if Session A's pass is to cover the
-board the stranger meets, the one thing worth re-checking on the phone is that
-POP reads as the button to press when a pocket ripens.
+**Two deliberate exceptions since, both Marc's own (2026-09-25):**
+
+- POP left the row above the hand for the cluster over the board — _"pop,
+  luck, lens, camera"_ — and the footer is only the hand (`cc6c1ee`).
+- A tap on a placed tile opens the lens panel on its ground — _"make it pop
+  the lens for that color"_ — where it used to say the tile's one-line
+  description; and the purse and lens sheets now sit above the cluster's real
+  height (`5cd33b1`).
+
+Both change the first minute after the clean pass, on purpose and by the
+owner. Neither had been seen on a phone when it landed, so they are round six
+on the sheet (§1). **Round six is Session A's pass for the board the stranger
+meets**: once it comes back clean, that build is the one Session C runs on.
 
 So the road to v2.0 is now:
 
@@ -52,17 +59,24 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — nothing waiting
+## 1. Marc, on the phone — round six, four looks
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
 the page's `answers` collection, one document per item id. A session reads
 them with `ArtifactData` `list` before touching anything here.
 
-**Five rounds, all answered, all built, and the last one kept everything**
+**Five rounds, all answered, all built, and the fifth kept everything**
 (2026-09-25: the sharp diary picture and the pop receipt's table, both
-_ok_). There is no look on this list that has not been seen on the phone.
-The next thing that needs Marc's phone is a stranger's — Session C (§0).
+_ok_).
+
+**Round six, published 2026-09-25**, is the two first-minute changes (§0):
+`r6-pop` (does POP over the board read as the button to press?), `r6-cover`
+(does the floating cluster, two lines tall in French, ever hide a tile you
+want?), `r6-tiletap` (does a tap on a tile opening the lens help or get in the
+way in the first placements?), and `r6-sheets` (do the purse and the lens clear
+the two-line cluster?). After it, the next thing that needs Marc's phone is a
+stranger's — Session C (§0).
 
 ---
 
@@ -123,9 +137,17 @@ The next thing that needs Marc's phone is a stranger's — Session C (§0).
   `7353e35` (a `budget.json` bar move), _"MY VIEW did not give back the angle
   the hands made"_ — three in nine days, two of them after the follow camera
   landed. The follow is dropped by every lean change, so it should not be the
-  cause, but that is now worth proving rather than assuming: next time, run
-  the spec with `--repeat-each=20` before and after `b72e6b4`. If it fails again, read the screenshot
-  before touching the spec; `e2e` gates nothing, `smoke` does.
+  cause, but that is now worth proving rather than assuming.
+  **Run and read on 2026-09-25 (`LOG.md` Session 116):** 20/20 on `b72e6b4^`,
+  20/20 on `b72e6b4`, then **1 in 20 on HEAD** with the CI message: the hands
+  left yaw 45, MY VIEW gave back 30 — the second-to-last move's angle. Not the
+  follow: the `orbited` flag, which a stale passive effect could consume, so
+  the last angle stamped nothing. **Fixed in the same session** by carrying
+  `hands` with the angle itself (`Board.tsx`, `leanBy`). The repeat runs
+  cannot prove it — 60/60 with the fix, and 60/60 without it as a control — so
+  the fix stands on the mechanism. **If it fails again, the theory is wrong**:
+  read the screenshot before touching the spec; `e2e` gates nothing, `smoke`
+  does.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the
   theory was disproved (`e2e/stacking.spec.ts` asks the engine). Nothing to do
