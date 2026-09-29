@@ -1059,7 +1059,10 @@ export const TUNING: Tuning = {
   // Identity only moves 14.3% -> 16.3% from this dial alone — see
   // `identityBonusRate` below for the rest of the ask.
   distanceMultiplierCap: 2,
-  harvestSizeBonus: 0.5,
+  // 0.5 -> 0.4 on 2026-09-29, paired with `identityBonusRate` 2 — see there.
+  // A pocket of 10 is x4.6 now, not x5.5: size still pays and patience still
+  // wins, but it stops drowning out how well the pocket was matched.
+  harvestSizeBonus: 0.4,
 
   // The rest of the same ask, same session: Marc, told identity had only
   // moved 14.3% -> 16.3%, said find a way rather than leave it. Shrinking
@@ -1100,7 +1103,19 @@ export const TUNING: Tuning = {
   // identity 19.4%, pocket 22.8%, distance 20.7%, reach 18.6%, claim
   // 10.0%, bounty 5.1%, site 3.4% — placement a top-tier channel, raw
   // reach halved, landmarks reached doubled, patience x1.15.
-  identityBonusRate: 1.0,
+  //
+  // 1.0 -> 2 on 2026-09-29, with `harvestSizeBonus` 0.5 -> 0.4 (Marc: "colors
+  // should matter at all stages of the game"; then "i just want long term
+  // healthy balance"). Colour's share of a pop's points — matches, power,
+  // rare, native — was 34% early, 26% mid-run and 38% late for a patient line
+  // (popAt8, 400 seeds, `scripts/study.ts --colour`): the pocket multiplier
+  // drowned it exactly where runs are longest. Paying the placing twice and
+  // growing the size bonus a little slower gives 47% / 37% / 50%, with
+  // scores +2% (so bests already saved on phones stay fair) and run length
+  // unchanged; `sim.test.ts`'s patience gate and `profiles.test.ts`'s
+  // veteran-beats-naive gate both still pass. Rate 3 would have given
+  // ~52 / 42 / 55% at +15-20% on every score. `LOG.md` Session 117.
+  identityBonusRate: 2,
 
   // The jackpot (Session 51, see the field). Swept 0..8 at 120 seeds:
   // `rare`'s share of harvest points 1.6% -> 3.6 / 5.5 / 7.3 / 10.6 /

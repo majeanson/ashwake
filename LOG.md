@@ -9719,3 +9719,35 @@ this commit.** Marc's answers to the candidates:
 - **Overripe pockets: ruled out by Marc** (_"i dislike the overripe"_). Four
   other timing ideas were offered instead (chains, tides, bounty deadlines,
   colour sets) and none is chosen yet.
+
+**Session 117, colour at every stage — and a rule moved: `sim.golden.txt`
+changes in this commit.** Marc: _"colors should matter at al lstages of the
+game"_, then, offered strengths and timings, _"i dont care about now vs
+session c, i just want long term healthy balance"_.
+
+What was found first: colour already decides SURVIVAL. A colour-blind bot
+that packs as tightly but picks its card at random (`blindK` in
+`study.ts`) scores a quarter as much (306 against 1194) and dies at 60
+placements instead of 102, because a pop pays tiles by how well it matched.
+What was weak was colour's share of the SCORE: 34% early, 26% mid-run and 38%
+late (`--colour`), with the pocket multiplier drowning it exactly where runs
+are longest.
+
+What shipped: `identityBonusRate` 1 → 2 (the "for the placing" term, the
+colour worth paid once more outside the multipliers) and `harvestSizeBonus`
+0.5 → 0.4 (a pocket of 10 is ×4.6, was ×5.5). Colour's share becomes
+47 / 37 / 50%. The golden moves in the points columns ONLY: depth,
+placements, harvests, relics and every tally are byte-identical, so nothing
+but scoring moved. Means: patient lines +1-3% (bank20 1317 → 1332), small-
+pocket lines more (greedy 481 → 550, bank3 770 → 853), and the best single
+runs 5-8% lower (bank20's best 5316 → 4890), so bests already saved on phones
+stay fair. Patience still wins (bank20 over greedy ×2.42, was ×2.74) and both
+of its gates pass. ×3 was offered too (~52 / 42 / 55%, every score +15-20%)
+and declined for the inflation. The chosen timing: now rather than after
+Session C, because round ten has not named the stranger's build yet, and a
+stranger should meet the balance the game keeps. The receipts say it in words
+a player reads, "worth 1 × 2 for the placing"; `prose.pin` moved on those
+numbers and nothing else. `endless.test.ts`'s distance pin states the new
+payouts as literals (near 6, far 9, with the arithmetic beside them) —
+Marc: _"make them hardcoded values"_ — so the next balance pass that moves
+either dial has to come to that test and say what the pocket now pays.

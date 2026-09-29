@@ -1,7 +1,7 @@
 import { TUNING, type Tuning } from '../src/content/tuning';
 import { parse, distance } from '../src/engine/hex';
 import { canSpend, newRun, reduce } from '../src/engine/reduce';
-import { stream, type RngStream } from '../src/engine/rng';
+import { rngInt, stream, type RngStream } from '../src/engine/rng';
 import {
   canPlaceNow,
   costOf,
@@ -102,6 +102,50 @@ const popAt = (k: number): Policy => ({
 });
 
 /**
+ * COLOUR-BLIND, same hands otherwise (2026-09-29, Marc: "colors should matter
+ * at all stages of the game"). Packs exactly as tightly — the spot with the
+ * most filled neighbours — but picks the card at random and never asks what
+ * colour anything is. popAt(k) against colourBlind(k) is what colour play is
+ * worth in points, stage by stage; the points split alone understates it,
+ * because matching also scales what the pocket and distance multipliers
+ * multiply.
+ */
+const colourBlind = (k: number): Policy => ({
+  name: `blind${k}`,
+  note: `popAt${k}'s timing and packing, choosing the card without looking at colour.`,
+  decide(state, s) {
+    if (biggest(state) >= k) return [pocketMove(state, 'big') ?? [], s];
+    if (canPlaceNow(state)) {
+      const spots = legalPlacements(state.cells, state.tuning);
+      let top: string | null = null;
+      let most = -1;
+      for (const hex of spots) {
+        const h = parse(hex);
+        let n = 0;
+        for (const [dq, dr] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+          [1, -1],
+          [-1, 1],
+        ] as const)
+          if (state.cells[`${h.q + dq},${h.r + dr}`] !== undefined) n++;
+        if (n > most) {
+          most = n;
+          top = hex;
+        }
+      }
+      if (top !== null) {
+        const [index, next] = rngInt(s, state.draft.length);
+        return [place({ index, hex: top }), next];
+      }
+    }
+    return [pocketMove(state, 'small') ?? [], s];
+  },
+});
+
+/**
  * IS LUCK WORTH SPENDING: popAt(k) plus one way of spending. `reroll` redraws
  * a hand whose best spot is worth nothing; `forge` upgrades the card about to
  * be placed; `steer` buys a hand of the colour the board holds most of.
@@ -161,6 +205,9 @@ type Felt = {
   spends: number;
   /** Share of the pops' points earned in the last third of the run: the climax. */
   late: number;
+  /** Points earned in each third of the run, and the colour share of each. */
+  thirds: [number, number, number];
+  colourThirds: [number, number, number];
 };
 
 function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 0): Felt {
@@ -180,6 +227,8 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
     reach: 0,
     spends: 0,
     late: 0,
+    thirds: [0, 0, 0],
+    colourThirds: [0, 0, 0],
   };
   let low = false;
   let sincePop = 0;
@@ -242,6 +291,14 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
     .filter((h) => h.at >= (state.placements * 2) / 3)
     .reduce((a, h) => a + worth(h), 0);
   f.late = popPts === 0 ? 0 : latePts / popPts;
+  for (const h of state.log.harvests) {
+    const third = Math.min(2, Math.floor((3 * h.at) / Math.max(1, state.placements))) as 0 | 1 | 2;
+    f.thirds[third] += worth(h);
+    const b = h.split?.bySource;
+    if (b !== undefined && h.split !== undefined && h.split.total > 0)
+      f.colourThirds[third] +=
+        (worth(h) * (b.matches + b.power + b.rare + b.native)) / h.split.total;
+  }
   f.placements = state.placements;
   f.pops = state.log.harvests.length;
   let reach = 0;
@@ -259,6 +316,17 @@ const pct = (xs: number[], p: number): number => {
 const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
 const pad = (v: string | number, n: number): string => String(v).padStart(n);
 
+/** One row of the `--colour` table: points by third, and colour's share of each. */
+function colourRow(name: string, runs: readonly Felt[]): string {
+  const cells: string[] = [name.padEnd(14)];
+  for (let t = 0; t < 3; t++) {
+    const pts = runs.reduce((a, r) => a + r.thirds[t]!, 0);
+    const col = runs.reduce((a, r) => a + r.colourThirds[t]!, 0);
+    cells.push(pad(Math.round(pts / Math.max(1, runs.length)), 7));
+    cells.push(pad(`${pts === 0 ? 0 : Math.round((100 * col) / pts)}%`, 6));
+  }
+  return cells.join(' ');
+}
 function main(): void {
   const i = process.argv.indexOf('--seeds');
   const seeds = i > 0 ? Number(process.argv[i + 1]) : 1000;
@@ -271,7 +339,8 @@ function main(): void {
     luckLine(4, 'steer'),
   ];
   const people = [randomLegal, greedy, timid, bank3, bank20, spender, seeker, chooser, tourist];
-  const every = [...timing, popAt(8), ...luck, ...people].filter(
+  const blinds = [4, 8, 12].map(colourBlind);
+  const every = [...timing, popAt(8), ...luck, ...people, ...blinds].filter(
     (p, n, a) => a.findIndex((q) => q.name === p.name) === n,
   );
 
@@ -326,10 +395,12 @@ function main(): void {
       pad('late%', 6),
     ].join(' '),
   );
+  const colourRows: string[] = [];
   for (const policy of all) {
     const runs: Felt[] = [];
     for (let s = 1; s <= seeds; s++) runs.push(feel(policy, s, tuning, escalate));
     const pts = runs.map((r) => r.points);
+    colourRows.push(colourRow(policy.name, runs));
     const m = mean(pts);
     const sd = Math.sqrt(mean(pts.map((p) => (p - m) ** 2)));
     const turns = runs.reduce((a, r) => a + r.placements, 0);
@@ -369,6 +440,22 @@ function main(): void {
   console.log(
     'peak = where the biggest pop landed (1 = the end); walk% = tiles from caches/sites vs pops; <40 = runs that ended before 40 placements.',
   );
+  if (process.argv.includes('--colour')) {
+    console.log('\nCOLOUR BY STAGE — mean pop points in each third of the run, and colour');
+    console.log("(matches + power + rare + native) as a share of that third's points\n");
+    console.log(
+      [
+        'line'.padEnd(14),
+        pad('early', 7),
+        pad('col', 6),
+        pad('middle', 7),
+        pad('col', 6),
+        pad('late', 7),
+        pad('col', 6),
+      ].join(' '),
+    );
+    for (const row of colourRows) console.log(row);
+  }
 }
 
 main();

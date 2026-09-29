@@ -96,13 +96,18 @@ describe('local harvest', () => {
   });
 
   it('pays the same pocket more the farther from home it sits', () => {
-    // Identical dominoes: worth 1 + 1, size bonus 1.5 (harvestSizeBonus 0.5).
-    // Near home the multiplier is 1; at mean distance 8.5 with distanceStep 3
-    // the unbound multiplier is 3, but distanceMultiplierCap (2 since
-    // 2026-09-04, was 3) caps it at 2. Since Session 51 the same worth is
-    // ALSO paid flat once more (`identityBonusRate` 1.0), which distance
-    // does not touch — so far pays 8 to near's 5 rather than double: the
-    // walk still pays, and what you placed pays wherever you cash it.
+    // Identical dominoes: worth 1 + 1, size bonus 1.4 (harvestSizeBonus 0.4
+    // since 2026-09-29, was 0.5). Near home the multiplier is 1; at mean
+    // distance 8.5 with distanceStep 3 the unbound multiplier is 3, but
+    // distanceMultiplierCap (2 since 2026-09-04, was 3) caps it at 2. Since
+    // Session 51 the same worth is ALSO paid flat once more, and twice since
+    // 2026-09-29 (`identityBonusRate` 2), which distance does not touch.
+    // Every payout is floored:
+    //   near: floor(2 × (1.4 × 1 + 2)) = floor(6.8) = 6
+    //   far:  floor(2 × (1.4 × 2 + 2)) = floor(9.6) = 9
+    // Literal on purpose: a balance pass that moves either dial should have
+    // to come here and say what the pocket now pays. The walk still pays, and
+    // what you placed pays wherever you cash it.
     const near: Record<HexKey, Cell> = {};
     const far: Record<HexKey, Cell> = {};
     const [n1] = domino(near, 0, 0);
@@ -110,9 +115,8 @@ describe('local harvest', () => {
 
     const nearPay = harvestValue(stateWith(near), n1).points;
     const farPay = harvestValue(stateWith(far), f1).points;
-    const { identityBonusRate: idb } = ENDLESS;
-    expect(nearPay).toBe(2 * (1.5 * 1 + idb));
-    expect(farPay).toBe(2 * (1.5 * 2 + idb));
+    expect(nearPay).toBe(6);
+    expect(farPay).toBe(9);
     expect(farPay).toBeGreaterThan(nearPay);
   });
 
