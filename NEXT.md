@@ -202,6 +202,13 @@ steer sentence in French is Marc's to read.**
   does. **2026-09-29: sixteen pushes green in a row** on both engines since
   the last failure (`3df3fe6` → `de4c781`), eleven of them after the fix in
   `b514f6f`.
+- **`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29).** The
+  deploy had landed (`version.json` matched the commit on workers.dev); a
+  later check in the same step lost its connection, and the next push
+  (`c2b0cb7`) deployed and verified clean. A network flake on the runner,
+  not the app. If it happens again, the question is which check in
+  `scripts/verify-deploy.ts` fetches after the version and whether it
+  deserves the retry the version check already has.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the
   theory was disproved (`e2e/stacking.spec.ts` asks the engine). Nothing to do
