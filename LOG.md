@@ -9588,3 +9588,38 @@ visible and standing over the shop it names. **The French line is Marc's to
 read**, like every new sentence. `prose.pin`'s two snapshots were re-recorded for
 the one thing they gained, the flag's row (label and note, both languages);
 nothing else in either moved.
+
+**Session 117, round nine — and the remaining questions, asked as questions.**
+Marc asked for every open decision as a choice rather than a paragraph. Four
+went up; the answers:
+
+- **The header (`r9-header`)**: _"the visual is good, but im wondering if we
+  could priotize tiles, points (the other 2 are less important and affect the
+  overall progress of the game still) id like to hear on you."_ My view:
+  yes. Tiles ends the run and points is what it is played for, while reach is
+  also on the board and the cost moves only every few placements. But demote,
+  don't hide: the cost still decides a move. He chose the **weighted row**
+  over two tiers: reach and cost take three quarters of their old width share,
+  a smaller mark, and a number capped at 0.95rem in the dim ink. The size
+  formula is untouched, so every number is still the largest its box allows.
+  `e2e/hud.spec.ts` stages the widest case (a five-digit score, two-digit
+  reach and cost) at 320, 360 and 390 on both engines. It checks that tiles and
+  points are drawn larger than reach and cost, and that no number is cut or
+  runs under its mark. It is the first row of the first minute, so it is
+  round ten (`r10-header`) and that look names Session C's build.
+- **The stranger**: none in sight. Session C floats.
+- **The D23 French line**: kept as written.
+- **ashwake.marcportal.com on the day**: decided on the day, as `CUTOVER.md`
+  already says.
+
+_And the desk's own test run broke under it, not because of it._ The chain
+before this push failed 36 shell tests that save a world. Every one also
+failed with the header change stashed, on the commit CI had just passed. The
+cause: Node 26 puts its own `localStorage` on the global, and it is `undefined`
+without `--localstorage-file`. Vitest's jsdom environment only copies a window
+key the global lacks, so jsdom's storage never arrived. CI runs Node 22 and
+never saw it. `setupTests.ts` now hands the tests jsdom's storage where Node's
+shadows it. **Not explained**: the same suite passed on the same Node at 12:47
+the same day, and nothing in `node_modules`, `.npmrc` or the Node binary moved
+between the two runs. The shim makes the answer not matter; the question is
+written down so it is not mistaken for understood.

@@ -40,6 +40,16 @@ const STATS = ['tiles', 'points', 'map', 'cost', 'left'] as const;
 
 type StatId = (typeof STATS)[number];
 
+/*
+ * TILES AND POINTS FIRST (Marc, 2026-09-29, round nine: "could we prioritize
+ * tiles, points (the other 2 are less important and affect the overall
+ * progress of the game still)"). Tiles is the number that ends a run and
+ * points the one it is played for; reach is on the board itself and the cost
+ * steps only every few placements. So these stay in the row, still tappable,
+ * in a narrower box and a quieter ink — `.stat.minor` in `ui.css`.
+ */
+const MINOR: ReadonlySet<StatId> = new Set(['map', 'cost', 'left']);
+
 export function Hud({ hud, s, onNote, menu }: HudProps) {
   const [rose, setRose] = useState<StatId | null>(null);
 
@@ -52,7 +62,7 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
           <button
             key={id}
             type="button"
-            className="stat"
+            className={MINOR.has(id) ? 'stat minor' : 'stat'}
             data-stat={id}
             /*
              * The 44px exemption, declared HERE, on each stat (2026-09-25).

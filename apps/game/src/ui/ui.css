@@ -1662,6 +1662,29 @@ a:visited {
   );
   line-height: 1;
 }
+/*
+ * TILES AND POINTS FIRST (Marc, 2026-09-29) — see `MINOR` in `Hud.tsx`.
+ *
+ * Reach and cost keep their place and their tap, and give up room: their
+ * share of the row's width is scaled down, so the two numbers that matter
+ * take what they give, and their number is capped smaller and drawn in the
+ * dim ink the marks already use. The size formula above is untouched, so a
+ * minor number is still the largest its own (smaller) box allows.
+ */
+.hud:has(.board-menu) > .stat.minor {
+  flex-grow: calc((var(--len, 2) + 2) * 0.75);
+  padding-inline: 0.15rem;
+  gap: 0.2rem;
+  --mark: clamp(13px, 26cqi, 16px);
+}
+.hud:has(.board-menu) .stat.minor .stat-value {
+  font-size: clamp(
+    0.7rem,
+    calc((100cqi - var(--mark) - 0.25rem) / (var(--len, 2) * 0.55)),
+    0.95rem
+  );
+  color: var(--ink-dim);
+}
 .hud > .board-menu {
   position: static;
   flex: none;

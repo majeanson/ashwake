@@ -65,7 +65,7 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — round nine, one look
+## 1. Marc, on the phone — round ten, one look
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
@@ -76,8 +76,17 @@ them with `ArtifactData` `list` before touching anything here.
 came back clean at `8e7785d`. Then Marc, the same evening: _"make sure the
 header in game uses all height available (with menu in it changed) and make
 sure symbols and points occupy maximum size so its easy to read"_ — built, and
-it is the first row of the first minute, so **round nine is that one look
-(`r9-header`), and its _ok_ names Session C's build.**
+it is the first row of the first minute, so round nine was that one look.
+
+**Round nine came back on 2026-09-29** (in the session, not on the sheet; the
+answer is written into `r9-header` all the same): _"the visual is good, but im
+wondering if we could priotize tiles, points (the other 2 are less important
+and affect the overall progress of the game still)"_. Offered a weighted row
+or two tiers, he chose the weighted row: reach and cost keep their place and
+their tap in narrower boxes, with smaller, dimmer numbers (`MINOR` in
+`Hud.tsx`, `e2e/hud.spec.ts`). So **round ten is that one look
+(`r10-header`), and its _ok_ names Session C's build.** No stranger is lined
+up yet, so there is no hurry on it.
 
 ---
 
