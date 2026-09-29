@@ -16,6 +16,7 @@ import {
   ripeClusters,
   ripeKeys,
   scoreOf,
+  steerDrawsAfterHand,
   territoryPaysAt,
   withinBeaconHorizon,
   worthOf,
@@ -1699,7 +1700,11 @@ export function purseLesson(t: Tuning, theme: Theme, s: Strings): SetLesson {
     ...(t.luckSteerCost > 0
       ? COLOURS.map((colour): TipRow => ({
           colour,
-          text: p.steer(n[colour], t.luckSteerCost, t.colourBiasDraws),
+          text: (t.steerSure ? p.steerSure : p.steer)(
+            n[colour],
+            t.luckSteerCost,
+            steerDrawsAfterHand(t),
+          ),
         }))
       : []),
     ...(t.luckForgeCost > 0 ? [{ text: p.forge(t.luckForgeCost) }] : []),

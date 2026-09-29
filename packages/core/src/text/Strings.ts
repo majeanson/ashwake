@@ -320,6 +320,9 @@ export type Strings = {
     readonly purse: {
       readonly redraw: (cost: number) => string;
       readonly steer: (name: string, cost: number, draws: number) => string;
+      /** A steer that GUARANTEES its colour (`steerSure`, 2026-09-29): the new hand
+       *  is all of it, and `draws` more after the hand. */
+      readonly steerSure: (name: string, cost: number, draws: number) => string;
       readonly forge: (cost: number) => string;
       readonly sacrifice: (pct: number) => string;
       readonly lostPartly: (pct: number) => string;
@@ -631,6 +634,8 @@ export type Strings = {
   readonly spent: {
     readonly reroll: (paid: number) => string;
     readonly steer: (name: string, draws: number, paid: number) => string;
+    /** What a guaranteed steer paid out — see `view.purse.steerSure`. */
+    readonly steerSure: (name: string, draws: number, paid: number) => string;
     readonly forge: (paid: number) => string;
     readonly tithe: (paid: number, relics: number) => string;
   };

@@ -162,9 +162,12 @@ rule, so it moves `sim.golden.txt` in the same commit.**
 
 **Ruled 2026-09-29:** forge at 40, shipped. Horizon 3 and caches paying 10
 are queued for after Session C. Escalation and overripe pockets are dropped.
-Next is making **colour matter at every stage of a run** (Marc); steer's
-shape waits on that. Timing ideas not yet chosen: chains, tides, bounty
-deadlines, colour sets.
+Colour now counts at every stage (the placing paid twice, pocket size +0.4 a
+tile: colour's share 34/26/38% → 47/37/50%), and steer is a GUARANTEE —
+six draws of the colour named, at 20 luck — which pays when it reads the
+ground and wastes its luck when it does not. Still open, none chosen: a
+real cost to waiting (chains, tides, bounty deadlines, colour sets). **The
+steer sentence in French is Marc's to read.**
 
 ## 4. Watching — no action unless it happens again
 

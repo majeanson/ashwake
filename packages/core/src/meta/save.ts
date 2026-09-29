@@ -151,7 +151,12 @@ export function decodeRun(raw: string | null): GameState | null {
     // block keeps, so `wakeAt` can never decode as `undefined`.
     wakeAt: typeof wakeAt === 'string' ? wakeAt : null,
     bias:
-      isRecord(bias) && typeof bias['colour'] === 'string' && typeof bias['left'] === 'number'
+      isRecord(bias) &&
+      typeof bias['colour'] === 'string' &&
+      typeof bias['left'] === 'number' &&
+      // A steer's guarantee (2026-09-29): absent, or exactly `true` — a
+      // poked value must not decode into a promise the draws never made.
+      (bias['sure'] === undefined || bias['sure'] === true)
         ? bias
         : null,
     quest: isRecord(quest) ? quest : null,

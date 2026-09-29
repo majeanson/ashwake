@@ -3,7 +3,7 @@ import { PERK_DIALS } from '@content/goals';
 import { TUNING } from '@content/tuning';
 import { key, neighbourKeys, type HexKey } from './hex';
 import { canSpend, newRun, rarityOdds, reduce } from './reduce';
-import { costOf, harvestValue, rootboundGrip, worthOf } from './rules';
+import { costOf, harvestValue, legalPlacements, rootboundGrip, worthOf } from './rules';
 import type { Cell, GameState } from './state';
 
 /**
@@ -150,6 +150,39 @@ describe('luck as a purse', () => {
     // the hand in front of you — that is what makes it a purchase and not a bet.
     expect(steered.bias === null || steered.bias.colour === 'blue').toBe(true);
     expect(steered.draft.map((t) => t.id)).not.toEqual(rich.draft.map((t) => t.id));
+  });
+
+  /*
+   * THE GUARANTEE (2026-09-29, Marc: "using lucking to 'garantee' more of a
+   * color is a core concept"). The purse says "a whole hand of FARM, and the
+   * next 3 draws too", and this is the test that makes that sentence true
+   * rather than likely: over many seeds and every colour, the new hand is
+   * all of it, and so is the whole hand the next placement deals (a
+   * placement deals three fresh cards), with the promise spent exactly then.
+   */
+  it('guarantees the colour it is paid for: this hand, and the next', () => {
+    expect(T.steerSure).toBe(true);
+    for (let seed = 1; seed <= 40; seed++) {
+      for (const colour of ['green', 'yellow', 'red', 'blue'] as const) {
+        const rich: GameState = { ...newRun(seed, T), luck: 100 };
+        const steered = reduce(rich, { type: 'SPEND', on: 'steer', colour });
+        expect(steered.draft.every((t) => t.colour === colour)).toBe(true);
+        expect(steered.bias).toEqual({ colour, left: 3, sure: true });
+
+        const hex = legalPlacements(steered.cells, T)[0]!;
+        const next = reduce(reduce(steered, { type: 'SELECT', index: 0 }), { type: 'PLACE', hex });
+        expect(next.placements).toBe(1);
+        expect(next.draft.every((t) => t.colour === colour)).toBe(true);
+        expect(next.bias).toBeNull();
+      }
+    }
+  });
+
+  it('keeps the old lean where the guarantee is switched off', () => {
+    const lean = without({ steerSure: false });
+    const rich: GameState = { ...newRun(5, lean), luck: 100 };
+    const steered = reduce(rich, { type: 'SPEND', on: 'steer', colour: 'blue' });
+    expect(steered.bias?.sure).toBeUndefined();
   });
 
   it('pays to forge the selected card unique', () => {

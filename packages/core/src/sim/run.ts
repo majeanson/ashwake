@@ -80,7 +80,15 @@ type RunOptions = {
  * move was a no-op no matter what it did to the state object.
  */
 const progress = (s: GameState): string =>
-  `${s.placements}/${s.log.harvests.length}/${s.points}/${s.tiles}`;
+  `${s.placements}/${s.log.harvests.length}/${s.points}/${s.tiles}/${s.luck}`;
+/*
+ * LUCK joined the list on 2026-09-29. A spend that only redraws the hand — a
+ * STEER — moves nothing else here, and the day steer and forge became
+ * affordable together (20 + 40), `spender` bought one and was reported
+ * `stalled`. It was not a loop: every spend strictly lowers the purse, so a
+ * run of spends ends. What the check exists to catch — a move that changes
+ * nothing at all — still has nowhere to hide.
+ */
 
 function summarise(
   state: GameState,

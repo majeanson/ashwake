@@ -1,5 +1,11 @@
 import type { Colour } from '@content/tuning';
-import { cachePaysAt, distanceMultiplierAt, homeOf, territoryPaysAt } from '@engine/rules';
+import {
+  cachePaysAt,
+  distanceMultiplierAt,
+  homeOf,
+  steerDrawsAfterHand,
+  territoryPaysAt,
+} from '@engine/rules';
 import type { HexKey } from '@engine/hex';
 import type { GameState, LandmarkReward } from '@engine/state';
 import type { PerkId } from '@meta/progress';
@@ -310,9 +316,9 @@ export function spendReceipt(
     case 'reroll':
       return s.spent.reroll(paid);
     case 'steer':
-      return s.spent.steer(
+      return (after.tuning.steerSure ? s.spent.steerSure : s.spent.steer)(
         colour === undefined ? s.view.hex.someColour : namesOf(ctx.theme, s.locale)[colour],
-        after.tuning.colourBiasDraws,
+        steerDrawsAfterHand(after.tuning),
         paid,
       );
     case 'forge':

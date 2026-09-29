@@ -293,7 +293,16 @@ export type GameState = {
    * is how you get the tiles to build the NEXT green pocket. Null where the
    * bias is switched off.
    */
-  readonly bias: { readonly colour: Colour; readonly left: number } | null;
+  readonly bias: {
+    readonly colour: Colour;
+    readonly left: number;
+    /**
+     * A GUARANTEE rather than a lean: every draw left is this colour. Set by
+     * a STEER under `steerSure` (2026-09-29). Absent on every pop's lean and
+     * on every run saved before.
+     */
+    readonly sure?: true;
+  } | null;
 
   /**
    * The hex you last built on, or null before the first placement.

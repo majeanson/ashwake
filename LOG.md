@@ -9751,3 +9751,39 @@ numbers and nothing else. `endless.test.ts`'s distance pin states the new
 payouts as literals (near 6, far 9, with the arithmetic beside them) —
 Marc: _"make them hardcoded values"_ — so the next balance pass that moves
 either dial has to come to that test and say what the pocket now pays.
+
+**Session 117, steer becomes a guarantee — and a rule moved:
+`sim.golden.txt` changes in this commit.** Marc, on what steer is for:
+_"finding the right color for the map (steer) should be a thoughtful
+decision or at least using lucking to 'garantee' more of a color is a core
+concept i want to keep"_.
+
+The old steer bought a lean that every pop already gives away, and a lean is
+worth nothing at any weight: a three-card hand already offers enough colour to
+match. What can pay is a steer that reads the MAP. `popAt8+map` in
+`study.ts` steers to the ground colour most of its buildable spots are native
+to, and only when the hand holds none of it. So steer became a promise:
+`steerSure` (a guaranteed colour, not odds) and `steerDraws` 6, at 20 luck
+(was 30). Over 1000 seeds the thoughtful steer earns +7.5%, and +8.7% for
+small-pocket play; the careless one (toward what the board already holds)
+earns -0.7%, a waste of luck but not a trap. Runs are +3 placements. At 15
+luck the careless steer was bought 19 times a run and lost, and at 30 nothing
+paid.
+
+The guarantee is a real promise and is tested as one. A sure lean draws only
+its colour and still spends one roll of the tile stream, so the tiles after it
+are the tiles they would have been. `tilesonly.test.ts` holds it over 40 seeds
+× 4 colours: this hand and the next hand are all the named colour, and then
+the promise is spent. `save.test.ts` holds that a steer bought before a
+reload is still owed, and that a poked `sure` decodes to nothing. The purse
+said _"the next 6 draws"_ beside _"a new hand"_, counting the hand twice; one
+helper (`steerDrawsAfterHand`) counts what is left after it, and the sentence
+now reads _"A whole hand of FARM, and the next 3 draws too"_ / _"Une main
+entière de FERME, et les 3 prochaines pioches aussi"_. The French is Marc's to
+read.
+
+The golden moves on `spender` only (1663 → 1660), the one policy that steers.
+The harness also had to learn something: steer and forge became affordable
+together (20 + 40), `spender` bought a steer, and the runner reported it
+`stalled`, because its progress check did not count luck. It counts luck now
+(`sim/run.ts`); a run of spends always ends, because each one lowers the purse.

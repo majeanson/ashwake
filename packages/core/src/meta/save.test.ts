@@ -134,6 +134,22 @@ describe('runs saved before a field existed', () => {
     expect(back.relics).toBe(0);
   });
 
+  it('keeps a steer’s promise across a reload, and never invents one', () => {
+    // A steer bought just before the phone locked is still owed its next hand
+    // (2026-09-29, `steerSure`); a poked `sure` must not decode into a promise
+    // the draws never made.
+    const steered = reduce(
+      { ...newRun(4), luck: 100 },
+      { type: 'SPEND', on: 'steer', colour: 'red' },
+    );
+    expect(steered.bias).toEqual({ colour: 'red', left: 3, sure: true });
+    expect(decodeRun(encodeRun(steered))?.bias).toEqual({ colour: 'red', left: 3, sure: true });
+
+    const poked = JSON.parse(encodeRun(steered)) as Record<string, unknown>;
+    poked['bias'] = { colour: 'red', left: 3, sure: 'yes' };
+    expect(decodeRun(JSON.stringify(poked))?.bias).toBeNull();
+  });
+
   it('keeps playing afterwards, which is the point of not rejecting it', () => {
     const state = reduce(newRun(4), { type: 'PLACE', hex: legalPlacements(newRun(4).cells)[0]! });
     const back = decodeRun(stripped(state, LATER));

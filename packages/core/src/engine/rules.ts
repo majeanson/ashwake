@@ -23,6 +23,17 @@ export const costOf = (placements: number, t: Tuning): number =>
   t.baseCost + Math.floor(Math.max(0, placements - t.costGrace) / t.costRisesEvery);
 
 /**
+ * How many draws a STEER reaches past the hand it redraws (2026-09-29).
+ *
+ * The steer's draws are spent drawing, the new hand first, so of six a hand
+ * of three takes three and three are left for what comes after. The purse
+ * said "the next 6 draws" beside "a new hand" until today — both halves of
+ * one count, printed as if they were two.
+ */
+export const steerDrawsAfterHand = (t: Tuning): number =>
+  Math.max(0, (t.steerDraws > 0 ? t.steerDraws : t.colourBiasDraws) - t.draftWidth);
+
+/**
  * You may place while you hold any tiles at all, even fewer than the cost.
  *
  * This is DESIGN.md's "at zero: one last tile, one last harvest", and it is one

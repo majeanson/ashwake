@@ -10,6 +10,8 @@ import {
   previewWorth,
   ripeClusters,
 } from '../src/engine/rules';
+import { biomeAt } from '../src/engine/world';
+import type { Colour } from '../src/content/tuning';
 import type { Action, GameState } from '../src/engine/state';
 import {
   bank20,
@@ -183,6 +185,38 @@ const luckLine = (k: number, how: 'reroll' | 'forge' | 'steer'): Policy => {
   };
 };
 
+/**
+ * THE THOUGHTFUL STEER (2026-09-29, Marc: "finding the right color for the map
+ * (steer) should be a thoughtful decision"). `luckLine(k, 'steer')` leaned
+ * toward whatever the board already held most of, which is the one colour a
+ * hand least needs more of. This one reads the GROUND: the colour most of the
+ * spots it could build on are native to, and only when the hand holds no card
+ * of it. A tile on its own ground scores a match for free, paid twice since
+ * `identityBonusRate` 2.
+ */
+const steerMap = (k: number): Policy => {
+  const base = popAt(k);
+  return {
+    name: `popAt${k}+map`,
+    note: `popAt${k}, steering to the colour of the ground it can build on.`,
+    decide(state, s) {
+      if (biggest(state) < k && canPlaceNow(state) && canSpend(state, 'steer')) {
+        const counts = new Map<Colour, number>();
+        for (const hex of legalPlacements(state.cells, state.tuning)) {
+          const h = parse(hex);
+          const ground = biomeAt(state.rootSeed, h.q, h.r, state.tuning);
+          if (ground !== null) counts.set(ground, (counts.get(ground) ?? 0) + 1);
+        }
+        let top: Colour | null = null;
+        for (const [c, n] of counts) if (top === null || n > (counts.get(top) ?? 0)) top = c;
+        if (top !== null && !state.draft.some((t) => t.colour === top))
+          return [[{ type: 'SPEND', on: 'steer', colour: top }], s];
+      }
+      return base.decide(state, s);
+    },
+  };
+};
+
 /** What one run felt like, measured from the inside. */
 type Felt = {
   points: number;
@@ -337,6 +371,8 @@ function main(): void {
     luckLine(8, 'steer'),
     luckLine(8, 'reroll'),
     luckLine(4, 'steer'),
+    steerMap(8),
+    steerMap(4),
   ];
   const people = [randomLegal, greedy, timid, bank3, bank20, spender, seeker, chooser, tourist];
   const blinds = [4, 8, 12].map(colourBlind);

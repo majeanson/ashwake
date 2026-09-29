@@ -67,7 +67,12 @@ type Rolled = { readonly tiles: RngStream; readonly loot: RngStream };
  * draw rather than stored, so the bias is always exactly what state says.
  */
 function weightsFor(t: Tuning, bias: GameState['bias']): readonly (readonly [Colour, number])[] {
-  if (bias === null || bias.left <= 0 || t.colourBiasWeight <= 0) return COLOUR_WEIGHTS;
+  if (bias === null || bias.left <= 0) return COLOUR_WEIGHTS;
+  // A STEER that guarantees (`steerSure`) is a promise, not odds: its colour
+  // is the only one on the table. The draw still spends one roll of the tile
+  // stream, so the tiles after it are the tiles they would have been.
+  if (bias.sure === true) return [[bias.colour, 1]];
+  if (t.colourBiasWeight <= 0) return COLOUR_WEIGHTS;
   return COLOUR_WEIGHTS.map(([colour, weight]) =>
     colour === bias.colour ? [colour, weight + t.colourBiasWeight] : [colour, weight],
   );
@@ -112,7 +117,7 @@ function rollDraft(
     draft.push(rolled.tile);
     cur = rolled;
     if (left !== null) {
-      left = left.left > 1 ? { colour: left.colour, left: left.left - 1 } : null;
+      left = left.left > 1 ? { ...left, left: left.left - 1 } : null;
     }
   }
   return { draft, bias: left, ...cur };
@@ -402,8 +407,16 @@ function spendLuck(state: GameState, on: Spend, colour?: Colour): GameState {
     return { ...state, luck, draft };
   }
 
+  // A paid steer may run longer than a pop's free lean, and may be a
+  // guarantee rather than a lean (Marc, 2026-09-29) — see `steerSure`.
   const bias =
-    on === 'steer' && colour !== undefined ? { colour, left: t.colourBiasDraws } : state.bias;
+    on === 'steer' && colour !== undefined
+      ? {
+          colour,
+          left: t.steerDraws > 0 ? t.steerDraws : t.colourBiasDraws,
+          ...(t.steerSure ? { sure: true as const } : {}),
+        }
+      : state.bias;
   const rolled = rollDraft(state.rng.tiles, state.rng.loot, t, luck, bias);
   return {
     ...state,

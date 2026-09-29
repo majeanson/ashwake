@@ -318,6 +318,8 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       redraw: (cost) => `REDRAW · ${cost}. Throw this hand away for a new one.`,
       steer: (name, cost, draws) =>
         `${name} · ${cost}. A hand leaning ${name}, and the next ${draws} draws with it.`,
+      steerSure: (name, cost, draws) =>
+        `${name} · ${cost}. A whole hand of ${name}, and the next ${draws} draws too.`,
       forge: (cost) => `FORGE · ${cost}. Turn the selected card UNIQUE.`,
       sacrifice: (pct) =>
         `SACRIFICE LUCK: the WHOLE purse traded for relics at ${pct}%. Better than dying on it.`,
@@ -593,6 +595,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     reroll: (paid) => `A fresh hand, for ${paid} luck.`,
     steer: (name, draws, paid) =>
       `${name} runs hot: a new hand drawn under it, and the next ${draws} draws lean its way. ${paid} luck.`,
+    steerSure: (name, draws, paid) =>
+      `${name}, guaranteed: a whole hand of it, and the next ${draws} draws too. ${paid} luck.`,
     forge: (paid) =>
       `Forged UNIQUE: wild, and every match it makes counts double, both ways. ${paid} luck.`,
     tithe: (paid, relics) =>

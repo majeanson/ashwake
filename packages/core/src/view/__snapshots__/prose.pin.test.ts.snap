@@ -360,19 +360,19 @@ Every button under your hand is priced in luck, and you CAN lose it all: whateve
       },
       {
         "colour": "green",
-        "text": "FARM · 30. A hand leaning FARM, and the next 6 draws with it.",
+        "text": "FARM · 20. A whole hand of FARM, and the next 3 draws too.",
       },
       {
         "colour": "yellow",
-        "text": "MARKET · 30. A hand leaning MARKET, and the next 6 draws with it.",
+        "text": "MARKET · 20. A whole hand of MARKET, and the next 3 draws too.",
       },
       {
         "colour": "red",
-        "text": "QUARRY · 30. A hand leaning QUARRY, and the next 6 draws with it.",
+        "text": "QUARRY · 20. A whole hand of QUARRY, and the next 3 draws too.",
       },
       {
         "colour": "blue",
-        "text": "ROADS · 30. A hand leaning ROADS, and the next 6 draws with it.",
+        "text": "ROADS · 20. A whole hand of ROADS, and the next 3 draws too.",
       },
       {
         "text": "FORGE · 40. Turn the selected card UNIQUE.",
@@ -389,19 +389,19 @@ Every button under your hand is priced in luck, and you CAN lose it all: the run
       },
       {
         "colour": "green",
-        "text": "FARM · 30. A hand leaning FARM, and the next 6 draws with it.",
+        "text": "FARM · 20. A whole hand of FARM, and the next 3 draws too.",
       },
       {
         "colour": "yellow",
-        "text": "MARKET · 30. A hand leaning MARKET, and the next 6 draws with it.",
+        "text": "MARKET · 20. A whole hand of MARKET, and the next 3 draws too.",
       },
       {
         "colour": "red",
-        "text": "QUARRY · 30. A hand leaning QUARRY, and the next 6 draws with it.",
+        "text": "QUARRY · 20. A whole hand of QUARRY, and the next 3 draws too.",
       },
       {
         "colour": "blue",
-        "text": "ROADS · 30. A hand leaning ROADS, and the next 6 draws with it.",
+        "text": "ROADS · 20. A whole hand of ROADS, and the next 3 draws too.",
       },
       {
         "text": "FORGE · 40. Turn the selected card UNIQUE.",
@@ -1012,19 +1012,19 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui 
       },
       {
         "colour": "green",
-        "text": "FERME · 30. Une main qui penche FERME, et les 6 prochaines pioches avec.",
+        "text": "FERME · 20. Une main entière de FERME, et les 3 prochaines pioches aussi.",
       },
       {
         "colour": "yellow",
-        "text": "MARCHÉ · 30. Une main qui penche MARCHÉ, et les 6 prochaines pioches avec.",
+        "text": "MARCHÉ · 20. Une main entière de MARCHÉ, et les 3 prochaines pioches aussi.",
       },
       {
         "colour": "red",
-        "text": "CARRIÈRE · 30. Une main qui penche CARRIÈRE, et les 6 prochaines pioches avec.",
+        "text": "CARRIÈRE · 20. Une main entière de CARRIÈRE, et les 3 prochaines pioches aussi.",
       },
       {
         "colour": "blue",
-        "text": "CHEMINS · 30. Une main qui penche CHEMINS, et les 6 prochaines pioches avec.",
+        "text": "CHEMINS · 20. Une main entière de CHEMINS, et les 3 prochaines pioches aussi.",
       },
       {
         "text": "FORGER · 40. Rends UNIQUE la carte choisie.",
@@ -1041,19 +1041,19 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin 
       },
       {
         "colour": "green",
-        "text": "FERME · 30. Une main qui penche FERME, et les 6 prochaines pioches avec.",
+        "text": "FERME · 20. Une main entière de FERME, et les 3 prochaines pioches aussi.",
       },
       {
         "colour": "yellow",
-        "text": "MARCHÉ · 30. Une main qui penche MARCHÉ, et les 6 prochaines pioches avec.",
+        "text": "MARCHÉ · 20. Une main entière de MARCHÉ, et les 3 prochaines pioches aussi.",
       },
       {
         "colour": "red",
-        "text": "CARRIÈRE · 30. Une main qui penche CARRIÈRE, et les 6 prochaines pioches avec.",
+        "text": "CARRIÈRE · 20. Une main entière de CARRIÈRE, et les 3 prochaines pioches aussi.",
       },
       {
         "colour": "blue",
-        "text": "CHEMINS · 30. Une main qui penche CHEMINS, et les 6 prochaines pioches avec.",
+        "text": "CHEMINS · 20. Une main entière de CHEMINS, et les 3 prochaines pioches aussi.",
       },
       {
         "text": "FORGER · 40. Rends UNIQUE la carte choisie.",

@@ -319,6 +319,8 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       redraw: (cost) => `REPIOCHER · ${cost}. Jette cette main pour une nouvelle.`,
       steer: (name, cost, draws) =>
         `${name} · ${cost}. Une main qui penche ${name}, et les ${draws} prochaines pioches avec.`,
+      steerSure: (name, cost, draws) =>
+        `${name} · ${cost}. Une main entière de ${name}, et les ${draws} prochaines pioches aussi.`,
       forge: (cost) => `FORGER · ${cost}. Rends UNIQUE la carte choisie.`,
       sacrifice: (pct) =>
         `SACRIFIER LA CHANCE${D}: TOUTE la bourse échangée contre des reliques à ${pc(pct)}. Mieux que de mourir dessus.`,
@@ -600,6 +602,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     reroll: (paid) => `Une main neuve, pour ${nb(paid)} chance.`,
     steer: (name, draws, paid) =>
       `${name} chauffe${D}: une nouvelle main tirée sous cette couleur, et les ${draws} prochaines pioches penchent de son côté. ${nb(paid)} chance.`,
+    steerSure: (name, draws, paid) =>
+      `${name} à coup sûr${D}: une main entière, et les ${draws} prochaines pioches aussi. ${nb(paid)} chance.`,
     forge: (paid) =>
       `Forgé UNIQUE${D}: sauvage, et chaque appariement compte double, des deux côtés. ${nb(paid)} chance.`,
     tithe: (paid, relics) =>

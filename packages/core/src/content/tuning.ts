@@ -539,6 +539,20 @@ export type Tuning = {
   readonly luckPerTile: number;
   readonly colourBiasDraws: number;
   readonly colourBiasWeight: number;
+  /**
+   * What a STEER buys, as against what a pop gives (2026-09-29, Marc: "using
+   * lucking to 'garantee' more of a color is a core concept i want to keep").
+   *
+   * Steer bought the same six-draw, weight-2 lean every pop hands out free to
+   * the colour it popped, so it guaranteed nothing and was dead at any price
+   * (`scripts/study.ts`). `steerSure` makes it a GUARANTEE: every one of its
+   * `steerDraws` draws is the colour named, the new hand first — a promise
+   * rather than odds, so the purse can say "all" and be true. `steerDraws`
+   * zero means the pop's own `colourBiasDraws`; `steerSure` false is the
+   * pop's lean. A tuning that names neither plays exactly as it did.
+   */
+  readonly steerSure: boolean;
+  readonly steerDraws: number;
 
   /**
    * What luck is SPENT on (2026-08-15, Marc played and reported the flaw:
@@ -808,6 +822,8 @@ export const BARE_TUNING: Tuning = {
   titheMin: 0,
   colourBiasDraws: 0,
   colourBiasWeight: 0,
+  steerSure: false,
+  steerDraws: 0,
 
   singlePayout: false,
   shrinesReborn: false,
@@ -1183,6 +1199,19 @@ export const TUNING: Tuning = {
   luckPerTile: 0.5,
   colourBiasDraws: 6,
   colourBiasWeight: 2,
+  // A STEER GUARANTEES (2026-09-29, Marc: "finding the right color for the
+  // map (steer) should be a thoughtful decision or at least using lucking to
+  // 'garantee' more of a color is a core concept i want to keep"). Six draws
+  // of the named colour, the new hand first, at 20 luck. Measured over 1000
+  // seeds (`scripts/study.ts`): steering to the colour of the ground ahead
+  // (`popAt8+map`) +7.5%, and +8.7% for small-pocket play; steering blind
+  // toward whatever the board already holds, -0.7% — so a thought-out steer
+  // pays and a careless one wastes its luck without being a trap. Runs +3
+  // placements. At 15 the careless steer was bought 19 times a run and lost;
+  // at 30 nothing paid. A lean (the old steer) was worth nothing at any
+  // weight: a three-card hand already offers enough colour to match.
+  steerSure: true,
+  steerDraws: 6,
 
   // Luck is a PURSE, not a bar (Marc played it, 2026-08-15). It buys nothing
   // passively here — permanent odds are bought with points between runs — so
@@ -1203,7 +1232,7 @@ export const TUNING: Tuning = {
   // other direction: live numbers here, records in the MENU tab.
   hidePoints: false,
   luckRerollCost: 12,
-  luckSteerCost: 30,
+  luckSteerCost: 20, // 30 until 2026-09-29 — see `steerSure`
   // 75 until 2026-09-29 (Marc, from the balance study): luck was mostly
   // never spent, and forge — the one spend that pays — at 75 was a purse
   // most runs never filled. At 40, forging lines score +13% (popAt8+forge
