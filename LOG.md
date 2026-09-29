@@ -9542,3 +9542,49 @@ width less the mark and the gap, over the digits at 0.55em each (Cinzel's are
 five-digit score takes the room a single "8" does not need. Measured: every
 number 23.8 px at 360 and 390, 20-22 px at 320, nothing overlapping. It is the
 first row of the first minute, so round nine is that one look.
+
+### Session 117 — the week's desk work, and one open item that was never open (2026-09-29)
+
+**Question:** of what is left before v2.0, what can be closed without Marc?
+
+**Answer: all of it but the stranger — one item by finding it was already done,
+and two by asking.** The
+plan for the week (Marc: _"lets plan the week"_) put four pieces of desk work
+beside Session C, which has no stranger lined up yet; round nine
+(`r9-header`) is still unanswered on the sheet, so PLAYTEST.md's build blank
+stays blank.
+
+- **The board's fit already stands the board up.** NEXT.md §3 carried _"the
+  fit ignores how tall a tile stands"_ as a framing decision frozen until
+  Session C. It is not true and never was: `frameFor` has reserved
+  `tallest × sin(tilt)` of sky since Stage 2b, `tallest` is
+  `tallestOf(cells, relief)` with the lift in it, and `camera.test.ts` holds
+  every corner at floor and top height inside the phone. The 2026-09-10 sweep
+  read `h = 0` at every `screenOf` call and did not read the line beneath
+  it. The one docblock that said height was _"irrelevant to where a hex lands
+  on screen"_ (`Board.tsx`, the marker's lean) was the false sentence, and it
+  now says why the marker asks the ground instead. Struck; nothing to decide.
+- **The flakes are quiet.** Sixteen pushes with `e2e` green on both engines
+  since the last failure, eleven after `b514f6f`. Noted in NEXT.md §4, still
+  watched.
+- **The cutover's one unknown is known.** Step 3 said whether wrangler moves a
+  custom domain off another worker was not confirmed. Its source says: in a
+  terminal it asks, and without a TTY it overrides origin and DNS record
+  without asking. So step 2 (disarm tiles' CI) and "do not push" in step 0 are
+  what keep a CI job from moving the hostname by itself. Step 1's read-only
+  pre-flight was rehearsed and works. Both written into `CUTOVER.md`.
+
+**D22 and D23 were put to Marc as options, not guessed at, and he took the
+recommendation on each** (`DECISIONS.md` D13). D22: keep _"Nothing leaves
+your phone"_, collect nothing. D23: one line on the ending of the device's
+first finished run in a world, naming what it opened (a world that remembers,
+a shop whose purchases carry), and no unlock. Built behind `ui.firstRun`, off.
+**The flag is the timing ruling in code**: a stranger must not meet it, so it
+lights by deleting the flag after Session C, never by flipping its default,
+since the registry's own test holds every flag off. The shell decides the
+whole condition (`standing.run === 1`, null on a daily and a detour). Two
+browser tests: dark on RUN 1 as shipped, and with `?ff=ui.firstRun` present,
+visible and standing over the shop it names. **The French line is Marc's to
+read**, like every new sentence. `prose.pin`'s two snapshots were re-recorded for
+the one thing they gained, the flag's row (label and note, both languages);
+nothing else in either moved.

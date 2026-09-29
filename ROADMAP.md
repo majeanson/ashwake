@@ -141,7 +141,9 @@ worker; v1 stays reachable on its workers.dev host and by tag.
       (the golden sim diff green) and its own look.
 - [ ] **A stranger finished a run and chose to start another** — on v2
       (`DECISIONS.md` D1 ruling 3; Ashwake 1's D4).
-- [ ] **Ashwake 1's D22 and D23 answered.**
+- [x] **Ashwake 1's D22 and D23 answered** — 2026-09-29, `DECISIONS.md`
+      D13: keep the privacy line; one end-screen beat on the first finished
+      run, behind a flag that stays off until Session C has run.
 
 ## Parking lot
 

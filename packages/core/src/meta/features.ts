@@ -110,6 +110,20 @@ export const FEATURES = [
     wired: true,
     player: true,
   },
+  // D23, the first-run acknowledgement (DECISIONS.md D13, 2026-09-29): one
+  // line on the end screen of the device's FIRST finished run in a world,
+  // naming what that run opened. Off, and off by ruling rather than by habit:
+  // a stranger who starts a second run after a congratulation tells us nothing
+  // about the game, so it stays dark until Session C has run. Then this entry
+  // is DELETED and the line is unconditional — every flag here defaults off,
+  // with no exceptions (`features.test.ts`), so it is never flipped on. Not a
+  // player's switch; `?ff=ui.firstRun` shows it.
+  {
+    id: 'ui.firstRun',
+    defaultOn: false,
+    wired: true,
+    player: false,
+  },
 ] as const satisfies readonly FeatureDef[];
 
 /** The switches a player's SETTINGS screen offers. */

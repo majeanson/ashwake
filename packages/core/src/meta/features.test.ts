@@ -52,7 +52,11 @@ describe('the registry', () => {
     // and nothing a shared seed would replay differently. Phrased as AWAKE so
     // that OFF is the shipped board and the rule above keeps no exception.
     const ids = FEATURES.map((f) => f.id);
-    expect(ids).toEqual(['debug.overlay', 'ui.sound', 'ui.haptics', 'board.awake']);
+    //
+    // ui.firstRun joined 2026-09-29 (D23, DECISIONS.md D13): one line on the
+    // end screen of a device's first finished run. Presentation — it says
+    // what the run opened and opens nothing — and dark until Session C.
+    expect(ids).toEqual(['debug.overlay', 'ui.sound', 'ui.haptics', 'board.awake', 'ui.firstRun']);
   });
 
   it('describes every flag, so the registry never becomes a list of mystery ids', () => {

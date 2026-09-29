@@ -488,7 +488,7 @@ export type Strings = {
   >;
   readonly feature: Readonly<
     Record<
-      'debug.overlay' | 'ui.sound' | 'ui.haptics' | 'board.awake',
+      'debug.overlay' | 'ui.sound' | 'ui.haptics' | 'board.awake' | 'ui.firstRun',
       { readonly label: string; readonly note: string }
     >
   >;
@@ -1233,6 +1233,14 @@ export type Strings = {
        */
       readonly importKeeps: string;
       readonly relicsBanked: (n: number) => string;
+      /**
+       * THE FIRST FINISHED RUN, acknowledged (D23; `DECISIONS.md` D13,
+       * 2026-09-29). Said once, on the ending of a device's first run in a
+       * world, behind `ui.firstRun`. It names what the run OPENED — a world
+       * that remembers, and a shop whose purchases carry — and no unlock, by
+       * ruling: run one already opens those, and what was missing was saying so.
+       */
+      readonly firstRun: string;
       /**
        * The run's own shape, as the six facts Ashwake 1 fixed the grid at.
        *

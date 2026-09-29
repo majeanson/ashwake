@@ -181,6 +181,14 @@ type EndScreenProps = {
    * and a screen that derived it would be a second place for it to be wrong.
    */
   readonly backUp?: boolean | undefined;
+  /**
+   * THIS WAS THE DEVICE'S FIRST FINISHED RUN IN A WORLD (D23; `DECISIONS.md`
+   * D13, 2026-09-29), and the `ui.firstRun` flag is on.
+   *
+   * The shell decides all of it, for `backUp`'s reason: "first" is a fact about
+   * the device's record book, and the flag is the shell's to read.
+   */
+  readonly firstRun?: boolean | undefined;
   /** This run came from a shared link, so the chain can carry on from here. */
   readonly fromLink?: boolean;
 };
@@ -200,6 +208,7 @@ export function EndScreen({
   daily,
   importDaily,
   backUp,
+  firstRun,
   fromLink,
   hud,
   harvests,
@@ -460,6 +469,17 @@ export function EndScreen({
       {world != null && hud.relics > 0 && (
         <p className="note end-banked" data-hud="banked">
           <Icon name="relic" /> {s.ui.ending.relicsBanked(hud.relics)}
+        </p>
+      )}
+
+      {/*
+        THE FIRST FINISHED RUN, said once (D23, 2026-09-29) — see `firstRun`.
+        Under the relics and over the shop it points at, because the sentence
+        is about the two of them.
+      */}
+      {firstRun === true && (
+        <p className="note end-first" data-hud="first-run">
+          {s.ui.ending.firstRun}
         </p>
       )}
 

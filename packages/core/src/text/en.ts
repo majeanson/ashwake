@@ -527,6 +527,10 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       label: 'Board always awake',
       note: 'Normally the board stops breathing after fifteen untouched seconds, to spare the battery. On, it never sleeps.',
     },
+    'ui.firstRun': {
+      label: 'First run acknowledged',
+      note: 'At the end of your very first run in a world, one line says what it just opened.',
+    },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
   story: [
@@ -784,6 +788,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       importKeeps:
         'The ground you walked and the territories you claimed come with it. The score and the relics stay behind, and the shrines wake up.',
       relicsBanked: (n) => `${n} relics banked`,
+      firstRun:
+        'Your first run is done, and your world remembers it. THE SHOP below spends relics, and what you buy comes with you into every run after this one.',
       placements: 'PLACEMENTS',
       popped: 'POPPED',
       biggestPop: 'BIGGEST POP',

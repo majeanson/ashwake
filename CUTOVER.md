@@ -75,7 +75,11 @@ across (decision 3).
 
 **1. Pre-flight, read-only.** `wrangler deployments list` for both workers, so
 there are version ids to roll back to, and `curl /version.json` on all four
-hosts.
+hosts. **Rehearsed 2026-09-29, all of it working:** tiles on both of its hosts
+answered `7b9a751` (version `18fc34c1…`), ashwake on both of its answered
+`de4c781` (version `ece2391c…`), `DEPLOY_ENABLED` was `true`, and every
+hard-coded hostname outside the docs is one step 0 names (seven lines in four
+files, `git grep marcportal`).
 
 **2. Disarm tiles' CI.** `gh variable set DEPLOY_ENABLED --body false -R majeanson/tiles`.
 Check with `gh variable list -R majeanson/tiles`. Undo: set it back to `true`.
@@ -83,10 +87,21 @@ Check with `gh variable list -R majeanson/tiles`. Undo: set it back to `true`.
 **3. Move the hostname, by hand.** On the prepared commit, from a clean tree:
 `pnpm build && pnpm exec wrangler deploy`, so the prompt about
 tiles.marcportal.com belonging to `tiles` is seen and answered by a person.
-Whether wrangler moves a domain bound to another worker, and what it does
-without a prompt in CI, was **not** confirmed; the dashboard (tiles → Domains →
-remove, then add it on `ashwake`) is the other way, with a short window where
-the host answers nothing.
+The dashboard (tiles → Domains → remove, then add it on `ashwake`) is the other
+way, with a short window where the host answers nothing.
+
+**What wrangler does here — read from its source, 2026-09-29** (wrangler
+4.127.1, `publishCustomDomains` in `wrangler-dist/cli.js`). In a terminal it
+asks _"Custom Domains already exist for these domains: • tiles.marcportal.com
+(used as a domain for "tiles") Update them to point to this script
+instead?"_; yes moves the domain, no skips it and fails the deploy. **Without a
+TTY — CI, a piped shell, an agent's shell — it asks nothing and overrides the
+origin AND the DNS record.** So the order above is load-bearing, not caution:
+the prepared commit pushed before this step would take the hostname silently
+from CI, and a tiles push with `DEPLOY_ENABLED` still true would take it
+back the same way. Run this step yourself, in a real terminal. Not run: what
+the replace does to `ashwake.marcportal.com` when it is dropped from `routes`
+(inferred: removed from the worker, since the call replaces the worker's set).
 
 - Check: `DEPLOY_URL=https://tiles.marcportal.com pnpm verify:deploy` (the sha,
   bundles, fonts, install surface, the stamped worker and the CSP);

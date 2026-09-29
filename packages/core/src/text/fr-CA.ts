@@ -533,6 +533,10 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       label: 'Plateau toujours éveillé',
       note: 'D’habitude, le plateau cesse de respirer après quinze secondes sans être touché, pour ménager la batterie. Allumé, il ne s’endort jamais.',
     },
+    'ui.firstRun': {
+      label: 'Première partie soulignée',
+      note: 'À la fin de ta toute première partie dans un monde, une ligne dit ce qu’elle vient d’ouvrir.',
+    },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
   story: [
@@ -799,6 +803,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       importKeeps:
         'Le terrain que tu as parcouru et les territoires que tu as réclamés te suivent. Le score et les reliques restent derrière, et les sanctuaires s’éveillent.',
       relicsBanked: (n) => `${nb(n)} reliques mises de côté`,
+      firstRun:
+        'Ta première partie est faite, et ton monde s’en souvient. LA BOUTIQUE plus bas dépense les reliques, et ce que tu achètes te suit dans chaque partie qui vient.',
       placements: 'POSES',
       popped: 'RÉCOLTES',
       biggestPop: 'PLUS GROSSE',

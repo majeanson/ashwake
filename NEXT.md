@@ -53,7 +53,10 @@ So the road to v2.0 is now:
 
 1. **Session C**, the stranger test, `PLAYTEST.md`. v2.0's gate, never run on
    either body.
-2. **Then D22 and D23** (§3), both ruled to wait for it.
+2. **Then light D23**: delete the `ui.firstRun` flag in `meta/features.ts`
+   so the first-run line is unconditional (built and tested dark on
+   2026-09-29, §3). D22 is ruled and needs nothing: the promise stays.
+3. **Then the cutover** (§5c, `CUTOVER.md`), and v2.0.
 
 The friends keep playing through all of it — Marc: _"carry on forward while
 users are playing … don't care about midgame updates"_. Work that does not
@@ -96,18 +99,24 @@ it is the first row of the first minute, so **round nine is that one look
 
 - **~~The ✦ marks in the diary~~ — SHOWN 2026-09-24**, like Ashwake 1 (§1, item 3).
 - **~~The atlas~~ — MOVED 2026-09-24** to the hall of fame (§1, item 4).
-- **D22 — collecting play data, and the privacy line.** Marc, 2026-09-24:
-  **after Session C.** SETTINGS still says _"Nothing leaves your phone: no
-  account, no analytics, no server."_; the two honest options are unchanged.
-  Still in `ROADMAP.md`'s definition of done.
-- **D23 — the first-run acknowledgement.** Sequenced AFTER Session C, on
-  purpose: shipped before it, a stranger who starts a second run tells us
+- **~~D22 — collecting play data~~ — RULED 2026-09-29: (a), keep the
+  promise.** Marc chose to keep _"Nothing leaves your phone: no account, no
+  analytics, no server."_ No collection; balance stays answered by the sim
+  harness and the reports players choose to send (`DECISIONS.md` D13).
+- **D23 — the first-run acknowledgement. RULED 2026-09-29: an end-screen
+  beat**, on the first finished run only, naming what just opened; no new
+  unlock axis (`DECISIONS.md` D13). Built behind a flag that stays OFF until
+  Session C has run: shipped on, a stranger who starts a second run tells us
   nothing about the game.
-- **The board's fit ignores how tall a tile stands.** `screenOf` gets height
-  `0` at every production site (`board/camera.ts`, `board/cursor.ts`), so the
-  fit measures the ground while relief lifts a hex up to ~0.55 radii (about
-  20 px at the top edge). A framing change on the first screen, so **frozen
-  until Session C** with the rest of the first minute.
+- **~~The board's fit ignores how tall a tile stands~~ — NOT TRUE, checked
+  2026-09-29.** `frameFor` has reserved `tallest × sin(tilt)` of sky at the
+  top edge since Stage 2b (`2a9cd3c`); `tallest` is the relief-lifted
+  `tallestOf` (`Board.tsx`); and `camera.test.ts` (_"keeps the whole board on
+  screen at every angle, walls and all"_) holds every corner at floor AND top
+  height inside the phone. The 2026-09-10 finding read `h = 0`
+  at the call sites and missed the `sky` term. The remaining zeros are right:
+  the drag inverse maps a finger onto the ground, and an arrow asks which
+  neighbour lies that way on the ground. Nothing to decide.
 - **~~TREASURE's price~~ — RETIRED 2026-09-24.** Marc: _"i never used that
   option get rid of the whole concept."_ `treasureNeed` is 0 and every
   surface is gone (`content/tuning.ts` says what stays and why).
@@ -145,7 +154,9 @@ it is the first row of the first minute, so **round nine is that one look
   cannot prove it — 60/60 with the fix, and 60/60 without it as a control — so
   the fix stands on the mechanism. **If it fails again, the theory is wrong**:
   read the screenshot before touching the spec; `e2e` gates nothing, `smoke`
-  does.
+  does. **2026-09-29: sixteen pushes green in a row** on both engines since
+  the last failure (`3df3fe6` → `de4c781`), eleven of them after the fix in
+  `b514f6f`.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the
   theory was disproved (`e2e/stacking.spec.ts` asks the engine). Nothing to do

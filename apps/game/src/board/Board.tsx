@@ -693,8 +693,10 @@ export function Board(props: BoardProps) {
     if (props.popped !== null) setFinished(props.popped.id);
   }, [props.popped]);
 
-  /** The angle, as the marker's arithmetic wants it. Height is irrelevant to
-   *  where a hex lands on screen, so the tallest is not asked for. */
+  /** The angle, as the marker's arithmetic wants it. An arrow asks which
+   *  neighbour lies that way on the GROUND — a hex's lift would bend the
+   *  answer by how tall its neighbours stand — so the tallest is not asked
+   *  for. (Height does move a hex on screen; the fit's `sky` pays for it.) */
   const leanFor = useMemo<Lean>(
     () => ({ tilt: lean.tilt, yaw: lean.yaw, tallest: 0 }),
     [lean.tilt, lean.yaw],

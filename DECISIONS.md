@@ -462,6 +462,26 @@ comments in `theme/index.ts`, `contrast.test.ts` and elsewhere that measure
 torchlit's own numbers stay as they were graded; they are a record of a
 direction that shipped and was retired; the direction itself is not.
 
+### D13 — Ashwake 1's D22 and D23, ruled: keep the promise, and one beat on the first finished run — RULED 2026-09-29
+
+Both carried over from Ashwake 1 unchanged (`../tiles/DECISIONS.md`), and both
+are in `ROADMAP.md`'s definition of done. Put to Marc as options with a
+recommendation; he took the recommendation on each.
+
+**D22 — (a), keep the line.** SETTINGS goes on saying _"Nothing leaves your
+phone: no account, no analytics, no server."_, and it stays true: no
+collection, no backend. Balance is answered by the sim harness and by the
+reports a player chooses to send. There was never a third option where the
+line stays and data flows, and (b) would have needed a server this game does
+not have.
+
+**D23 — an end-screen beat, not an unlock.** On the FIRST finished run only,
+the end screen names what that run just opened. No third unlock axis: run one
+already opens the shop door and mints relics, and what was missing was the
+acknowledgement, not the unlock. **Its timing ruling stands**: it ships behind
+a flag that stays off until Session C has run, because a stranger who starts a
+second run after a congratulation tells us nothing about the game.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.
@@ -486,5 +506,6 @@ direction that shipped and was retired; the direction itself is not.
   a phone set to light or high contrast, so the only choice left is the
   device's.
 - **Session C** — v2.0's gate. Unattempted on either body.
-- Ashwake 1's D22 (telemetry and the privacy line) and D23 (the first-run
-  acknowledgement, only after Session C) carry over unchanged.
+- ~~Ashwake 1's D22 (telemetry and the privacy line) and D23 (the first-run
+  acknowledgement, only after Session C) carry over unchanged.~~ **RULED
+  2026-09-29 (D13).**

@@ -3863,6 +3863,11 @@ function Game() {
                threshold and the once-ever mark are settled where the ending
                banks, because `markSaid` is a write. See the banking effect. */
             backUp={showBackUp}
+            /* D23 (DECISIONS.md D13): the device's first finished run in a
+               world. `standing.run` counts home runs device-wide and is null
+               on a daily and a detour, so `=== 1` is the whole of "first".
+               Dark behind `ui.firstRun` until Session C has run. */
+            firstRun={isEnabled(features, 'ui.firstRun') && standing?.run === 1}
             fromLink={session.detour}
           />
         </div>

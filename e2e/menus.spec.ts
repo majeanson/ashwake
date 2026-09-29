@@ -149,6 +149,9 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   await expect(end.locator('[data-hud="which-run"]')).toBeVisible();
   await expect(end.locator('[data-hud="new-best"]')).toBeVisible();
   expect(await end.locator('[data-hud="short-of-best"]').count()).toBe(0);
+  // D23's line is dark until Session C has run (`ui.firstRun`, off): this is
+  // RUN 1, the one ending it would speak on, and it must not.
+  expect(await end.locator('[data-hud="first-run"]').count()).toBe(0);
 
   // The breakdown is folded, and opening it is the whole of the answer to
   // "why was the number what it was".
@@ -215,6 +218,34 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   await row.locator('summary').click();
   await expect(row.locator('.fact-label')).toHaveCount(9);
   await expect(row.locator('.fact-value').filter({ hasText: '·' })).toHaveCount(1);
+
+  expect(errors).toEqual([]);
+});
+
+/*
+ * D23, THE FIRST FINISHED RUN (DECISIONS.md D13, 2026-09-29), with its flag
+ * on — the only way to reach it until Session C has run. A flag a test cannot
+ * turn on is a line nobody can prove is wired: the test above proves it is
+ * dark on RUN 1, and this one that the same ending speaks once it is lit, and
+ * that the line stands over the shop it points at.
+ */
+test('the first finished run says what it opened, behind its flag', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?end=1&taught=1&ff=ui.firstRun');
+  await begin(page);
+
+  const end = page.locator('[data-hud="end"]');
+  await end.waitFor({ state: 'visible' });
+  await expect(end.locator('[data-hud="which-run"]')).toBeVisible();
+  const line = end.locator('[data-hud="first-run"]');
+  await expect(line).toHaveCount(1);
+  await expect(line).toBeVisible();
+  const lineTop = await line.evaluate((el) => el.getBoundingClientRect().top);
+  const shopTop = await end
+    .locator('.shop-row')
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().top);
+  expect(lineTop, 'the first-run line stands over the shop it names').toBeLessThan(shopTop);
 
   expect(errors).toEqual([]);
 });

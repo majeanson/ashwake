@@ -444,6 +444,11 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "Board always awake",
       "Normally the board stops breathing after fifteen untouched seconds, to spare the battery. On, it never sleeps.",
     ],
+    [
+      "ui.firstRun",
+      "First run acknowledged",
+      "At the end of your very first run in a world, one line says what it just opened.",
+    ],
   ],
   "goals": [
     [
@@ -1090,6 +1095,11 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "board.awake",
       "Plateau toujours éveillé",
       "D’habitude, le plateau cesse de respirer après quinze secondes sans être touché, pour ménager la batterie. Allumé, il ne s’endort jamais.",
+    ],
+    [
+      "ui.firstRun",
+      "Première partie soulignée",
+      "À la fin de ta toute première partie dans un monde, une ligne dit ce qu’elle vient d’ouvrir.",
     ],
   ],
   "goals": [
