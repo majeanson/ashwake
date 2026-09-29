@@ -9623,3 +9623,45 @@ shadows it. **Not explained**: the same suite passed on the same Node at 12:47
 the same day, and nothing in `node_modules`, `.npmrc` or the Node binary moved
 between the two runs. The shim makes the answer not matter; the question is
 written down so it is not mistaken for understood.
+
+**Session 117, the balance-and-fun study.** Marc picked the simulator from
+four fresh ideas and asked for _"general balance and fun after"_. The first
+thing read changed the question: under the shipped `singlePayout` a pop pays
+tiles AND points, so every bot's tiles-or-points choice is a label (`farm`,
+`hoard` and `survivor` are one row), and `burnLuck`/`burnRelics` are both 0,
+so SACRIFICE is hidden and nothing ever burns. The live decisions are which
+pocket, when, and whether to spend luck. `scripts/study.ts` measures those,
+beside `pnpm sim` rather than inside it so the golden file cannot move:
+
+```
+1000 seeds per line, shipped TUNING
+
+line              p10    med    p90    cv  place  pops  live%  which%  close  drought  peak  walk%  reach   <40  spends
+popAt1            304    458    667  0.31     73    42      0       0   0.03        7  0.55      5    8.9     1     0.0
+popAt2            430    618    889  0.28     84    28     74      42   0.36       10  0.58     10    9.6     0     0.0
+popAt3            528    762   1069  0.28     92    26     80      51   1.11       12  0.57     12   10.0     0     0.0
+popAt4            619    880   1249  0.27     97    25     82      53   2.03       14  0.57     13   10.4     0     0.0
+popAt5            671    970   1403  0.29     99    24     82      51   2.61       16  0.56     14   10.4     0     0.0
+popAt6            697   1021   1486  0.30    100    24     83      49   2.86       18  0.53     14   10.5     0     0.0
+popAt8            754   1182   1813  0.35    102    24     83      46   3.72       21  0.52     15   10.7     0     0.0
+popAt10           801   1259   2023  0.37    104    25     83      43   4.01       22  0.51     16   10.7     0     0.0
+popAt12           811   1301   2149  0.40    104    25     83      42   4.11       22  0.52     15   10.7     0     0.0
+popAt15           812   1333   2198  0.43    104    25     82      41   4.15       22  0.52     16   10.8     0     0.0
+popAt20           812   1334   2223  0.45    105    25     82      40   4.17       22  0.52     16   10.8     0     0.0
+popAt8+reroll     762   1184   1817  0.35    102    24     83      46   3.71       21  0.52     15   10.7     0     0.1
+popAt8+forge      881   1312   1968  0.33    108    26     83      45   3.96       21  0.52     15   11.1     0     3.2
+popAt8+steer      765   1184   1789  0.34    103    25     83      46   3.73       21  0.52     16   10.5     0     8.3
+random-legal      100    121    255  0.50     25     1     22       2   0.13       22  0.55     24    5.6   983     0.0
+greedy            304    458    667  0.31     73    42      0       0   0.03        7  0.55      5    8.9     1     0.0
+timid             479    684    970  0.28     87    28     69      35   1.23       12  0.54     10    9.7     0     0.0
+bank3             528    762   1069  0.28     92    26     80      51   1.11       12  0.57     12   10.0     0     0.0
+bank20            812   1334   2223  0.45    105    25     82      40   4.17       22  0.52     16   10.8     0     0.0
+spender           948   1462   2454  0.42    110    26     83      40   4.43       22  0.52     16   11.1     0     3.3
+seeker            603   1201   2313  0.52     82    14     77      31   3.33       24  0.55     18    9.9    41     0.0
+chooser           499    793   1334  0.42     85    21     75      44   0.07       19  0.44      4    9.6     0     0.0
+tourist           440    440    955  0.49     25     0      0       0   0.04       25  0.01    100   25.3   955     0.0
+```
+
+The findings are NEXT.md §3a, each Marc's to rule on. One sentence the data
+contradicted was fixed at once: `tuning.ts` spoke of an interior timing
+optimum that this economy does not have, and says so now with the numbers.

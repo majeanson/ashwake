@@ -133,6 +133,31 @@ up yet, so there is no hurry on it.
 
 ---
 
+## 3a. The balance-and-fun study — findings, each a decision of Marc's
+
+`packages/core/scripts/study.ts`, 1000 seeds, the shipped `TUNING`, run
+2026-09-29 (`LOG.md` Session 117 has the table). Bots are not people: these
+are places where fun is known to leak, not verdicts. **Any change here moves a
+rule, so it moves `sim.golden.txt` in the same commit.**
+
+- **Waiting is never wrong.** Popping at pocket size k scores 458 at k=1,
+  1182 at 8 and 1334 at 20, and never turns down. Waiting costs only close
+  calls (0 → 4 a run) and spread. The pop-or-wait question is on the table
+  on 82% of turns, but its answer is always "wait if you can".
+- **The run peaks at halftime.** The biggest pop lands on average 52% of the
+  way through, on every line. The second half is a wind-down under a rising
+  cost, not a climax.
+- **Two of the three luck spends buy nothing.** Forge pays: +11% median.
+  Steer is taken eight times a run and gains nothing, and reroll is almost
+  never worth taking. Luck mostly goes unspent and becomes relics at 5%.
+- **Chasing the glow is a trap for 4% of runs.** `seeker` dies before 40
+  placements in 41 runs out of 1000, and its median is 10% under plain
+  banking.
+- **The seed decides a lot.** The best line's 90th-percentile score is 2.7× its
+  10th. The skill gap is healthy all the same: greedy 458, patient 1334.
+- **Walking pays about 15% of the tiles**; pops pay the rest. Session 11 made
+  caches "the survival engine", and they are a supplement now.
+
 ## 4. Watching — no action unless it happens again
 
 - **`quota.spec.ts:185` on WebKit — back on this list the day it was taken
@@ -228,4 +253,6 @@ question, a leaderboard (needs a backend, D13), store wrappers, the
 waypoint-perk earn, world mood, ground-feeds-draft, storage compaction, the
 timeline's spine question (its ✦ half answered 2026-09-24: Marc had the
 marks shown in the diary, like Ashwake 1 — the spine itself stays parked), and pop-vs-burn-vs-wait (answered over weeks of
-play, not before a tag).
+play, not before a tag; its BURN half no longer exists — `burnLuck` and
+`burnRelics` are both 0 and SACRIFICE is hidden — and the harness's half is
+measured in §3a, 2026-09-29).

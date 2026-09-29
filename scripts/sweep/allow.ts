@@ -166,7 +166,10 @@ const HARNESS_RECORD: readonly Ruling[] = (
  *   - **`HarvestRecord.tiles`** stays. It is what one pop paid in TILES, and
  *     the end screen counts harvests by CHOICE instead — but it is a fact
  *     about a harvest that a reader of the log would reasonably expect to
- *     find, in the one record that describes a pop.
+ *     find, in the one record that describes a pop. **It has a reader now**
+ *     (2026-09-29): `packages/core/scripts/study.ts` weighs what pops paid in
+ *     tiles against what walking did, so its ruling left the list below — the
+ *     report's "Rulings that match nothing" said so the same day.
  *
  * And `RunDetail`'s six turned out not to be dead at all: they are the run's
  * SHAPE, the hall of fame prints four of nine, and `RunDetail`'s docblock
@@ -175,10 +178,7 @@ const HARNESS_RECORD: readonly Ruling[] = (
  * `TIMELINE_SPINE`'s note, and P7.7.
  */
 const SAVED_BLOB: readonly Ruling[] = (
-  [
-    'packages/core/src/engine/state.ts#GameState.version',
-    'packages/core/src/engine/state.ts#HarvestRecord.tiles',
-  ] as const
+  ['packages/core/src/engine/state.ts#GameState.version'] as const
 ).map((id) => ({
   id,
   on: '2026-09-10',

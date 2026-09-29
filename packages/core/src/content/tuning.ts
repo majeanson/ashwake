@@ -1018,6 +1018,14 @@ export const TUNING: Tuning = {
   // 58.5% without an interior optimum moving. Neither changes %tiles or the
   // relic economy — both measured unchanged across every sweep.
   //
+  // **There is no interior optimum under this economy (measured 2026-09-29,
+  // `scripts/study.ts`, 1000 seeds).** Popping the biggest pocket once it
+  // reaches k scores a median of 458 at k=1, 1182 at 8, 1301 at 12 and 1334 at
+  // 20: rising, then flat, never falling. A pocket past ~15 is almost never
+  // built before the purse runs out, so bank20, bank40 and bank80 play the
+  // same run move for move (`pnpm sim` shows three identical rows). Waiting
+  // costs close calls and spread, never score. `LOG.md` Session 117.
+  //
   // Second pass, 2026-09-04 — a played run's own receipt still read distance
   // 43% / pocket 27% / bounty 25% / identity (matches+power+rare+native) 5%,
   // and Marc, asked directly: distance still too dominant, and identity too
