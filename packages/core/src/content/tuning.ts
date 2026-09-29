@@ -1173,7 +1173,8 @@ export const TUNING: Tuning = {
   // passively here — permanent odds are bought with points between runs — so
   // these three prices are the whole of what popping early is for. Income is
   // about 10 a pop and a good run pops ~140 times, so a reroll is small
-  // change, a steered hand is a real decision, and a unique costs six pops.
+  // change, a steered hand is a real decision, and a unique costs four pops
+  // (six until forge came down to 40, 2026-09-29).
   luckMagicPerPop: 0,
   luckUniquePerPop: 0,
   luckCap: 99999,
@@ -1188,7 +1189,13 @@ export const TUNING: Tuning = {
   hidePoints: false,
   luckRerollCost: 12,
   luckSteerCost: 30,
-  luckForgeCost: 75,
+  // 75 until 2026-09-29 (Marc, from the balance study): luck was mostly
+  // never spent, and forge — the one spend that pays — at 75 was a purse
+  // most runs never filled. At 40, forging lines score +13% (popAt8+forge
+  // median 1328 -> 1501, 400 seeds) for +5% run length (108 -> 113
+  // placements), inside Marc's "dont want too much longer games". Lines that
+  // never spend are untouched. `scripts/study.ts`; `LOG.md` Session 117.
+  luckForgeCost: 40,
   // TITHE existed 2026-08-18 through 2026-09-03: a clean 3x what death pays
   // on unspent luck, so cashing out mid-run was a real alternative to
   // hoarding. Cut the same session and for the same reason as `burnRelics`

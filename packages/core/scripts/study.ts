@@ -1,4 +1,4 @@
-import { TUNING } from '../src/content/tuning';
+import { TUNING, type Tuning } from '../src/content/tuning';
 import { parse, distance } from '../src/engine/hex';
 import { canSpend, newRun, reduce } from '../src/engine/reduce';
 import { stream, type RngStream } from '../src/engine/rng';
@@ -159,10 +159,12 @@ type Felt = {
   popTiles: number;
   reach: number;
   spends: number;
+  /** Share of the pops' points earned in the last third of the run: the climax. */
+  late: number;
 };
 
-function feel(policy: Policy, seed: number): Felt {
-  let state = newRun(seed, TUNING, [], []);
+function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 0): Felt {
+  let state = newRun(seed, tuning, [], []);
   let dice: RngStream = stream((seed ^ 0x51ed270b) | 0);
   const f: Felt = {
     points: 0,
@@ -177,6 +179,7 @@ function feel(policy: Policy, seed: number): Felt {
     popTiles: 0,
     reach: 0,
     spends: 0,
+    late: 0,
   };
   let low = false;
   let sincePop = 0;
@@ -213,14 +216,32 @@ function feel(policy: Policy, seed: number): Felt {
       low = false;
     }
   }
+  /*
+   * THE LATE-RUN ESCALATION, prototyped as a re-score (2026-09-29, Marc chose
+   * it over "overripe pockets"): a pop landing after the run's n-th cost step
+   * is worth `1 + escalate × n` of itself. Faithful for these policies because
+   * none of them decides by points — they choose by pocket size — so the
+   * moves are the same and only what the pops were worth changes. `chooser`
+   * is the exception, and reads slightly low under it. No engine code until
+   * the rule is chosen.
+   */
+  const step = Math.max(1, tuning.costRisesEvery);
+  const worth = (h: { at: number; points: number }): number =>
+    h.points * (1 + escalate * Math.floor(h.at / step));
   let peak = 0;
   for (const h of state.log.harvests) {
-    if (h.points > peak) {
-      peak = h.points;
+    if (worth(h) > peak) {
+      peak = worth(h);
       f.peakAt = state.placements === 0 ? 0 : h.at / state.placements;
     }
   }
-  f.points = state.points;
+  const rawPops = state.log.harvests.reduce((a, h) => a + h.points, 0);
+  const popPts = state.log.harvests.reduce((a, h) => a + worth(h), 0);
+  f.points = Math.round(state.points - rawPops + popPts);
+  const latePts = state.log.harvests
+    .filter((h) => h.at >= (state.placements * 2) / 3)
+    .reduce((a, h) => a + worth(h), 0);
+  f.late = popPts === 0 ? 0 : latePts / popPts;
   f.placements = state.placements;
   f.pops = state.log.harvests.length;
   let reach = 0;
@@ -243,13 +264,47 @@ function main(): void {
   const seeds = i > 0 ? Number(process.argv[i + 1]) : 1000;
 
   const timing = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20].map(popAt);
-  const luck = (['reroll', 'forge', 'steer'] as const).map((h) => luckLine(8, h));
+  const luck = [
+    ...[2, 4, 6, 8, 12, 20].map((k) => luckLine(k, 'forge')),
+    luckLine(8, 'steer'),
+    luckLine(8, 'reroll'),
+    luckLine(4, 'steer'),
+  ];
   const people = [randomLegal, greedy, timid, bank3, bank20, spender, seeker, chooser, tourist];
-  const all = [...timing, popAt(8), ...luck, ...people].filter(
+  const every = [...timing, popAt(8), ...luck, ...people].filter(
     (p, n, a) => a.findIndex((q) => q.name === p.name) === n,
   );
 
-  console.log(`${seeds} seeds per line, shipped TUNING\n`);
+  /*
+   * A CANDIDATE is `--set key=value` (repeatable), typed by the shipped value
+   * the way `pnpm sim --set` types it, and `--lines a,b` narrows the table to
+   * the lines a question needs. The shipped economy is still the default: a
+   * bare run is the study as it was first measured.
+   */
+  const changed: string[] = [];
+  let tuning: Tuning = TUNING;
+  process.argv.forEach((arg, n) => {
+    if (arg !== '--set') return;
+    const setting = process.argv[n + 1] ?? '';
+    const eq = setting.indexOf('=');
+    const name = setting.slice(0, eq) as keyof Tuning;
+    if (eq < 0 || !(name in TUNING)) throw new Error(`--set: no such tuning key in "${setting}"`);
+    const raw = setting.slice(eq + 1);
+    const value = typeof TUNING[name] === 'boolean' ? raw === 'true' : Number(raw);
+    if (typeof value === 'number' && !Number.isFinite(value)) throw new Error(`--set ${setting}`);
+    tuning = { ...tuning, [name]: value };
+    changed.push(setting);
+  });
+  const x = process.argv.indexOf('--escalate');
+  const escalate = x > 0 ? Number(process.argv[x + 1]) : 0;
+  if (escalate > 0) changed.push(`escalate=${escalate}`);
+  const l = process.argv.indexOf('--lines');
+  const wanted = l > 0 ? (process.argv[l + 1] ?? '').split(',') : null;
+  const all = wanted === null ? every : every.filter((p) => wanted.includes(p.name));
+
+  console.log(
+    `${seeds} seeds per line, ${changed.length === 0 ? 'shipped TUNING' : changed.join(' ')}\n`,
+  );
   console.log(
     [
       'line'.padEnd(14),
@@ -268,11 +323,12 @@ function main(): void {
       pad('reach', 6),
       pad('<40', 5),
       pad('spends', 7),
+      pad('late%', 6),
     ].join(' '),
   );
   for (const policy of all) {
     const runs: Felt[] = [];
-    for (let s = 1; s <= seeds; s++) runs.push(feel(policy, s));
+    for (let s = 1; s <= seeds; s++) runs.push(feel(policy, s, tuning, escalate));
     const pts = runs.map((r) => r.points);
     const m = mean(pts);
     const sd = Math.sqrt(mean(pts.map((p) => (p - m) ** 2)));
@@ -300,6 +356,7 @@ function main(): void {
         pad(mean(runs.map((r) => r.reach)).toFixed(1), 6),
         pad(runs.filter((r) => r.placements < 40).length, 5),
         pad(mean(runs.map((r) => r.spends)).toFixed(1), 7),
+        pad((100 * mean(runs.map((r) => r.late))).toFixed(0), 6),
       ].join(' '),
     );
   }

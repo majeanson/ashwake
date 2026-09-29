@@ -9665,3 +9665,57 @@ tourist           440    440    955  0.49     25     0      0       0   0.04    
 The findings are NEXT.md §3a, each Marc's to rule on. One sentence the data
 contradicted was fixed at once: `tuning.ts` spoke of an interior timing
 optimum that this economy does not have, and says so now with the numbers.
+
+**Session 117, the candidates.** Marc asked for all four findings explored,
+with one limit: _"dont want to have too much longer games either"_.
+`study.ts` takes `--set` and `--lines` now; 12 candidates at 400 seeds, then
+8 aimed at the glow at 1000. Medians; the best lines run ~105 placements
+today.
+
+- **Waiting: no dial does it.** Pocket cap 10 or 8 flattens the curve sooner
+  (popAt12 1322 → 1280 → 1211) but never makes it turn down, and cheaper luck
+  lifts every k alike. Waiting's only price is close calls, and in the sim a
+  patient line never once died of them. A real cost to waiting is a new
+  rule, not a number.
+- **Climax: no dial does it either.** Every candidate left the biggest pop at
+  51-53% of the run and the last third at 37-41% of the pops' points.
+- **Luck: forge's price is the lever.** Forge at 40 (from 75): forge lines
+  +13% (popAt8+forge 1328 → 1501), runs +5% (108 → 113). At 30: +23% and +7%.
+  Steer is dead at any price, and the code says why: it buys a six-draw lean
+  toward a colour, which every pop already hands out free to the colour it
+  popped. Reroll stays near zero.
+- **The glow: the horizon, not the pay.** Richer caches (10, or +6 a ring)
+  lift the chaser's median and leave its early deaths where they were (41 in
+  1000). `beaconHorizon` 3 (from 4) takes them to 9 and leaves every other
+  line untouched, because nothing else walks toward a beacon; with
+  `cachePays` 10 as well the chaser's median goes +11% at 91 placements.
+  `destinationRampBlocks` 1 made the deaths WORSE (55): more near glows, more
+  arms walked into nothing.
+
+**Session 117, the rulings — and a rule moved: `sim.golden.txt` changes in
+this commit.** Marc's answers to the candidates:
+
+- **Forge 75 → 40, shipped.** The golden moves on ONE row, `spender`, the
+  only policy that forges: 1507 → 1639 mean points, 111 → 115 placements.
+  Every other row is byte-identical, which is the check that nothing else
+  moved. The purse card's price is the only sentence that changed (both
+  languages' `prose.pin` snapshots, the number and nothing else).
+- **Horizon 3 and caches paying 10: queued for the day after Session C**
+  (NEXT §3a). The horizon is what the first screen shows glowing.
+- **Steer: a heavier lean does nothing, and neither does the lean itself.**
+  Steer at weight 6, 10 or 20, over nine draws, left popAt8+steer at
+  1190-1213 against 1194 without. Then the control: switching OFF the free
+  lean every pop gives costs 1-2% (popAt8 1194 → 1175), and tripling it
+  gains about the same. Colour barely drives points in this economy; pocket
+  size and distance do. Marc's answer goes past steer: _"colors should
+  matter at al lstages of the game"_. That is the next piece of work, and
+  steer's shape waits on it. The steer dials built to test this were
+  reverted rather than shipped at zero.
+- **Late-run escalation: dropped.** +10% a pop per cost step moved the
+  biggest pop only from 51% to 54% of the way through, and inflated every
+  score 15-30%, so every best already saved on a phone would be easy to beat.
+  The halftime peak is structural: late in a run there are fewer, smaller
+  pockets.
+- **Overripe pockets: ruled out by Marc** (_"i dislike the overripe"_). Four
+  other timing ideas were offered instead (chains, tides, bounty deadlines,
+  colour sets) and none is chosen yet.

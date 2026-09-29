@@ -375,7 +375,7 @@ Every button under your hand is priced in luck, and you CAN lose it all: whateve
         "text": "ROADS · 30. A hand leaning ROADS, and the next 6 draws with it.",
       },
       {
-        "text": "FORGE · 75. Turn the selected card UNIQUE.",
+        "text": "FORGE · 40. Turn the selected card UNIQUE.",
       },
     ],
     "text": "LUCK IS FOR SPENDING
@@ -404,7 +404,7 @@ Every button under your hand is priced in luck, and you CAN lose it all: the run
         "text": "ROADS · 30. A hand leaning ROADS, and the next 6 draws with it.",
       },
       {
-        "text": "FORGE · 75. Turn the selected card UNIQUE.",
+        "text": "FORGE · 40. Turn the selected card UNIQUE.",
       },
     ],
     "text": "LUCK IS FOR SPENDING
@@ -1027,7 +1027,7 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui 
         "text": "CHEMINS · 30. Une main qui penche CHEMINS, et les 6 prochaines pioches avec.",
       },
       {
-        "text": "FORGER · 75. Rends UNIQUE la carte choisie.",
+        "text": "FORGER · 40. Rends UNIQUE la carte choisie.",
       },
     ],
     "text": "LA CHANCE, ÇA SE DÉPENSE
@@ -1056,7 +1056,7 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin 
         "text": "CHEMINS · 30. Une main qui penche CHEMINS, et les 6 prochaines pioches avec.",
       },
       {
-        "text": "FORGER · 75. Rends UNIQUE la carte choisie.",
+        "text": "FORGER · 40. Rends UNIQUE la carte choisie.",
       },
     ],
     "text": "LA CHANCE, ÇA SE DÉPENSE

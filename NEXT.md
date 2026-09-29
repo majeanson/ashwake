@@ -55,7 +55,9 @@ So the road to v2.0 is now:
    either body.
 2. **Then light D23**: delete the `ui.firstRun` flag in `meta/features.ts`
    so the first-run line is unconditional (built and tested dark on
-   2026-09-29, §3). D22 is ruled and needs nothing: the promise stays.
+   2026-09-29, §3). D22 is ruled and needs nothing: the promise stays. And
+   set `beaconHorizon: 3` and `cachePays: 10` (§3a, ruled 2026-09-29) — a
+   rule move, so `sim.golden.txt` moves with it.
 3. **Then the cutover** (§5c, `CUTOVER.md`), and v2.0.
 
 The friends keep playing through all of it — Marc: _"carry on forward while
@@ -157,6 +159,12 @@ rule, so it moves `sim.golden.txt` in the same commit.**
   10th. The skill gap is healthy all the same: greedy 458, patient 1334.
 - **Walking pays about 15% of the tiles**; pops pay the rest. Session 11 made
   caches "the survival engine", and they are a supplement now.
+
+**Ruled 2026-09-29:** forge at 40, shipped. Horizon 3 and caches paying 10
+are queued for after Session C. Escalation and overripe pockets are dropped.
+Next is making **colour matter at every stage of a run** (Marc); steer's
+shape waits on that. Timing ideas not yet chosen: chains, tides, bounty
+deadlines, colour sets.
 
 ## 4. Watching — no action unless it happens again
 
