@@ -228,7 +228,12 @@ the phone round (§1) and its French.**
   2026-09-29** (`e2e` on `2a892fd`, Chromium this time, passed on retry): the
   same DIAG — the run shed to 2802 bytes, `__toast` empty. Three times now,
   every time with the shed done and the sentence missing, which points at the
-  toast path rather than the storage path. Not started yet.
+  toast path rather than the storage path. Not started yet. **A fourth on
+  2026-09-30** (`e2e` on `8f7179a`, Chromium, retry included; the job re-run
+  passed): the same DIAG, run at 2792 bytes, `__toast` empty. The commit added
+  a teaching card, but `?taught=1` marks every `TEACH_IDS` entry, so it cannot
+  fire here, and 9/9 passed locally with `--repeat-each=3`. Four in sixteen
+  days now, two per engine.
 - **`board.spec.ts` "two fingers lean and turn the board"** failed CI's `e2e`
   job on 2026-09-16, retry included (`toHaveAttribute` at line 1138), and
   **again on 2026-09-24** on Chromium, on `5e7bc07` — a commit that changed
