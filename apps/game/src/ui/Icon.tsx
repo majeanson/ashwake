@@ -38,14 +38,14 @@ type IconProps = {
    * that IS the button is a button called "button".
    */
   readonly title?: string | undefined;
-  /** Extra classes, for a call site that already had a rule for its mark. */
-  readonly className?: string | undefined;
+  // `className` went on 2026-09-30: no call site ever passed one, and the
+  // sweep could not see that until its key index learned contextual types.
 };
 
-export function Icon({ name, title, className }: IconProps) {
+export function Icon({ name, title }: IconProps) {
   return (
     <svg
-      className={className === undefined ? 'icon' : `icon ${className}`}
+      className="icon"
       viewBox="0 0 256 256"
       width="1em"
       height="1em"

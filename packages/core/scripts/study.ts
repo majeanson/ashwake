@@ -904,12 +904,13 @@ function main(): void {
   const protos = [
     ...[3, 4, 6].flatMap((small) => [tideAware(12, small), setAware(12, small)]),
     ...[8, 12, 20].map(flex),
-    ...[4, 8, 12, 20].map((k) => take(popAt(k))),
+    // The whole timing curve, taking wares (2026-09-30): was waiting still
+    // always right once the caravan pays for trying? `take:popAtK` is the
+    // curve a fixed habit plays; `tryK` the same habit that tries in town.
+    ...timing.map(take),
     answer(8),
     answer(12),
-    tryer(4),
-    tryer(8),
-    tryer(12),
+    ...[3, 4, 5, 6, 8, 10, 12, 15, 20].map(tryer),
     { ...take(luckLine(8, 'forge')), name: 'take:forge8' },
     { ...take(steerMap(8)), name: 'take:steer8' },
   ];

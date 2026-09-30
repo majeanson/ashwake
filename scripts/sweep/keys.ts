@@ -143,6 +143,42 @@ export function keyIndex(w: Workspace): KeyIndex {
     return declaresIt(props.getProperty(name.text));
   };
 
+  /**
+   * AN OBJECT-LITERAL KEY IS ATTRIBUTED THE SAME WAY, and it was not until
+   * 2026-09-30 (`NEXT.md` §4, found 2026-09-29).
+   *
+   * `attributable` alone asks the key what it is, and a key in an object
+   * literal answers exactly as a JSX attribute did: with the literal's own
+   * property, declared by the literal. So EVERY object-literal key in the
+   * program read as unattributable — not only the generic-callback case this
+   * index exists for. The caravan's `return { index, kind, from, until }`,
+   * contextually typed as `CaravanAsk | null` and filling a `CaravanAsk.until`
+   * the compiler knew all about, withheld the finding on
+   * `allow.ts#Ruling.until` by name, and the ruling on it stopped matching.
+   * The ledger blamed `optional.ts#suppliers`; the probe said otherwise —
+   * `findReferences` never listed that literal, this index did.
+   *
+   * So a key is asked through the literal's CONTEXTUAL type, each member of a
+   * union separately (`CaravanAsk | null` has no `until` of its own; its
+   * `CaravanAsk` does). Where there is no contextual type, or it declares no
+   * such property — the inferred literal in `rows.map((c) => ({ paint }))` —
+   * the key stays unattributable and still withholds, which is the trade
+   * above and the reason this file exists. (In that literal the contextual
+   * type is `map`'s `U`, not `Bar`: nothing here attributes it, and
+   * `optional.test.ts` holds both halves — `Bar.paint` still withheld,
+   * `Ruling.until` reported.) A key this DOES attribute to a declaration is
+   * expected to be one `findReferences` already lists as its supply — checked
+   * rather than assumed: counting every attributed key as a supply of its
+   * declaration as well changed nothing, on the fixture or the repository.
+   */
+  const attributableKey = (literal: ts.ObjectLiteralExpression, name: ts.Identifier): boolean => {
+    if (attributable(name)) return true;
+    const context = w.checker.getContextualType(literal);
+    if (context === undefined) return false;
+    const members = context.isUnion() ? context.types : [context];
+    return members.some((t) => declaresIt(t.getProperty(name.text)));
+  };
+
   for (const file of w.files) {
     const path = w.path(file);
     // A test writing a key is exactly what hid `perkAt`, so tests are not
@@ -154,7 +190,7 @@ export function keyIndex(w: Workspace): KeyIndex {
         node.parent !== undefined &&
         ts.isObjectLiteralExpression(node.parent) &&
         ts.isIdentifier(node.name) &&
-        !attributable(node.name)
+        !attributableKey(node.parent, node.name)
       ) {
         note(node.name.text, path);
       }

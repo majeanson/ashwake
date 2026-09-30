@@ -114,8 +114,12 @@ export type Workspace = {
   readonly path: (file: ts.SourceFile) => string;
 };
 
-export function workspace(): Workspace {
-  const roots = sourceFiles();
+/**
+ * `roots` is for the sweep's own tests: a fixture is a handful of files with
+ * one answer each, and a test that built the whole repository to ask about
+ * them would take a minute and answer about the repository instead.
+ */
+export function workspace(roots: readonly string[] = sourceFiles()): Workspace {
   const versions = new Map<string, string>();
   for (const f of roots) versions.set(f, '1');
 

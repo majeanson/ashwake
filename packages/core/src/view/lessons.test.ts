@@ -270,21 +270,6 @@ describe('the territory lesson answers for the board it is read on', () => {
 });
 
 describe('the lesson registry, whatever the language', () => {
-  /**
-   * A figure OR rows, never both — the portrait-card rule, stated where the
-   * data is so a future lesson cannot quietly break it. A teaching card
-   * already runs glyph, lead, body and button; a hex figure AND four marked
-   * rows overflow an 844px screen.
-   */
-  it('never asks a card to carry a figure and rows at once', () => {
-    for (const lesson of LESSONS) {
-      expect(
-        lesson.figure !== undefined && lesson.rows !== undefined,
-        `${lesson.id} has both a figure and rows`,
-      ).toBe(false);
-    }
-  });
-
   it('points every figure at one the table actually holds', () => {
     for (const lesson of LESSONS) {
       if (lesson.figure === undefined) continue;

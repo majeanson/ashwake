@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 // they pin; this file only says where to look and how the aliases resolve.
 export default defineConfig({
   test: {
-    projects: ['packages/*', 'apps/*'],
+    projects: ['packages/*', 'apps/*', 'scripts/sweep'],
     /*
      * A ceiling on the workers, because the default is one per core and this
      * workspace's two projects are not the same weight (2026-08-29).

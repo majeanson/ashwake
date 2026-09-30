@@ -10181,3 +10181,63 @@ gone, `__said` empty and `.toast` blank, the DIAG of the failures on
   WebKit (`--repeat-each`, no retries).
 
 The DIAG catch stays until 2026-10-07 in case this is not the whole story.
+
+### Session 122 — four things in parallel, and one the sweep found (2026-09-30)
+
+**Question:** while round eleven waits for the phone, what can be fixed or
+measured that touches nothing a stranger sees in the first minute?
+
+Marc chose all four offered: the sweep's blind spot, CI's browser install,
+the caravan's answer, and an e2e of the caravan's whole loop.
+
+- **CI's e2e runs in Playwright's image** (`e667eda`). Two runs had hit the
+  25-minute ceiling with the tests on time. `playwright install --with-deps`
+  spent 16 minutes on a slow apt mirror, with gaps of up to 140 s between
+  packages; the browsers themselves took seconds. So a browser cache would
+  not have helped. The job runs in `mcr.microsoft.com/playwright:v1.62.1-noble`
+  with no apt step, and passed in 11 minutes. `ciImage.test.ts`, in the gating
+  job, fails if the tag and the lockfile disagree (checked both ways). `smoke`
+  moves once this has held for a few runs.
+- **The e2e walks the caravan's loop.** At seed 9, 14 placements in, a pop in
+  town is taken, the picker offers three wares, and ONE MORE CARD widens the
+  hand. At seed 8, 13 in, a pop is passed on, nothing opens, and the caravan
+  stays in town. The seeds were found by walking the page's own session. Each
+  test fails against a break (a dead picker, a silent receipt, a no-op ware).
+- **`e667eda` did not deploy: my miss.** It added a test file without
+  regenerating `SWEEP.md`, and `ci`'s drift check refused it. The memory note
+  says to run the sweep before every push; this commit skipped it.
+- **The sweep's blind spot was in `keys.ts`, not `optional.ts`** (a subagent,
+  in a worktree, proved it). Every object-literal key read as
+  "unattributable" and withheld its name program-wide. A key is now
+  attributed through the literal's contextual type. `scripts/sweep` is a
+  vitest project, and `optional.test.ts` fails on the old code. The corrected
+  pass found three hidden gaps:
+  - `IconProps.className`: an option nothing passed. Deleted.
+  - `Lesson.rows`: an option nothing supplied. Deleted, with `LessonCard`'s
+    branch and its test.
+  - `TipRow.art`: a finding for Marc (NEXT §4). The purse card's steer rows
+    never got the real baked tile Marc asked for on 2026-08-27. The ruling
+    expires 2026-10-31.
+
+  The first time-limited ruling made "nothing sets `Ruling.until`" stale, so
+  that ruling is cut.
+
+- **The caravan did not make waiting wrong** (NEXT §3a). Taking wares, the
+  pop-at-size curve rises at every size (451 at 1 up to 1295 at 20), and the
+  tryers too (947 at 3 up to 1390 at 20). Trying at 8 scores what waiting to 20
+  does (1293 against 1295). Waiting 8 → 20 is now +8%, against +11% before
+  the caravan. `study.ts` builds the whole curve now: `take:popAtK` for every
+  timing and `tryK` at nine sizes.
+- **The post-Session-C rule move is measured.** Horizon 3 with caches paying
+  10 closes `seeker`'s trap (runs dying before 40 placements: 41 → 9 per 1000)
+  and moves every other line 1-2%. The golden diff is known.
+
+**Found on the way: the COLOURS card has never shown in this body.** A
+probe played 16 placements on a new device and read the teaching ledger:
+`colours` is never met, though its moment (a tile placed, a hand held) is
+true from the first placement. It is a card-class id with no lesson and no
+renderer, so `LessonCard` draws nothing and nothing marks it told. It also
+sits ahead of LAST GASP in `ORDER`, so that toast can never speak. The
+`lessons.ts` docblock saying these concepts "hold their prose" is false for
+COLOURS. Both are first-minute teaching, so what to do is Marc's (NEXT §1).
+The same probe saw the CARAVAN card fire at the eighth placement.

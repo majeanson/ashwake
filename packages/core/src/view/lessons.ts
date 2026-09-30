@@ -6,7 +6,6 @@ import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/ic
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings, TaughtId } from '@text/Strings';
 import type { FigureId } from './figure';
-import type { TipRow } from './view';
 
 /**
  * One lesson, one source (2026-08-28).
@@ -132,15 +131,16 @@ export type Lesson = {
   /** MAGIC and UNIQUE keep the ink `rarityInked` already gives them. */
   readonly ink?: 'ink-magic' | 'ink-unique';
   readonly beats: readonly Beat[];
-  /** A set this lesson lists — the four grounds, the purse's spends. */
-  readonly rows?: (t: Tuning, theme: Theme, s: Strings) => readonly TipRow[];
+  /*
+   * `rows` went on 2026-09-30. It was for "a set this lesson lists — the four
+   * grounds, the purse's spends", and both of those are `SetLesson`s drawn by
+   * `SaidCard`, so no lesson ever set it and `LessonCard`'s branch for it drew
+   * nothing. The sweep found it once its key index learned contextual types.
+   */
   /**
    * The picture of this rule. Travels WITH the lesson, so every door that
    * teaches it draws the same one — which is the whole of Marc's ask.
    *
-   * A lesson has a figure or rows, never both: a portrait teaching card
-   * already runs icon, lead, body and button, and both together overflow it.
-   * `lessons.test.ts` asserts it.
    */
   readonly figure?: FigureId;
 };

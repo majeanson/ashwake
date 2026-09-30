@@ -5,7 +5,6 @@ import type { Strings } from '@text/Strings';
 import { Card } from '../ui/Card';
 import { Figure } from '../ui/Figure';
 import { ProseLines } from '../ui/Prose';
-import { TipRows } from '../ui/TipRows';
 
 /**
  * One lesson, as a card (Stage 3, 2026-08-29).
@@ -43,8 +42,6 @@ export function LessonCard({ id, theme, s, dismiss, onDismiss, firstContact }: L
   const lesson = lessonOf(id);
   if (lesson === undefined) return null;
 
-  // A lesson carries a figure OR rows, never both — `lessons.test.ts` says so,
-  // which is why this reads as two independent optionals rather than a choice.
   return (
     <Card
       id={`lesson-${id}`}
@@ -63,9 +60,6 @@ export function LessonCard({ id, theme, s, dismiss, onDismiss, firstContact }: L
         s={s}
       />
       {lesson.figure !== undefined && <Figure id={lesson.figure} theme={theme} s={s} />}
-      {lesson.rows !== undefined && (
-        <TipRows rows={lesson.rows(TUNING, theme, s)} theme={theme} s={s} />
-      )}
     </Card>
   );
 }

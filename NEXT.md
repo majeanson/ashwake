@@ -118,6 +118,15 @@ only the first five wares' names on a phone, and the longest now is
 _UNE PLUS GRANDE RÉSERVE_ with a two-line note. Whether three of those stack
 well at 320px is part of this look.
 
+**And one finding for this round, not built (2026-09-30, `LOG.md` Session
+122): the COLOURS card has never shown in this body.** Its moment (a tile
+placed, a hand held) is true from the first placement, but `colours` has no
+lesson and no renderer, so it draws nothing, is never marked told, and
+silences LAST GASP, which comes after it in the drip. A new device's ledger
+after 16 placements holds every other early id and not `colours`. Ashwake 1
+taught the four grounds on one card (_"teach all tiles at one in a beautiful
+tip"_, 2026-08-27). Building it changes the first minute, so it is Marc's:
+build it into round eleven's look, or leave it until after Session C.
 ---
 
 ## 2. Somebody else's device
@@ -207,6 +216,22 @@ game without a caravan, runs are 4-7 placements longer (forging, 7; Marc:
 ~20 is okay), singles never pay (1000 seeds, `LOG.md` Session 119). **Marc's:
 the phone round (§1) and its French.**
 
+**Did the caravan answer "waiting is always right"? No, measured
+2026-09-30** (`LOG.md` Session 122, 1000 seeds). Taking wares, the pop-at-size
+curve still rises at every step: 451 at 1, 1199 at 8, 1275 at 12, 1295 at 20.
+The tryers rise too: 947 at 3, 1293 at 8, 1390 at 20. What changed is the
+top: waiting from 8 to 20 is worth +8% now, against +11% before the caravan,
+and **trying at 8 scores what waiting to 20 does** (1293 against 1295). So
+the caravan gives an earlier habit a way to match the patient one; it does
+not make waiting wrong. Marc's, if it matters: whether that is enough.
+
+**And the rule move queued for after Session C is measured and ready**
+(`beaconHorizon: 3`, `cachePays: 10`). `seeker`'s trap closes: runs dying
+before 40 placements go 41 → 9 per 1000, and its median 1052 → 1131. Other
+lines move 1-2% (bank20 1076 → 1089, try12 1387 → 1417, lengths +0-1). `pnpm
+sim` moves in the points and best columns (e.g. seeker 1020 → 1185, bank20
+1066 → 1095); the new golden is one `pnpm sim` away when it ships.
+
 ## 4. Watching — no action unless it happens again
 
 - **A run saved on 2026-09-29 shows the caravan's size in its price.** It
@@ -248,17 +273,20 @@ the phone round (§1) and its French.**
   does. **2026-09-29: sixteen pushes green in a row** on both engines since
   the last failure (`3df3fe6` → `de4c781`), eleven of them after the fix in
   `b514f6f`.
-- **The sweep's optional-input pass counts a same-named shorthand as a
-  supplier (found 2026-09-29).** The caravan's ask was `{ index, kind, from,
-until }`, and with it in the program the ruling on
-  `scripts/sweep/allow.ts#Ruling.until` ("nothing sets one") stopped matching.
-  Renaming the caravan's field to `ends` brought it straight back, so the pass
-  (`scripts/sweep/optional.ts`, `suppliers`) took an unrelated object literal's
-  `until` for a supply of `Ruling.until`. That is the dangerous direction: a
-  false supplier HIDES a real "nothing supplies this" finding. The field was
-  `ends` (gone since 2026-09-30, with the countdown that read it); **the pass
-  wants fixing**: check that each reference's symbol
-  is the declared property's, not just its name.
+- **~~The sweep counted a same-named key as a supplier~~ — FIXED 2026-09-30**
+  (`LOG.md` Session 122). The fault was not `optional.ts#suppliers`, as this
+  entry said, but `keys.ts`: every object-literal key read as
+  "unattributable" and withheld its NAME program-wide. A key is now asked
+  through the literal's contextual type, and `scripts/sweep/optional.test.ts`
+  (a new `sweep` test project) fails on the old code. The corrected pass found
+  three gaps it had been hiding. `IconProps.className` and `Lesson.rows` were
+  options nothing supplied, and are deleted. **`TipRow.art` is a finding for
+  Marc:** the real baked tile beside a ground in a set of rows (_"visuals with
+  real tiles … in the how to play"_, 2026-08-27) came with the Ashwake 1 lift
+  and was never supplied in this body. The rows that would carry it are the
+  PURSE card's four steer rows, which draw a flat swatch. That card fires on
+  the first opening of the purse, inside a stranger's first run, so it waits
+  for Session C; its sweep ruling expires on 2026-10-31 so it comes back.
 - **`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29).** The
   deploy had landed (`version.json` matched the commit on workers.dev); a
   later check in the same step lost its connection, and the next push
