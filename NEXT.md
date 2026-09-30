@@ -97,14 +97,19 @@ before the stranger plays.
 **And the caravan changes it** (§3a): a line under the header from the first
 placement and a pick-one-of-three sheet. So **round eleven (`r11-caravan`,
 `r11-french`) is its look**, and its _ok_ names Session C's build in place of
-`ccc5379`. **Since 2026-09-30 the look is different** (LOG Session 118). The
-line says only _on its way_ / _THE CARAVAN IS IN TOWN_ / _left town_, POP wears
-no mark, and the receipt says _took it_ or _passed on this one_. The sheet's
-round-eleven items were rewritten for this look on 2026-09-30 (Session 119),
-before either was answered. To judge: does the
-in-town line read as a reason to pop? The in-town accent and the dimmed
-away lines are old styles, reused sight unseen. And the new French: four lines
-(`caravan.coming/town/left/passed`) and eight wares (EVERY POP PAYS, RARER
+`ccc5379`. **Since 2026-09-30 the look is different** (LOG Sessions 118-120).
+The line wears a storefront and says only _CARAVAN · ON ITS WAY_ / _IN TOWN_
+/ _LEFT TOWN_, POP wears no mark, and the receipt says _took it_ or _passed
+on this one_. The first time it is in town with a pop to try, a CARAVAN card
+explains it, and the manual has a CARAVAN section under PLAY with the sizes
+and every ware in its DETAILS. The sheet's round-eleven items were rewritten
+for this look on 2026-09-30, before either was answered. To judge: does the
+in-town line read as a reason to pop, and does the card land at a good
+moment? The in-town accent and the dimmed away lines are old styles, reused
+sight unseen, and the storefront beside them is new. And the new French: the
+line (`CARAVANE · EN ROUTE / EN VILLE / PARTIE / N MARCHANDISES EN ATTENTE`),
+the receipt's `passed`, the card and section (`lesson.caravan`), and eight
+wares (EVERY POP PAYS, RARER
 DRAWS, RARES PAY, ALL POWERS, THE ROAD PAYS, BIGGER BOUNTIES, LUCKY POPS, A
 BIGGER STASH, in `fr-CA.ts` `caravan.ware`). ALL POWERS's note was
 reworded in review (Session 119): it said _double_ and the ware is ×1.5, so it

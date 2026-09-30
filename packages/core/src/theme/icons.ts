@@ -70,6 +70,10 @@ export type IconName =
   // receipt the pop leaves behind.
   | 'pop'
   | 'sacrifice'
+  // THE CARAVAN (2026-09-30, Marc's pick of four): a STOREFRONT, because it
+  // comes to town to sell. One mark on its line, its picker, its card, its
+  // manual section and its lens row, so the five read as one thing.
+  | 'caravan'
   // The lens panel's rows (2026-09-24, Marc: "give symbols … to each stat").
   // Each names a quantity the receipts already speak — a share, a hand, the
   // size bonus, the rare jackpot, the placing — so a row and the sentence
@@ -141,6 +145,7 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
    */
   pop: 'fill/hand-grabbing-fill.svg',
   sacrifice: 'fill/flame-fill.svg',
+  caravan: 'fill/storefront-fill.svg',
 
   // The lens panel's rows (2026-09-24). A pie for a share of the whole, an
   // open hand for what is held (`pop` is a hand TAKING), outward arrows for
@@ -255,6 +260,8 @@ export const LENS_ICON = {
   placing: 'placing',
   jackpot: 'jackpot',
   bounty: 'site',
+  // Its own mark since 2026-09-30; it borrowed the bounty's star until then.
+  caravan: 'caravan',
   perPop: 'pop',
   points: 'points',
 } as const satisfies Readonly<Record<string, IconName>>;
@@ -287,9 +294,20 @@ export const CONCEPT_ICON = {
   // manual section, and the receipt a burn leaves.
   pop: 'pop',
   sacrifice: 'sacrifice',
+  // The caravan's line, picker, card, manual section and lens row.
+  caravan: 'caravan',
 } as const satisfies Readonly<
   Record<
-    'relic' | 'luck' | 'wall' | 'stone' | 'fame' | 'met' | 'notYet' | 'pop' | 'sacrifice',
+    | 'relic'
+    | 'luck'
+    | 'wall'
+    | 'stone'
+    | 'fame'
+    | 'met'
+    | 'notYet'
+    | 'pop'
+    | 'sacrifice'
+    | 'caravan',
     IconName
   >
 >;

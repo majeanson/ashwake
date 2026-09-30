@@ -168,6 +168,18 @@ export const STRINGS_FR: Strings = {
       core: (need, radius, bonus) =>
         `Une PRIME, c’est le deuxième paiement d’un site${D}: récolte ${need} tuiles ou plus à ${radius} hex de son étoile et cette récolte marque ×${bonus}. Elle est active dès que tu réclames le site, et n’importe quelle récolte à portée peut l’encaisser.`,
     },
+    caravan: {
+      name: 'CARAVANE',
+      terms: [],
+      core: 'De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle.',
+      try: 'Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.',
+      card: `La ligne sous l’en-tête dit quand elle est EN VILLE${D}: c’est le moment d’essayer une récolte.`,
+      sizes: (smallMin, smallMax, bigMin) =>
+        `Petite, c’est de ${nb(smallMin)} à ${nb(smallMax)} tuiles; grande, ${nb(bigMin)} ou plus. Chaque visite en veut une, et paie une fois.`,
+      visits: (every, away) =>
+        `Elle reste ${nb(every)} placements, puis s’absente de 1 à ${nb(away)} placements avant de revenir.`,
+      ware: (name, note) => `${name}${D}: ${note}`,
+    },
     stash: {
       name: 'RÉSERVE',
       terms: ['RÉSERVE'],
@@ -599,9 +611,9 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
   },
 
   caravan: {
-    coming: 'La caravane est en route.',
-    town: 'LA CARAVANE EST EN VILLE',
-    left: 'La caravane a quitté la ville.',
+    coming: 'CARAVANE · EN ROUTE',
+    town: 'CARAVANE · EN VILLE',
+    left: 'CARAVANE · PARTIE',
     answered: (picks) =>
       picks > 1
         ? `La caravane la prend${D}: ${nb(picks)} marchandises à choisir.`
@@ -612,8 +624,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     later: 'PLUS TARD',
     open: (n) =>
       n > 1
-        ? `CARAVANE · ${nb(n)} marchandises en attente`
-        : 'CARAVANE · une marchandise en attente',
+        ? `CARAVANE · ${nb(n)} MARCHANDISES EN ATTENTE`
+        : 'CARAVANE · UNE MARCHANDISE EN ATTENTE',
     took: (name) => `Pris à la caravane${D}: ${name}.`,
     ware: {
       placing: {

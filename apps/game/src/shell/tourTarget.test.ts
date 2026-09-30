@@ -90,6 +90,7 @@ const DECLINED: readonly TeachId[] = [
   'purse',
   'relic', // what a run carries out
   'lastGasp',
+  'caravan', // a line under the header, not a place on the board
 ];
 
 /**

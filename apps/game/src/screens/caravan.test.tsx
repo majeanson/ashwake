@@ -41,8 +41,11 @@ describe('the caravan, on the board', () => {
       const { container, unmount } = render(
         <CaravanAsk hud={hud} s={s} picking={false} onOpen={() => {}} />,
       );
-      expect(container.textContent).toBe(s.caravan[where]);
+      expect(container.textContent.trim()).toBe(s.caravan[where]);
       expect(container.textContent).not.toMatch(/\d/);
+      // One mark in every state (2026-09-30): the storefront, decorative
+      // beside its own name.
+      expect(container.querySelectorAll('svg[aria-hidden="true"]')).toHaveLength(1);
       unmount();
     }
   });

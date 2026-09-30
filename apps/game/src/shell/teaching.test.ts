@@ -85,6 +85,24 @@ describe('the teaching drip', () => {
     expect(next?.as).toBe('card');
   });
 
+  it('tells the CARAVAN when it is in town with a pop to try, and never before POP', () => {
+    // 2026-09-30. Its own card says "that is the moment to try a pop", so it
+    // fires only while one can be tried; and POP's moment is exactly that, so
+    // the card about popping always lands first.
+    const walked = momentAt(8);
+    const at = (caravan: Moment['hud']['caravan'], canHarvest: boolean): Moment => ({
+      ...walked,
+      hud: { ...walked.hud, caravan, canHarvest },
+    });
+    expect(nextLesson(at('town', true), taughtExcept('caravan'))).toEqual({
+      id: 'caravan',
+      as: 'card',
+    });
+    for (const quiet of [at('town', false), at('coming', true), at('left', true), at(null, true)])
+      expect(nextLesson(quiet, taughtExcept('caravan'))).toBeNull();
+    expect(nextLesson(at('town', true), taughtExcept('pop', 'caravan'))?.id).toBe('pop');
+  });
+
   it('says ONE thing, however many moments are true at once', () => {
     // A walked board has a legal edge, a cost above one, a hand, walls — several
     // moments true together, and a virgin ledger for all of them.

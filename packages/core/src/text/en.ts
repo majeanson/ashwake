@@ -169,6 +169,18 @@ export const STRINGS_EN: Strings = {
       core: (need, radius, bonus) =>
         `A BOUNTY is a site’s second payout: pop ${need}+ tiles within ${radius} hexes of its star and that pop scores ×${bonus}. It is live the moment you claim the site, and any pop in range can collect it.`,
     },
+    caravan: {
+      name: 'CARAVAN',
+      terms: [],
+      core: 'Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which.',
+      try: 'While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.',
+      card: 'The line under the header says when it is IN TOWN: that is the moment to try a pop.',
+      sizes: (smallMin, smallMax, bigMin) =>
+        `Small is ${smallMin} to ${smallMax} tiles, big is ${bigMin} or more. Each visit wants one, and pays once.`,
+      visits: (every, away) =>
+        `It stays ${every} placements, then is away 1 to ${away} before it comes back.`,
+      ware: (name, note) => `${name}: ${note}`,
+    },
     stash: {
       name: 'STASH',
       terms: ['STASH'],
@@ -592,9 +604,9 @@ Nothing new inside. A find grants only what you do not already carry, and only o
   },
 
   caravan: {
-    coming: 'The caravan is on its way.',
-    town: 'THE CARAVAN IS IN TOWN',
-    left: 'The caravan left town.',
+    coming: 'CARAVAN · ON ITS WAY',
+    town: 'CARAVAN · IN TOWN',
+    left: 'CARAVAN · LEFT TOWN',
     answered: (picks) =>
       picks > 1
         ? `The caravan takes it: ${picks} wares to choose.`
@@ -603,7 +615,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     choose: 'The caravan pays. Take one:',
     waiting: (n) => `${n} more to take after this one.`,
     later: 'LATER',
-    open: (n) => (n > 1 ? `CARAVAN · ${n} wares waiting` : 'CARAVAN · a ware waiting'),
+    open: (n) => (n > 1 ? `CARAVAN · ${n} WARES WAITING` : 'CARAVAN · A WARE WAITING'),
     took: (name) => `Taken from the caravan: ${name}.`,
     ware: {
       placing: {

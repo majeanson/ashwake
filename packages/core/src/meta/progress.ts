@@ -187,6 +187,10 @@ export const TEACH_IDS = [
   // still play — is that normal?"): deliberate since DESIGN.md, illegible
   // until taught at the moment it first happens.
   'lastGasp',
+  // THE CARAVAN's card (2026-09-30, Marc: _"add respective how to play,
+  // guide, hints, etc. for caravans"_), the first time it is IN TOWN. Added
+  // after every ledger existed, so every device gets it exactly once.
+  'caravan',
 ] as const;
 
 export type TeachId = (typeof TEACH_IDS)[number];

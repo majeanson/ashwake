@@ -10117,3 +10117,44 @@ pointsPerPop=0.35`). `try8` 1293 and `try12` 1387, so trying pays about
   HudView field has a consumer (0 findings).
 - **Stale, corrected:** the study's docblock said its prototype bands were
   the built caravan's. They were until today.
+
+### Session 120 — the caravan is taught, and wears one mark (2026-09-30)
+
+**Question:** can a player who never opens the manual learn what IN TOWN is
+for, and does every surface the caravan touches read as the same thing?
+
+Marc: _"add respective how to play, guide, hints, etc. for caravans and
+uniformize its entity"_. Asked three ways, he chose: a **storefront** for its
+mark; a **first-contact card and a manual section**, not a tappable word or
+a tappable line; and for "uniformize", **one mark and one name** and **one
+voice for the line**. The ware names were left as they are.
+
+**Built:**
+
+- **One mark.** `caravan` joins `IconName` as Phosphor's storefront (baked,
+  39 icons). It is worn on the line in all four states, on the picker's head,
+  on the card, on the manual heading, and on the lens row. The lens row
+  borrowed the bounty's star until today.
+- **One voice.** The line is `CARAVAN · ON ITS WAY` / `CARAVAN · IN TOWN` /
+  `CARAVAN · LEFT TOWN` / `CARAVAN · 3 WARES WAITING` (`CARAVANE · EN ROUTE`
+  / `EN VILLE` / `PARTIE` / `3 MARCHANDISES EN ATTENTE`). Before, two states
+  were sentences, IN TOWN was shouted, and the waiting line was a third form.
+  The e2e fit check now measures each line with its mark in.
+- **The card.** `caravan` is a teach id and a card. It fires the first time
+  the caravan is IN TOWN and a pop can be tried. POP's moment is exactly
+  `canHarvest`, and it comes first in `ORDER`, so the card about popping
+  always lands before the card about a reason to pop. Every device gets it
+  once. `teaching.test.ts` holds both halves.
+- **The manual.** A CARAVAN section in PLAY, beside BOUNTY. It grows in once
+  the card has spoken, like every section behind a teach id. What it is and
+  how to try it are visible. The DETAILS fold has the two sizes (3-6, 7+),
+  the visit (10 in town, away 1-10), and every ware `offerFor` can draw for
+  the tuning, in the picker's own words (`waresOnSale`). A caravan that is
+  off leaves the fold empty and the section still says what it is.
+- **Not built:** no tappable CARAVAN term (no `terms`, like THE COST and
+  REACH). No tour to a hex: it is a line, not a place (`tourTarget.test.ts`
+  rules it DECLINED).
+
+**Pins:** the only snapshot change is the lesson-name list gaining
+`caravan · CARAVAN / CARAVANE`, and nothing recorded changed. The new French
+is Marc's to pass (NEXT §1).

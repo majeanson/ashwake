@@ -18,6 +18,8 @@ test('the caravan says where it is from the first placement, and nothing it want
   await expect(ask).toBeVisible();
   await expect(ask).toContainText(/caravan|caravane/i);
   await expect(ask).not.toContainText(/\d/);
+  // Its one mark, the storefront its card and manual section wear too.
+  await expect(ask.locator('svg')).toHaveCount(1);
 
   // Under the header, not over the board's own controls.
   const header = await page.locator('[data-hud="stats"]').boundingBox();
@@ -51,23 +53,27 @@ for (const width of [320, 360, 390])
       const longest =
         locale === 'fr-CA'
           ? [
-              'La caravane est en route.',
-              'LA CARAVANE EST EN VILLE',
-              'La caravane a quitté la ville.',
-              'CARAVANE · 3 marchandises en attente',
+              'CARAVANE · EN ROUTE',
+              'CARAVANE · EN VILLE',
+              'CARAVANE · PARTIE',
+              'CARAVANE · 3 MARCHANDISES EN ATTENTE',
             ]
           : [
-              'The caravan is on its way.',
-              'THE CARAVAN IS IN TOWN',
-              'The caravan left town.',
-              'CARAVAN · 3 wares waiting',
+              'CARAVAN · ON ITS WAY',
+              'CARAVAN · IN TOWN',
+              'CARAVAN · LEFT TOWN',
+              'CARAVAN · 3 WARES WAITING',
             ];
       for (const text of longest) {
+        // The mark stays in: it takes the line's room too (2026-09-30).
         const fitsLong = await ask.evaluate((e, t) => {
           const was = e.textContent;
+          const mark = e.querySelector('svg');
           e.textContent = t;
+          if (mark !== null) e.prepend(mark, ' ');
           const ok = e.scrollWidth <= e.clientWidth + 1;
           e.textContent = was;
+          if (mark !== null) e.prepend(mark);
           return ok;
         }, text);
         expect(fitsLong, `"${text}" overflows at ${width}px`).toBe(true);

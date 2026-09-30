@@ -249,6 +249,10 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "BOUNTY",
     ],
     [
+      "caravan",
+      "CARAVAN",
+    ],
+    [
       "stash",
       "STASH",
     ],
@@ -899,6 +903,10 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     [
       "bounty",
       "PRIME",
+    ],
+    [
+      "caravan",
+      "CARAVANE",
     ],
     [
       "stash",

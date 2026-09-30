@@ -2203,7 +2203,7 @@ export function priceRows(p: PriceTerms | null, t: Tuning, s: Strings): TipRow[]
     });
   if (p !== null && p.caravanMult > 1)
     rows.push({
-      icon: LENS_ICON.bounty,
+      icon: LENS_ICON.caravan,
       text: sum.caravan,
       value: `× ${n(p.caravanMult)}`,
       hint: h.caravan,

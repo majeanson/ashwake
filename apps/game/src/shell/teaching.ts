@@ -48,6 +48,11 @@ const ORDER: readonly TeachId[] = [
   'place',
   'ripe',
   'pop',
+  // The caravan's card, the first time it is IN TOWN with a pocket to try
+  // (2026-09-30). POP is true whenever it is, and comes first, so the card
+  // about a reason to pop never lands before the card about popping. It
+  // stands ten placements, so a card held back a beat is not missed.
+  'caravan',
   'costRise',
   'cache',
   'site',
@@ -70,6 +75,7 @@ const CARDS = new Set<TeachId>([
   'story',
   'ripe',
   'pop',
+  'caravan',
   'cache',
   'site',
   'shrine',
@@ -190,6 +196,11 @@ function isTrue(id: TeachId, now: Moment): boolean {
       return hud.ripeCount > 0;
     case 'pop':
       return hud.canHarvest;
+    case 'caravan':
+      // In town AND something to pop: the card says "that is the moment to
+      // try a pop", so it fires when a pop can be tried — and never ahead of
+      // POP's own card, whose moment is exactly `canHarvest`.
+      return hud.caravan === 'town' && hud.canHarvest;
     case 'costRise':
       return hud.cost > 1;
     case 'cache':

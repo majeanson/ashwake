@@ -131,6 +131,13 @@ export function offerFor(
 }
 
 /**
+ * Every ware this tuning's caravan can sell, in the catalogue's order — what
+ * the manual lists (2026-09-30), by the same test an offer draws from.
+ */
+export const waresOnSale = (t: Tuning): readonly WareId[] =>
+  WARE_IDS.filter((w) => wareDoesSomething(w, t, []));
+
+/**
  * Whether a ware would change anything for this run (found in review,
  * 2026-09-29): a fifth card is the most a hand holds, and a forge at its floor
  * — or not built at all — has nothing left to cheapen. Likewise a pop that

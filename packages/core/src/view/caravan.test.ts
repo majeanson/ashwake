@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { pickLocale } from '@content/locale';
 import { TUNING } from '@content/tuning';
-import { answers, caravanVisitAt } from '@engine/caravan';
+import { WARE_IDS } from '@content/caravan';
+import { answers, caravanVisitAt, waresOnSale } from '@engine/caravan';
 import { newRun, reduce } from '@engine/reduce';
 import { harvestValue, legalPlacements, ripeClusters } from '@engine/rules';
 import type { GameState } from '@engine/state';
 import { stringsFor } from '@text/index';
+import { SETTLEMENT } from '@theme/themes/settlement';
+import { lessonDetail, lessonLines, lessonOf } from './lessons';
 import { harvestNote, pocketNote, toHudView } from './view';
 
 /**
@@ -86,5 +89,22 @@ describe('what a pop in town says', () => {
     }
     expect(took).toBeGreaterThan(0);
     expect(passed).toBeGreaterThan(0);
+  });
+});
+
+describe('what the manual says of it', () => {
+  it('lists exactly the wares an offer can draw, in their picker words', () => {
+    // 2026-09-30: the DETAILS fold lists the wares, so a ware the picker can
+    // show and the manual cannot, or the reverse, is a rule said two ways.
+    const lesson = lessonOf('caravan')!;
+    const detail = lessonDetail(lesson, TUNING, SETTLEMENT, s);
+    for (const ware of WARE_IDS) {
+      const line = s.lesson.caravan.ware(s.caravan.ware[ware].name, s.caravan.ware[ware].note);
+      expect(detail.includes(line)).toBe(waresOnSale(TUNING).includes(ware));
+    }
+    // With the caravan off, the section still says what it is, and no more.
+    const off = { ...TUNING, caravanEvery: 0 };
+    expect(lessonDetail(lesson, off, SETTLEMENT, s)).toEqual([]);
+    expect(lessonLines(lesson, off, SETTLEMENT, s).length).toBeGreaterThan(0);
   });
 });

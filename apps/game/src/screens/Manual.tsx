@@ -102,7 +102,9 @@ const KEY_LINES = [
  */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
   start: ['ripe', 'pop', 'sizeBonus', 'worth', 'costRise'],
-  play: ['pocket', 'reach', 'bounty', 'field', 'lens'],
+  // THE CARAVAN beside BOUNTY (2026-09-30): the other reason a pop pays
+  // more, and a section that grows in when its card has spoken.
+  play: ['pocket', 'reach', 'bounty', 'caravan', 'field', 'lens'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
 

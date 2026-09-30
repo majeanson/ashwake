@@ -1,4 +1,6 @@
+import { CARAVAN_BANDS, WARE_IDS } from '@content/caravan';
 import type { Tuning } from '@content/tuning';
+import { waresOnSale } from '@engine/caravan';
 import type { TeachId } from '@meta/progress';
 import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { namesOf, type Theme } from '@theme/tokens';
@@ -457,6 +459,48 @@ export const LESSONS: readonly Lesson[] = [
         at: 'core',
         say: (t, _theme, s) => s.lesson.bounty.core(t.questNeed, t.questRadius, t.questBonus),
       },
+    ],
+  },
+  /**
+   * THE CARAVAN (2026-09-30, Marc: _"add respective how to play, guide,
+   * hints, etc. for caravans and uniformize its entity"_). Its card fires the
+   * first time it is IN TOWN with a pocket to try (`shell/teaching.ts`), and
+   * it wears the same storefront as its line, its picker and its lens row.
+   *
+   * What it IS holds under every dial. The sizes, the visit and the wares are
+   * the DETAILS fold's: the sizes are the answer a missed pop gives anyway,
+   * and a card at first contact has no room for thirteen wares. The wares
+   * listed are the ones `offerFor` can draw for this tuning, each in its own
+   * picker words, so the manual and the picker cannot describe one two ways.
+   */
+  {
+    id: 'caravan',
+    icon: CONCEPT_ICON.caravan,
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.caravan.core },
+      { say: (_t, _theme, s) => s.lesson.caravan.try },
+      { at: 'card', say: (_t, _theme, s) => s.lesson.caravan.card },
+      {
+        at: 'detail',
+        say: (t, _theme, s) =>
+          t.caravanEvery > 0
+            ? s.lesson.caravan.sizes(CARAVAN_BANDS[0][0], CARAVAN_BANDS[0][1], CARAVAN_BANDS[1][0])
+            : null,
+      },
+      {
+        at: 'detail',
+        say: (t, _theme, s) =>
+          t.caravanEvery > 0 && t.caravanAway >= 1
+            ? s.lesson.caravan.visits(t.caravanEvery, Math.floor(t.caravanAway))
+            : null,
+      },
+      ...WARE_IDS.map((ware): Beat => ({
+        at: 'detail',
+        say: (t, _theme, s) =>
+          t.caravanEvery > 0 && waresOnSale(t).includes(ware)
+            ? s.lesson.caravan.ware(s.caravan.ware[ware].name, s.caravan.ware[ware].note)
+            : null,
+      })),
     ],
   },
   {

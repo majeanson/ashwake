@@ -1,6 +1,8 @@
+import { CONCEPT_ICON } from '@theme/icons';
 import type { WareId } from '@content/caravan';
 import type { Strings } from '@text/Strings';
 import type { HudView } from '@view/view';
+import { Icon } from '../ui/Icon';
 
 /**
  * THE CARAVAN, on the board (2026-09-29; `engine/caravan.ts` is the rule).
@@ -13,7 +15,10 @@ import type { HudView } from '@view/view';
  * and its picker has been put down, the same line becomes the way back to it.
  * `CaravanPicker` is the choice itself: three wares, one tap, or LATER.
  *
- * Every sentence is the catalogue's (`s.caravan`), every fact the view's.
+ * Every sentence is the catalogue's (`s.caravan`), every fact the view's, and
+ * all three wear the caravan's one mark (`CONCEPT_ICON.caravan`, a storefront;
+ * 2026-09-30, Marc: _"uniformize its entity"_) — the same one its teaching
+ * card, its manual section and its lens row wear.
  */
 
 type AskProps = {
@@ -50,13 +55,13 @@ function AskLine({
   if (hud.offersWaiting > 0 && !picking)
     return (
       <button type="button" className="caravan-ask waiting" data-hud="caravan" onClick={onOpen}>
-        {s.caravan.open(hud.offersWaiting)}
+        <Icon name={CONCEPT_ICON.caravan} /> {s.caravan.open(hud.offersWaiting)}
       </button>
     );
 
   return (
     <p className={`caravan-ask ${ask}`} data-hud="caravan" data-caravan={ask}>
-      {s.caravan[ask]}
+      <Icon name={CONCEPT_ICON.caravan} /> {s.caravan[ask]}
     </p>
   );
 }
@@ -73,7 +78,9 @@ export function CaravanPicker({ offer, waiting, s, onPick, onLater }: PickerProp
   return (
     <div className="drawer spends caravan-picker" data-hud="caravan-picker">
       <div className="spends-head">
-        <span className="fact-label">{s.caravan.choose}</span>
+        <span className="fact-label">
+          <Icon name={CONCEPT_ICON.caravan} /> {s.caravan.choose}
+        </span>
       </div>
       {offer.map((ware, i) => (
         <button

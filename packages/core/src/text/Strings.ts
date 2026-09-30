@@ -117,6 +117,22 @@ type LessonStrings = {
   readonly bounty: LessonHead & {
     readonly core: (need: number, radius: number, bonus: number) => string;
   };
+  /**
+   * THE CARAVAN (2026-09-30, Marc: _"add respective how to play, guide,
+   * hints, etc. for caravans"_). A first-contact card the first time it is in
+   * town, and a section of the manual. `core` holds under every dial; the
+   * sizes, the visit and each ware are the DETAILS fold's, one sentence each.
+   */
+  readonly caravan: LessonHead & {
+    readonly core: string;
+    readonly try: string;
+    /** First contact only: where to look for the moment to try. */
+    readonly card: string;
+    readonly sizes: (smallMin: number, smallMax: number, bigMin: number) => string;
+    readonly visits: (every: number, away: number) => string;
+    /** One ware, as the manual lists it: its name and its own note. */
+    readonly ware: (name: string, note: string) => string;
+  };
   readonly stash: LessonHead & {
     readonly coreMany: (slots: number) => string;
     readonly coreOne: string;
@@ -639,7 +655,11 @@ export type Strings = {
    * reads the tuning.
    */
   readonly caravan: {
-    /** Where it is — `HudView.caravan`: not yet come, in town, gone. */
+    /**
+     * Where it is — `HudView.caravan`: not yet come, in town, gone. One voice
+     * with `open` (2026-09-30, Marc: _"uniformize its entity"_): its name,
+     * a dot, and the state, in capitals, beside the caravan's own mark.
+     */
     readonly coming: string;
     readonly town: string;
     readonly left: string;
