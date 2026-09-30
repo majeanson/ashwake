@@ -1125,7 +1125,10 @@ function addSplit(into: Mutable<PointsSplit>, from: PointsSplit): void {
   for (const c of COLOURS) into.byColour[c] += from.byColour[c];
   for (const r of ['common', 'magic', 'unique'] as const) into.byRarity[r] += from.byRarity[r];
   for (const k of Object.keys(into.bySource) as (keyof PointsSplit['bySource'])[]) {
-    into.bySource[k] += from.bySource[k];
+    // `?? 0`: a harvest recorded before a source existed has no row for it —
+    // the `caravan` row is absent from every split banked before 2026-09-29,
+    // and `+ undefined` made the whole column NaN.
+    into.bySource[k] += from.bySource[k] ?? 0;
   }
 }
 

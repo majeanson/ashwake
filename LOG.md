@@ -9892,3 +9892,17 @@ _And the budget moved with it._ First paint 183.7 KB gzipped against a
 wares, sentences and screens. The first-paint bar is now 192,000 bytes and
 precache 2,190,000, with the reason in `budget.json`. The caravan belongs in
 the first paint because its ask is on screen from the first placement.
+
+**Session 117, the review — and a hotfix first.** Marc asked for a
+fresh-eyes review of the day. Three reviewers read it with none of the
+session's context. The worst finding was live in production: **a run saved
+before the caravan froze on its first frame.** A save keeps its own tuning
+whole, so `caravanEvery` decodes as `undefined`, and the ask's guard read
+`caravanEvery <= 0`. That is false for `undefined`, so the ask loop never
+ended. `save.ts` has said since 2026-08-18 that every new tuning key must be
+guarded `> 0`, and this one was not. Fixed with `!(x > 0)` and a finite check,
+with the other new dials hardened the same way. The fold that sums an ending's
+point sources now reads a missing `caravan` row as 0 instead of NaN.
+`view/oldsave.test.ts` plays a real run, strips it to what a pre-caravan build
+wrote, and decodes, draws and plays it on. With the old guard put back, that
+test run fails, so the test catches the freeze.

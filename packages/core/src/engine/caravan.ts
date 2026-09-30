@@ -43,13 +43,20 @@ function mix(a: number, b: number): number {
  * it takes to be grown.
  */
 export function caravanAskAt(seed: number, placements: number, t: Tuning): CaravanAsk | null {
-  if (t.caravanEvery <= 0) return null;
+  // `!(x > 0)`, never `x <= 0`: a run saved before the caravan carries a
+  // tuning with no such key, `undefined <= 0` is false, and the loop below
+  // never ended — every resumed pre-caravan run froze on its first frame
+  // (found in review, 2026-09-29; `save.ts` has warned of exactly this since
+  // 2026-08-18). A step that is not a finite positive number is no caravan.
+  if (!(t.caravanEvery > 0) || !Number.isFinite(t.caravanEvery)) return null;
+  const wildLife =
+    t.caravanWildLife > 1 && Number.isFinite(t.caravanWildLife) ? t.caravanWildLife : 1;
   let from = 0;
   for (let index = 0; ; index++) {
     const h = mix(seed, index);
     const wild = (h % 10000) / 10000 < t.caravanWild;
     const kind = (wild ? 3 : (h >>> 14) % 3) as CaravanKind;
-    const ends = from + t.caravanEvery * (wild ? Math.max(1, t.caravanWildLife) : 1);
+    const ends = from + t.caravanEvery * (wild ? wildLife : 1);
     if (placements < ends) return { index, kind, from, ends };
     from = ends;
   }
@@ -79,7 +86,7 @@ export function caravanFor(state: GameState, size: number): CaravanAsk | null {
 
 /** How many wares an answered ask pays. */
 export const picksFor = (kind: CaravanKind, t: Tuning): number =>
-  kind === 3 ? Math.max(1, t.caravanWildPicks) : 1;
+  kind === 3 && t.caravanWildPicks > 1 ? Math.floor(t.caravanWildPicks) : 1;
 
 /**
  * Three different wares, for the `pick`-th offer the run has been made.
