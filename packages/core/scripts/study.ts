@@ -11,6 +11,8 @@ import {
   ripeClusters,
 } from '../src/engine/rules';
 import { biomeAt } from '../src/engine/world';
+import { caravanAskAt, caravanFor } from '../src/engine/caravan';
+import type { WareId } from '../src/content/caravan';
 import type { Colour } from '../src/content/tuning';
 import type { Action, GameState } from '../src/engine/state';
 import {
@@ -247,26 +249,60 @@ const steerMap = (k: number): Policy => {
  * small is sometimes right. One per window, so a small window cannot be
  * farmed with a string of threes.
  */
-const want = { life: 0, bonus: 0 };
+const want = {
+  life: 0,
+  bonus: 0,
+  /** Share of requests that are OUTRAGEOUS (Marc: "outrageous pocket sizes
+   *  too with uniques perks maybe so we both want small or big"). */
+  wild: 0,
+  /** What meeting a request pays: flat points, or a caravan boon (Marc's
+   *  pick: "A caravan boon"); an outrageous one pays `wildPicks` boons. */
+  reward: 'points' as 'points' | 'boon' | 'both',
+  wildPicks: 3,
+  /** How many request-lengths an outrageous ask stays. */
+  wildLife: 2,
+  /**
+   * The DYNAMIC kicker (Marc: "no hard points, could be dynamic or by luck or
+   * similar but no flat"): the pop that meets a request is multiplied by its
+   * band's factor — biggest for small, so a small ask pays about what a large
+   * one does. Zeros mean no kicker.
+   */
+  mult: [0, 0, 0, 0] as number[],
+};
+/** small, medium, large, and the outrageous ask. */
 const BANDS = [
-  [3, 5],
-  [6, 9],
-  [10, Infinity],
+  [3, 4],
+  [5, 8],
+  [9, 11],
+  // 15+ was met by no line in 400 runs: a pocket that size is almost never
+  // built before the purse runs out. Outrageous has to be hard, not absent.
+  [12, Infinity],
 ] as const;
-function bandAt(seed: number, placements: number): readonly [number, number] {
-  const w = Math.floor(placements / Math.max(1, want.life));
-  const h = (Math.imul(seed ^ 0x9e3779b9, 2654435761) ^ Math.imul(w + 1, 40503)) >>> 0;
-  return BANDS[h % 3]!;
+type Request = { readonly index: number; readonly kind: 0 | 1 | 2 | 3 };
+/**
+ * The request covering a placement: a seeded sequence, each lasting
+ * `want.life` placements, the outrageous ones twice that, so a pocket of 15
+ * has time to be grown. Pure, so the bot, the scorer and a screen agree.
+ */
+function requestAt(seed: number, placements: number): Request {
+  let start = 0;
+  for (let index = 0; ; index++) {
+    const h = (Math.imul(seed ^ 0x9e3779b9, 2654435761) ^ Math.imul(index + 1, 40503)) >>> 0;
+    const kind = ((h % 1000) / 1000 < want.wild ? 3 : (h >>> 10) % 3) as 0 | 1 | 2 | 3;
+    const len = Math.max(1, want.life) * (kind === 3 ? want.wildLife : 1);
+    if (placements < start + len) return { index, kind };
+    start += len;
+  }
 }
-const fits = (size: number, band: readonly [number, number]): boolean =>
-  size >= band[0] && size <= band[1];
-/** Windows already paid, read from the run's own log — the same for bot and scorer. */
-function paidWindows(state: GameState): Set<number> {
+const fits = (size: number, kind: 0 | 1 | 2 | 3): boolean =>
+  size >= BANDS[kind][0] && size <= BANDS[kind][1];
+/** Requests already met, read from the run's own log. */
+function paidRequests(state: GameState): Set<number> {
   const paid = new Set<number>();
   if (want.life <= 0) return paid;
   for (const h of state.log.harvests) {
-    const w = Math.floor(h.at / want.life);
-    if (!paid.has(w) && fits(h.count, bandAt(state.rootSeed, h.at))) paid.add(w);
+    const r = requestAt(state.rootSeed, h.at);
+    if (!paid.has(r.index) && fits(h.count, r.kind)) paid.add(r.index);
   }
   return paid;
 }
@@ -278,14 +314,19 @@ const flex = (big: number): Policy => {
     note: `popAt${big}, but pops to the wanted size when a pocket fits it.`,
     decide(state, s) {
       if (want.life > 0) {
-        const band = bandAt(state.rootSeed, state.placements);
-        const w = Math.floor(state.placements / want.life);
-        if (!paidWindows(state).has(w)) {
+        const r = requestAt(state.rootSeed, state.placements);
+        if (!paidRequests(state).has(r.index)) {
           let pick: string[] | null = null;
           for (const p of ripeClusters(state.cells))
-            if (fits(p.length, band) && (pick === null || p.length > pick.length)) pick = p;
+            if (fits(p.length, r.kind) && (pick === null || p.length > pick.length)) pick = p;
           if (pick?.[0] !== undefined)
             return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
+          // An outrageous ask is worth growing for: build instead of cashing
+          // at the usual size, and pop only when nothing can be placed.
+          if (r.kind === 3) {
+            const o = best(state);
+            if (o !== null) return [place(o), s];
+          }
         }
       }
       return base.decide(state, s);
@@ -459,6 +500,45 @@ const setAware = (big: number, small: number): Policy => {
   };
   return self;
 };
+
+/*
+ * THE CARAVAN AS BUILT (2026-09-29): the engine's own rule, not a re-score.
+ * `take(policy)` is any habit that accepts the wares it is offered — a fixed
+ * habit still takes a free ware — and `answer(big)` pops to the caravan's
+ * ask (and grows for an outrageous one), otherwise playing popAt(big).
+ */
+const TASTE: readonly WareId[] = ['placing', 'size', 'hand', 'forge', 'luck'];
+const take = (policy: Policy): Policy => ({
+  name: `take:${policy.name}`,
+  note: `${policy.note} Takes every ware offered.`,
+  decide(state, s) {
+    const offer = state.caravan.offers[0];
+    if (offer !== undefined) {
+      const pick = [...offer].sort((a, b) => TASTE.indexOf(a) - TASTE.indexOf(b))[0]!;
+      return [[{ type: 'CARAVAN', pick: offer.indexOf(pick) }], s];
+    }
+    return policy.decide(state, s);
+  },
+});
+const answer = (big: number): Policy =>
+  take({
+    name: `answer${big}`,
+    note: `popAt${big}, but pops to the caravan's ask.`,
+    decide(state, s) {
+      let pick: string[] | null = null;
+      for (const p of ripeClusters(state.cells))
+        if (caravanFor(state, p.length) !== null && (pick === null || p.length > pick.length))
+          pick = p;
+      if (pick?.[0] !== undefined) return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
+      const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
+      if (ask !== null && ask.kind === 3 && !state.caravan.met.includes(ask.index)) {
+        const o = best(state);
+        if (o !== null) return [place(o), s];
+      }
+      return popAt(big).decide(state, s);
+    },
+  });
+
 /** What one run felt like, measured from the inside. */
 type Felt = {
   points: number;
@@ -485,8 +565,8 @@ type Felt = {
   caravans: number;
   /** Pockets sold to one. */
   sold: number;
-  /** Wanted-size requests met, by band: small, medium, large. */
-  bands: [number, number, number];
+  /** Wanted-size requests met, by band: small, medium, large, outrageous. */
+  bands: [number, number, number, number];
   /** Points earned in each third of the run, and the colour share of each. */
   thirds: [number, number, number];
   colourThirds: [number, number, number];
@@ -511,7 +591,7 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
     late: 0,
     caravans: 0,
     sold: 0,
-    bands: [0, 0, 0],
+    bands: [0, 0, 0, 0],
     thirds: [0, 0, 0],
     colourThirds: [0, 0, 0],
   };
@@ -520,6 +600,8 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
   const popMult: number[] = [];
   let toCaravan = 0;
   let waiting: number | null = null;
+  const boonPaid = new Set<number>();
+  const multPaid = new Set<number>();
   let wares: RngStream = stream((seed ^ 0x0ca2a7a) | 0);
   let runSet = new Set<Colour>();
   let steps = 0;
@@ -588,6 +670,14 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
       // The prototypes' bonus, decided at the moment of the pop.
       let m = 1;
       if (inTide(before.placements)) m += proto.tideBonus;
+      if (want.life > 0 && want.mult.some((x) => x > 0)) {
+        const h = state.log.harvests.at(-1)!;
+        const req = requestAt(seed, h.at);
+        if (!multPaid.has(req.index) && fits(h.count, req.kind)) {
+          multPaid.add(req.index);
+          m *= want.mult[req.kind] || 1;
+        }
+      }
       const c = state.bias?.colour;
       if (proto.setBonus > 0 && c !== undefined) {
         runSet.add(c);
@@ -597,6 +687,16 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
         }
       }
       popMult.push(m);
+      // A request met pays its boon now, where the rest of the run can use it.
+      if (want.life > 0 && want.reward !== 'points') {
+        const h = state.log.harvests.at(-1)!;
+        const req = requestAt(seed, h.at);
+        if (!boonPaid.has(req.index) && fits(h.count, req.kind)) {
+          boonPaid.add(req.index);
+          for (let n = 0; n < (req.kind === 3 ? want.wildPicks : 1); n++)
+            [state, wares] = takeBoon(state, wares);
+        }
+      }
       // The caravan: count this pop toward the next one, and take a boon
       // when it arrives.
       if (caravan.mode !== 'off') {
@@ -635,17 +735,18 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
    */
   const step = Math.max(1, tuning.costRisesEvery);
   const bonusOf = new Map(state.log.harvests.map((h, i) => [h, popMult[i] ?? 1]));
-  // The wanted size: a flat bonus on the first pop in each window that fits.
+  // The wanted size: which pops met a request (counted by band either way;
+  // paid in flat points here only when the reward is points — a boon was
+  // paid during the run).
   const wanted = new Set<object>();
   if (want.life > 0) {
     const paid = new Set<number>();
     for (const h of state.log.harvests) {
-      const w = Math.floor(h.at / want.life);
-      if (!paid.has(w) && fits(h.count, bandAt(seed, h.at))) {
-        paid.add(w);
-        wanted.add(h);
-        const band = bandAt(seed, h.at);
-        f.bands[BANDS.indexOf(band as (typeof BANDS)[number]) as 0 | 1 | 2] += 1;
+      const r = requestAt(seed, h.at);
+      if (!paid.has(r.index) && fits(h.count, r.kind)) {
+        paid.add(r.index);
+        if (want.reward !== 'boon') wanted.add(h);
+        f.bands[r.kind] += 1;
       }
     }
   }
@@ -720,6 +821,9 @@ function main(): void {
   const protos = [
     ...[3, 4, 6].flatMap((small) => [tideAware(12, small), setAware(12, small)]),
     ...[8, 12, 20].map(flex),
+    ...[4, 8, 12, 20].map((k) => take(popAt(k))),
+    answer(8),
+    answer(12),
   ];
   const every = [...timing, popAt(8), ...luck, ...people, ...blinds, ...protos].filter(
     (p, n, a) => a.findIndex((q) => q.name === p.name) === n,
@@ -758,9 +862,18 @@ function main(): void {
   }
   const wa = process.argv.indexOf('--want');
   if (wa > 0) {
-    const [life, bonus] = (process.argv[wa + 1] ?? '').split(',').map(Number);
-    Object.assign(want, { life: life ?? 0, bonus: bonus ?? 0 });
-    changed.push(`want=every${life}/+${bonus}`);
+    const [life, bonus, wild, reward] = (process.argv[wa + 1] ?? '').split(',');
+    Object.assign(want, {
+      life: Number(life ?? 0),
+      bonus: Number(bonus ?? 0),
+      wild: Number(wild ?? 0),
+      reward: reward === 'boon' || reward === 'both' ? reward : 'points',
+    });
+    const wm = process.argv.indexOf('--want-mult');
+    if (wm > 0) want.mult = (process.argv[wm + 1] ?? '').split('/').map(Number);
+    const wl = process.argv.indexOf('--wild-life');
+    if (wl > 0) want.wildLife = Number(process.argv[wl + 1]);
+    changed.push(`want=every${life}/+${bonus}/wild${wild ?? 0}/${want.reward}`);
   }
   const sl = process.argv.indexOf('--sell');
   if (sl > 0) {
@@ -820,7 +933,7 @@ function main(): void {
     const pts = runs.map((r) => r.points);
     colourRows.push(colourRow(policy.name, runs));
     bandRows.push(
-      `${policy.name.padEnd(14)} ${[0, 1, 2].map((b) => mean(runs.map((r) => r.bands[b as 0 | 1 | 2])).toFixed(2)).join(' / ')}`,
+      `${policy.name.padEnd(14)} ${[0, 1, 2, 3].map((b) => mean(runs.map((r) => r.bands[b as 0 | 1 | 2 | 3])).toFixed(2)).join(' / ')}`,
     );
     const m = mean(pts);
     const sd = Math.sqrt(mean(pts.map((p) => (p - m) ** 2)));
@@ -880,7 +993,7 @@ function main(): void {
   }
   if (want.life > 0) {
     console.log('');
-    console.log('WANTED SIZE — requests met per run: small / medium / large');
+    console.log('WANTED SIZE — requests met per run: small / medium / large / outrageous');
     for (const row of bandRows) console.log(row);
   }
 }

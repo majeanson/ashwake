@@ -1,3 +1,4 @@
+import { WARE_IDS, type WareId } from '@content/caravan';
 import type { GameState, Tile } from '@engine/state';
 
 /**
@@ -125,6 +126,25 @@ export function decodeRun(raw: string | null): GameState | null {
   const wakeAt = parsed['wakeAt'];
   const quest = parsed['quest'];
   const held = parsed['held'];
+  // The caravan (2026-09-29): absent from every run saved before it, and a
+  // poked one keeps only what the reducer could have written — whole indices,
+  // and wares this build sells, three to an offer.
+  const caravanRaw = parsed['caravan'];
+  const isWare = (w: unknown): w is WareId =>
+    typeof w === 'string' && (WARE_IDS as readonly string[]).includes(w);
+  const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
+  const caravan = isRecord(caravanRaw)
+    ? {
+        met: Array.isArray(caravanRaw['met']) ? caravanRaw['met'].filter(whole) : [],
+        offers: Array.isArray(caravanRaw['offers'])
+          ? caravanRaw['offers'].filter(
+              (o): o is WareId[] => Array.isArray(o) && o.length === 3 && o.every(isWare),
+            )
+          : [],
+        made: whole(caravanRaw['made']) ? caravanRaw['made'] : 0,
+        taken: Array.isArray(caravanRaw['taken']) ? caravanRaw['taken'].filter(isWare) : [],
+      }
+    : { met: [], offers: [], made: 0, taken: [] };
   // Reborn landmarks (2026-08-20): a run saved before they existed simply
   // had none — and a poked-at record keeps only entries wearing the two
   // rewards the reveal knows.
@@ -160,6 +180,7 @@ export function decodeRun(raw: string | null): GameState | null {
         ? bias
         : null,
     quest: isRecord(quest) ? quest : null,
+    caravan,
     // The stash became a LIST on 2026-08-21, and a run saved before that
     // holds a single tile — or null. All three shapes decode, because the
     // alternative is a player losing the tile they were saving to a build

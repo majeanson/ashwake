@@ -1,4 +1,5 @@
 import type { Colour, PointSource, Rarity, Tuning } from '@content/tuning';
+import type { WareId } from '@content/caravan';
 import type { HexKey } from './hex';
 import type { RngStreams } from './rng';
 
@@ -351,6 +352,25 @@ export type GameState = {
    */
   readonly claimedFinds: readonly HexKey[];
 
+  /**
+   * THE CARAVAN, this run (2026-09-29; `engine/caravan.ts`). Empty in every
+   * run saved before it, and in every tuning where it is off.
+   */
+  readonly caravan: {
+    /** The asks already answered, by their index in the run's sequence. */
+    readonly met: readonly number[];
+    /**
+     * Offers waiting for a pick, oldest first — three wares each. An
+     * outrageous ask queues several. Play goes on while one waits: the
+     * caravan is a choice, never a wall.
+     */
+    readonly offers: readonly (readonly WareId[])[];
+    /** Offers ever made this run — what seeds the next one. */
+    readonly made: number;
+    /** The wares taken, in order, for the screens that name them. */
+    readonly taken: readonly WareId[];
+  };
+
   /** Telemetry for the end screen and the harness. */
   readonly log: {
     readonly harvests: readonly HarvestRecord[];
@@ -406,6 +426,8 @@ export type Action =
    * price means the shop does not exist — so every game that never heard of
    * luck ignores this action entirely.
    */
-  | { readonly type: 'SPEND'; readonly on: Spend; readonly colour?: Colour };
+  | { readonly type: 'SPEND'; readonly on: Spend; readonly colour?: Colour }
+  /** Take ware `pick` (0-2) from the oldest offer the caravan has made. */
+  | { readonly type: 'CARAVAN'; readonly pick: number };
 
 export type Spend = 'reroll' | 'steer' | 'forge' | 'tithe';

@@ -9829,3 +9829,66 @@ engine code.
   small requests 2.7 times a run, medium 1.9 and large 0.5, so small is
   often right and large sometimes. Weaker versions (+40) lose to growing,
   and +80 wins by only 3%.
+
+**Session 117, the caravan — built, and a rule moved: `sim.golden.txt`
+changes in this commit.** Marc's answers took the design to its final shape
+in three steps. Stronger boons, not points (_"2"_). _"no hard points, could
+be dynamic or by luck or similar but no flat"_. And _"outrageous pocket sizes
+too with uniques perks maybe so we both want small or big"_. What shipped:
+
+- **The ask.** The caravan wants a pocket of 3-4, 5-8 or 9-11, a new ask
+  every 10 placements. About one in seven asks is OUTRAGEOUS, 12 or more,
+  and stands 30 placements. 15+ was tried first and met by no line in 400
+  runs, because a pocket that size is almost never built. Seeded
+  (`engine/caravan.ts`), so the board shows it before the pocket exists.
+- **The pay.** The first pop that fits is multiplied by its band, ×3 small,
+  ×2 medium, ×1.5 large, ×2 outrageous (dynamic, never flat), and buys a pick
+  of one of three WARES; the outrageous ask pays three picks. A pair or a
+  single tile never fits, and one ask pays once.
+- **The wares** (`content/caravan.ts`) change what a run is worth or how it
+  plays, never how long it lasts: the placing pays more, size pays more, one
+  more card (5 at most), a lump of luck, a cheaper forge. The first
+  prototype sold survival and the patient line played 524 placements; that
+  is where the rule comes from.
+- **The calibration.** `pointsPerPop` 0.35 → 0.26, measured on the built
+  rule with `take:`/`answer` lines in `study.ts`: the best fixed habit
+  scores 1377 (1348 before the caravan) and the player who answers the
+  caravan 1632, +18.5%, in 102 placements rather than 106. The golden bots
+  never take a ware, so they show only the multiplier and the lower rate:
+  points 4-10% lower, and depth, placements, pops and tallies are
+  byte-identical.
+
+Built on the existing paths rather than beside them. The multiplier sits
+inside `harvestValue` like the bounty, so POP's figure is right and POP wears
+the caravan's mark when the priced pocket answers. The points split gained a
+`caravan` row, so every column still sums to the total. Offers are seeded
+from the run rather than drawn from a new random stream, which would have
+moved every other stream and every saved run. A pick is a `CARAVAN` action,
+the replay token `c`, and a save validates it (`save.ts`: a poked offer or an
+unknown ware decodes to nothing; a run saved before today loads with an empty
+caravan). On the board: one line under the header (`CaravanAsk`) and a
+pick-one-of-three sheet in the purse's own style (`CaravanPicker`). The sheet
+opens itself when a ware is owed, LATER puts it down, and the line becomes the
+way back. The open state is DERIVED from the count of offers made, not set in
+an effect. Tests: `engine/caravan.test.ts` (asks, bands, wares, caps, the
+pick), `sim/caravan.test.ts` (whole runs: answered only by the right size,
+never by a pair, owed = made, singles do not pay, runs no longer, save and
+replay round trips), `screens/caravan.test.tsx` (each ware tapped moves its
+number through `reduce`), and `e2e/caravan.spec.ts` (the ask on a real board,
+under the header). **The French sentences are Marc's to read**, and the look
+is a phone round's.
+
+_And the instrument, once more._ The pre-push sweep failed with two rulings
+matching nothing. `Policy.note` was genuine: the study and the caravan test
+read a policy's note now, so its "never read" ruling went. `Ruling.until` was
+the pass. Nothing sets a ruling's expiry; the caravan's ask had a field of the
+same name, and renaming that field to `ends` brought the ruling back. The
+optional-input pass had counted an unrelated shorthand `until` as supplying
+`Ruling.until`. A false supplier hides real findings, so it is in NEXT §4 to
+fix rather than left as a rename nobody explains.
+
+_And the budget moved with it._ First paint 183.7 KB gzipped against a
+181.6 KB bar, precache 2093.9 KB raw against 2085.0: the caravan's rule,
+wares, sentences and screens. The first-paint bar is now 192,000 bytes and
+precache 2,190,000, with the reason in `budget.json`. The caravan belongs in
+the first paint because its ask is on screen from the first placement.

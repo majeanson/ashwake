@@ -107,6 +107,9 @@ function tokenFor(action: Action): string {
       return `d${action.slot === undefined ? '' : action.slot}`;
     case 'SPEND':
       return `x${letterFor(SPEND, action.on)}${action.colour ?? ''}`;
+    // A caravan ware taken (2026-09-29): `c` and which of the three.
+    case 'CARAVAN':
+      return `c${action.pick}`;
   }
 }
 
@@ -144,6 +147,10 @@ function actionFrom(token: string): Action | null {
       if (at[0] !== '@') return null;
       const hex = hexFrom(at.slice(1));
       return hex === null ? null : { type: 'HARVEST', choice, at: hex };
+    }
+    case 'c': {
+      const pick = countFrom(rest);
+      return pick === null ? null : { type: 'CARAVAN', pick };
     }
     case 'd': {
       if (rest === '') return { type: 'HOLD' };

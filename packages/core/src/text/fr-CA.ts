@@ -598,6 +598,42 @@ ${worn ? 'Déjà porté, ça fonctionne à partir d’ici.' : 'À toi pour de bo
 Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà, et seulement sur ton propre monde.`,
   },
 
+  caravan: {
+    ask: (min, max, left) => `CARAVANE · une poche de ${nb(min)} à ${nb(max)} · encore ${nb(left)}`,
+    askWild: (min, left) => `CARAVANE · une poche de ${nb(min)} ou plus · encore ${nb(left)}`,
+    met: (left) => `CARAVANE · payée. Nouvelle demande dans ${nb(left)}.`,
+    answered: (mult, picks) =>
+      picks > 1
+        ? `La caravane la prend${D}: × ${d1(mult)}, et ${nb(picks)} marchandises à choisir.`
+        : `La caravane la prend${D}: × ${d1(mult)}, et une marchandise à choisir.`,
+    choose: `La caravane paie. Prends-en une${D}:`,
+    waiting: (n) => `Encore ${nb(n)} à prendre après celle-ci.`,
+    later: 'PLUS TARD',
+    open: (n) =>
+      n > 1
+        ? `CARAVANE · ${nb(n)} marchandises en attente`
+        : 'CARAVANE · une marchandise en attente',
+    took: (name) => `Pris à la caravane${D}: ${name}.`,
+    ware: {
+      placing: {
+        name: 'LA POSE PAIE',
+        note: 'Chaque récolte paie davantage sa pose, jusqu’à la fin de la partie.',
+      },
+      size: {
+        name: 'LA TAILLE PAIE',
+        note: 'Chaque tuile de plus dans une poche vaut davantage, jusqu’à la fin de la partie.',
+      },
+      hand: {
+        name: 'UNE CARTE DE PLUS',
+        note: 'Une carte de plus dans ta main, jusqu’à la fin de la partie (5 au plus).',
+      },
+      luck: { name: 'CHANCE', note: 'Un bon paquet de chance, tout de suite.' },
+      forge: {
+        name: 'FORGE MOINS CHÈRE',
+        note: 'Forger coûte moins cher, jusqu’à la fin de la partie.',
+      },
+    },
+  },
   spent: {
     reroll: (paid) => `Une main neuve, pour ${nb(paid)} chance.`,
     steer: (name, draws, paid) =>
@@ -878,6 +914,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         placing: 'Pour la pose',
         jackpot: 'Gros lot rare',
         bounty: 'Prime',
+        caravan: 'Caravane',
         perPop: 'Payé par récolte',
         points: 'Points',
         hints: {
@@ -893,6 +930,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
             `La valeur des tuiles magiques et uniques de la poche, ×${D}${d1(rate)}.`,
           bounty:
             'La prime en cours, touchée, parce que cette poche est assez grande et assez proche.',
+          caravan:
+            'La caravane demandait une poche de cette taille, et celle-ci est la première à répondre.',
           perPop: (pct) => `Chaque récolte paie ${pc(pct)} du prix calculé au-dessus.`,
           points: 'Ce que RÉCOLTER paie pour cette poche, arrondi vers le bas.',
         },
@@ -951,6 +990,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       pocket: 'TAILLE DE LA POCHE',
       distance: 'DISTANCE',
       bounty: 'PRIMES',
+      caravan: 'CARAVANE',
     },
     sites: 'SITES RÉCLAMÉS',
     arc: 'LA COURBE DE LA PARTIE',

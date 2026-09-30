@@ -683,7 +683,16 @@ test('a pop after the first is a line at the bottom, and it taps out', async ({ 
    * reading. A line in the strip has the same duty and a smaller footprint,
    * and the tap is aimed away from it on purpose.
    */
-  await page.mouse.click(120, 300);
+  /*
+   * AT THE BOARD'S CENTRE, where the run's own cells are (2026-09-29). This
+   * tapped a fixed (120, 300) until the caravan's line under the header moved
+   * the board down, and that point became open plain: a ray that hits no cell
+   * reaches no tap handler, so nothing replaced the line and the test failed
+   * for a reason that was never its subject. The centre is always the run.
+   */
+  const canvas = await page.locator('canvas').boundingBox();
+  if (canvas === null) throw new Error('no canvas');
+  await page.mouse.click(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2);
   await expect(line, 'the pop line outlived the tap that should have replaced it').toHaveCount(0);
 
   expect(errors, errors.join('\n')).toEqual([]);

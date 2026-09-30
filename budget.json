@@ -13,9 +13,8 @@
     "To move a bar: change it here, and say why in `LOG.md` in the same commit.",
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
-
   "firstPaint": {
-    "gzip": 186000,
+    "gzip": 192000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -51,10 +50,16 @@
       "languages, and the diary's marks. All asked for by name. Splitting the",
       "icon table so the lens's five load later was the alternative: a second",
       "icon path for 1.7 KB, declined for the same reason as the codec above.",
-      "The renderer-by-name check is untouched."
+      "The renderer-by-name check is untouched.",
+      "",
+      "MOVED 2026-09-29, from 186,000 to 192,000, for THE CARAVAN (LOG.md",
+      "Session 117). Measured 183.7 KB gzipped: the rule (engine/caravan.ts),",
+      "its wares (content/caravan.ts), its sentences in both languages, and the",
+      "ask line and picker (screens/Caravan.tsx). It is in the first paint on",
+      "purpose: the ask is on screen from the first placement, because a size to",
+      "aim for has to be read before the pocket exists."
     ]
   },
-
   "renderer": {
     "gzip": 291500,
     "$why": [
@@ -68,7 +73,6 @@
       "it has happened; a name is caught on the build that introduces it."
     ]
   },
-
   "fonts": {
     "raw": 156000,
     "$why": [
@@ -84,9 +88,8 @@
       "the first visit and a missing one is the FOUT B8.2 went and fixed."
     ]
   },
-
   "precache": {
-    "raw": 2135000,
+    "raw": 2190000,
     "$why": [
       "WHAT AN OFFLINE INSTALL COSTS A PHONE'S STORAGE — the worker's own",
       "list, read off the BUILT worker because `__PRECACHE_ASSETS__` is",
@@ -95,7 +98,10 @@
       "",
       "RAW, because storage pays raw. It is also the bar most likely to move",
       "for a good reason: every new terrain PNG lands here. Moving it is fine;",
-      "moving it without noticing is what this file is against."
+      "moving it without noticing is what this file is against.",
+      "",
+      "MOVED 2026-09-29, from 2,135,000 to 2,190,000, for the same caravan: 2093.9",
+      "KB raw, the same code and sentences counted uncompressed."
     ]
   }
 }

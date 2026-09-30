@@ -1,3 +1,4 @@
+import { caravanFor, caravanMultiplier, type CaravanAsk } from './caravan';
 import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { distance, key, neighbourKeys, parse, type HexKey } from './hex';
 import type { Cell, GameState, PointsSplit, PointSource, Rarity, Tile } from './state';
@@ -568,6 +569,10 @@ export function harvestValue(
   placing: number;
   jackpot: number;
   bounty: number;
+  /** The caravan's ask this pocket answers, or null (2026-09-29). */
+  caravan: CaravanAsk | null;
+  /** What answering it multiplies the whole catch by; 1 where it does not. */
+  caravanMult: number;
   /** The rare tile this pocket would yield as treasure, if big enough. */
   treasure: Rarity | null;
 } {
@@ -599,6 +604,10 @@ export function harvestValue(
   // It is priced into the button so the reason to press it is on the button.
   const questPays = pops.length > 0 && questMet(state, pops);
   const bounty = questPays ? (state.quest?.bonus ?? 1) : 1;
+  // The caravan's ask, answered: a multiplier on the whole catch, like the
+  // bounty, and priced into the button for the same reason.
+  const caravan = pops.length > 0 ? caravanFor(state, pops.length) : null;
+  const caravanMult = caravan === null ? 1 : caravanMultiplier(caravan.kind, t);
 
   return {
     keys: pops,
@@ -617,7 +626,8 @@ export function harvestValue(
     points: Math.floor(
       (sumWorth * (sizeBonus * mult + dial(t.identityBonusRate)) +
         rareWorth * dial(t.rareBonusRate)) *
-        bounty,
+        bounty *
+        caravanMult,
     ),
     sizeBonus,
     rareWorth,
@@ -627,6 +637,8 @@ export function harvestValue(
     placing: sumWorth * dial(t.identityBonusRate),
     jackpot: rareWorth * dial(t.rareBonusRate),
     bounty,
+    caravan,
+    caravanMult,
     treasure: treasureFor(pops.length, t),
   };
 }
@@ -733,6 +745,7 @@ export function pointsSplit(
     pocket: 0,
     distance: 0,
     bounty: 0,
+    caravan: 0,
   };
 
   // The jackpot's base, per row: the worth carried by magic/unique tiles,
@@ -772,6 +785,8 @@ export function pointsSplit(
   const sizeBonus = 1 + t.harvestSizeBonus * Math.max(0, counted - 1);
   const mult = harvestMultiplier(state, keys);
   const bounty = questMet(state, keys) ? (state.quest?.bonus ?? 1) : 1;
+  const asked = caravanFor(state, keys.length);
+  const caravanMult = asked === null ? 1 : caravanMultiplier(asked.kind, t);
 
   // `identityBonusRate` (Session 48) is a SECOND, flat reward on the same
   // four rows — neither `sizeBonus` nor `mult` touch it, so it is folded in
@@ -792,16 +807,19 @@ export function pointsSplit(
   sources.distance = sumWorth * sizeBonus * (mult - 1);
   const beforeBounty = sumWorth * (sizeBonus * mult + bonusRate) + rareWorth * rareRate;
   sources.bounty = beforeBounty * (bounty - 1);
+  // The caravan multiplies after the bounty, so its row is the slice of the
+  // whole catch its own factor added.
+  sources.caravan = beforeBounty * bounty * (caravanMult - 1);
 
   // Everything above is in WORTH; the run banks POINTS. One scale factor
   // carries both floors, and it is the same factor for all three axes, which
   // is what keeps them agreeing with each other and with the run's total.
-  const raw = beforeBounty * bounty;
+  const raw = beforeBounty * bounty * caravanMult;
   const scale = scored / raw;
   // A colour or rarity row is its tiles' worth through every factor those
   // tiles earned, plus the jackpot on whichever of them were rare.
   const amplified = (n: number, rare: number): number =>
-    (n * (sizeBonus * mult + bonusRate) + rare * rareRate) * bounty * scale;
+    (n * (sizeBonus * mult + bonusRate) + rare * rareRate) * bounty * caravanMult * scale;
 
   return {
     total: scored,

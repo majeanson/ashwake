@@ -1,5 +1,6 @@
 import type { PointSource, Rarity } from '@content/tuning';
 import type { Locale } from '@content/locale';
+import type { WareId } from '@content/caravan';
 
 /**
  * Every sentence a player reads, as one typed object per language.
@@ -631,6 +632,33 @@ export type Strings = {
    * purchase pays out into the toast — the purse is a currency now, and a
    * currency you cannot see leaving is a currency you stop trusting."*
    */
+  /**
+   * THE CARAVAN (2026-09-29; `content/caravan.ts`). It asks for a pocket of a
+   * size; the first pop that fits is multiplied and buys a ware. Every number
+   * arrives as an argument — the catalogue never reads the tuning.
+   */
+  readonly caravan: {
+    /** The standing ask, with its bounds and the placements it has left. */
+    readonly ask: (min: number, max: number, left: number) => string;
+    /** The OUTRAGEOUS ask, which has no upper bound. */
+    readonly askWild: (min: number, left: number) => string;
+    /** This ask has been answered; the next one is on its way. */
+    readonly met: (left: number) => string;
+    /** Said on the pop that answers it: the multiplier and the wares owed. */
+    readonly answered: (mult: number, picks: number) => string;
+    /** Over the three wares. */
+    readonly choose: string;
+    /** More offers queued behind this one. */
+    readonly waiting: (n: number) => string;
+    /** Put the offer down and keep playing; it waits. */
+    readonly later: string;
+    /** The way back to a waiting offer. */
+    readonly open: (n: number) => string;
+    /** Said when a ware is taken. */
+    readonly took: (name: string) => string;
+    /** Each ware: a short name, and what it does for the rest of the run. */
+    readonly ware: Readonly<Record<WareId, { readonly name: string; readonly note: string }>>;
+  };
   readonly spent: {
     readonly reroll: (paid: number) => string;
     readonly steer: (name: string, draws: number, paid: number) => string;
@@ -1488,6 +1516,8 @@ export type Strings = {
         readonly placing: string;
         readonly jackpot: string;
         readonly bounty: string;
+        /** The caravan's ask, answered (2026-09-29). */
+        readonly caravan: string;
         /** The scaling every scoring pop is paid at — `pointsPerPop`. */
         readonly perPop: string;
         readonly points: string;
@@ -1504,6 +1534,7 @@ export type Strings = {
           readonly placing: (pct: number) => string;
           readonly jackpot: (rate: number) => string;
           readonly bounty: string;
+          readonly caravan: string;
           readonly perPop: (pct: number) => string;
           readonly points: string;
         };

@@ -1,3 +1,5 @@
+import { CARAVAN_BANDS, type WareId } from '@content/caravan';
+import { caravanAskAt, caravanMultiplier, picksFor } from '@engine/caravan';
 import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { distance, key, neighbourKeys, parse, type HexKey } from '@engine/hex';
 import { canSpend, rarityOdds, spendCost } from '@engine/reduce';
@@ -792,6 +794,31 @@ export type HudView = {
    */
   readonly questPays: boolean;
 
+  /**
+   * THE CARAVAN'S STANDING ASK (2026-09-29; `engine/caravan.ts`), or null
+   * where there is no caravan. `max` is null for the outrageous ask, which
+   * has no upper bound; `left` is placements until it moves on; `met`
+   * once it has been answered, so the screen can say "paid" rather than
+   * go on asking.
+   */
+  readonly caravan: {
+    readonly outrageous: boolean;
+    readonly min: number;
+    readonly max: number | null;
+    readonly left: number;
+    readonly met: boolean;
+    /** What answering it multiplies the pop by, as the screen prints it. */
+    readonly mult: number;
+    readonly picks: number;
+  } | null;
+  /** True when the priced pocket answers the caravan — POP wears it. */
+  readonly caravanPays: boolean;
+  /** The oldest offer waiting, three wares, or null; and how many wait. */
+  readonly offer: readonly WareId[] | null;
+  readonly offersWaiting: number;
+  /** Offers ever made this run — what tells a screen a NEW one arrived. */
+  readonly offersMade: number;
+
   /** Luck a BURN would pay for the priced pocket; 0 where burning is off. */
   readonly harvestBurn: number;
   /**
@@ -917,6 +944,24 @@ export function toHudView(
     harvestAt: target,
 
     questPays: value.questPays,
+    caravan: (() => {
+      const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
+      if (ask === null) return null;
+      const [min, max] = CARAVAN_BANDS[ask.kind];
+      return {
+        outrageous: ask.kind === 3,
+        min,
+        max: Number.isFinite(max) ? max : null,
+        left: ask.ends - state.placements,
+        met: state.caravan.met.includes(ask.index),
+        mult: caravanMultiplier(ask.kind, state.tuning),
+        picks: picksFor(ask.kind, state.tuning),
+      };
+    })(),
+    caravanPays: value.caravan !== null,
+    offer: state.caravan.offers[0] ?? null,
+    offersWaiting: state.caravan.offers.length,
+    offersMade: state.caravan.made,
     // The sacrifice pays RELICS now: the between-runs currency, and the only
     // thing on this screen that is not about staying alive.
     harvestBurn:
@@ -1062,6 +1107,7 @@ function emptySplit(): Mutable<PointsSplit> {
       pocket: 0,
       distance: 0,
       bounty: 0,
+      caravan: 0,
     },
   };
 }
@@ -1124,6 +1170,8 @@ type PriceTerms = {
   readonly placing: number;
   readonly jackpot: number;
   readonly bounty: number;
+  /** The caravan's multiplier on this pocket; 1 where it does not answer. */
+  readonly caravanMult: number;
 };
 
 /** A pocket's price terms, and what POP actually pays for it — `scoreOf`. */
@@ -1218,6 +1266,7 @@ function colourPotentials(state: GameState): ColourPotential[] {
       placing: v.placing,
       jackpot: v.jackpot,
       bounty: v.bounty,
+      caravanMult: v.caravanMult,
     };
     return { holds, price };
   });
@@ -2138,6 +2187,13 @@ export function priceRows(p: PriceTerms | null, t: Tuning, s: Strings): TipRow[]
       text: sum.bounty,
       value: `× ${n(p.bounty)}`,
       hint: h.bounty,
+    });
+  if (p !== null && p.caravanMult > 1)
+    rows.push({
+      icon: LENS_ICON.bounty,
+      text: sum.caravan,
+      value: `× ${n(p.caravanMult)}`,
+      hint: h.caravan,
     });
   if (t.singlePayout && t.pointsPerPop > 0) {
     rows.push({

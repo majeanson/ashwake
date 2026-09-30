@@ -318,6 +318,8 @@ describe('harvest value', () => {
       placing: 0,
       jackpot: 0,
       bounty: 1,
+      caravan: null,
+      caravanMult: 1,
       treasure: null,
     });
   });

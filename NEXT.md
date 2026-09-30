@@ -67,7 +67,7 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — clean at round ten
+## 1. Marc, on the phone — round eleven, the caravan
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in
@@ -91,8 +91,13 @@ their tap in narrower boxes, with smaller, dimmer numbers (`MINOR` in
 **Round ten came back ok (2026-09-29, on the sheet and again in the session),
 so Session C's build is `ccc5379`** (`PLAYTEST.md`). It carries the day's
 balance pass (§3a) on purpose. Marc also passed both new French steer
-sentences. **Nothing is open on the sheet.** From here, anything that changes
-the first minute needs a new look before the stranger plays.
+sentences. From here, anything that changes the first minute needs a new look
+before the stranger plays.
+
+**And the caravan changes it** (§3a): a line under the header from the first
+placement, POP wearing the caravan's mark, a pick-one-of-three sheet. So
+**round eleven (`r11-caravan`, `r11-french`) is its look**, and its _ok_
+names Session C's build in place of `ccc5379`.
 
 ---
 
@@ -169,9 +174,15 @@ are queued for after Session C. Escalation and overripe pockets are dropped.
 Colour now counts at every stage (the placing paid twice, pocket size +0.4 a
 tile: colour's share 34/26/38% → 47/37/50%), and steer is a GUARANTEE —
 six draws of the colour named, at 20 luck — which pays when it reads the
-ground and wastes its luck when it does not. Still open, none chosen: a
-real cost to waiting (chains, tides, bounty deadlines, colour sets). **The
-steer sentence in French is Marc's to read.**
+ground and wastes its luck when it does not. The steer French was passed.
+
+**Built the same day: THE CARAVAN**, the answer to "waiting is always right"
+(`content/caravan.ts`, `LOG.md` Session 117). It asks for a pocket of 3-4,
+5-8 or 9-11, or now and then an outrageous 12+. The first pop that fits is
+multiplied (×3 / ×2 / ×1.5 / ×2) and buys one of three wares for the rest
+of the run (three for the outrageous ask). Reading it beats every fixed habit
+by ~18%, runs are no longer, singles never pay, and `pointsPerPop` 0.26 keeps
+fixed play where it was. **Marc's: the phone round (§1) and its French.**
 
 ## 4. Watching — no action unless it happens again
 
@@ -206,6 +217,16 @@ steer sentence in French is Marc's to read.**
   does. **2026-09-29: sixteen pushes green in a row** on both engines since
   the last failure (`3df3fe6` → `de4c781`), eleven of them after the fix in
   `b514f6f`.
+- **The sweep's optional-input pass counts a same-named shorthand as a
+  supplier (found 2026-09-29).** The caravan's ask was `{ index, kind, from,
+until }`, and with it in the program the ruling on
+  `scripts/sweep/allow.ts#Ruling.until` ("nothing sets one") stopped matching.
+  Renaming the caravan's field to `ends` brought it straight back, so the pass
+  (`scripts/sweep/optional.ts`, `suppliers`) took an unrelated object literal's
+  `until` for a supply of `Ruling.until`. That is the dangerous direction: a
+  false supplier HIDES a real "nothing supplies this" finding. The field is
+  `ends` now; **the pass wants fixing**: check that each reference's symbol
+  is the declared property's, not just its name.
 - **`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29).** The
   deploy had landed (`version.json` matched the commit on workers.dev); a
   later check in the same step lost its connection, and the next push

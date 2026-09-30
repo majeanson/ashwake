@@ -260,7 +260,13 @@ export function PocketActions({
           name too, because the glyph is `aria-hidden` and a screen reader
           is owed the same reason.
         */
-          bounty={hud.questPays ? s.lesson.bounty.name : null}
+          bounty={
+            hud.questPays
+              ? s.lesson.bounty.name
+              : hud.caravanPays
+                ? s.ui.lensPanel.sum.caravan
+                : null
+          }
           /*
           HOW MANY DECISIONS ARE WAITING (Marc, 2026-09-16) — the bar's
           caption until the bar went (2026-09-25), inside the button now.

@@ -68,6 +68,7 @@ import { Manual } from './screens/Manual';
 import { Device } from './screens/Device';
 import { More } from './screens/More';
 import { Purse } from './screens/Purse';
+import { CaravanAsk, CaravanPicker } from './screens/Caravan';
 import { Settings } from './screens/Settings';
 import { Shop } from './screens/Shop';
 import { Worlds } from './screens/Worlds';
@@ -690,6 +691,13 @@ function Game() {
   const saidOnce = useRef<Set<OnceId>>(new Set());
 
   const [purseOpen, setPurseOpen] = useState(false);
+  /**
+   * The caravan's picker — see `screens/Caravan`. DERIVED, not toggled by an
+   * effect: it is open whenever a ware is owed, unless LATER was pressed since
+   * the last offer arrived. `putDown` is the count of offers made when it was;
+   * a new offer moves that count on, and the picker opens itself.
+   */
+  const [putDown, setPutDown] = useState<number | null>(null);
   /** The lens panel, over the hand — see `screens/LensPanel`. One sheet at a
    *  time: opening this closes the purse and the purse closes this. */
   const [lensOpen, setLensOpen] = useState(false);
@@ -2454,13 +2462,19 @@ function Game() {
    * A pure pan rather than a zoom, so the effect rides along at whatever scale
    * the player chose to watch the board at.
    */
+  const caravanOpen = snap.hud.offersWaiting > 0 && putDown !== snap.hud.offersMade;
+
   const onHarvest = useCallback(
     (choice: HarvestChoice) => {
       const at = snap.hud.harvestAt;
       if (at !== null) board.current?.flyToHex(at, board.current.zoomLevel());
+      // Priced BEFORE the pop: this pocket answers the caravan's ask, so say
+      // what it pays on the same tap (2026-09-29). The picker opens itself.
+      const ask = snap.hud.caravanPays ? snap.hud.caravan : null;
       act({ type: 'HARVEST', choice, ...(at === null ? {} : { at }) });
+      if (ask !== null) say(s.caravan.answered(ask.mult, ask.picks));
     },
-    [act, snap.hud.harvestAt],
+    [act, snap.hud.harvestAt, snap.hud.caravanPays, snap.hud.caravan, say, s],
   );
 
   const onLens = useCallback(
@@ -3315,6 +3329,9 @@ function Game() {
           }
         />
       )}
+      {playing && (
+        <CaravanAsk hud={snap.hud} s={s} picking={caravanOpen} onOpen={() => setPutDown(null)} />
+      )}
 
       {/*
         Reachable only while it is the thing on screen.
@@ -3694,6 +3711,19 @@ function Game() {
               theme={theme}
               s={s}
               onHold={holdLens}
+            />
+          )}
+          {caravanOpen && snap.hud.offer !== null && (
+            <CaravanPicker
+              offer={snap.hud.offer}
+              waiting={snap.hud.offersWaiting}
+              s={s}
+              onPick={(pick) => {
+                const ware = snap.hud.offer?.[pick];
+                act({ type: 'CARAVAN', pick });
+                if (ware !== undefined) say(s.caravan.took(s.caravan.ware[ware].name));
+              }}
+              onLater={() => setPutDown(snap.hud.offersMade)}
             />
           )}
           {purseOpen && (

@@ -93,7 +93,6 @@ const DESIGN_RECORD: readonly Ruling[] = (
     'packages/core/src/theme/assets.ts#AssetSlot.label',
     'packages/core/src/theme/assets.ts#AssetSlot.note',
     'packages/core/src/theme/assets.ts#AssetSlot.tiling',
-    'packages/core/src/sim/policy.ts#Policy.note',
     'packages/core/src/theme/tokens.ts#Theme.source',
   ] as const
 ).map((id) => ({

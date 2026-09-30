@@ -591,6 +591,39 @@ ${worn ? 'Already worn, so it works from here on.' : 'Yours for good, in THIS wo
 Nothing new inside. A find grants only what you do not already carry, and only on your own world.`,
   },
 
+  caravan: {
+    ask: (min, max, left) => `CARAVAN · a pocket of ${min} to ${max} · ${left} left`,
+    askWild: (min, left) => `CARAVAN · a pocket of ${min} or more · ${left} left`,
+    met: (left) => `CARAVAN · paid. A new ask in ${left}.`,
+    answered: (mult, picks) =>
+      picks > 1
+        ? `The caravan takes it: × ${d1(mult)}, and ${picks} wares to choose.`
+        : `The caravan takes it: × ${d1(mult)}, and a ware to choose.`,
+    choose: 'The caravan pays. Take one:',
+    waiting: (n) => `${n} more to take after this one.`,
+    later: 'LATER',
+    open: (n) => (n > 1 ? `CARAVAN · ${n} wares waiting` : 'CARAVAN · a ware waiting'),
+    took: (name) => `Taken from the caravan: ${name}.`,
+    ware: {
+      placing: {
+        name: 'MATCHING PAYS',
+        note: 'Every pop pays its placing more, for the rest of the run.',
+      },
+      size: {
+        name: 'SIZE PAYS',
+        note: 'Every extra tile in a pocket is worth more, for the rest of the run.',
+      },
+      hand: {
+        name: 'ONE MORE CARD',
+        note: 'One more card in your hand, for the rest of the run (5 at most).',
+      },
+      luck: { name: 'LUCK', note: 'A lump of luck, right now.' },
+      forge: {
+        name: 'CHEAPER FORGE',
+        note: 'Forging costs less, for the rest of the run.',
+      },
+    },
+  },
   spent: {
     reroll: (paid) => `A fresh hand, for ${paid} luck.`,
     steer: (name, draws, paid) =>
@@ -864,6 +897,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         placing: 'For the placing',
         jackpot: 'Rare jackpot',
         bounty: 'Bounty',
+        caravan: 'Caravan',
         perPop: 'Paid per pop',
         points: 'Points',
         hints: {
@@ -878,6 +912,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
           jackpot: (rate) => `The worth of the pocket's magic and unique tiles, ×${d1(rate)}.`,
           bounty:
             'The standing bounty, collected, because this pocket is big enough and near enough.',
+          caravan: 'The caravan asked for a pocket this size, and this is the first to answer it.',
           perPop: (pct) => `Every pop pays ${pc(pct)} of the price worked out above.`,
           points: 'What POP pays for this pocket, rounded down.',
         },
@@ -936,6 +971,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       pocket: 'POCKET SIZE',
       distance: 'DISTANCE',
       bounty: 'BOUNTIES',
+      caravan: 'CARAVAN',
     },
     sites: 'SITES CLAIMED',
     arc: 'THE SHAPE OF THE RUN',

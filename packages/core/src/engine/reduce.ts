@@ -30,6 +30,7 @@ import type {
   Tile,
 } from './state';
 import { destinationAt, findAt, terrainAt } from './world';
+import { applyWare, offerFor, picksFor } from './caravan';
 
 /**
  * The engine. `reduce(state, action) -> state`, and nothing else.
@@ -323,6 +324,7 @@ export function newRun(
     held: [],
     quest: null,
     bias: null,
+    caravan: { met: [], offers: [], made: 0, taken: [] },
     lastPlaced: null,
     wakeAt,
     claimed,
@@ -344,7 +346,33 @@ export function reduce(state: GameState, action: Action): GameState {
       return hold(state, action.slot);
     case 'SPEND':
       return spendLuck(state, action.on, action.colour);
+    case 'CARAVAN':
+      return takeWare(state, action.pick);
   }
+}
+
+/**
+ * Take one ware from the oldest offer the caravan has made (2026-09-29).
+ *
+ * Refused — the state handed back unchanged — when nothing is on offer, the
+ * pick is not one of the three, or the run is over. The ware changes the rest
+ * of the run through its own `tuning` (`engine/caravan.ts`), which is what
+ * lets a replay re-play it exactly.
+ */
+function takeWare(state: GameState, pick: number): GameState {
+  if (state.phase !== 'placing') return state;
+  const offer = state.caravan.offers[0];
+  const ware = offer?.[pick];
+  if (ware === undefined) return state;
+  const bought = applyWare(state, ware);
+  return {
+    ...bought,
+    caravan: {
+      ...state.caravan,
+      offers: state.caravan.offers.slice(1),
+      taken: [...state.caravan.taken, ware],
+    },
+  };
 }
 
 /**
@@ -618,7 +646,7 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
   if (state.phase !== 'placing') return state;
 
   const t = state.tuning;
-  const { keys, count, tiles, points, questPays, treasure } = harvestValue(state, at);
+  const { keys, count, tiles, points, questPays, treasure, caravan } = harvestValue(state, at);
   if (keys.length === 0) return state;
   // Burning is only a thing where the sacrifice has a price — either one.
   if (choice === 'burn' && t.burnLuck <= 0 && t.burnRelics <= 0) return state;
@@ -677,6 +705,15 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
   // bounty and pay nothing for it (Day 2). One expression, one answer.
   const collected = questPays && scores;
 
+  // The caravan's ask, answered by the pop that SCORES — the same rule as the
+  // bounty, for the same reason: its multiplier is already inside `points`.
+  // It pays its wares as offers to pick from, one per pick owed.
+  const answered = caravan !== null && scores;
+  const owed = answered ? picksFor(caravan.kind, t) : 0;
+  const offers = Array.from({ length: owed }, (_, i) =>
+    offerFor(state.rootSeed, state.caravan.made + i),
+  );
+
   // Luck arrives mostly as a FLAT amount per pop, so three small pockets beat
   // one big one at buying better draws while the big one beats them at tiles
   // and score. That is the whole reason to ever pop early — see `luckPerPop`.
@@ -724,6 +761,14 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
     relics: state.relics + relicsGained,
     quest: collected ? null : state.quest,
     bias,
+    caravan: answered
+      ? {
+          ...state.caravan,
+          met: [...state.caravan.met, caravan.index],
+          offers: [...state.caravan.offers, ...offers],
+          made: state.caravan.made + owed,
+        }
+      : state.caravan,
     log: {
       ...state.log,
       popped: state.log.popped + count,

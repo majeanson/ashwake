@@ -41,6 +41,7 @@ const summary = (
       pocket: 1,
       distance: 0,
       bounty: 0,
+      caravan: 0,
     },
   },
   sitePoints: 0,

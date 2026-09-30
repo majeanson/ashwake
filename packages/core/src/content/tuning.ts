@@ -366,6 +366,29 @@ export type Tuning = {
   readonly treasureNeed: number;
   readonly treasureUnique: number;
 
+  /**
+   * THE CARAVAN (2026-09-29; `content/caravan.ts` has the sizes and wares and
+   * the whole argument). It asks for a pocket size that changes as the run
+   * goes; the first pop that fits is multiplied by its band's factor and buys
+   * a pick of one of three wares.
+   *
+   * `caravanEvery` — placements an ordinary ask stands. **0 is no caravan**,
+   * the dial every system ships behind.
+   * `caravanWild` — the share of asks that are OUTRAGEOUS (12+).
+   * `caravanWildLife` — how many ordinary lengths an outrageous ask stands.
+   * `caravanMult*` — what the fitting pop is multiplied by, per band.
+   * `caravanWildPicks` — how many wares an outrageous ask pays (an ordinary
+   * one pays one).
+   */
+  readonly caravanEvery: number;
+  readonly caravanWild: number;
+  readonly caravanWildLife: number;
+  readonly caravanMultSmall: number;
+  readonly caravanMultMedium: number;
+  readonly caravanMultLarge: number;
+  readonly caravanMultWild: number;
+  readonly caravanWildPicks: number;
+
   readonly startingTiles: number;
 
   /**
@@ -779,6 +802,14 @@ export const BARE_TUNING: Tuning = {
 
   treasureNeed: 0,
   treasureUnique: 0,
+  caravanEvery: 0,
+  caravanWild: 0,
+  caravanWildLife: 0,
+  caravanMultSmall: 0,
+  caravanMultMedium: 0,
+  caravanMultLarge: 0,
+  caravanMultWild: 0,
+  caravanWildPicks: 0,
 
   // 40/100 let the first human session bank 134 tiles without ever feeling
   // the curve (2026-08-04). Swept to 30/70: random-legal dies on map 1,
@@ -944,6 +975,14 @@ const PLANE: Tuning = {
   // 10 and 20: a pocket of 10 for a magic tile, 20 for a unique.
   treasureNeed: 0,
   treasureUnique: 0,
+  caravanEvery: 0,
+  caravanWild: 0,
+  caravanWildLife: 0,
+  caravanMultSmall: 0,
+  caravanMultMedium: 0,
+  caravanMultLarge: 0,
+  caravanMultWild: 0,
+  caravanWildPicks: 0,
 };
 
 /** The four tile colours. Named for what they are — art direction is undecided. */
@@ -972,6 +1011,7 @@ export type Rarity = (typeof RARITIES)[number];
  *   pocket    what harvesting many at once multiplied it by
  *   distance  what cashing it far from home multiplied it by
  *   bounty    what a collected bounty multiplied it by
+ *   caravan   what meeting the caravan's ask multiplied it by (2026-09-29)
  */
 export const POINT_SOURCES = [
   'matches',
@@ -981,6 +1021,7 @@ export const POINT_SOURCES = [
   'pocket',
   'distance',
   'bounty',
+  'caravan',
 ] as const;
 export type PointSource = (typeof POINT_SOURCES)[number];
 
@@ -1240,6 +1281,20 @@ export const TUNING: Tuning = {
   // placements), inside Marc's "dont want too much longer games". Lines that
   // never spend are untouched. `scripts/study.ts`; `LOG.md` Session 117.
   luckForgeCost: 40,
+
+  // THE CARAVAN (2026-09-29; `content/caravan.ts`, and `LOG.md` Session 117
+  // for every candidate that lost to it). An ask every 10 placements, one in
+  // seven outrageous and standing three times as long; the pop that answers
+  // is multiplied ×3 small, ×2 medium, ×1.5 large, ×2 outrageous, and buys a
+  // ware (three for an outrageous ask).
+  caravanEvery: 10,
+  caravanWild: 0.15,
+  caravanWildLife: 3,
+  caravanMultSmall: 3,
+  caravanMultMedium: 2,
+  caravanMultLarge: 1.5,
+  caravanMultWild: 2,
+  caravanWildPicks: 3,
   // TITHE existed 2026-08-18 through 2026-09-03: a clean 3x what death pays
   // on unspent luck, so cashing out mid-run was a real alternative to
   // hoarding. Cut the same session and for the same reason as `burnRelics`
@@ -1252,7 +1307,13 @@ export const TUNING: Tuning = {
 
   singlePayout: true,
   shrinesReborn: false,
-  pointsPerPop: 0.35,
+  // 0.35 until 2026-09-29: the caravan pays every player something (a fixed
+  // habit meets its ask now and then too), so the rate came down until the
+  // best fixed habit scores what it did before the caravan (1377 against
+  // 1348, 400 seeds, `scripts/study.ts`), and a player who answers the
+  // caravan scores 1632 — +18.5%, in 102 placements rather than 106. Bests
+  // already saved on phones stay fair.
+  pointsPerPop: 0.26,
   // Burning pays RELICS now, not luck. That was the open question, and the
   // answer arrived with the meta economy: a burn gives up the tiles keeping
   // you alive AND the score, and buys the next run instead. Luck was the
