@@ -100,8 +100,8 @@ placement and a pick-one-of-three sheet. So **round eleven (`r11-caravan`,
 `ccc5379`. **Since 2026-09-30 the look is different** (LOG Session 118). The
 line says only _on its way_ / _THE CARAVAN IS IN TOWN_ / _left town_, POP wears
 no mark, and the receipt says _took it_ or _passed on this one_. The sheet's
-round-eleven items were written for the old look (size and countdown on
-screen), so they want re-reading before Marc answers them. To judge: does the
+round-eleven items were rewritten for this look on 2026-09-30 (Session 119),
+before either was answered. To judge: does the
 in-town line read as a reason to pop? The in-town accent and the dimmed
 away lines are old styles, reused sight unseen. And the new French: four lines
 (`caravan.coming/town/left/passed`) and eight wares (EVERY POP PAYS, RARER
