@@ -492,17 +492,19 @@ export function harvestMultiplier(state: GameState, pops: readonly HexKey[]): nu
 
 /**
  * The tiles a pop pays for its depth — `popTilesPerRing` a tile per popped
- * tile per ring past the first — at the distance ceiling the run had before
- * the caravan sold it THE ROAD PAYS. That ware raises the ceiling for points
- * alone: a ware never buys survival (`content/caravan.ts`), and a tile is
- * survival. Found in review, 2026-09-30: it paid a far pocket of eight two
- * more tiles every pop.
+ * tile for each step of the distance multiplier past ×1 — at the ceiling the
+ * run had before the caravan sold it THE ROAD PAYS. That ware raises the
+ * ceiling for points alone: a ware never buys survival (`content/caravan.ts`),
+ * and a tile is survival. Found in review, 2026-09-30: at the shipped ceiling
+ * of ×2 it paid a pocket of eight popped at ×3 two more tiles.
  */
 export function ringTiles(state: GameState, count: number, mult: number): number {
   const t = state.tuning;
   if (!(t.popTilesPerRing > 0)) return 0;
   const road = state.caravan.taken.filter((w) => w === 'road').length * CARAVAN_WARES.road;
-  const paying = road > 0 ? Math.min(mult, t.distanceMultiplierCap - road) : mult;
+  // Never under ×1: the ware is sold only where a ceiling exists, but a
+  // tile count must not go negative whatever a tuning says.
+  const paying = road > 0 ? Math.max(1, Math.min(mult, t.distanceMultiplierCap - road)) : mult;
   return Math.floor(count * t.popTilesPerRing * (paying - 1));
 }
 

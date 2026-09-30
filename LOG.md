@@ -10081,10 +10081,10 @@ POWERS once?
 **Answer: two faults fixed, one tell left and written down, and the rest holds.**
 
 - **THE ROAD PAYS bought tiles.** Shipped `TUNING` pays `popTilesPerRing`
-  (0.25) a tile per popped tile per ring past the first, up to
-  `distanceMultiplierCap` (2). The ware raised that ceiling, so a far pocket
-  of eight paid two more tiles every pop. That is survival, which a ware may
-  never buy. `ringTiles` (`engine/rules.ts`) now pays tiles at the ceiling
+  (0.25) a tile per popped tile for each step of the distance multiplier
+  past ×1, up to `distanceMultiplierCap` (2). The ware raised that ceiling,
+  so a pocket of eight popped at ×3 paid two more tiles. That is survival,
+  which a ware may never buy. `ringTiles` (`engine/rules.ts`) now pays tiles at the ceiling
   the run had before the ware. The engine and the receipt both call it, so
   the receipt's arithmetic still sums. The road still pays in points.
   `engine/caravan.test.ts` holds it. The golden does not move, because the
@@ -10108,7 +10108,8 @@ pointsPerPop=0.35`). `try8` 1293 and `try12` 1387, so trying pays about
   while the ask is hidden.
 - **Holds, checked:** old ware ids are a subset of the new ones, so pending
   offers decode. An old save with no `caravanAway` is never away, which is the
-  guard. Only the `caravan` line and the receipt read the caravan. The HUD
+  guard. Before a pop, the caravan reaches the screen through the `caravan`
+  line and, only where a multiplier is set, the price (the tell above). The HUD
   says where it is and nothing more, and no number is on the line (e2e). ALL
   POWERS cannot come twice. `offerFor` filters on `taken` at both call sites,
   `takeWare` re-draws the queued offers with the ware counted, and
