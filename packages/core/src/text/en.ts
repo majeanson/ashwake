@@ -291,6 +291,7 @@ export const STRINGS_EN: Strings = {
       },
       bar: (count, cap) => `POCKET ${count}/${cap}`,
       bounty: (bonus) => `This pocket collects the bounty: ×${bonus} on its score.`,
+      caravan: (mult) => `The caravan asked for a pocket this size: ×${d1(mult)} on its score.`,
       rares: (n) => `${n} rare tile${plural(n, '', 's')} in here will be spent by popping it.`,
     },
     harvest: {
@@ -319,7 +320,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       steer: (name, cost, draws) =>
         `${name} · ${cost}. A hand leaning ${name}, and the next ${draws} draws with it.`,
       steerSure: (name, cost, draws) =>
-        `${name} · ${cost}. A whole hand of ${name}, and the next ${draws} draws too.`,
+        `${name} · ${cost}. A whole hand of ${name}${draws === 0 ? '' : draws === 1 ? ', and the next draw too' : `, and the next ${draws} draws too`}.`,
       forge: (cost) => `FORGE · ${cost}. Turn the selected card UNIQUE.`,
       sacrifice: (pct) =>
         `SACRIFICE LUCK: the WHOLE purse traded for relics at ${pct}%. Better than dying on it.`,
@@ -531,7 +532,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     },
     'ui.firstRun': {
       label: 'First run acknowledged',
-      note: 'At the end of your very first run in a world, one line says what it just opened.',
+      note: 'At the end of the first run finished on this phone, one line says what it just opened.',
     },
   },
   // The frame moves, the verbs do not: those are the glossary's (D4).
@@ -597,8 +598,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     met: (left) => `CARAVAN · paid. A new ask in ${left}.`,
     answered: (mult, picks) =>
       picks > 1
-        ? `The caravan takes it: × ${d1(mult)}, and ${picks} wares to choose.`
-        : `The caravan takes it: × ${d1(mult)}, and a ware to choose.`,
+        ? `The caravan takes it: ×${d1(mult)}, and ${picks} wares to choose.`
+        : `The caravan takes it: ×${d1(mult)}, and a ware to choose.`,
     choose: 'The caravan pays. Take one:',
     waiting: (n) => `${n} more to take after this one.`,
     later: 'LATER',
@@ -629,7 +630,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     steer: (name, draws, paid) =>
       `${name} runs hot: a new hand drawn under it, and the next ${draws} draws lean its way. ${paid} luck.`,
     steerSure: (name, draws, paid) =>
-      `${name}, guaranteed: a whole hand of it, and the next ${draws} draws too. ${paid} luck.`,
+      `${name}, guaranteed: a whole hand of it${draws === 0 ? '' : draws === 1 ? ', and the next draw too' : `, and the next ${draws} draws too`}. ${paid} luck.`,
     forge: (paid) =>
       `Forged UNIQUE: wild, and every match it makes counts double, both ways. ${paid} luck.`,
     tithe: (paid, relics) =>

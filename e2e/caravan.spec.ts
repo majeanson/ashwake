@@ -40,5 +40,29 @@ for (const width of [320, 360, 390])
       await expect(ask).toBeVisible();
       const fits = await ask.evaluate((e) => e.scrollWidth <= e.clientWidth + 1);
       expect(fits, `the ask overflows at ${width}px in ${locale}`).toBe(true);
+      /*
+       * And the LONGEST lines each language can show (review, 2026-09-29):
+       * seed 7's first ask is the short small one, so the outrageous ask with
+       * its 30-placement countdown and the "paid" line were never measured.
+       * Written into the real element, in its real style — copied from
+       * `text/en.ts` and `text/fr-CA.ts`, which a wording change must update.
+       */
+      const longest =
+        locale === 'fr-CA'
+          ? [
+              'CARAVANE · une poche de 12 ou plus · encore 30',
+              'CARAVANE · payée. Nouvelle demande dans 30.',
+            ]
+          : ['CARAVAN · a pocket of 12 or more · 30 left', 'CARAVAN · paid. A new ask in 30.'];
+      for (const text of longest) {
+        const fitsLong = await ask.evaluate((e, t) => {
+          const was = e.textContent;
+          e.textContent = t;
+          const ok = e.scrollWidth <= e.clientWidth + 1;
+          e.textContent = was;
+          return ok;
+        }, text);
+        expect(fitsLong, `"${text}" overflows at ${width}px`).toBe(true);
+      }
       await ctx.close();
     });

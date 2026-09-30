@@ -365,11 +365,18 @@ function takeWare(state: GameState, pick: number): GameState {
   const ware = offer?.[pick];
   if (ware === undefined) return state;
   const bought = applyWare(state, ware);
+  // The offers still waiting are drawn again against the run as it now is:
+  // one more card at five, or a forge at its floor, is a ware that does
+  // nothing, and the pick after an outrageous ask must not offer one.
+  const rest = state.caravan.offers.length - 1;
+  const first = state.caravan.made - rest;
   return {
     ...bought,
     caravan: {
       ...state.caravan,
-      offers: state.caravan.offers.slice(1),
+      offers: Array.from({ length: rest }, (_, i) =>
+        offerFor(state.rootSeed, first + i, bought.tuning),
+      ),
       taken: [...state.caravan.taken, ware],
     },
   };
@@ -711,7 +718,7 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
   const answered = caravan !== null && scores;
   const owed = answered ? picksFor(caravan.kind, t) : 0;
   const offers = Array.from({ length: owed }, (_, i) =>
-    offerFor(state.rootSeed, state.caravan.made + i),
+    offerFor(state.rootSeed, state.caravan.made + i, t),
   );
 
   // Luck arrives mostly as a FLAT amount per pop, so three small pockets beat
@@ -742,10 +749,15 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
       steer = colour;
     }
   }
+  // A PAID guarantee outranks a free lean (found in review, 2026-09-29): a
+  // pop between buying a steer and drawing its hand used to overwrite the
+  // steer with the popped colour, and the purse had promised "all".
   const bias =
-    t.colourBiasDraws > 0 && steer !== null
-      ? { colour: steer, left: t.colourBiasDraws }
-      : state.bias;
+    state.bias?.sure === true && state.bias.left > 0
+      ? state.bias
+      : t.colourBiasDraws > 0 && steer !== null
+        ? { colour: steer, left: t.colourBiasDraws }
+        : state.bias;
 
   return endIfStuck({
     ...state,

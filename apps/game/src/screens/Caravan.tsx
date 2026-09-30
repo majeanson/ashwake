@@ -21,12 +21,30 @@ type AskProps = {
   readonly onOpen: () => void;
   /** Whether the picker is open — the line gives way to it. */
   readonly picking: boolean;
+  /** A panel is open over the board: the line is out of reach with it. */
+  readonly inert?: boolean;
 };
 
-export function CaravanAsk({ hud, s, onOpen, picking }: AskProps) {
+export function CaravanAsk({ hud, s, onOpen, picking, inert = false }: AskProps) {
   const ask = hud.caravan;
   if (ask === null) return null;
+  return (
+    // A slot of the line's own height, so the board does not resize when the
+    // line becomes the 44px way back to a waiting ware: that control sits
+    // OVER the slot and the board's top edge, never in the flow (review).
+    <div className="caravan-slot" inert={inert}>
+      <AskLine hud={hud} s={s} onOpen={onOpen} picking={picking} ask={ask} />
+    </div>
+  );
+}
 
+function AskLine({
+  hud,
+  s,
+  onOpen,
+  picking,
+  ask,
+}: Omit<AskProps, 'inert'> & { readonly ask: NonNullable<HudView['caravan']> }) {
   if (hud.offersWaiting > 0 && !picking)
     return (
       <button type="button" className="caravan-ask waiting" data-hud="caravan" onClick={onOpen}>

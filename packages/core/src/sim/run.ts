@@ -80,7 +80,7 @@ type RunOptions = {
  * move was a no-op no matter what it did to the state object.
  */
 const progress = (s: GameState): string =>
-  `${s.placements}/${s.log.harvests.length}/${s.points}/${s.tiles}/${s.luck}`;
+  `${s.placements}/${s.log.harvests.length}/${s.points}/${s.tiles}/${s.luck}/${s.caravan.taken.length}`;
 /*
  * LUCK joined the list on 2026-09-29. A spend that only redraws the hand — a
  * STEER — moves nothing else here, and the day steer and forge became

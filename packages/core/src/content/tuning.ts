@@ -1283,8 +1283,9 @@ export const TUNING: Tuning = {
   luckForgeCost: 40,
 
   // THE CARAVAN (2026-09-29; `content/caravan.ts`, and `LOG.md` Session 117
-  // for every candidate that lost to it). An ask every 10 placements, one in
-  // seven outrageous and standing three times as long; the pop that answers
+  // for every candidate that lost to it). An ask every 10 placements, 15% of
+  // them outrageous — and since those stand three times as long, one is up
+  // about a third of the time; the pop that answers
   // is multiplied ×3 small, ×2 medium, ×1.5 large, ×2 outrageous, and buys a
   // ware (three for an outrageous ask).
   caravanEvery: 10,
@@ -1311,7 +1312,9 @@ export const TUNING: Tuning = {
   // habit meets its ask now and then too), so the rate came down until the
   // best fixed habit scores what it did before the caravan (1377 against
   // 1348, 400 seeds, `scripts/study.ts`), and a player who answers the
-  // caravan scores 1632 — +18.5%, in 102 placements rather than 106. Bests
+  // caravan scores 1632 — +18.5%, in 102 placements rather than 106. At 1000
+  // seeds it is 1361 against 1587, +16.6%, 102 against 105: a 400-seed median
+  // carries about ±50 points of noise, so call it ~17%. Bests
   // already saved on phones stay fair.
   pointsPerPop: 0.26,
   // Burning pays RELICS now, not luck. That was the open question, and the

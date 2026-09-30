@@ -388,7 +388,20 @@ for (const locale of ['fr-CA', 'en-CA'] as const) {
       if (board.pop) {
         await tabTo(page, /^BUTTON .*POP/);
         await page.keyboard.press('Enter');
-        await page.waitForTimeout(300);
+        /*
+         * WAIT FOR THE CARD THAT MAY BE COMING, not for 300 ms (2026-09-29).
+         * The first pop's card lands after the pop's cascade, and an open card
+         * makes the board inert — correctly — so a tab walk that starts before
+         * it arrives ends inside it and never reaches the board. CI's slower
+         * runner lost that race twice in a row (`e2e` on 2a892fd, retry
+         * included); a desk wins it every time, which is why it looked fine.
+         */
+        await page
+          .locator('[role="dialog"]')
+          .first()
+          .waitFor({ state: 'visible', timeout: 1500 })
+          .catch(() => undefined);
+        await dismissCards(page);
         await tabTo(page, /\[application\]/);
         continue;
       }

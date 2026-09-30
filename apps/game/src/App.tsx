@@ -69,6 +69,7 @@ import { Device } from './screens/Device';
 import { More } from './screens/More';
 import { Purse } from './screens/Purse';
 import { CaravanAsk, CaravanPicker } from './screens/Caravan';
+import type { WareId } from '@content/caravan';
 import { Settings } from './screens/Settings';
 import { Shop } from './screens/Shop';
 import { Worlds } from './screens/Worlds';
@@ -693,11 +694,16 @@ function Game() {
   const [purseOpen, setPurseOpen] = useState(false);
   /**
    * The caravan's picker — see `screens/Caravan`. DERIVED, not toggled by an
-   * effect: it is open whenever a ware is owed, unless LATER was pressed since
-   * the last offer arrived. `putDown` is the count of offers made when it was;
-   * a new offer moves that count on, and the picker opens itself.
+   * effect: it is open whenever a ware is owed, unless LATER was pressed on
+   * THIS offer. `putDown` holds the offer itself and the count made then, so
+   * a new offer — in this run, the next one, or after a reload — opens it
+   * again. It was the count alone until review (2026-09-29), and a count
+   * restarts at 0 every run: a LATER in one run hid the next run's picker.
    */
-  const [putDown, setPutDown] = useState<number | null>(null);
+  const [putDown, setPutDown] = useState<{
+    readonly offer: readonly WareId[];
+    readonly made: number;
+  } | null>(null);
   /** The lens panel, over the hand — see `screens/LensPanel`. One sheet at a
    *  time: opening this closes the purse and the purse closes this. */
   const [lensOpen, setLensOpen] = useState(false);
@@ -2462,19 +2468,32 @@ function Game() {
    * A pure pan rather than a zoom, so the effect rides along at whatever scale
    * the player chose to watch the board at.
    */
-  const caravanOpen = snap.hud.offersWaiting > 0 && putDown !== snap.hud.offersMade;
+  const caravanOpen =
+    snap.hud.offersWaiting > 0 &&
+    !(
+      putDown !== null &&
+      putDown.offer === snap.hud.offer &&
+      putDown.made === snap.hud.offersMade
+    ) &&
+    // One sheet at a time over the hand: the purse and the lens panel sit in
+    // the same place, so the picker waits behind either (found in review).
+    !purseOpen &&
+    !lensOpen;
+  const openCaravan = (): void => {
+    setPutDown(null);
+    setPurseOpen(false);
+    setLensOpen(false);
+  };
 
   const onHarvest = useCallback(
     (choice: HarvestChoice) => {
       const at = snap.hud.harvestAt;
       if (at !== null) board.current?.flyToHex(at, board.current.zoomLevel());
-      // Priced BEFORE the pop: this pocket answers the caravan's ask, so say
-      // what it pays on the same tap (2026-09-29). The picker opens itself.
-      const ask = snap.hud.caravanPays ? snap.hud.caravan : null;
+      // The caravan's answer is said by the pop's own receipt (`harvestNote`),
+      // and the picker opens itself — see `caravanOpen`.
       act({ type: 'HARVEST', choice, ...(at === null ? {} : { at }) });
-      if (ask !== null) say(s.caravan.answered(ask.mult, ask.picks));
     },
-    [act, snap.hud.harvestAt, snap.hud.caravanPays, snap.hud.caravan, say, s],
+    [act, snap.hud.harvestAt],
   );
 
   const onLens = useCallback(
@@ -3330,7 +3349,13 @@ function Game() {
         />
       )}
       {playing && (
-        <CaravanAsk hud={snap.hud} s={s} picking={caravanOpen} onOpen={() => setPutDown(null)} />
+        <CaravanAsk
+          hud={snap.hud}
+          s={s}
+          picking={caravanOpen}
+          onOpen={openCaravan}
+          inert={anyOpen}
+        />
       )}
 
       {/*
@@ -3723,7 +3748,10 @@ function Game() {
                 act({ type: 'CARAVAN', pick });
                 if (ware !== undefined) say(s.caravan.took(s.caravan.ware[ware].name));
               }}
-              onLater={() => setPutDown(snap.hud.offersMade)}
+              onLater={() =>
+                snap.hud.offer !== null &&
+                setPutDown({ offer: snap.hud.offer, made: snap.hud.offersMade })
+              }
             />
           )}
           {purseOpen && (

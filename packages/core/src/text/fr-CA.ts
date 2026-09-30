@@ -291,6 +291,8 @@ export const STRINGS_FR: Strings = {
       },
       bar: (count, cap) => `POCHE ${count}/${cap}`,
       bounty: (bonus) => `Cette poche encaisse la prime${D}: ×${bonus} sur son score.`,
+      caravan: (mult) =>
+        `La caravane demandait une poche de cette taille${D}: ×${d1(mult)} sur son score.`,
       rares: (n) =>
         `${n} tuile${pl(n, '', 's')} rare${pl(n, '', 's')} là-dedans ser${pl(n, 'a', 'ont')} dépensée${pl(n, '', 's')} par la récolte.`,
     },
@@ -320,7 +322,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       steer: (name, cost, draws) =>
         `${name} · ${cost}. Une main qui penche ${name}, et les ${draws} prochaines pioches avec.`,
       steerSure: (name, cost, draws) =>
-        `${name} · ${cost}. Une main entière de ${name}, et les ${draws} prochaines pioches aussi.`,
+        `${name} · ${cost}. Une main entière de ${name}${draws === 0 ? '' : draws === 1 ? ', et la prochaine pioche aussi' : `, et les ${nb(draws)} prochaines pioches aussi`}.`,
       forge: (cost) => `FORGER · ${cost}. Rends UNIQUE la carte choisie.`,
       sacrifice: (pct) =>
         `SACRIFIER LA CHANCE${D}: TOUTE la bourse échangée contre des reliques à ${pc(pct)}. Mieux que de mourir dessus.`,
@@ -537,7 +539,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     },
     'ui.firstRun': {
       label: 'Première partie soulignée',
-      note: 'À la fin de ta toute première partie dans un monde, une ligne dit ce qu’elle vient d’ouvrir.',
+      note: 'À la fin de la première partie terminée sur ce téléphone, une ligne dit ce qu’elle vient d’ouvrir.',
     },
   },
   // Le cadre bouge, les verbes ne bougent pas : ce sont ceux du glossaire (D4).
@@ -604,8 +606,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     met: (left) => `CARAVANE · payée. Nouvelle demande dans ${nb(left)}.`,
     answered: (mult, picks) =>
       picks > 1
-        ? `La caravane la prend${D}: × ${d1(mult)}, et ${nb(picks)} marchandises à choisir.`
-        : `La caravane la prend${D}: × ${d1(mult)}, et une marchandise à choisir.`,
+        ? `La caravane la prend${D}: ×${d1(mult)}, et ${nb(picks)} marchandises à choisir.`
+        : `La caravane la prend${D}: ×${d1(mult)}, et une marchandise à choisir.`,
     choose: `La caravane paie. Prends-en une${D}:`,
     waiting: (n) => `Encore ${nb(n)} à prendre après celle-ci.`,
     later: 'PLUS TARD',
@@ -639,7 +641,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     steer: (name, draws, paid) =>
       `${name} chauffe${D}: une nouvelle main tirée sous cette couleur, et les ${draws} prochaines pioches penchent de son côté. ${nb(paid)} chance.`,
     steerSure: (name, draws, paid) =>
-      `${name} à coup sûr${D}: une main entière, et les ${draws} prochaines pioches aussi. ${nb(paid)} chance.`,
+      `${name} à coup sûr${D}: une main entière${draws === 0 ? '' : draws === 1 ? ', et la prochaine pioche aussi' : `, et les ${nb(draws)} prochaines pioches aussi`}. ${nb(paid)} chance.`,
     forge: (paid) =>
       `Forgé UNIQUE${D}: sauvage, et chaque appariement compte double, des deux côtés. ${nb(paid)} chance.`,
     tithe: (paid, relics) =>

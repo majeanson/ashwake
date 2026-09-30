@@ -1,3 +1,4 @@
+import { COLOURS } from '@content/tuning';
 import { WARE_IDS, type WareId } from '@content/caravan';
 import type { GameState, Tile } from '@engine/state';
 
@@ -173,7 +174,9 @@ export function decodeRun(raw: string | null): GameState | null {
     bias:
       isRecord(bias) &&
       typeof bias['colour'] === 'string' &&
-      typeof bias['left'] === 'number' &&
+      (COLOURS as readonly string[]).includes(bias['colour']) &&
+      Number.isSafeInteger(bias['left']) &&
+      (bias['left'] as number) >= 0 &&
       // A steer's guarantee (2026-09-29): absent, or exactly `true` — a
       // poked value must not decode into a promise the draws never made.
       (bias['sure'] === undefined || bias['sure'] === true)

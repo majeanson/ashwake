@@ -3996,8 +3996,13 @@ a:visited {
  * once it has been answered. When a ware is waiting, the same line is a
  * control, so it keeps the 44px floor every control keeps.
  */
+.caravan-slot {
+  position: relative;
+  min-height: 1.6rem;
+}
 .caravan-ask {
   margin: 0;
+  line-height: 1rem;
   padding: 0.3rem 0.5rem;
   font-family: var(--font-label);
   /* One line, and the COUNTDOWN is at its end — so the line shrinks to the
@@ -4019,8 +4024,10 @@ a:visited {
   opacity: 0.7;
 }
 button.caravan-ask.waiting {
+  position: absolute;
+  inset: 0 0.5rem auto;
+  z-index: 3;
   display: block;
-  width: 100%;
   min-height: 44px;
   border: 1px solid var(--panel-edge);
   border-radius: var(--radius);

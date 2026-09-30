@@ -255,6 +255,8 @@ export type Strings = {
       ) => string;
       readonly bar: (count: number, cap: number) => string;
       readonly bounty: (bonus: number) => string;
+      /** The pocket answers the caravan's ask: its multiplier (2026-09-29). */
+      readonly caravan: (mult: number) => string;
       readonly rares: (n: number) => string;
     };
     readonly harvest: {

@@ -261,11 +261,14 @@ export function PocketActions({
           is owed the same reason.
         */
           bounty={
-            hud.questPays
-              ? s.lesson.bounty.name
-              : hud.caravanPays
-                ? s.ui.lensPanel.sum.caravan
-                : null
+            // Both, when both pay: the accessible name owes a listener every
+            // reason the figure is bigger (review, 2026-09-29).
+            [
+              hud.questPays ? s.lesson.bounty.name : null,
+              hud.caravanPays ? s.ui.lensPanel.sum.caravan : null,
+            ]
+              .filter((x) => x !== null)
+              .join(' · ') || null
           }
           /*
           HOW MANY DECISIONS ARE WAITING (Marc, 2026-09-16) — the bar's

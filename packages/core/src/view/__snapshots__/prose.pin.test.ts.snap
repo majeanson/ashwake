@@ -447,7 +447,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     [
       "ui.firstRun",
       "First run acknowledged",
-      "At the end of your very first run in a world, one line says what it just opened.",
+      "At the end of the first run finished on this phone, one line says what it just opened.",
     ],
   ],
   "goals": [
@@ -1099,7 +1099,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     [
       "ui.firstRun",
       "Première partie soulignée",
-      "À la fin de ta toute première partie dans un monde, une ligne dit ce qu’elle vient d’ouvrir.",
+      "À la fin de la première partie terminée sur ce téléphone, une ligne dit ce qu’elle vient d’ouvrir.",
     ],
   ],
   "goals": [

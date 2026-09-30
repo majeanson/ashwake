@@ -46,6 +46,17 @@ import {
  * longest stretch without a pop, where the biggest pop lands, how many runs
  * die before they start, and how much of the score the seed decides rather
  * than the hands. None of those is fun; each is a place fun is known to leak.
+ *
+ * **What "shipped" means moved during the day it was written.** The first
+ * table in `LOG.md` Session 117 is the economy before the colour pass, the
+ * steer guarantee and the caravan; every prototype after it (tides, sets, the
+ * free and sold caravan, the wanted size) re-scores ON TOP of whatever
+ * `TUNING` ships, which now includes the real caravan at `pointsPerPop` 0.26.
+ * To stand where a LOG number was measured, set the dials back first — e.g.
+ * `--set caravanEvery=0 --set pointsPerPop=0.35`, and for the table before
+ * the colour pass `--set identityBonusRate=1 --set harvestSizeBonus=0.5` too.
+ * The prototypes' own bands are the ones the built caravan ended with
+ * (3-4 / 5-8 / 9-11 / 12+); the LOG's wanted-size numbers used 3-5 / 6-9 / 10+.
  */
 
 type Move = readonly Action[];
@@ -133,8 +144,12 @@ const colourBlind = (k: number): Policy => ({
           [0, -1],
           [1, -1],
           [-1, 1],
-        ] as const)
-          if (state.cells[`${h.q + dq},${h.r + dr}`] !== undefined) n++;
+        ] as const) {
+          // What ENCLOSES a pocket — tile, stone, wall — not revealed empty
+          // ground, which the first version counted (review, 2026-09-29).
+          const kind = state.cells[`${h.q + dq},${h.r + dr}`]?.kind;
+          if (kind === 'tile' || kind === 'stone' || kind === 'wall') n++;
+        }
         if (n > most) {
           most = n;
           top = hex;
@@ -241,7 +256,8 @@ const steerMap = (k: number): Policy => {
 /*
  * THE WANTED SIZE (2026-09-29, Marc: "we want people using size as a
  * flexibility so sometimes small is good sometimes its bad"). A request
- * names a size band — small 3-5, medium 6-9, large 10+ — that changes every
+ * names a size band — small 3-4, medium 5-8, large 9-11, or outrageous 12+
+ * (3-5 / 6-9 / 10+ when the LOG's first numbers were taken) — that changes every
  * `want.life` placements, drawn from the seed so the player (and the bot)
  * can see it coming. The FIRST pop that fits it in its window pays a flat
  * `want.bonus` points: flat, not a multiplier, because doubling a big pop
@@ -520,8 +536,8 @@ const take = (policy: Policy): Policy => ({
     return policy.decide(state, s);
   },
 });
-const answer = (big: number): Policy =>
-  take({
+const answer = (big: number): Policy => {
+  const wrapped = take({
     name: `answer${big}`,
     note: `popAt${big}, but pops to the caravan's ask.`,
     decide(state, s) {
@@ -538,6 +554,9 @@ const answer = (big: number): Policy =>
       return popAt(big).decide(state, s);
     },
   });
+  // Named `answerK`, not `take:answerK` — `--lines answer12` has to find it.
+  return { ...wrapped, name: `answer${big}` };
+};
 
 /** What one run felt like, measured from the inside. */
 type Felt = {
@@ -853,6 +872,7 @@ function main(): void {
   if (cv > 0) {
     const [mode, every, min] = (process.argv[cv + 1] ?? '').split(',');
     Object.assign(caravan, { mode, every: Number(every), min: Number(min ?? 1) });
+    if (!(caravan.every > 0)) throw new Error('--caravan wants a positive count');
     changed.push(`caravan=${mode}/${every}/${min ?? 1}`);
   }
   const bs = process.argv.indexOf('--boon-scale');

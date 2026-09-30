@@ -9906,3 +9906,61 @@ point sources now reads a missing `caravan` row as 0 instead of NaN.
 `view/oldsave.test.ts` plays a real run, strips it to what a pre-caravan build
 wrote, and decodes, draws and plays it on. With the old guard put back, that
 test run fails, so the test catches the freeze.
+
+**Session 117, the review, whole.** Three reviewers read the day with fresh
+eyes: the core rules, the screens and words, and the ledgers against the
+code. Every finding was checked against the code before anything changed.
+The hotfix above went out on its own. The rest:
+
+- **A paid steer was lost to a pop.** A pop between buying a steer and
+  drawing its hand overwrote the guarantee with the popped colour's free
+  lean, and the purse had promised "all". A live `sure` lean now outranks a
+  pop's. `caravan.test.ts` plays to a ripe pocket, steers, pops and places.
+  Without the fix it fails.
+- **The caravan's answer is part of the pop's receipt** (`harvestNote`), not
+  a second `say`. That line was overwritten by the receipt a beat later, or
+  under reduced motion overwrote it. A burn or treasure pop can no longer
+  claim the caravan took it.
+- **A LATER in one run hid the next run's picker.** The count of offers
+  restarts at 0, so the put-down marker now holds the offer itself. Opening
+  the picker closes the purse and lens, and it waits behind either, so no
+  two sheets stack.
+- **No useless wares.** A fifth card is the most a hand holds, and a forge at
+  its floor (or not built) has nothing to cheapen. Neither is offered, and
+  queued offers are re-drawn against the run after each pick.
+- **No offer on an ended run.** The pop that answers can end the run, and a
+  pick there is refused, so the view shows none.
+- **The pocket's note names the caravan's ×**, so its two lines agree. The
+  POP button's accessible name carries both reasons when bounty and caravan
+  both pay.
+- **The "ware waiting" line no longer resizes the board.** It sits over a
+  slot of the line's own height. It goes inert under an open panel. Its
+  width test now also measures the longest line each language can show.
+- **A tampered save** can no longer turn a lean into a guarantee of a colour
+  that does not exist.
+- **The sim counts a ware taken as progress**, so a policy that takes wares
+  is not reported stalled.
+- **Words.** "The next 1 draws" (a five-card hand) reads as one draw in both
+  languages. The first-run flag says "on this phone", which is what
+  `standing.run === 1` means.
+- **Claims corrected.** The caravan's edge is ~17% (16.6% at 1000 seeds;
+  the 18.5% was a 400-seed median, ±50). "One in seven" is 15% of asks, up
+  about a third of the time. "Never lengthens a run" is a design rule and a
+  measurement (102 against 105), not a proof. Earlier in this LOG, the
+  caravan's golden move was "points 4-10% lower"; the true range is 0 to
+  -13.5% (greedy). The colour pass's "every tally byte-identical" missed
+  chooser's `%tiles` rounding from 1 to 0. The study's colour-blind bot
+  counted empty ground as a neighbour. Corrected it scores 339, not 306,
+  and still dies at 61 placements against 102, so the conclusion stands.
+  The study's docblock now says which dials to set back to stand where each
+  LOG number was measured.
+- **And CI's `e2e` on the hotfix** failed "the board never speaks over
+  itself" twice. It was a race in the test: a fixed 300 ms after POP, then
+  a tab walk that the first-pop card, arriving later on a slow runner, made
+  endless. It now waits for the card if one is coming. The quota flake came
+  back a third time (NEXT §4).
+
+Not changed, and why: a fast double-tap after an outrageous ask can take a
+ware from the next offer blind. React flushes between taps, so it is a UX
+risk, not a bug. The caravan has no manual entry or tap-to-explain yet; that
+is a teaching question for the phone round.

@@ -181,7 +181,7 @@ ground and wastes its luck when it does not. The steer French was passed.
 5-8 or 9-11, or now and then an outrageous 12+. The first pop that fits is
 multiplied (×3 / ×2 / ×1.5 / ×2) and buys one of three wares for the rest
 of the run (three for the outrageous ask). Reading it beats every fixed habit
-by ~18%, runs are no longer, singles never pay, and `pointsPerPop` 0.26 keeps
+by ~17%, runs are no longer, singles never pay, and `pointsPerPop` 0.26 keeps
 fixed play where it was. **Marc's: the phone round (§1) and its French.**
 
 ## 4. Watching — no action unless it happens again
@@ -194,7 +194,11 @@ fixed play where it was. **Marc's: the phone round (§1) and its French.**
   the toast was empty. `30c027e`, one commit earlier with the same app code,
   passed it; the commit between them touched only `board.spec.ts`. So a
   flake, with a clean diagnostic now: the shed happened and the sentence did
-  not reach `.toast`. If it fails again, start from that.
+  not reach `.toast`. If it fails again, start from that. **It did, on
+  2026-09-29** (`e2e` on `2a892fd`, Chromium this time, passed on retry): the
+  same DIAG — the run shed to 2802 bytes, `__toast` empty. Three times now,
+  every time with the shed done and the sentence missing, which points at the
+  toast path rather than the storage path. Not started yet.
 - **`board.spec.ts` "two fingers lean and turn the board"** failed CI's `e2e`
   job on 2026-09-16, retry included (`toHaveAttribute` at line 1138), and
   **again on 2026-09-24** on Chromium, on `5e7bc07` — a commit that changed

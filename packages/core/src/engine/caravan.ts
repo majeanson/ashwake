@@ -92,13 +92,28 @@ export const picksFor = (kind: CaravanKind, t: Tuning): number =>
  * Three different wares, for the `pick`-th offer the run has been made.
  * Seeded like the asks, so the same run is offered the same wares.
  */
-export function offerFor(seed: number, pick: number): readonly WareId[] {
+export function offerFor(seed: number, pick: number, t: Tuning): readonly WareId[] {
   const out: WareId[] = [];
-  for (let n = 0; out.length < 3; n++) {
+  // Never more than the run can use; there are always three that can
+  // (placing, size and luck are never used up).
+  const usable = WARE_IDS.filter((w) => wareDoesSomething(w, t));
+  const want = Math.min(3, usable.length);
+  for (let n = 0; out.length < want; n++) {
     const ware = WARE_IDS[mix(seed ^ 0x5bd1e995, pick * 97 + n) % WARE_IDS.length]!;
-    if (!out.includes(ware)) out.push(ware);
+    if (usable.includes(ware) && !out.includes(ware)) out.push(ware);
   }
   return out;
+}
+
+/**
+ * Whether a ware would change anything for this run (found in review,
+ * 2026-09-29): a fifth card is the most a hand holds, and a forge at its floor
+ * — or not built at all — has nothing left to cheapen.
+ */
+function wareDoesSomething(ware: WareId, t: Tuning): boolean {
+  if (ware === 'hand') return t.draftWidth < CARAVAN_WARES.handMax;
+  if (ware === 'forge') return t.luckForgeCost > CARAVAN_WARES.forgeFloor;
+  return true;
 }
 
 /** A ware, applied to the rest of the run. Never to its length — see `CARAVAN_WARES`. */

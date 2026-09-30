@@ -959,8 +959,11 @@ export function toHudView(
       };
     })(),
     caravanPays: value.caravan !== null,
-    offer: state.caravan.offers[0] ?? null,
-    offersWaiting: state.caravan.offers.length,
+    // Only while the run is being played: the pop that answers an ask can also
+    // end the run, and a pick on an ended run is refused — a picker opened
+    // over the ending would take a tap and change nothing (found in review).
+    offer: state.phase === 'placing' ? (state.caravan.offers[0] ?? null) : null,
+    offersWaiting: state.phase === 'placing' ? state.caravan.offers.length : 0,
     offersMade: state.caravan.made,
     // The sacrifice pays RELICS now: the between-runs currency, and the only
     // thing on this screen that is not about staying alive.
@@ -1547,6 +1550,8 @@ export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
     // Every pop scores under the single payout, so the bounty rides on any
     // of them — this rider named a button that no longer exists.
     lines.push(p.bounty(t.questBonus));
+  // The caravan's multiplier is inside the price above, so the note says why.
+  if (value.caravan !== null) lines.push(p.caravan(value.caravanMult));
   if (rares > 0) lines.push(p.rares(rares));
   return lines.join('\n');
 }
@@ -1573,7 +1578,19 @@ export function harvestNote(
     0,
   );
   const multiplier = harvestMultiplier(before, value.keys);
-  const head = h.head(value.count, worth);
+  // The caravan's answer is PART of the pop's own receipt (found in review,
+  // 2026-09-29): said as a second line by the shell, it was overwritten by
+  // this receipt a beat later, or — under reduced motion — overwrote it. Only
+  // a pop that scores answers the ask, the same rule as the bounty.
+  const answered =
+    value.caravan !== null && choice !== 'treasure' && choice !== 'burn'
+      ? s.caravan.answered(value.caravanMult, picksFor(value.caravan.kind, t))
+      : null;
+  const head =
+    answered === null
+      ? h.head(value.count, worth)
+      : `${h.head(value.count, worth)}
+${answered}`;
 
   // The bounty answers EVERY pop while it is live (Marc, Day 2: "when we
   // pop, the ×3 applied or not — success or not — with points or +0"):

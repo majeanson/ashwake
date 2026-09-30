@@ -12,7 +12,8 @@
  * a small ask is worth about what a large one is — and buys a pick of one of
  * three WARES. Measured in `scripts/study.ts` before a line of this was
  * written (`LOG.md` Session 117): a player who pops to the ask beats every
- * fixed habit by ~16%, runs are no longer, and single tiles never qualify.
+ * fixed habit by ~17% (16.6% over 1000 seeds), runs are no longer (102
+ * placements against 105), and single tiles never qualify.
  *
  * Every number here is balance, so it lives in `content/` — the dials that
  * switch it on and scale it are in `tuning.ts`.
@@ -41,7 +42,10 @@ export type CaravanKind = 0 | 1 | 2 | 3;
  * The rule the first prototype taught (it sold "cost rises slower" and "12
  * tiles now", and the patient line played 524 placements instead of 104):
  * **a ware changes what a run is worth or how it plays, never how long it
- * lasts.** Nothing here buys survival.
+ * lasts.** Nothing here pays tiles or slows the cost. That is a design rule,
+ * not a proof: luck and a wider hand can help a run survive indirectly, so
+ * the length is MEASURED — 102 placements with the caravan against 105
+ * without (`study.ts`), and `sim/caravan.test.ts` holds it per seed.
  *
  * Strengths are the prototype's ×3, the level at which a ware is worth
  * reading the caravan for. Each is applied to the run's own `tuning`, which

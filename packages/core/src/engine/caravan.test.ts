@@ -3,6 +3,7 @@ import { CARAVAN_WARES, WARE_IDS } from '@content/caravan';
 import { TUNING } from '@content/tuning';
 import { answers, applyWare, caravanAskAt, caravanMultiplier, offerFor, picksFor } from './caravan';
 import { newRun, reduce } from './reduce';
+import { legalPlacements, ripeClusters } from './rules';
 import type { GameState } from './state';
 
 /**
@@ -71,10 +72,10 @@ describe('the caravan sells', () => {
   it('offers three different wares, the same three for the same pick', () => {
     for (let seed = 1; seed <= 30; seed++)
       for (let pick = 0; pick < 10; pick++) {
-        const offer = offerFor(seed, pick);
+        const offer = offerFor(seed, pick, T);
         expect(new Set(offer).size).toBe(3);
         expect(offer.every((w) => (WARE_IDS as readonly string[]).includes(w))).toBe(true);
-        expect(offerFor(seed, pick)).toEqual(offer);
+        expect(offerFor(seed, pick, T)).toEqual(offer);
       }
   });
 
@@ -118,6 +119,7 @@ describe('the caravan sells', () => {
       ...run,
       caravan: {
         ...run.caravan,
+        made: 2,
         offers: [
           ['placing', 'size', 'hand'],
           ['luck', 'forge', 'size'],
@@ -126,10 +128,74 @@ describe('the caravan sells', () => {
     };
     const took = reduce(offered, { type: 'CARAVAN', pick: 1 });
     expect(took.tuning.harvestSizeBonus).toBeCloseTo(T.harvestSizeBonus + CARAVAN_WARES.size, 9);
-    expect(took.caravan.offers).toEqual([['luck', 'forge', 'size']]);
+    // The offer still waiting is drawn again against the run as it now is.
+    expect(took.caravan.offers).toEqual([offerFor(5, 1, took.tuning)]);
     expect(took.caravan.taken).toEqual(['size']);
 
     expect(reduce(offered, { type: 'CARAVAN', pick: 3 })).toBe(offered);
     expect(reduce(run, { type: 'CARAVAN', pick: 0 })).toBe(run);
+  });
+});
+
+/*
+ * FOUND IN REVIEW (2026-09-29), each pinned where it lives.
+ */
+describe('what the review found', () => {
+  it('never offers a ware the run cannot use, and re-draws the queue after a pick', () => {
+    const full = {
+      ...T,
+      draftWidth: CARAVAN_WARES.handMax,
+      luckForgeCost: CARAVAN_WARES.forgeFloor,
+    };
+    const noForge = { ...T, luckForgeCost: 0 };
+    for (let seed = 1; seed <= 40; seed++)
+      for (let pick = 0; pick < 8; pick++) {
+        const offer = offerFor(seed, pick, full);
+        expect(offer).toHaveLength(3);
+        expect(offer).not.toContain('hand');
+        expect(offer).not.toContain('forge');
+        expect(offerFor(seed, pick, noForge)).not.toContain('forge');
+      }
+
+    // Three offers queued (an outrageous ask), and the first pick is the fifth
+    // card: nothing still waiting may offer a sixth.
+    const run = newRun(5, { ...T, draftWidth: CARAVAN_WARES.handMax - 1 });
+    const queued: GameState = {
+      ...run,
+      caravan: {
+        ...run.caravan,
+        made: 3,
+        offers: [
+          ['hand', 'placing', 'size'],
+          ['hand', 'luck', 'size'],
+          ['hand', 'placing', 'luck'],
+        ],
+      },
+    };
+    const took = reduce(queued, { type: 'CARAVAN', pick: 0 });
+    expect(took.tuning.draftWidth).toBe(CARAVAN_WARES.handMax);
+    expect(took.caravan.offers).toHaveLength(2);
+    for (const offer of took.caravan.offers) expect(offer).not.toContain('hand');
+  });
+
+  it('keeps a paid steer through a pop in between', () => {
+    // Play until a pocket is ripe, then steer, then pop that pocket.
+    let run: GameState = newRun(8, T);
+    for (let i = 0; i < 200 && ripeClusters(run.cells).length === 0; i++) {
+      const hex = legalPlacements(run.cells, run.tuning)[0];
+      if (hex === undefined) break;
+      run = reduce(reduce(run, { type: 'SELECT', index: 0 }), { type: 'PLACE', hex });
+    }
+    const pocket = ripeClusters(run.cells)[0];
+    expect(pocket).toBeDefined();
+    const steered = reduce({ ...run, luck: 100 }, { type: 'SPEND', on: 'steer', colour: 'red' });
+    expect(steered.bias).toEqual({ colour: 'red', left: 3, sure: true });
+    const popped = reduce(steered, { type: 'HARVEST', choice: 'tiles', at: pocket![0]! });
+    expect(popped.log.harvests.length).toBe(steered.log.harvests.length + 1);
+    // A pop's own lean is free; it must not overwrite a guarantee paid for.
+    expect(popped.bias).toEqual({ colour: 'red', left: 3, sure: true });
+    const hex = legalPlacements(popped.cells, popped.tuning)[0]!;
+    const next = reduce(reduce(popped, { type: 'SELECT', index: 0 }), { type: 'PLACE', hex });
+    expect(next.draft.every((t) => t.colour === 'red')).toBe(true);
   });
 });
