@@ -1,3 +1,4 @@
+import { CARAVAN_WARES } from '@content/caravan';
 import { caravanFor, caravanMultiplier, type CaravanAsk } from './caravan';
 import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { distance, key, neighbourKeys, parse, type HexKey } from './hex';
@@ -490,6 +491,22 @@ export function harvestMultiplier(state: GameState, pops: readonly HexKey[]): nu
 }
 
 /**
+ * The tiles a pop pays for its depth — `popTilesPerRing` a tile per popped
+ * tile per ring past the first — at the distance ceiling the run had before
+ * the caravan sold it THE ROAD PAYS. That ware raises the ceiling for points
+ * alone: a ware never buys survival (`content/caravan.ts`), and a tile is
+ * survival. Found in review, 2026-09-30: it paid a far pocket of eight two
+ * more tiles every pop.
+ */
+export function ringTiles(state: GameState, count: number, mult: number): number {
+  const t = state.tuning;
+  if (!(t.popTilesPerRing > 0)) return 0;
+  const road = state.caravan.taken.filter((w) => w === 'road').length * CARAVAN_WARES.road;
+  const paying = road > 0 ? Math.min(mult, t.distanceMultiplierCap - road) : mult;
+  return Math.floor(count * t.popTilesPerRing * (paying - 1));
+}
+
+/**
  * What a harvest would pay, right now.
  *
  * Tiles are LINEAR in harvest size. Points get a bonus per extra tile in the
@@ -599,7 +616,7 @@ export function harvestValue(
   const mult = harvestMultiplier(state, pops);
   // The gradual dial: a pocket cashed farther out pays extra tiles per pop per
   // ring, so survival income grows with depth instead of being flat everywhere.
-  if (t.popTilesPerRing > 0) tiles += Math.floor(pops.length * t.popTilesPerRing * (mult - 1));
+  tiles += ringTiles(state, pops.length, mult);
   // The bounty multiplies the one scoring channel rather than adding another.
   // It is priced into the button so the reason to press it is on the button.
   const questPays = pops.length > 0 && questMet(state, pops);

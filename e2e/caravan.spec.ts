@@ -4,17 +4,20 @@ import { begin, watchErrors } from './helpers';
 /*
  * THE CARAVAN, on a real board (2026-09-29; `screens/Caravan.tsx`). The rule is
  * pinned in the core and the picker's wiring in `caravan.test.tsx`; what only a
- * browser can say is that the ask is ON SCREEN from the first placement, under
- * the header, where a size to aim for has to be read before the pocket exists.
+ * browser can say is that the line is ON SCREEN from the first placement, under
+ * the header — and since 2026-09-30, that it says where the caravan is and not
+ * one number about what it wants.
  */
-test('the caravan says what it wants from the first placement', async ({ page }) => {
+test('the caravan says where it is from the first placement, and nothing it wants', async ({
+  page,
+}) => {
   const errors = watchErrors(page);
   await page.goto('/?seed=7&taught=1');
   await begin(page);
   const ask = page.locator('[data-hud="caravan"]');
   await expect(ask).toBeVisible();
-  await expect(ask).toContainText(/CARAVAN|CARAVANE/);
-  await expect(ask).toContainText(/\d/);
+  await expect(ask).toContainText(/caravan|caravane/i);
+  await expect(ask).not.toContainText(/\d/);
 
   // Under the header, not over the board's own controls.
   const header = await page.locator('[data-hud="stats"]').boundingBox();
@@ -24,14 +27,13 @@ test('the caravan says what it wants from the first placement', async ({ page })
 });
 
 /*
- * ONE LINE, AND ITS COUNTDOWN ON IT (2026-09-29). The ask ends with how long it
- * has left, so a line that overflows cuts the one number that says when to
- * hurry. It overflowed at 320 in both languages and at 360 in French on its
- * first build; the size follows the phone now, and this holds it there.
+ * ONE LINE (2026-09-29). It overflowed at 320 in both languages and at 360 in
+ * French on its first build, when it carried a size and a countdown; the size
+ * follows the phone now, and this holds it there for every line it can say.
  */
 for (const width of [320, 360, 390])
   for (const locale of ['en-US', 'fr-CA'])
-    test(`the caravan's ask fits one line at ${width}px in ${locale}`, async ({ browser }) => {
+    test(`the caravan's line fits one line at ${width}px in ${locale}`, async ({ browser }) => {
       const ctx = await browser.newContext({ locale, viewport: { width, height: 740 } });
       const page = await ctx.newPage();
       await page.goto('/?seed=7&taught=1');
@@ -39,21 +41,27 @@ for (const width of [320, 360, 390])
       const ask = page.locator('[data-hud="caravan"]');
       await expect(ask).toBeVisible();
       const fits = await ask.evaluate((e) => e.scrollWidth <= e.clientWidth + 1);
-      expect(fits, `the ask overflows at ${width}px in ${locale}`).toBe(true);
+      expect(fits, `the line overflows at ${width}px in ${locale}`).toBe(true);
       /*
-       * And the LONGEST lines each language can show (review, 2026-09-29):
-       * seed 7's first ask is the short small one, so the outrageous ask with
-       * its 30-placement countdown and the "paid" line were never measured.
-       * Written into the real element, in its real style — copied from
-       * `text/en.ts` and `text/fr-CA.ts`, which a wording change must update.
+       * And EVERY line each language can show (review, 2026-09-29): seed 7
+       * opens on one of them, so the others were never measured. Written into
+       * the real element, in its real style — copied from `text/en.ts` and
+       * `text/fr-CA.ts`, which a wording change must update.
        */
       const longest =
         locale === 'fr-CA'
           ? [
-              'CARAVANE · une poche de 12 ou plus · encore 30',
-              'CARAVANE · payée. Nouvelle demande dans 30.',
+              'La caravane est en route.',
+              'LA CARAVANE EST EN VILLE',
+              'La caravane a quitté la ville.',
+              'CARAVANE · 3 marchandises en attente',
             ]
-          : ['CARAVAN · a pocket of 12 or more · 30 left', 'CARAVAN · paid. A new ask in 30.'];
+          : [
+              'The caravan is on its way.',
+              'THE CARAVAN IS IN TOWN',
+              'The caravan left town.',
+              'CARAVAN · 3 wares waiting',
+            ];
       for (const text of longest) {
         const fitsLong = await ask.evaluate((e, t) => {
           const was = e.textContent;

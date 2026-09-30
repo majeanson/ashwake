@@ -55,8 +55,10 @@ import {
  * To stand where a LOG number was measured, set the dials back first — e.g.
  * `--set caravanEvery=0 --set pointsPerPop=0.35`, and for the table before
  * the colour pass `--set identityBonusRate=1 --set harvestSizeBonus=0.5` too.
- * The prototypes' own bands are the ones the built caravan ended with
- * (3-4 / 5-8 / 9-11 / 12+); the LOG's wanted-size numbers used 3-5 / 6-9 / 10+.
+ * The prototypes' own bands are the ones the built caravan shipped with on
+ * 2026-09-29 (3-4 / 5-8 / 9-11 / 12+); the LOG's wanted-size numbers used
+ * 3-5 / 6-9 / 10+. The built caravan has had two since 2026-09-30 (3-6 / 7+,
+ * `content/caravan.ts`), and the `take:`/`try` lines play that real rule.
  */
 
 type Move = readonly Action[];
@@ -523,7 +525,23 @@ const setAware = (big: number, small: number): Policy => {
  * habit still takes a free ware — and `answer(big)` pops to the caravan's
  * ask (and grows for an outrageous one), otherwise playing popAt(big).
  */
-const TASTE: readonly WareId[] = ['placing', 'size', 'hand', 'forge', 'luck'];
+/** Which ware a line takes first; `--taste pops,size` puts those at the front. */
+// Strongest first, as measured one ware at a time (2026-09-30, LOG Session 118).
+let TASTE: readonly WareId[] = [
+  'rares',
+  'pops',
+  'powers',
+  'placing',
+  'road',
+  'size',
+  'hand',
+  'jackpot',
+  'lucky',
+  'luck',
+  'forge',
+  'bounty',
+  'hold',
+];
 const take = (policy: Policy): Policy => ({
   name: `take:${policy.name}`,
   note: `${policy.note} Takes every ware offered.`,
@@ -547,7 +565,7 @@ const answer = (big: number): Policy => {
           pick = p;
       if (pick?.[0] !== undefined) return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
       const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
-      if (ask !== null && ask.kind === 3 && !state.caravan.met.includes(ask.index)) {
+      if (ask !== null && ask.kind === 2 && !state.caravan.met.includes(ask.index)) {
         const o = best(state);
         if (o !== null) return [place(o), s];
       }
@@ -556,6 +574,50 @@ const answer = (big: number): Policy => {
   });
   // Named `answerK`, not `take:answerK` — `--lines answer12` has to find it.
   return { ...wrapped, name: `answer${big}` };
+};
+
+/**
+ * THE HIDDEN CARAVAN (2026-09-30): the screen says only whether it is in
+ * town, never the size. `try${big}` plays popAt(big), but while the caravan is
+ * in town and unmet it pops a ripe pocket of 3 or more of a size it has not
+ * tried this visit, biggest first — "try their pop", Marc's words for what the
+ * indicator is for. It reads what the screen shows and nothing more.
+ */
+const tried = new WeakMap<object, { visit: number; sizes: number[] }>();
+const tryer = (big: number): Policy => {
+  const self: Policy = take({
+    name: `try${big}`,
+    note: `popAt${big}, but tries a pop while the caravan is in town, and learns from a miss.`,
+    decide(state, s) {
+      const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
+      if (ask !== null && !state.caravan.met.includes(ask.index)) {
+        let memo = tried.get(self);
+        if (memo === undefined || memo.visit !== ask.index) {
+          memo = { visit: ask.index, sizes: [] };
+          tried.set(self, memo);
+        }
+        // A miss says which band it is NOT: small missed, so it wants big.
+        const smallMissed = memo.sizes.some((n) => n <= 6);
+        const bigMissed = memo.sizes.some((n) => n >= 7);
+        const ok = (n: number): boolean =>
+          n >= 3 && (smallMissed ? n >= 7 : true) && (bigMissed ? n <= 6 : true);
+        let pick: string[] | null = null;
+        for (const p of ripeClusters(state.cells))
+          if (ok(p.length) && (pick === null || p.length > pick.length)) pick = p;
+        if (pick?.[0] !== undefined) {
+          memo.sizes.push(pick.length);
+          return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
+        }
+        // Knows it wants big and has none ripe: grow, don't pop.
+        if (smallMissed && !bigMissed) {
+          const o = best(state);
+          if (o !== null) return [place(o), s];
+        }
+      }
+      return popAt(big).decide(state, s);
+    },
+  });
+  return { ...self, name: `try${big}` };
 };
 
 /** What one run felt like, measured from the inside. */
@@ -796,6 +858,8 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
   }
   f.placements = state.placements;
   f.pops = state.log.harvests.length;
+  // The built caravan's meetings (2026-09-30), beside any prototype's arrivals.
+  f.caravans += state.caravan.met.length;
   let reach = 0;
   const home = homeOf(state);
   for (const [k, c] of Object.entries(state.cells))
@@ -843,6 +907,11 @@ function main(): void {
     ...[4, 8, 12, 20].map((k) => take(popAt(k))),
     answer(8),
     answer(12),
+    tryer(4),
+    tryer(8),
+    tryer(12),
+    { ...take(luckLine(8, 'forge')), name: 'take:forge8' },
+    { ...take(steerMap(8)), name: 'take:steer8' },
   ];
   const every = [...timing, popAt(8), ...luck, ...people, ...blinds, ...protos].filter(
     (p, n, a) => a.findIndex((q) => q.name === p.name) === n,
@@ -912,6 +981,12 @@ function main(): void {
   if (st > 0) {
     proto.setBonus = Number(process.argv[st + 1]);
     changed.push(`sets=+${proto.setBonus}`);
+  }
+  const ta = process.argv.indexOf('--taste');
+  if (ta > 0) {
+    const front = (process.argv[ta + 1] ?? '').split(',') as WareId[];
+    TASTE = [...front, ...TASTE.filter((w) => !front.includes(w))];
+    changed.push(`taste=${front.join('/')}`);
   }
   const x = process.argv.indexOf('--escalate');
   const escalate = x > 0 ? Number(process.argv[x + 1]) : 0;

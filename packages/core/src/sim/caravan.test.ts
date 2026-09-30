@@ -64,9 +64,10 @@ describe('the caravan, over whole runs', () => {
     for (const { state } of runs)
       for (const h of state.log.harvests) {
         if (h.count >= 3) continue;
-        const ask = caravanAskAt(state.rootSeed, h.at, state.tuning)!;
-        // A pop this small can stand inside an ask; it can never answer it.
-        expect(answers(h.count, ask.kind)).toBe(false);
+        const ask = caravanAskAt(state.rootSeed, h.at, state.tuning);
+        // A pop this small can land while the caravan is in town; it can
+        // never answer it.
+        if (ask !== null) expect(answers(h.count, ask.kind)).toBe(false);
       }
   });
 
@@ -84,7 +85,7 @@ describe('the caravan, over whole runs', () => {
     }
   });
 
-  it('does not reward popping singles, and does not make the run longer', () => {
+  it('does not reward popping singles, and makes a run at most a little longer', () => {
     const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
     const greedyPts = runs.filter((r) => r.name === 'greedy').map((r) => r.state.points);
     const patientPts = runs.filter((r) => r.name === 'bank20').map((r) => r.state.points);
@@ -93,7 +94,10 @@ describe('the caravan, over whole runs', () => {
     for (let seed = 1; seed <= 12; seed++) {
       const withIt = play(taking(bank20), seed).state.placements;
       const without = play(bank20, seed, { ...TUNING, caravanEvery: 0 }).state.placements;
-      expect(withIt).toBeLessThanOrEqual(without + 12);
+      // Marc, 2026-09-30: _"~ < 20 placements being okay"_ — a ware may make
+      // a run better, and a better run lasts a little longer; it may never
+      // buy survival outright (`content/caravan.ts`).
+      expect(withIt).toBeLessThanOrEqual(without + 20);
     }
   });
 

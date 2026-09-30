@@ -368,23 +368,35 @@ export type Tuning = {
 
   /**
    * THE CARAVAN (2026-09-29; `content/caravan.ts` has the sizes and wares and
-   * the whole argument). It asks for a pocket size that changes as the run
-   * goes; the first pop that fits is multiplied by its band's factor and buys
-   * a pick of one of three wares.
+   * the whole argument). It comes to town now and then wanting a pocket size
+   * the player is never told (2026-09-30); the first pop that fits buys a
+   * pick of one of three wares — and, where a band's multiplier is set, is
+   * multiplied by it.
    *
-   * `caravanEvery` — placements an ordinary ask stands. **0 is no caravan**,
+   * `caravanEvery` — placements an ordinary visit stands. **0 is no caravan**,
    * the dial every system ships behind.
+   * `caravanAway` — the most placements it stays away between visits; each
+   * absence is seeded, 1 to this many, which is a chance of arriving that
+   * rises every placement it has not. **0 is never away** — one ask always
+   * standing, the rule of 2026-09-29 and what every run saved before this
+   * key existed carries.
    * `caravanWild` — the share of asks that are OUTRAGEOUS (12+).
    * `caravanWildLife` — how many ordinary lengths an outrageous ask stands.
-   * `caravanMult*` — what the fitting pop is multiplied by, per band.
+   * `caravanMult*` — what the fitting pop is multiplied by, per band. **Not
+   * compatible with the hidden ask**: the multiplier is priced into POP and
+   * the lens table before the pop, so a price that jumps when a pocket grows
+   * tells the size the line no longer says (found in review, 2026-09-30).
+   * A run saved on 2026-09-29 carries its dials in its own tuning and plays
+   * on with that tell — small ×3, big ×1.5, 12+ ×2 (its medium key is read
+   * by nothing), and never away — one evening's exposure, left as it is.
    * `caravanWildPicks` — how many wares an outrageous ask pays (an ordinary
    * one pays one).
    */
   readonly caravanEvery: number;
+  readonly caravanAway: number;
   readonly caravanWild: number;
   readonly caravanWildLife: number;
   readonly caravanMultSmall: number;
-  readonly caravanMultMedium: number;
   readonly caravanMultLarge: number;
   readonly caravanMultWild: number;
   readonly caravanWildPicks: number;
@@ -803,10 +815,10 @@ export const BARE_TUNING: Tuning = {
   treasureNeed: 0,
   treasureUnique: 0,
   caravanEvery: 0,
+  caravanAway: 0,
   caravanWild: 0,
   caravanWildLife: 0,
   caravanMultSmall: 0,
-  caravanMultMedium: 0,
   caravanMultLarge: 0,
   caravanMultWild: 0,
   caravanWildPicks: 0,
@@ -976,10 +988,10 @@ const PLANE: Tuning = {
   treasureNeed: 0,
   treasureUnique: 0,
   caravanEvery: 0,
+  caravanAway: 0,
   caravanWild: 0,
   caravanWildLife: 0,
   caravanMultSmall: 0,
-  caravanMultMedium: 0,
   caravanMultLarge: 0,
   caravanMultWild: 0,
   caravanWildPicks: 0,
@@ -1282,19 +1294,21 @@ export const TUNING: Tuning = {
   // never spend are untouched. `scripts/study.ts`; `LOG.md` Session 117.
   luckForgeCost: 40,
 
-  // THE CARAVAN (2026-09-29; `content/caravan.ts`, and `LOG.md` Session 117
-  // for every candidate that lost to it). An ask every 10 placements, 15% of
-  // them outrageous — and since those stand three times as long, one is up
-  // about a third of the time; the pop that answers
-  // is multiplied ×3 small, ×2 medium, ×1.5 large, ×2 outrageous, and buys a
-  // ware (three for an outrageous ask).
+  // THE CARAVAN (2026-09-29; `content/caravan.ts`, and `LOG.md` Sessions
+  // 117-118 for every candidate that lost to it). Since 2026-09-30 it is in
+  // town 10 placements, away 1 to 10 between, wanting a small or a big pocket
+  // it never names; the first pop that fits buys a ware. No outrageous asks
+  // and no multiplier: with the size hidden, a 12+ visit that stood 30
+  // placements was a stretch where every try failed, and the multiplier was
+  // points the player could not see coming (Marc: "remove … its points").
+  // The dials stay, zeroed, as every system does.
   caravanEvery: 10,
-  caravanWild: 0.15,
+  caravanAway: 10,
+  caravanWild: 0,
   caravanWildLife: 3,
-  caravanMultSmall: 3,
-  caravanMultMedium: 2,
-  caravanMultLarge: 1.5,
-  caravanMultWild: 2,
+  caravanMultSmall: 0,
+  caravanMultLarge: 0,
+  caravanMultWild: 0,
   caravanWildPicks: 3,
   // TITHE existed 2026-08-18 through 2026-09-03: a clean 3x what death pays
   // on unspent luck, so cashing out mid-run was a real alternative to
@@ -1316,6 +1330,13 @@ export const TUNING: Tuning = {
   // seeds it is 1361 against 1587, +16.6%, 102 against 105: a 400-seed median
   // carries about ±50 points of noise, so call it ~17%. Bests
   // already saved on phones stay fair.
+  // Held at 0.26 through the hidden caravan (2026-09-30): the thirteen wares
+  // pay what the multiplier did, so a fixed habit still scores the game
+  // without a caravan (popAt8 1199 against 1207, popAt12 1275 against 1316,
+  // 1000 seeds) and trying a pop in town pays ~8-9% on top. Runs are 4-7
+  // placements longer (106-108 against 102-104; forging 120 against 113),
+  // inside Marc's ~20. Measured after THE ROAD PAYS stopped paying tiles
+  // (`LOG.md` Session 119).
   pointsPerPop: 0.26,
   // Burning pays RELICS now, not luck. That was the open question, and the
   // answer arrived with the meta economy: a burn gives up the tiles keeping

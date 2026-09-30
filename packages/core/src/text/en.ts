@@ -291,7 +291,6 @@ export const STRINGS_EN: Strings = {
       },
       bar: (count, cap) => `POCKET ${count}/${cap}`,
       bounty: (bonus) => `This pocket collects the bounty: ×${bonus} on its score.`,
-      caravan: (mult) => `The caravan asked for a pocket this size: ×${d1(mult)} on its score.`,
       rares: (n) => `${n} rare tile${plural(n, '', 's')} in here will be spent by popping it.`,
     },
     harvest: {
@@ -593,13 +592,14 @@ Nothing new inside. A find grants only what you do not already carry, and only o
   },
 
   caravan: {
-    ask: (min, max, left) => `CARAVAN · a pocket of ${min} to ${max} · ${left} left`,
-    askWild: (min, left) => `CARAVAN · a pocket of ${min} or more · ${left} left`,
-    met: (left) => `CARAVAN · paid. A new ask in ${left}.`,
-    answered: (mult, picks) =>
+    coming: 'The caravan is on its way.',
+    town: 'THE CARAVAN IS IN TOWN',
+    left: 'The caravan left town.',
+    answered: (picks) =>
       picks > 1
-        ? `The caravan takes it: ×${d1(mult)}, and ${picks} wares to choose.`
-        : `The caravan takes it: ×${d1(mult)}, and a ware to choose.`,
+        ? `The caravan takes it: ${picks} wares to choose.`
+        : 'The caravan takes it: a ware to choose.',
+    passed: 'The caravan passed on this one.',
     choose: 'The caravan pays. Take one:',
     waiting: (n) => `${n} more to take after this one.`,
     later: 'LATER',
@@ -622,6 +622,38 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       forge: {
         name: 'CHEAPER FORGE',
         note: 'Forging costs less, for the rest of the run.',
+      },
+      pops: {
+        name: 'EVERY POP PAYS',
+        note: 'Every pop scores more, for the rest of the run.',
+      },
+      rares: {
+        name: 'RARER DRAWS',
+        note: 'Magic and unique tiles turn up more often, for the rest of the run.',
+      },
+      jackpot: {
+        name: 'RARES PAY',
+        note: 'A rare tile in a pop pays a bigger jackpot, for the rest of the run.',
+      },
+      powers: {
+        name: 'ALL POWERS',
+        note: 'Every colour’s power is half again as strong, for the rest of the run.',
+      },
+      road: {
+        name: 'THE ROAD PAYS',
+        note: 'Pops far from home can be multiplied further, for the rest of the run.',
+      },
+      bounty: {
+        name: 'BIGGER BOUNTIES',
+        note: 'Every bounty multiplies its pop by more, for the rest of the run.',
+      },
+      lucky: {
+        name: 'LUCKY POPS',
+        note: 'Every pop pays more luck, for the rest of the run.',
+      },
+      hold: {
+        name: 'A BIGGER STASH',
+        note: 'One more STASH slot to keep a tile in, for the rest of the run.',
       },
     },
   },

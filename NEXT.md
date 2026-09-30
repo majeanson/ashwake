@@ -95,9 +95,23 @@ sentences. From here, anything that changes the first minute needs a new look
 before the stranger plays.
 
 **And the caravan changes it** (§3a): a line under the header from the first
-placement, POP wearing the caravan's mark, a pick-one-of-three sheet. So
-**round eleven (`r11-caravan`, `r11-french`) is its look**, and its _ok_
-names Session C's build in place of `ccc5379`.
+placement and a pick-one-of-three sheet. So **round eleven (`r11-caravan`,
+`r11-french`) is its look**, and its _ok_ names Session C's build in place of
+`ccc5379`. **Since 2026-09-30 the look is different** (LOG Session 118). The
+line says only _on its way_ / _THE CARAVAN IS IN TOWN_ / _left town_, POP wears
+no mark, and the receipt says _took it_ or _passed on this one_. The sheet's
+round-eleven items were written for the old look (size and countdown on
+screen), so they want re-reading before Marc answers them. To judge: does the
+in-town line read as a reason to pop? The in-town accent and the dimmed
+away lines are old styles, reused sight unseen. And the new French: four lines
+(`caravan.coming/town/left/passed`) and eight wares (EVERY POP PAYS, RARER
+DRAWS, RARES PAY, ALL POWERS, THE ROAD PAYS, BIGGER BOUNTIES, LUCKY POPS, A
+BIGGER STASH, in `fr-CA.ts` `caravan.ware`). ALL POWERS's note was
+reworded in review (Session 119): it said _double_ and the ware is ×1.5, so it
+now says _moitié plus fort_. **A finding, not measured:** the picker has shown
+only the first five wares' names on a phone, and the longest now is
+_UNE PLUS GRANDE RÉSERVE_ with a two-line note. Whether three of those stack
+well at 320px is part of this look.
 
 ---
 
@@ -177,14 +191,25 @@ six draws of the colour named, at 20 luck — which pays when it reads the
 ground and wastes its luck when it does not. The steer French was passed.
 
 **Built the same day: THE CARAVAN**, the answer to "waiting is always right"
-(`content/caravan.ts`, `LOG.md` Session 117). It asks for a pocket of 3-4,
-5-8 or 9-11, or now and then an outrageous 12+. The first pop that fits is
-multiplied (×3 / ×2 / ×1.5 / ×2) and buys one of three wares for the rest
-of the run (three for the outrageous ask). Reading it beats every fixed habit
-by ~17%, runs are no longer, singles never pay, and `pointsPerPop` 0.26 keeps
-fixed play where it was. **Marc's: the phone round (§1) and its French.**
+(`content/caravan.ts`, `LOG.md` Sessions 117-118). **Hidden since
+2026-09-30**, at Marc's word. It comes to town for 10 placements, away 1 to
+10 between, wanting a small (3-6) or big (7+) pocket it never names. The
+first pop that fits buys one of three of thirteen wares: the first five
+doubled, and eight more.
+There is no multiplier and no outrageous ask (both dials at 0). Trying a pop
+in town pays ~8-9% over the same habit that doesn't, fixed habits score the
+game without a caravan, runs are 4-7 placements longer (forging, 7; Marc:
+~20 is okay), singles never pay (1000 seeds, `LOG.md` Session 119). **Marc's:
+the phone round (§1) and its French.**
 
 ## 4. Watching — no action unless it happens again
+
+- **A run saved on 2026-09-29 shows the caravan's size in its price.** It
+  keeps that evening's multipliers in its own tuning, so POP's figure and the
+  lens row jump when a pocket fits (`tuning.ts` at `caravanMult*`, `LOG.md`
+  Session 119). No run started since shows it. If a friend reports a caravan
+  row in the lens, this is why. And no multiplier dial comes back on while
+  the ask is hidden.
 
 - **`quota.spec.ts:185` on WebKit — back on this list the day it was taken
   off.** Retired on the morning of 2026-09-24 by its own rule (no failure
@@ -228,8 +253,9 @@ until }`, and with it in the program the ruling on
   Renaming the caravan's field to `ends` brought it straight back, so the pass
   (`scripts/sweep/optional.ts`, `suppliers`) took an unrelated object literal's
   `until` for a supply of `Ruling.until`. That is the dangerous direction: a
-  false supplier HIDES a real "nothing supplies this" finding. The field is
-  `ends` now; **the pass wants fixing**: check that each reference's symbol
+  false supplier HIDES a real "nothing supplies this" finding. The field was
+  `ends` (gone since 2026-09-30, with the countdown that read it); **the pass
+  wants fixing**: check that each reference's symbol
   is the declared property's, not just its name.
 - **`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29).** The
   deploy had landed (`version.json` matched the commit on workers.dev); a

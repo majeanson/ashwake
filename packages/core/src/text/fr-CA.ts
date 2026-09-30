@@ -291,8 +291,6 @@ export const STRINGS_FR: Strings = {
       },
       bar: (count, cap) => `POCHE ${count}/${cap}`,
       bounty: (bonus) => `Cette poche encaisse la prime${D}: ×${bonus} sur son score.`,
-      caravan: (mult) =>
-        `La caravane demandait une poche de cette taille${D}: ×${d1(mult)} sur son score.`,
       rares: (n) =>
         `${n} tuile${pl(n, '', 's')} rare${pl(n, '', 's')} là-dedans ser${pl(n, 'a', 'ont')} dépensée${pl(n, '', 's')} par la récolte.`,
     },
@@ -601,13 +599,14 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
   },
 
   caravan: {
-    ask: (min, max, left) => `CARAVANE · une poche de ${nb(min)} à ${nb(max)} · encore ${nb(left)}`,
-    askWild: (min, left) => `CARAVANE · une poche de ${nb(min)} ou plus · encore ${nb(left)}`,
-    met: (left) => `CARAVANE · payée. Nouvelle demande dans ${nb(left)}.`,
-    answered: (mult, picks) =>
+    coming: 'La caravane est en route.',
+    town: 'LA CARAVANE EST EN VILLE',
+    left: 'La caravane a quitté la ville.',
+    answered: (picks) =>
       picks > 1
-        ? `La caravane la prend${D}: ×${d1(mult)}, et ${nb(picks)} marchandises à choisir.`
-        : `La caravane la prend${D}: ×${d1(mult)}, et une marchandise à choisir.`,
+        ? `La caravane la prend${D}: ${nb(picks)} marchandises à choisir.`
+        : `La caravane la prend${D}: une marchandise à choisir.`,
+    passed: 'La caravane n’en a pas voulu.',
     choose: `La caravane paie. Prends-en une${D}:`,
     waiting: (n) => `Encore ${nb(n)} à prendre après celle-ci.`,
     later: 'PLUS TARD',
@@ -633,6 +632,38 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       forge: {
         name: 'FORGE MOINS CHÈRE',
         note: 'Forger coûte moins cher, jusqu’à la fin de la partie.',
+      },
+      pops: {
+        name: 'CHAQUE RÉCOLTE PAIE',
+        note: 'Chaque récolte rapporte davantage, jusqu’à la fin de la partie.',
+      },
+      rares: {
+        name: 'TIRAGES RARES',
+        note: 'Les tuiles magiques et uniques sortent plus souvent, jusqu’à la fin de la partie.',
+      },
+      jackpot: {
+        name: 'LES RARES PAIENT',
+        note: 'Une tuile rare dans une récolte rapporte un plus gros lot, jusqu’à la fin de la partie.',
+      },
+      powers: {
+        name: 'TOUS LES POUVOIRS',
+        note: 'Le pouvoir de chaque couleur est moitié plus fort, jusqu’à la fin de la partie.',
+      },
+      road: {
+        name: 'LA ROUTE PAIE',
+        note: 'Les récoltes loin de chez toi peuvent être multipliées davantage, jusqu’à la fin de la partie.',
+      },
+      bounty: {
+        name: 'PRIMES PLUS GROSSES',
+        note: 'Chaque prime multiplie sa récolte davantage, jusqu’à la fin de la partie.',
+      },
+      lucky: {
+        name: 'RÉCOLTES CHANCEUSES',
+        note: 'Chaque récolte rapporte plus de chance, jusqu’à la fin de la partie.',
+      },
+      hold: {
+        name: 'UNE PLUS GRANDE RÉSERVE',
+        note: 'Une place de plus dans la RÉSERVE pour mettre une tuile de côté, jusqu’à la fin de la partie.',
       },
     },
   },

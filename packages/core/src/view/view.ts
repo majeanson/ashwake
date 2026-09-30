@@ -1,5 +1,5 @@
 import { CARAVAN_BANDS, type WareId } from '@content/caravan';
-import { caravanAskAt, caravanMultiplier, picksFor } from '@engine/caravan';
+import { caravanVisitAt, picksFor } from '@engine/caravan';
 import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { distance, key, neighbourKeys, parse, type HexKey } from '@engine/hex';
 import { canSpend, rarityOdds, spendCost } from '@engine/reduce';
@@ -15,6 +15,7 @@ import {
   placementsLeft,
   previewWorth,
   reachOf,
+  ringTiles,
   ripeClusters,
   ripeKeys,
   scoreOf,
@@ -795,24 +796,15 @@ export type HudView = {
   readonly questPays: boolean;
 
   /**
-   * THE CARAVAN'S STANDING ASK (2026-09-29; `engine/caravan.ts`), or null
-   * where there is no caravan. `max` is null for the outrageous ask, which
-   * has no upper bound; `left` is placements until it moves on; `met`
-   * once it has been answered, so the screen can say "paid" rather than
-   * go on asking.
+   * WHERE THE CARAVAN IS (2026-09-30; `engine/caravan.ts`), and nothing
+   * about what it wants — Marc: _"caravan is in town" and "caravan left
+   * town" so people can try their pop_. `coming` before its first visit,
+   * `town` while it stands unanswered, `left` once it has been answered
+   * or moved on; null where there is no caravan. The size, the countdown and
+   * the multiplier were on screen until that day, and are not now anywhere:
+   * which pop it takes is the chance.
    */
-  readonly caravan: {
-    readonly outrageous: boolean;
-    readonly min: number;
-    readonly max: number | null;
-    readonly left: number;
-    readonly met: boolean;
-    /** What answering it multiplies the pop by, as the screen prints it. */
-    readonly mult: number;
-    readonly picks: number;
-  } | null;
-  /** True when the priced pocket answers the caravan — POP wears it. */
-  readonly caravanPays: boolean;
+  readonly caravan: 'coming' | 'town' | 'left' | null;
   /** The oldest offer waiting, three wares, or null; and how many wait. */
   readonly offer: readonly WareId[] | null;
   readonly offersWaiting: number;
@@ -944,21 +936,7 @@ export function toHudView(
     harvestAt: target,
 
     questPays: value.questPays,
-    caravan: (() => {
-      const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
-      if (ask === null) return null;
-      const [min, max] = CARAVAN_BANDS[ask.kind];
-      return {
-        outrageous: ask.kind === 3,
-        min,
-        max: Number.isFinite(max) ? max : null,
-        left: ask.ends - state.placements,
-        met: state.caravan.met.includes(ask.index),
-        mult: caravanMultiplier(ask.kind, state.tuning),
-        picks: picksFor(ask.kind, state.tuning),
-      };
-    })(),
-    caravanPays: value.caravan !== null,
+    caravan: caravanWhere(state),
     // Only while the run is being played: the pop that answers an ask can also
     // end the run, and a pick on an ended run is refused — a picker opened
     // over the ending would take a tap and change nothing (found in review).
@@ -1550,10 +1528,16 @@ export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
     // Every pop scores under the single payout, so the bounty rides on any
     // of them — this rider named a button that no longer exists.
     lines.push(p.bounty(t.questBonus));
-  // The caravan's multiplier is inside the price above, so the note says why.
-  if (value.caravan !== null) lines.push(p.caravan(value.caravanMult));
   if (rares > 0) lines.push(p.rares(rares));
   return lines.join('\n');
+}
+
+/** Where the caravan is — see `HudView.caravan`. */
+function caravanWhere(state: GameState): HudView['caravan'] {
+  const visit = caravanVisitAt(state.rootSeed, state.placements, state.tuning);
+  if (visit === null) return null;
+  if (state.placements < visit.from) return visit.index === 0 ? 'coming' : 'left';
+  return state.caravan.met.includes(visit.index) ? 'left' : 'town';
 }
 
 /**
@@ -1582,10 +1566,19 @@ export function harvestNote(
   // 2026-09-29): said as a second line by the shell, it was overwritten by
   // this receipt a beat later, or — under reduced motion — overwrote it. Only
   // a pop that scores answers the ask, the same rule as the bounty.
-  const answered =
-    value.caravan !== null && choice !== 'treasure' && choice !== 'burn'
-      ? s.caravan.answered(value.caravanMult, picksFor(value.caravan.kind, t))
-      : null;
+  //
+  // And since the ask is hidden (2026-09-30), a pop of three or more that the
+  // caravan in town does NOT take says so too: with a small and a big half,
+  // one miss says which it wants, and that is what makes a try worth making.
+  const scoring = choice !== 'treasure' && choice !== 'burn';
+  const inTown = caravanWhere(before) === 'town';
+  const answered = !scoring
+    ? null
+    : value.caravan !== null
+      ? s.caravan.answered(picksFor(value.caravan.kind, t))
+      : inTown && value.count >= CARAVAN_BANDS[0][0]
+        ? s.caravan.passed
+        : null;
   const head =
     answered === null
       ? h.head(value.count, worth)
@@ -1624,7 +1617,7 @@ ${answered}`;
     const luck = `\n${h.luck(gained, oddsRose)}`;
     // The depth grade, shown only when it actually paid something — the
     // arithmetic on screen has to sum to the number on screen.
-    const rings = Math.floor(value.count * t.popTilesPerRing * (multiplier - 1));
+    const rings = ringTiles(before, value.count, multiplier);
     // Under the single payout the pop SCORES too — say the number here
     // rather than leaving it to the stat row (the bounty line below
     // needs a points figure to be about).

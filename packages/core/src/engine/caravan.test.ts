@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { CARAVAN_WARES, WARE_IDS } from '@content/caravan';
 import { TUNING } from '@content/tuning';
-import { answers, applyWare, caravanAskAt, caravanMultiplier, offerFor, picksFor } from './caravan';
+import {
+  answers,
+  applyWare,
+  caravanAskAt,
+  caravanMultiplier,
+  caravanVisitAt,
+  offerFor,
+  picksFor,
+} from './caravan';
 import { newRun, reduce } from './reduce';
-import { legalPlacements, ripeClusters } from './rules';
+import { legalPlacements, ringTiles, ripeClusters } from './rules';
 import type { GameState } from './state';
 
 /**
@@ -12,6 +20,13 @@ import type { GameState } from './state';
  */
 const T = TUNING;
 const off = { ...T, caravanEvery: 0 };
+
+/** The first placement a visit no longer stands at, found by walking the rule. */
+const leaves = (seed: number, visit: { index: number; from: number }, t = TUNING): number => {
+  let p = visit.from;
+  while (caravanAskAt(seed, p, t)?.index === visit.index) p++;
+  return p;
+};
 
 describe('the caravan asks', () => {
   it('is not there at all with its dial at zero', () => {
@@ -24,47 +39,81 @@ describe('the caravan asks', () => {
         expect(caravanAskAt(seed, p, T)).toEqual(caravanAskAt(seed, p, T));
   });
 
-  it('runs its asks end to end, the outrageous ones three times as long', () => {
+  it('comes and goes: in town for its stay, away 1 to caravanAway between', () => {
+    const wildT = { ...T, caravanWild: 0.15 };
     let wild = 0;
-    for (let seed = 1; seed <= 60; seed++) {
-      let last = caravanAskAt(seed, 0, T)!;
-      expect(last.from).toBe(0);
-      for (let p = 1; p < 300; p++) {
-        const ask = caravanAskAt(seed, p, T)!;
-        if (ask.index !== last.index) {
-          expect(ask.index).toBe(last.index + 1);
-          expect(ask.from).toBe(last.ends);
-          last = ask;
+    let visits = 0;
+    for (const t of [T, wildT])
+      for (let seed = 1; seed <= 60; seed++) {
+        let last = null as { index: number; ends: number } | null;
+        for (let p = 0; p < 300; p++) {
+          const visit = caravanVisitAt(seed, p, t)!;
+          const ask = caravanAskAt(seed, p, t);
+          // In town exactly while the visit stands; away, the next is named.
+          expect(ask).toEqual(p >= visit.from ? visit : null);
+          if (visit.index !== last?.index) {
+            const ends = leaves(seed, visit, t);
+            const gap = visit.from - (last?.ends ?? 0);
+            expect(visit.index).toBe((last?.index ?? -1) + 1);
+            expect(gap).toBeGreaterThanOrEqual(1);
+            expect(gap).toBeLessThanOrEqual(t.caravanAway);
+            expect(ends - visit.from).toBe(
+              t.caravanEvery * (visit.kind === 2 ? t.caravanWildLife : 1),
+            );
+            if (visit.kind === 2) wild++;
+            visits++;
+            last = { index: visit.index, ends };
+          }
         }
-        expect(ask.ends - ask.from).toBe(T.caravanEvery * (ask.kind === 3 ? T.caravanWildLife : 1));
-        if (ask.kind === 3 && ask.from === p) wild++;
       }
-    }
-    // One in seven or so, across sixty runs of thirty-odd asks.
-    expect(wild).toBeGreaterThan(100);
-    expect(wild).toBeLessThan(500);
+    // The shipped caravan never asks the outrageous size; one in seven or
+    // so of the wild tuning's visits do.
+    expect(wild).toBeGreaterThan(visits / 30);
+    expect(wild).toBeLessThan(visits / 8);
   });
 
-  it('never takes a single tile or a pair, at any band', () => {
-    for (const kind of [0, 1, 2, 3] as const) {
+  it('is never away in a run saved before it could be', () => {
+    // No `caravanAway` key at all — the tuning of a run saved on 2026-09-29.
+    const before = { ...T, caravanAway: undefined } as unknown as typeof T;
+    for (let seed = 1; seed <= 20; seed++) {
+      // Always in town: every placement stands inside some ask, and each
+      // begins the placement the last one left.
+      let last = caravanAskAt(seed, 0, before)!;
+      expect(last.from).toBe(0);
+      for (let p = 1; p < 200; p++) {
+        const ask = caravanAskAt(seed, p, before)!;
+        if (ask.index !== last.index) expect(ask.from).toBe(leaves(seed, last, before));
+        last = ask;
+      }
+    }
+  });
+
+  it('wants a small pocket or a big one, and never a single tile or a pair', () => {
+    for (const kind of [0, 1, 2] as const) {
       expect(answers(1, kind)).toBe(false);
       expect(answers(2, kind)).toBe(false);
     }
-    expect([3, 4].every((n) => answers(n, 0))).toBe(true);
-    expect([5, 8].every((n) => answers(n, 1))).toBe(true);
-    expect([9, 11].every((n) => answers(n, 2))).toBe(true);
-    expect([12, 40].every((n) => answers(n, 3))).toBe(true);
-    expect(answers(5, 0) || answers(4, 1) || answers(12, 2) || answers(11, 3)).toBe(false);
+    expect([3, 6].every((n) => answers(n, 0))).toBe(true);
+    expect([7, 40].every((n) => answers(n, 1))).toBe(true);
+    expect([12, 40].every((n) => answers(n, 2))).toBe(true);
+    expect(answers(7, 0) || answers(6, 1) || answers(11, 2)).toBe(false);
+    // Small or big, half and half: one miss says which it is.
+    let small = 0;
+    for (let seed = 1; seed <= 200; seed++) if (caravanVisitAt(seed, 0, T)!.kind === 0) small++;
+    expect(small).toBeGreaterThan(70);
+    expect(small).toBeLessThan(130);
   });
 
-  it('pays most for the smallest ask, and more wares for the outrageous one', () => {
-    expect(caravanMultiplier(0, T)).toBe(3);
-    expect(caravanMultiplier(1, T)).toBe(2);
-    expect(caravanMultiplier(2, T)).toBe(1.5);
-    expect(caravanMultiplier(3, T)).toBe(2);
-    expect(caravanMultiplier(0, off)).toBe(3);
+  it('multiplies nothing as shipped, and more wares for the outrageous one', () => {
+    for (const kind of [0, 1, 2] as const) expect(caravanMultiplier(kind, T)).toBe(1);
+    const dialled = { ...T, caravanMultSmall: 3, caravanMultLarge: 1.5, caravanMultWild: 2 };
+    expect(caravanMultiplier(0, dialled)).toBe(3);
+    expect(caravanMultiplier(1, dialled)).toBe(1.5);
+    expect(caravanMultiplier(2, dialled)).toBe(2);
+    expect(caravanMultiplier(0, off)).toBe(1);
     expect(picksFor(0, T)).toBe(1);
-    expect(picksFor(3, T)).toBe(3);
+    expect(picksFor(1, T)).toBe(1);
+    expect(picksFor(2, T)).toBe(3);
   });
 });
 
@@ -72,10 +121,10 @@ describe('the caravan sells', () => {
   it('offers three different wares, the same three for the same pick', () => {
     for (let seed = 1; seed <= 30; seed++)
       for (let pick = 0; pick < 10; pick++) {
-        const offer = offerFor(seed, pick, T);
+        const offer = offerFor(seed, pick, T, []);
         expect(new Set(offer).size).toBe(3);
         expect(offer.every((w) => (WARE_IDS as readonly string[]).includes(w))).toBe(true);
-        expect(offerFor(seed, pick, T)).toEqual(offer);
+        expect(offerFor(seed, pick, T, [])).toEqual(offer);
       }
   });
 
@@ -93,6 +142,7 @@ describe('the caravan sells', () => {
     expect(applyWare(run, 'forge').tuning.luckForgeCost).toBe(
       Math.max(w.forgeFloor, T.luckForgeCost - w.forge),
     );
+    expect(applyWare(run, 'pops').tuning.pointsPerPop).toBeCloseTo(T.pointsPerPop + w.pops, 9);
     // Nothing a ware touches is the purse, the cost curve or the clock.
     for (const ware of WARE_IDS) {
       const after = applyWare(run, ware);
@@ -111,6 +161,107 @@ describe('the caravan sells', () => {
     expect(s.tuning.luckForgeCost).toBe(CARAVAN_WARES.forgeFloor);
     const noForge = newRun(3, { ...T, luckForgeCost: 0 });
     expect(applyWare(noForge, 'forge')).toBe(noForge);
+    // Nor makes a pop score where the tuning says pops score nothing.
+    const noPoints = newRun(3, { ...T, pointsPerPop: 0 });
+    expect(applyWare(noPoints, 'pops')).toBe(noPoints);
+    for (let seed = 1; seed <= 20; seed++)
+      expect(offerFor(seed, 0, noPoints.tuning, [])).not.toContain('pops');
+  });
+
+  it('never lays the hand out wider than one row of six', () => {
+    // The DRAFT and HOLD unlocks together: four cards and two slots. ONE MORE
+    // CARD made a seventh column here until 2026-09-30.
+    const full = newRun(3, { ...T, draftWidth: 4, holdSlots: 2 });
+    expect(applyWare(full, 'hand')).toBe(full);
+    expect(applyWare(full, 'hold')).toBe(full);
+    for (let seed = 1; seed <= 40; seed++) {
+      const offer = offerFor(seed, 0, full.tuning, []);
+      expect(offer).not.toContain('hand');
+      expect(offer).not.toContain('hold');
+    }
+    // Room for one: either takes it, and then neither is left.
+    let s: GameState = newRun(3, { ...T, draftWidth: 4, holdSlots: 1 });
+    s = applyWare(s, 'hold');
+    expect(s.tuning.holdSlots).toBe(2);
+    expect(applyWare(s, 'hand')).toBe(s);
+    // And a run with no stash is not given one.
+    const open = newRun(3, { ...T, holdSlots: 0 });
+    expect(applyWare(open, 'hold')).toBe(open);
+  });
+
+  it('sells ALL POWERS once a run — a second would be survival', () => {
+    const run = newRun(3, T);
+    const once = applyWare(run, 'powers');
+    const had = { ...once, caravan: { ...once.caravan, taken: ['powers' as const] } };
+    expect(applyWare(had, 'powers')).toBe(had);
+    for (let seed = 1; seed <= 60; seed++)
+      expect(offerFor(seed, 0, had.tuning, had.caravan.taken)).not.toContain('powers');
+    // And it IS offered before then, somewhere in sixty runs.
+    expect(Array.from({ length: 60 }, (_, i) => offerFor(i + 1, 0, T, [])).flat()).toContain(
+      'powers',
+    );
+    // Queued behind the pick that took it, it is drawn again without it.
+    const queued: GameState = {
+      ...run,
+      caravan: {
+        ...run.caravan,
+        made: 2,
+        offers: [
+          ['powers', 'placing', 'size'],
+          ['powers', 'luck', 'size'],
+        ],
+      },
+    };
+    const took = reduce(queued, { type: 'CARAVAN', pick: 0 });
+    expect(took.caravan.offers[0]).not.toContain('powers');
+  });
+
+  it('turns up the system each new ware names, and builds none that is off', () => {
+    const run = newRun(3, T);
+    const w = CARAVAN_WARES;
+    const t = (ware: (typeof WARE_IDS)[number]) => applyWare(run, ware).tuning;
+    expect(t('rares').magicChance).toBeCloseTo(T.magicChance + w.magic, 9);
+    expect(t('rares').uniqueChance).toBeCloseTo(T.uniqueChance + w.unique, 9);
+    expect(t('jackpot').rareBonusRate).toBe(T.rareBonusRate + w.jackpot);
+    expect(t('powers').greenCrowdBonus).toBeCloseTo(T.greenCrowdBonus * w.powers, 9);
+    expect(t('powers').yellowCompanyBonus).toBeCloseTo(T.yellowCompanyBonus * w.powers, 9);
+    expect(t('powers').redAshBonus).toBeCloseTo(T.redAshBonus * w.powers, 9);
+    expect(t('powers').blueTideEvery).toBe(Math.round(T.blueTideEvery / 2));
+    expect(t('powers').blueTideCap).toBe(T.blueTideCap + 1);
+    expect(t('road').distanceMultiplierCap).toBe(T.distanceMultiplierCap + w.road);
+    expect(t('bounty').questBonus).toBe(T.questBonus + w.bounty);
+    expect(t('lucky').luckPerPop).toBe(T.luckPerPop + w.luckyPop);
+
+    const bare = newRun(3, {
+      ...T,
+      magicChance: 0,
+      greenCrowdBonus: 0,
+      yellowCompanyBonus: 0,
+      redAshMatches: false,
+      blueTideEvery: 0,
+      distanceMultiplierCap: 0,
+      questNeed: 0,
+      luckPerPop: 0,
+    });
+    const off = ['rares', 'jackpot', 'powers', 'road', 'bounty', 'lucky'] as const;
+    for (const ware of off) expect(applyWare(bare, ware)).toBe(bare);
+    for (let seed = 1; seed <= 40; seed++)
+      for (const ware of offerFor(seed, 0, bare.tuning, [])) expect(off).not.toContain(ware);
+  });
+
+  it('pays THE ROAD in points, never in tiles', () => {
+    // Found in review, 2026-09-30: the raised ceiling fed `popTilesPerRing`
+    // too, so a far pop paid tiles the run did not have before the ware.
+    const run = newRun(3, T);
+    const cap = T.distanceMultiplierCap;
+    const bought = reduce(
+      { ...run, caravan: { ...run.caravan, made: 1, offers: [['road', 'placing', 'size']] } },
+      { type: 'CARAVAN', pick: 0 },
+    );
+    expect(bought.tuning.distanceMultiplierCap).toBe(cap + CARAVAN_WARES.road);
+    expect(ringTiles(bought, 8, cap + CARAVAN_WARES.road)).toBe(ringTiles(run, 8, cap));
+    expect(ringTiles(bought, 8, cap)).toBe(ringTiles(run, 8, cap));
+    expect(ringTiles(run, 8, cap)).toBeGreaterThan(0);
   });
 
   it('takes the ware picked from the oldest offer, and refuses what it cannot', () => {
@@ -129,7 +280,7 @@ describe('the caravan sells', () => {
     const took = reduce(offered, { type: 'CARAVAN', pick: 1 });
     expect(took.tuning.harvestSizeBonus).toBeCloseTo(T.harvestSizeBonus + CARAVAN_WARES.size, 9);
     // The offer still waiting is drawn again against the run as it now is.
-    expect(took.caravan.offers).toEqual([offerFor(5, 1, took.tuning)]);
+    expect(took.caravan.offers).toEqual([offerFor(5, 1, took.tuning, took.caravan.taken)]);
     expect(took.caravan.taken).toEqual(['size']);
 
     expect(reduce(offered, { type: 'CARAVAN', pick: 3 })).toBe(offered);
@@ -150,11 +301,11 @@ describe('what the review found', () => {
     const noForge = { ...T, luckForgeCost: 0 };
     for (let seed = 1; seed <= 40; seed++)
       for (let pick = 0; pick < 8; pick++) {
-        const offer = offerFor(seed, pick, full);
+        const offer = offerFor(seed, pick, full, []);
         expect(offer).toHaveLength(3);
         expect(offer).not.toContain('hand');
         expect(offer).not.toContain('forge');
-        expect(offerFor(seed, pick, noForge)).not.toContain('forge');
+        expect(offerFor(seed, pick, noForge, [])).not.toContain('forge');
       }
 
     // Three offers queued (an outrageous ask), and the first pick is the fifth

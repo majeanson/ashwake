@@ -5,10 +5,12 @@ import type { HudView } from '@view/view';
 /**
  * THE CARAVAN, on the board (2026-09-29; `engine/caravan.ts` is the rule).
  *
- * Two pieces. `CaravanAsk` is the line under the header that says what the
- * caravan wants and for how long — a size to aim for, so it has to be on
- * screen before the pocket is, not discovered after. When a ware is owed and
- * its picker has been put down, the same line becomes the way back to it.
+ * Two pieces. `CaravanAsk` is the line under the header that says whether
+ * the caravan is in town — and nothing of what it wants (2026-09-30, Marc:
+ * _"caravan is in town" and "caravan left town" so people can try their
+ * pop_). It said the size and a countdown for one day, and that made the
+ * caravan a target to aim at rather than a reason to pop. When a ware is owed
+ * and its picker has been put down, the same line becomes the way back to it.
  * `CaravanPicker` is the choice itself: three wares, one tap, or LATER.
  *
  * Every sentence is the catalogue's (`s.caravan`), every fact the view's.
@@ -52,17 +54,9 @@ function AskLine({
       </button>
     );
 
-  const text = ask.met
-    ? s.caravan.met(ask.left)
-    : ask.max === null
-      ? s.caravan.askWild(ask.min, ask.left)
-      : s.caravan.ask(ask.min, ask.max, ask.left);
   return (
-    <p
-      className={`caravan-ask${ask.outrageous && !ask.met ? ' outrageous' : ''}${ask.met ? ' met' : ''}`}
-      data-hud="caravan"
-    >
-      {text}
+    <p className={`caravan-ask ${ask}`} data-hud="caravan" data-caravan={ask}>
+      {s.caravan[ask]}
     </p>
   );
 }

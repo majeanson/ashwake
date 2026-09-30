@@ -375,7 +375,7 @@ function takeWare(state: GameState, pick: number): GameState {
     caravan: {
       ...state.caravan,
       offers: Array.from({ length: rest }, (_, i) =>
-        offerFor(state.rootSeed, first + i, bought.tuning),
+        offerFor(state.rootSeed, first + i, bought.tuning, [...state.caravan.taken, ware]),
       ),
       taken: [...state.caravan.taken, ware],
     },
@@ -718,7 +718,7 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
   const answered = caravan !== null && scores;
   const owed = answered ? picksFor(caravan.kind, t) : 0;
   const offers = Array.from({ length: owed }, (_, i) =>
-    offerFor(state.rootSeed, state.caravan.made + i, t),
+    offerFor(state.rootSeed, state.caravan.made + i, t, state.caravan.taken),
   );
 
   // Luck arrives mostly as a FLAT amount per pop, so three small pockets beat

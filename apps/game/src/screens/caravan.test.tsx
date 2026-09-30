@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { pickLocale } from '@content/locale';
 import { TUNING } from '@content/tuning';
 import { CARAVAN_WARES } from '@content/caravan';
+import { caravanVisitAt } from '@engine/caravan';
 import { newRun, reduce } from '@engine/reduce';
 import type { GameState } from '@engine/state';
 import { stringsFor } from '@text/index';
@@ -20,18 +21,30 @@ import { CaravanAsk, CaravanPicker } from './Caravan';
  */
 const s = stringsFor(pickLocale(['en']));
 
-describe('the caravan asks, on the board', () => {
-  it('says what it wants and for how long, from the run itself', () => {
+describe('the caravan, on the board', () => {
+  it('says whether it is in town, from the run itself, and never what it wants', () => {
     const run = newRun(4, TUNING);
-    const hud = toHudView(run, s);
-    render(<CaravanAsk hud={hud} s={s} picking={false} onOpen={() => {}} />);
-    const ask = hud.caravan!;
-    const line = screen.getByText(/^CARAVAN · /);
-    expect(line.textContent).toBe(
-      ask.max === null
-        ? s.caravan.askWild(ask.min, ask.left)
-        : s.caravan.ask(ask.min, ask.max, ask.left),
-    );
+    const first = caravanVisitAt(4, 0, TUNING)!;
+    // The first placement it no longer stands at, found by walking the rule.
+    const leaves = (v: typeof first): number => {
+      let p = v.from;
+      while (caravanVisitAt(4, p, TUNING)!.index === v.index) p++;
+      return p;
+    };
+    for (const [placements, where] of [
+      [0, 'coming'],
+      [first.from, 'town'],
+      [leaves(first), 'left'],
+    ] as const) {
+      const hud = toHudView({ ...run, placements }, s);
+      expect(hud.caravan).toBe(where);
+      const { container, unmount } = render(
+        <CaravanAsk hud={hud} s={s} picking={false} onOpen={() => {}} />,
+      );
+      expect(container.textContent).toBe(s.caravan[where]);
+      expect(container.textContent).not.toMatch(/\d/);
+      unmount();
+    }
   });
 
   it('is not there when the caravan is off', () => {

@@ -255,8 +255,6 @@ export type Strings = {
       ) => string;
       readonly bar: (count: number, cap: number) => string;
       readonly bounty: (bonus: number) => string;
-      /** The pocket answers the caravan's ask: its multiplier (2026-09-29). */
-      readonly caravan: (mult: number) => string;
       readonly rares: (n: number) => string;
     };
     readonly harvest: {
@@ -635,19 +633,20 @@ export type Strings = {
    * currency you cannot see leaving is a currency you stop trusting."*
    */
   /**
-   * THE CARAVAN (2026-09-29; `content/caravan.ts`). It asks for a pocket of a
-   * size; the first pop that fits is multiplied and buys a ware. Every number
-   * arrives as an argument — the catalogue never reads the tuning.
+   * THE CARAVAN (2026-09-29; `content/caravan.ts`). It comes to town wanting
+   * a pocket of a size it never names (2026-09-30); the first pop that fits
+   * buys a ware. Every number arrives as an argument — the catalogue never
+   * reads the tuning.
    */
   readonly caravan: {
-    /** The standing ask, with its bounds and the placements it has left. */
-    readonly ask: (min: number, max: number, left: number) => string;
-    /** The OUTRAGEOUS ask, which has no upper bound. */
-    readonly askWild: (min: number, left: number) => string;
-    /** This ask has been answered; the next one is on its way. */
-    readonly met: (left: number) => string;
-    /** Said on the pop that answers it: the multiplier and the wares owed. */
-    readonly answered: (mult: number, picks: number) => string;
+    /** Where it is — `HudView.caravan`: not yet come, in town, gone. */
+    readonly coming: string;
+    readonly town: string;
+    readonly left: string;
+    /** Said on the pop that answers it: the wares owed. */
+    readonly answered: (picks: number) => string;
+    /** Said on a pop of three or more, in town, that it did not take. */
+    readonly passed: string;
     /** Over the three wares. */
     readonly choose: string;
     /** More offers queued behind this one. */

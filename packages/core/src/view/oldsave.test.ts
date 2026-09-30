@@ -24,10 +24,10 @@ const s = stringsFor(pickLocale(['en']));
 
 const NEW_KEYS = [
   'caravanEvery',
+  'caravanAway',
   'caravanWild',
   'caravanWildLife',
   'caravanMultSmall',
-  'caravanMultMedium',
   'caravanMultLarge',
   'caravanMultWild',
   'caravanWildPicks',

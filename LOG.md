@@ -9964,3 +9964,155 @@ Not changed, and why: a fast double-tap after an outrageous ask can take a
 ware from the next offer blind. React flushes between taps, so it is a UX
 risk, not a bug. The caravan has no manual entry or tap-to-explain yet; that
 is a teaching question for the phone round.
+
+### Session 118 — the caravan goes quiet, and a try has to pay (2026-09-30)
+
+**Question:** if the caravan stops saying what it wants, does trying a pop
+while it is in town still pay, or does hiding the size just tax the players
+who try?
+
+Marc: _"upgrade perks given by the caravan, remove ui that displays when the
+caravan arrives and its points, and it just becomes a randomizer so people
+will want to pop"_. Asked four ways to build it, he chose: a hidden size ask
+that comes and goes by chance; no multiplier, wares only; wares revised _"with
+new ideas if necessary"_; and for the indicator, _"a 'caravan is in town' and
+'caravan left town' so people can try their pop"_.
+
+**Answer: only with two halves, not three bands.** Every number below is
+`scripts/study.ts`, which gained two things: `tryN` (plays popAtN, but while
+the caravan is in town and unmet it pops a ripe pocket of 3+, and learns
+from a miss which half it is NOT), and `--taste` (which ware a line takes
+first). The `car` column now counts real meetings.
+
+- **Hidden 3-4 / 5-8 / 9-11 / 12+: trying loses.** At 300 seeds `try12`
+  scored 1382 against `take:popAt12`'s 1624. Popping early to find the size
+  gives up more than the ware returns, so the indicator would have taught
+  players NOT to try. Fixed habits met it 1-1.5 times a run.
+- **Small (3-6) or big (7+), half and half: trying pays.** One miss says
+  which half it wants, and the receipt says so ("The caravan passed on this
+  one"). At 1000 seeds, `pointsPerPop` 0.26: `try8` 1367 against
+  `take:popAt8` 1235, `try12` 1454 against 1302, so about +11%, 3.4-3.6
+  meetings a run. Runs are no longer: 99 placements against 102-104.
+  (An earlier "2007 against 1699" came from a mistaken edit that put small in
+  two of three bands. It was re-measured, and it is not the number used.)
+- **No outrageous ask** (`caravanWild` 0): with the size hidden, a 30-placement
+  12+ visit is one where every try fails. The dial stays.
+- **`pointsPerPop` holds at 0.26.** The doubled wares pay what the
+  multiplier did. A fixed habit scores the game without a caravan: popAt8
+  1235 against 1207, popAt12 1302 against 1316. Bests on phones stay fair.
+- **The wares, doubled:** placing +3, size +0.3, luck 250, forge -60. One new
+  ware, EVERY POP PAYS (`pointsPerPop` +0.1), made no run longer. **RARER
+  DRAWS was tried and cut:** at every strength worth taking it made runs
+  longer (105-111 placements against 101), and a ware may not. Preferring
+  each ware in turn (`--taste`, 300 seeds, `try12`): placing 1585, pops 1566,
+  size 1492, hand 1429, forge 1363, luck 1252. Luck and forge look weak only
+  because these lines never spend luck.
+- **The caravan comes and goes.** It is in town for 10 placements, then away
+  1 to 10 (`caravanAway`, its own hash). A uniform absence is a chance of
+  arriving that rises every placement it has not. `caravanAway` 0 (every run
+  saved before today) is the old always-standing ask.
+
+**On screen:** the line under the header says only _on its way_ / _IN TOWN_ /
+_left town_ (answered or gone). No size, countdown, multiplier, POP mark or
+price-note line. The receipt says it took the pocket, or passed on a 3+. The
+looks are the old outrageous and answered styles, reused sight unseen. Marc's
+to judge (NEXT §1).
+
+**The golden moves in the points columns only** (e.g. bank20 1280 → 1066):
+the sim's policies never take a ware, so they lost the multiplier and gained
+nothing. Every length and count column is unchanged. `CaravanAsk.ends` went
+with the countdown, its one reader (the sweep found it). A run saved on
+2026-09-29 replays under today's bands: the one day between the two commits
+is the whole exposure.
+
+**Session 118, continued — the length rule loosened, and nine more ware ideas.**
+Marc, on RARER DRAWS being cut for +5-10 placements: _"10 more placements
+isnt the end of the world"_, then _"yes review with ~ < 20 placements being
+okay, id like more creative ideas"_. The rule it came from was the first
+prototype's 524-placement runaway, where wares that paid tiles or slowed the
+cost made every caravan buy more game. So the rule is restated
+(`content/caravan.ts`): **a ware never buys survival outright**, and a run
+may run up to ~20 placements longer. `sim/caravan.test.ts` holds that per
+seed.
+
+Nine candidates, each an existing system turned up for the rest of the run
+(so replays stay exact). Measured one at a time (`--taste`, 300 seeds, four
+lines: `take:popAt8`, `try12`, and the two luck spenders `take:forge8` and
+`take:steer8`, added for this):
+
+- **Kept:** RARER DRAWS (magic +5%, unique +1%), the strongest or
+  near-strongest ware in every line, +3-5 placements. RARES PAY (jackpot
+  +3). ALL POWERS (below). THE ROAD PAYS (distance ceiling +1). BIGGER
+  BOUNTIES (×3 → ×5) and LUCKY POPS (luck per pop doubled): situational,
+  for site chasers and luck spenders. A BIGGER STASH (+1 slot).
+- **ALL POWERS at ×2 was a runaway:** 321 placements for `try12`, 141 for
+  the steering line. A pop pays tiles by its worth, so a colour power is
+  survival too. Without blue's part it was still 470. At ×1.5 it plays
+  101-109, so it ships at ×1.5 and **once a run** (`ONCE_WARES`), since a
+  second copy stacks back toward ×2. Offers queued behind the pick are
+  re-drawn without it.
+- **Cut as duds:** LONGER GUARANTEE (a steer's draws +6) and NO CEILING (size
+  cap +10). Both scored below a plain lump of luck in every line, and a dud
+  wastes one of the three slots in an offer. THE CARAVAN RETURNS (visits
+  more often) was never built: the visit schedule is recomputed from the
+  run's tuning every placement, so a ware that changed it would rewrite
+  visits already met.
+- **Found on the way:** ONE MORE CARD could lay out a SEVENTH column. The
+  DRAFT and HOLD unlocks give 4 cards and 2 slots, and `hand.ts` holds six
+  as the most one row can take. Both hand wares now stop at six
+  (`CARAVAN_WARES.columns`).
+
+**The whole set at 1000 seeds** (the study's lines take the strongest ware
+offered, as a person choosing from three would): fixed habits `take:popAt8`
+1201 and `take:popAt12` 1286, against 1207 and 1316 for the game before the
+caravan, so `pointsPerPop` stays 0.26. Trying, `try8` 1312 and `try12` 1404:
+about +9%. Runs are 107-110 placements against 102-104 (forging, 121 against
+113). The p90 rose more than the median (try12 2602 against 2094), which is
+the randomizer showing. Taking wares in list order instead cost the tryers
+most of their edge (+2%), so the choice among the three matters. The golden
+does not move: the sim's policies take no wares.
+
+### Session 119 — the hidden caravan, reviewed before it is committed (2026-09-30)
+
+**Question:** does Session 118's diff do what its ledger says: no leak of the
+hidden size before a pop, old saves safe, no ware that buys survival, ALL
+POWERS once?
+
+**Answer: two faults fixed, one tell left and written down, and the rest holds.**
+
+- **THE ROAD PAYS bought tiles.** Shipped `TUNING` pays `popTilesPerRing`
+  (0.25) a tile per popped tile per ring past the first, up to
+  `distanceMultiplierCap` (2). The ware raised that ceiling, so a far pocket
+  of eight paid two more tiles every pop. That is survival, which a ware may
+  never buy. `ringTiles` (`engine/rules.ts`) now pays tiles at the ceiling
+  the run had before the ware. The engine and the receipt both call it, so
+  the receipt's arithmetic still sums. The road still pays in points.
+  `engine/caravan.test.ts` holds it. The golden does not move, because the
+  sim's policies take no wares.
+- **ALL POWERS said "pays double"** in both languages. It is ×1.5. It now
+  says _half again as strong_ / _moitié plus fort_.
+- **Re-measured after the fix** (1000 seeds, `scripts/study.ts`). These
+  numbers replace Session 118's (1201/1286/1312/1404/107-110), which were
+  right for the code as it stood: `take:popAt8` 1199 and `take:popAt12` 1275,
+  against 1207 and 1316 before the caravan (`--set caravanEvery=0 --set
+pointsPerPop=0.35`). `try8` 1293 and `try12` 1387, so trying pays about
+  +8-9%. Runs are 106-108 placements against 102-104, and forging runs 120
+  against 113. The p90 of `try12` is 2528 against 2094. `pointsPerPop` stays
+  0.26.
+- **A tell, left as it is:** `caravanMult*` is priced into POP and the lens
+  table before the pop. So a nonzero multiplier gives the size away the moment
+  a pocket grows into the band. Shipped dials are 0, so no new run shows it.
+  A run saved on 2026-09-29 keeps its own ×3 / ×1.5 / ×2, and plays on
+  showing it with the caravan never away. That is one evening's exposure.
+  Stated at the dial in `tuning.ts`, so the multiplier does not come back on
+  while the ask is hidden.
+- **Holds, checked:** old ware ids are a subset of the new ones, so pending
+  offers decode. An old save with no `caravanAway` is never away, which is the
+  guard. Only the `caravan` line and the receipt read the caravan. The HUD
+  says where it is and nothing more, and no number is on the line (e2e). ALL
+  POWERS cannot come twice. `offerFor` filters on `taken` at both call sites,
+  `takeWare` re-draws the queued offers with the ware counted, and
+  `applyWare` refuses a second copy. The sweep shows every new string and
+  HudView field has a consumer (0 findings).
+- **Stale, corrected:** the study's docblock said its prototype bands were
+  the built caravan's. They were until today.

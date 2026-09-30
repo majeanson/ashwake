@@ -260,16 +260,11 @@ export function PocketActions({
           name too, because the glyph is `aria-hidden` and a screen reader
           is owed the same reason.
         */
-          bounty={
-            // Both, when both pay: the accessible name owes a listener every
-            // reason the figure is bigger (review, 2026-09-29).
-            [
-              hud.questPays ? s.lesson.bounty.name : null,
-              hud.caravanPays ? s.ui.lensPanel.sum.caravan : null,
-            ]
-              .filter((x) => x !== null)
-              .join(' · ') || null
-          }
+          /*
+          The caravan wore this mark too, 2026-09-29 to -30 — until its ask
+          was hidden, and a mark on the pop that meets it would have said it.
+        */
+          bounty={hud.questPays ? s.lesson.bounty.name : null}
           /*
           HOW MANY DECISIONS ARE WAITING (Marc, 2026-09-16) — the bar's
           caption until the bar went (2026-09-25), inside the button now.

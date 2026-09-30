@@ -3990,11 +3990,12 @@ a:visited {
 }
 
 /*
- * THE CARAVAN (2026-09-29; `screens/Caravan.tsx`). The ask sits under the
- * header as one quiet line, because it is a size to aim for and has to be
- * read before the pocket exists — louder only when it is OUTRAGEOUS, dimmer
- * once it has been answered. When a ware is waiting, the same line is a
- * control, so it keeps the 44px floor every control keeps.
+ * THE CARAVAN (2026-09-29; `screens/Caravan.tsx`). One quiet line under the
+ * header saying where it is — in the accent while it is IN TOWN, dimmer while
+ * it is on its way or gone (2026-09-30; those two looks are the old
+ * outrageous-ask and answered-ask styles, reused unseen on a phone, and are
+ * Marc's to judge). When a ware is waiting, the same line is a control, so it
+ * keeps the 44px floor every control keeps.
  */
 .caravan-slot {
   position: relative;
@@ -4005,10 +4006,10 @@ a:visited {
   line-height: 1rem;
   padding: 0.3rem 0.5rem;
   font-family: var(--font-label);
-  /* One line, and the COUNTDOWN is at its end — so the line shrinks to the
-     phone rather than cutting what it has left. Measured 2026-09-29: the
-     label tracking and a fixed size overflowed at 320 in both languages and
-     at 360 in French. */
+  /* One line that shrinks to the phone rather than cutting. Measured
+     2026-09-29, when it carried a size and a countdown: the label tracking
+     and a fixed size overflowed at 320 in both languages and at 360 in
+     French. */
   letter-spacing: 0.04em;
   font-size: min(0.72rem, 3.2vw);
   white-space: nowrap;
@@ -4017,10 +4018,11 @@ a:visited {
   color: var(--ink-dim);
   text-align: center;
 }
-.caravan-ask.outrageous {
+.caravan-ask.town {
   color: var(--accent);
 }
-.caravan-ask.met {
+.caravan-ask.coming,
+.caravan-ask.left {
   opacity: 0.7;
 }
 button.caravan-ask.waiting {
