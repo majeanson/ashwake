@@ -160,6 +160,19 @@ jobs:
     # (the ruling of 2026-09-11 stands) — it is the difference between a
     # report that is red in fifteen minutes and one nobody has yet.
     timeout-minutes: 25
+    # THE BROWSERS COME PREINSTALLED (2026-09-30). Two runs in a row hit the
+    # ceiling above with the tests themselves on time: `playwright install
+    # --with-deps` spent sixteen minutes pulling Ubuntu packages from a slow
+    # apt mirror (gaps of up to 140 s between packages; the browsers took
+    # seconds). A browser cache would not have touched that, so the job runs
+    # in Playwright's own image, which ships both engines and every system
+    # package they need, and there is no apt step at all. The tag MUST be the
+    # lockfile's Playwright version, or the runner looks for browsers the
+    # image does not have; `apps/game/src/shell/ciImage.test.ts`, in the
+    # gating `ci` job, holds the two together.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -172,7 +185,7 @@ jobs:
       # played in — `CLAUDE.md`'s testing rule is a phone, in portrait — and
       # every spec in this repository had run in Chromium alone. The split of
       # which specs run where, and why, is argued in `playwright.config.ts`.
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      # Both are in the image, so there is nothing to install.
       - run: pnpm test:e2e
       # WHAT THE FAILING BROWSER SAW (2026-09-11).
       #
