@@ -217,6 +217,248 @@ const steerMap = (k: number): Policy => {
   };
 };
 
+/*
+ * TWO REASONS TO POP EARLIER, prototyped (2026-09-29, Marc chose to try
+ * both). Neither changes what is legal, only what a pop is worth, so like the
+ * escalation they are measured as a re-score: the runs are real, the bonus is
+ * laid over them.
+ *
+ *   TIDES   the last `tideLen` placements of every `tideEvery` are a tide;
+ *           a pop made during one pays `tideBonus` more.
+ *   SETS    each pop is the colour of most of its tiles (the colour the game
+ *           already leans toward after it); the pop that completes all four
+ *           colours since the last set pays `setBonus` more, and a new set
+ *           begins.
+ *
+ * `tideAware` and `setAware` are the players who play FOR them: grow to
+ * `big` as usual, but cash anything of `small` or more when the tide is in /
+ * when the pocket is a colour the set still lacks. If they beat `popAt(big)`
+ * the mechanic has made popping earlier a real choice.
+ */
+
+/*
+ * THE WANTED SIZE (2026-09-29, Marc: "we want people using size as a
+ * flexibility so sometimes small is good sometimes its bad"). A request
+ * names a size band — small 3-5, medium 6-9, large 10+ — that changes every
+ * `want.life` placements, drawn from the seed so the player (and the bot)
+ * can see it coming. The FIRST pop that fits it in its window pays a flat
+ * `want.bonus` points: flat, not a multiplier, because doubling a big pop
+ * is worth far more than doubling a small one and the whole point is that
+ * small is sometimes right. One per window, so a small window cannot be
+ * farmed with a string of threes.
+ */
+const want = { life: 0, bonus: 0 };
+const BANDS = [
+  [3, 5],
+  [6, 9],
+  [10, Infinity],
+] as const;
+function bandAt(seed: number, placements: number): readonly [number, number] {
+  const w = Math.floor(placements / Math.max(1, want.life));
+  const h = (Math.imul(seed ^ 0x9e3779b9, 2654435761) ^ Math.imul(w + 1, 40503)) >>> 0;
+  return BANDS[h % 3]!;
+}
+const fits = (size: number, band: readonly [number, number]): boolean =>
+  size >= band[0] && size <= band[1];
+/** Windows already paid, read from the run's own log — the same for bot and scorer. */
+function paidWindows(state: GameState): Set<number> {
+  const paid = new Set<number>();
+  if (want.life <= 0) return paid;
+  for (const h of state.log.harvests) {
+    const w = Math.floor(h.at / want.life);
+    if (!paid.has(w) && fits(h.count, bandAt(state.rootSeed, h.at))) paid.add(w);
+  }
+  return paid;
+}
+/** Grows to `big` as usual, but cashes a ripe pocket that fits an unpaid request. */
+const flex = (big: number): Policy => {
+  const base = popAt(big);
+  return {
+    name: `flex${big}`,
+    note: `popAt${big}, but pops to the wanted size when a pocket fits it.`,
+    decide(state, s) {
+      if (want.life > 0) {
+        const band = bandAt(state.rootSeed, state.placements);
+        const w = Math.floor(state.placements / want.life);
+        if (!paidWindows(state).has(w)) {
+          let pick: string[] | null = null;
+          for (const p of ripeClusters(state.cells))
+            if (fits(p.length, band) && (pick === null || p.length > pick.length)) pick = p;
+          if (pick?.[0] !== undefined)
+            return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
+        }
+      }
+      return base.decide(state, s);
+    },
+  };
+};
+
+const proto = { tideEvery: 0, tideLen: 0, tideBonus: 0, setBonus: 0 };
+
+/*
+ * THE CARAVAN, prototyped (2026-09-29, Marc: "market makers could offer
+ * more or offer certain passive perks so we have to choose between pop and
+ * new decisions? slay the spire like" — structure A, named CARAVAN). Every
+ * so often a caravan arrives with three run-only boons, and one is taken.
+ * Unlike the tide it changes what the rest of the run IS, so it is applied
+ * for real: the boon edits the run's own `tuning` (the engine reads nothing
+ * else), or its purse.
+ *
+ * What counts toward the next caravan is the question Marc asked to be
+ * tested hardest ("make sure the strategy of always popping only 1 tile
+ * doesnt work out either"):
+ *   pops    every `every` pops, any size — the naive rule
+ *   pops3   every `every` pops of `min`+ tiles
+ *   tiles   every `every` tiles popped — size cannot buy frequency
+ */
+const caravan = { mode: 'off' as 'off' | 'pops' | 'tiles', every: 0, min: 1 };
+/*
+ * SELLING A POCKET (2026-09-29, Marc chose it over the free caravan). With
+ * `sell.mode` other than `free`, an arriving caravan WAITS `stay` placements
+ * for a sale: one ripe pocket goes to stone as usual but pays no points, no
+ * tiles and no luck, and the best of three boons is taken instead. Unsold,
+ * it leaves. A sale never counts toward the next caravan.
+ *   none   never sells — today's game, with caravans passing by
+ *   small  sells the smallest ripe pocket of `min`+ tiles (min 1 = the
+ *          single-tile exploit Marc asked to be tested)
+ *   big    sells the biggest ripe pocket of `min`+ tiles
+ */
+const sell = {
+  mode: 'free' as 'free' | 'none' | 'small' | 'big' | 'early',
+  min: 1,
+  stay: 3,
+  /** The sale keeps the pocket's TILES and gives up only its points and luck. */
+  keepTiles: false,
+};
+
+/** Take one boon from three offered, the bot's favourite. */
+function takeBoon(state: GameState, wares: RngStream): [GameState, RngStream] {
+  const offered: Boon[] = [];
+  let w = wares;
+  while (offered.length < 3) {
+    const [i, next] = rngInt(w, BOONS.length);
+    w = next;
+    const boon = BOONS[i]!;
+    if (!offered.includes(boon)) offered.push(boon);
+  }
+  offered.sort((a, b) => PREFER.indexOf(a.id) - PREFER.indexOf(b.id));
+  return [offered[0]!.apply(state), w];
+}
+
+type Boon = { readonly id: string; apply(state: GameState): GameState };
+/*
+ * WARES THAT NEVER LENGTHEN A RUN. The first cut sold "cost rises slower"
+ * and "12 tiles now", and runaway was immediate: each caravan made the run
+ * longer, a longer run met more caravans, and the patient line played 524
+ * placements instead of 104. Marc's limit ("dont want to have too much
+ * longer games") is therefore a rule for the caravan's wares: they change
+ * what a run is WORTH or how it PLAYS, never how long it lasts.
+ */
+/** How strong every ware is, for sweeping (--boon-scale). */
+let boonScale = 1;
+const BOONS: readonly Boon[] = [
+  {
+    id: 'placing-pays',
+    apply: (s) => ({
+      ...s,
+      tuning: { ...s.tuning, identityBonusRate: s.tuning.identityBonusRate + 0.5 * boonScale },
+    }),
+  },
+  {
+    id: 'size-pays',
+    apply: (s) => ({
+      ...s,
+      tuning: { ...s.tuning, harvestSizeBonus: s.tuning.harvestSizeBonus + 0.05 * boonScale },
+    }),
+  },
+  {
+    id: 'wider-hand',
+    apply: (s) => ({
+      ...s,
+      tuning: { ...s.tuning, draftWidth: Math.min(5, s.tuning.draftWidth + 1) },
+    }),
+  },
+  { id: 'luck-now', apply: (s) => ({ ...s, luck: s.luck + 40 * boonScale }) },
+  {
+    id: 'forge-cheaper',
+    apply: (s) => ({
+      ...s,
+      tuning: { ...s.tuning, luckForgeCost: Math.max(20, s.tuning.luckForgeCost - 10 * boonScale) },
+    }),
+  },
+];
+/** The bot's taste, best first — a player who has read the offers. */
+const PREFER = ['placing-pays', 'size-pays', 'wider-hand', 'forge-cheaper', 'luck-now'];
+const inTide = (placements: number): boolean =>
+  proto.tideEvery > 0 && placements % proto.tideEvery >= proto.tideEvery - proto.tideLen;
+
+/** The colour most of a pocket's tiles are — the engine's own rule. */
+function pocketColour(state: GameState, pocket: readonly string[]): Colour | null {
+  const n = new Map<Colour, number>();
+  for (const k of pocket) {
+    const c = state.cells[k];
+    if (c?.kind === 'tile') n.set(c.colour, (n.get(c.colour) ?? 0) + 1);
+  }
+  let top: Colour | null = null;
+  let most = 0;
+  for (const [c, v] of n)
+    if (v > most) {
+      most = v;
+      top = c;
+    }
+  return top;
+}
+
+/** The set so far, per run, read the way the re-score reads it. */
+const setMemory = new WeakMap<object, { seen: number; set: Set<Colour> }>();
+function setSoFar(policy: object, state: GameState): Set<Colour> {
+  let m = setMemory.get(policy);
+  if (m === undefined || state.log.harvests.length < m.seen) {
+    m = { seen: 0, set: new Set() };
+    setMemory.set(policy, m);
+  }
+  if (state.log.harvests.length > m.seen) {
+    m.seen = state.log.harvests.length;
+    const c = state.bias?.colour;
+    if (c !== undefined) m.set.add(c);
+    if (m.set.size === 4) m.set = new Set();
+  }
+  return m.set;
+}
+
+const tideAware = (big: number, small: number): Policy => {
+  const base = popAt(big);
+  return {
+    name: `tide${big}/${small}`,
+    note: `popAt${big}, but cashes any pocket of ${small}+ while the tide is in.`,
+    decide(state, s) {
+      if (inTide(state.placements) && biggest(state) >= small)
+        return [pocketMove(state, 'big') ?? [], s];
+      return base.decide(state, s);
+    },
+  };
+};
+
+const setAware = (big: number, small: number): Policy => {
+  const base = popAt(big);
+  const self: Policy = {
+    name: `set${big}/${small}`,
+    note: `popAt${big}, but cashes a pocket of ${small}+ whose colour the set still lacks.`,
+    decide(state, s) {
+      const set = setSoFar(self, state);
+      let pick: string[] | null = null;
+      for (const p of ripeClusters(state.cells)) {
+        if (p.length < small) continue;
+        const c = pocketColour(state, p);
+        if (c !== null && !set.has(c) && (pick === null || p.length > pick.length)) pick = p;
+      }
+      if (pick?.[0] !== undefined && biggest(state) < big)
+        return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
+      return base.decide(state, s);
+    },
+  };
+  return self;
+};
 /** What one run felt like, measured from the inside. */
 type Felt = {
   points: number;
@@ -239,6 +481,12 @@ type Felt = {
   spends: number;
   /** Share of the pops' points earned in the last third of the run: the climax. */
   late: number;
+  /** Caravans that arrived this run. */
+  caravans: number;
+  /** Pockets sold to one. */
+  sold: number;
+  /** Wanted-size requests met, by band: small, medium, large. */
+  bands: [number, number, number];
   /** Points earned in each third of the run, and the colour share of each. */
   thirds: [number, number, number];
   colourThirds: [number, number, number];
@@ -261,13 +509,61 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
     reach: 0,
     spends: 0,
     late: 0,
+    caravans: 0,
+    sold: 0,
+    bands: [0, 0, 0],
     thirds: [0, 0, 0],
     colourThirds: [0, 0, 0],
   };
   let low = false;
   let sincePop = 0;
+  const popMult: number[] = [];
+  let toCaravan = 0;
+  let waiting: number | null = null;
+  let wares: RngStream = stream((seed ^ 0x0ca2a7a) | 0);
+  let runSet = new Set<Colour>();
   let steps = 0;
   while (state.phase === 'placing' && steps < 20000) {
+    // A caravan waiting for a sale: leave when its time is up, or buy a
+    // pocket if the seller wants one.
+    if (waiting !== null && state.placements > waiting) waiting = null;
+    // 'early' sells like 'small', but only in the first 50 placements: a boon
+    // lasts the rest of the run, so it is worth most when bought early.
+    const selling =
+      sell.mode === 'small' ||
+      sell.mode === 'big' ||
+      (sell.mode === 'early' && state.placements < 50);
+    if (waiting !== null && selling) {
+      let pick: string[] | null = null;
+      for (const p of ripeClusters(state.cells)) {
+        if (p.length < sell.min) continue;
+        if (
+          pick === null ||
+          (sell.mode === 'big' ? p.length > pick.length : p.length < pick.length)
+        )
+          pick = p;
+      }
+      if (pick?.[0] !== undefined) {
+        const was = state;
+        const cashed = reduce(state, { type: 'HARVEST', choice: 'tiles', at: pick[0] });
+        if (cashed !== was) {
+          // Stone, as a pop leaves it — and nothing paid for it.
+          state = {
+            ...cashed,
+            tiles: sell.keepTiles ? cashed.tiles : was.tiles,
+            points: was.points,
+            luck: was.luck,
+            log: { ...cashed.log, harvests: was.log.harvests },
+          };
+          [state, wares] = takeBoon(state, wares);
+          f.caravans++;
+          f.sold++;
+          waiting = null;
+          steps++;
+          continue;
+        }
+      }
+    }
     const [move, next] = policy.decide(state, dice);
     dice = next;
     if (move.length === 0) break;
@@ -289,6 +585,35 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
       if (paid > 0) f.walkTiles += paid;
     }
     if (state.log.harvests.length > before.log.harvests.length) {
+      // The prototypes' bonus, decided at the moment of the pop.
+      let m = 1;
+      if (inTide(before.placements)) m += proto.tideBonus;
+      const c = state.bias?.colour;
+      if (proto.setBonus > 0 && c !== undefined) {
+        runSet.add(c);
+        if (runSet.size === 4) {
+          m += proto.setBonus;
+          runSet = new Set();
+        }
+      }
+      popMult.push(m);
+      // The caravan: count this pop toward the next one, and take a boon
+      // when it arrives.
+      if (caravan.mode !== 'off') {
+        const size = state.log.harvests.at(-1)?.count ?? 0;
+        toCaravan += caravan.mode === 'tiles' ? size : size >= caravan.min ? 1 : 0;
+        while (toCaravan >= caravan.every && state.phase === 'placing') {
+          toCaravan -= caravan.every;
+          if (sell.mode === 'free') {
+            [state, wares] = takeBoon(state, wares);
+            f.caravans++;
+          } else {
+            waiting = state.placements + sell.stay;
+          }
+        }
+      }
+      for (let extra = before.log.harvests.length + 1; extra < state.log.harvests.length; extra++)
+        popMult.push(1);
       sincePop = 0;
       f.popTiles += state.log.harvests.at(-1)?.tiles ?? 0;
     }
@@ -309,8 +634,24 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
    * the rule is chosen.
    */
   const step = Math.max(1, tuning.costRisesEvery);
+  const bonusOf = new Map(state.log.harvests.map((h, i) => [h, popMult[i] ?? 1]));
+  // The wanted size: a flat bonus on the first pop in each window that fits.
+  const wanted = new Set<object>();
+  if (want.life > 0) {
+    const paid = new Set<number>();
+    for (const h of state.log.harvests) {
+      const w = Math.floor(h.at / want.life);
+      if (!paid.has(w) && fits(h.count, bandAt(seed, h.at))) {
+        paid.add(w);
+        wanted.add(h);
+        const band = bandAt(seed, h.at);
+        f.bands[BANDS.indexOf(band as (typeof BANDS)[number]) as 0 | 1 | 2] += 1;
+      }
+    }
+  }
   const worth = (h: { at: number; points: number }): number =>
-    h.points * (1 + escalate * Math.floor(h.at / step));
+    (bonusOf.get(h as never) ?? 1) * h.points * (1 + escalate * Math.floor(h.at / step)) +
+    (wanted.has(h) ? want.bonus : 0);
   let peak = 0;
   for (const h of state.log.harvests) {
     if (worth(h) > peak) {
@@ -376,7 +717,11 @@ function main(): void {
   ];
   const people = [randomLegal, greedy, timid, bank3, bank20, spender, seeker, chooser, tourist];
   const blinds = [4, 8, 12].map(colourBlind);
-  const every = [...timing, popAt(8), ...luck, ...people, ...blinds].filter(
+  const protos = [
+    ...[3, 4, 6].flatMap((small) => [tideAware(12, small), setAware(12, small)]),
+    ...[8, 12, 20].map(flex),
+  ];
+  const every = [...timing, popAt(8), ...luck, ...people, ...blinds, ...protos].filter(
     (p, n, a) => a.findIndex((q) => q.name === p.name) === n,
   );
 
@@ -400,6 +745,41 @@ function main(): void {
     tuning = { ...tuning, [name]: value };
     changed.push(setting);
   });
+  const cv = process.argv.indexOf('--caravan');
+  if (cv > 0) {
+    const [mode, every, min] = (process.argv[cv + 1] ?? '').split(',');
+    Object.assign(caravan, { mode, every: Number(every), min: Number(min ?? 1) });
+    changed.push(`caravan=${mode}/${every}/${min ?? 1}`);
+  }
+  const bs = process.argv.indexOf('--boon-scale');
+  if (bs > 0) {
+    boonScale = Number(process.argv[bs + 1]);
+    changed.push(`boons=x${boonScale}`);
+  }
+  const wa = process.argv.indexOf('--want');
+  if (wa > 0) {
+    const [life, bonus] = (process.argv[wa + 1] ?? '').split(',').map(Number);
+    Object.assign(want, { life: life ?? 0, bonus: bonus ?? 0 });
+    changed.push(`want=every${life}/+${bonus}`);
+  }
+  const sl = process.argv.indexOf('--sell');
+  if (sl > 0) {
+    const [mode, min] = (process.argv[sl + 1] ?? '').split(',');
+    Object.assign(sell, { mode, min: Number(min ?? 1) });
+    if (process.argv.includes('--keep-tiles')) sell.keepTiles = true;
+    changed.push(`sell=${mode}/${min ?? 1}`);
+  }
+  const td = process.argv.indexOf('--tide');
+  if (td > 0) {
+    const [every, len, bonus] = (process.argv[td + 1] ?? '').split(',').map(Number);
+    Object.assign(proto, { tideEvery: every ?? 0, tideLen: len ?? 0, tideBonus: bonus ?? 0 });
+    changed.push(`tide=${every}/${len}/+${bonus}`);
+  }
+  const st = process.argv.indexOf('--sets');
+  if (st > 0) {
+    proto.setBonus = Number(process.argv[st + 1]);
+    changed.push(`sets=+${proto.setBonus}`);
+  }
   const x = process.argv.indexOf('--escalate');
   const escalate = x > 0 ? Number(process.argv[x + 1]) : 0;
   if (escalate > 0) changed.push(`escalate=${escalate}`);
@@ -429,14 +809,19 @@ function main(): void {
       pad('<40', 5),
       pad('spends', 7),
       pad('late%', 6),
+      pad('car', 5),
     ].join(' '),
   );
   const colourRows: string[] = [];
+  const bandRows: string[] = [];
   for (const policy of all) {
     const runs: Felt[] = [];
     for (let s = 1; s <= seeds; s++) runs.push(feel(policy, s, tuning, escalate));
     const pts = runs.map((r) => r.points);
     colourRows.push(colourRow(policy.name, runs));
+    bandRows.push(
+      `${policy.name.padEnd(14)} ${[0, 1, 2].map((b) => mean(runs.map((r) => r.bands[b as 0 | 1 | 2])).toFixed(2)).join(' / ')}`,
+    );
     const m = mean(pts);
     const sd = Math.sqrt(mean(pts.map((p) => (p - m) ** 2)));
     const turns = runs.reduce((a, r) => a + r.placements, 0);
@@ -464,6 +849,7 @@ function main(): void {
         pad(runs.filter((r) => r.placements < 40).length, 5),
         pad(mean(runs.map((r) => r.spends)).toFixed(1), 7),
         pad((100 * mean(runs.map((r) => r.late))).toFixed(0), 6),
+        pad(mean(runs.map((r) => r.caravans)).toFixed(1), 5),
       ].join(' '),
     );
   }
@@ -491,6 +877,11 @@ function main(): void {
       ].join(' '),
     );
     for (const row of colourRows) console.log(row);
+  }
+  if (want.life > 0) {
+    console.log('');
+    console.log('WANTED SIZE — requests met per run: small / medium / large');
+    for (const row of bandRows) console.log(row);
   }
 }
 

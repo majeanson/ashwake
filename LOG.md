@@ -9787,3 +9787,45 @@ The harness also had to learn something: steer and forge became affordable
 together (20 + 40), `spender` bought a steer, and the runner reported it
 `stalled`, because its progress check did not count luck. It counts luck now
 (`sim/run.ts`); a run of spends always ends, because each one lowers the purse.
+
+**Session 117, a real cost to waiting — decided together, measured before
+anything is built.** Marc chose to prototype tides and colour sets, then
+redirected twice: to a CARAVAN (_"market makers … so we have to choose
+between pop and new decisions? slay the spire like"_), and, after the
+caravan's numbers, to luck on the pop, with the goal stated plainly: _"we
+want people using size as a flexibility so sometimes small is good sometimes
+its bad"_. The test for each idea was the same: does a player who plays FOR
+the mechanic beat every fixed habit (pop at 4, 8, 12, 20)? And, per Marc,
+_"make sure the strategy of always popping only 1 tile doesnt work out
+either"_. All of it is in `scripts/study.ts` as re-scores or run edits; no
+engine code.
+
+- **Colour sets: fail.** The set-chaser never beat growing at +100, +200 or
+  +300% (best 1326 against 1432): a set pays once per four pops.
+- **Tides: work, and were superseded.** A tide every 15 placements, 3 long,
+  pops ×2: cashing 3+ in the tide beats growing by 5%, runs shorter, and the
+  longest wait between pops drops from 22 to 15. With `pointsPerPop` 0.30
+  plain play holds today's score.
+- **Caravan, free boon: safe but not the lever.** The first wares sold
+  survival ("cost rises slower", "12 tiles now") and ran away: the patient
+  line played 524 placements. The rule that came out of it is that **a
+  caravan's wares change what a run is worth or how it plays, never how long
+  it lasts.** With such wares, single-tile spam never won, runs never
+  lengthened, and scores rose 3-26%. But growing still won everywhere,
+  because patient play pops as often as medium play and meets as many
+  caravans.
+- **Caravan, sell a pocket for the boon: never a real choice.** It lost
+  15% with the tiles gone and 5% with them kept. Even ×3 boons sold early
+  gained 2% at best, because a pocket is worth more than a boon pays back.
+  Counted per 4 pops of 3+, caravans came ~0.4 a run for patient play and
+  none in the first 50 placements.
+- **The wanted size: the first to do what Marc asked.** A request names a
+  size band (small 3-5, medium 6-9, large 10+), changes every 10 placements
+  (seeded, so it can be shown ahead), and the first pop in each window that
+  fits pays a FLAT +120 points. Flat, because a multiplier favours big
+  pockets. The player who pops to the request beats every fixed habit: with
+  `pointsPerPop` 0.28, fixed habits score about today's (best 1411) and the
+  flexible player 1620, +15%, in 101 placements rather than 105. It meets
+  small requests 2.7 times a run, medium 1.9 and large 0.5, so small is
+  often right and large sometimes. Weaker versions (+40) lose to growing,
+  and +80 wins by only 3%.
