@@ -118,15 +118,18 @@ only the first five wares' names on a phone, and the longest now is
 _UNE PLUS GRANDE RÉSERVE_ with a two-line note. Whether three of those stack
 well at 320px is part of this look.
 
-**And one finding for this round, not built (2026-09-30, `LOG.md` Session
-122): the COLOURS card has never shown in this body.** Its moment (a tile
-placed, a hand held) is true from the first placement, but `colours` has no
-lesson and no renderer, so it draws nothing, is never marked told, and
-silences LAST GASP, which comes after it in the drip. A new device's ledger
-after 16 placements holds every other early id and not `colours`. Ashwake 1
-taught the four grounds on one card (_"teach all tiles at one in a beautiful
-tip"_, 2026-08-27). Building it changes the first minute, so it is Marc's:
-build it into round eleven's look, or leave it until after Session C.
+**And THE FOUR GROUNDS joins this round (2026-09-30, `LOG.md` Sessions
+122-123; Marc: build it for round eleven).** The COLOURS card had never shown
+in this body: the drip fired `colours` into a card with no lesson, so it was
+never told, and LAST GASP, behind it, never spoke. It is Ashwake 1's card: a
+lead line and one row per ground, each with the real baked tile and the
+ground's own sentence (the one a second tap on a card says). It fires on the
+first placement, so it is part of this look. So is the baked tile now beside
+the PURSE card's four steer rows, which drew flat squares. To judge: is the
+card worth stopping for at the first placement, and do the four rows read at
+a glance? And its French: _LES QUATRE SOLS_, _Chaque carte est l’un de ces
+quatre sols, et chacun marque à sa façon._
+
 ---
 
 ## 2. Somebody else's device
@@ -280,13 +283,12 @@ sim` moves in the points and best columns (e.g. seeker 1020 → 1185, bank20
   through the literal's contextual type, and `scripts/sweep/optional.test.ts`
   (a new `sweep` test project) fails on the old code. The corrected pass found
   three gaps it had been hiding. `IconProps.className` and `Lesson.rows` were
-  options nothing supplied, and are deleted. **`TipRow.art` is a finding for
-  Marc:** the real baked tile beside a ground in a set of rows (_"visuals with
-  real tiles … in the how to play"_, 2026-08-27) came with the Ashwake 1 lift
-  and was never supplied in this body. The rows that would carry it are the
-  PURSE card's four steer rows, which draw a flat swatch. That card fires on
-  the first opening of the purse, inside a stranger's first run, so it waits
-  for Session C; its sweep ruling expires on 2026-10-31 so it comes back.
+  options nothing supplied, and were deleted. `TipRow.art`, the real baked
+  tile beside a ground (_"visuals with real tiles … in the how to play"_,
+  2026-08-27), was never supplied in this body; since Session 123 `TipRows`
+  draws the bake for every ground row itself, and the field is gone.
+  `Lesson.rows` came back the same day with THE FOUR GROUNDS as its supplier
+  (§1).
 - **`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29).** The
   deploy had landed (`version.json` matched the commit on workers.dev); a
   later check in the same step lost its connection, and the next push

@@ -1703,18 +1703,8 @@ export type TipRow = {
   readonly colour?: Colour;
   /** An icon from the registry, for a row that is not a ground. */
   readonly icon?: IconName;
-  /**
-   * The ground's REAL baked tile, as a data URL (2026-08-27, Marc: "can we
-   * have visuals with real tiles or examples in the how to play and hand and
-   * such? so we have a visual with real in game assets").
-   *
-   * The same canvas `bakeSurface` hands the draft card — texture, gradient,
-   * inset and all — so the square beside a colour's name stops being an
-   * approximation of the tile and becomes the tile. Optional because a caller
-   * without a canvas (a bare test, the gallery) has nothing to bake with, and
-   * the flat `colour` swatch is still a correct, if plainer, mark.
-   */
-  readonly art?: string;
+  // `art`, the baked tile as a data URL, went on 2026-09-30: no caller ever
+  // supplied one, and `TipRows` now draws the bake for any `colour` row.
 };
 
 /** A card that teaches a set: the lead, and the rows under it. */

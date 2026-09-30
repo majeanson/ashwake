@@ -133,6 +133,14 @@ type LessonStrings = {
     /** One ware, as the manual lists it: its name and its own note. */
     readonly ware: (name: string, note: string) => string;
   };
+  /**
+   * THE FOUR GROUNDS (2026-09-30), Ashwake 1's one card for all four (Marc,
+   * 2026-08-27: _"teach all tiles at one in a beautiful tip"_). It never
+   * shipped in this body: the drip fired `colours` into a card with no
+   * lesson. The lead is `core`; each ground's row is `view.colour`'s own
+   * sentence, the one a second tap on a card says.
+   */
+  readonly colours: LessonHead & { readonly core: string };
   readonly stash: LessonHead & {
     readonly coreMany: (slots: number) => string;
     readonly coreOne: string;

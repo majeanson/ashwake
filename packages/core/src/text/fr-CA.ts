@@ -180,6 +180,11 @@ export const STRINGS_FR: Strings = {
         `Elle reste ${nb(every)} placements, puis s’absente de 1 à ${nb(away)} placements avant de revenir.`,
       ware: (name, note) => `${name}${D}: ${note}`,
     },
+    colours: {
+      name: 'LES QUATRE SOLS',
+      terms: [],
+      core: 'Chaque carte est l’un de ces quatre sols, et chacun marque à sa façon.',
+    },
     stash: {
       name: 'RÉSERVE',
       terms: ['RÉSERVE'],

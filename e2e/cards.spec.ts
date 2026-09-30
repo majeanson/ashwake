@@ -120,3 +120,50 @@ test('never shows two cards at once', async ({ page }) => {
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('THE FOUR GROUNDS: a new device is shown all four, with their real tiles', async ({
+  page,
+}) => {
+  /*
+   * 2026-09-30. The drip fired `colours` at every device from the first
+   * placement, and it had no lesson: `LessonCard` drew nothing, nothing ever
+   * told it, and LAST GASP, behind it in the drip's order, never spoke. The
+   * card is Ashwake 1's (Marc, 2026-08-27: "teach all tiles at one in a
+   * beautiful tip"), with the real baked tile beside each ground.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7');
+  await begin(page);
+  await clearCards(page);
+
+  // One placement, by hand: `placeOneTile` would dismiss the card it raises.
+  const box = (await page.locator('canvas').boundingBox())!;
+  const before = await tilesLeft(page);
+  search: for (const r of [40, 60, 80, 30, 100]) {
+    for (let i = 0; i < 12; i++) {
+      await page.mouse.click(
+        box.x + box.width / 2 + r * Math.cos((Math.PI / 6) * i),
+        box.y + box.height / 2 + r * Math.sin((Math.PI / 6) * i),
+      );
+      if ((await tilesLeft(page)) < before) break search;
+    }
+  }
+
+  const card = page.locator('.card-scrim .card');
+  await expect(card).toContainText(/THE FOUR GROUNDS|LES QUATRE SOLS/);
+  await expect(card.locator('.tip-row')).toHaveCount(4);
+  // The real tiles, once the bake lands, and not four flat squares.
+  await expect(card.locator('.tip-mark img')).toHaveCount(4);
+
+  await card.locator('button').last().click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (JSON.parse(localStorage.getItem('ashwake.progress.v1') ?? '{}') as { met?: string[] })
+            .met ?? [],
+      ),
+    )
+    .toContain('colours');
+  expect(errors, errors.join('\n')).toEqual([]);
+});

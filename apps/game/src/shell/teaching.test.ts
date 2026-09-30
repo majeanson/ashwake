@@ -4,7 +4,8 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { createSession, type Snapshot } from './store';
-import { nextLesson, toastLine, told, type Moment } from './teaching';
+import { lessonOf } from '@view/lessons';
+import { CARDS, nextLesson, toastLine, told, type Moment } from './teaching';
 import { walk } from './walk';
 
 /**
@@ -183,5 +184,17 @@ describe('the teaching drip', () => {
   it('marks told idempotently, so a double-dismiss cannot double-write', () => {
     const once = told(EMPTY_PROGRESS, 'ripe');
     expect(told(once, 'ripe')).toEqual(once);
+  });
+});
+
+describe('every card the drip can fire', () => {
+  it('is a card something draws', () => {
+    // 2026-09-30. COLOURS was in `CARDS` with no lesson, so `LessonCard`
+    // returned nothing for it: never shown, never told, and LAST GASP, behind
+    // it in `ORDER`, never spoke. STORY has its own card in `App`, and PURSE
+    // is raised by opening the purse (`purseLesson`) and never by a moment.
+    const ownCard = new Set(['story', 'purse']);
+    for (const id of CARDS)
+      if (!ownCard.has(id)) expect(lessonOf(id), `${id} has no lesson to draw`).toBeDefined();
   });
 });

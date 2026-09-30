@@ -10241,3 +10241,36 @@ sits ahead of LAST GASP in `ORDER`, so that toast can never speak. The
 `lessons.ts` docblock saying these concepts "hold their prose" is false for
 COLOURS. Both are first-minute teaching, so what to do is Marc's (NEXT §1).
 The same probe saw the CARAVAN card fire at the eighth placement.
+
+### Session 123 — THE FOUR GROUNDS, built at last (2026-09-30)
+
+**Question:** can the card Marc asked for on 2026-08-27 (_"teach all tiles at
+one in a beautiful tip"_) reach a new device's first placement, and does
+LAST GASP speak again once it does?
+
+Marc chose to build it for round eleven. It is Ashwake 1's card
+(`src/ui/game.ts`, `#groundRows`): THE FOUR GROUNDS / LES QUATRE SOLS, one
+lead line, and a row per ground with the baked tile and `colourLesson`'s own
+sentence.
+
+- **The lesson:** `colours` in `LESSONS`, with `Lesson.rows` restored (deleted
+  in Session 122 as unsupplied; this is the lesson it was written for). A
+  ground whose power is off gives no row; the lead always speaks.
+- **The tiles:** `TipRows` draws the theme's bake (`useTerrainArt`) for any
+  row with a `colour`, so the PURSE card's steer rows get the real tile too.
+  `TipRow.art`, which every caller was meant to supply and none did, is gone,
+  and so is its sweep ruling.
+- **The guard:** `CARDS` is exported for one test in `teaching.test.ts`:
+  every card-class id except STORY and PURSE (which draw their own cards)
+  must have a lesson. Against the old `lessons.ts` it fails: _"colours has no
+  lesson to draw"_.
+- **The browser:** `cards.spec.ts` places one tile on a new device and expects
+  the card, four rows, four baked tiles, and `colours` in the ledger after it
+  is dismissed. It fails when the card draws without its rows. Chromium and
+  WebKit pass.
+- **The docblock that said** `purse`, `colours`, `place`, `wall` and
+  `lastGasp` "hold their prose" as lessons is corrected. Only COLOURS is a
+  lesson now; the rest speak through `SaidCard` and the drip's toast lines.
+
+A first-minute change, on purpose and by Marc's word, inside round eleven's
+look (NEXT §1). Its French is his to pass.

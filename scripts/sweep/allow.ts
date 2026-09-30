@@ -565,6 +565,18 @@ export const ALLOW: readonly Ruling[] = [
       'test” rather than “by nobody”. That is the shape it should keep.',
   },
   {
+    id: 'scripts/sweep/allow.ts#Ruling.until',
+    on: '2026-09-10',
+    why:
+      'This file’s own expiry, and the pass is right that nothing sets one: no ' +
+      'ruling here is temporary yet. It is not dead surface — `expired()` reads ' +
+      'it and the report prints what it finds, so the machinery for a ruling ' +
+      'that outlives its reason is built and waiting for the first one. The ' +
+      'docblock at the top of this file is where that promise is made. (The ' +
+      'first, `TipRow.art`, lived on 2026-09-30 only: its subject was built the ' +
+      'same day.)',
+  },
+  {
     id: 'scripts/notices.ts#nameRecord(wanted)',
     on: '2026-09-10',
     why:
@@ -588,20 +600,6 @@ export const ALLOW: readonly Ruling[] = [
       'the drag inverse. Whether the fit should include lift changes the framing ' +
       'of the first minute, which `CLAUDE.md` says is not guessed at from a ' +
       'session with no phone in it.',
-  },
-  {
-    id: 'packages/core/src/view/view.ts#TipRow.art',
-    on: '2026-09-30',
-    until: '2026-10-31',
-    why:
-      'A FINDING for Marc rather than a fix, and it is in `NEXT.md` §4: the ' +
-      'real baked tile beside a ground in a set of rows (Marc, 2026-08-27: ' +
-      '"visuals with real tiles … in the how to play") was lifted with the ' +
-      'field on 2026-08-28 and never supplied in this body, so the PURSE card’s ' +
-      'four steer rows draw the flat swatch. Found when the key index learned ' +
-      'contextual types. That card fires on the first opening of the purse, ' +
-      'inside a stranger’s first run, so it waits for Session C; this ruling ' +
-      'expires so the question comes back.',
   },
   ...LIFT_SURFACE,
   ...DESIGN_RECORD,

@@ -1,11 +1,12 @@
 import { CARAVAN_BANDS, WARE_IDS } from '@content/caravan';
-import type { Tuning } from '@content/tuning';
+import { COLOURS, type Tuning } from '@content/tuning';
 import { waresOnSale } from '@engine/caravan';
 import type { TeachId } from '@meta/progress';
 import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings, TaughtId } from '@text/Strings';
 import type { FigureId } from './figure';
+import { colourLesson, type TipRow } from './view';
 
 /**
  * One lesson, one source (2026-08-28).
@@ -131,15 +132,22 @@ export type Lesson = {
   /** MAGIC and UNIQUE keep the ink `rarityInked` already gives them. */
   readonly ink?: 'ink-magic' | 'ink-unique';
   readonly beats: readonly Beat[];
-  /*
-   * `rows` went on 2026-09-30. It was for "a set this lesson lists — the four
-   * grounds, the purse's spends", and both of those are `SetLesson`s drawn by
-   * `SaidCard`, so no lesson ever set it and `LessonCard`'s branch for it drew
-   * nothing. The sweep found it once its key index learned contextual types.
+  /**
+   * A set this lesson lists, one row each: THE FOUR GROUNDS (2026-09-30).
+   *
+   * Deleted and restored the same day. The sweep found it read and never set,
+   * because the lesson it was written for had never been built: the drip
+   * fired `colours` at every device and `LessonCard` drew nothing for it,
+   * so it was never told and LAST GASP, behind it, never spoke.
    */
+  readonly rows?: (t: Tuning, theme: Theme, s: Strings) => readonly TipRow[];
   /**
    * The picture of this rule. Travels WITH the lesson, so every door that
    * teaches it draws the same one — which is the whole of Marc's ask.
+   *
+   * A lesson has a figure or rows, never both: a portrait teaching card
+   * already runs icon, lead, body and button, and both together overflow it.
+   * `lessons.test.ts` asserts it.
    *
    */
   readonly figure?: FigureId;
@@ -154,9 +162,10 @@ export const lessonName = (lesson: Lesson, s: Strings): string => s.lesson[lesso
 /**
  * UPPERCASE, longest first — the spellings `tips.ts`'s matcher alternates
  * over. An EMPTY list is a lesson with no tappable word, which is how the
- * concepts `glossary.ts` deliberately left out (`purse`, `colours`, `place`,
- * `wall`, `lastGasp`) can hold their prose without becoming a button nobody
- * could ever reach — and how the 2026-09-03 manual sections (`costRise`,
+ * concepts `glossary.ts` deliberately left out can hold their prose without
+ * becoming a button nobody could ever reach (THE FOUR GROUNDS, since
+ * 2026-09-30; `purse`, `place`, `wall` and `lastGasp` never were lessons, and
+ * speak through `SaidCard` and the drip's toast lines instead) — and how the 2026-09-03 manual sections (`costRise`,
  * `reach`, `field`, `lens`) explain a rule without minting a vocabulary word
  * for it.
  */
@@ -502,6 +511,26 @@ export const LESSONS: readonly Lesson[] = [
             : null,
       })),
     ],
+  },
+  /**
+   * THE FOUR GROUNDS (2026-09-30): Ashwake 1's card, built at last. Marc,
+   * 2026-08-27: _"teach all tiles at one in a beautiful tip"_. One card, not
+   * four toasts, because the four only mean anything against each other:
+   * every hand is a choice between them. Each row is the ground's own
+   * sentence from `colourLesson`, the one a second tap on a card says, so the
+   * card and the hand cannot describe a ground two ways; `TipRows` draws the
+   * baked tile beside it. A ground whose power is off says nothing, and the
+   * lead still does.
+   */
+  {
+    id: 'colours',
+    icon: TILE_ICON,
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.colours.core }],
+    rows: (t, theme, s) =>
+      COLOURS.flatMap((colour): TipRow[] => {
+        const text = colourLesson(colour, t, theme, s);
+        return text === null ? [] : [{ colour, text }];
+      }),
   },
   {
     id: 'stash',

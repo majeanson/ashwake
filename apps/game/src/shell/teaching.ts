@@ -70,8 +70,14 @@ const ORDER: readonly TeachId[] = [
   'lastGasp',
 ];
 
-/** Which ones interrupt. A concept earns a card; a consequence gets a line. */
-const CARDS = new Set<TeachId>([
+/**
+ * Which ones interrupt. A concept earns a card; a consequence gets a line.
+ *
+ * Exported for one test (2026-09-30): every id here must be a card something
+ * DRAWS. COLOURS sat in this set with no lesson for a month, so `LessonCard`
+ * drew nothing, nothing told it, and LAST GASP behind it never spoke.
+ */
+export const CARDS = new Set<TeachId>([
   'story',
   'ripe',
   'pop',

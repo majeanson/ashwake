@@ -6,6 +6,7 @@ import type { TipRow } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { Prose } from './Prose';
 import type { LessonId } from '@view/lessons';
+import { useTerrainArt } from '../shell/art';
 
 /**
  * A marked list (Stage 3, 2026-08-29).
@@ -16,9 +17,12 @@ import type { LessonId } from '@view/lessons';
  * from the registries, or neither, and the mark column is reserved either way
  * so the text of a markless row still lines up with the text of a marked one.
  *
- * `art` is a data URL of the real baked tile where the caller has one. Without
- * it the row falls back to the flat colour swatch, which is why this works
- * before a single texture has loaded.
+ * A ground's row draws the REAL baked tile (Marc, 2026-08-27: _"visuals with
+ * real tiles or examples in the how to play"_), looked up here from the
+ * theme's own bake. Until 2026-09-30 it was a `TipRow.art` each caller had to
+ * supply, and in this body none ever did, so every ground row drew a flat
+ * swatch. Until the bake lands the swatch is still what shows, which is why
+ * this works before a single texture has loaded.
  *
  * **One component for every table the game prices** (2026-09-25, Marc: _"make
  * sure all those tabs we present have unified components and hints on each so
@@ -40,14 +44,15 @@ export function TipRows({
   readonly onTerm?: ((id: LessonId) => void) | undefined;
 }) {
   const [open, setOpen] = useState<number | null>(null);
+  const art = useTerrainArt(theme.id);
   const priced = rows.some((row) => row.value !== undefined);
   const list = (
     <>
       {rows.map((row, i) => {
         const mark = (
           <span className="tip-mark" aria-hidden="true">
-            {row.art !== undefined ? (
-              <img src={row.art} alt="" width={18} height={18} />
+            {row.colour !== undefined && art[row.colour] !== null ? (
+              <img src={art[row.colour]!} alt="" width={18} height={18} />
             ) : row.colour !== undefined ? (
               <span
                 className="tip-swatch"

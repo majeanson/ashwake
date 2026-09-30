@@ -181,6 +181,11 @@ export const STRINGS_EN: Strings = {
         `It stays ${every} placements, then is away 1 to ${away} before it comes back.`,
       ware: (name, note) => `${name}: ${note}`,
     },
+    colours: {
+      name: 'THE FOUR GROUNDS',
+      terms: [],
+      core: 'Every card is one of these four, and each one scores its own way.',
+    },
     stash: {
       name: 'STASH',
       terms: ['STASH'],
