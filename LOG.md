@@ -10274,3 +10274,9 @@ sentence.
 
 A first-minute change, on purpose and by Marc's word, inside round eleven's
 look (NEXT §1). Its French is his to pass.
+
+**Later the same evening:** `smoke` moved into the same image, on Marc's word,
+once `e2e` had passed in it on three commits running (`e667eda`, `8513ffb`,
+`98bb5d3`). It gates the deploy with a 12-minute ceiling, so the apt mirror
+that cost `e2e` sixteen minutes would have blocked a deploy outright.
+`ciImage.test.ts` now holds both tags to the lockfile.

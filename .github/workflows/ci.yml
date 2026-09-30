@@ -105,6 +105,14 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    # In Playwright's image too, since 2026-09-30, after `e2e` passed in it on
+    # three commits running. This job GATES the deploy and its ceiling is
+    # twelve minutes, so the slow apt mirror that cost `e2e` sixteen (see that
+    # job) would have blocked a deploy outright here. `ciImage.test.ts` holds
+    # this tag to the lockfile's Playwright along with `e2e`'s.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -113,7 +121,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm exec playwright test e2e/board.spec.ts --project=chromium --grep "boots, draws a board with WebGL" --retries=2
 
   # THE BROWSERS, IN A JOB OF THEIR OWN (2026-09-11, Marc: "separate e2e and
