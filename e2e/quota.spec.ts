@@ -131,6 +131,17 @@ async function fillTheDisk(page: Page): Promise<number> {
  * `lost` again and the line is continuously refreshed, so it can be read at
  * leisure. **The outcome that is easy to observe is the one where nothing was
  * saved**, which is worth knowing about any test of this ladder.
+ *
+ * **AND IT LISTENS BEFORE THE DISK IS FULL (2026-09-30).** The keeper writes
+ * 400 ms after a change (`shell/keeper.ts`, `SETTLE_MS`), so a write left
+ * pending by BEGIN can land between `fillTheDisk` and this call. That write
+ * runs the ladder, sheds the diary and says so before anything is recording,
+ * and the test's own tap then clears the line (a placement says `null`).
+ * What is left is the diary gone, `__said` empty and the toast blank: the DIAG
+ * of every CI failure that printed one (2026-09-24, -29, -30, both engines).
+ * Forced on demand with a placement, then the fill, then a 600 ms wait
+ * before this call: 3 of 3 failed with that exact DIAG. The app was right every time; the
+ * test was late. Recording first catches the sentence whichever write sheds.
  */
 async function recordWhatIsSaid(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -155,9 +166,10 @@ test('a device with no room left says so, and keeps playing', async ({ page }) =
   await begin(page);
   await clearCards(page);
 
+  // Listening BEFORE the disk is full, never after — see `recordWhatIsSaid`.
+  await recordWhatIsSaid(page);
   const chunks = await fillTheDisk(page);
   expect(chunks, 'the quota was never reached, so nothing below is a test').toBeGreaterThan(0);
-  await recordWhatIsSaid(page);
 
   /*
    * A placement is a write: the keeper saves the run on every state change. The
@@ -194,9 +206,10 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
    * three cheaper rungs could never have found.
    */
   await page.evaluate((key) => localStorage.setItem(key, 'x'.repeat(1024 * 1024)), TIMELINE_KEY);
+  // Listening BEFORE the disk is full, never after — see `recordWhatIsSaid`.
+  await recordWhatIsSaid(page);
   const chunks = await fillTheDisk(page);
   expect(chunks, 'the quota was never reached').toBeGreaterThan(0);
-  await recordWhatIsSaid(page);
 
   await placeOneTile(page);
   try {
@@ -211,8 +224,9 @@ test('a rung that frees enough room says which one, and takes it', async ({ page
      * seconds after a placement that landed. Nothing in `said` means nothing
      * to read, so on the next failure this prints every non-fill storage key
      * with its size, the last-error record (the ladder's first rung) and the
-     * toast's live text. `NEXT.md` §2 carries the entry; delete both when the
-     * flake has been explained or has not recurred in a week.
+     * toast's live text. `NEXT.md` §4 carries the entry. EXPLAINED 2026-09-30
+     * (`recordWhatIsSaid`); this stays until a clean week, 2026-10-07, in
+     * case the explanation is not the whole of it.
      */
     /*
      * AND THE DIAGNOSTIC HAD NEVER ONCE PRINTED (2026-09-14). `ERROR_KEY` is a

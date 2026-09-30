@@ -216,24 +216,16 @@ the phone round (§1) and its French.**
   row in the lens, this is why. And no multiplier dial comes back on while
   the ask is hidden.
 
-- **`quota.spec.ts:185` on WebKit — back on this list the day it was taken
-  off.** Retired on the morning of 2026-09-24 by its own rule (no failure
-  since 2026-09-14), it failed CI's `e2e` job that evening on `0941f5e`,
-  retry included: `DIAG {"ashwake.world.1.v1":157,"ashwake.run.1.v1":2553,
-"__error":null,"__errorLength":null,"__toast":""}` — the diary WAS shed and
-  the toast was empty. `30c027e`, one commit earlier with the same app code,
-  passed it; the commit between them touched only `board.spec.ts`. So a
-  flake, with a clean diagnostic now: the shed happened and the sentence did
-  not reach `.toast`. If it fails again, start from that. **It did, on
-  2026-09-29** (`e2e` on `2a892fd`, Chromium this time, passed on retry): the
-  same DIAG — the run shed to 2802 bytes, `__toast` empty. Three times now,
-  every time with the shed done and the sentence missing, which points at the
-  toast path rather than the storage path. Not started yet. **A fourth on
-  2026-09-30** (`e2e` on `8f7179a`, Chromium, retry included; the job re-run
-  passed): the same DIAG, run at 2792 bytes, `__toast` empty. The commit added
-  a teaching card, but `?taught=1` marks every `TEACH_IDS` entry, so it cannot
-  fire here, and 9/9 passed locally with `--repeat-each=3`. Four in sixteen
-  days now, two per engine.
+- **~~`quota.spec.ts:185`, the toast that said nothing~~ — EXPLAINED AND FIXED
+  2026-09-30** (`LOG.md` Session 121). Every CI failure that printed a DIAG
+  (2026-09-24, -29, -30, both engines) printed the same one: the diary shed,
+  the toast blank. The keeper writes 400 ms after a change, so a write left
+  pending by BEGIN could land between filling the disk and the test starting
+  to listen. It shed the diary and said so unheard, and the test's own tap cleared the line. Forced on
+  demand, 3/3 failed with that DIAG; with the recorder moved before the fill,
+  3/3 passed, plus 15/15 Chromium and 9/9 WebKit. The app was right every
+  time. The diagnostic in the test stays until 2026-10-07; if it fires again,
+  the explanation was not the whole of it.
 - **`board.spec.ts` "two fingers lean and turn the board"** failed CI's `e2e`
   job on 2026-09-16, retry included (`toHaveAttribute` at line 1138), and
   **again on 2026-09-24** on Chromium, on `5e7bc07` — a commit that changed

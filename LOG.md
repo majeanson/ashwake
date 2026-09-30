@@ -10158,3 +10158,26 @@ voice for the line**. The ware names were left as they are.
 **Pins:** the only snapshot change is the lesson-name list gaining
 `caravan · CARAVAN / CARAVANE`, and nothing recorded changed. The new French
 is Marc's to pass (NEXT §1).
+
+### Session 121 — the quota flake, explained (2026-09-30)
+
+**Question:** why does `quota.spec.ts`'s shed test sometimes find the diary
+gone and nothing said?
+
+**Answer: the test started listening too late, and the app was right.** The
+keeper writes 400 ms after a change (`SETTLE_MS`). A write left pending by
+BEGIN could land after `fillTheDisk` but before `recordWhatIsSaid`. It ran
+the ladder, shed the diary and said so to nobody, and the test's placement
+then cleared the line (a tap that places says `null`). That leaves the diary
+gone, `__said` empty and `.toast` blank, the DIAG of the failures on
+2026-09-24, -29 and -30 on both engines.
+
+- **Timed:** a probe showed the pending write shedding about 430 ms after a
+  placement, after the fill.
+- **Forced:** a placement, the fill, then a 600 ms wait before recording
+  failed 3/3 with the exact CI DIAG.
+- **Fixed:** both shed tests record before filling the disk. The forced
+  version then passed 3/3, and the spec passed 15/15 on Chromium and 9/9 on
+  WebKit (`--repeat-each`, no retries).
+
+The DIAG catch stays until 2026-10-07 in case this is not the whole story.
