@@ -10471,3 +10471,15 @@ a horizon of 3, and `decodeProgress` keeps any level over an upgrade's cap
 at the cap and refunds each level above it at its price — 120 relics for a
 third nose already bought, the SECOND SLOT's precedent. The test is green;
 the sim golden did not move.
+
+**A test this branch makes flaky (found 2026-10-01, CI run 36912227367).**
+`a11y.spec.ts` "a run can be started, played, finished and restarted on keys
+alone" failed once in CI on this branch (both attempts) and passed on the
+re-run and in 3/3 local runs. CI's snapshot at failure: TILES 80, COST 1,
+REACH 21, a lens left on, the bot pressing Enter on a wall. The bot walks
+Right-Up-Left-Down and presses Enter, a loop that can circle one spot; on the
+shipped rules the purse empties first and the run ends, but under the knee
+(cost 1 for 40 placements) with caches paying 10, an unlucky path keeps the
+purse full and 240 actions are not enough. Before landing: make the bot's
+walk leave the spot it is on (or press toward legal ground), rather than
+raising the bound.
