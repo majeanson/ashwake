@@ -10405,3 +10405,8 @@ analytics, no server."_ The fix is a switch in Marc's Cloudflare dashboard
 
 Also started, on a branch and not on `main`: the queued rule move
 (`after-session-c`, `NEXT.md` §0 item 2).
+
+**Closed the same day.** Marc disabled RUM for marcportal.com (Web
+Analytics → Manage site → Disable). Thirty seconds later neither custom
+domain carried `data-cf-beacon`, and a browser load of each sent nothing to
+`cloudflareinsights.com` or `/cdn-cgi/rum`.

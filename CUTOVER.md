@@ -68,8 +68,8 @@ played six placements on ashwake.marcportal.com, BACK UP downloaded the file,
 and a fresh browser on ashwake.marc-jeanson.workers.dev (another origin, same
 worker, standing in for tiles.marcportal.com after step 3) RESTOREd it onto
 the same run, which survived a reload. The same rehearsal found the zone's
-Web Analytics beacon injected on both custom domains (`NEXT.md` §2): switch it
-off before this step, or the first v2 load on tiles carries its CSP errors.
+Web Analytics beacon injected on both custom domains; Marc disabled it the
+same day (`NEXT.md` §2).
 
 **0. Prepare, and do not push.**
 

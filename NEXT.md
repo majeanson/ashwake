@@ -142,17 +142,14 @@ quatre sols, et chacun marque à sa façon._
   had spent its showings on an earlier visit, which is the rule working
   (`shell/installDue.ts`). Confirmed from the desk the same day: a fresh
   iPhone-Safari WebKit page shows the line under DAILY.
-- **Cloudflare Web Analytics is on for marcportal.com — Marc, in the
-  dashboard** (found 2026-10-01, `LOG.md` Session 125). The edge injects its
-  beacon into every page a browser loads from ashwake.marcportal.com and
-  tiles.marcportal.com (not workers.dev; `curl` without a browser user agent
-  never sees it). v2's CSP refuses it: the promise holds, and the console
-  carries four CSP errors a load. **v1 has no CSP: on tiles.marcportal.com
-  the beacon loads and POSTs to `/cdn-cgi/rum`** under _"no analytics"_. Turn
-  off Web Analytics' automatic setup for the zone (or exclude both
-  hostnames). Before the cutover is best, since a v2 page on tiles is
-  otherwise its first page load with those errors. To check: a browser load
-  of either host has no `data-cf-beacon` in its HTML.
+- **~~Cloudflare Web Analytics on marcportal.com~~ — DISABLED 2026-10-01**
+  by Marc (Web Analytics → marcportal.com → RUM: Disable), the same day it
+  was found (`LOG.md` Session 125). The edge had injected its beacon on both
+  custom domains; v2's CSP refused it, and v1, with no CSP, POSTed to
+  `/cdn-cgi/rum` under _"no analytics"_. Checked after, in a browser: neither
+  host loads the beacon or sends anything. If it ever comes back, a browser
+  load shows `data-cf-beacon` in the HTML; `curl` without a browser user
+  agent never does.
 - **A genuinely full phone**, if one ever turns up: open the game, press BEGIN,
   and see whether the strip says the diary was shed once the board is up. No
   harness can stage it (`e2e/quota.spec.ts`'s skip carries five measurements
