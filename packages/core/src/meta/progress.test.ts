@@ -426,7 +426,8 @@ describe('the shop climbs back to what the rebalance took', () => {
    * `cachePays` is what a ring-2 cache reaches from it (base plus two rings'
    * bonus) and is also the pre-2026-08-18 flat payout that graded formula
    * restores — the doorstep cache stays a snack on purpose. `baseCostRisesEvery`
-   * is TODAY's climb rate (what a fresh shop, nothing bought, plays under);
+   * was the climb rate a fresh shop played under until the knee replaced
+   * the straight curve after Session C;
    * `maxedCostRisesEvery` and `startingTiles` are what the 2026-08-16/18
    * rebalances moved those two numbers DOWN from, and STEADY PACE's job is to
    * buy the climb rate back up to its old value.
@@ -444,24 +445,30 @@ describe('the shop climbs back to what the rebalance took', () => {
     bought: { [id]: UPGRADES.find((u) => u.id === id)?.levels ?? 0 },
   });
 
-  it('returns a ring-2 cache to the tiles caches paid before', () => {
+  it('returns a ring-2 cache to the tiles caches paid before, and past', () => {
     // Cache value is graded by distance since 2026-08-18, so the restoration
-    // moved outward with it: maxed base, plus two rings' bonus, is the
-    // pre-rebalance total. The doorstep cache stays a snack on purpose.
+    // moved outward with it: maxed base, plus two rings' bonus, reached the
+    // pre-rebalance total exactly. The doorstep cache came up 6 → 10 after
+    // Session C (`LOG.md` Session 125), so a maxed ring-2 cache now goes
+    // four tiles past it: still a ladder, from a richer first rung.
     const t = applyProgress(TUNING, maxed('world'));
-    expect(t.cachePays).toBe(PRE_REBALANCE.cachePaysBase);
-    expect(t.cachePays + 2 * t.cachePaysPerRing).toBe(PRE_REBALANCE.cachePays);
+    expect(t.cachePays).toBe(PRE_REBALANCE.cachePaysBase + 4);
+    expect(t.cachePays + 2 * t.cachePaysPerRing).toBe(PRE_REBALANCE.cachePays + 4);
   });
 
-  it('returns the cost curve to what it climbed at before', () => {
+  it('still buys the cost curve back a step at a time, on the knee', () => {
     // STEADY PACE exists so the 2026-08-18 steepening is a ladder rather
-    // than a nerf: +2 a level, four levels, the old curve exactly.
-    expect(applyProgress(TUNING, EMPTY_PROGRESS).costRisesEvery).toBe(
-      PRE_REBALANCE.baseCostRisesEvery,
-    );
-    expect(applyProgress(TUNING, maxed('pace')).costRisesEvery).toBe(
-      PRE_REBALANCE.maxedCostRisesEvery,
-    );
+    // than a nerf: +2 a level, four levels, and on the straight curve that
+    // was 22 → 30, the old curve exactly. Since the knee (`costGrace` 40,
+    // `LOG.md` Sessions 124-125) the rise after placement 40 is 10, and the
+    // same ladder buys it to 18 — almost double, where 22 → 30 was +36%.
+    // Measured before the ruling, maxed against fresh: 1291 → 2275, beside
+    // the straight curve's 1199 → 2396. The ladder holds; it is not the old
+    // curve any more, because the old curve had no grace.
+    expect(TUNING.costGrace).toBe(40);
+    expect(applyProgress(TUNING, EMPTY_PROGRESS).costRisesEvery).toBe(10);
+    expect(applyProgress(TUNING, maxed('pace')).costRisesEvery).toBe(18);
+    expect(PRE_REBALANCE.maxedCostRisesEvery - PRE_REBALANCE.baseCostRisesEvery).toBe(8);
   });
 
   it('puts destination density back past where it was', () => {

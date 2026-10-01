@@ -10424,3 +10424,43 @@ is the `more` caret with the word as its accessible name. 6/6 on both engines,
 with `targets.spec.ts` (the 44 px floor) and `a11y.spec.ts` green. It changes
 the first minute at Marc's word, so it joins round eleven's look (`NEXT.md`
 §1).
+
+### Session 127 — the rule move after Session C, built and parked (2026-10-01)
+
+**Question:** can the move Marc queued for after the stranger (`NEXT.md` §0
+item 2) wait as one commit, so v2.0 is a fast-forward the day Session C is
+done? Built on the branch `after-session-c`, not on `main`: it changes the
+first minute (a fresh run's cost line and its first cache), which stays
+frozen until the stranger has played.
+
+**The dials** (`content/tuning.ts`, all in `TUNING`): `costGrace` 0 → 40,
+`costRisesEvery` 22 → 10, `pointsPerPop` 0.26 → 0.20 (the knee, ruled
+2026-10-01), `cachePays` 6 → 10 and `beaconHorizon` 4 → 3 (ruled
+2026-09-29). **D23 is not in it**: lighting `ui.firstRun` is its own step.
+
+**The golden moves, every row, and that is the reason this entry exists.**
+`pnpm sim` (200 seeds, the legacy policies), mean points old → new:
+bank20 1066 → 1444, seeker 1020 → 1486, farm/survivor/hoard 1016 → 1390,
+spender 1326 → 1520, chooser 737 → 1147, blind 272 → 471, greedy 473 → 520,
+tourist 440 → 440 (its best 1905 → 4150). Placements rise 10-30 a row. These
+policies choose tiles or points by runway, and the knee hands them runway, so
+they bank more as points: the sim's rows rise further than the study's lines
+did. The study, re-run on this tuning at 1000 seeds, reproduces Session 124
+exactly: `take:popAt8` 1291 at 117 placements, `seeker` 0 runs dead before 40. **The study is the ruling's measure, and it holds.**
+
+**What else moved with it.** The prose pins: every epitaph that names a price
+(cost 2-3 → 1-2 at the same placement counts), the COST glossary takes the
+grace clause in both languages (_"It stays 1 for the first 40 placements,
+then rises +1 every 10"_), the CACHE line pays 10 (and 14 at ring one), and a
+territory's _"glows 5 out"_ hint is gone from the opening fixture, because 5
+is past the new horizon. `progress.test.ts`'s ladder tests are restated: a
+maxed ring-2 cache pays 30 (four past the pre-rebalance 26), and STEADY PACE
+buys 10 → 18 on the knee, not 22 → 30. A daily's and shared board's
+territories pay `cachePays` (`shell/economy.ts`), so they pay 10 too —
+not measured, and not in any ruling.
+
+**One test left red on purpose:** `progress.test.ts` _"sharpens the nose one
+hex a level, and never out to the beacons"_. KEEN NOSE maxed is 3 hexes and
+the horizon is now 3, so a shimmer reaches as far as a beacon. No study
+models the nose, so the ruling never saw it. Marc's: fewer nose levels, a
+horizon of 4, or accept the equality.

@@ -8,8 +8,8 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "bounty · TUNING · settlement": "A BOUNTY is a site’s second payout: pop 8+ tiles within 12 hexes of its star and that pop scores ×3. It is live the moment you claim the site, and any pop in range can collect it.",
   "cache · BARE_TUNING · daylight": "A CACHE pays 12 tiles on the spot, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.",
   "cache · BARE_TUNING · settlement": "A CACHE pays 12 tiles on the spot, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.",
-  "cache · TUNING · daylight": "A CACHE pays 6 tiles on the spot, +4 per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.",
-  "cache · TUNING · settlement": "A CACHE pays 6 tiles on the spot, +4 per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.",
+  "cache · TUNING · daylight": "A CACHE pays 10 tiles on the spot, +4 per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.",
+  "cache · TUNING · settlement": "A CACHE pays 10 tiles on the spot, +4 per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.",
   "find · BARE_TUNING · daylight": "A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
   "find · BARE_TUNING · settlement": "A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
   "find · TUNING · daylight": "A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
@@ -336,7 +336,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
 exports[`the teaching pins — every word, exactly as it reads today · en > pins every stat note on an opening board 1`] = `
 {
   "cost · BARE_TUNING": "COST: the next placement’s price, 1. It rises +1 every 70 placed, and it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
-  "cost · TUNING": "COST: the next placement’s price, 1. It rises +1 every 22 placed, and it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
+  "cost · TUNING": "COST: the next placement’s price, 1. It stays 1 for the first 40 placements, then rises +1 every 10 placed, and it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
   "left · BARE_TUNING": "LEFT: placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.",
   "left · TUNING": "LEFT: placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.",
   "luck · BARE_TUNING": "LUCK is a purse, not a score. The row under your hand spends it.",
@@ -395,8 +395,8 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "bounty · TUNING · settlement": "Une PRIME, c’est le deuxième paiement d’un site : récolte 8 tuiles ou plus à 12 hex de son étoile et cette récolte marque ×3. Elle est active dès que tu réclames le site, et n’importe quelle récolte à portée peut l’encaisser.",
   "cache · BARE_TUNING · daylight": "Une CACHE paie 12 tuiles sur-le-champ dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.",
   "cache · BARE_TUNING · settlement": "Une CACHE paie 12 tuiles sur-le-champ dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.",
-  "cache · TUNING · daylight": "Une CACHE paie 6 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.",
-  "cache · TUNING · settlement": "Une CACHE paie 6 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.",
+  "cache · TUNING · daylight": "Une CACHE paie 10 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.",
+  "cache · TUNING · settlement": "Une CACHE paie 10 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.",
   "find · BARE_TUNING · daylight": "Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
   "find · BARE_TUNING · settlement": "Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
   "find · TUNING · daylight": "Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
@@ -724,7 +724,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
 exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins every stat note on an opening board 1`] = `
 {
   "cost · BARE_TUNING": "COÛT : le prix de la prochaine pose, 1. Il monte de +1 toutes les 70 poses, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
-  "cost · TUNING": "COÛT : le prix de la prochaine pose, 1. Il monte de +1 toutes les 22 poses, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
+  "cost · TUNING": "COÛT : le prix de la prochaine pose, 1. Il reste à 1 pour les 40 premières poses, puis monte de +1 toutes les 10 poses, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
   "left · BARE_TUNING": "RESTE : les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.",
   "left · TUNING": "RESTE : les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.",
   "luck · BARE_TUNING": "La CHANCE est une bourse, pas un score. La rangée sous ta main la dépense.",

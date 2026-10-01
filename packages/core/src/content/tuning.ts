@@ -1337,7 +1337,11 @@ export const TUNING: Tuning = {
   // placements longer (106-108 against 102-104; forging 120 against 113),
   // inside Marc's ~20. Measured after THE ROAD PAYS stopped paying tiles
   // (`LOG.md` Session 119).
-  pointsPerPop: 0.26,
+  // 0.20 after Session C (ruled 2026-10-01, `LOG.md` Sessions 124-125), with
+  // the knee below: pops land later and bigger under `costGrace`, so the
+  // rate comes down to keep medians within 7% of 0.26 without the knee and
+  // every best already saved on a phone fair.
+  pointsPerPop: 0.2,
   // Burning pays RELICS now, not luck. That was the open question, and the
   // answer arrived with the meta economy: a burn gives up the tiles keeping
   // you alive AND the score, and buys the next run instead. Luck was the
@@ -1382,7 +1386,16 @@ export const TUNING: Tuning = {
   endClaimBonus: 100,
 
   runLength: 0,
-  costGrace: 0,
+  // THE KNEE, at last (ruled 2026-10-01, shipped after Session C; `LOG.md`
+  // Sessions 124-125). At 0 the price rose from the first placement and the
+  // purse ran out at halftime: from there pockets halved every fifth of the
+  // run and the last 30% was singles cashed to stay alive. 40 placements
+  // flat, then a step every 10, moves the run's biggest pops to its last
+  // fifth and closes the glow trap. The price: waiting is more right than
+  // before, and placements 22-40 cost 1 where they cost 2 — an easier
+  // start than Marc's 2026-08-18 "easier gradually with relics" asked for,
+  // bought with a harder end. STEADY PACE still climbs: +2 a level, 10 → 18.
+  costGrace: 40,
   // Swept: 22 gave ~140-placement runs (8 min), 38 gave ~270 (16). 30 lands
   // a good run near 200 placements — about twelve minutes — with careless
   // play dead at 111 and random play at 32, which is the skill spread Gate C
@@ -1396,7 +1409,9 @@ export const TUNING: Tuning = {
   // agrees: run one falls to ~121 placements · reach 12 · ~3,000 pts while
   // maxed climbs to ~248 · 18 · ~23,000 — the widest ladder of every
   // candidate swept (see LOG, 2026-08-18).
-  costRisesEvery: 22,
+  //
+  // 10 after Session C, with `costGrace` 40 above: the knee's sharper rise.
+  costRisesEvery: 10,
 
   /**
    * RUN ONE IS SMALLER THAN IT WAS (Marc, 2026-08-16, mid-run at 166 tiles on
@@ -1449,11 +1464,22 @@ export const TUNING: Tuning = {
    * spread intact (random dead at 23 placements, pop-early at 102, competent
    * at 121), and reach — the point of the game — grows 12 → 18 across the
    * shop ladder where the flat world managed 14 → 16.
+   *
+   * 6 → 10 after Session C (ruled 2026-09-29, `LOG.md` Sessions 117 and
+   * 125), with `beaconHorizon` 3 below: the horizon closes the glow trap
+   * (`seeker` dead before 40 placements, 41 → 9 per 1000), and the richer
+   * doorstep cache is what lifts the chaser's median once it survives. A
+   * daily's and a shared board's territories pay this too
+   * (`shell/economy.ts`), so they rose with it.
    */
-  cachePays: 6,
+  cachePays: 10,
   cachePaysPerRing: 4,
   popTilesPerRing: 0.25,
   destinationRampBlocks: 2,
+  // 4 → 3 after Session C (ruled 2026-09-29, `LOG.md` Session 117): a glow
+  // three rings out is one a chaser can walk to before the purse runs dry.
+  // Nothing else walks toward a beacon, so no other line moved.
+  beaconHorizon: 3,
 
   // 42% cache, 36% site, 17% territory near home — caches carry survival so
   // they lead close in; shrine is always the remainder (5%), never a fourth
