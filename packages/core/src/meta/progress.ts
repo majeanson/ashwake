@@ -62,7 +62,10 @@ export const UPGRADES: readonly Upgrade[] = [
   { id: 'odds', cost: 35, levels: 5 },
   { id: 'world', cost: 50, levels: 4 },
   { id: 'pace', cost: 30, levels: 4 },
-  { id: 'sense', cost: 40, levels: 3 },
+  // Three levels until the horizon came in to 3 (2026-10-01, Marc: "nose caps
+  // at 2"): a maxed nose at 3 reached as far as a beacon. A third level
+  // already bought is refunded on load (`decodeProgress`).
+  { id: 'sense', cost: 40, levels: 2 },
 ];
 
 /** What an upgrade is called and what it does, in the words the shop prints —
@@ -364,8 +367,8 @@ export function applyProgress(tuning: Tuning, progress: Progress): Tuning {
     // 22 at run one, +2 a level, 30 — the old curve exactly — at max. The
     // whole point of a steeper start is that this ladder exists.
     costRisesEvery: tuning.costRisesEvery + level('pace') * UPGRADE_STEPS.pace,
-    // KEEN NOSE: 2 hexes of shimmer a level, 6 maxed — deliberately under
-    // `beaconHorizon` (8), so a shimmer can never become a beacon.
+    // KEEN NOSE: 1 hex of shimmer a level, 2 maxed — deliberately under
+    // `beaconHorizon` (3), so a shimmer can never become a beacon.
     findSense: tuning.findSense + level('sense') * UPGRADE_STEPS.sense,
     // The worn perk, as dials. Exactly one of these blocks can fire.
     rootboundOnly: worn.has('rootbound'),
@@ -424,13 +427,21 @@ export function decodeProgress(raw: string | null): Progress {
     const levels: Record<string, unknown> =
       typeof bought === 'object' && bought !== null ? (bought as Record<string, unknown>) : {};
 
-    const knownUpgrades = new Set<string>(UPGRADES.map((u) => u.id));
+    const knownUpgrades = new Map<string, Upgrade>(UPGRADES.map((u) => [u.id, u]));
 
     const clean: Partial<Record<UpgradeId, number>> = {};
     let refund = 0;
     for (const [id, n] of Object.entries(levels)) {
       if (typeof n !== 'number' || n <= 0) continue;
-      if (knownUpgrades.has(id)) clean[id as UpgradeId] = Math.floor(n);
+      const upgrade = knownUpgrades.get(id);
+      if (upgrade !== undefined) {
+        // A level above the table's cap — bought before the cap came down
+        // (KEEN NOSE 3 -> 2, 2026-10-01) — is kept at the cap, and each level
+        // above it comes back at the price it sold for, like the slot below.
+        const owned = Math.floor(n);
+        clean[id as UpgradeId] = Math.min(owned, upgrade.levels);
+        for (let k = upgrade.levels + 1; k <= owned; k++) refund += upgrade.cost * k;
+      }
       // The deleted SECOND SLOT: its exact price comes back as relics.
       else if (id === 'slot') refund += SLOT_REFUND * Math.floor(n);
     }

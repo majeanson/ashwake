@@ -10464,3 +10464,10 @@ hex a level, and never out to the beacons"_. KEEN NOSE maxed is 3 hexes and
 the horizon is now 3, so a shimmer reaches as far as a beacon. No study
 models the nose, so the ruling never saw it. Marc's: fewer nose levels, a
 horizon of 4, or accept the equality.
+
+**Ruled the same day: the nose caps at 2** (Marc, offered the three). The
+next commit takes KEEN NOSE to two levels, so a maxed shimmer reaches 2 under
+a horizon of 3, and `decodeProgress` keeps any level over an upgrade's cap
+at the cap and refunds each level above it at its price — 120 relics for a
+third nose already bought, the SECOND SLOT's precedent. The test is green;
+the sim golden did not move.

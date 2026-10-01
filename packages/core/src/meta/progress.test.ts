@@ -237,9 +237,9 @@ describe('what the upgrades do to a run', () => {
   });
 
   it('sharpens the nose one hex a level, and never out to the beacons', () => {
-    const maxed: Progress = { ...EMPTY_PROGRESS, bought: { sense: 3 } };
+    const maxed: Progress = { ...EMPTY_PROGRESS, bought: { sense: 2 } };
     const t = applyProgress(TUNING, maxed);
-    expect(t.findSense).toBe(3);
+    expect(t.findSense).toBe(2);
     // A shimmer that reaches the beacon horizon is a beacon with extra steps.
     expect(t.findSense).toBeLessThan(TUNING.beaconHorizon);
   });
@@ -361,6 +361,14 @@ describe('storage', () => {
     const decoded = decodeProgress('{"relics":25,"bought":{"slot":1},"equipped":[]}');
     expect(decoded.relics).toBe(425);
     expect(decoded.bought).toEqual({});
+  });
+
+  /** KEEN NOSE came down to two levels with the horizon (2026-10-01): a third
+   *  already bought is kept at two and its 120 relics come back. */
+  it('keeps a level over the cap at the cap and refunds what it cost', () => {
+    const decoded = decodeProgress('{"relics":5,"bought":{"sense":3,"tiles":2},"equipped":[]}');
+    expect(decoded.bought).toEqual({ sense: 2, tiles: 2 });
+    expect(decoded.relics).toBe(125);
   });
 
   it('refunds the slot even in a blob whose shelf it is dropping', () => {
