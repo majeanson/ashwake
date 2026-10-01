@@ -63,6 +63,14 @@ SETTINGS → BACK UP on ashwake.marcportal.com, and RESTORE on
 tiles.marcportal.com once step 3 is done. Nothing else carries those saves
 across (decision 3).
 
+**Rehearsed 2026-10-01, working** (`LOG.md` Session 125): a fresh browser
+played six placements on ashwake.marcportal.com, BACK UP downloaded the file,
+and a fresh browser on ashwake.marc-jeanson.workers.dev (another origin, same
+worker, standing in for tiles.marcportal.com after step 3) RESTOREd it onto
+the same run, which survived a reload. The same rehearsal found the zone's
+Web Analytics beacon injected on both custom domains (`NEXT.md` §2): switch it
+off before this step, or the first v2 load on tiles carries its CSP errors.
+
 **0. Prepare, and do not push.**
 
 - `wrangler.toml`: the route becomes `tiles.marcportal.com` alone (decision 3).

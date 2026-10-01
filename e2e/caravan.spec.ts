@@ -149,3 +149,92 @@ test('a pop in town it does not want says so, and opens nothing', async ({ page 
   await expect(line).toHaveAttribute('data-caravan', 'town');
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+/*
+ * THE PICKER AT ITS WORST (2026-10-01). `NEXT.md` §1 carried "a finding, not
+ * measured": the picker had been seen on a phone showing only the first five
+ * wares, and the longest now is UNE PLUS GRANDE RÉSERVE with a two-line note.
+ * The offer is the rule's to draw, so the real picker is opened (seed 9, as
+ * above) and its three rows are rewritten to the three LONGEST wares each
+ * language has, in their real elements and style. It asks what "stacks well"
+ * can mean to a machine: every row is on screen, none is covered by the header
+ * or anything else, no row overflows sideways, and PLUS TARD is still in reach.
+ * Whether it reads well is Marc's look, round eleven; the screenshots it keeps
+ * are for that.
+ */
+const longestWares = (strings: typeof STRINGS_EN) =>
+  [...Object.values(strings.caravan.ware)]
+    .sort((a, b) => b.name.length + b.note.length - (a.name.length + a.note.length))
+    .slice(0, 3);
+
+for (const [width, height] of [
+  [320, 568],
+  [360, 640],
+  [390, 740],
+] as const)
+  for (const locale of ['en-US', 'fr-CA'] as const)
+    test(`the picker holds its three longest wares at ${width}x${height} in ${locale}`, async ({
+      browser,
+    }, testInfo) => {
+      const ctx = await browser.newContext({ locale, viewport: { width, height } });
+      const page = await ctx.newPage();
+      const errors = watchErrors(page);
+      await page.goto('/?seed=9&place=14&taught=1');
+      await begin(page);
+      await clearCards(page);
+      await page.locator('[data-action="pop"]').click();
+      await expect.poll(async () => saysOneOf(await said(page), TOOK)).toBe(true);
+      await clearCards(page);
+      const picker = page.locator('[data-hud="caravan-picker"]');
+      await expect(picker).toBeVisible();
+
+      const wares = longestWares(locale === 'fr-CA' ? STRINGS_FR : STRINGS_EN);
+      await picker.evaluate((e, ws) => {
+        e.querySelectorAll('.caravan-ware').forEach((row, i) => {
+          row.querySelector('b')!.textContent = ws[i]!.name;
+          row.querySelector('.caravan-ware-note')!.textContent = ws[i]!.note;
+        });
+      }, wares);
+      await page.screenshot({
+        path: testInfo.outputPath(`picker-${width}x${height}-${locale}-open.png`),
+      });
+
+      const problems = await picker.evaluate((e) => {
+        const out: string[] = [];
+        const { innerWidth: w, innerHeight: h } = window;
+        const box = e.getBoundingClientRect();
+        if (box.top < 0 || box.left < 0 || box.right > w || box.bottom > h)
+          out.push(`the picker leaves the screen: ${JSON.stringify(box)}`);
+        // Reachable means on screen and uncovered once scrolled to: since
+        // 2026-10-01 a sheet taller than its room scrolls inside it.
+        const reachable = (el: Element, label: string): void => {
+          el.scrollIntoView({ block: 'nearest' });
+          const r = el.getBoundingClientRect();
+          if (r.top < 0 || r.bottom > h) {
+            out.push(`${label} is off screen (${Math.round(r.top)}..${Math.round(r.bottom)})`);
+            return;
+          }
+          const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          if (hit === null || !el.contains(hit))
+            out.push(`${label} is covered by ${hit?.className || hit?.tagName}`);
+        };
+        // It opens on its head, which says what the rows are for.
+        reachable(e.querySelector('.spends-head')!, 'the head');
+        e.querySelectorAll('.caravan-ware').forEach((row, i) => {
+          if (row.scrollWidth > row.clientWidth + 1) out.push(`row ${i} overflows sideways`);
+          reachable(row, `row ${i}`);
+        });
+        reachable(e.querySelector('.caravan-later')!, 'PLUS TARD');
+        return out;
+      });
+      await testInfo.attach(`picker-${width}x${height}-${locale}`, {
+        body: await page.screenshot(),
+        contentType: 'image/png',
+      });
+      await page.screenshot({
+        path: testInfo.outputPath(`picker-${width}x${height}-${locale}.png`),
+      });
+      expect(problems, problems.join('\n')).toEqual([]);
+      expect(errors, errors.join('\n')).toEqual([]);
+      await ctx.close();
+    });

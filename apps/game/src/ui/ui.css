@@ -4036,6 +4036,15 @@ button.caravan-ask.waiting {
   background: var(--panel);
   color: var(--accent);
 }
+.caravan-picker {
+  /* Its max-height is measured in `Caravan.tsx`: the room under the header. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* A flex column squeezes its rows into the cap instead of scrolling them. */
+.caravan-picker > * {
+  flex-shrink: 0;
+}
 .caravan-ware .spend-name {
   display: flex;
   flex-direction: column;

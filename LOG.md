@@ -10355,3 +10355,53 @@ almost double, against today's 22 → 30, but the ladder holds (400 seeds,
 at 168. And the knee is an easier START (placements 22-40 at 1, not 2), where
 Marc asked on 2026-08-18 for a hard start eased by relics. Put to him in NEXT
 §3a rather than assumed away.
+
+### Session 125 — the picker at its worst, the deploy check's network, and step 0a rehearsed live (2026-10-01)
+
+Written question: **does anything on the road to v2.0 that needs no phone
+fail when it is actually run?** Three things were run rather than reasoned
+about, and two of them found something.
+
+**The caravan picker at 320 px** (`NEXT.md` §1 carried it as "a finding, not
+measured"). `e2e/caravan.spec.ts` now opens the real picker and rewrites its
+three rows to the three LONGEST wares each language has, at 320x568, 360x640
+and 390x740, in both languages. At 320x568 in French — the narrowest phone
+this game supports, per `board.spec.ts` — the sheet stood 486 px tall from
+its anchor above the camera cluster, so its head and the first ware's name
+were 55 px off the top of the screen. Every other size passed. Fixed in
+`Caravan.tsx`: the sheet measures the room between its foot and the header's
+and scrolls inside it (`.caravan-picker`, rows `flex-shrink: 0`, which the
+first try lacked: a capped flex column squeezes its rows over each other
+instead). Where the wares fit, nothing changes. 15/15 on both engines. This
+is part of round eleven's look, so Marc sees the fixed sheet.
+
+**`verify:deploy` and the runner's network** (`NEXT.md` §4, `06d7ed1`). Only
+the version check retried; every later request died on the first `fetch
+failed`. Every request now goes through `reach`, which retries a request that
+could not be MADE (5 tries, 3 s) and never one that got an answer, so a wrong
+status still fails at once. The message now carries the cause
+(`getaddrinfo ENOTFOUND …`). Verified against the live site, and against
+`nothing.invalid` to watch it give up.
+
+**`CUTOVER.md` step 0a, rehearsed against the live hosts.** A fresh Chromium
+device played six placements on ashwake.marcportal.com, survived a reload,
+pressed the real BACK UP (a 4.3 kB download), and a second fresh device on
+ashwake.marc-jeanson.workers.dev — another origin serving the same worker,
+standing in for tiles.marcportal.com after step 3 — pasted it into the real
+RESTORE, confirmed, and was on the same run, which survived its own reload.
+The spec was a throwaway against production and is not in the repo.
+
+**And it found what nobody had looked for: Cloudflare Web Analytics is
+switched on for the marcportal.com zone.** The edge injects its beacon into
+every HTML page served to a browser (a plain `curl` never sees it, which is
+why `verify:deploy` never did) on both custom domains, and not on workers.dev.
+On ashwake.marcportal.com the CSP refuses it, so the promise holds and the
+console shows four CSP errors a load. On **tiles.marcportal.com, v1, there is
+no CSP: the beacon loads and POSTs to `/cdn-cgi/rum`** — measured in a
+browser — under a game that says _"Nothing leaves your phone: no account, no
+analytics, no server."_ The fix is a switch in Marc's Cloudflare dashboard
+(Web Analytics, the zone's automatic setup), not code, so it is in `NEXT.md`
+§2 and `CUTOVER.md` and was not touched.
+
+Also started, on a branch and not on `main`: the queued rule move
+(`after-session-c`, `NEXT.md` §0 item 2).

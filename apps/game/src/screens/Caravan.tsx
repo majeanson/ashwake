@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { CONCEPT_ICON } from '@theme/icons';
 import type { WareId } from '@content/caravan';
 import type { Strings } from '@text/Strings';
@@ -75,8 +76,30 @@ type PickerProps = {
 };
 
 export function CaravanPicker({ offer, waiting, s, onPick, onLater }: PickerProps) {
+  /*
+   * IT STOPS AT THE HEADER (2026-10-01). The sheet grows upward from above
+   * the camera cluster, and three of the longest wares in French stand 486 px
+   * tall: at 320x568, the narrowest phone this game supports, its head and
+   * its first ware's name went 55 px off the top of the screen
+   * (`e2e/caravan.spec.ts`, "the picker holds its three longest wares"). So
+   * it measures the room between its own foot and the header's, and scrolls
+   * inside that when the wares do not fit; where they fit, nothing changes.
+   */
+  const sheet = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    const el = sheet.current;
+    if (el === null) return;
+    const fit = (): void => {
+      const header = document.querySelector('[data-hud="stats"]');
+      const ceiling = header === null ? 0 : header.getBoundingClientRect().bottom;
+      el.style.maxHeight = `${Math.max(0, el.getBoundingClientRect().bottom - ceiling - 4)}px`;
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
   return (
-    <div className="drawer spends caravan-picker" data-hud="caravan-picker">
+    <div className="drawer spends caravan-picker" data-hud="caravan-picker" ref={sheet}>
       <div className="spends-head">
         <span className="fact-label">
           <Icon name={CONCEPT_ICON.caravan} /> {s.caravan.choose}

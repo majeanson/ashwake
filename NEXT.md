@@ -114,10 +114,12 @@ wares (EVERY POP PAYS, RARER
 DRAWS, RARES PAY, ALL POWERS, THE ROAD PAYS, BIGGER BOUNTIES, LUCKY POPS, A
 BIGGER STASH, in `fr-CA.ts` `caravan.ware`). ALL POWERS's note was
 reworded in review (Session 119): it said _double_ and the ware is ×1.5, so it
-now says _moitié plus fort_. **A finding, not measured:** the picker has shown
-only the first five wares' names on a phone, and the longest now is
-_UNE PLUS GRANDE RÉSERVE_ with a two-line note. Whether three of those stack
-well at 320px is part of this look.
+now says _moitié plus fort_. **Measured 2026-10-01** (`LOG.md` Session 125):
+three of the longest wares, in French, at 320x568, ran the picker 55 px off
+the top of the screen, head and first name with it. It now stops at the header
+and scrolls inside; at 360x640 and up, all three fit without scrolling. So on
+the smallest phone the third ware sits under the fold, and whether that reads
+as "there is more" is part of this look.
 
 **And THE FOUR GROUNDS joins this round (2026-09-30, `LOG.md` Sessions
 122-123; Marc: build it for round eleven).** The COLOURS card had never shown
@@ -140,6 +142,17 @@ quatre sols, et chacun marque à sa façon._
   had spent its showings on an earlier visit, which is the rule working
   (`shell/installDue.ts`). Confirmed from the desk the same day: a fresh
   iPhone-Safari WebKit page shows the line under DAILY.
+- **Cloudflare Web Analytics is on for marcportal.com — Marc, in the
+  dashboard** (found 2026-10-01, `LOG.md` Session 125). The edge injects its
+  beacon into every page a browser loads from ashwake.marcportal.com and
+  tiles.marcportal.com (not workers.dev; `curl` without a browser user agent
+  never sees it). v2's CSP refuses it: the promise holds, and the console
+  carries four CSP errors a load. **v1 has no CSP: on tiles.marcportal.com
+  the beacon loads and POSTs to `/cdn-cgi/rum`** under _"no analytics"_. Turn
+  off Web Analytics' automatic setup for the zone (or exclude both
+  hostnames). Before the cutover is best, since a v2 page on tiles is
+  otherwise its first page load with those errors. To check: a browser load
+  of either host has no `data-cf-beacon` in its HTML.
 - **A genuinely full phone**, if one ever turns up: open the game, press BEGIN,
   and see whether the strip says the diary was shed once the board is up. No
   harness can stage it (`e2e/quota.spec.ts`'s skip carries five measurements
@@ -318,13 +331,11 @@ Cheaper prices (reroll 8, steer 15) take them to +11% and +10%. **Ruled
   draws the bake for every ground row itself, and the field is gone.
   `Lesson.rows` came back the same day with THE FOUR GROUNDS as its supplier
   (§1).
-- **`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29).** The
-  deploy had landed (`version.json` matched the commit on workers.dev); a
-  later check in the same step lost its connection, and the next push
-  (`c2b0cb7`) deployed and verified clean. A network flake on the runner,
-  not the app. If it happens again, the question is which check in
-  `scripts/verify-deploy.ts` fetches after the version and whether it
-  deserves the retry the version check already has.
+- **~~`verify:deploy` "fetch failed" once, on `06d7ed1` (2026-09-29)~~ —
+  HARDENED 2026-10-01** (`LOG.md` Session 125). Every request now retries a
+  connection that could not be made (`reach`), never an answer, and says the
+  cause. If a deploy still fails on `fetch failed` after five tries, it is not
+  a blip.
 - **Three `z-index: calc(...)` sites** in `ui.css` (`.board-menu`, `.lens-off`,
   `.directions`) were suspected of a WebKit stacking bug in 2026-09 and the
   theory was disproved (`e2e/stacking.spec.ts` asks the engine). Nothing to do

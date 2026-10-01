@@ -68,8 +68,32 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 /** The edge refused us, not the app — the Worker itself never answers 403. */
 class EdgeBlockedError extends Error {}
 
+/**
+ * A fetch that survives the RUNNER's network (2026-10-01). On `06d7ed1`
+ * (2026-09-29) the version matched and a later check in the same run died on
+ * `fetch failed`: the connection, not the app, and the next push verified
+ * clean. Only the version check had a retry then. So every request here gets
+ * a few tries at being MADE; an answer that arrives — any status — is never
+ * retried by this, because judging an answer is each check's own business.
+ */
+async function reach(url: string, init: RequestInit): Promise<Response> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      const cause =
+        err instanceof Error && err.cause instanceof Error ? ` (${err.cause.message})` : '';
+      const said = `${init.method ?? 'GET'} ${url} -> ${String(err)}${cause}`;
+      if (attempt >= ASSET_ATTEMPTS)
+        throw new Error(`${said} after ${attempt} attempts`, { cause: err });
+      console.log(`    ${said} — retrying in ${ASSET_DELAY_MS / 1000}s`);
+      await sleep(ASSET_DELAY_MS);
+    }
+  }
+}
+
 async function get(base: string, path: string): Promise<{ status: number; body: string }> {
-  const res = await fetch(`${base}${path}`, {
+  const res = await reach(`${base}${path}`, {
     cache: 'no-store',
     headers: { 'cache-control': 'no-cache' },
   });
@@ -203,7 +227,7 @@ async function checkAssets(base: string): Promise<void> {
 async function servesAFile(base: string, path: string): Promise<void> {
   let last = '';
   for (let attempt = 1; attempt <= ASSET_ATTEMPTS; attempt++) {
-    const res = await fetch(`${base}${path}`, { method: 'HEAD', cache: 'no-store' });
+    const res = await reach(`${base}${path}`, { method: 'HEAD', cache: 'no-store' });
     // A 200 alone proves nothing: the worker's SPA fallback answers 200 with
     // index.html for any path that has no file. None of the paths this is ever
     // pointed at are HTML, so a text/html answer means "missing", not "served".
@@ -277,7 +301,7 @@ const HEADERS_MUST_CARRY: readonly (readonly [string, string])[] = [
 ];
 
 async function checkHeaders(base: string): Promise<void> {
-  const res = await fetch(`${base}/`, { cache: 'no-store' });
+  const res = await reach(`${base}/`, { cache: 'no-store' });
   if (res.status === 403 && res.headers.has('cf-mitigated')) {
     throw new EdgeBlockedError('GET / -> 403 (edge bot challenge, not the app)');
   }
