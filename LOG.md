@@ -10280,3 +10280,78 @@ once `e2e` had passed in it on three commits running (`e667eda`, `8513ffb`,
 `98bb5d3`). It gates the deploy with a 12-minute ceiling, so the apt mirror
 that cost `e2e` sixteen minutes would have blocked a deploy outright.
 `ciImage.test.ts` now holds both tags to the lockfile.
+
+### Session 124 — the halftime peak is the purse, and the knee was the answer written down in August (2026-10-01)
+
+**Question:** with nobody free to play, can the study say WHY a run peaks at
+halftime, and does steer or reroll earn its button under today's economy?
+
+Desk only: nothing in `packages/core/src` moved and `pnpm sim` is untouched.
+`study.ts` learned two instruments. `--arc` prints each tenth of a run:
+pops, mean pocket size, pop points, and runway (placements the purse could
+pay for at the current price). `tail%` is the share of the run after its
+last pop of 5+ tiles. And one line, `popAt8+rrN`, a reroll that redraws any
+hand whose best spot is worth under N, because the old reroll line redrew
+only a worthless hand and so measured "never bought", not "never worth it".
+
+**Why halftime (1000 seeds, shipped, `take:popAt8`):**
+
+```
+tenth          10%  20%  30%  40%  50%  60%  70%  80%  90%
+runway         8.4  9.3  7.9  6.4  4.4  3.0  1.8  0.9  0.2
+pocket size    7.9  7.1  5.5  4.8  3.8  3.2  2.4  2.0  1.4
+pop points      48   60   90  108  124  134  133  134  103
+```
+
+From halftime the purse cannot afford to grow anything, so the last 30% of a
+run holds 16 of its 25 pops, singles and pairs cashed to buy one more
+placement. Session 117 called it structural; it is the cost curve's shape.
+`costGrace` 0 means the price rises from the first placement, which is the
+convergence `tuning.ts`'s own docblock on `costGrace` warns about: the
+"two eras" knee was designed in August and is set to 0.
+
+**The knee, score-neutral** (`pointsPerPop` lowered so medians stay near
+shipped, because inflating every saved best is why escalation was dropped):
+
+```
+                       shipped   30/12 @.22   40/10 @.20   45/9 @.19
+take:popAt8 median        1199         1251         1286        1271
+biggest pop lands at      0.55         0.61         0.63        0.63
+pop points peak (tenth) 60-80%       70-80%       80-90%      80-90%
+try12 best tenth           191          256          294         307
+tail of singles            20%          13%          11%         11%
+placements                 107          111          116         118
+seeker dead before 40       41            6            6           6
+popAt4 -> popAt20         +27%         +53%         +56%        +59%
+close calls (popAt4)      2.21         0.45         0.23        0.19
+take:forge8 over popAt8   +33%         +14%         +12%        +13%
+```
+
+It is the first thing in the study that moves the climax: pockets stay at 8
+until past halftime and the points rise until the last fifth. It closes the
+glow trap as well as the queued horizon/cache move does (41 → 6). Its price is
+real: waiting becomes MORE right (finding one gets worse, not better), a
+small-pocket player almost never comes close to dying, and luck buys less
+because there are fewer pops (21 against 25). Marc's to rule; nothing built.
+
+**Steer and reroll, re-measured** (1000 seeds, shipped, with wares):
+
+- Steer that reads the ground: +6% (`take:steer8` 1273 vs 1199); the careless
+  steer toward what the board holds most of: -0.4%. Unchanged since 117.
+- Reroll is not dead. `rr4` pays +6% (1273), bought ~18 times a run. The old
+  line's verdict was the bot's, not the rule's.
+- Forge dominates per luck: ~94 points per 100 luck against steer's ~44 and
+  reroll's ~25. Reroll at 8 lifts `rr4` to +11%, steer at 15 to +10%; forge
+  is +33% either way. All three buttons pay; one pays three times the others.
+
+**The rulings, the same day.** Marc queued the knee at 40/10 with
+`pointsPerPop` 0.20 for after Session C, and left the luck prices as they are.
+Measured with the queued horizon/cache move on top (1000 seeds): `seeker`
+loses no run before 40 placements, `take:popAt8` 1291, `try12` 1713, runs 117.
+
+Checked after: STEADY PACE maxed (+8 to the step) on the knee is 10 → 18,
+almost double, against today's 22 → 30, but the ladder holds (400 seeds,
+`take:popAt8`): shipped 1199 → 2396 at 161 placements, the knee 1291 → 2275
+at 168. And the knee is an easier START (placements 22-40 at 1, not 2), where
+Marc asked on 2026-08-18 for a hard start eased by relics. Put to him in NEXT
+§3a rather than assumed away.

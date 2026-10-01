@@ -56,8 +56,9 @@ So the road to v2.0 is now:
 2. **Then light D23**: delete the `ui.firstRun` flag in `meta/features.ts`
    so the first-run line is unconditional (built and tested dark on
    2026-09-29, §3). D22 is ruled and needs nothing: the promise stays. And
-   set `beaconHorizon: 3` and `cachePays: 10` (§3a, ruled 2026-09-29) — a
-   rule move, so `sim.golden.txt` moves with it.
+   set `beaconHorizon: 3` and `cachePays: 10` (§3a, ruled 2026-09-29), and
+   the knee, `costGrace: 40`, `costRisesEvery: 10`, `pointsPerPop: 0.20`
+   (§3a, ruled 2026-10-01). Rule moves, so `sim.golden.txt` moves with them.
 3. **Then the cutover** (§5c, `CUTOVER.md`), and v2.0.
 
 The friends keep playing through all of it — Marc: _"carry on forward while
@@ -234,6 +235,34 @@ before 40 placements go 41 → 9 per 1000, and its median 1052 → 1131. Other
 lines move 1-2% (bank20 1076 → 1089, try12 1387 → 1417, lengths +0-1). `pnpm
 sim` moves in the points and best columns (e.g. seeker 1020 → 1185, bank20
 1066 → 1095); the new golden is one `pnpm sim` away when it ships.
+
+**The halftime peak, explained, and a candidate measured (2026-10-01,
+`LOG.md` Session 124).** It is the purse: from halftime the runway falls
+under 5 placements and pocket size halves every fifth of the run, so the last
+30% is singles cashed to stay alive. `costGrace` (the "two eras" knee,
+designed in August, shipped at 0) is the first thing that moves it. At 40/10
+with `pointsPerPop` 0.20, medians stay within 7% of shipped, the points peak
+moves to the run's last fifth, the singles tail halves and the glow trap
+closes (41 → 6), for +9 placements. Its cost: waiting gets more right
+(+27% → +56% from pop-at-4 to pop-at-20) and small-pocket play almost never
+nearly dies. **Ruled 2026-10-01: queued for after Session C**, beside the
+horizon/cache move (§0). Measured together at 1000 seeds: the trap closes
+entirely (0 runs dead before 40), other lines move 0-1% from the knee alone,
+runs +10 over shipped. It is three dials, so nothing needs building. The day
+it ships, the cost-curve sentences take the grace clause (`COST_CURVE_GRACE`),
+the `prose.pin` snapshots move with them, and so does `sim.golden.txt`.
+Two things checked after the ruling. STEADY PACE (+2 a level to the step)
+is a bigger share of 10 than of 22, but the ladder holds: maxed, shipped goes
+2.0× (1199 → 2396) and the knee 1.8× (1291 → 2275). And Marc's 2026-08-18
+_"easier gradually with relics, not at the start"_ (`tuning.ts` at
+`costRisesEvery`): the knee makes placements 22-40 cost 1, not 2, an easier
+start bought with a harder end. Worth his eye on the phone the day it ships.
+
+**And steer and reroll, re-measured the same day.** Both pay: the ground-reading
+steer +6%, a reroll of any hand worth under 4 +6% (the old reroll line only
+redrew worthless hands). Forge pays about 3× either per point of luck (+33%).
+Cheaper prices (reroll 8, steer 15) take them to +11% and +10%. **Ruled
+2026-10-01: leave it.** All three pay, and forge being the strong one is fine.
 
 ## 4. Watching — no action unless it happens again
 

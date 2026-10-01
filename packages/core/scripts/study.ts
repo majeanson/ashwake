@@ -236,6 +236,28 @@ const steerMap = (k: number): Policy => {
   };
 };
 
+/**
+ * THE FAIR REROLL (2026-10-01). `luckLine(k, 'reroll')` redraws only a hand
+ * whose best spot is worth nothing, which almost never happens, so it says
+ * reroll is never bought rather than never worth buying. This one redraws
+ * whenever the hand's best spot is worth under `below`: the question a player
+ * asks, "is this hand bad enough to pay for another?", swept over the bar.
+ */
+const rerollBelow = (k: number, below: number): Policy => {
+  const base = popAt(k);
+  return {
+    name: `popAt${k}+rr${below}`,
+    note: `popAt${k}, rerolling any hand whose best spot is worth under ${below}.`,
+    decide(state, s) {
+      if (biggest(state) < k && canPlaceNow(state) && canSpend(state, 'reroll')) {
+        const o = best(state);
+        if (o !== null && o.worth < below) return [[{ type: 'SPEND', on: 'reroll' }], s];
+      }
+      return base.decide(state, s);
+    },
+  };
+};
+
 /*
  * TWO REASONS TO POP EARLIER, prototyped (2026-09-29, Marc chose to try
  * both). Neither changes what is legal, only what a pop is worth, so like the
@@ -651,6 +673,14 @@ type Felt = {
   /** Points earned in each third of the run, and the colour share of each. */
   thirds: [number, number, number];
   colourThirds: [number, number, number];
+  /**
+   * THE ARC, by tenth of the run (2026-10-01): pops, tiles popped, pop points
+   * and the purse's runway (tiles over the price of a placement, sampled
+   * every placement). Why the biggest pop lands at halftime, as numbers.
+   */
+  /** Share of the run after its last pop of 5+ tiles: the spiral of singles. */
+  tail: number;
+  arc: { pops: number[]; size: number[]; pts: number[]; runway: number[]; turns: number[] };
 };
 
 function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 0): Felt {
@@ -675,7 +705,10 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
     bands: [0, 0, 0, 0],
     thirds: [0, 0, 0],
     colourThirds: [0, 0, 0],
+    arc: { pops: [], size: [], pts: [], runway: [], turns: [] },
+    tail: 0,
   };
+  const runways: number[] = [];
   let low = false;
   let sincePop = 0;
   const popMult: number[] = [];
@@ -799,6 +832,7 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
       f.popTiles += state.log.harvests.at(-1)?.tiles ?? 0;
     }
     const runway = state.tiles / Math.max(1, costOf(state.placements, state.tuning));
+    if (state.placements > before.placements) runways[state.placements - 1] = runway;
     if (runway <= 2) low = true;
     else if (low && runway >= 5) {
       f.closeCalls++;
@@ -856,6 +890,22 @@ function feel(policy: Policy, seed: number, tuning: Tuning = TUNING, escalate = 
       f.colourThirds[third] +=
         (worth(h) * (b.matches + b.power + b.rare + b.native)) / h.split.total;
   }
+  const tenth = (at: number): number =>
+    Math.min(9, Math.floor((10 * at) / Math.max(1, state.placements)));
+  for (const k of ['pops', 'size', 'pts', 'runway', 'turns'] as const)
+    f.arc[k] = Array<number>(10).fill(0);
+  for (const h of state.log.harvests) {
+    const d = tenth(h.at);
+    f.arc.pops[d]! += 1;
+    f.arc.size[d]! += h.count;
+    f.arc.pts[d]! += worth(h);
+  }
+  runways.forEach((r, at) => {
+    f.arc.runway[tenth(at)]! += r;
+    f.arc.turns[tenth(at)]! += 1;
+  });
+  const lastReal = state.log.harvests.filter((h) => h.count >= 5).at(-1)?.at ?? 0;
+  f.tail = state.placements === 0 ? 0 : (state.placements - lastReal) / state.placements;
   f.placements = state.placements;
   f.pops = state.log.harvests.length;
   // The built caravan's meetings (2026-09-30), beside any prototype's arrivals.
@@ -886,6 +936,23 @@ function colourRow(name: string, runs: readonly Felt[]): string {
   }
   return cells.join(' ');
 }
+/** The `--arc` rows for one line: each tenth's mean pops, pocket size, pop points, runway. */
+function arcRows(name: string, runs: readonly Felt[]): string[] {
+  const sum = (k: keyof Felt['arc'], d: number): number =>
+    runs.reduce((a, r) => a + r.arc[k][d]!, 0);
+  const row = (label: string, cell: (d: number) => string): string =>
+    [`${name} ${label}`.padEnd(20), ...Array.from({ length: 10 }, (_, d) => pad(cell(d), 6))].join(
+      ' ',
+    );
+  const n = Math.max(1, runs.length);
+  return [
+    row('pops', (d) => (sum('pops', d) / n).toFixed(1)),
+    row('size', (d) => (sum('size', d) / Math.max(1, sum('pops', d))).toFixed(1)),
+    row('pts', (d) => String(Math.round(sum('pts', d) / n))),
+    row('runway', (d) => (sum('runway', d) / Math.max(1, sum('turns', d))).toFixed(1)),
+  ];
+}
+
 function main(): void {
   const i = process.argv.indexOf('--seeds');
   const seeds = i > 0 ? Number(process.argv[i + 1]) : 1000;
@@ -898,6 +965,8 @@ function main(): void {
     luckLine(4, 'steer'),
     steerMap(8),
     steerMap(4),
+    ...[2, 4, 6, 9, 12, 16].map((b) => rerollBelow(8, b)),
+    ...[4, 9].map((b) => ({ ...take(rerollBelow(8, b)), name: `take:rr${b}` })),
   ];
   const people = [randomLegal, greedy, timid, bank3, bank20, spender, seeker, chooser, tourist];
   const blinds = [4, 8, 12].map(colourBlind);
@@ -1019,15 +1088,18 @@ function main(): void {
       pad('spends', 7),
       pad('late%', 6),
       pad('car', 5),
+      pad('tail%', 6),
     ].join(' '),
   );
   const colourRows: string[] = [];
+  const arcLines: string[] = [];
   const bandRows: string[] = [];
   for (const policy of all) {
     const runs: Felt[] = [];
     for (let s = 1; s <= seeds; s++) runs.push(feel(policy, s, tuning, escalate));
     const pts = runs.map((r) => r.points);
     colourRows.push(colourRow(policy.name, runs));
+    arcLines.push(...arcRows(policy.name, runs));
     bandRows.push(
       `${policy.name.padEnd(14)} ${[0, 1, 2, 3].map((b) => mean(runs.map((r) => r.bands[b as 0 | 1 | 2 | 3])).toFixed(2)).join(' / ')}`,
     );
@@ -1059,6 +1131,7 @@ function main(): void {
         pad(mean(runs.map((r) => r.spends)).toFixed(1), 7),
         pad((100 * mean(runs.map((r) => r.late))).toFixed(0), 6),
         pad(mean(runs.map((r) => r.caravans)).toFixed(1), 5),
+        pad((100 * mean(runs.map((r) => r.tail))).toFixed(0), 6),
       ].join(' '),
     );
   }
@@ -1086,6 +1159,14 @@ function main(): void {
       ].join(' '),
     );
     for (const row of colourRows) console.log(row);
+  }
+  if (process.argv.includes('--arc')) {
+    console.log('\nTHE ARC — by tenth of the run: pops, mean pocket size, pop points, and runway');
+    console.log('(placements the purse could pay for at the current price)\n');
+    console.log(
+      ['line'.padEnd(20), ...Array.from({ length: 10 }, (_, d) => pad(`${d * 10}%`, 6))].join(' '),
+    );
+    for (const row of arcLines) console.log(row);
   }
   if (want.life > 0) {
     console.log('');
