@@ -1868,6 +1868,15 @@ a:visited {
    frame round the first. */
 .toast:has(.toast-open) {
   background: transparent;
+  /* ONE ROW, the result and its ✕ (2026-10-01, Marc: "make sure ... the X
+     (to close) is on the same line"). Two inline boxes wrapped the ✕ under
+     the result at every phone width; a row that never wraps keeps it beside,
+     and the result's own text wraps inside its box instead. */
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  padding-inline: var(--gap-sm);
 }
 
 /*
@@ -1898,6 +1907,7 @@ a:visited {
   letter-spacing: var(--label-tracking);
   background: var(--panel);
   border-color: var(--panel-edge-active);
+  min-width: 0;
 }
 
 /* The ✕ beside a pop's result (2026-09-25): the same panel face as the line
@@ -1909,13 +1919,15 @@ a:visited {
   border-color: var(--panel-edge-active);
   color: var(--ink-dim);
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
-/* What the second half of the tap is for. Faint on purpose: the points are
-   the message and this is the footnote saying there is more of it. */
+/* What the second half of the tap is for, as a mark since 2026-10-01. Faint
+   on purpose: the points are the message and this is the footnote saying
+   there is more of it. */
 .toast-more {
-  font-family: var(--font-label);
-  font-size: 0.62rem;
+  display: inline-flex;
+  flex-shrink: 0;
   color: var(--ink-faint);
 }
 

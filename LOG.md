@@ -10410,3 +10410,17 @@ Also started, on a branch and not on `main`: the queued rule move
 Analytics → Manage site → Disable). Thirty seconds later neither custom
 domain carried `data-cf-beacon`, and a browser load of each sent nothing to
 `cloudflareinsights.com` or `/cdn-cgi/rum`.
+
+### Session 126 — the pop line and its ✕ on one row (2026-10-01)
+
+Question: **does a pop's result keep its ✕ beside it on a phone?** Marc:
+_"make sure when we pop, the toast about details of our score's X (to close)
+is on the same line. use symbols if necessary instead of words"_. A new test
+at 320, 360 and 390 px in both languages failed at every one: the result and
+the ✕ were two inline boxes in a centred line, and the result (with DÉTAILS in
+it) filled the width, so the ✕ wrapped underneath. The toast is a flex row
+that never wraps now, the result shrinks and wraps its own text, and DÉTAILS
+is the `more` caret with the word as its accessible name. 6/6 on both engines,
+with `targets.spec.ts` (the 44 px floor) and `a11y.spec.ts` green. It changes
+the first minute at Marc's word, so it joins round eleven's look (`NEXT.md`
+§1).

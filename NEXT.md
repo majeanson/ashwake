@@ -133,6 +133,13 @@ card worth stopping for at the first placement, and do the four rows read at
 a glance? And its French: _LES QUATRE SOLS_, _Chaque carte est l’un de ces
 quatre sols, et chacun marque à sa façon._
 
+**And the pop line joins it too (2026-10-01, Marc: _"make sure when we pop,
+the toast about details of our score's X (to close) is on the same line. use
+symbols if necessary instead of words"_).** The ✕ had wrapped under the result
+at every phone width in both languages; the line is one row now, and DÉTAILS
+is a caret with the word as its name (`e2e/board.spec.ts`, "share one row").
+At 320px in French the result itself still takes two lines, beside the ✕.
+
 ---
 
 ## 2. Somebody else's device

@@ -727,6 +727,45 @@ test('a pop result has a ✕ that closes it and opens nothing', async ({ page })
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+/*
+ * ONE ROW (2026-10-01, Marc: "make sure when we pop, the toast about details
+ * of our score's X (to close) is on the same line. use symbols if necessary
+ * instead of words"). The ✕ is the line's own control, so it sits beside the
+ * result at every phone width and in both languages, never under it.
+ */
+for (const width of [320, 360, 390])
+  for (const locale of ['en-US', 'fr-CA'])
+    test(`a pop result and its ✕ share one row at ${width}px in ${locale}`, async ({
+      browser,
+    }, testInfo) => {
+      const ctx = await browser.newContext({ locale, viewport: { width, height: 740 } });
+      const page = await ctx.newPage();
+      const errors = watchErrors(page);
+      await page.goto('/?taught=1&runs=1&place=24');
+      await begin(page);
+      await page.waitForTimeout(600);
+      await clearCards(page);
+      await page
+        .getByRole('button', { name: /POP|RÉCOLT/ })
+        .first()
+        .click();
+      const line = page.locator('[data-action="pop-details"]');
+      await expect(line).toBeVisible({ timeout: 4000 });
+      const close = page.locator('[data-action="pop-close"]');
+      const a = (await line.boundingBox())!;
+      const b = (await close.boundingBox())!;
+      await page.screenshot({ path: testInfo.outputPath(`pop-${width}-${locale}.png`) });
+      const mid = b.y + b.height / 2;
+      expect(
+        mid > a.y && mid < a.y + a.height,
+        `the ✕ (y ${Math.round(b.y)}) is not on the result's row (y ${Math.round(a.y)}..${Math.round(a.y + a.height)})`,
+      ).toBe(true);
+      expect(b.x, 'the ✕ is not beside the result').toBeGreaterThanOrEqual(a.x + a.width - 1);
+      expect(b.x + b.width, 'the ✕ runs off the screen').toBeLessThanOrEqual(width);
+      expect(errors, errors.join('\n')).toEqual([]);
+      await ctx.close();
+    });
+
 test('a card in the hand is the tile it will become, and only the chosen one has a box', async ({
   page,
 }) => {

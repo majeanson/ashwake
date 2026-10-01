@@ -3546,8 +3546,13 @@ function Game() {
                   if (shown !== null) setSaidCard(shown);
                 }}
               >
-                {note.text}
-                <span className="toast-more">{s.ui.details}</span>
+                <span className="toast-text">{note.text}</span>
+                {/* A mark, not the word (2026-10-01, Marc: "use symbols if
+                    necessary instead of words"): DÉTAILS was what pushed the
+                    ✕ onto a second row. Its name is still the word. */}
+                <span className="toast-more">
+                  <Icon name={CHROME_ICON.more} title={s.ui.details} />
+                </span>
               </button>
             )}
             {/*
