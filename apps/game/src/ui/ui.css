@@ -1079,7 +1079,7 @@ button[disabled] {
 }
 .tip-row:has(.tip-value) {
   grid-template-columns: 1.6rem 1fr auto;
-  align-items: baseline;
+  align-items: center;
 }
 /* The total — set apart. Marked by the row (`TipRow.total`), not by being
    last: the lens's stat sheet is a table too, and its last row is no sum. */
@@ -1111,8 +1111,9 @@ button[disabled] {
 }
 /* The open row is marked at its edge rather than filled: a fill would put the
    row's ink on a colour the contrast budget never measured it against. */
-.tip-hinted[aria-expanded='true'] {
+.tip-line:has(> .tip-hinted[aria-expanded='true']) {
   box-shadow: inset 2px 0 0 var(--accent);
+  border-radius: var(--radius-sm);
 }
 .tip-hinted > span:nth-child(2) {
   text-decoration: underline dotted;
@@ -2733,7 +2734,8 @@ a:visited {
   color: var(--ink);
   font-size: 0.7rem;
 }
-.lens-rule {
+.lens-detail .lens-rule {
+  margin-bottom: 0.45rem;
   font-size: 0.75rem;
 }
 
