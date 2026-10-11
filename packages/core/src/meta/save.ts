@@ -157,8 +157,11 @@ export function decodeRun(raw: string | null): GameState | null {
     }
   }
 
+  // A run's own deal (see `GameState.deal`): absent, or a finite number.
+  const { deal: dealRaw, ...rest } = parsed;
   const state = {
-    ...parsed,
+    ...rest,
+    ...(typeof dealRaw === 'number' && Number.isFinite(dealRaw) ? { deal: dealRaw } : {}),
     claimed: Array.isArray(claimed) && claimed.every((k) => typeof k === 'string') ? claimed : [],
     claimedFinds:
       Array.isArray(claimedFinds) && claimedFinds.every((k) => typeof k === 'string')

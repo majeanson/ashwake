@@ -21,6 +21,7 @@ import {
   encodeWorld,
   hasBeenPlayed,
   newWorld,
+  dealFor,
   rearmedSpent,
   type WorldMemory,
 } from '@meta/world';
@@ -860,6 +861,12 @@ export type RunMemory = {
    * layer, tested in the core, reachable from nothing.
    */
   readonly revealed: readonly HexKey[];
+  /**
+   * The seed this run's tiles and caravan are dealt from, when it is not the
+   * place's own: a world's second and later runs get a fresh deal on the same
+   * map. Absent on the first run, so that one is the board it always was.
+   */
+  readonly deal?: number;
 };
 
 /** A run that remembers nothing — a daily, a shared seed, a first visit. */
@@ -881,6 +888,7 @@ export function memoryFor(slot: Slot, seed: number): RunMemory {
     finds: world.finds,
     rearmed: rearmedSpent(world),
     revealed: world.revealed,
+    ...(world.runs > 0 ? { deal: dealFor(world) } : {}),
   };
 }
 

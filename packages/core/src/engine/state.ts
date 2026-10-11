@@ -208,6 +208,14 @@ export type { PointSource } from '@content/tuning';
 export type GameState = {
   readonly version: 1;
   readonly rootSeed: number;
+  /**
+   * The seed of what is DEALT in this run — the tile draft, the loot rolls and
+   * the caravan's visits and wares — where `rootSeed` stays the seed of the
+   * PLACE (terrain, landmarks, finds, elevation). Absent means the deal is the
+   * place's own, which is every daily, every shared board, a world's first run
+   * and every run saved before this field existed. Read through `dealOf`.
+   */
+  readonly deal?: number;
   readonly rng: RngStreams;
 
   /**
@@ -431,3 +439,7 @@ export type Action =
   | { readonly type: 'CARAVAN'; readonly pick: number };
 
 export type Spend = 'reroll' | 'steer' | 'forge' | 'tithe';
+
+/** The seed of what this run is dealt — see `GameState.deal`. */
+export const dealOf = (state: Pick<GameState, 'rootSeed' | 'deal'>): number =>
+  state.deal ?? state.rootSeed;

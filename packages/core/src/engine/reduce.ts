@@ -18,16 +18,17 @@ import {
   scoreOf,
   territoryPaysAt,
 } from './rules';
-import type {
-  Action,
-  Cell,
-  DeathCause,
-  GameState,
-  HarvestChoice,
-  Quest,
-  Rarity,
-  Spend,
-  Tile,
+import {
+  dealOf,
+  type Action,
+  type Cell,
+  type DeathCause,
+  type GameState,
+  type HarvestChoice,
+  type Quest,
+  type Rarity,
+  type Spend,
+  type Tile,
 } from './state';
 import { destinationAt, findAt, terrainAt } from './world';
 import { applyWare, offerFor, picksFor } from './caravan';
@@ -298,14 +299,18 @@ export function newRun(
   // Spent one-time landmarks reborn for this run (Marc, 2026-08-20) — see
   // `GameState.rearmed`. Plain data, the `claimed` contract's fourth rider.
   rearmed: Readonly<Record<HexKey, 'cache' | 'site'>> = {},
+  // Reshuffles what is DEALT (tiles, loot, caravan) while the place stays
+  // `rootSeed`'s: a world's later runs. Absent is the place's own deal.
+  deal?: number,
 ): GameState {
-  const streams = streamsFrom(rootSeed);
+  const streams = streamsFrom(deal ?? rootSeed);
   const origin = wakeAt !== null ? parse(wakeAt) : { q: 0, r: 0 };
   const opened = openWorld(rootSeed, streams, tuning, claimed, claimedFinds, origin, rearmed);
 
   return {
     version: 1,
     rootSeed,
+    ...(deal !== undefined ? { deal } : {}),
     rng: opened.rng,
     tuning,
     phase: 'placing',
@@ -375,7 +380,7 @@ function takeWare(state: GameState, pick: number): GameState {
     caravan: {
       ...state.caravan,
       offers: Array.from({ length: rest }, (_, i) =>
-        offerFor(state.rootSeed, first + i, bought.tuning, [...state.caravan.taken, ware]),
+        offerFor(dealOf(state), first + i, bought.tuning, [...state.caravan.taken, ware]),
       ),
       taken: [...state.caravan.taken, ware],
     },
@@ -718,7 +723,7 @@ function harvest(state: GameState, choice: HarvestChoice, at?: HexKey): GameStat
   const answered = caravan !== null && scores;
   const owed = answered ? picksFor(caravan.kind, t) : 0;
   const offers = Array.from({ length: owed }, (_, i) =>
-    offerFor(state.rootSeed, state.caravan.made + i, t, state.caravan.taken),
+    offerFor(dealOf(state), state.caravan.made + i, t, state.caravan.taken),
   );
 
   // Luck arrives mostly as a FLAT amount per pop, so three small pockets beat

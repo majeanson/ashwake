@@ -304,7 +304,15 @@ const open = (
   memory?: RunMemory,
   wakeAt: HexKey | null = null,
 ): GameState =>
-  newRun(seed, tuning, memory?.claimed ?? [], memory?.finds ?? [], wakeAt, memory?.rearmed ?? {});
+  newRun(
+    seed,
+    tuning,
+    memory?.claimed ?? [],
+    memory?.finds ?? [],
+    wakeAt,
+    memory?.rearmed ?? {},
+    memory?.deal,
+  );
 
 /**
  * Where a camp run would wake, or null when this world may not camp.

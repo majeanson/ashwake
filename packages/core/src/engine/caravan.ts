@@ -7,7 +7,7 @@ import {
   type WareId,
 } from '@content/caravan';
 import type { Tuning } from '@content/tuning';
-import type { GameState } from './state';
+import { dealOf, type GameState } from './state';
 
 /**
  * The caravan's rule (2026-09-29) — `content/caravan.ts` has the why.
@@ -99,7 +99,7 @@ export function caravanMultiplier(kind: CaravanKind, t: Tuning): number {
  * pays nothing extra, so a small ask cannot be farmed with a string of threes.
  */
 export function caravanFor(state: GameState, size: number): CaravanAsk | null {
-  const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
+  const ask = caravanAskAt(dealOf(state), state.placements, state.tuning);
   if (ask === null || state.caravan.met.includes(ask.index)) return null;
   return answers(size, ask.kind) ? ask : null;
 }

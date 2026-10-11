@@ -14,7 +14,7 @@ import { biomeAt } from '../src/engine/world';
 import { caravanAskAt, caravanFor } from '../src/engine/caravan';
 import type { WareId } from '../src/content/caravan';
 import type { Colour } from '../src/content/tuning';
-import type { Action, GameState } from '../src/engine/state';
+import { dealOf, type Action, type GameState } from '../src/engine/state';
 import {
   bank20,
   bank3,
@@ -586,7 +586,7 @@ const answer = (big: number): Policy => {
         if (caravanFor(state, p.length) !== null && (pick === null || p.length > pick.length))
           pick = p;
       if (pick?.[0] !== undefined) return [[{ type: 'HARVEST', choice: 'tiles', at: pick[0] }], s];
-      const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
+      const ask = caravanAskAt(dealOf(state), state.placements, state.tuning);
       if (ask !== null && ask.kind === 2 && !state.caravan.met.includes(ask.index)) {
         const o = best(state);
         if (o !== null) return [place(o), s];
@@ -611,7 +611,7 @@ const tryer = (big: number): Policy => {
     name: `try${big}`,
     note: `popAt${big}, but tries a pop while the caravan is in town, and learns from a miss.`,
     decide(state, s) {
-      const ask = caravanAskAt(state.rootSeed, state.placements, state.tuning);
+      const ask = caravanAskAt(dealOf(state), state.placements, state.tuning);
       if (ask !== null && !state.caravan.met.includes(ask.index)) {
         let memo = tried.get(self);
         if (memo === undefined || memo.visit !== ask.index) {

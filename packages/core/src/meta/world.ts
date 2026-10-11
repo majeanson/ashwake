@@ -474,3 +474,13 @@ export function rearmedSpent(world: WorldMemory): Record<HexKey, 'cache' | 'site
   }
   return out;
 }
+
+/**
+ * The deal of a world's NEXT run: what its tiles and caravan are drawn from
+ * (`GameState.deal`), on the ground that never moves. A pure hash of
+ * (worldSeed, runs) — the same clock `rearmedSpent` rerolls on — so it changes
+ * each time a run finishes and every reload and replay of one run agrees.
+ * A world's first run has no deal of its own (`memoryFor` sends none).
+ */
+export const dealFor = (world: WorldMemory): number =>
+  Math.imul(world.worldSeed ^ Math.imul(world.runs, 0x7f4a7c15), 0x2c1b3c6d) | 0;
