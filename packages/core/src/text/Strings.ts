@@ -973,6 +973,9 @@ export type Strings = {
     readonly watchSkip: string;
     readonly watching: (step: number, of: number) => string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
+    /** The manual's section on the lens button and its panel — a control, not a
+     *  term, so it has no lesson (the `expedition` shape). */
+    readonly lensGuide: { readonly title: string; readonly lines: readonly string[] };
     /**
      * THE VIEW BUTTON'S THREE STOPS (2026-09-08, Marc: *"Revise all 3 camera
      * modes so the third one is always 'my own custom view' ... Other two would

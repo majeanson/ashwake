@@ -101,10 +101,13 @@ const KEY_LINES = [
  * everyone.
  */
 const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
-  start: ['ripe', 'pop', 'sizeBonus', 'worth', 'costRise'],
+  // WORTH and POCKET before the lessons that use them (2026-10-11): RIPE says
+  // "shows its WORTH", POP cashes a POCKET, SIZE BONUS multiplies a pocket's
+  // worth — and POCKET sat on the next tab, WORTH after the bonus.
+  start: ['ripe', 'worth', 'pocket', 'pop', 'sizeBonus', 'costRise'],
   // THE CARAVAN beside BOUNTY (2026-09-30): the other reason a pop pays
   // more, and a section that grows in when its card has spoken.
-  play: ['pocket', 'reach', 'bounty', 'caravan', 'field', 'lens'],
+  play: ['reach', 'bounty', 'caravan', 'field', 'lens'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
 };
 
@@ -333,6 +336,20 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
       {drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
         <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
       ))}
+
+      {/* THE LENS — the one control in the manual (2026-10-11): the panel
+          beside LUCK had no section, so "tap a ground to hold the lens" was
+          only ever said in the panel's own footer. */}
+      {on === 'play' && (
+        <section className="lesson">
+          <h2 className="panel-title marked">
+            <span>{s.ui.lensGuide.title}</span>
+          </h2>
+          {s.ui.lensGuide.lines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </section>
+      )}
     </Panel>
   );
 }

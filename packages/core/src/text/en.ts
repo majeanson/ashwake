@@ -112,7 +112,7 @@ export const STRINGS_EN: Strings = {
       name: 'SITE',
       terms: ['SITE'],
       core: (pays) =>
-        `A SITE pays ${pays} points × its distance from home the moment you claim it, and it opens a BOUNTY. Sites re-arm every run, so a claimed one is worth returning to.`,
+        `A SITE is claimed by building a tile touching it. It pays ${pays} points × its distance from home, and opens a BOUNTY: one more bonus to go and collect (see BOUNTY). Sites re-arm every run, so a claimed one is worth returning to.`,
     },
     shrine: {
       name: 'SHRINE',
@@ -167,7 +167,7 @@ export const STRINGS_EN: Strings = {
       name: 'BOUNTY',
       terms: ['BOUNTY'],
       core: (need, radius, bonus) =>
-        `A BOUNTY is a site’s second payout: pop ${need}+ tiles within ${radius} hexes of its star and that pop scores ×${bonus}. It is live the moment you claim the site, and any pop in range can collect it.`,
+        `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star, taking POINTS (not tiles): that pop scores ×${bonus}. Only one bounty at a time; another site opens no second one while this one waits.`,
     },
     caravan: {
       name: 'CARAVAN',
@@ -388,7 +388,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       cache: (tiles) => `CACHE: build a tile touching it to claim ${tiles} tiles on the spot.`,
       siteClaimed: 'SITE: already claimed.',
       site: (pays, bonus) =>
-        `SITE: claim it for ${pays} pts × its distance. It opens a bounty worth ×${bonus}.`,
+        `SITE: build a tile touching it to claim it: ${pays} pts × its distance. That opens a bounty: then pop for POINTS in a big pocket near it for ×${bonus}.`,
       shrineDetourClaimed: 'SHRINE: woken. On your own world, this switches a system on for good.',
       shrineDetour:
         'SHRINE: touch it with a tile. On your own world, waking one switches a system on for good.',
@@ -581,7 +581,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
 +${tiles} tiles, on the spot.`,
     site: (pts, need, radius, bonus) =>
       `SITE CLAIMED
-+${pts} pts banked, and this star has set a BOUNTY: pop a pocket of ${need}+ within ${radius} hexes of it for ×${bonus}.`,
++${pts} pts banked, and this star has set a BOUNTY: pop a pocket of ${need}+ for POINTS within ${radius} hexes of it for ×${bonus}.`,
     territory: (radius, owns) =>
       `TERRITORY CLAIMED
 Ground within ${radius} hexes is native to ${owns} now, and it stays yours between runs.`,
@@ -654,7 +654,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       },
       powers: {
         name: 'ALL POWERS',
-        note: 'Every colour’s power is half again as strong, for the rest of the run.',
+        note: 'Each colour’s own bonus (green, yellow, red, blue) is half again as strong, for the rest of the run. Once a run.',
       },
       road: {
         name: 'THE ROAD PAYS',
@@ -662,7 +662,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       },
       bounty: {
         name: 'BIGGER BOUNTIES',
-        note: 'Every bounty multiplies its pop by more, for the rest of the run.',
+        note: 'A bounty’s × is bigger, for the rest of the run.',
       },
       lucky: {
         name: 'LUCKY POPS',
@@ -790,6 +790,14 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     /** The camera cluster. `home` is its third control, shown only once the
      *  board has been turned or leaned away from the angle it opens at. */
+    lensGuide: {
+      title: 'THE LENS',
+      lines: [
+        'The magnifier button beside LUCK opens the lens: one row per ground, with how many of its tiles are standing, what they are worth, and how much of it is ripe.',
+        'Tap a row to hold the lens on that ground. The board lights it, and the panel shows its power and stats; THE PRICE tab shows how its best pocket would score if you popped it now. Tap the row again to let go.',
+        'Tap any line in a table to read what it means. Pressing and holding a card in your hand lights its ground the same way.',
+      ],
+    },
     camera: { flat: 'FLAT', home: 'DEFAULT', mine: 'MY VIEW' },
     sharpness: {
       label: 'SHARPNESS',

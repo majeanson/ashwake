@@ -111,7 +111,7 @@ export const STRINGS_FR: Strings = {
       name: 'SITE',
       terms: ['SITE'],
       core: (pays) =>
-        `Un SITE paie ${pays} points × sa distance du départ dès que tu le réclames, et il ouvre une PRIME. Les sites se réarment à chaque partie, alors un site réclamé vaut la peine d’y retourner.`,
+        `Un SITE se réclame en posant une tuile qui le touche. Il paie alors ${pays} points × sa distance du départ, et il ouvre une PRIME${D}: un bonus de plus à aller chercher (voir PRIME). Les sites se réarment à chaque partie, alors un site réclamé vaut la peine d’y retourner.`,
     },
     shrine: {
       name: 'SANCTUAIRE',
@@ -166,7 +166,7 @@ export const STRINGS_FR: Strings = {
       name: 'PRIME',
       terms: ['PRIME'],
       core: (need, radius, bonus) =>
-        `Une PRIME, c’est le deuxième paiement d’un site${D}: récolte ${need} tuiles ou plus à ${radius} hex de son étoile et cette récolte marque ×${bonus}. Elle est active dès que tu réclames le site, et n’importe quelle récolte à portée peut l’encaisser.`,
+        `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site, en prenant les POINTS (pas les tuiles)${D}: cette récolte marque ×${bonus}. Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant que celle-ci attend.`,
     },
     caravan: {
       name: 'CARAVANE',
@@ -391,7 +391,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `CACHE${D}: pose une tuile qui la touche pour réclamer ${tiles} tuiles sur-le-champ.`,
       siteClaimed: `SITE${D}: déjà réclamé.`,
       site: (pays, bonus) =>
-        `SITE${D}: réclame-le pour ${pays} pts × sa distance. Il ouvre une prime qui vaut ×${bonus}.`,
+        `SITE${D}: pose une tuile qui le touche pour le réclamer${D}: ${pays} pts × sa distance. Ça ouvre une prime${D}: récolte ensuite des POINTS dans une grosse poche près de lui pour ×${bonus}.`,
       shrineDetourClaimed: `SANCTUAIRE${D}: éveillé. Sur ton propre monde, ça allume un système pour de bon.`,
       shrineDetour: `SANCTUAIRE${D}: touche-le avec une tuile. Sur ton propre monde, en éveiller un allume un système pour de bon.`,
       shrineClaimed: `SANCTUAIRE${D}: éveillé. Il a allumé un système pour ce monde.`,
@@ -587,7 +587,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
 +${nb(tiles)} tuiles, sur-le-champ.`,
     site: (pts, need, radius, bonus) =>
       `SITE RÉCLAMÉ
-+${nb(pts)} pts en banque, et cette étoile ouvre une PRIME${D}: récolte une poche de ${need}+ à moins de ${radius} hexes pour ×${bonus}.`,
++${nb(pts)} pts en banque, et cette étoile ouvre une PRIME${D}: récolte des POINTS dans une poche de ${need}+ à moins de ${radius} hexes de lui pour ×${bonus}.`,
     territory: (radius, owns) =>
       `TERRITOIRE RÉCLAMÉ
 Le sol à moins de ${radius} hexes est natif de ${owns} maintenant, et il te reste entre les parties.`,
@@ -664,7 +664,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       },
       powers: {
         name: 'TOUS LES POUVOIRS',
-        note: 'Le pouvoir de chaque couleur est moitié plus fort, jusqu’à la fin de la partie.',
+        note: 'Le bonus propre à chaque couleur (vert, jaune, rouge, bleu) grimpe de moitié, jusqu’à la fin de la partie. Une seule fois par partie.',
       },
       road: {
         name: 'LA ROUTE PAIE',
@@ -672,7 +672,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       },
       bounty: {
         name: 'PRIMES PLUS GROSSES',
-        note: 'Chaque prime multiplie sa récolte davantage, jusqu’à la fin de la partie.',
+        note: 'Le multiplicateur d’une prime (le ×) est plus gros, jusqu’à la fin de la partie.',
       },
       lucky: {
         name: 'RÉCOLTES CHANCEUSES',
@@ -807,6 +807,14 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         'Tu marches vers une plaine noire. Tu poses des tuiles, elles mûrissent, tu récoltes, et tu pousses plus loin.',
         'Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part.',
         'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
+      ],
+    },
+    lensGuide: {
+      title: 'LA LENTILLE',
+      lines: [
+        `Le bouton loupe à côté de la CHANCE ouvre la lentille${D}: une ligne par sol, avec combien de ses tuiles sont en place, ce qu’elles valent et combien sont mûres.`,
+        'Touche une ligne pour tenir la lentille sur ce sol. Le plateau l’éclaire, et le panneau montre son pouvoir et ses stats; l’onglet LE PRIX montre ce que sa meilleure poche rapporterait si tu la récoltais maintenant. Touche la ligne encore pour lâcher.',
+        'Touche n’importe quelle ligne d’un tableau pour lire ce qu’elle veut dire. Garder le doigt appuyé sur une carte de ta main éclaire son sol de la même façon.',
       ],
     },
     camera: { flat: 'À PLAT', home: 'DÉFAUT', mine: 'MA VUE' },

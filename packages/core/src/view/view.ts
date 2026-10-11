@@ -24,13 +24,14 @@ import {
   withinBeaconHorizon,
   worthOf,
 } from '@engine/rules';
-import type {
-  GameState,
-  HarvestChoice,
-  LandmarkReward,
-  PointsSplit,
-  Rarity,
-  Spend,
+import {
+  dealOf,
+  type GameState,
+  type HarvestChoice,
+  type LandmarkReward,
+  type PointsSplit,
+  type Rarity,
+  type Spend,
 } from '@engine/state';
 import {
   destinationAt,
@@ -1534,7 +1535,7 @@ export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
 
 /** Where the caravan is — see `HudView.caravan`. */
 function caravanWhere(state: GameState): HudView['caravan'] {
-  const visit = caravanVisitAt(state.rootSeed, state.placements, state.tuning);
+  const visit = caravanVisitAt(dealOf(state), state.placements, state.tuning);
   if (visit === null) return null;
   if (state.placements < visit.from) return visit.index === 0 ? 'coming' : 'left';
   return state.caravan.met.includes(visit.index) ? 'left' : 'town';
