@@ -10635,3 +10635,45 @@ whether a toast is a loud enough voice for a coach. The coach shares the
 strip with receipts by design; if it reads as too quiet, the next step is a
 persistent line, which is a screen decision (the guide line was removed on
 2026-08-29 for repeating).
+
+### Session 130 — strategy for the four grounds (2026-10-12)
+
+**The question.** Does a player who can read WHEN to take each ground pick
+better than one who only knows what each does? Unanswered until it is played;
+this is the build of it.
+
+Marc, after asking why not yellow every time: _"make sure tips don't just say
+'match colours for more points' if it's not the case"_, then _"add more
+strategy in how to play towards colours, or maybe each colour could have its
+own explanation + general strategy"_.
+
+- **The tip was not the whole truth, and is fixed.** A tile does earn one
+  worth per matching neighbour, but yellow is paid by ANY neighbouring tile,
+  red also by stone and walls, green has a crowd bonus and blue a capped
+  distance bonus. The coach's colours line now says "most tiles" and points at
+  THE FOUR GROUNDS instead of promising matching is the whole rule.
+- **A COLOURS tab in HOW TO PLAY.** `view/strategy.ts` (`groundGuide`, pure)
+  builds it: five general lines (plan the pocket; no ground wins everywhere;
+  stone pays only red; distance; you cannot always pick), then one block per
+  ground — its rule (`colourLesson`, verbatim, so the card and the tab cannot
+  disagree), PICK IT WHEN, WATCH FOR. The words are `s.strategy` in both
+  languages, as functions of numbers, and the numbers come from the live
+  tuning: a full ring of green is `6 + 5 × greenCrowdBonus`, yellow's full ring
+  is quoted only where company counts every stranger, blue's cap is read off
+  `blueTideCap`. A ground whose power is zeroed is not taught.
+- **The tab grows in**: it appears once THE FOUR GROUNDS has been met, like
+  every section that does, so a stranger's manual is not longer for it.
+
+**Verified.** 1483 unit tests (a new `strategy.test.ts`: both languages, both
+directions, live numbers, dials off); the Québec typography test caught nothing
+this time; two e2e (the tab and its four grounds; no tab for a stranger) and
+the tab added to the manual's clean-layout sweep; a 390 px screenshot read by
+eye. First paint 191.7 KB, 1.3 KB over, so the bar moved 195,000 → 197,000
+with the reason in `budget.json`. Sweep at 0 after demoting the two types and
+dropping a `name` field nothing read.
+
+**Not verified, and it is Marc's.** The advice is derived from the rules, not
+from play: "red gets better as a run goes on" and "yellow earns less late"
+follow from stone accumulating and are what the tuning comments say, but no
+study was re-run here. The French is the author's. And whether four tabs
+crowd the bar on a narrow phone: it scrolls sideways, as it was built to.

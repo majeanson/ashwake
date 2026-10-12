@@ -232,10 +232,55 @@ export const STRINGS_FR: Strings = {
   rareCard: 'Dépense-la là où beaucoup de tuiles se touchent.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
+  strategy: {
+    head: 'CHOISIR UN SOL',
+    pickWhen: 'À CHOISIR QUAND',
+    watchFor: 'ATTENTION À',
+    general: {
+      pocket:
+        'Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule.',
+      compare: (n) =>
+        `Aucun sol ne gagne partout${D}: ${n.yellow} est régulier, ${n.green} monte le plus haut en foule, ${n.red} s’enrichit à mesure que le sol s’use, et ${n.blue} paie loin du départ.`,
+      stone: (red) =>
+        red === null
+          ? 'Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance à personne.'
+          : `Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance qu’à ${red}.`,
+      distance:
+        'La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance.',
+      hand: 'Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.',
+    },
+    green: {
+      pick: (bonus, ring) =>
+        `Quand tu peux faire grossir une seule foule. Chaque voisine de sa couleur après la première ajoute +${d1(bonus)}, alors une tuile entourée de sa propre couleur vaut ${d1(ring)}.`,
+      watch:
+        'Seule en terrain mixte, elle ne gagne aucun bonus, seulement les ressemblances ordinaires.',
+    },
+    yellow: {
+      pick: (ring) =>
+        ring === null
+          ? 'Quand le terrain autour est mélangé. Elle est payée pour les couleurs différentes à ses côtés.'
+          : `Quand le terrain autour est mélangé. Chaque tuile voisine la paie, peu importe sa couleur, alors une fois entourée, elle vaut ${d1(ring)}.`,
+      watch:
+        'La pierre, les murs et le bord de la carte ne lui rapportent rien, et elle ne donne aucune ressemblance aux autres couleurs. En fin de partie, quand les récoltes ont laissé de la pierre, elle rapporte moins.',
+    },
+    red: {
+      pick: (walls) =>
+        `À côté de la pierre${walls ? ' et des murs' : ''}, qui comptent comme des ressemblances pour elle. Tes propres récoltes laissent de la pierre, alors elle s’améliore à mesure que la partie avance.`,
+      watch: 'Sur un sol neuf et ouvert, elle ne rapporte que les ressemblances ordinaires.',
+    },
+    blue: {
+      pick: (every, cap) =>
+        `Loin du départ. Elle ajoute +1 de valeur par ${every} hex d’éloignement${cap > 0 ? `, jusqu’à +${cap}` : ''}.`,
+      watch: (cap) =>
+        cap > 0
+          ? `Son extra est petit (+${cap} au plus), alors près du départ ou seule elle ne rapporte que les ressemblances ordinaires. Choisis-la là où elle a aussi des voisines de sa couleur.`
+          : 'Près du départ, elle ne rapporte rien de plus.',
+    },
+  },
   coach: {
     place: `Les tuiles sous le plateau forment ta main, et la tuile éclairée est la prochaine que tu poseras. Touche une arête lumineuse du plateau pour la poser${D}: chaque tuile posée agrandit ton terrain, et c’est le terrain qui marque.`,
     match:
-      'Regarde les couleurs. La VALEUR d’une tuile, c’est combien de ses voisines ont sa couleur, alors pose les prochaines contre des tuiles qui lui ressemblent.',
+      'La plupart des tuiles gagnent de la VALEUR auprès des voisines de leur couleur, alors pose les prochaines contre des tuiles semblables. Chaque couleur plie aussi cette règle à sa façon, et LES QUATRE SOLS les expliquent.',
     grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent. Chaque pose dépense des tuiles de ta réserve, alors bâtis avec un plan.',
     pop: `Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER${D}: ça te redonne des tuiles pour continuer à poser, et des points pour ton score.`,
   },
@@ -750,7 +795,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     forge: 'FORGER',
     sacrificeLuck: 'SACRIFIER LA CHANCE',
     sacrificeLuckFor: (relics) => `SACRIFIER LA CHANCE POUR ${relics}`,
-    tabs: { start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN' },
+    tabs: { start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN', colours: 'COULEURS' },
     fame: {
       title: 'TEMPLE DE LA RENOMMÉE',
       diary: 'JOURNAL',

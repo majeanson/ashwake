@@ -159,3 +159,41 @@ test('the first run is walked: one coach line per step, and nothing else in the 
   ).toBe(true);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('HOW TO PLAY has a COLOURS tab: each ground, when to take it, what to watch for', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-12, Marc: _"add more strategy in how to play towards colours … each
+   * colour could have their own explanation + general strategy"_. The tab is
+   * one of the manual's sections that grow in, so a stranger who has not met
+   * THE FOUR GROUNDS does not see it, and a device that has does.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+  await begin(page);
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+  await page.locator('[data-tab="colours"]').click();
+
+  const manual = page.locator('[data-panel="manual"]');
+  await expect(manual).toContainText(/CHOOSING A GROUND|CHOISIR UN SOL/);
+  await expect(manual.locator('[data-ground]')).toHaveCount(4);
+  for (const colour of ['green', 'yellow', 'red', 'blue']) {
+    const block = manual.locator(`[data-ground="${colour}"]`);
+    await expect(block).toContainText(/PICK IT WHEN|À CHOISIR QUAND/);
+    await expect(block).toContainText(/WATCH FOR|ATTENTION À/);
+  }
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the COLOURS tab waits for a stranger to meet the four grounds', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await begin(page);
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+  await expect(page.locator('[data-tab="start"]')).toBeVisible();
+  await expect(page.locator('[data-tab="colours"]')).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

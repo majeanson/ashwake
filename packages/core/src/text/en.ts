@@ -232,11 +232,55 @@ export const STRINGS_EN: Strings = {
   rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Tap remembered fog to light its ground.',
+  strategy: {
+    head: 'CHOOSING A GROUND',
+    pickWhen: 'PICK IT WHEN',
+    watchFor: 'WATCH FOR',
+    general: {
+      pocket:
+        'A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile.',
+      compare: (n) =>
+        `No ground wins everywhere. ${n.yellow} is steady, ${n.green} climbs highest in a crowd, ${n.red} grows as the ground is spent, and ${n.blue} pays far from home.`,
+      stone: (red) =>
+        red === null
+          ? 'Popped ground turns to stone. It helps tiles ripen, but it pays no one a match.'
+          : `Popped ground turns to stone. It helps tiles ripen, but it pays a match only to ${red}.`,
+      distance:
+        'Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward.',
+      hand: 'You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.',
+    },
+    green: {
+      pick: (bonus, ring) =>
+        `When you can keep one crowd growing. Every neighbour of its own colour past the first adds +${d1(bonus)}, so a tile ringed by its own colour is worth ${d1(ring)}.`,
+      watch: 'Alone in mixed ground it earns no bonus, only plain matches.',
+    },
+    yellow: {
+      pick: (ring) =>
+        ring === null
+          ? 'When the ground around you is mixed. It is paid for the different colours beside it.'
+          : `When the ground around you is mixed. Every neighbouring tile pays it, whatever its colour, so once ringed it is worth ${d1(ring)}.`,
+      watch:
+        'Stone, walls and the map’s edge pay it nothing, and it gives other colours no match. Late in a run, as pops leave stone, it earns less.',
+    },
+    red: {
+      pick: (walls) =>
+        `Beside stone${walls ? ' and walls' : ''}, which count as matches for it. Your own pops leave stone, so it gets better as a run goes on.`,
+      watch: 'On fresh open ground it earns only plain matches.',
+    },
+    blue: {
+      pick: (every, cap) =>
+        `Far from home. It adds +1 worth per ${every} hexes out${cap > 0 ? `, up to +${cap}` : ''}.`,
+      watch: (cap) =>
+        cap > 0
+          ? `Its extra is small (at most +${cap}), so near home or on its own it is just plain matches. Choose it where it also has neighbours of its own colour.`
+          : 'Near home it earns nothing extra.',
+    },
+  },
   coach: {
     place:
       'The tiles under the board are your hand, and the lit one is the next you will place. Tap a glowing edge on the board to put it down: every tile you place is ground you build, and ground is what scores.',
     match:
-      'Look at the colours. A tile’s WORTH is how many of its neighbours match its colour, so place the next tiles beside ones that match.',
+      'Most tiles earn WORTH from neighbours of their own colour, so place the next ones beside matches. Each colour also bends that rule its own way: THE FOUR GROUNDS explains them.',
     grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in. Each placement spends tiles from your supply, so build with a plan.',
     pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP: it gives you tiles back to keep placing, and points toward your score.',
   },
@@ -739,7 +783,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
     sacrificeLuckFor: (relics) => `SACRIFICE LUCK FOR ${relics}`,
-    tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND' },
+    tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND', colours: 'COLOURS' },
     fame: {
       title: 'HALL OF FAME',
       diary: 'DIARY',

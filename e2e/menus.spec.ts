@@ -442,7 +442,7 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await clean('MORE, off the board');
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  for (const tab of ['start', 'play', 'hand']) {
+  for (const tab of ['start', 'play', 'hand', 'colours']) {
     await page.locator(`[data-tab="${tab}"]`).click();
     await clean(`the manual's ${tab} tab`);
   }

@@ -1,4 +1,4 @@
-import type { PointSource, Rarity } from '@content/tuning';
+import type { Colour, PointSource, Rarity } from '@content/tuning';
 import type { Locale } from '@content/locale';
 import type { WareId } from '@content/caravan';
 
@@ -208,6 +208,39 @@ export type Strings = {
   /** The first toast of a run: what to do with the tile in hand. One
    *  sentence (2026-10-12, Marc: the second one — what the faint number is —
    *  was too much on the first screen; it has its own door in the manual). */
+  /**
+   * CHOOSING A GROUND (2026-10-12, Marc: _"add more strategy in how to play
+   * towards colours"_): the manual's COLOURS tab. Each ground's RULE is
+   * `colourLesson`, the sentence every other door says; this is what the rule
+   * is FOR. Functions take numbers and names, never read state (D4), and the
+   * numbers come from the live tuning so the tab cannot go stale.
+   */
+  readonly strategy: {
+    readonly head: string;
+    readonly pickWhen: string;
+    readonly watchFor: string;
+    /** The advice that holds for every ground. `n` is the direction's own
+     *  ground names; `red` is null where no ground counts stone. */
+    readonly general: {
+      readonly pocket: string;
+      readonly compare: (n: Readonly<Record<Colour, string>>) => string;
+      readonly stone: (red: string | null) => string;
+      readonly distance: string;
+      readonly hand: string;
+    };
+    readonly green: {
+      readonly pick: (bonus: number, ring: number) => string;
+      readonly watch: string;
+    };
+    /** `ring` is null where yellow counts distinct colours, which has no
+     *  single full-ring figure to quote. */
+    readonly yellow: { readonly pick: (ring: number | null) => string; readonly watch: string };
+    readonly red: { readonly pick: (walls: boolean) => string; readonly watch: string };
+    readonly blue: {
+      readonly pick: (every: number, cap: number) => string;
+      readonly watch: (cap: number) => string;
+    };
+  };
   /**
    * THE FIRST RUN'S COACH (2026-10-12, Marc: _"take the user by the hand and
    * walk them through their actions and why they do it"_). One line per step,
@@ -810,6 +843,7 @@ export type Strings = {
       readonly start: string;
       readonly play: string;
       readonly hand: string;
+      readonly colours: string;
     };
     /**
      * "There is more behind this tab", said out loud (2026-09-02).

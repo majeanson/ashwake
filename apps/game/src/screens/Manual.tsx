@@ -16,6 +16,7 @@ import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { Figure } from '../ui/Figure';
+import { GroundGuide } from './GroundGuide';
 import { Legend } from './Legend';
 import { Panel } from '../ui/Panel';
 import { ProseLines } from '../ui/Prose';
@@ -38,7 +39,7 @@ import { panelOf, tabOf, Tabs } from '../ui/Tabs';
  * 2026-08-27 after it kept dismissing the manual mid-sentence.
  */
 
-const TABS = ['start', 'play', 'hand'] as const;
+const TABS = ['start', 'play', 'hand', 'colours'] as const;
 type TabId = (typeof TABS)[number];
 
 /** The key list, in the order somebody learns it: point at a hex, act on it,
@@ -110,6 +111,10 @@ const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
   // more, and a section that grows in when its card has spoken.
   play: ['reach', 'bounty', 'caravan', 'field', 'lens'],
   hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
+  // COLOURS is not a list of lessons: it is `GroundGuide`, built from the
+  // colour rules and the strategy catalogue (2026-10-12). Its tab appears when
+  // THE FOUR GROUNDS has been met, like every section that grows in.
+  colours: [],
 };
 
 /**
@@ -217,7 +222,7 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
           base="manual"
           growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
-          tabs={TABS.map((id) => ({
+          tabs={TABS.filter((id) => id !== 'colours' || metHere('colours', known)).map((id) => ({
             id,
             label: s.ui.tabs[id],
             // A tab with sections still to unlock says so — see `Tab.grows`.
@@ -334,6 +339,8 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
         in the registry because it is a fact about a PAGE, not about a
         lesson: a teaching card shows the same figure and should.
       */}
+      {on === 'colours' && <GroundGuide theme={theme} s={s} />}
+
       {drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
         <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
       ))}

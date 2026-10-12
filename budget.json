@@ -14,7 +14,7 @@
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
   "firstPaint": {
-    "gzip": 195000,
+    "gzip": 197000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -71,7 +71,13 @@
       "MOVED 2026-10-12 (later), from 194,000 to 195,000, for THE WALK (LOG.md",
       "Session 129). Measured 189.5 KB gzipped, 0.1 KB over: the coach's three",
       "lines in both languages, `walked` in the ledger and the step logic in",
-      "shell/teaching.ts. First minute again; renderer-by-name check untouched."
+      "shell/teaching.ts. First minute again; renderer-by-name check untouched.",
+      "",
+      "MOVED 2026-10-12 (later still), from 195,000 to 197,000, for THE COLOURS",
+      "TAB (LOG.md Session 129). Measured 191.7 KB gzipped, 1.3 KB over: the",
+      "strategy catalogue in both languages (view/strategy.ts, GroundGuide) and",
+      "the tab. Asked for by name, and manual text is first-paint text here.",
+      "Renderer-by-name check untouched."
     ]
   },
   "renderer": {

@@ -1068,6 +1068,12 @@ button[disabled] {
   align-items: start;
 }
 
+/* The advice under a ground in the manual's COLOURS tab (2026-10-12): set in
+   under the row's mark so the three lines read as one block. */
+.ground-advice {
+  margin: 0.35rem 0 0.35rem 2.1rem;
+}
+
 /* A row that prices something carries its number on the right (2026-09-25):
    the receipt's table and the lens's are the same rows. */
 .tip-table {
