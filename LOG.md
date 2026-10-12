@@ -10562,3 +10562,8 @@ the chips' pace); a new e2e for the replay; screenshots at 390 px of the card
 with its mark, the one-sentence toast with no chip over it, and UNDO dim then
 live. The chip's pace is unit-tested rather than e2e'd: a chip's moment depends
 on a deal no browser test can hold still (the one tried placed the wrong tiles).
+
+**Addendum, same session:** REPLAY THE TUTORIAL is also a row on MENU, under HOW
+TO PLAY (armed like the Settings row; both call one `replayTutorial` in `App`),
+because somebody who is lost looks at MENU first. 350 of 350 e2e on Chromium
+and WebKit.

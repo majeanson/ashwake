@@ -2860,6 +2860,19 @@ function Game() {
   const newRun = useCallback(() => startRun(null), [startRun]);
 
   /**
+   * REPLAY THE TUTORIAL — from SETTINGS and from MENU, one function (2026-10-12).
+   * Clears the lessons and the pace and starts the next run in this world, so
+   * the story and HOW IT WORKS come first; see the SETTINGS wiring below for
+   * why it also starts a run.
+   */
+  const replayTutorial = useCallback(() => {
+    setProgress((p) => ({ ...p, met: [] }));
+    spokeRef.current = null;
+    setSpokeAt(null);
+    newRun();
+  }, [setProgress, newRun]);
+
+  /**
    * BEGIN AT CAMP — the fifth shrine's unlock, finally opening onto something.
    *
    * `campFor` is what decides whether there is a camp at all; a null here is
@@ -4092,12 +4105,7 @@ function Game() {
            * RESET ALL is next to it and is armed, and is what a player asking
            * for that would press.
            */
-          onReplayTutorial={() => {
-            setProgress((p) => ({ ...p, met: [] }));
-            spokeRef.current = null;
-            setSpokeAt(null);
-            newRun();
-          }}
+          onReplayTutorial={replayTutorial}
         />
       )}
 
@@ -4129,6 +4137,7 @@ function Game() {
           onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
           onBack={more.hide}
           onHowToPlay={() => manual.show()}
+          onTutorial={replayTutorial}
           onFame={() => fame.show()}
           onSettings={() => settings.show()}
           onShop={() => shop.show()}

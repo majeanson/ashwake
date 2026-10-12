@@ -84,7 +84,10 @@ test('the tutorial can be replayed from SETTINGS, from the story', async ({ page
 
   await openMore(page);
   await page.locator('[data-go="settings"]').click();
-  await page.getByRole('button', { name: /REPLAY THE TUTORIAL|REFAIRE LE TUTORIEL/ }).click();
+  await page
+    .locator('[data-panel="settings"]')
+    .getByRole('button', { name: /REPLAY THE TUTORIAL|REFAIRE LE TUTORIEL/ })
+    .click();
   // Armed: it says what it will do, and a second press does it.
   const armed = page.locator('[data-panel="settings"] button.armed');
   await expect(armed).toContainText(/NEW RUN|NOUVELLE PARTIE/);
@@ -98,5 +101,21 @@ test('the tutorial can be replayed from SETTINGS, from the story', async ({ page
   await clearCards(page);
   expect(await tilesLeft(page), 'the replay did not start a fresh run').toBeGreaterThan(before);
 
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the tutorial is also one tap from MENU, for somebody who is lost', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+  await begin(page);
+  await clearCards(page);
+
+  await openMore(page);
+  await page.getByRole('button', { name: /REPLAY THE TUTORIAL|REFAIRE LE TUTORIEL/ }).click();
+  const armed = page.locator('[data-panel="more"] button.armed');
+  await expect(armed).toContainText(/NEW RUN|NOUVELLE PARTIE/);
+  await armed.click();
+
+  await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
   expect(errors, errors.join('\n')).toEqual([]);
 });

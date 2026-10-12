@@ -60,6 +60,10 @@ type MoreProps = {
   readonly onWorlds: () => void;
   readonly onDaily: () => void;
   readonly onRestart: () => void;
+  /** REPLAY THE TUTORIAL, one tap from MENU as well as in SETTINGS (2026-10-12,
+   *  Marc: _"also add a way to redo the tutorial"_) — where somebody who is
+   *  lost looks first. Armed like the Settings row: it starts a new run. */
+  readonly onTutorial: () => void;
   /** False on a shared board, which has no restart to offer — `App` carries
    *  the argument, and `MODES.md` the invariant behind it. */
   readonly canRestart: boolean;
@@ -78,6 +82,7 @@ export function More({
   onWorlds,
   onDaily,
   onRestart,
+  onTutorial,
   canRestart,
 }: MoreProps) {
   return (
@@ -88,6 +93,11 @@ export function More({
           <button type="button" data-go="manual" onClick={onHowToPlay}>
             {s.ui.howToPlay}
           </button>
+          <Confirming
+            label={s.ui.replayTutorial}
+            armed={s.ui.replayTutorialArmed}
+            onConfirm={onTutorial}
+          />
           <button type="button" data-go="daily" onClick={onDaily}>
             {s.ui.daily}
           </button>
