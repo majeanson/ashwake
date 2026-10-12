@@ -90,11 +90,15 @@ test('the tutorial can be replayed from SETTINGS, from the story', async ({ page
     .click();
   // Armed: it says what it will do, and a second press does it.
   const armed = page.locator('[data-panel="settings"] button.armed');
-  await expect(armed).toContainText(/NEW RUN|NOUVELLE PARTIE/);
+  await expect(armed).toContainText(/TUTORIAL WORLD|MONDE TUTORIEL/);
   await armed.click();
 
-  // A new run, and the lessons start over from the story.
+  // A new world, MENU closed behind it (it used to stay open over a run in one
+  // of the player's own worlds), and the lessons start over from the story.
   await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
+  await expect(page.locator('[data-panel]'), 'a panel stayed open over the tutorial').toHaveCount(
+    0,
+  );
   await page.locator('.card-scrim button').last().click({ force: true });
   await expect(page.locator('.card-scrim .card')).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
   await page.locator('.card-scrim button').last().click({ force: true });
@@ -113,7 +117,7 @@ test('the tutorial is also one tap from MENU, for somebody who is lost', async (
   await openMore(page);
   await page.getByRole('button', { name: /REPLAY THE TUTORIAL|REFAIRE LE TUTORIEL/ }).click();
   const armed = page.locator('[data-panel="more"] button.armed');
-  await expect(armed).toContainText(/NEW RUN|NOUVELLE PARTIE/);
+  await expect(armed).toContainText(/TUTORIAL WORLD|MONDE TUTORIEL/);
   await armed.click();
 
   await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);

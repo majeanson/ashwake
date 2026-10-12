@@ -986,6 +986,27 @@ export function settleWorldInto(slot: Slot, world: WorldMemory): void {
  */
 export const isFreeSlot = (slot: Slot): boolean => !hasBeenPlayed(readWorld(slot));
 
+/**
+ * WHERE THE TUTORIAL GOES (2026-10-12, Marc: _"the tutorial doesn't open a new
+ * world at all, it keeps us on menu screen and when i leave menu i'm in one of
+ * my worlds"_).
+ *
+ * The tutorial is a world — the chosen board, `content/learn` — opened in a
+ * slot, so the player's own worlds are left exactly as they were and the door
+ * is the world switch every other world uses. In order: a slot nobody has
+ * played (one already holding the tutorial's seed first, so it is not piled up),
+ * else a played tutorial world, which gets a fresh run on the same map, else
+ * nowhere, and the caller says so. `fresh` means the slot is to be minted.
+ */
+export function tutorialSlot(): { readonly slot: Slot; readonly fresh: boolean } | null {
+  const free = SLOTS.filter(isFreeSlot);
+  const waiting = free.find((slot) => readWorld(slot)?.worldSeed === LEARN_SEED);
+  const pick = waiting ?? free[0];
+  if (pick !== undefined) return { slot: pick, fresh: true };
+  const played = SLOTS.find((slot) => readWorld(slot)?.worldSeed === LEARN_SEED);
+  return played === undefined ? null : { slot: played, fresh: false };
+}
+
 /** Every key this game owns. RESET ALL, and the thing RESTORE writes over. */
 export function clearEverything(): void {
   for (const key of Object.values(DEVICE)) drop(key);

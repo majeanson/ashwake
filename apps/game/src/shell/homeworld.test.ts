@@ -21,6 +21,7 @@ import {
   readWorld,
   settleWorldInto,
   worldSeedFor,
+  tutorialSlot,
   writeWorld,
 } from './storage';
 
@@ -276,5 +277,35 @@ describe('what a world lends the run it opens', () => {
     // It reaches the run's own state, which is what makes it replay-honest:
     // the same run resumed or re-derived agrees about what is out there.
     expect(returning.rearmed).toEqual(lent.rearmed);
+  });
+});
+
+describe('where the tutorial opens (2026-10-12)', () => {
+  const played = (slot: 1 | 2 | 3, seed: number) =>
+    writeWorld(slot, { ...newWorld(seed), runs: 1 });
+
+  it('takes the first slot nobody has played, to be minted', () => {
+    played(1, 11);
+    expect(tutorialSlot()).toEqual({ slot: 2, fresh: true });
+  });
+
+  it('prefers a waiting tutorial world, so replaying does not pile them up', () => {
+    played(1, 11);
+    writeWorld(3, newWorld(LEARN_SEED));
+    expect(tutorialSlot()).toEqual({ slot: 3, fresh: true });
+  });
+
+  it('reuses a played tutorial world with a fresh run when every slot is taken', () => {
+    played(1, 11);
+    played(2, LEARN_SEED);
+    played(3, 33);
+    expect(tutorialSlot()).toEqual({ slot: 2, fresh: false });
+  });
+
+  it('has nowhere to go when all three worlds are played and none is the tutorial', () => {
+    played(1, 11);
+    played(2, 22);
+    played(3, 33);
+    expect(tutorialSlot()).toBeNull();
   });
 });

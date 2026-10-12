@@ -10567,3 +10567,22 @@ on a deal no browser test can hold still (the one tried placed the wrong tiles).
 TO PLAY (armed like the Settings row; both call one `replayTutorial` in `App`),
 because somebody who is lost looks at MENU first. 350 of 350 e2e on Chromium
 and WebKit.
+
+**Correction, same day (Marc's phone):** REPLAY THE TUTORIAL _"doesn't open a new
+world at all, it keeps us on menu screen and when i leave menu i'm in one of my
+worlds"_ — true twice over. It started a run in the world the player was
+standing in, and NEW RUN's door does not close the panels (`fromMenus` is set
+only for BEGIN AT CAMP). It is now a world: `replayTutorial` takes a slot
+(`tutorialSlot`: a slot nobody has played, one already holding the tutorial's
+seed first; else a played tutorial world, with a fresh run; else it says all
+three worlds are in use), mints it on `LEARN_SEED` with `settleWorldInto`, and
+enters it through `enterRun` with `fromMenus`. The player's own worlds are not
+touched. A new row in `MODES.md`'s door table, which `modes.test.ts` demands of
+any new `enterRun` caller. The confirmation says so: _"OPEN A TUTORIAL WORLD?
+YOUR WORLDS STAY AS THEY ARE."_
+
+**e2e, honestly:** 349 of 350 on Chromium and WebKit for this change. The one
+failure is the touring-board test on WebKit ("the board never toured": the
+canvas capture reads 0 apart). It fails 3 of 3 **on `c587fc0` too**, run alone
+with `--repeat-each`, and passed in three full runs before and in CI — WebKit's
+blank-capture class (`P6.8`, `board.spec.ts` records it), not this change.

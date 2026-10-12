@@ -38,16 +38,17 @@ rearrange it, it **wakes** it, and the doors appear where the caches were.
 ## The doors
 
 Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
-`Door`. The compiler asks: a new field is a compile error at all four.
+`Door`. The compiler asks: a new field is a compile error at every one of them.
 
-| Door                                                                  | `daily`        | `detour`            | `memory`                 | `economy`   | `keepsWorld` |
-| --------------------------------------------------------------------- | -------------- | ------------------- | ------------------------ | ----------- | ------------ |
-| **boot** (not `enterRun`; `App`'s `buildSession`)                     | from `?daily=` | seed ≠ slot's world | the slot's, unless daily | by kind     | —            |
-| **NEW RUN / BEGIN AT CAMP**                                           | null           | false               | the slot's               | `economyAt` | false        |
-| **enterWorld** (world switch, kept board, front-door SETTLE, RESTORE) | null           | false               | the slot's               | `economyAt` | false        |
-| **enterDaily**                                                        | the date       | false               | none                     | `daily`     | false        |
-| **takeCrossing**                                                      | null           | false               | none (fresh world)       | `economyAt` | **true**     |
-| **RESET ALL** (direct `session.restart`)                              | null           | false (default)     | none                     | `economyAt` | —            |
+| Door                                                                                               | `daily`        | `detour`            | `memory`                 | `economy`   | `keepsWorld` |
+| -------------------------------------------------------------------------------------------------- | -------------- | ------------------- | ------------------------ | ----------- | ------------ |
+| **boot** (not `enterRun`; `App`'s `buildSession`)                                                  | from `?daily=` | seed ≠ slot's world | the slot's, unless daily | by kind     | —            |
+| **NEW RUN / BEGIN AT CAMP**                                                                        | null           | false               | the slot's               | `economyAt` | false        |
+| **enterWorld** (world switch, kept board, front-door SETTLE, RESTORE)                              | null           | false               | the slot's               | `economyAt` | false        |
+| **REPLAY THE TUTORIAL** (a free slot minted on `content/learn`'s seed, or a played tutorial world) | null           | false               | the slot's               | `economyAt` | false        |
+| **enterDaily**                                                                                     | the date       | false               | none                     | `daily`     | false        |
+| **takeCrossing**                                                                                   | null           | false               | none (fresh world)       | `economyAt` | **true**     |
+| **RESET ALL** (direct `session.restart`)                                                           | null           | false (default)     | none                     | `economyAt` | —            |
 
 ## A SEVENTH SESSION THAT IS NOT A DOOR — the projector (2026-09-23)
 

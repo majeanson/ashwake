@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GoalId } from '@content/goals';
 import type { Colour } from '@content/tuning';
+import { LEARN_SEED } from '@content/learn';
 import { dailyBadge, dailyName, dailySeed, dailyStreak } from '@meta/daily';
 import { appendEntry } from '@meta/timeline';
 import { startingPerk } from '@engine/reduce';
@@ -98,6 +99,7 @@ import {
   holdShed,
   takeHeldSheds,
   settleWorldInto,
+  tutorialSlot,
   setActiveSlot,
   writeRecords,
   hasReplay,
@@ -2861,16 +2863,43 @@ function Game() {
 
   /**
    * REPLAY THE TUTORIAL — from SETTINGS and from MENU, one function (2026-10-12).
-   * Clears the lessons and the pace and starts the next run in this world, so
-   * the story and HOW IT WORKS come first; see the SETTINGS wiring below for
-   * why it also starts a run.
+   *
+   * **It opens a WORLD** (Marc: _"the tutorial doesn't open a new world at
+   * all, it keeps us on menu screen and when i leave menu i'm in one of my
+   * worlds"_): the chosen board, `content/learn`, in a slot — see
+   * `tutorialSlot` — entered through the same door every world is, so the
+   * player's own worlds are left as they were and the panels close behind it
+   * (`fromMenus`, which NEW RUN does not set because it is pressed on the
+   * board; that is why the first version stayed on MENU).
+   *
+   * The lessons and the pace start over with it: the story and HOW IT WORKS
+   * come first.
    */
   const replayTutorial = useCallback(() => {
+    const where = tutorialSlot();
+    if (where === null) {
+      say(s.ui.tutorialNoRoom);
+      return;
+    }
+    if (where.fresh) settleWorldInto(where.slot, newWorld(LEARN_SEED));
     setProgress((p) => ({ ...p, met: [] }));
     spokeRef.current = null;
     setSpokeAt(null);
-    newRun();
-  }, [setProgress, newRun]);
+    setSlot(where.slot);
+    const seed = worldSeedFor(where.slot);
+    enterRun(wiring, {
+      daily: null,
+      resume: null,
+      seed,
+      memory: memoryFor(where.slot, seed),
+      economy: economyAt(where.slot, seed),
+      wakeAt: null,
+      from: startsFrom(where.slot, progress.found),
+      detour: false,
+      keepsWorld: false,
+      fromMenus: true,
+    });
+  }, [say, s, setProgress, setSlot, wiring, progress.found, startsFrom]);
 
   /**
    * BEGIN AT CAMP — the fifth shrine's unlock, finally opening onto something.

@@ -1102,6 +1102,8 @@ export type Strings = {
      */
     readonly restartArmed: string;
     readonly replayTutorialArmed: string;
+    /** REPLAY THE TUTORIAL with all three worlds taken and none of them the tutorial. */
+    readonly tutorialNoRoom: string;
     readonly newWorldArmed: (n: number) => string;
     /** The three, as a heading. Distinct from `newWorld`, which is the
      *  destructive action inside that panel rather than the panel itself. */
