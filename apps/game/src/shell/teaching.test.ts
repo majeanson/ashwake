@@ -327,3 +327,20 @@ describe('REDRAW, offered on a poor hand (2026-10-12)', () => {
     expect(nextLesson(unaffordable, taughtExcept('reroll'))).toBeNull();
   });
 });
+
+describe('the chips keep the pace too (2026-10-12)', () => {
+  it('shows none within the gap of the last thing the game said, and returns after it', () => {
+    // Seed 122 at depth 20 shows a shrine and a territory unclaimed.
+    const s = createSession({
+      seed: 122,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+    });
+    walk(s, 20);
+    const snap = s.get();
+    const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
+    expect(newDots(now, EMPTY_PROGRESS).length).toBeGreaterThan(0);
+    expect(newDots({ ...now, since: CARD_GAP - 1 }, EMPTY_PROGRESS)).toEqual([]);
+    expect(newDots({ ...now, since: CARD_GAP }, EMPTY_PROGRESS).length).toBeGreaterThan(0);
+  });
+});

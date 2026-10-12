@@ -1779,9 +1779,17 @@ function Game() {
   const dots = useMemo(
     () =>
       started && !snap.hud.ended
-        ? newDots({ board: snap.board, hud: snap.hud, placed: snap.hud.placements > 0 }, progress)
+        ? newDots(
+            {
+              board: snap.board,
+              hud: snap.hud,
+              placed: snap.hud.placements > 0,
+              since: sinceSpoke(spokeAt, snap.hud.placements),
+            },
+            progress,
+          )
         : [],
-    [started, snap.board, snap.hud, progress],
+    [started, snap.board, snap.hud, progress, spokeAt],
   );
   const [dotOpen, setDotOpen] = useState<TeachId | null>(null);
 
@@ -3695,6 +3703,8 @@ function Game() {
             canSpend={playing && snap.hud.spends.length > 0}
             onPurse={onPurse}
             purseOpen={purseOpen}
+            chips={playing ? <NewChips ids={dots} s={s} onOpen={setDotOpen} /> : null}
+            showUndo={playing}
             canUndo={playing && snap.undoable}
             onUndo={undoLast}
             canLens={playing}
@@ -3829,7 +3839,6 @@ function Game() {
               }
             />
           )}
-          <NewChips ids={dots} s={s} onOpen={setDotOpen} />
           <ActionBar
             hud={snap.hud}
             theme={theme}
@@ -4064,7 +4073,16 @@ function Game() {
           onRenderScale={setRenderScale}
           onDevice={() => device.show()}
           /*
-           * RESET TEACHING resets the TEACHING (2026-08-30).
+           * REPLAY THE TUTORIAL (2026-10-12, Marc: _"also add a way to redo the
+           * tutorial"_) — what RESET TEACHING was, plus the run to learn it on.
+           * Cards alone would arrive over a board that is mid-run, with the
+           * story over a placed tile; so it also clears the pace and starts the
+           * next run in this world, which is why its confirmation says so. On
+           * a device's first world that is the chosen board (`content/learn`)
+           * with a fresh deal; on any other it is the same ground, the same
+           * lessons.
+           *
+           * It was RESET TEACHING until then, and resets the TEACHING (2026-08-30).
            *
            * It handed back `EMPTY_PROGRESS`, which is the whole ledger — the
            * relic purse and every shop level with it. A control labelled
@@ -4074,7 +4092,12 @@ function Game() {
            * RESET ALL is next to it and is armed, and is what a player asking
            * for that would press.
            */
-          onResetTeaching={() => setProgress((p) => ({ ...p, met: [] }))}
+          onReplayTutorial={() => {
+            setProgress((p) => ({ ...p, met: [] }));
+            spokeRef.current = null;
+            setSpokeAt(null);
+            newRun();
+          }}
         />
       )}
 

@@ -205,6 +205,10 @@ export type Strings = {
    *  the drip's LENS toast and the manual's fog section — so the gesture is
    *  never described two ways. */
   readonly lensHint: string;
+  /** The first toast of a run: what to do with the tile in hand. One
+   *  sentence (2026-10-12, Marc: the second one — what the faint number is —
+   *  was too much on the first screen; it has its own door in the manual). */
+  readonly placeHint: string;
   /** The drip's one line on a poor hand: REDRAW exists, and what it costs. */
   readonly rerollHint: (cost: number) => string;
 
@@ -931,7 +935,7 @@ export type Strings = {
      * next to anything that explains it.
      */
     readonly luckPurse: (luck: number) => string;
-    readonly resetTeaching: string;
+    readonly replayTutorial: string;
     /** The disclosure a manual section folds its finer print into. */
     readonly details: string;
     /** The front door's own disclosure: the three-sentence hook, folded so a
@@ -1097,7 +1101,7 @@ export type Strings = {
      * confirmation should name which of the three is about to go.
      */
     readonly restartArmed: string;
-    readonly resetTeachingArmed: string;
+    readonly replayTutorialArmed: string;
     readonly newWorldArmed: (n: number) => string;
     /** The three, as a heading. Distinct from `newWorld`, which is the
      *  destructive action inside that panel rather than the panel itself. */

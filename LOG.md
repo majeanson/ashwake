@@ -10514,7 +10514,7 @@ dive instead of 150 ms after the tap, because the board it now builds is not
 the one that already fits. **Chromium and WebKit: 348 of 348**, the new `teaching.spec.ts`
 included.
 
-**Measured.** `pnpm budget`: first paint 188.6 KB gzipped, 1.1 KB over the old
+**Measured.** `pnpm budget`: first paint 188.8 KB gzipped, 1.3 KB over the old
 bar — raised 192,000 → 194,000 with the reason in `budget.json`. The golden sim
 is byte-identical. A screenshot at 390×844 shows the chip above the cluster and
 the UNDO arrow beside POP.
@@ -10522,3 +10522,43 @@ the UNDO arrow beside POP.
 **For the phone** (`NEXT.md` §1, round twelve): does the second card land as
 "oh, that's the game"? Does the chip read as an offer rather than a nag? Is
 the first board a good first board? Does UNDO feel like it belongs next to POP?
+
+### Session 128 — the first screen, read off Marc's phone (2026-10-12)
+
+**Question: does the first minute still clutter on a real phone?** Marc played
+the deployed build and sent a screenshot of the first board: a NEW MAGIC chip
+printed over the first toast, a magic tile in the very first hand, and a
+second sentence in the toast he did not like. And, while this was being fixed:
+UNDO should always be in the cluster, left of the view button, and the
+tutorial should be replayable.
+
+**What changed.**
+
+- **The chip is part of the cluster** (`screens/Camera`'s row), not a layer
+  above it, and `.toast` now clears the cluster's real height (`--camera-h`)
+  instead of assuming one row. It was its own absolute layer, which is why it
+  landed on the toast.
+- **Chips keep the pace** (`newDots` reads `since`): none within `CARD_GAP`
+  placements of the last thing the game said, so a first hand with a magic tile
+  no longer opens with an offer on top of a story, a card and a sentence.
+- **The first toast is one sentence**: _"Tap a glowing edge to place your
+  tile."_ (`placeHint`), which says what to DO. The old second sentence — what
+  the faint number is — keeps its place in the manual's figure (`figure.place`).
+  If the sentence Marc disliked was the HOW IT WORKS card's second one instead,
+  that is a one-line change.
+- **POP and LUCK wear their button's mark in a sentence** (`TERM_MARK` in
+  `ui/Prose.tsx`), everywhere prose is drawn: the card, the manual, a receipt.
+  Marc: _"when talking about luck or pop, use the same symbols as the button"_.
+- **UNDO is always in the cluster**, immediately left of the view button,
+  dimmed when there is nothing to take back, and no longer between POP and LUCK.
+- **REPLAY THE TUTORIAL** (Settings; `replayTutorial` in the catalogue, once
+  RESET TEACHING): clears the lessons and the pace and starts the next run in
+  this world, so the story and HOW IT WORKS come first. Its confirmation says
+  it starts a new run. On a first world that is the chosen board; on any other
+  it is the same ground with the same lessons.
+
+**Verified.** 1460 unit tests (a `NewChips` component test, a `Prose` mark test,
+the chips' pace); a new e2e for the replay; screenshots at 390 px of the card
+with its mark, the one-sentence toast with no chip over it, and UNDO dim then
+live. The chip's pace is unit-tested rather than e2e'd: a chip's moment depends
+on a deal no browser test can hold still (the one tried placed the wrong tiles).

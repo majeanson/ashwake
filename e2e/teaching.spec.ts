@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { begin, clearCards, placeOneTile, tilesLeft, watchErrors } from './helpers';
+import { begin, clearCards, openMore, placeOneTile, tilesLeft, watchErrors } from './helpers';
 
 /**
  * THE FIRST MINUTE, AFTER TWO STRANGERS (2026-10-12).
@@ -8,7 +8,8 @@ import { begin, clearCards, placeOneTile, tilesLeft, watchErrors } from './helpe
  * trop vite trop tôt"_, _"un undo ça serait clutch aussi"_. Three things came
  * of it and each is a thing a player touches, so each is asked of a real
  * browser: the card that says what the game is, the chips that offer the rest
- * without interrupting, and the button that takes a tile back.
+ * without interrupting (unit-tested: `NewChips.test.tsx` and `shell/teaching.test.ts`,
+ * because a chip's moment depends on a deal no browser test can hold still), and the button that takes a tile back.
  */
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -51,47 +52,51 @@ test('UNDO takes the last tile back, and only appears when there is one', async 
   await clearCards(page);
 
   const undo = page.locator('[data-action="undo"]');
-  await expect(undo, 'UNDO offered with nothing to take back').toHaveCount(0);
+  // Always in the cluster while a run is played, dimmed when it has nothing to do.
+  await expect(undo, 'UNDO missing from the cluster').toBeVisible();
+  await expect(undo, 'UNDO live with nothing to take back').toBeDisabled();
 
   const before = await tilesLeft(page);
   await placeOneTile(page);
   expect(await tilesLeft(page)).toBeLessThan(before);
-  await expect(undo, 'no UNDO after a placement').toBeVisible();
+  await expect(undo, 'no UNDO after a placement').toBeEnabled();
 
   await undo.click();
   expect(await tilesLeft(page), 'UNDO did not give the tile back').toBe(before);
-  await expect(undo).toHaveCount(0);
+  await expect(undo).toBeDisabled();
 
   // The keyboard's way: place, then U.
   await placeOneTile(page);
-  await expect(undo).toBeVisible();
+  await expect(undo).toBeEnabled();
   await page.keyboard.press('u');
   expect(await tilesLeft(page)).toBe(before);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('a territory or a shrine is a NEW chip, and its card opens when tapped', async ({ page }) => {
+test('the tutorial can be replayed from SETTINGS, from the story', async ({ page }) => {
   const errors = watchErrors(page);
-  // Seed 122 at depth 20 puts all four destinations on one board unclaimed
-  // (`shell/tourTarget.test.ts` chose it by looking). The ledger is untaught.
-  await page.goto('/?seed=122&place=20');
+  await page.goto('/?taught=1');
   await begin(page);
   await clearCards(page);
+  await placeOneTile(page);
+  const before = await tilesLeft(page);
 
-  const chips = page.locator('[data-new-chip]');
-  await expect(chips.first(), 'no NEW chip on a board that shows a shrine').toBeVisible();
-  const which = await chips.first().getAttribute('data-new-chip');
+  await openMore(page);
+  await page.locator('[data-go="settings"]').click();
+  await page.getByRole('button', { name: /REPLAY THE TUTORIAL|REFAIRE LE TUTORIEL/ }).click();
+  // Armed: it says what it will do, and a second press does it.
+  const armed = page.locator('[data-panel="settings"] button.armed');
+  await expect(armed).toContainText(/NEW RUN|NOUVELLE PARTIE/);
+  await armed.click();
 
-  await clearCards(page);
-  await chips.first().click();
-  await expect(page.locator('.card-scrim .card')).toBeVisible();
+  // A new run, and the lessons start over from the story.
+  await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
   await page.locator('.card-scrim button').last().click({ force: true });
-  await page.waitForTimeout(300);
+  await expect(page.locator('.card-scrim .card')).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
+  await page.locator('.card-scrim button').last().click({ force: true });
+  await clearCards(page);
+  expect(await tilesLeft(page), 'the replay did not start a fresh run').toBeGreaterThan(before);
 
-  await expect(
-    page.locator(`[data-new-chip="${which}"]`),
-    'the chip stayed after its card was read',
-  ).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });

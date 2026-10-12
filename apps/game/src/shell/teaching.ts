@@ -22,7 +22,7 @@ import { statNote, type HudView } from '@view/view';
  *   reading it.
  * - **Cards outrank toasts.** A concept gets a card; a consequence gets a line.
  * - **A lesson fires once per device**, written through the same ledger the
- *   shelf uses, so RESET TEACHING is one clear rather than a hunt.
+ *   shelf uses, so REPLAY THE TUTORIAL is one clear rather than a hunt.
  *
  * Pure: it takes two snapshots and returns what to say. No timers, no DOM, no
  * state of its own — which is what lets it be tested by handing it two views.
@@ -185,7 +185,12 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
  * has not been opened yet, in the drip's own order.
  */
 export const newDots = (now: Moment, progress: Progress): readonly TeachId[] =>
-  ORDER.filter((id) => DOTS.has(id) && !hasMet(progress, id) && isTrue(id, now));
+  // Under the same pace as the cards (2026-10-12, Marc: _"we start with a
+  // magic tile"_): a chip over a first screen that already has a story, a card
+  // and a sentence is the clutter this pace exists to prevent.
+  now.since !== undefined && now.since < CARD_GAP
+    ? []
+    : ORDER.filter((id) => DOTS.has(id) && !hasMet(progress, id) && isTrue(id, now));
 
 /**
  * The toast's own words — one line per toast-class moment (2026-09-03).
@@ -211,7 +216,7 @@ export function toastLine(
 ): string | null {
   switch (id) {
     case 'place':
-      return s.figure.place;
+      return s.placeHint;
     case 'costRise':
       return statNote('cost', now.hud, t, s);
     case 'wall':

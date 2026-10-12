@@ -63,7 +63,7 @@ type SettingsProps = {
   readonly onTheme: (id: ThemeId) => void;
   readonly onLocale: (locale: Locale) => void;
   readonly onFeature: (id: FeatureId, on: boolean) => void;
-  readonly onResetTeaching: () => void;
+  readonly onReplayTutorial: () => void;
   /** The SHARPNESS dial's value and this phone's own ceiling — see the section
    *  below for why it lives here rather than on the board. */
   readonly renderScale: number;
@@ -82,7 +82,7 @@ export function Settings({
   onTheme,
   onLocale,
   onFeature,
-  onResetTeaching,
+  onReplayTutorial,
   renderScale,
   maxRenderScale,
   onRenderScale,
@@ -339,9 +339,9 @@ export function Settings({
       <section>
         <PanelMenu>
           <Confirming
-            label={s.ui.resetTeaching}
-            armed={s.ui.resetTeachingArmed}
-            onConfirm={onResetTeaching}
+            label={s.ui.replayTutorial}
+            armed={s.ui.replayTutorialArmed}
+            onConfirm={onReplayTutorial}
           />
           {/*
           THIS DEVICE, one level further down (2026-09-08).

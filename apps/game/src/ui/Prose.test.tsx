@@ -92,3 +92,21 @@ describe('prose', () => {
     expect(lessonName(ripe, s)).toBe(s.lesson.ripe.name);
   });
 });
+
+describe('the words that are also buttons wear the button’s mark (2026-10-12)', () => {
+  it('draws a mark beside POP and LUCK, in both languages, and beside no other term', () => {
+    const { container } = render(<Prose text="POP a pocket and spend LUCK." s={s} />);
+    expect(container.querySelectorAll('.term-mark svg')).toHaveLength(2);
+
+    const french = render(<Prose text="RÉCOLTE une poche et dépense de la CHANCE." s={fr} />);
+    expect(french.container.querySelectorAll('.term-mark svg')).toHaveLength(2);
+
+    const plain = render(<Prose text="A tile RIPENS when surrounded." s={s} />);
+    expect(plain.container.querySelectorAll('.term-mark')).toHaveLength(0);
+  });
+
+  it('keeps the word as text, so a tap target and a screen reader still find it', () => {
+    render(<Prose text="Tap POP." s={s} onTerm={() => undefined} />);
+    expect(screen.getByRole('button', { name: 'POP' })).toBeDefined();
+  });
+});

@@ -232,6 +232,7 @@ export const STRINGS_EN: Strings = {
   rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Tap remembered fog to light its ground.',
+  placeHint: 'Tap a glowing edge to place your tile.',
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
 
   view: {
@@ -774,7 +775,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     menu: 'MENU',
     menuGroups: { play: 'PLAY', record: 'YOUR RECORD', device: 'THIS DEVICE' },
     luckPurse: (luck) => `LUCK: ${luck}. Open the purse.`,
-    resetTeaching: 'RESET TEACHING',
+    replayTutorial: 'REPLAY THE TUTORIAL',
     details: 'DETAILS',
     theStory: 'THE STORY',
     theGoal: 'HOW IT WORKS',
@@ -840,7 +841,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     resetAll: 'RESET ALL',
     resetAllArmed: 'ERASE EVERY WORLD?',
     restartArmed: 'END THIS RUN AND START OVER?',
-    resetTeachingArmed: 'SHOW EVERY LESSON AGAIN?',
+    replayTutorialArmed: 'START A NEW RUN WITH EVERY LESSON AGAIN?',
     newWorldArmed: (n) => `ABANDON WORLD ${n} AND ALL OF ITS GROUND?`,
     worlds: 'MY WORLDS',
     worldN: (n) => `WORLD ${n}`,

@@ -90,9 +90,15 @@ not say. Four questions:
   1st, a cache by the 6th, the first pop around the 9th, a poor hand soon
   after): is it a good first board, and is the first pop something a stranger
   would reach without help?
-- **UNDO** beside POP and **the NEW chip** over the hand: does either read as
+- **UNDO** (always there, left of the view button) and **the NEW chip** (at the head of the cluster, after four placements): does either read as
   belonging, or as clutter? And **the REDRAW hint**: on a poor hand, once, a line says what REDRAW
   costs. Did it come at a moment you could use it, and did you press REDRAW?
+
+**Also new, from your first screenshot:** the first toast is one sentence ("Tap a
+glowing edge to place your tile."), POP and LUCK wear their button's mark in
+every sentence, and SETTINGS has REPLAY THE TUTORIAL (new run, every lesson
+again, from the story). Say if the sentence you disliked was the HOW IT WORKS
+card's second one instead.
 
 **Found on the way, and fixed:** when the caravan was in town and took a
 pocket, its pick-one-of-three sheet opened over the pop result's ✕ and DÉTAILS,

@@ -1856,7 +1856,10 @@ a:visited {
      and a tap target tall. They overlapped on the first build and the buttons
      punched holes through the sentence. */
   bottom: min(
-    max(calc(var(--tap) + var(--gap) * 2), calc(var(--toast-lift, 0px) + var(--gap))),
+    max(
+      calc(var(--camera-h, var(--tap)) + var(--gap) * 2),
+      calc(var(--toast-lift, 0px) + var(--gap))
+    ),
     calc(100% - 4.5rem)
   );
   z-index: var(--z-board);
@@ -4081,23 +4084,18 @@ button.caravan-ask.waiting {
 /*
  * THE NEW CHIPS (2026-10-12, Marc: "card with new dot").
  *
- * Out of flow, against `.hand-host`, so a chip appearing never moves the board
- * the way a row above the hand would. Bottom-left of the board, one row above
- * the camera cluster.
+ * The head of the camera cluster's row (`screens/Camera`), so a chip is part
+ * of the cluster's height — which the toast and the sheets are placed against
+ * — and never sits over a sentence. It was its own layer above the cluster
+ * first, and Marc's phone showed it printed over the first toast.
  */
 .new-chips {
-  position: absolute;
-  left: var(--gap);
-  /* Above the cluster, whatever height it is (it is two rows with a pocket
-     ripe and one without — `Camera` publishes it), so a chip never sits under
-     POP's pill. */
-  bottom: calc(100% + var(--camera-h, var(--tap)) + 2 * var(--gap));
-  max-width: calc(100% - 2 * var(--gap));
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  z-index: var(--z-board);
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.35rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .new-chip {
@@ -4135,4 +4133,15 @@ button.caravan-ask.waiting {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* A term that is also a button wears the button's mark (2026-10-12) — see
+   `TERM_MARK` in `ui/Prose.tsx`. Sized to the word, held to it. */
+.term-marked {
+  white-space: nowrap;
+}
+.term-mark {
+  display: inline-block;
+  margin-inline-end: 0.2em;
+  vertical-align: -0.1em;
 }

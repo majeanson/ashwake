@@ -93,10 +93,13 @@ type CameraProps = {
   /** A pocket's buttons, first in the row — see `PocketActions` (2026-09-25). */
   readonly actions?: ReactNode;
   /**
-   * UNDO (2026-10-12): present while a run is played and the shell has a
-   * placement to take back. Absent otherwise, so the cluster is never wider
-   * than what a press can do.
+   * UNDO (2026-10-12): shown while a run is played, enabled when the shell has a
+   * placement to take back.
    */
+  /** NEW chips (2026-10-12): at the head of the row, so they are part of the
+   *  cluster's height and nothing the toast or a sheet is placed against. */
+  readonly chips?: ReactNode;
+  readonly showUndo: boolean;
   readonly canUndo: boolean;
   readonly onUndo: () => void;
 };
@@ -165,6 +168,8 @@ export function Camera({
   onLensPanel,
   lensOpen,
   actions,
+  chips,
+  showUndo,
   canUndo,
   onUndo,
 }: CameraProps) {
@@ -193,18 +198,8 @@ export function Camera({
       <div className="camera-row">
         {/* POP, UNDO, LUCK, LENS, then the camera — Marc's order, 2026-09-25,
             with UNDO beside the pocket's buttons since 2026-10-12. */}
+        {chips}
         {actions}
-        {canUndo && (
-          <button
-            type="button"
-            data-action="undo"
-            aria-label={s.ui.undo}
-            title={s.ui.undo}
-            onClick={onUndo}
-          >
-            <Icon name={CHROME_ICON.undo} />
-          </button>
-        )}
         {canSpend && (
           <button
             type="button"
@@ -244,6 +239,25 @@ export function Camera({
           lines over the board. The stop a press goes to is still the button's
           name for a screen reader and a long-press, and `data-view` for tests.
         */}
+        {/*
+          UNDO, always here while a run is played, immediately left of the view
+          button (2026-10-12, Marc: "make sure undo button is always there in
+          the ui, left of map display changes button"). Dimmed rather than
+          absent when there is nothing to take back, so it never appears under
+          a thumb that was heading for something else.
+        */}
+        {showUndo && (
+          <button
+            type="button"
+            data-action="undo"
+            aria-label={s.ui.undo}
+            title={s.ui.undo}
+            disabled={!canUndo}
+            onClick={onUndo}
+          >
+            <Icon name={CHROME_ICON.undo} />
+          </button>
+        )}
         <button
           type="button"
           data-action="camera"

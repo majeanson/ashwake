@@ -2,6 +2,35 @@ import { Fragment, type ReactNode } from 'react';
 import type { LessonId } from '@view/lessons';
 import { conceptPattern, conceptTerms, rarityPattern } from '@view/tips';
 import type { Strings } from '@text/Strings';
+import { CONCEPT_ICON, type IconName } from '@theme/icons';
+import { Icon } from './Icon';
+
+/**
+ * THE WORDS THAT ARE ALSO BUTTONS wear their mark in a sentence (2026-10-12,
+ * Marc: _"when talking about luck or pop, use the same symbols as the
+ * button"_). POP and LUCK are the two ideas a stranger meets as a mark first —
+ * on the cluster — and as a word in the very next card; the same shape in both
+ * places is how the word and the button become one thing. Only these two: the
+ * registry's own rule is a mark for an idea that recurs, and these recur.
+ */
+const TERM_MARK: Partial<Record<LessonId, IconName>> = {
+  pop: CONCEPT_ICON.pop,
+  luck: CONCEPT_ICON.luck,
+};
+
+/** The mark and the word, held together so a line never breaks between them. */
+function Marked({ id, children }: { readonly id: LessonId; readonly children: ReactNode }) {
+  const mark = TERM_MARK[id];
+  if (mark === undefined) return <>{children}</>;
+  return (
+    <span className="term-marked">
+      <span className="term-mark">
+        <Icon name={mark} />
+      </span>
+      {children}
+    </span>
+  );
+}
 
 /**
  * Every sentence the game says, with its terms tappable (Stage 3, 2026-08-29).
@@ -60,38 +89,40 @@ function inked(text: string, s: Strings, onTerm?: (id: LessonId) => void): React
     if (term === undefined) return <Fragment key={i}>{rarityInked(piece, s, i)}</Fragment>;
     if (onTerm === undefined) {
       return (
-        <span key={i} className={term.ink}>
-          {piece}
-        </span>
+        <Marked key={i} id={term.id}>
+          <span className={term.ink}>{piece}</span>
+        </Marked>
       );
     }
     return (
-      <button
-        key={i}
-        type="button"
-        className={['term', term.ink].filter(Boolean).join(' ')}
-        /*
-         * BELOW THE 44px FLOOR ON PURPOSE, and now saying so (2026-09-02).
-         *
-         * A term is a WORD INSIDE A SENTENCE. It is the size of the word, and
-         * it cannot be anything else: padding it to a tap target would push
-         * the lines of every paragraph in the manual apart around whichever
-         * words happen to be glossary entries, which is a worse reading
-         * experience for everyone in exchange for an easier tap on something
-         * that only ever opens an explanation.
-         *
-         * `.stat` is the other exemption in this build and it declares itself
-         * (`screens/Hud`). This one did not, so it was the one undeclared
-         * sub-44px control in the app — sixty-odd rows a run in the audit's
-         * unhandled column, drowning the ones that need deciding. The claim is
-         * the same claim, made in the same attribute, which is what stops two
-         * checks disagreeing about who is allowed to be small.
-         */
-        data-audit-compact=""
-        onClick={() => onTerm(term.id)}
-      >
-        {piece}
-      </button>
+      <Marked key={i} id={term.id}>
+        <button
+          key={i}
+          type="button"
+          className={['term', term.ink].filter(Boolean).join(' ')}
+          /*
+           * BELOW THE 44px FLOOR ON PURPOSE, and now saying so (2026-09-02).
+           *
+           * A term is a WORD INSIDE A SENTENCE. It is the size of the word, and
+           * it cannot be anything else: padding it to a tap target would push
+           * the lines of every paragraph in the manual apart around whichever
+           * words happen to be glossary entries, which is a worse reading
+           * experience for everyone in exchange for an easier tap on something
+           * that only ever opens an explanation.
+           *
+           * `.stat` is the other exemption in this build and it declares itself
+           * (`screens/Hud`). This one did not, so it was the one undeclared
+           * sub-44px control in the app — sixty-odd rows a run in the audit's
+           * unhandled column, drowning the ones that need deciding. The claim is
+           * the same claim, made in the same attribute, which is what stops two
+           * checks disagreeing about who is allowed to be small.
+           */
+          data-audit-compact=""
+          onClick={() => onTerm(term.id)}
+        >
+          {piece}
+        </button>
+      </Marked>
     );
   });
 }
