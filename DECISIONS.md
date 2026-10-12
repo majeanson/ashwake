@@ -482,6 +482,25 @@ acknowledgement, not the unlock. **Its timing ruling stands**: it ships behind
 a flag that stays off until Session C has run, because a stranger who starts a
 second run after a congratulation tells us nothing about the game.
 
+### D14 — The first world is a chosen one, not a mode — BUILT 2026-10-12, as a reading of Marc's ruling
+
+Two strangers asked for a forced tutorial with no randomness. Marc picked "a
+separate learn run, not strict, but limited". **Read as a world, not a mode:**
+a fourth kind of run is a fourth set of doors (`MODES.md`) and a scripted
+hand moves the rules and `sim.golden.txt`, while a world is already a seed and
+a seed already fixes the ground and the order of the tiles. So `worldSeedFor`
+hands the first world a device ever has `LEARN_SEED` (`content/learn.ts`,
+found by walking 250 seeds; `shell/learn.test.ts` pins what was looked for),
+and the lessons are paced (`CARD_GAP`) rather than scripted. Marc can still
+choose the mode: it would be a new `Door`, and nothing built here is in its
+way.
+
+**And the reroll lesson is a hint, not a rigged deal:** a hand override would
+move the rules and `sim.golden.txt`, and 2,100 scanned seeds have no sustained
+bad stretch under natural play. `tuning.poorHandBelow` offers REDRAW once on a
+poor hand the player can pay to replace, and the chosen world deals one right
+after the first pop.
+
 ## Open
 
 - **The name.** Same name, new look? "Ashwake 2"? Marc's, before Stage 5.

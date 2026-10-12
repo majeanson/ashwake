@@ -1793,6 +1793,13 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
    */
   const errors = watchErrors(page);
   await page.goto('/?seed=122');
+  // A NEW chip and the UNDO arrow are DOM over the canvas, and both come and
+  // go with what the test does (a placement, a shrine coming into view): that
+  // is a difference between two frames this test reads as the camera. Not
+  // what it is about.
+  await page.addStyleTag({
+    content: '.new-chips, [data-action="undo"] { visibility: hidden !important; }',
+  });
   await page.locator('[data-door="begin"]').click();
   await page.waitForTimeout(700);
 
@@ -1800,20 +1807,32 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   const place = page.locator(
     '#lesson-shrine-name, #lesson-cache-name, #lesson-site-name, #lesson-territory-name',
   );
-  for (let i = 0; i < 8 && (await place.count()) === 0; i++) {
-    if ((await scrim.count()) === 0) throw new Error('no card for a place ever came');
+  // The lessons are paced (`CARD_GAP` placements apart), so the card for a
+  // place comes after some building: dismiss what is up, build, look again.
+  for (let i = 0; i < 24 && (await place.count()) === 0; i++) {
+    if ((await scrim.count()) === 0) {
+      await placeOneTile(page, { keepCards: true });
+      await page.waitForTimeout(120);
+      continue;
+    }
     await scrim.locator('button').last().click({ force: true });
     await page.waitForTimeout(120);
   }
   expect(await place.count(), 'no card for a place ever came').toBe(1);
 
+  // The card now comes some placements in (the pace), so the camera is still
+  // easing after the last tile: let it come to rest first.
+  await page.waitForTimeout(1500);
   const held = await tiles(page);
-  await scrim.locator('button').last().click({ force: true });
-
-  // The opening board already fits, so the trip's first leg moves nothing: this
-  // is home, taken while the scrim is gone and the dive has not begun.
-  await page.waitForTimeout(150);
+  // HOME is the board at rest BEFORE the dive, and the dive starts on the
+  // dismissal — so it is read now, with the scrim hidden rather than gone. It
+  // used to be read 150ms after the tap, which only worked while the opening
+  // board already fitted and the first leg of the trip moved nothing.
+  await scrim.evaluate((el) => ((el as HTMLElement).style.visibility = 'hidden'));
   const home = await small(page);
+  await scrim.evaluate((el) => ((el as HTMLElement).style.visibility = ''));
+  await scrim.locator('button').last().click({ force: true });
+  await page.waitForTimeout(150);
 
   // ...and this is the dive, which is the half that makes the rest meaningful.
   // Polled rather than slept for: see `settleUntil`. The hold at the hex is

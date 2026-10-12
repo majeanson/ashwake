@@ -7,6 +7,7 @@ import {
   dailySeed,
   type DailyBook,
 } from '@meta/daily';
+import { LEARN_SEED } from '@content/learn';
 import { decodeFeatures, encodeFeatures, type FeatureSet } from '@meta/features';
 import { decodeProgress, encodeProgress, EMPTY_PROGRESS, type Progress } from '@meta/progress';
 import { isOwnKey, restorePlan, type Backup } from '@meta/backup';
@@ -821,7 +822,10 @@ export const freshWorldSeed = (): number =>
 export function worldSeedFor(slot: Slot): number {
   const held = readWorld(slot);
   if (held !== null) return held.worldSeed;
-  const minted = newWorld(freshWorldSeed());
+  // The first world a device has is the chosen one — `content/learn`. Asked of
+  // every slot, so a world kept in slot 2 does not make slot 1's the first.
+  const first = SLOTS.every((other) => readWorld(other) === null);
+  const minted = newWorld(first ? LEARN_SEED : freshWorldSeed());
   writeWorld(slot, minted);
   return minted.worldSeed;
 }

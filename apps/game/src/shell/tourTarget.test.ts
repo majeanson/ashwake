@@ -4,7 +4,7 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress, type TeachId } from '@meta/progress';
 import { createSession, type Snapshot } from './store';
-import { nextLesson, type Moment } from './teaching';
+import { newDots, nextLesson, type Moment } from './teaching';
 import { tourTarget } from './tourTarget';
 import { walk } from './walk';
 
@@ -79,6 +79,7 @@ const TARGETED: readonly TeachId[] = [
 ];
 const DECLINED: readonly TeachId[] = [
   'story', // what this place is; no place in it
+  'goal', // what to do; no place in it either
   'place', // the legal edge, which is everywhere at once
   'pop', // a button, and RIPE has just flown to the same pocket
   'costRise', // the run's own arithmetic
@@ -87,6 +88,7 @@ const DECLINED: readonly TeachId[] = [
   'lens',
   'colours', // a way of looking, not a thing looked at
   'luck',
+  'reroll', // a hand, not a place
   'purse',
   'relic', // what a run carries out
   'lastGasp',
@@ -115,7 +117,11 @@ describe('the hex a lesson means', () => {
     for (const [seed, depth] of BOARDS) {
       const moment = momentAt(seed, depth);
       for (const id of TARGETED) {
-        const fires = nextLesson(moment, onlyUnmet(id))?.id === id;
+        // A card fires; a chip (shrine, territory) is offered. Either way the
+        // lesson is due, and the trip it ends with needs a place to go.
+        const fires =
+          nextLesson(moment, onlyUnmet(id))?.id === id ||
+          newDots(moment, onlyUnmet(id)).includes(id);
         expect(
           tourTarget(id, moment.board) !== null,
           `${id} on seed ${String(seed)} at ${String(depth)}: moment ${String(fires)}`,

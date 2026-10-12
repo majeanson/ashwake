@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { newRun } from '@engine/reduce';
+import { LEARN_SEED } from '@content/learn';
 import { TUNING } from '@content/tuning';
 import { pickLocale } from '@content/locale';
 import { newWorld, worldFromRun } from '@meta/world';
@@ -74,11 +75,25 @@ describe('the world a run is played on', () => {
     expect(readWorld(1)?.worldSeed, 'the seed was minted but never written down').toBe(first);
   });
 
+  it('makes the first world a device ever has the chosen one, and no other', () => {
+    // 2026-10-12: `content/learn`. The ground is the tutorial.
+    expect(worldSeedFor(1)).toBe(LEARN_SEED);
+    expect(worldSeedFor(2), 'a second world is as random as ever').not.toBe(LEARN_SEED);
+    expect(worldSeedFor(3)).not.toBe(LEARN_SEED);
+  });
+
+  it('does not hand the chosen world to a slot because slot 1 is empty', () => {
+    // The first world was kept in slot 2; slot 1 is a later world.
+    expect(worldSeedFor(2)).toBe(LEARN_SEED);
+    expect(worldSeedFor(1)).not.toBe(LEARN_SEED);
+  });
+
   it('gives each slot its own world, so switching worlds switches the ground', () => {
     expect(worldSeedFor(1)).not.toBe(worldSeedFor(2));
   });
 
   it('starts again on a fresh seed once a slot is cleared', () => {
+    worldSeedFor(2);
     const before = worldSeedFor(1);
     clearSlot(1);
     expect(worldSeedFor(1), 'NEW WORLD handed back the world it replaced').not.toBe(before);

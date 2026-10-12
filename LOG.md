@@ -10424,3 +10424,101 @@ is the `more` caret with the word as its accessible name. 6/6 on both engines,
 with `targets.spec.ts` (the 44 px floor) and `a11y.spec.ts` green. It changes
 the first minute at Marc's word, so it joins round eleven's look (`NEXT.md`
 §1).
+
+### Session 127 — the first minute, after two strangers (2026-10-12)
+
+**Question: can a person who has never seen the game understand the first
+minute without being told twice?** Marc showed the live game to two clever
+friends and brought back their words from a group chat: _"Je comprends
+tellement pas ce jeu"_; _"jcomprend rien mais des fois les chiffres
+grossissent"_; _"ça prendrait un forced tutorial avec 0 randomness pour les 20
+premières tiles"_; _"j'ai encore aucune idée c'est quoi une pocket pi si ça
+vaut la peine d'attendre ou de pop right away"_; _"il y avait juste trop
+d'information trop vite trop tôt"_; _"un undo ça serait clutch aussi"_. It is
+the nearest thing to Session C that has happened, so **the first-minute freeze
+(`NEXT.md` §0) is lifted** — Marc's ruling — and Session C itself now waits for
+a build that answers this.
+
+**What was built, in the order Marc ruled it** (each step answers a sentence
+above):
+
+1. **THE GAME IN TWO SENTENCES** (`goal`, a new `TEACH_ID`), a card right after
+   the story: _"Place tiles until they're surrounded and ripe, then POP them to
+   score or to earn tiles to keep going. Waiting pays more, but each placement
+   costs more than the last."_ Wording was Marc's: he picked the merge of two
+   drafts and asked for popping to also give tiles. For a stranger only —
+   `decodeProgress` seals it for any ledger that holds something past `story`,
+   and keeps it armed for a ledger holding only `story` (a device that closed
+   the page between the two cards). The French is a draft for Marc's review
+   (`howItWorks` in `fr-CA.ts`; it says RÉCOLTER, the catalogue's word for POP).
+2. **THE PACE** (`shell/teaching.ts`, `CARD_GAP = 4`): after the game says
+   anything it says nothing NEW for four placements. Held back, not dropped.
+   Never held: the opening beats, RIPE, POP, THE FOUR GROUNDS (the first
+   placement is a choice between them) and LAST GASP (its moment passes).
+3. **NEW CHIPS** for the four lessons that are about a thing rather than the
+   game — a magic tile, a unique tile, a territory, a shrine. Marc: _"card with
+   new dot"_. A chip over the hand opens the same card an interruption would
+   have, and the same trip to look at a territory or a shrine follows it.
+   `nextLesson` passes over them (so a chip nobody taps cannot hold a card
+   back) and `newDots` says which are showing.
+4. **UNDO** (Marc: _"1 but daily allowed"_): the last placement, free. In the
+   SESSION, not the rules — a placement is a pure function of the state before
+   it, so keeping that state is the whole mechanism and `reduce` never learns
+   it exists. It closes after a pop, a spend, a stash or a caravan pick, after
+   a placement that claimed anything (a find's perk, a territory and a
+   crossing live outside the session and would not come back), and at the end
+   of a run. Picking up a card does not close it. `tuning.undoSteps` is the
+   dial (0 off, 1 ships); the film is cut back with the state so a replay folds
+   to the board on screen. A button in the camera cluster beside POP, and `U`.
+5. **THE FIRST WORLD IS A CHOSEN ONE** (`content/learn.ts`, `LEARN_SEED`): Marc
+   picked "separate learn run" from the options and then asked for it to be
+   _"not strict, but limited"_; the reading that costs the least is not a mode
+   at all. A tutorial run would be a fourth kind of run and a fourth set of
+   doors (`MODES.md`), and a scripted hand would move the rules and the golden
+   sim. A world already is a seed, and a seed already fixes the ground and the
+   order of the tiles — so the first world a device ever has is a seed
+   somebody looked at. 2,100 seeds were walked with the bot (and measured card
+   by card: the best any card in the hand can do anywhere); **a handful**
+   had a wall in view by the 6th placement, a cache by the 8th, a first pop
+   between the 8th and 14th, a site by the 16th, no shrine, territory or rare
+   tile in the first 24 / 14, **and a poor hand soon after the first pop**.
+   Seed 933 is the one with the site nearest (placement 1); its poor hands
+   fall on the 11th, 12th and 15th, the first pop being the 9th.
+   `shell/learn.test.ts` pins every line. Only the FIRST world (asked of every
+   slot): later worlds are as random as ever.
+6. **A POOR HAND SAYS REDRAW EXISTS** (`tuning.poorHandBelow`, `HudView.poorHand`,
+   teaching id `reroll`) — Saber's _"une série de tuiles de marde back2back
+   pour introduire comment utiliser sa luck pour reroll"_. **Not a rigged
+   deal:** the scan found no seed with a _sustained_ bad stretch under natural
+   play, and a hand override would move the rules and the golden sim. Poor
+   hands come on their own, a few a run; the first one a player has the luck
+   to answer gets one toast, with the real cost: _"A poor hand? REDRAW throws
+   it away for a new one, for 12 luck."_ A hand is poor when the best any card
+   can do anywhere is 2 or less (the numbers the board prints), the dial is 0
+   in the bare tuning and 2 as shipped, and the hint is silent when luck
+   cannot pay — a hint about a dead button is a taunt. The chosen world is the
+   one that deals a poor hand right after the first pop, so the lesson arrives
+   when the player has just earned the luck.
+
+**What the e2e run found.** Two tests named a card (`board.spec.ts` "a tap on a
+touring board…") that the pace now delays until some building has happened —
+rewritten to build until the card comes (`placeOneTile`'s `keepCards`). Two more
+(`a pop result has a ✕…`, `POP wears one mark…`) fail on **`HEAD` too**, checked
+by stashing this work: the caravan's sheet opened over the pop result's ✕ and
+DÉTAILS. **Fixed, not worked around:** the result stands on the sheet's top edge
+(`--toast-lift`, published by `CaravanPicker`; the first version observed its
+own resize and looped, which the 320×568 picker test caught as the crash
+panel). A
+fifth, the touring-board test, also needed its "home" frame read before the
+dive instead of 150 ms after the tap, because the board it now builds is not
+the one that already fits. **Chromium and WebKit: 348 of 348**, the new `teaching.spec.ts`
+included.
+
+**Measured.** `pnpm budget`: first paint 188.6 KB gzipped, 1.1 KB over the old
+bar — raised 192,000 → 194,000 with the reason in `budget.json`. The golden sim
+is byte-identical. A screenshot at 390×844 shows the chip above the cluster and
+the UNDO arrow beside POP.
+
+**For the phone** (`NEXT.md` §1, round twelve): does the second card land as
+"oh, that's the game"? Does the chip read as an offer rather than a nag? Is
+the first board a good first board? Does UNDO feel like it belongs next to POP?

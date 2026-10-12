@@ -709,3 +709,19 @@ describe('what a shrine says when you tap it', () => {
     expect(describeHexOf({ ...base, shrinesClaimed: 0 }, AT)).toBe(EN.view.hex.shrine(null));
   });
 });
+
+describe('a poor hand (2026-10-12)', () => {
+  const hud = (poorHandBelow: number) =>
+    toHudView(newRun(5, tuned({ worldWalls: 0, destinationChance: 0, poorHandBelow })), EN);
+
+  it('is never true while the dial is off', () => {
+    expect(hud(0).poorHand).toBe(false);
+  });
+
+  it('is true when no card can pay more than the dial, and false once one can', () => {
+    // A ceiling no placement on a fresh board can clear, and a floor none can
+    // fail to: the same hand, read both ways.
+    expect(hud(1000).poorHand).toBe(true);
+    expect(hud(0.001).poorHand).toBe(false);
+  });
+});

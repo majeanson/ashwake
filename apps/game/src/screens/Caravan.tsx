@@ -94,9 +94,36 @@ export function CaravanPicker({ offer, waiting, s, onPick, onLater }: PickerProp
       const ceiling = header === null ? 0 : header.getBoundingClientRect().bottom;
       el.style.maxHeight = `${Math.max(0, el.getBoundingClientRect().bottom - ceiling - 4)}px`;
     };
+    /*
+     * AND SAYS HOW FAR UP IT REACHES (2026-10-12). The pop result is a toast
+     * pinned to the foot of the board, which is exactly where this sheet
+     * opens, so the sheet covered the result's ✕ and DÉTAILS until it was
+     * answered — a pop that had just paid said nothing readable. Published on
+     * the root as --toast-lift, read by `.toast`, which stands on the sheet's
+     * top edge instead of under it. Where the sheet fills the board (the
+     * narrowest phone, three long French wares) the toast keeps clear of the
+     * header and the overlap that is left is the sheet's.
+     */
+    const root = document.documentElement;
+    const lift = (): void => {
+      const host = el.parentElement;
+      if (host === null) return;
+      const up = host.getBoundingClientRect().top - el.getBoundingClientRect().top;
+      root.style.setProperty('--toast-lift', `${Math.max(0, Math.round(up))}px`);
+    };
     fit();
+    lift();
+    // Only `lift` is observed: `fit` sets this element's own max-height, and
+    // an observer whose callback resizes what it watches is a loop.
+    // (Absent under jsdom, which has no layout to observe.)
+    const watch = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(lift);
+    watch?.observe(el);
     window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
+    return () => {
+      watch?.disconnect();
+      window.removeEventListener('resize', fit);
+      root.style.removeProperty('--toast-lift');
+    };
   }, []);
   return (
     <div className="drawer spends caravan-picker" data-hud="caravan-picker" ref={sheet}>

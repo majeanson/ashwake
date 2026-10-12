@@ -269,7 +269,7 @@ describe('what the upgrades do to a run', () => {
 
 describe('storage', () => {
   it('round-trips the three fields the device blob still carries', () => {
-    const progress = meet(buy(withRelics(1000), upgrade('tiles')), 'relic');
+    const progress = meet(meet(buy(withRelics(1000), upgrade('tiles')), 'goal'), 'relic');
     expect(decodeProgress(encodeProgress(progress))).toEqual(progress);
   });
 
@@ -405,11 +405,12 @@ describe('teaching, drop by drop (2026-08-19)', () => {
     const decoded = decodeProgress(
       '{"relics":0,"bought":{},"met":["ripe","ripe","banana","pop",7]}',
     );
-    expect(decoded.met).toEqual(['ripe', 'pop']);
+    // `goal` is sealed: a ledger past `story` belongs to a device that has played.
+    expect(decoded.met).toEqual(['ripe', 'pop', 'goal']);
   });
 
   it('round-trips the ledger with the rest of the purse', () => {
-    const taught = meet(meet(withRelics(50), 'ripe'), 'luck');
+    const taught = meet(meet(meet(withRelics(50), 'ripe'), 'luck'), 'goal');
     expect(decodeProgress(encodeProgress(taught))).toEqual(taught);
   });
 });
@@ -503,5 +504,16 @@ describe('salvage, not surrender (2026-08-20)', () => {
     expect(levelOf(badRelics, 'tiles')).toBe(3);
     // An unreadable purse is zero, not a reason to forget the levels.
     expect(badRelics.relics).toBe(0);
+  });
+});
+
+describe('the goal card is for strangers', () => {
+  it('keeps goal armed for a device caught between story and goal', () => {
+    expect(decodeProgress('{"relics":0,"bought":{},"met":["story"]}').met).toEqual(['story']);
+  });
+  it('seals goal for a device that has already played past the story', () => {
+    expect(decodeProgress('{"relics":0,"bought":{},"met":["story","place"]}').met).toContain(
+      'goal',
+    );
   });
 });

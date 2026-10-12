@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { pickLocale } from '@content/locale';
+import { TUNING } from '@content/tuning';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
 import { createSession, type Snapshot } from './store';
 import { lessonOf } from '@view/lessons';
-import { CARDS, nextLesson, toastLine, told, type Moment } from './teaching';
+import {
+  CARD_GAP,
+  CARDS,
+  newDots,
+  nextLesson,
+  sinceSpoke,
+  toastLine,
+  told,
+  type Moment,
+} from './teaching';
 import { walk } from './walk';
 
 /**
@@ -193,8 +203,127 @@ describe('every card the drip can fire', () => {
     // returned nothing for it: never shown, never told, and LAST GASP, behind
     // it in `ORDER`, never spoke. STORY has its own card in `App`, and PURSE
     // is raised by opening the purse (`purseLesson`) and never by a moment.
-    const ownCard = new Set(['story', 'purse']);
+    const ownCard = new Set(['story', 'goal', 'purse']);
     for (const id of CARDS)
       if (!ownCard.has(id)) expect(lessonOf(id), `${id} has no lesson to draw`).toBeDefined();
+  });
+});
+
+describe('the pace (2026-10-12): one new idea at a time', () => {
+  it('holds a paced lesson back until the gap has passed, and then releases it', () => {
+    // LENS is paced and true from six tiles on; everything else is told.
+    const device = taughtExcept('lens');
+    const now = momentAt(8);
+    expect(nextLesson(now, device)?.id).toBe('lens');
+    expect(nextLesson({ ...now, since: CARD_GAP - 1 }, device)).toBeNull();
+    expect(nextLesson({ ...now, since: CARD_GAP }, device)?.id).toBe('lens');
+  });
+
+  it('never holds back the opening beats, RIPE, POP or LAST GASP', () => {
+    // A first frame an instant after the game spoke: the story still comes.
+    expect(nextLesson({ ...momentAt(0), since: 0 }, EMPTY_PROGRESS)?.id).toBe('story');
+    expect(nextLesson({ ...momentAt(0), since: 0 }, told(EMPTY_PROGRESS, 'story'))?.id).toBe(
+      'goal',
+    );
+  });
+
+  it('keeps the held moment armed rather than dropping it', () => {
+    const device = taughtExcept('lens');
+    const now = momentAt(8);
+    expect(nextLesson({ ...now, since: 0 }, device)).toBeNull();
+    // Nothing was told in between, so it is still there.
+    expect(nextLesson({ ...now, since: 99 }, device)?.id).toBe('lens');
+  });
+
+  it('counts placements since the game last spoke, and forgets across runs', () => {
+    expect(sinceSpoke(null, 7)).toBeUndefined();
+    expect(sinceSpoke(3, 7)).toBe(4);
+    // A new run restarts placements at 0, below the remembered count.
+    expect(sinceSpoke(9, 2)).toBeUndefined();
+  });
+});
+
+describe('the NEW chips (2026-10-12): offered, never fired', () => {
+  it('never returns a chip lesson from the drip, so one cannot hold a card back', () => {
+    for (const id of ['rare', 'rareUnique', 'territory', 'shrine'] as const) {
+      for (const n of [0, 3, 8, 20]) {
+        expect(nextLesson(momentAt(n), taughtExcept(id))?.id).not.toBe(id);
+      }
+    }
+  });
+
+  it('offers a chip while its moment is true and until it is opened', () => {
+    // CACHE is a card; the chips are the four that are not. A board that shows
+    // one of them offers it, and opening it (telling it) clears it.
+    // Seed 122 at depth 20 puts all four destinations on one board unclaimed
+    // (see `tourTarget.test.ts`, which chose it by looking at the boards).
+    let found = false;
+    for (const [seed, n] of [[122, 20]] as const) {
+      const s = createSession({
+        seed,
+        theme: resolveTheme(null),
+        strings: stringsFor(pickLocale(['en'])),
+      });
+      walk(s, n);
+      const snap = s.get();
+      const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
+      for (const id of newDots(now, EMPTY_PROGRESS)) {
+        found = true;
+        expect(newDots(now, told(EMPTY_PROGRESS, id))).not.toContain(id);
+      }
+    }
+    expect(found, 'no walked board ever showed a chip').toBe(true);
+  });
+
+  it('draws no card for a chip lesson until it is tapped', () => {
+    for (const id of ['rare', 'rareUnique', 'territory', 'shrine'] as const) {
+      expect(CARDS.has(id)).toBe(false);
+      expect(lessonOf(id), `${id} needs a lesson for its chip to open`).toBeDefined();
+    }
+  });
+});
+
+describe('REDRAW, offered on a poor hand (2026-10-12)', () => {
+  const poor = (over: Partial<Moment['hud']>): Moment => {
+    const now = momentAt(8);
+    return {
+      ...now,
+      hud: {
+        ...now.hud,
+        poorHand: true,
+        luck: 99,
+        spends: now.hud.spends.map((spend) => ({ ...spend, affordable: true })),
+        ...over,
+      },
+    };
+  };
+
+  it('says it once, as a toast with the real cost, when the hand is poor and luck can pay', () => {
+    const now = poor({});
+    const due = nextLesson(now, taughtExcept('reroll'));
+    expect(due?.id).toBe('reroll');
+    expect(due?.as).toBe('toast');
+    const line = toastLine(
+      'reroll',
+      now,
+      TUNING,
+      resolveTheme(null),
+      stringsFor(pickLocale(['en'])),
+    );
+    const cost = now.hud.spends.find((spend) => spend.on === 'reroll')!.cost;
+    expect(line).toContain(String(cost));
+  });
+
+  it('stays quiet on a good hand, and when luck cannot pay (a hint about a dead button is a taunt)', () => {
+    expect(nextLesson(poor({ poorHand: false }), taughtExcept('reroll'))).toBeNull();
+    const broke = poor({});
+    const unaffordable: Moment = {
+      ...broke,
+      hud: {
+        ...broke.hud,
+        spends: broke.hud.spends.map((spend) => ({ ...spend, affordable: false })),
+      },
+    };
+    expect(nextLesson(unaffordable, taughtExcept('reroll'))).toBeNull();
   });
 });

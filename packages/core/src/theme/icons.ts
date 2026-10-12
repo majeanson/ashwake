@@ -98,7 +98,9 @@ export type IconName =
   | 'lens'
   // NEW RUN in the cluster, a mark like POP's since 2026-09-25 (Marc: "make
   // sure we use symbols for all actions").
-  | 'newRun';
+  | 'newRun'
+  // UNDO beside the camera: take back the last placement (2026-10-12).
+  | 'undo';
 
 /**
  * Which Phosphor file each name is cut from.
@@ -198,6 +200,7 @@ export const ICON_SOURCE: Readonly<Record<IconName, string>> = {
   view: 'bold/eye-bold.svg',
   lens: 'bold/magnifying-glass-bold.svg',
   newRun: 'bold/arrow-counter-clockwise-bold.svg',
+  undo: 'bold/arrow-u-up-left-bold.svg',
 };
 
 /** The four grounds, by the colour the rules call them. */
@@ -342,6 +345,7 @@ export const CHROME_ICON = {
   view: 'view',
   lens: 'lens',
   newRun: 'newRun',
+  undo: 'undo',
 } as const satisfies Readonly<
   Record<
     | 'back'
@@ -353,7 +357,8 @@ export const CHROME_ICON = {
     | 'soundOff'
     | 'view'
     | 'lens'
-    | 'newRun',
+    | 'newRun'
+    | 'undo',
     IconName
   >
 >;

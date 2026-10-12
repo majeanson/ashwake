@@ -232,6 +232,7 @@ export const STRINGS_EN: Strings = {
   rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Tap remembered fog to light its ground.',
+  rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
 
   view: {
     groundHead: (name, word) => `${name}: ${word}.`,
@@ -559,6 +560,9 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     'What you carry home is never much. This place has more than it had yesterday, some nights more than you remember leaving it.',
   ],
 
+  howItWorks:
+    'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Waiting pays more, but each placement costs more than the last.',
+
   share: {
     run: (name, pts, placements, arc) =>
       `${name}: ${pts} pts in ${placements} placements${arc === '' ? '' : ` · ${arc}`}. Beat my run:`,
@@ -714,6 +718,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     daily: 'DAILY',
     shop: 'THE SHOP',
     hold: 'STASH',
+    undo: 'UNDO',
     holdEmpty: 'Stash the selected tile for later',
     holdSwap: (ground) => `Take the stashed ${ground} tile back into the hand`,
     holdNothing: 'Nothing in hand to stash. Tap a card first.',
@@ -772,6 +777,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     resetTeaching: 'RESET TEACHING',
     details: 'DETAILS',
     theStory: 'THE STORY',
+    theGoal: 'HOW IT WORKS',
     howToPlay: 'HOW TO PLAY',
     perkFound: (name) => `A FIND: you carry ${name} now.`,
     woke: (what) => `WOKE: ${what}`,
@@ -818,12 +824,14 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         view: '0: the view button, without reaching for it.',
         cards: '1 to 8: pick up that card from the hand.',
         hold: 'H: stash the card you are holding, or take the stashed one back.',
+        undo: 'U: take back your last tile.',
         mouse: 'Drag with the right button, or with Shift held, to turn and lean. The wheel zooms.',
       },
     },
     resume: 'RESUME',
     fromTerritories: (tiles) => `+${tiles} tiles from the territories you hold.`,
     gotIt: 'GOT IT',
+    newChip: 'NEW',
     thisDevice: 'THIS DEVICE',
     noStorage: 'This browser is not keeping anything: your run will not survive closing the tab.',
     backUp: 'BACK UP MY WORLDS',

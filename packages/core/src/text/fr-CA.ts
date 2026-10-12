@@ -232,6 +232,8 @@ export const STRINGS_FR: Strings = {
   rareCard: 'Dépense-la là où beaucoup de tuiles se touchent.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
+  rerollHint: (cost) =>
+    `Une main faible? REPIOCHER la jette pour une nouvelle, au prix de ${cost} de CHANCE.`,
 
   view: {
     groundHead: (name, word) => `${name}${D}: ${word}.`,
@@ -565,6 +567,9 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     'Ce que tu ramènes n’est jamais grand-chose. Cet endroit en a plus qu’hier, certains soirs plus que ce que tu te souviens d’y avoir laissé.',
   ],
 
+  howItWorks:
+    'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Attendre paie plus, mais chaque pose coûte plus cher que la précédente.',
+
   share: {
     run: (name, pts, placements, arc) =>
       `${name}${D}: ${nb(pts)} pts en ${placements} poses${arc === '' ? '' : ` · ${arc}`}. Bats ma partie${D}:`,
@@ -725,6 +730,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     daily: 'QUOTIDIEN',
     shop: 'LA BOUTIQUE',
     hold: 'RÉSERVE',
+    undo: 'ANNULER',
     holdEmpty: 'Mettre la tuile choisie en réserve',
     holdSwap: (ground) => `Reprendre la tuile ${ground} de la réserve`,
     holdNothing: 'Rien en main à mettre en réserve. Touche d’abord une carte.',
@@ -793,6 +799,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     resetTeaching: 'RÉINITIALISER LES LEÇONS',
     details: 'DÉTAILS',
     theStory: 'L’HISTOIRE',
+    theGoal: 'COMMENT ÇA MARCHE',
     howToPlay: 'COMMENT JOUER',
     perkFound: (name) => `UNE TROUVAILLE${D}: tu portes ${name} maintenant.`,
     woke: (what) => `ÉVEILLÉ${D}: ${what}`,
@@ -837,6 +844,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         view: `0${D}: le bouton de vue, sans aller le chercher.`,
         cards: `1 à 8${D}: prend cette carte dans la main.`,
         hold: `H${D}: mets la carte choisie en RÉSERVE, ou reprends celle qui y est.`,
+        undo: `U${D}: reprends ta dernière tuile.`,
         mouse:
           'Glisse avec le bouton droit, ou en tenant Majuscule, pour tourner et incliner. La roulette zoome.',
       },
@@ -844,6 +852,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     resume: 'REPRENDRE',
     fromTerritories: (tiles) => `+${tiles} tuiles des territoires que tu tiens.`,
     gotIt: 'COMPRIS',
+    newChip: 'NOUVEAU',
     thisDevice: 'CET APPAREIL',
     noStorage: `Ce navigateur ne garde rien${D}: ta partie ne survivra pas à la fermeture de l’onglet.`,
     backUp: 'SAUVEGARDER MES MONDES',

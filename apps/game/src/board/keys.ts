@@ -24,6 +24,7 @@ import type { Direction } from './cursor';
  * | `Q` · `E`, or Home · End | turn the board |
  * | `R` · `F`, or PageUp · PageDown | lean the camera back and forward |
  * | `0` | the VIEW button, without reaching for it |
+ * | `U` | take back the last tile |
  * | `1`–`8` | pick up that card |
  *
  * **Why the turn and the lean have two spellings each.** `Q`/`E`/`R`/`F` is
@@ -63,7 +64,8 @@ type BoardCommand =
   | { readonly kind: 'act' }
   | { readonly kind: 'view' }
   | { readonly kind: 'card'; readonly index: number }
-  | { readonly kind: 'hold' };
+  | { readonly kind: 'hold' }
+  | { readonly kind: 'undo' };
 
 /** The part of a `KeyboardEvent` a key map reads. A real event satisfies it,
  *  and a test can write one down. */
@@ -124,6 +126,10 @@ export function commandFor(chord: Chord): BoardCommand | null {
   // H for HOLD — the stash, which a thumb reaches by tapping a dashed slot and
   // a keyboard had no way to reach at all (2026-08-29).
   if (key === 'h') return { kind: 'hold' };
+
+  // U for UNDO — take back the last tile (2026-10-12). Not Ctrl+Z: a modifier
+  // means the key is not ours, and the rule above this is the reason.
+  if (key === 'u') return { kind: 'undo' };
 
   if (isViewKey(chord)) return { kind: 'view' };
 

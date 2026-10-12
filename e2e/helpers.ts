@@ -328,7 +328,10 @@ export const tilesLeft = async (page: Page): Promise<number> =>
  * than in each caller, because every caller needs it and only some of them
  * happened to have it.
  */
-export async function placeOneTile(page: Page): Promise<void> {
+export async function placeOneTile(
+  page: Page,
+  { keepCards = false }: { readonly keepCards?: boolean } = {},
+): Promise<void> {
   /*
    * WAIT FOR THE PICTURE, NOT FOR 600 ms (2026-09-11).
    *
@@ -375,7 +378,10 @@ export async function placeOneTile(page: Page): Promise<void> {
         await clearCards(page);
         await page.mouse.click(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
         if ((await tilesLeft(page)) < before) {
-          await clearCards(page);
+          // `keepCards`: a lesson is paced to arrive some placements in
+          // (`shell/teaching`'s CARD_GAP), so a test about THAT card has to
+          // place until it comes and must not dismiss it on the way out.
+          if (!keepCards) await clearCards(page);
           return;
         }
       }

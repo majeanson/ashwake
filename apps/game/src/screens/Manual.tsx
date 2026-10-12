@@ -53,6 +53,7 @@ const KEY_LINES = [
   'view',
   'cards',
   'hold',
+  'undo',
   'mouse',
 ] as const;
 

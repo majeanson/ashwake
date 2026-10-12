@@ -24,6 +24,14 @@ Where the rest lives:
 
 ## 0. Where it stands
 
+**2026-10-12: the first-minute freeze is lifted, by Marc**, after two friends
+played the live game and came back with _"je comprends tellement pas ce jeu"_
+and _"trop d'information trop vite trop tôt"_ (`LOG.md` Session 127). What
+landed: the game in two sentences as a card after the story, a pace of one new
+idea per four placements, NEW chips for the lessons about a thing, UNDO, and a
+chosen first world. **Round twelve (§1) is its look, and Session C waits for it.**
+Everything below this paragraph that says "frozen" is the state before it.
+
 **Session A passed clean on 2026-09-24**, on the phone sheet (§1), and the
 first minute is **frozen from today until Session C has run.** The same
 sitting asked for six changes and all six landed the same day as the pass's
@@ -68,7 +76,34 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — round eleven, the caravan
+## 1. Marc, on the phone — round twelve, the first minute after two strangers
+
+**Build this and play it as a stranger would**: clear the site's data (or a
+fresh browser profile), open it, and do not touch anything the first card does
+not say. Four questions:
+
+- **The second card** ("HOW IT WORKS"): does it land as _"oh, that's the
+  game"_? The French is a draft (`howItWorks`, `fr-CA.ts`) and is yours.
+- **The pace**: after the cards, is the first minute one idea at a time, or is
+  there still a place where it is too much too soon?
+- **The first board** (seed 933: a site at the 1st placement, a wall at the
+  1st, a cache by the 6th, the first pop around the 9th, a poor hand soon
+  after): is it a good first board, and is the first pop something a stranger
+  would reach without help?
+- **UNDO** beside POP and **the NEW chip** over the hand: does either read as
+  belonging, or as clutter? And **the REDRAW hint**: on a poor hand, once, a line says what REDRAW
+  costs. Did it come at a moment you could use it, and did you press REDRAW?
+
+**Found on the way, and fixed:** when the caravan was in town and took a
+pocket, its pick-one-of-three sheet opened over the pop result's ✕ and DÉTAILS,
+so neither could be pressed until the sheet was answered. The result now stands
+on the sheet's top edge (`--toast-lift`, published by `CaravanPicker`). On the
+narrowest phone with three long French wares the sheet fills the board and the
+overlap that is left is the sheet's; a phone will say whether that matters.
+
+---
+
+## 1b. Round eleven, the caravan (still open)
 
 **The sheet is a published page**, _The phone sitting_ —
 https://claude.ai/artifact/D9Hu295m8xDoXGNkLHiGyc — and its answers land in

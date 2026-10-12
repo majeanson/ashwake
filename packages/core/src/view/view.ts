@@ -756,6 +756,13 @@ export type HudView = {
 
   readonly ripeCount: number;
   /**
+   * True when no card in the hand can be placed anywhere for more than
+   * `tuning.poorHandBelow` — a hand worth throwing away. False when the dial
+   * is 0, when nothing may be placed, and on any hand with one good move. The
+   * drip's REDRAW hint reads it (`shell/teaching`'s `reroll`).
+   */
+  readonly poorHand: boolean;
+  /**
    * Separate ripe pockets, not ripe tiles — a big pocket is still one
    * decision, and that is the number worth showing.
    *
@@ -922,6 +929,7 @@ export function toHudView(
     },
 
     ripeCount: ctx.ripe.size,
+    poorHand: isPoorHand(state.tuning.poorHandBelow, ctx.previews),
     pocketsReady: ctx.pocketCount,
     harvestTiles: value.tiles,
     // Through scoreOf, not raw (2026-08-25, Marc with two screenshots: "what
@@ -988,6 +996,18 @@ export type SpendView = {
    */
   readonly relics?: number;
 };
+
+/**
+ * Whether the best any card in the hand can do, anywhere it may go, is no more
+ * than `below`. Judged on the same `previewWorth` the board prints, so the
+ * hint and the numbers on screen cannot disagree about what a hand is worth.
+ */
+function isPoorHand(below: number, previews: readonly ReadonlyMap<HexKey, number>[]): boolean {
+  if (below <= 0) return false;
+  let best = -Infinity;
+  for (const map of previews) for (const worth of map.values()) best = Math.max(best, worth);
+  return best !== -Infinity && best <= below;
+}
 
 /** The shop, in the order it reads: cheapest first, forge — then tithe, the exit from the purse. */
 function spendsFor(state: GameState): readonly SpendView[] {

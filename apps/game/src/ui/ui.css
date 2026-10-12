@@ -1855,7 +1855,10 @@ a:visited {
   /* Clear of the camera cluster, which is pinned `var(--gap)` from the bottom
      and a tap target tall. They overlapped on the first build and the buttons
      punched holes through the sentence. */
-  bottom: calc(var(--tap) + var(--gap) * 2);
+  bottom: min(
+    max(calc(var(--tap) + var(--gap) * 2), calc(var(--toast-lift, 0px) + var(--gap))),
+    calc(100% - 4.5rem)
+  );
   z-index: var(--z-board);
   color: var(--ink);
   white-space: pre-line;
@@ -4073,4 +4076,63 @@ button.caravan-ask.waiting {
 .caravan-later {
   min-height: 44px;
   margin-top: 0.25rem;
+}
+
+/*
+ * THE NEW CHIPS (2026-10-12, Marc: "card with new dot").
+ *
+ * Out of flow, against `.hand-host`, so a chip appearing never moves the board
+ * the way a row above the hand would. Bottom-left of the board, one row above
+ * the camera cluster.
+ */
+.new-chips {
+  position: absolute;
+  left: var(--gap);
+  /* Above the cluster, whatever height it is (it is two rows with a pocket
+     ripe and one without — `Camera` publishes it), so a chip never sits under
+     POP's pill. */
+  bottom: calc(100% + var(--camera-h, var(--tap)) + 2 * var(--gap));
+  max-width: calc(100% - 2 * var(--gap));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  z-index: var(--z-board);
+}
+
+.new-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--tap);
+  max-width: 100%;
+  padding: 0 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.new-chip-dot {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.new-chip-new {
+  flex: none;
+  color: var(--accent);
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+}
+
+.new-chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

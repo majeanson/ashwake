@@ -92,6 +92,13 @@ type CameraProps = {
   readonly lensOpen: boolean;
   /** A pocket's buttons, first in the row — see `PocketActions` (2026-09-25). */
   readonly actions?: ReactNode;
+  /**
+   * UNDO (2026-10-12): present while a run is played and the shell has a
+   * placement to take back. Absent otherwise, so the cluster is never wider
+   * than what a press can do.
+   */
+  readonly canUndo: boolean;
+  readonly onUndo: () => void;
 };
 
 /**
@@ -158,6 +165,8 @@ export function Camera({
   onLensPanel,
   lensOpen,
   actions,
+  canUndo,
+  onUndo,
 }: CameraProps) {
   /*
    * THE CLUSTER SAYS HOW TALL IT IS (2026-09-25). The purse and the lens
@@ -182,8 +191,20 @@ export function Camera({
   return (
     <div className="camera" ref={cluster}>
       <div className="camera-row">
-        {/* POP, LUCK, LENS, then the camera — Marc's order, 2026-09-25. */}
+        {/* POP, UNDO, LUCK, LENS, then the camera — Marc's order, 2026-09-25,
+            with UNDO beside the pocket's buttons since 2026-10-12. */}
         {actions}
+        {canUndo && (
+          <button
+            type="button"
+            data-action="undo"
+            aria-label={s.ui.undo}
+            title={s.ui.undo}
+            onClick={onUndo}
+          >
+            <Icon name={CHROME_ICON.undo} />
+          </button>
+        )}
         {canSpend && (
           <button
             type="button"

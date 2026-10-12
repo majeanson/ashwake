@@ -67,6 +67,8 @@ export type Snapshot = {
    * both are things that just occurred and are gone by the next dispatch.
    */
   readonly said: Said | null;
+  /** True when `Session.undo` has a placement to take back. */
+  readonly undoable: boolean;
 };
 
 /** Function-typed on purpose: `useSyncExternalStore` takes `get` and
@@ -193,6 +195,18 @@ export type Session = {
   readonly get: () => Snapshot;
   readonly subscribe: (listener: () => void) => () => void;
   readonly dispatch: (action: Action) => void;
+  /**
+   * TAKE BACK THE LAST PLACEMENT (2026-10-12, a stranger: _"un undo ça serait
+   * clutch aussi"_). Silent when there is nothing to take back.
+   *
+   * It lives in the SESSION and not in the rules, because a placement is
+   * already a pure function of the state before it: keeping that state is the
+   * whole mechanism, and the rules never learn it exists (`reduce` has no
+   * undo action, so a replay and a saved run cannot disagree about one).
+   * Which placements it will take back is the next paragraph's business, in
+   * `dispatch`.
+   */
+  readonly undo: () => void;
   /** Price a pocket: a tap on a ripe tile. Null clears it. */
   readonly target: (hex: HexKey | null) => void;
   /**
@@ -455,6 +469,11 @@ export function createSession(opts: {
   let popCount = 0;
   let said: Said | null = null;
   let saidCount = 0;
+  /**
+   * What UNDO goes back to, newest last: the state before a placement, and how
+   * long the film was then. At most `tuning.undoSteps` deep.
+   */
+  let undoStack: { readonly state: GameState; readonly moves: number }[] = [];
   let snapshot: Snapshot = build();
   const listeners = new Set<() => void>();
 
@@ -466,6 +485,7 @@ export function createSession(opts: {
       hud: toHudView(state, strings, harvestAt, spotlight, ctx),
       popped,
       said,
+      undoable: undoStack.length > 0,
     };
   }
 
@@ -645,6 +665,36 @@ export function createSession(opts: {
       // A priced pocket that popped or ripened away is no longer a pocket.
       if (harvestAt !== null && state.cells[harvestAt]?.kind !== 'tile') harvestAt = null;
       said = whatToSay(before, next, action, cashed);
+      /*
+       * WHAT CAN BE TAKEN BACK. A placement, and only one that did nothing the
+       * world remembers: a claim writes to the ledger and the world's memory
+       * from outside this session (a find grants a perk, a territory is kept,
+       * a shrine may offer a crossing), none of which a restored state would
+       * undo — so `said !== null` closes the door, as does a run that has
+       * just ended and been banked. A card being picked up is not a decision
+       * (SELECT leaves the stack alone), and everything else — a pop, a spend,
+       * a stash, a caravan pick — is, so it empties it: the player never takes
+       * back across money.
+       */
+      if (action.type === 'PLACE') {
+        undoStack =
+          said === null && next.phase !== 'ended' && tuning.undoSteps > 0
+            ? [...undoStack, { state: before, moves: moves.length - 1 }].slice(-tuning.undoSteps)
+            : [];
+      } else if (action.type !== 'SELECT') undoStack = [];
+      commit();
+    },
+    undo() {
+      const back = undoStack.at(-1);
+      if (back === undefined) return;
+      undoStack = undoStack.slice(0, -1);
+      state = back.state;
+      // The film is what happened, and this did not: cut it back with the
+      // state, so a replay folds to the board the player is looking at.
+      moves.length = back.moves;
+      harvestAt = null;
+      popped = null;
+      said = null;
       commit();
     },
     replay: () => ({ from: openedOn, moves: [...moves] }),
@@ -696,6 +746,7 @@ export function createSession(opts: {
       spotlight = null;
       popped = null;
       said = null;
+      undoStack = [];
       commit();
     },
   };

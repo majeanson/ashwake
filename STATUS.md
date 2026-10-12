@@ -4,7 +4,17 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Last checkpoint: **2026-09-24, evening — Session A is clean, and the first
+Newest, **2026-10-12 — the first minute after two strangers (`LOG.md`
+Session 127), built and unit-verified, not yet looked at on a phone.** The
+freeze is lifted by Marc. A "HOW IT WORKS" card after the story, a pace of one
+new idea per four placements, NEW chips, UNDO, and a chosen first world
+(`content/learn.ts`). Verified: typecheck, lint, 1449 unit tests, the golden
+sim byte-identical, `pnpm sweep` 0 findings, the budget (bar moved, reason
+recorded), and the e2e on Chromium, 348 of 348 on Chromium and WebKit before the last two changes, then the touched
+specs again (two tests that failed on `HEAD` for the caravan sheet pass now that
+the pop result stands above it). Round twelve is its look; Session C waits for it.
+
+Last checkpoint before it: **2026-09-24, evening — Session A is clean, and the first
 minute is frozen until Session C.** Marc answered the published phone sheet;
 the six changes it asked for (TREASURE retired, the replay a door that dives
 to its pops, the waking tap swallowed, the chosen pocket flashing, the lens

@@ -45,6 +45,7 @@ type Teach = {
  */
 const ORDER: readonly TeachId[] = [
   'story',
+  'goal',
   'place',
   'ripe',
   'pop',
@@ -64,6 +65,7 @@ const ORDER: readonly TeachId[] = [
   'rareUnique',
   'lens',
   'luck',
+  'reroll',
   'purse',
   'relic',
   'colours',
@@ -79,27 +81,71 @@ const ORDER: readonly TeachId[] = [
  */
 export const CARDS = new Set<TeachId>([
   'story',
+  'goal',
   'ripe',
   'pop',
   'caravan',
   'cache',
   'site',
-  'shrine',
-  'territory',
-  'rare',
-  'rareUnique',
   'luck',
   'purse',
   'relic',
   'colours',
 ]);
 
+/**
+ * THE ONES THAT DO NOT INTERRUPT (2026-10-12, Marc: _"card with new dot"_).
+ *
+ * A magic tile, a unique tile, a territory and a shrine are each worth a card
+ * and none is worth stopping the game for: the player can be playing perfectly
+ * well without knowing what they are. They wait as a NEW chip over the hand,
+ * and the card opens when it is tapped. They are not in `CARDS` because
+ * nothing fires them, and `nextLesson` passes over them, so a chip nobody has
+ * tapped never holds back a lesson behind it.
+ */
+const DOTS: ReadonlySet<TeachId> = new Set<TeachId>(['rare', 'rareUnique', 'territory', 'shrine']);
+
 export type Moment = {
   readonly board: BoardView;
   readonly hud: HudView;
   /** True once the player has placed at least one tile this run. */
   readonly placed: boolean;
+  /**
+   * Placements since the game last said something (a card or a toast), or
+   * undefined where nothing is holding back — a test, a first frame. See
+   * `CARD_GAP`.
+   */
+  readonly since?: number | undefined;
 };
+
+/**
+ * THE PACE (2026-10-12, two strangers: _"trop d'information trop vite trop
+ * tôt"_). After the game says something it says nothing NEW for this many
+ * placements, so a first minute is one idea at a time instead of a queue of
+ * cards. 0 turns the gate off, as every system's dial does.
+ *
+ * Held back, not dropped: a moment that stays true stays armed, which is the
+ * priority list's own contract.
+ */
+export const CARD_GAP = 4;
+
+/**
+ * Placements since the game last spoke, for a `Moment`. A count above the
+ * current one is a new run (placements restart at 0), which has said nothing
+ * yet; null is the same.
+ */
+export const sinceSpoke = (spokeAt: number | null, placements: number): number | undefined =>
+  spokeAt === null || spokeAt > placements ? undefined : placements - spokeAt;
+
+/**
+ * What is never held back. The opening beats come before there is a pace to
+ * keep; RIPE and POP are the two ideas the game cannot be played without, and
+ * waiting four placements to hear what a ripe tile is would be the confusion
+ * this gate exists to cure; THE FOUR GROUNDS is what the first placement is
+ * a choice between, so it is told the moment there is one; LAST GASP is the
+ * one lesson whose moment passes with the next placement.
+ */
+const UNPACED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'lastGasp']);
 
 /**
  * The first thing worth saying that this device has not been told.
@@ -126,12 +172,20 @@ export type Moment = {
  */
 export function nextLesson(now: Moment, progress: Progress): Teach | null {
   for (const id of ORDER) {
-    if (hasMet(progress, id)) continue;
+    if (hasMet(progress, id) || DOTS.has(id)) continue;
     if (!isTrue(id, now)) continue;
+    if (!UNPACED.has(id) && now.since !== undefined && now.since < CARD_GAP) continue;
     return { id, as: CARDS.has(id) ? 'card' : 'toast' };
   }
   return null;
 }
+
+/**
+ * The chips that are showing: every non-interrupting moment that is true and
+ * has not been opened yet, in the drip's own order.
+ */
+export const newDots = (now: Moment, progress: Progress): readonly TeachId[] =>
+  ORDER.filter((id) => DOTS.has(id) && !hasMet(progress, id) && isTrue(id, now));
 
 /**
  * The toast's own words — one line per toast-class moment (2026-09-03).
@@ -168,6 +222,10 @@ export function toastLine(
     }
     case 'lens':
       return s.lensHint;
+    case 'reroll': {
+      const row = now.hud.spends.find((spend) => spend.on === 'reroll');
+      return row === undefined ? null : s.rerollHint(row.cost);
+    }
     case 'lastGasp':
       return s.lastGaspRule;
     default:
@@ -194,6 +252,10 @@ function isTrue(id: TeachId, now: Moment): boolean {
       // Ahead of PLACE by construction (see `ORDER`): true from the first
       // frame of any run, board geometry included, so it is the one card a
       // stranger cannot fail to meet.
+      return true;
+    case 'goal':
+      // Right behind the story by `ORDER`, on the same first frame: what this
+      // place is, then what to do in it.
       return true;
     case 'place':
       // The first thing anyone sees: there is somewhere to put a tile.
@@ -227,6 +289,10 @@ function isTrue(id: TeachId, now: Moment): boolean {
       return board.cells.filter((c) => c.kind === 'tile').length >= 6;
     case 'luck':
       return hud.luck > 0;
+    case 'reroll':
+      // A poor hand AND the luck to do something about it: a hint about a
+      // button that cannot be pressed is a taunt.
+      return hud.poorHand && hud.spends.some((spend) => spend.on === 'reroll' && spend.affordable);
     case 'purse':
       /*
        * Fired by the player OPENING the purse, not by having one, so it is

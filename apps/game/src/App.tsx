@@ -155,7 +155,8 @@ import { useFilm } from './shell/watching';
 import type { Replay } from '@meta/replay';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
-import { nextLesson, toastLine, told } from './shell/teaching';
+import { newDots, nextLesson, sinceSpoke, toastLine, told } from './shell/teaching';
+import { NewChips } from './screens/NewChips';
 import { walk, walkToEnd } from './shell/walk';
 import { CHROME_ICON } from '@theme/icons';
 import { Icon } from './ui/Icon';
@@ -1136,21 +1137,40 @@ function Game() {
    * a card's dismissal calls this with the ledger that dismissal just wrote,
    * a beat before React has it.
    */
+  /**
+   * THE PACE: where the game last said something (2026-10-12). The placement
+   * count at that moment, or null before it has said anything — and a count
+   * above the current one means a new run began, so it reads as null again.
+   * A state for the render that decides whether a card is due and a ref for the
+   * handler that has just spoken, which cannot wait for React's copy.
+   */
+  const [spokeAt, setSpokeAt] = useState<number | null>(null);
+  const spokeRef = useRef<number | null>(null);
+  const markSpoke = useCallback((placements: number) => {
+    spokeRef.current = placements;
+    setSpokeAt(placements);
+  }, []);
   const speakLesson = useCallback(
     (after: Progress, at: Snapshot): boolean => {
       // An ended run teaches nothing and marks nothing told — `mayTeach`'s
       // `ended` clause, for the half that does not go through it.
       if (at.hud.ended) return false;
-      const moment = { board: at.board, hud: at.hud, placed: at.hud.placements > 0 };
+      const moment = {
+        board: at.board,
+        hud: at.hud,
+        placed: at.hud.placements > 0,
+        since: sinceSpoke(spokeRef.current, at.hud.placements),
+      };
       const due = nextLesson(moment, after);
       if (due === null || due.as !== 'toast') return false;
       const line = toastLine(due.id, moment, at.state.tuning, theme, s);
       if (line === null) return false;
       setProgress((p) => told(p, due.id));
+      markSpoke(at.hud.placements);
       say(line);
       return true;
     },
-    [theme, s, say, setProgress],
+    [theme, s, say, setProgress, markSpoke],
   );
 
   /**
@@ -1743,13 +1763,27 @@ function Game() {
     () =>
       started
         ? nextLesson(
-            { board: snap.board, hud: snap.hud, placed: snap.hud.placements > 0 },
+            {
+              board: snap.board,
+              hud: snap.hud,
+              placed: snap.hud.placements > 0,
+              since: sinceSpoke(spokeAt, snap.hud.placements),
+            },
             progress,
           )
         : null,
-    [started, snap.board, snap.hud, progress],
+    [started, snap.board, snap.hud, progress, spokeAt],
   );
   const card = teach !== null && teach.as === 'card' ? teach.id : null;
+  /** The NEW chips showing over the hand, and the one whose card is open. */
+  const dots = useMemo(
+    () =>
+      started && !snap.hud.ended
+        ? newDots({ board: snap.board, hud: snap.hud, placed: snap.hud.placements > 0 }, progress)
+        : [],
+    [started, snap.board, snap.hud, progress],
+  );
+  const [dotOpen, setDotOpen] = useState<TeachId | null>(null);
 
   /**
    * A tap on the board, and every answer it owes.
@@ -2584,6 +2618,22 @@ function Game() {
   );
 
   /**
+   * TAKE BACK THE LAST TILE (2026-10-12, a stranger: _"un undo ça serait clutch
+   * aussi"_). The session decides whether there is one — a placement that
+   * claimed something, a pop, a spend or a stash closes the door, see
+   * `Session.undo` — so this is a press and a quiet toast.
+   *
+   * The toast is cleared rather than replaced: the sentence under the board was
+   * about the tile that is no longer there, and a receipt for a move that
+   * un-happened is the one line this game should never print.
+   */
+  const undoLast = useCallback(() => {
+    if (!session.get().undoable) return;
+    session.undo();
+    say(null);
+  }, [session, say]);
+
+  /**
    * Hand this run to somebody — the game's entire distribution mechanism.
    *
    * A daily and a world run share nothing but the verb: the daily's line is a
@@ -3285,6 +3335,9 @@ function Game() {
           b?.focus();
           return;
         }
+        case 'undo':
+          undoLast();
+          return;
         case 'view':
           cycleView();
           return;
@@ -3311,6 +3364,7 @@ function Game() {
     playing,
     anyOpen,
     onLook,
+    undoLast,
     onTap,
     onSelect,
     onHold,
@@ -3641,6 +3695,8 @@ function Game() {
             canSpend={playing && snap.hud.spends.length > 0}
             onPurse={onPurse}
             purseOpen={purseOpen}
+            canUndo={playing && snap.undoable}
+            onUndo={undoLast}
             canLens={playing}
             onLensPanel={onLensPanel}
             lensOpen={lensOpen}
@@ -3773,6 +3829,7 @@ function Game() {
               }
             />
           )}
+          <NewChips ids={dots} s={s} onOpen={setDotOpen} />
           <ActionBar
             hud={snap.hud}
             theme={theme}
@@ -4375,7 +4432,28 @@ function Game() {
              * functional so it cannot clobber a concurrent grant.
              */
             setProgress((p) => told(p, 'story'));
+            markSpoke(session.get().hud.placements);
             speakLesson(told(progress, 'story'), session.get());
+          }}
+        />
+      )}
+
+      {/*
+        THE GAME IN TWO SENTENCES, right behind the story (2026-10-12): the
+        story says what this place is, this says what to do in it. The same
+        `SaidCard` door and the same reasoning — `s.goal` is the one source, so
+        there is no `LESSONS` entry.
+      */}
+      {card === 'goal' && saidCard === null && film === null && (
+        <SaidCard
+          text={`${s.ui.theGoal}\n${s.howItWorks}`}
+          theme={theme}
+          s={s}
+          onTerm={setTerm}
+          onDismiss={() => {
+            setProgress((p) => told(p, 'goal'));
+            markSpoke(session.get().hud.placements);
+            speakLesson(told(progress, 'goal'), session.get());
           }}
         />
       )}
@@ -4420,6 +4498,7 @@ function Game() {
             // The same quiet beat the story card spends — see above.
             const after = told(progress, teaching);
             setProgress((p) => told(p, teaching));
+            markSpoke(session.get().hud.placements);
             speakLesson(after, session.get());
             /*
              * AND GO AND LOOK AT IT, where the lesson was about a place.
@@ -4431,6 +4510,30 @@ function Game() {
              * hex, so most cards pass straight through it.
              */
             showOnBoard(teaching);
+          }}
+        />
+      )}
+
+      {/*
+        A NEW chip's card (2026-10-12): the same card and the same first-contact
+        sentence an interruption would have shown, opened by a tap. Its dismissal
+        is the same quiet beat, and for a territory or a shrine the same trip to
+        look at it.
+      */}
+      {dotOpen !== null && teaching === null && saidCard === null && film === null && (
+        <LessonCard
+          id={dotOpen}
+          theme={theme}
+          s={s}
+          firstContact
+          dismiss={s.ui.gotIt}
+          onDismiss={() => {
+            const after = told(progress, dotOpen);
+            setProgress((p) => told(p, dotOpen));
+            setDotOpen(null);
+            markSpoke(session.get().hud.placements);
+            speakLesson(after, session.get());
+            showOnBoard(dotOpen);
           }}
         />
       )}

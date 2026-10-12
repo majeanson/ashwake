@@ -129,6 +129,12 @@ export const TEACH_IDS = [
   // LAST GASP before it — every device gets this card exactly once, on
   // whichever run it next begins.
   'story',
+  // THE GAME IN ONE BREATH (2026-10-12, a stranger's feedback: "je comprends
+  // tellement pas ce jeu", "trop d'information trop vite trop tôt"). The story
+  // says what this place IS; this says what to DO, in two sentences, right
+  // after it. For fresh devices only — `decodeProgress` seals it for any
+  // ledger that already holds something past `story`.
+  'goal',
   // The very first lesson (2026-08-20, the launch audit's finding: nobody was
   // ever told how to place a tile outside the opt-in manual): one card, at
   // the start of a genuinely virgin device's first run — see
@@ -163,6 +169,10 @@ export const TEACH_IDS = [
   // biome — the gesture was undiscoverable (Marc: "hard to discover").
   'lens',
   'luck',
+  // A POOR HAND's one-line hint that REDRAW exists (2026-10-12) — see
+  // `tuning.poorHandBelow`. Added after every ledger existed, so every device
+  // is told once, the first time it is dealt one.
+  'reroll',
   // The purse fold's own first opening (Marc, 2026-08-20: "explain all and
   // that you can lose it all too"): what each spend row IS, and that a
   // purse you die on is mostly lost. Added after launch-week ledgers
@@ -461,6 +471,11 @@ export function decodeProgress(raw: string | null): Progress {
           ),
         ]
       : [...TEACH_IDS];
+    // `goal` is for a stranger. A ledger that holds anything beyond `story`
+    // belongs to a device that has already played, so it is sealed rather than
+    // re-taught; a ledger holding only `story` is a fresh device caught
+    // between the two cards, and keeps `goal` armed.
+    if (!taught.includes('goal') && taught.some((id) => id !== 'story')) taught.push('goal');
 
     return {
       relics: Math.max(0, Math.floor(purse)) + refund,

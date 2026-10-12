@@ -86,6 +86,12 @@ describe('the key map', () => {
     expect(commandFor(press({ key: 'H', code: 'KeyH' }))).toEqual({ kind: 'hold' });
   });
 
+  it('gives U to taking back the last tile, and leaves Ctrl+Z to the browser', () => {
+    expect(commandFor(press({ key: 'u', code: 'KeyU' }))).toEqual({ kind: 'undo' });
+    expect(commandFor(press({ key: 'U', code: 'KeyU' }))).toEqual({ kind: 'undo' });
+    expect(commandFor(press({ key: 'z', code: 'KeyZ', ctrlKey: true }))).toBeNull();
+  });
+
   it('refuses every key a modifier claims, because those are not ours', () => {
     // Ctrl+W is a closed tab, and a closed tab is a lost run.
     for (const held of [{ ctrlKey: true }, { altKey: true }, { metaKey: true }]) {

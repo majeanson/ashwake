@@ -109,8 +109,8 @@ export type Floor = {
  * rather than collapsed:
  *
  *  - **`card`** — there has to be a lesson due at all.
- *  - **`'story'`** is not raised here. It has its own door on the front screen
- *    and would otherwise arrive twice.
+ *  - **`'story'`** and **`'goal'`** are not raised here. They have their own
+ *    doors on the front screen and would otherwise arrive twice.
  *  - **`said`** — a RECEIPT OUTRANKS A LESSON. One card at a time, and the
  *    receipt is about something that just happened.
  *  - **`touring`** — a card raised while the board is away showing the last
@@ -141,6 +141,7 @@ export type Floor = {
 export const mayTeach = (floor: Floor): boolean =>
   floor.card !== null &&
   floor.card !== 'story' &&
+  floor.card !== 'goal' &&
   !floor.said &&
   !floor.touring &&
   !floor.watching &&

@@ -205,6 +205,8 @@ export type Strings = {
    *  the drip's LENS toast and the manual's fog section — so the gesture is
    *  never described two ways. */
   readonly lensHint: string;
+  /** The drip's one line on a poor hand: REDRAW exists, and what it costs. */
+  readonly rerollHint: (cost: number) => string;
 
   readonly view: {
     /**
@@ -557,6 +559,14 @@ export type Strings = {
    */
   readonly story: readonly [string, string, string, string];
 
+  /**
+   * The game in two sentences, on the card that follows the story (2026-10-12,
+   * Marc, from two strangers' feedback): what to do, and the one tension that
+   * makes it a game. Plain words only — no pocket, no colour; those arrive
+   * later, each at its own moment.
+   */
+  readonly howItWorks: string;
+
   readonly share: {
     readonly run: (name: string, pts: number, placements: number, arc: string) => string;
     readonly daily: (
@@ -732,6 +742,8 @@ export type Strings = {
     readonly daily: string;
     readonly shop: string;
     readonly hold: string;
+    /** The cluster's UNDO button: takes back the last placement. */
+    readonly undo: string;
     /**
      * The stash, in words.
      *
@@ -925,6 +937,8 @@ export type Strings = {
     /** The front door's own disclosure: the three-sentence hook, folded so a
      *  stranger free to skip it is not made to scroll past it first. */
     readonly theStory: string;
+    /** The heading of the card that says what to do (`goal`). */
+    readonly theGoal: string;
     /** The door into the manual, from MORE and from the board's `?`. */
     readonly howToPlay: string;
     /**
@@ -1036,6 +1050,7 @@ export type Strings = {
         readonly view: string;
         readonly cards: string;
         readonly hold: string;
+        readonly undo: string;
         readonly mouse: string;
       };
     };
@@ -1052,6 +1067,8 @@ export type Strings = {
     readonly fromTerritories: (tiles: number) => string;
     /** What a card is dismissed with, once it has been read. */
     readonly gotIt: string;
+    /** The word on a chip that offers a lesson without interrupting (`DOTS`). */
+    readonly newChip: string;
     /** The heading over everything that can destroy something. */
     readonly thisDevice: string;
     /** Said where nothing can be kept — a private window, storage blocked. */

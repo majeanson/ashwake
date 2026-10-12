@@ -328,6 +328,33 @@ export type Tuning = {
   readonly holdSlots: number;
 
   /**
+   * UNDO (2026-10-12, a stranger: _"un undo ça serait clutch aussi"_): how many
+   * placements the shell will take back, last first. 0 — none, the bare
+   * default; 1 — the last placement, which is what ships.
+   *
+   * The shell's, not the rules': `reduce` never reads it, so a run is still
+   * reproducible from its seed and its moves. It is here because every system
+   * ships behind a dial that zeroes it, and a number a player might want to
+   * change belongs where the other numbers live. Only a placement that did
+   * nothing the world remembers is taken back — see `createSession`.
+   */
+  readonly undoSteps: number;
+
+  /**
+   * A POOR HAND (2026-10-12, a stranger: _"donne une série de tuiles de marde
+   * back2back pour introduire comment utiliser sa luck pour reroll"_). A hand
+   * whose best placement — any card, anywhere it may go — pays no more than
+   * this is a poor one, and the shell says once that REDRAW exists. 0 — never,
+   * the bare default; 2 ships.
+   *
+   * A hint rather than a rigged deal: 2,100 seeds were scanned for a first
+   * world with a stretch of poor hands and none has one under natural play,
+   * and a hand override would move the rules and the golden sim. Poor hands
+   * come on their own, a few a run, and the first one is the lesson.
+   */
+  readonly poorHandBelow: number;
+
+  /**
    * Territory perks (P4b, M3 of `ROADMAP.md`): every territory this world
    * holds adds `territoryTiles` to the next run's purse, up to
    * `territoryTilesCap` in total.
@@ -809,6 +836,10 @@ export const BARE_TUNING: Tuning = {
 
   holdSlots: 0,
 
+  undoSteps: 0,
+
+  poorHandBelow: 0,
+
   territoryTiles: 0,
   territoryTilesCap: 0,
 
@@ -974,6 +1005,10 @@ const PLANE: Tuning = {
   elevationBands: 5,
 
   holdSlots: 1,
+
+  undoSteps: 1,
+
+  poorHandBelow: 2,
 
   // Six tiles a territory, capped at 24 — four territories' worth. That is
   // about a fifth of the starting purse per territory and never more than
