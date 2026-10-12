@@ -10586,3 +10586,52 @@ failure is the touring-board test on WebKit ("the board never toured": the
 canvas capture reads 0 apart). It fails 3 of 3 **on `c587fc0` too**, run alone
 with `--repeat-each`, and passed in three full runs before and in CI — WebKit's
 blank-capture class (`P6.8`, `board.spec.ts` records it), not this change.
+
+### Session 129 — the first run is walked; one word for a tile (2026-10-12)
+
+**The question.** Does a stranger do better when, until their first pop, the
+game says one thing per step (what to do, and why) and nothing else?
+Unanswered until the stranger test; this is the build of it.
+
+Three asks from Marc, in one sitting:
+
+- **HOW IT WORKS' second sentence** was awkward and about one mechanic. It is
+  now the game's shape, not a rule: _"Every move is a bet between cashing in
+  now and building toward something bigger."_ (fr-CA: _"Chaque geste est un
+  pari entre encaisser maintenant et bâtir vers plus grand."_ — Marc's review
+  surface.)
+- **"Card" → "tile", everywhere a player reads it** (_"to have one less
+  term"_): the hand, the stash, FORGE, the draft, ONE MORE TILE, the manual's
+  key line and the empty-hand line, in both languages. The French `carte`
+  that means the MAP stays. Identifiers (`Card.tsx`, `CARDS`, "a card" in
+  docblocks) are the shell's word for a modal and were not touched. The eight
+  pin snapshots moved by exactly these words and no others.
+- **The tutorial walks.** `guided(progress)` is true until a new ledger id,
+  `walked`, is met by the first pop that actually LANDS (`App`, `did.popped`):
+  not by the POP card, which fires when a pocket becomes poppable. While
+  guided, `nextLesson` returns only story, goal, place, colours, ripe, pop;
+  `newDots` returns none; the once-a-run lines (NEW GROUND, UNIQUE, SPARE
+  TILES) and the signpost do not speak. All held back, not dropped. In their
+  place `coachStep` (place → match → grow → pop, read from the view alone) says one
+  line from `s.coach`, each saying what to do and why, once per step and again
+  after a receipt has taken the strip.
+- **NEW GROUND is silent on a world's first run** (`reachAtStart` null when
+  the world has no reach yet): there is no past to be farther than.
+
+`walked` is sealed in `decodeProgress` for any ledger holding something past
+the walk's own lessons, so a veteran is never walked; a device caught mid-walk
+keeps it. REPLAY THE TUTORIAL clears the ledger and so walks again.
+`Strings.placeHint` had no reader left (the sweep found it) and is gone.
+
+**Verified.** 1469 unit tests; the sweep at 0 findings; Chromium e2e 182 of
+182 (skips aside) after one fix: the touring-board test needs a place's card, which the walk
+now holds, so it seeds a walked ledger. A new e2e builds six tiles and sees the
+opening line AND the colours line, no chip and no NEW GROUND. WebKit, the whole suite:
+170 passed, 13 skipped. First paint 189.5 KB, 0.1 KB over, so the
+bar moved 194,000 → 195,000 with the reason in `budget.json`.
+
+**Not verified, and it is Marc's:** how the three lines read on the phone, and
+whether a toast is a loud enough voice for a coach. The coach shares the
+strip with receipts by design; if it reads as too quiet, the next step is a
+persistent line, which is a screen decision (the guide line was removed on
+2026-08-29 for repeating).

@@ -270,7 +270,8 @@ describe('what the upgrades do to a run', () => {
 describe('storage', () => {
   it('round-trips the three fields the device blob still carries', () => {
     const progress = meet(meet(buy(withRelics(1000), upgrade('tiles')), 'goal'), 'relic');
-    expect(decodeProgress(encodeProgress(progress))).toEqual(progress);
+    // A ledger past the walk's own lessons is a veteran's: decoded as walked.
+    expect(decodeProgress(encodeProgress(progress))).toEqual(meet(progress, 'walked'));
   });
 
   /**
@@ -410,7 +411,7 @@ describe('teaching, drop by drop (2026-08-19)', () => {
   });
 
   it('round-trips the ledger with the rest of the purse', () => {
-    const taught = meet(meet(meet(withRelics(50), 'ripe'), 'luck'), 'goal');
+    const taught = meet(meet(meet(meet(withRelics(50), 'ripe'), 'luck'), 'goal'), 'walked');
     expect(decodeProgress(encodeProgress(taught))).toEqual(taught);
   });
 });
@@ -515,5 +516,16 @@ describe('the goal card is for strangers', () => {
     expect(decodeProgress('{"relics":0,"bought":{},"met":["story","place"]}').met).toContain(
       'goal',
     );
+  });
+});
+
+describe('the walked seal (2026-10-12)', () => {
+  it('keeps a device mid-walk walked, and seals one that has played on', () => {
+    const midWalk = ['story', 'goal', 'place', 'colours', 'ripe', 'pop'].reduce(
+      (p, id) => meet(p, id as 'story'),
+      withRelics(0),
+    );
+    expect(decodeProgress(encodeProgress(midWalk)).met).not.toContain('walked');
+    expect(decodeProgress(encodeProgress(meet(midWalk, 'cache'))).met).toContain('walked');
   });
 });

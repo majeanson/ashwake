@@ -123,3 +123,39 @@ test('the tutorial is also one tap from MENU, for somebody who is lost', async (
   await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('the first run is walked: one coach line per step, and nothing else in the way', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-12, Marc: _"take the user by the hand and walk them through their
+   * actions and why they do it more thoroughly. Make sure no other info is in
+   * the way (like NEW GROUND)"_. Until the first pop lands the strip says the
+   * coach's line for the step and nothing else, and no NEW chip is offered.
+   * What the coach says is unit-tested; this asks a real browser that it is
+   * heard, and that building does not bring the clutter back.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await begin(page);
+
+  const toast = page.locator('.toast');
+  await expect(toast).toContainText(
+    /The tiles under the board are your hand|Les tuiles sous le plateau forment ta main/,
+  );
+
+  // The walk changes its words as the player gets further in.
+  const heard = new Set<string>();
+  for (let i = 0; i < 6; i++) {
+    await placeOneTile(page);
+    heard.add((await toast.textContent()) ?? '');
+    await expect(page.locator('.new-chips')).toHaveCount(0);
+    await expect(toast).not.toContainText(/NEW GROUND|NOUVEAU TERRAIN|UNIQUE/);
+  }
+  // Past the first line: the colours step was heard too, not only the opening.
+  expect(
+    [...heard].some((text) => /WORTH|VALEUR/.test(text)),
+    [...heard].join(' | '),
+  ).toBe(true);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

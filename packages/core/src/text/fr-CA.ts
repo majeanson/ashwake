@@ -183,15 +183,15 @@ export const STRINGS_FR: Strings = {
     colours: {
       name: 'LES QUATRE SOLS',
       terms: [],
-      core: 'Chaque carte est l’un de ces quatre sols, et chacun marque à sa façon.',
+      core: 'Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.',
     },
     stash: {
       name: 'RÉSERVE',
       terms: ['RÉSERVE'],
       coreMany: (slots) =>
-        `Les cartes pointillées RÉSERVE mettent ${slots} tuiles de côté. Touches-en une pour y mettre la carte choisie; touche une carte en réserve pour la reprendre contre ta tuile.`,
+        `Les cases pointillées RÉSERVE mettent ${slots} tuiles de côté. Touches-en une pour y mettre la tuile choisie; touche une tuile en réserve pour la reprendre à la place.`,
       coreOne:
-        'La carte pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la carte choisie; touche-la encore pour reprendre cette tuile.',
+        'La case pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la tuile choisie; touche-la encore pour reprendre cette tuile.',
       more: 'Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.',
     },
     sizeBonus: {
@@ -232,7 +232,13 @@ export const STRINGS_FR: Strings = {
   rareCard: 'Dépense-la là où beaucoup de tuiles se touchent.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
-  placeHint: 'Touche une arête lumineuse pour poser ta tuile.',
+  coach: {
+    place: `Les tuiles sous le plateau forment ta main, et la tuile éclairée est la prochaine que tu poseras. Touche une arête lumineuse du plateau pour la poser${D}: chaque tuile posée agrandit ton terrain, et c’est le terrain qui marque.`,
+    match:
+      'Regarde les couleurs. La VALEUR d’une tuile, c’est combien de ses voisines ont sa couleur, alors pose les prochaines contre des tuiles qui lui ressemblent.',
+    grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent. Chaque pose dépense des tuiles de ta réserve, alors bâtis avec un plan.',
+    pop: `Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER${D}: ça te redonne des tuiles pour continuer à poser, et des points pour ton score.`,
+  },
   rerollHint: (cost) =>
     `Une main faible? REPIOCHER la jette pour une nouvelle, au prix de ${cost} de CHANCE.`,
 
@@ -341,7 +347,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `${name} · ${cost}. Une main qui penche ${name}, et les ${draws} prochaines pioches avec.`,
       steerSure: (name, cost, draws) =>
         `${name} · ${cost}. Une main entière de ${name}${draws === 0 ? '' : draws === 1 ? ', et la prochaine pioche aussi' : `, et les ${nb(draws)} prochaines pioches aussi`}.`,
-      forge: (cost) => `FORGER · ${cost}. Rends UNIQUE la carte choisie.`,
+      forge: (cost) => `FORGER · ${cost}. Rends UNIQUE la tuile choisie.`,
       sacrifice: (pct) =>
         `SACRIFIER LA CHANCE${D}: TOUTE la bourse échangée contre des reliques à ${pc(pct)}. Mieux que de mourir dessus.`,
       lostPartly: (pct) =>
@@ -443,7 +449,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       'Les bords qui luisent sont là où une tuile peut aller. Le chiffre pâle est ce qu’elle paierait.',
     pop: 'Des tuiles mûres qui se touchent font UNE poche. Elles se récoltent ensemble, et laissent de la pierre.',
     rare: `Une rare posée porte un anneau de sa couleur${D}: magique, puis unique.`,
-    stash: 'La case pointillée, c’est la RÉSERVE. Touche-la pour y mettre la carte choisie.',
+    stash: 'La case pointillée, c’est la RÉSERVE. Touche-la pour y mettre la tuile choisie.',
   },
 
   perk: {
@@ -518,7 +524,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
     perksAll: 'Trouver chaque atout',
   },
   unlock: {
-    draft: 'Une quatrième carte à piocher',
+    draft: 'Une quatrième tuile à piocher',
     hold: 'Une deuxième case de réserve',
     luck: 'Deux fois les chances de tuile rare',
     reach: 'Les destinations luisent de deux fois plus loin',
@@ -569,7 +575,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
   ],
 
   howItWorks:
-    'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Attendre paie plus, mais chaque pose coûte plus cher que la précédente.',
+    'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand.',
 
   share: {
     run: (name, pts, placements, arc) =>
@@ -648,8 +654,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         note: 'Chaque tuile de plus dans une poche vaut davantage, jusqu’à la fin de la partie.',
       },
       hand: {
-        name: 'UNE CARTE DE PLUS',
-        note: 'Une carte de plus dans ta main, jusqu’à la fin de la partie (5 au plus).',
+        name: 'UNE TUILE DE PLUS',
+        note: 'Une tuile de plus dans ta main, jusqu’à la fin de la partie (5 au plus).',
       },
       luck: { name: 'CHANCE', note: 'Un bon paquet de chance, tout de suite.' },
       forge: {
@@ -734,8 +740,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     undo: 'ANNULER',
     holdEmpty: 'Mettre la tuile choisie en réserve',
     holdSwap: (ground) => `Reprendre la tuile ${ground} de la réserve`,
-    holdNothing: 'Rien en main à mettre en réserve. Touche d’abord une carte.',
-    holdTrades: `Touche d’abord une carte${D}: la réserve échange, elle ne distribue pas.`,
+    holdNothing: 'Rien en main à mettre en réserve. Touche d’abord une tuile.',
+    holdTrades: `Touche d’abord une tuile${D}: la réserve échange, elle ne distribue pas.`,
     pop: 'RÉCOLTER',
     sacrifice: 'SACRIFIER',
     relicsPaid: (n) => `${nb(n)} relique${pl(n, '', 's')}`,
@@ -822,7 +828,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       lines: [
         `Le bouton loupe à côté de la CHANCE ouvre la lentille${D}: une ligne par sol, avec combien de ses tuiles sont en place, ce qu’elles valent et combien sont mûres.`,
         'Touche une ligne pour tenir la lentille sur ce sol. Le plateau l’éclaire, et le panneau montre son pouvoir et ses stats; l’onglet LE PRIX montre ce que sa meilleure poche rapporterait si tu la récoltais maintenant. Touche la ligne encore pour lâcher.',
-        'Touche n’importe quelle ligne d’un tableau pour lire ce qu’elle veut dire. Garder le doigt appuyé sur une carte de ta main éclaire son sol de la même façon.',
+        'Touche n’importe quelle ligne d’un tableau pour lire ce qu’elle veut dire. Garder le doigt appuyé sur une tuile de ta main éclaire son sol de la même façon.',
       ],
     },
     camera: { flat: 'À PLAT', home: 'DÉFAUT', mine: 'MA VUE' },
@@ -843,8 +849,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         turn: `Q et E, ou Origine et Fin${D}: fait tourner le plateau.`,
         lean: `R et F, ou Page précédente et Page suivante${D}: incline la caméra.`,
         view: `0${D}: le bouton de vue, sans aller le chercher.`,
-        cards: `1 à 8${D}: prend cette carte dans la main.`,
-        hold: `H${D}: mets la carte choisie en RÉSERVE, ou reprends celle qui y est.`,
+        cards: `1 à 8${D}: prend cette tuile dans la main.`,
+        hold: `H${D}: mets la tuile choisie en RÉSERVE, ou reprends celle qui y est.`,
         undo: `U${D}: reprends ta dernière tuile.`,
         mouse:
           'Glisse avec le bouton droit, ou en tenant Majuscule, pour tourner et incliner. La roulette zoome.',
@@ -933,7 +939,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     relicsHeld: (n) => `${nb(n)} relique${pl(n, '', 's')}`,
     perksTally: (found, all) =>
       `${nb(found)} atout${pl(found, '', 's')} trouvé${pl(found, '', 's')} sur ${nb(all)}`,
-    handEmpty: 'Ta main est vide. Touche une carte en bas pour en prendre une.',
+    handEmpty: 'Ta main est vide. Touche une tuile en bas pour en prendre une.',
     lensOn: (ground) =>
       `Sol ${ground} dont on se souvient${D}: chaque parcelle connue est éclairée. Touche encore le brouillard pour lâcher.`,
     lensTile: (ground) =>

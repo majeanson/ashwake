@@ -184,15 +184,15 @@ export const STRINGS_EN: Strings = {
     colours: {
       name: 'THE FOUR GROUNDS',
       terms: [],
-      core: 'Every card is one of these four, and each one scores its own way.',
+      core: 'Every tile is one of these four, and each one scores its own way.',
     },
     stash: {
       name: 'STASH',
       terms: ['STASH'],
       coreMany: (slots) =>
-        `The dashed STASH cards keep ${slots} tiles for later. Tap one to stash the selected card; tap a stashed card to trade that tile back.`,
+        `The dashed STASH slots keep ${slots} tiles for later. Tap one to stash the selected tile; tap a stashed tile to trade it back.`,
       coreOne:
-        'The dashed STASH card keeps one tile for later. Tap to stash the selected card; tap it again to trade that tile back.',
+        'The dashed STASH slot keeps one tile for later. Tap to stash the selected tile; tap it again to trade that tile back.',
       more: 'Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.',
     },
     sizeBonus: {
@@ -232,7 +232,14 @@ export const STRINGS_EN: Strings = {
   rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Tap remembered fog to light its ground.',
-  placeHint: 'Tap a glowing edge to place your tile.',
+  coach: {
+    place:
+      'The tiles under the board are your hand, and the lit one is the next you will place. Tap a glowing edge on the board to put it down: every tile you place is ground you build, and ground is what scores.',
+    match:
+      'Look at the colours. A tile’s WORTH is how many of its neighbours match its colour, so place the next tiles beside ones that match.',
+    grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in. Each placement spends tiles from your supply, so build with a plan.',
+    pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP: it gives you tiles back to keep placing, and points toward your score.',
+  },
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
 
   view: {
@@ -339,7 +346,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         `${name} · ${cost}. A hand leaning ${name}, and the next ${draws} draws with it.`,
       steerSure: (name, cost, draws) =>
         `${name} · ${cost}. A whole hand of ${name}${draws === 0 ? '' : draws === 1 ? ', and the next draw too' : `, and the next ${draws} draws too`}.`,
-      forge: (cost) => `FORGE · ${cost}. Turn the selected card UNIQUE.`,
+      forge: (cost) => `FORGE · ${cost}. Turn the selected tile UNIQUE.`,
       sacrifice: (pct) =>
         `SACRIFICE LUCK: the WHOLE purse traded for relics at ${pct}%. Better than dying on it.`,
       lostPartly: (pct) =>
@@ -440,7 +447,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     place: 'Glowing edges are where a tile may go. The faint number is what it would pay.',
     pop: 'Ripe tiles that touch are ONE pocket. They pop together, and leave stone.',
     rare: 'A placed rare wears a ring in its own colour: magic, then unique.',
-    stash: 'The dashed slot is the stash. Tap it to stash the selected card for later.',
+    stash: 'The dashed slot is the stash. Tap it to stash the selected tile for later.',
   },
 
   perk: {
@@ -512,7 +519,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
     perksAll: 'Find every perk',
   },
   unlock: {
-    draft: 'A fourth draft card',
+    draft: 'A fourth draft tile',
     hold: 'A second stash slot',
     luck: 'Twice the rare-tile odds',
     reach: 'Destinations glow from twice as far',
@@ -562,7 +569,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
   ],
 
   howItWorks:
-    'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Waiting pays more, but each placement costs more than the last.',
+    'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger.',
 
   share: {
     run: (name, pts, placements, arc) =>
@@ -637,8 +644,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         note: 'Every extra tile in a pocket is worth more, for the rest of the run.',
       },
       hand: {
-        name: 'ONE MORE CARD',
-        note: 'One more card in your hand, for the rest of the run (5 at most).',
+        name: 'ONE MORE TILE',
+        note: 'One more tile in your hand, for the rest of the run (5 at most).',
       },
       luck: { name: 'LUCK', note: 'A lump of luck, right now.' },
       forge: {
@@ -722,8 +729,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     undo: 'UNDO',
     holdEmpty: 'Stash the selected tile for later',
     holdSwap: (ground) => `Take the stashed ${ground} tile back into the hand`,
-    holdNothing: 'Nothing in hand to stash. Tap a card first.',
-    holdTrades: 'Tap a card in your hand first: the stash trades, it does not deal.',
+    holdNothing: 'Nothing in hand to stash. Tap a tile first.',
+    holdTrades: 'Tap a tile in your hand first: the stash trades, it does not deal.',
     pop: 'POP',
     sacrifice: 'SACRIFICE',
     relicsPaid: (n) => `${n} relic${plural(n, '', 's')}`,
@@ -802,7 +809,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       lines: [
         'The magnifier button beside LUCK opens the lens: one row per ground, with how many of its tiles are standing, what they are worth, and how much of it is ripe.',
         'Tap a row to hold the lens on that ground. The board lights it, and the panel shows its power and stats; THE PRICE tab shows how its best pocket would score if you popped it now. Tap the row again to let go.',
-        'Tap any line in a table to read what it means. Pressing and holding a card in your hand lights its ground the same way.',
+        'Tap any line in a table to read what it means. Pressing and holding a tile in your hand lights its ground the same way.',
       ],
     },
     camera: { flat: 'FLAT', home: 'DEFAULT', mine: 'MY VIEW' },
@@ -823,8 +830,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         turn: 'Q and E, or Home and End: turn the board.',
         lean: 'R and F, or Page Up and Page Down: lean the camera back and forward.',
         view: '0: the view button, without reaching for it.',
-        cards: '1 to 8: pick up that card from the hand.',
-        hold: 'H: stash the card you are holding, or take the stashed one back.',
+        cards: '1 to 8: pick up that tile from the hand.',
+        hold: 'H: stash the tile you are holding, or take the stashed one back.',
         undo: 'U: take back your last tile.',
         mouse: 'Drag with the right button, or with Shift held, to turn and lean. The wheel zooms.',
       },
@@ -917,7 +924,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
      * listening to it. French had the branch all along. */
     relicsHeld: (n) => `${n} relic${plural(n, '', 's')}`,
     perksTally: (found, all) => `${found} of ${all} perks found`,
-    handEmpty: 'Your hand is empty. Tap a card below to pick one up.',
+    handEmpty: 'Your hand is empty. Tap a tile below to pick one up.',
     lensOn: (ground) =>
       `Remembered ${ground} ground: every known patch of it is lit. Tap the fog again to let go.`,
     lensTile: (ground) => `Every ${ground} tile is lit. Hold one again to let go.`,

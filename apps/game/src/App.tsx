@@ -157,7 +157,7 @@ import { useFilm } from './shell/watching';
 import type { Replay } from '@meta/replay';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
-import { newDots, nextLesson, sinceSpoke, toastLine, told } from './shell/teaching';
+import { coachStep, newDots, nextLesson, sinceSpoke, toastLine, told } from './shell/teaching';
 import { NewChips } from './screens/NewChips';
 import { walk, walkToEnd } from './shell/walk';
 import { CHROME_ICON } from '@theme/icons';
@@ -501,7 +501,14 @@ function Game() {
    * frame effect — a child's, so it runs first — has already landed.
    */
   const [framing, setFraming] = useState(0);
-  const frameTheRun = useCallback(() => setFraming((n) => n + 1), []);
+  /** The coach step last spoken, so a step is said once and again only after
+   *  something louder (a receipt) has taken the strip. Null between runs. */
+  const coached = useRef<string | null>(null);
+  const frameTheRun = useCallback(() => {
+    // Every run opens through here: its coach starts from its first step.
+    coached.current = null;
+    setFraming((n) => n + 1);
+  }, []);
   /**
    * WHAT THIS RUN STARTED FROM — the three ledgers its gains are measured
    * against.
@@ -1966,6 +1973,8 @@ function Game() {
         witness('placed');
       }
       if (did.popped) witness('popped');
+      // The walk ends at the first pop that actually lands (`shell/teaching`).
+      if (did.popped) setProgress((p) => told(p, 'walked'));
 
       /*
        * A claim is SHOWN where it happened, then the camera comes back.
@@ -2054,6 +2063,25 @@ function Game() {
        * line, so it takes the toast only when nothing louder wanted it.
        */
       if (said === null) {
+        /*
+         * THE WALK (2026-10-12, Marc: _"take the user by the hand and walk them
+         * through their actions and why they do it"_, _"make sure no other info
+         * is in the way"_). While the first run is walked, the coach's line for
+         * this step is the only thing the strip says: no NEW GROUND, no UNIQUE,
+         * no SPARE TILES, no signpost, no other lesson. Each of those is held
+         * back, not dropped, and speaks after the first pop.
+         */
+        const step = coachStep(
+          { board: now.board, hud: now.hud, placed: now.hud.placements > 0 },
+          progress,
+        );
+        if (step !== null) {
+          if (coached.current !== step) {
+            coached.current = step;
+            say(s.coach[step]);
+          }
+          return;
+        }
         const mark = onceARun(
           {
             state: now.state,
@@ -2065,7 +2093,9 @@ function Game() {
              * hand, still fires on both.
              */
             reachAtStart:
-              daily !== null || session.detour ? null : (startedFrom.current?.reach ?? 0),
+              daily !== null || session.detour || (startedFrom.current?.reach ?? 0) === 0
+                ? null
+                : startedFrom.current!.reach,
             said: saidOnce.current,
           },
           s,
@@ -2098,6 +2128,9 @@ function Game() {
         if (sign !== null) say(sign);
         return;
       }
+
+      // A receipt has taken the strip: the coach says its step again after it.
+      coached.current = null;
 
       /*
        * The FIRST pop a device ever makes is a card (Marc's call, 2026-08-29).

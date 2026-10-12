@@ -208,7 +208,17 @@ export type Strings = {
   /** The first toast of a run: what to do with the tile in hand. One
    *  sentence (2026-10-12, Marc: the second one — what the faint number is —
    *  was too much on the first screen; it has its own door in the manual). */
-  readonly placeHint: string;
+  /**
+   * THE FIRST RUN'S COACH (2026-10-12, Marc: _"take the user by the hand and
+   * walk them through their actions and why they do it"_). One line per step,
+   * each saying what to do and why, spoken while nothing else is.
+   */
+  readonly coach: {
+    readonly place: string;
+    readonly match: string;
+    readonly grow: string;
+    readonly pop: string;
+  };
   /** The drip's one line on a poor hand: REDRAW exists, and what it costs. */
   readonly rerollHint: (cost: number) => string;
 

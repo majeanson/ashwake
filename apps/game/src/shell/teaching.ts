@@ -148,6 +148,37 @@ export const sinceSpoke = (spokeAt: number | null, placements: number): number |
 const UNPACED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'lastGasp']);
 
 /**
+ * THE FIRST RUN IS WALKED (2026-10-12, Marc: _"take the user by the hand and
+ * walk them through their actions and why they do it more thoroughly. Make
+ * sure no other info is in the way"_).
+ *
+ * Until a device's first pop has actually landed (`walked`, written by `App`) —
+ * the only things said are the opening beats, the two ideas the walk is
+ * about, and the coach's one line for the step the player is on. Every other
+ * lesson, NEW chip, once-a-run line (NEW GROUND, UNIQUE, SPARE TILES) and
+ * signpost waits: held back, not dropped, since each stays armed.
+ */
+export const guided = (progress: Progress): boolean => !hasMet(progress, 'walked');
+
+/** What may still speak while the first run is being walked. */
+const GUIDED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop']);
+
+/** The step of the walk the player is on. */
+type CoachStep = 'place' | 'match' | 'grow' | 'pop';
+
+/**
+ * Which step, or null when the walk is over. Read from the current view only,
+ * like `isTrue`: no remembered frame, so a step cannot be missed.
+ */
+export function coachStep(now: Moment, progress: Progress): CoachStep | null {
+  if (!guided(progress) || now.hud.ended) return null;
+  if (!now.placed) return 'place';
+  if (now.hud.canHarvest) return 'pop';
+  // The first two tiles are about colour; after that, about surrounding.
+  return now.hud.placements < 3 ? 'match' : 'grow';
+}
+
+/**
  * The first thing worth saying that this device has not been told.
  *
  * Returns null far more often than not — which is the point. A game that
@@ -171,8 +202,11 @@ const UNPACED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', '
  * burning a ledger entry on unshown words costs.
  */
 export function nextLesson(now: Moment, progress: Progress): Teach | null {
+  const walking = guided(progress);
   for (const id of ORDER) {
     if (hasMet(progress, id) || DOTS.has(id)) continue;
+    // Held back, not dropped: the moment stays armed for after the first pop.
+    if (walking && !GUIDED.has(id)) continue;
     if (!isTrue(id, now)) continue;
     if (!UNPACED.has(id) && now.since !== undefined && now.since < CARD_GAP) continue;
     return { id, as: CARDS.has(id) ? 'card' : 'toast' };
@@ -185,10 +219,11 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
  * has not been opened yet, in the drip's own order.
  */
 export const newDots = (now: Moment, progress: Progress): readonly TeachId[] =>
-  // Under the same pace as the cards (2026-10-12, Marc: _"we start with a
+  // None while the first run is being walked (2026-10-12, Marc: nothing else
+  // "in the way"), then under the same pace as the cards (2026-10-12, Marc: _"we start with a
   // magic tile"_): a chip over a first screen that already has a story, a card
   // and a sentence is the clutter this pace exists to prevent.
-  now.since !== undefined && now.since < CARD_GAP
+  guided(progress) || (now.since !== undefined && now.since < CARD_GAP)
     ? []
     : ORDER.filter((id) => DOTS.has(id) && !hasMet(progress, id) && isTrue(id, now));
 
@@ -216,7 +251,7 @@ export function toastLine(
 ): string | null {
   switch (id) {
     case 'place':
-      return s.placeHint;
+      return s.coach.place;
     case 'costRise':
       return statNote('cost', now.hud, t, s);
     case 'wall':
@@ -317,5 +352,8 @@ function isTrue(id: TeachId, now: Moment): boolean {
       return placed && hud.draft.length > 0;
     case 'lastGasp':
       return hud.left !== null && hud.left <= 1;
+    case 'walked':
+      // Written by the first pop that lands, never by a moment.
+      return false;
   }
 }

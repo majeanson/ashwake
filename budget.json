@@ -14,7 +14,7 @@
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
   "firstPaint": {
-    "gzip": 194000,
+    "gzip": 195000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -66,7 +66,12 @@
       "shell/teaching.ts, UNDO (the session's stack, the cluster's button, one",
       "vendored mark and its key line), the poor-hand hint, and the first world's seed. All of it is",
       "the first minute, which is the point of the bar. The renderer-by-name",
-      "check is untouched."
+      "check is untouched.",
+      "",
+      "MOVED 2026-10-12 (later), from 194,000 to 195,000, for THE WALK (LOG.md",
+      "Session 129). Measured 189.5 KB gzipped, 0.1 KB over: the coach's three",
+      "lines in both languages, `walked` in the ledger and the step logic in",
+      "shell/teaching.ts. First minute again; renderer-by-name check untouched."
     ]
   },
   "renderer": {

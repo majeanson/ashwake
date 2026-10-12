@@ -15,6 +15,8 @@ import {
   toastLine,
   told,
   type Moment,
+  coachStep,
+  guided,
 } from './teaching';
 import { walk } from './walk';
 
@@ -63,6 +65,9 @@ const taughtExcept = (...keep: readonly string[]): Progress =>
   TEACH_IDS.filter((id) => !keep.includes(id)).reduce<Progress>((p, id) => meet(p, id), {
     ...EMPTY_PROGRESS,
   });
+
+/** A device whose first pop has landed: nothing is held back for the walk. */
+const WALKED: Progress = meet({ ...EMPTY_PROGRESS }, 'walked');
 
 describe('the teaching drip', () => {
   it('opens on STORY: the first thing a stranger is told is what this place is', () => {
@@ -267,9 +272,9 @@ describe('the NEW chips (2026-10-12): offered, never fired', () => {
       walk(s, n);
       const snap = s.get();
       const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
-      for (const id of newDots(now, EMPTY_PROGRESS)) {
+      for (const id of newDots(now, WALKED)) {
         found = true;
-        expect(newDots(now, told(EMPTY_PROGRESS, id))).not.toContain(id);
+        expect(newDots(now, told(WALKED, id))).not.toContain(id);
       }
     }
     expect(found, 'no walked board ever showed a chip').toBe(true);
@@ -339,8 +344,49 @@ describe('the chips keep the pace too (2026-10-12)', () => {
     walk(s, 20);
     const snap = s.get();
     const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
-    expect(newDots(now, EMPTY_PROGRESS).length).toBeGreaterThan(0);
-    expect(newDots({ ...now, since: CARD_GAP - 1 }, EMPTY_PROGRESS)).toEqual([]);
-    expect(newDots({ ...now, since: CARD_GAP }, EMPTY_PROGRESS).length).toBeGreaterThan(0);
+    expect(newDots(now, WALKED).length).toBeGreaterThan(0);
+    expect(newDots({ ...now, since: CARD_GAP - 1 }, WALKED)).toEqual([]);
+    expect(newDots({ ...now, since: CARD_GAP }, WALKED).length).toBeGreaterThan(0);
+  });
+});
+
+describe('the first run is walked (2026-10-12)', () => {
+  it('walks a device until its first pop has landed, and then never again', () => {
+    expect(guided(EMPTY_PROGRESS)).toBe(true);
+    // The card about popping is not the pop.
+    expect(guided(told(EMPTY_PROGRESS, 'pop'))).toBe(true);
+    expect(guided(WALKED)).toBe(false);
+  });
+
+  it('says one thing per step: place, colours, surround, then pop', () => {
+    expect(coachStep(momentAt(0), EMPTY_PROGRESS)).toBe('place');
+    // The lit tile the place line points at is real: one is chosen at the start.
+    expect(momentAt(0).hud.draft.some((d) => d.selected)).toBe(true);
+    expect(coachStep(momentAt(1), EMPTY_PROGRESS)).toBe('match');
+    expect(coachStep(momentAt(3), EMPTY_PROGRESS)).toBe('grow');
+    const ripe = { ...momentAt(3), hud: { ...momentAt(3).hud, canHarvest: true } };
+    expect(coachStep(ripe, EMPTY_PROGRESS)).toBe('pop');
+    expect(coachStep(ripe, WALKED)).toBeNull();
+  });
+
+  it('holds every other lesson and every chip back until then', () => {
+    const now = momentAt(14);
+    const meetWalk = ['story', 'goal', 'place', 'colours', 'ripe', 'pop'].reduce(
+      (p, id) => told(p, id as 'story'),
+      EMPTY_PROGRESS,
+    );
+    expect(nextLesson(now, meetWalk)).toBeNull();
+    expect(newDots(now, meetWalk)).toEqual([]);
+    // Held back, not dropped: the same board speaks once the walk is over.
+    expect(nextLesson(now, told(meetWalk, 'walked'))).not.toBeNull();
+  });
+
+  it('the coach has words in both languages', () => {
+    for (const locale of ['en', 'fr-CA'] as const) {
+      const s = stringsFor(locale);
+      for (const step of ['place', 'match', 'grow', 'pop'] as const) {
+        expect(s.coach[step].length).toBeGreaterThan(20);
+      }
+    }
   });
 });

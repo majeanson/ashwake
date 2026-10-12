@@ -181,7 +181,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
     "pop": "Ripe tiles that touch are ONE pocket. They pop together, and leave stone.",
     "rare": "A placed rare wears a ring in its own colour: magic, then unique.",
     "ripen": "Six sides covered: the middle tile is ripe, and worth what matches it.",
-    "stash": "The dashed slot is the stash. Tap it to stash the selected card for later.",
+    "stash": "The dashed slot is the stash. Tap it to stash the selected tile for later.",
   },
   "names": [
     [
@@ -383,7 +383,7 @@ Every button under your hand is priced in luck, and you CAN lose it all: whateve
         "text": "ROADS · 20. A whole hand of ROADS, and the next 3 draws too.",
       },
       {
-        "text": "FORGE · 40. Turn the selected card UNIQUE.",
+        "text": "FORGE · 40. Turn the selected tile UNIQUE.",
       },
     ],
     "text": "LUCK IS FOR SPENDING
@@ -412,7 +412,7 @@ Every button under your hand is priced in luck, and you CAN lose it all: the run
         "text": "ROADS · 20. A whole hand of ROADS, and the next 3 draws too.",
       },
       {
-        "text": "FORGE · 40. Turn the selected card UNIQUE.",
+        "text": "FORGE · 40. Turn the selected tile UNIQUE.",
       },
     ],
     "text": "LUCK IS FOR SPENDING
@@ -511,7 +511,7 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
   "unlocks": [
     [
       "draft",
-      "A fourth draft card",
+      "A fourth draft tile",
     ],
     [
       "hold",
@@ -841,7 +841,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     "pop": "Des tuiles mûres qui se touchent font UNE poche. Elles se récoltent ensemble, et laissent de la pierre.",
     "rare": "Une rare posée porte un anneau de sa couleur : magique, puis unique.",
     "ripen": "Six côtés couverts : la tuile du milieu est mûre, et vaut ce qui lui ressemble.",
-    "stash": "La case pointillée, c’est la RÉSERVE. Touche-la pour y mettre la carte choisie.",
+    "stash": "La case pointillée, c’est la RÉSERVE. Touche-la pour y mettre la tuile choisie.",
   },
   "names": [
     [
@@ -1043,7 +1043,7 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui 
         "text": "CHEMINS · 20. Une main entière de CHEMINS, et les 3 prochaines pioches aussi.",
       },
       {
-        "text": "FORGER · 40. Rends UNIQUE la carte choisie.",
+        "text": "FORGER · 40. Rends UNIQUE la tuile choisie.",
       },
     ],
     "text": "LA CHANCE, ÇA SE DÉPENSE
@@ -1072,7 +1072,7 @@ Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin 
         "text": "CHEMINS · 20. Une main entière de CHEMINS, et les 3 prochaines pioches aussi.",
       },
       {
-        "text": "FORGER · 40. Rends UNIQUE la carte choisie.",
+        "text": "FORGER · 40. Rends UNIQUE la tuile choisie.",
       },
     ],
     "text": "LA CHANCE, ÇA SE DÉPENSE
@@ -1171,7 +1171,7 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
   "unlocks": [
     [
       "draft",
-      "Une quatrième carte à piocher",
+      "Une quatrième tuile à piocher",
     ],
     [
       "hold",

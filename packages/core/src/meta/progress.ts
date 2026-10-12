@@ -201,6 +201,11 @@ export const TEACH_IDS = [
   // guide, hints, etc. for caravans"_), the first time it is IN TOWN. Added
   // after every ledger existed, so every device gets it exactly once.
   'caravan',
+  // THE FIRST RUN IS WALKED (2026-10-12, Marc: take the user by the hand): met
+  // by the first pop that actually lands, not by the card about it. Until then
+  // nothing but the walk speaks (`shell/teaching.ts`). Sealed in `decodeProgress`
+  // for any ledger past the walk's own lessons.
+  'walked',
 ] as const;
 
 export type TeachId = (typeof TEACH_IDS)[number];
@@ -476,6 +481,10 @@ export function decodeProgress(raw: string | null): Progress {
     // re-taught; a ledger holding only `story` is a fresh device caught
     // between the two cards, and keeps `goal` armed.
     if (!taught.includes('goal') && taught.some((id) => id !== 'story')) taught.push('goal');
+    // `walked` likewise, but a device mid-walk has met the walk's own lessons,
+    // so only a ledger holding something BEYOND them belongs to a veteran.
+    const WALK = new Set<string>(['story', 'goal', 'place', 'ripe', 'pop', 'colours']);
+    if (!taught.includes('walked') && taught.some((id) => !WALK.has(id))) taught.push('walked');
 
     return {
       relics: Math.max(0, Math.floor(purse)) + refund,

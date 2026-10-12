@@ -1792,6 +1792,14 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
    * geography dial that has now moved under it twice.
    */
   const errors = watchErrors(page);
+  // The first run is WALKED (2026-10-12): every place's card waits for the
+  // device's first pop. This test is about the tour, so the device has walked.
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ashwake.progress.v1',
+      JSON.stringify({ relics: 0, bought: {}, met: ['walked'] }),
+    );
+  });
   await page.goto('/?seed=122');
   // A NEW chip and the UNDO arrow are DOM over the canvas, and both come and
   // go with what the test does (a placement, a shrine coming into view): that
