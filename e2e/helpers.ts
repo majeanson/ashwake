@@ -412,3 +412,21 @@ export async function pastTheFilm(page: Page): Promise<void> {
   await skip.click();
   await skip.waitFor({ state: 'detached' });
 }
+
+/**
+ * A device whose first run has been walked and toured (2026-10-13).
+ *
+ * The first run forces its first pop and then holds every other lesson until it
+ * ends (`shell/teaching`'s phases), so a test that places a hundred tiles on a
+ * fresh device, or waits for a place's card, is testing the tutorial's gate and
+ * not the thing it is about. This seeds only the two marks — every OTHER lesson
+ * still speaks, which is what `?taught=1` would silence.
+ */
+export async function walkedDevice(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ashwake.progress.v1',
+      JSON.stringify({ relics: 0, bought: {}, met: ['walked', 'toured'] }),
+    );
+  });
+}

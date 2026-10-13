@@ -8,6 +8,7 @@ import {
   openMore,
   placeOneTile,
   tilesLeft,
+  walkedDevice,
   watchErrors,
 } from './helpers';
 
@@ -171,6 +172,7 @@ test('takes a placement with the board leaned and turned', async ({ page }) => {
   // more, with the ground standing at different heights, a finger has to
   // still land on the hex under it.
   const errors = watchErrors(page);
+  await walkedDevice(page);
   await page.goto('/?seed=7&place=12&tilt=45&yaw=45&relief=0.35');
   await expect(page.locator('canvas')).toBeVisible();
   await begin(page);
@@ -189,6 +191,7 @@ test('keeps taking taps on the frontier as the board grows', async ({ page }) =>
   // outside it and went quiet. A growing board is the whole game, so this walks
   // one outward and insists every placement still lands.
   const errors = watchErrors(page);
+  await walkedDevice(page);
   await page.goto('/?seed=7&tilt=35');
   await expect(page.locator('canvas')).toBeVisible();
   await begin(page);
@@ -1792,14 +1795,9 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
    * geography dial that has now moved under it twice.
    */
   const errors = watchErrors(page);
-  // The first run is WALKED (2026-10-12): every place's card waits for the
-  // device's first pop. This test is about the tour, so the device has walked.
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      'ashwake.progress.v1',
-      JSON.stringify({ relics: 0, bought: {}, met: ['walked'] }),
-    );
-  });
+  // The first run is walked and toured (2026-10-12): every place's card waits
+  // for it. This test is about the tour, so the device has done both.
+  await walkedDevice(page);
   await page.goto('/?seed=122');
   // A NEW chip and the UNDO arrow are DOM over the canvas, and both come and
   // go with what the test does (a placement, a shrine coming into view): that
