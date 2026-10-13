@@ -841,7 +841,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     expedition: {
       title: 'THE EXPEDITION',
       lines: [
-        'You are walking out into a dark plane. You place tiles, they ripen, you pop them, and you push on.',
+        'You are walking out into a dark plane, and you push on as far as your tiles last.',
         'Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made.',
         'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
       ],

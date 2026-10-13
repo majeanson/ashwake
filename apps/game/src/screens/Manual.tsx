@@ -39,7 +39,7 @@ import { panelOf, tabOf, Tabs } from '../ui/Tabs';
  * 2026-08-27 after it kept dismissing the manual mid-sentence.
  */
 
-const TABS = ['start', 'play', 'hand', 'colours'] as const;
+const TABS = ['start', 'colours', 'play', 'hand'] as const;
 type TabId = (typeof TABS)[number];
 
 /** The key list, in the order somebody learns it: point at a hex, act on it,
@@ -106,11 +106,11 @@ const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
   // WORTH and POCKET before the lessons that use them (2026-10-11): RIPE says
   // "shows its WORTH", POP cashes a POCKET, SIZE BONUS multiplies a pocket's
   // worth — and POCKET sat on the next tab, WORTH after the bonus.
-  start: ['ripe', 'worth', 'pocket', 'pop', 'sizeBonus', 'costRise'],
+  start: ['ripe', 'worth', 'pocket', 'pop', 'costRise', 'sizeBonus'],
   // THE CARAVAN beside BOUNTY (2026-09-30): the other reason a pop pays
   // more, and a section that grows in when its card has spoken.
   play: ['reach', 'bounty', 'caravan', 'field', 'lens'],
-  hand: ['rare', 'rareUnique', 'stash', 'luck', 'relic'],
+  hand: ['luck', 'rare', 'rareUnique', 'stash', 'relic'],
   // COLOURS is not a list of lessons: it is `GroundGuide`, built from the
   // colour rules and the strategy catalogue (2026-10-12). Its tab appears when
   // THE FOUR GROUNDS has been met, like every section that grows in.
@@ -263,6 +263,9 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
           <h2 className="panel-title marked">
             <span>{s.ui.expedition.title}</span>
           </h2>
+          {/* The game in two sentences, first (2026-10-12, Marc): the same words the
+              second card of the opening says, so there is one wording. */}
+          <p>{s.howItWorks}</p>
           {s.ui.expedition.lines.map((line) => (
             <p key={line}>{line}</p>
           ))}
@@ -282,24 +285,6 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
         reader never opens. Four short paragraphs is what a fold saves; a
         false mental model is what it costs.
       */}
-      {on === 'start' && mode !== undefined && (
-        <section className="lesson">
-          <h2 className="panel-title marked">
-            <span>{s.ui.which.title}</span>
-          </h2>
-          <p>
-            {mode === 'world'
-              ? s.ui.which.nowWorld
-              : mode === 'shared'
-                ? s.ui.which.nowShared
-                : s.ui.which.nowDaily}
-          </p>
-          <p>{s.ui.which.world}</p>
-          <p>{s.ui.which.shared}</p>
-          <p>{s.ui.which.daily}</p>
-          <p>{s.ui.which.howToShare}</p>
-        </section>
-      )}
 
       {/*
         The keys, on the tab a player opens first and only where there is a
@@ -313,18 +298,6 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
         component that supplied the key and let the catalogue caption it would
         be deciding half of what a player reads.
       */}
-      {on === 'start' && keyboard === true && (
-        <section className="lesson">
-          <h2 className="panel-title marked">
-            <span>{s.ui.board.keys.title}</span>
-          </h2>
-          <ul className="keys">
-            {KEY_LINES.map((id) => (
-              <li key={id}>{s.ui.board.keys[id]}</li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {/*
         One picture per tab, however many lessons share it (2026-08-30).
@@ -339,11 +312,32 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
         in the registry because it is a fact about a PAGE, not about a
         lesson: a teaching card shows the same figure and should.
       */}
+      {/* WHICH GAME: straight under the opening for a reader in a shared or daily
+          run (the section exists for the reader in the wrong run), and after the
+          rules for one in their own world, who has the least need of it. */}
+      {on === 'start' && mode !== undefined && mode !== 'world' && <WhichGame mode={mode} s={s} />}
+
       {on === 'colours' && <GroundGuide theme={theme} s={s} />}
 
       {drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
         <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
       ))}
+
+      {on === 'start' && mode === 'world' && <WhichGame mode={mode} s={s} />}
+
+      {/* The keys come last: they only save time (2026-10-12). */}
+      {on === 'start' && keyboard === true && (
+        <section className="lesson">
+          <h2 className="panel-title marked">
+            <span>{s.ui.board.keys.title}</span>
+          </h2>
+          <ul className="keys">
+            {KEY_LINES.map((id) => (
+              <li key={id}>{s.ui.board.keys[id]}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* THE LENS — the one control in the manual (2026-10-11): the panel
           beside LUCK had no section, so "tap a ground to hold the lens" was
@@ -359,6 +353,41 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
         </section>
       )}
     </Panel>
+  );
+}
+
+/**
+ * WHICH GAME — see `mode` (2026-09-02). The line that says which of the three
+ * you are in comes first; the three definitions follow in the open (Marc,
+ * 2026-09-03: "remove details and explain each"), because the section exists
+ * for the reader in the WRONG run and a definition behind a tap is one they
+ * never open.
+ */
+function WhichGame({
+  mode,
+  s,
+}: {
+  readonly mode: 'world' | 'shared' | 'daily' | undefined;
+  readonly s: Strings;
+}) {
+  if (mode === undefined) return null;
+  return (
+    <section className="lesson">
+      <h2 className="panel-title marked">
+        <span>{s.ui.which.title}</span>
+      </h2>
+      <p>
+        {mode === 'world'
+          ? s.ui.which.nowWorld
+          : mode === 'shared'
+            ? s.ui.which.nowShared
+            : s.ui.which.nowDaily}
+      </p>
+      <p>{s.ui.which.world}</p>
+      <p>{s.ui.which.shared}</p>
+      <p>{s.ui.which.daily}</p>
+      <p>{s.ui.which.howToShare}</p>
+    </section>
   );
 }
 

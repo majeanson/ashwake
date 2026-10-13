@@ -197,3 +197,31 @@ test('the COLOURS tab waits for a stranger to meet the four grounds', async ({ p
   await expect(page.locator('[data-tab="colours"]')).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('HOW TO PLAY opens on the game in two sentences, and its tabs run most important first', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-12, Marc: _"revise how to play content and where its positioned
+   * … most important to least … our 2 sentences of game summarized added first
+   * tab first paragraph"_.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+  await begin(page);
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+
+  const manual = page.locator('[data-panel="manual"]');
+  const tabs = await manual
+    .locator('[data-tab]')
+    .evaluateAll((els) => els.map((el) => el.getAttribute('data-tab')));
+  expect(tabs).toEqual(['start', 'colours', 'play', 'hand']);
+
+  // The first paragraph of the first tab is the summary, the one the second
+  // opening card says.
+  await expect(manual.locator('section.lesson').first().locator('p').first()).toContainText(
+    /Place tiles until they’re surrounded|Pose des tuiles jusqu’à ce qu’elles soient entourées/,
+  );
+  expect(errors, errors.join('\n')).toEqual([]);
+});

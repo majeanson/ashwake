@@ -10677,3 +10677,26 @@ from play: "red gets better as a run goes on" and "yellow earns less late"
 follow from stone accumulating and are what the tuning comments say, but no
 study was re-run here. The French is the author's. And whether four tabs
 crowd the bar on a narrow phone: it scrolls sideways, as it was built to.
+
+**Addendum, same session — HOW TO PLAY, put in order (Marc: _"revise how to
+play content and where it's positioned … most important to least … our 2
+sentences of game summarized added first tab first paragraph"_).** No new
+content: the same sections, moved.
+
+- **The first paragraph of the first tab is the game in two sentences**, the
+  very string the opening's second card says (`s.howItWorks`). The
+  expedition's first line repeated it ("you place tiles, they ripen, you pop
+  them") and is now only the scene: _"You are walking out into a dark plane,
+  and you push on as far as your tiles last."_ (fr-CA likewise, Marc's review.)
+- **Tabs run most important first:** EXPEDITION, COLOURS (a choice every
+  hand), PLAY, HAND.
+- **Inside EXPEDITION:** the summary, the expedition, the rules in the order a
+  run uses them (RIPE, WORTH, POCKET, POP, THE COST, then SIZE BONUS — the cost
+  is what ends a run, the size bonus a refinement), WHICH GAME, and the keys
+  last, since they only save time. For a shared or daily reader WHICH GAME
+  comes straight under the opening instead, because that section exists for
+  the reader in the wrong run.
+- **Inside HAND:** LUCK first (the purse every button spends), then MAGIC,
+  UNIQUE, the stash, and RELICS, which is about the NEXT run.
+- PLAY is unchanged: the legend, then scoring (REACH, BOUNTY, CARAVAN), then
+  the ground and the lens.

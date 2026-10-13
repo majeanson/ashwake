@@ -863,7 +863,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     expedition: {
       title: 'L’EXPÉDITION',
       lines: [
-        'Tu marches vers une plaine noire. Tu poses des tuiles, elles mûrissent, tu récoltes, et tu pousses plus loin.',
+        'Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent.',
         'Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part.',
         'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
       ],
