@@ -109,6 +109,7 @@ import {
   type Slot,
 } from './shell/storage';
 import { tourTarget } from './shell/tourTarget';
+import { isTutorialRun, tutorialDoor } from './shell/tutorialRun';
 import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
 import { aim, perkAt, wornPerk, forgetShelf } from './shell/finds';
@@ -2917,12 +2918,15 @@ function Game() {
        */
       const at = activeSlot();
       const seed = worldSeedFor(at);
+      // The tutorial is the same every time: until the first run has ended, a
+      // run on the chosen seed starts from a world nobody has played.
+      const tutorial = wakeAt === null && isTutorialRun(seed, progress) ? tutorialDoor() : null;
       enterRun(wiring, {
         daily: null,
         resume: null,
         seed,
-        memory: memoryFor(at, seed),
-        economy: economyAt(at, seed),
+        memory: tutorial?.memory ?? memoryFor(at, seed),
+        economy: tutorial?.economy ?? economyAt(at, seed),
         wakeAt,
         from: startsFrom(at, progress.found),
         // `worldSeedFor` above: a new expedition is always into this device's
@@ -2934,7 +2938,7 @@ function Game() {
         fromMenus: wakeAt !== null,
       });
     },
-    [wiring, progress.found, startsFrom],
+    [wiring, progress, startsFrom],
   );
 
   const newRun = useCallback(() => startRun(null), [startRun]);
@@ -2965,12 +2969,16 @@ function Game() {
     setSpokeAt(null);
     setSlot(where.slot);
     const seed = worldSeedFor(where.slot);
+    // Always from a world nobody has played, so the replay is the same board,
+    // the same fog (none) and the same shop as the first time — the slot's own
+    // memory is left where it is.
+    const tutorial = tutorialDoor();
     enterRun(wiring, {
       daily: null,
       resume: null,
       seed,
-      memory: memoryFor(where.slot, seed),
-      economy: economyAt(where.slot, seed),
+      memory: tutorial.memory,
+      economy: tutorial.economy,
       wakeAt: null,
       from: startsFrom(where.slot, progress.found),
       detour: false,

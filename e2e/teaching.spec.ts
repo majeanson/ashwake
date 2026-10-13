@@ -69,7 +69,11 @@ test('UNDO takes the last tile back, and only appears when there is one', async 
   await placeOneTile(page);
   await expect(undo).toBeEnabled();
   await page.keyboard.press('u');
-  expect(await tilesLeft(page)).toBe(before);
+  // Polled, not read: a keypress is handled a frame later (WebKit failed once in a
+  // full run on a read taken straight after it, and passed six repeats alone).
+  await expect
+    .poll(() => tilesLeft(page), { message: 'U did not give the tile back' })
+    .toBe(before);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

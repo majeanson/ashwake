@@ -10756,3 +10756,26 @@ reads as one idea at a time on the phone (the cadence is the CARD_GAP pace plus
 the coach's once-per-step line). The chips fix is unit-tested, not driven in a
 browser: a deal that offers two chips at once cannot be held still. And a
 first run that never ends never leaves the tour, by design.
+
+**Addendum, same day — the tutorial is the same every time, and territories
+are taught as they appear (Marc: _"similar to a daily we reset fog in tutorial
+so it's always the same. explain territories as they spawn on tiles too"_).**
+
+- **No fog, no history, in a tutorial run.** A world remembers fog, claims,
+  finds and what the next run is dealt; a stranger who restarted, or a veteran
+  who replayed, got a half-revealed map and a half-stocked shop. While the first
+  run has not ended (`phaseOf` not `free`) a run on `content/learn`'s seed is
+  handed a world nobody has played (`shell/tutorialRun.ts`: `isTutorialRun`,
+  `tutorialDoor`), the way a daily has no world. REPLAY THE TUTORIAL always
+  does, whatever its slot holds, so it is the same board, the same (empty) fog
+  and the same bare shop as the first time. The slot itself is untouched: the
+  player's own world keeps what it had. `MODES.md`'s door table says so.
+- **A territory is a card in the tour**, told when one comes into view (a chip
+  nobody taps teaches nothing); its dismissal flies the camera to it like every
+  place's does. After the first run it is a NEW chip again.
+
+**Verified.** 1495 unit tests (the door is empty and identical every time; a
+territory is a card in the tour and a chip after it, and never brings the shrine
+with it). Sweep at 0, first paint unchanged at 192.6 KB. **Not driven in a
+browser:** the fog reset (the canvas cannot be asked what is remembered; the
+door is tested, not the picture) and the territory card on a real tour.

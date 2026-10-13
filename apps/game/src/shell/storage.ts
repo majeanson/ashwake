@@ -887,6 +887,13 @@ export const NO_MEMORY: RunMemory = { claimed: [], finds: [], rearmed: {}, revea
 export function memoryFor(slot: Slot, seed: number): RunMemory {
   const world = readWorld(slot);
   if (world === null || world.worldSeed !== seed) return NO_MEMORY;
+  return memoryOf(world);
+}
+
+/** What a run is handed of a world: its claimed ground, finds, re-armed
+ *  destinations, fog and deal. Split from `memoryFor` so a world that is not
+ *  stored — the tutorial's fresh one — can be handed over the same way. */
+export function memoryOf(world: WorldMemory): RunMemory {
   return {
     claimed: world.territories,
     finds: world.finds,

@@ -472,3 +472,35 @@ describe('a chip stays until it is opened (2026-10-12)', () => {
     ]);
   });
 });
+
+describe('a territory is explained as it appears, in the tour (2026-10-13)', () => {
+  // Seed 122 at depth 20 shows a shrine and a territory unclaimed.
+  const board = (): Moment => {
+    const s = createSession({
+      seed: 122,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+    });
+    walk(s, 20);
+    const snap = s.get();
+    return { board: snap.board, hud: snap.hud, placed: true };
+  };
+  const touring = [
+    ...(['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'walked'] as const),
+  ].reduce<Progress>((p, id) => told(p, id), EMPTY_PROGRESS);
+
+  it('is a card in the tour, not a chip', () => {
+    expect(nextLesson(board(), touring)).toEqual({ id: 'territory', as: 'card' });
+    expect(newDots(board(), touring)).toEqual([]);
+  });
+
+  it('does not bring the shrine with it: only the territory is on the tour', () => {
+    const afterTerritory = told(touring, 'territory');
+    expect(nextLesson(board(), afterTerritory)?.id).not.toBe('shrine');
+  });
+
+  it('is a chip again once the first run is over', () => {
+    expect(nextLesson(board(), WALKED)?.id).not.toBe('territory');
+    expect(newDots(board(), WALKED)).toContain('territory');
+  });
+});

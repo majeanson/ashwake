@@ -181,7 +181,7 @@ export const phaseOf = (progress: Progress): Phase =>
 /** What may still speak, by phase. Held back, not dropped. */
 const ALLOWED: Readonly<Record<'walk' | 'tour', ReadonlySet<TeachId>>> = {
   walk: new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop']),
-  tour: new Set<TeachId>(['luck', 'rare']),
+  tour: new Set<TeachId>(['luck', 'rare', 'territory']),
 };
 
 /**
@@ -245,16 +245,20 @@ export function coachStep(now: Moment, progress: Progress): CoachStep | null {
 export function nextLesson(now: Moment, progress: Progress): Teach | null {
   const phase = phaseOf(progress);
   for (const id of ORDER) {
-    // In the tour MAGIC is a card, and told once LUCK has been: a chip nobody
-    // taps is a lesson that never happens, and a magic tile cannot be dealt on
-    // cue, so the concept is taught on its own turn.
+    // In the tour MAGIC and a TERRITORY are cards, not chips: a chip nobody
+    // taps is a lesson that never happens. MAGIC is told once LUCK has been,
+    // because a magic tile cannot be dealt on cue and so the concept is taught
+    // on its own turn; a territory is told as it comes into view (2026-10-13,
+    // Marc: _"explain territories as they spawn on tiles too"_), and the card's
+    // dismissal flies the camera to it like every place's does.
     const magicTurn = phase === 'tour' && id === 'rare';
-    if (hasMet(progress, id) || (DOTS.has(id) && !magicTurn)) continue;
+    const tourCard = magicTurn || (phase === 'tour' && id === 'territory');
+    if (hasMet(progress, id) || (DOTS.has(id) && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && !ALLOWED[phase].has(id)) continue;
     if (!(magicTurn ? hasMet(progress, 'luck') : isTrue(id, now))) continue;
     if (!UNPACED.has(id) && now.since !== undefined && now.since < CARD_GAP) continue;
-    return { id, as: CARDS.has(id) || magicTurn ? 'card' : 'toast' };
+    return { id, as: CARDS.has(id) || tourCard ? 'card' : 'toast' };
   }
   return null;
 }
