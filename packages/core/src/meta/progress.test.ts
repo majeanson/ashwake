@@ -271,7 +271,9 @@ describe('storage', () => {
   it('round-trips the three fields the device blob still carries', () => {
     const progress = meet(meet(buy(withRelics(1000), upgrade('tiles')), 'goal'), 'relic');
     // A ledger past the walk's own lessons is a veteran's: decoded as walked.
-    expect(decodeProgress(encodeProgress(progress))).toEqual(meet(progress, 'walked'));
+    expect(decodeProgress(encodeProgress(progress))).toEqual(
+      meet(meet(progress, 'walked'), 'toured'),
+    );
   });
 
   /**

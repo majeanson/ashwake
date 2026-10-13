@@ -157,7 +157,16 @@ import { useFilm } from './shell/watching';
 import type { Replay } from '@meta/replay';
 import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
-import { coachStep, newDots, nextLesson, sinceSpoke, toastLine, told } from './shell/teaching';
+import {
+  coachStep,
+  mustPop,
+  newDots,
+  nextLesson,
+  offerDots,
+  sinceSpoke,
+  toastLine,
+  told,
+} from './shell/teaching';
 import { NewChips } from './screens/NewChips';
 import { walk, walkToEnd } from './shell/walk';
 import { CHROME_ICON } from '@theme/icons';
@@ -504,9 +513,14 @@ function Game() {
   /** The coach step last spoken, so a step is said once and again only after
    *  something louder (a receipt) has taken the strip. Null between runs. */
   const coached = useRef<string | null>(null);
+  /** The NEW chips this run has offered and the player has not opened. A chip,
+   *  once showing, stays until it is tapped: the pace holds a NEW chip back, it
+   *  does not take one away (2026-10-12). Cleared with every run. */
+  const [offeredDots, setOfferedDots] = useState<readonly TeachId[]>([]);
   const frameTheRun = useCallback(() => {
     // Every run opens through here: its coach starts from its first step.
     coached.current = null;
+    setOfferedDots([]);
     setFraming((n) => n + 1);
   }, []);
   /**
@@ -1785,7 +1799,7 @@ function Game() {
   );
   const card = teach !== null && teach.as === 'card' ? teach.id : null;
   /** The NEW chips showing over the hand, and the one whose card is open. */
-  const dots = useMemo(
+  const freshDots = useMemo(
     () =>
       started && !snap.hud.ended
         ? newDots(
@@ -1800,6 +1814,17 @@ function Game() {
         : [],
     [started, snap.board, snap.hud, progress, spokeAt],
   );
+  // A chip, once offered, stays until it is opened: the pace holds a NEW chip
+  // back, it does not take one away. Derived state, updated while rendering
+  // (React's own pattern for it) rather than in an effect.
+  const offeredNow = offerDots(offeredDots, freshDots, progress);
+  if (
+    offeredNow.length !== offeredDots.length ||
+    offeredNow.some((id, i) => id !== offeredDots[i])
+  ) {
+    setOfferedDots(offeredNow);
+  }
+  const dots = started && !snap.hud.ended ? offeredNow : [];
   const [dotOpen, setDotOpen] = useState<TeachId | null>(null);
 
   /**
@@ -1847,7 +1872,23 @@ function Game() {
       // happened yet. One read, not three: `session.get()` builds a whole
       // snapshot — the board view and the HUD included — and this was calling
       // it three times in six lines for three fields of one state.
-      const before = session.get().state;
+      const at = session.get();
+      const before = at.state;
+      /*
+       * THE FIRST POP IS NOT OPTIONAL (2026-10-12, Marc, of the first screen:
+       * _"it should force me to pop one cause now i can just place tiles and
+       * create a big one"_). While the walk has a ripe pocket waiting, a
+       * placement is refused with the one sentence that says what to do. The
+       * shell refuses; the rules never moved. Pops, selections and taps on a
+       * ripe tile all still work.
+       */
+      if (
+        action.type === 'PLACE' &&
+        mustPop({ board: at.board, hud: at.hud, placed: at.hud.placements > 0 }, progress)
+      ) {
+        say(s.coach.popFirst);
+        return;
+      }
       /*
        * WHAT A FIND HOLDS, handed over a beat before the receipt asks for it
        * (2026-09-02).
@@ -1975,6 +2016,8 @@ function Game() {
       if (did.popped) witness('popped');
       // The walk ends at the first pop that actually lands (`shell/teaching`).
       if (did.popped) setProgress((p) => told(p, 'walked'));
+      // ...and the tour ends with the first run that ends after it.
+      if (now.hud.ended) setProgress((p) => (hasMet(p, 'walked') ? told(p, 'toured') : p));
 
       /*
        * A claim is SHOWN where it happened, then the camera comes back.
@@ -2079,6 +2122,8 @@ function Game() {
           if (coached.current !== step) {
             coached.current = step;
             say(s.coach[step]);
+            // The ending has been explained: its toast need not say it again.
+            if (step === 'end') setProgress((p) => told(p, 'lastGasp'));
           }
           return;
         }
@@ -4625,7 +4670,9 @@ function Game() {
             const after = told(progress, dotOpen);
             setProgress((p) => told(p, dotOpen));
             setDotOpen(null);
-            markSpoke(session.get().hud.placements);
+            // No `markSpoke`: a chip's card was ASKED for, so it is not the game
+            // speaking, and marking it hid the other chip for four placements
+            // (Marc's second screenshot: _"if i press one, the other gets deleted"_).
             speakLesson(after, session.get());
             showOnBoard(dotOpen);
           }}

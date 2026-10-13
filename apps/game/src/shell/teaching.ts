@@ -158,20 +158,61 @@ const UNPACED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', '
  * lesson, NEW chip, once-a-run line (NEW GROUND, UNIQUE, SPARE TILES) and
  * signpost waits: held back, not dropped, since each stays armed.
  */
-export const guided = (progress: Progress): boolean => !hasMet(progress, 'walked');
+export const guided = (progress: Progress): boolean => phaseOf(progress) !== 'free';
 
-/** What may still speak while the first run is being walked. */
-const GUIDED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop']);
+/**
+ * THE FIRST RUN HAS THREE PHASES (2026-10-12, Marc, of the first screen:
+ * _"it should force me to pop one … we explain luck, then we continue until no
+ * more tiles are left … a big pop, until the end where we explain how it ends
+ * … make the tutorial even more structured so it is step by step and not too
+ * much at the same time"_).
+ *
+ * - **walk**: until the first pop lands. Place, colours, surround, and then
+ *   POP — which is not optional: `mustPop` refuses a placement while a pocket
+ *   waits, so the first pop is a small one, taken on purpose.
+ * - **tour**: from that pop until the first run ends. LUCK, then MAGIC, then
+ *   build one big pocket and cash it, then how a run ends.
+ * - **free**: everything else, as the drip has always had it.
+ */
+type Phase = 'walk' | 'tour' | 'free';
+export const phaseOf = (progress: Progress): Phase =>
+  !hasMet(progress, 'walked') ? 'walk' : !hasMet(progress, 'toured') ? 'tour' : 'free';
 
-/** The step of the walk the player is on. */
-type CoachStep = 'place' | 'match' | 'grow' | 'pop';
+/** What may still speak, by phase. Held back, not dropped. */
+const ALLOWED: Readonly<Record<'walk' | 'tour', ReadonlySet<TeachId>>> = {
+  walk: new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop']),
+  tour: new Set<TeachId>(['luck', 'rare']),
+};
+
+/**
+ * Whether the player must pop before they may place (the walk's one hard
+ * gate). The first pocket is the smallest the run will ever offer, which is
+ * exactly why it is the one to pop: a player left to place instead builds one
+ * big pocket on their first minute and never learns the verb.
+ */
+export const mustPop = (now: Moment, progress: Progress): boolean =>
+  phaseOf(progress) === 'walk' && now.hud.canHarvest && !now.hud.ended;
+
+/** Tiles at which "pop your biggest" is the advice: the tour's bank step. */
+const LOW_TILES = 5;
+
+/** The step of the walk or the tour the player is on. */
+type CoachStep = 'place' | 'match' | 'grow' | 'pop' | 'build' | 'bank' | 'end';
 
 /**
  * Which step, or null when the walk is over. Read from the current view only,
  * like `isTrue`: no remembered frame, so a step cannot be missed.
  */
 export function coachStep(now: Moment, progress: Progress): CoachStep | null {
-  if (!guided(progress) || now.hud.ended) return null;
+  const phase = phaseOf(progress);
+  if (phase === 'free' || now.hud.ended) return null;
+  if (phase === 'tour') {
+    const { tiles, cost } = now.hud;
+    // Fewer tiles than the next placement costs: the end of a run, taught.
+    if (tiles < cost) return 'end';
+    if (now.hud.canHarvest && tiles <= Math.max(LOW_TILES, cost * 2)) return 'bank';
+    return 'build';
+  }
   if (!now.placed) return 'place';
   if (now.hud.canHarvest) return 'pop';
   // The first two tiles are about colour; after that, about surrounding.
@@ -202,14 +243,18 @@ export function coachStep(now: Moment, progress: Progress): CoachStep | null {
  * burning a ledger entry on unshown words costs.
  */
 export function nextLesson(now: Moment, progress: Progress): Teach | null {
-  const walking = guided(progress);
+  const phase = phaseOf(progress);
   for (const id of ORDER) {
-    if (hasMet(progress, id) || DOTS.has(id)) continue;
-    // Held back, not dropped: the moment stays armed for after the first pop.
-    if (walking && !GUIDED.has(id)) continue;
-    if (!isTrue(id, now)) continue;
+    // In the tour MAGIC is a card, and told once LUCK has been: a chip nobody
+    // taps is a lesson that never happens, and a magic tile cannot be dealt on
+    // cue, so the concept is taught on its own turn.
+    const magicTurn = phase === 'tour' && id === 'rare';
+    if (hasMet(progress, id) || (DOTS.has(id) && !magicTurn)) continue;
+    // Held back, not dropped: the moment stays armed for its own phase.
+    if (phase !== 'free' && !ALLOWED[phase].has(id)) continue;
+    if (!(magicTurn ? hasMet(progress, 'luck') : isTrue(id, now))) continue;
     if (!UNPACED.has(id) && now.since !== undefined && now.since < CARD_GAP) continue;
-    return { id, as: CARDS.has(id) ? 'card' : 'toast' };
+    return { id, as: CARDS.has(id) || magicTurn ? 'card' : 'toast' };
   }
   return null;
 }
@@ -226,6 +271,24 @@ export const newDots = (now: Moment, progress: Progress): readonly TeachId[] =>
   guided(progress) || (now.since !== undefined && now.since < CARD_GAP)
     ? []
     : ORDER.filter((id) => DOTS.has(id) && !hasMet(progress, id) && isTrue(id, now));
+
+/**
+ * The chips a run has offered, in the order they came, and not yet opened
+ * (2026-10-12, Marc's second screenshot: _"we have two newdots … and if i press
+ * one, the other gets deleted"_). The pace decides when a chip may APPEAR, not
+ * whether one that has appeared may stay: opening one chip's card had marked
+ * the game as having just spoken, and the pace hid the other for four
+ * placements. `offered` is what has been shown; `fresh` is what `newDots` says
+ * now; a chip leaves the list only when its lesson has been met.
+ */
+export const offerDots = (
+  offered: readonly TeachId[],
+  fresh: readonly TeachId[],
+  progress: Progress,
+): readonly TeachId[] =>
+  [...offered, ...fresh.filter((id) => !offered.includes(id))].filter(
+    (id) => !hasMet(progress, id),
+  );
 
 /**
  * The toast's own words — one line per toast-class moment (2026-09-03).
@@ -351,7 +414,11 @@ function isTrue(id: TeachId, now: Moment): boolean {
     case 'colours':
       return placed && hud.draft.length > 0;
     case 'lastGasp':
-      return hud.left !== null && hud.left <= 1;
+      // The clock's last placement, or — in a run with no clock, which is
+      // most of them — fewer tiles than the next one costs. It read only the
+      // first, so it never fired where there is no clock (2026-10-12).
+      return (hud.left !== null && hud.left <= 1) || (hud.tiles > 0 && hud.tiles < hud.cost);
+    case 'toured':
     case 'walked':
       // Written by the first pop that lands, never by a moment.
       return false;

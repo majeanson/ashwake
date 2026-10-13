@@ -225,3 +225,43 @@ test('HOW TO PLAY opens on the game in two sentences, and its tabs run most impo
   );
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('the first pop is forced: a waiting pocket refuses placement until it is popped', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-12, Marc, of the first screen: _"it should force me to pop one cause
+   * now i can just place tiles and create a big one"_. Build until a pocket is
+   * ripe, as a stranger does; the next placement is refused with the one
+   * sentence that says what to do, tiles unchanged; popping lifts it.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await begin(page);
+
+  const toast = page.locator('.toast');
+  const refusal = /Pop this pocket before you place|Récolte cette poche avant de poser/;
+  let refused = false;
+  for (let i = 0; i < 40 && !refused; i++) {
+    try {
+      await placeOneTile(page);
+    } catch {
+      // `placeOneTile` found no tap that spent a tile: the placement was refused.
+      refused = true;
+    }
+  }
+  expect(refused, 'a ripe pocket never stopped the placing').toBe(true);
+  await expect(toast).toContainText(refusal);
+
+  const tiles = await tilesLeft(page);
+  await page
+    .getByRole('button', { name: /POP|RÉCOLT/ })
+    .first()
+    .click();
+  // The pop lands, and then a placement works again.
+  await page.waitForTimeout(1200);
+  await clearCards(page);
+  await placeOneTile(page);
+  expect(await tilesLeft(page)).not.toBe(tiles);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

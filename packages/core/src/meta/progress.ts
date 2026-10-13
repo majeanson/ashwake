@@ -206,6 +206,13 @@ export const TEACH_IDS = [
   // nothing but the walk speaks (`shell/teaching.ts`). Sealed in `decodeProgress`
   // for any ledger past the walk's own lessons.
   'walked',
+  // THE TOUR (2026-10-12, Marc: _"force me to pop one … we explain luck, then
+  // we continue until no more tiles are left … a big pop, until the end where
+  // we explain how it ends"_): the second half of the first run, between the
+  // first pop and the first ending. Met when that first run ends; until then
+  // only the tour speaks. Sealed like `walked` for a ledger past the tour's own
+  // lessons.
+  'toured',
 ] as const;
 
 export type TeachId = (typeof TEACH_IDS)[number];
@@ -485,6 +492,9 @@ export function decodeProgress(raw: string | null): Progress {
     // so only a ledger holding something BEYOND them belongs to a veteran.
     const WALK = new Set<string>(['story', 'goal', 'place', 'ripe', 'pop', 'colours']);
     if (!taught.includes('walked') && taught.some((id) => !WALK.has(id))) taught.push('walked');
+    // 'toured' likewise, past the lessons the tour itself teaches.
+    const TOUR = new Set<string>([...WALK, 'walked', 'luck', 'rare']);
+    if (!taught.includes('toured') && taught.some((id) => !TOUR.has(id))) taught.push('toured');
 
     return {
       relics: Math.max(0, Math.floor(purse)) + refund,

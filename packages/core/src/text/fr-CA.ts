@@ -282,6 +282,11 @@ export const STRINGS_FR: Strings = {
     match:
       'La plupart des tuiles gagnent de la VALEUR auprès des voisines de leur couleur, alors pose les prochaines contre des tuiles semblables. Chaque couleur plie aussi cette règle à sa façon, et LES QUATRE SOLS les expliquent.',
     grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent. Chaque pose dépense des tuiles de ta réserve, alors bâtis avec un plan.',
+    popFirst: `Récolte cette poche avant de poser autre chose. Touche une tuile mûre pour l’évaluer, puis appuie sur RÉCOLTER.`,
+    build:
+      'Maintenant, continue de bâtir. Une grosse poche paie plus que ses morceaux, alors fais-en grandir une exprès, mais chaque pose dépense des tuiles, et TUILES te dit combien il t’en reste.',
+    bank: `Tes tuiles s’épuisent. Encaisse ta plus grosse poche maintenant${D}: touche sa tuile mûre pour l’évaluer, puis appuie sur RÉCOLTER. Les tuiles sont ce qui te garde en train de poser.`,
+    end: `Avec moins de tuiles que le COÛT, tu peux quand même poser. ${LAST_GASP_RULE} À zéro sans rien de mûr à récolter, la partie finit. C’est la forme du jeu, pas une erreur de ta part.`,
     pop: `Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER${D}: ça te redonne des tuiles pour continuer à poser, et des points pour ton score.`,
   },
   rerollHint: (cost) =>

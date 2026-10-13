@@ -94,6 +94,7 @@ const DECLINED: readonly TeachId[] = [
   'lastGasp',
   'caravan', // a line under the header, not a place on the board
   'walked', // a fact about the device, written by the first pop
+  'toured', // likewise, written by the first run's end
 ];
 
 /**

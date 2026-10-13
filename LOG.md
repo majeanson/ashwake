@@ -10700,3 +10700,59 @@ content: the same sections, moved.
   UNIQUE, the stash, and RELICS, which is about the NEXT run.
 - PLAY is unchanged: the legend, then scoring (REACH, BOUNTY, CARAVAN), then
   the ground and the lens.
+
+### Session 131 — the first run is a tour (2026-10-13)
+
+**The question.** Does a stranger who is made to pop a small pocket first, then
+told about luck, magic and how a run ends one at a time, understand the game
+better than one who was told everything as it came? Unanswered until Session C.
+
+Marc, from two screenshots of the first run on his phone. The first: a pocket
+of eleven yellow tiles standing ripe, 4 tiles left, no pop ever made — _"it
+should force me to pop one cause now i can just place tiles and create a big
+one … force to pop it for a small pop, we explain luck, then we continue until
+no more tiles are left (we explain magic tiles, it never got explained) to
+have a big pop, until the end where we explain how it ends and how you can
+still place a tile if you don't have the full point"_. The second: two NEW
+chips, TERRITOIRE and UNIQUE, and _"if i press one, the other gets deleted"_.
+
+The first run now has three phases (`phaseOf`, `shell/teaching.ts`):
+
+- **walk**, until the first pop lands: place, colours, surround, pop. **The
+  pop is forced** (`mustPop`): while a pocket waits, `act` refuses a PLACE with
+  one sentence (`coach.popFirst`) and places nothing. The shell refuses; the
+  rules did not move. The first ripe pocket is the smallest the run offers,
+  which is why it is the one to take.
+- **tour**, from that pop until the first run ends (new ledger id `toured`,
+  written when a run ends after `walked`): LUCK, as its card, paced four
+  placements after the pop; then MAGIC **as a card** (it was a NEW chip nobody
+  tapped, and a magic tile cannot be dealt on cue, so the concept is taught on
+  its turn). The coach says `build` (grow one big pocket on purpose, watch
+  TILES), then `bank` once tiles are low (≤ 5 or ≤ 2 × COST) with a pocket
+  ripe, then `end` once tiles are fewer than the COST: the last-gasp rule and
+  _"at zero with nothing ripe to pop, the run ends"_. Nothing else speaks: no
+  chips, no NEW GROUND, no signpost, no other card.
+- **free**, as the drip always was.
+
+**A second bug, found on the way:** `lastGasp` read only `hud.left`, the
+placement clock, which is null in a run with no clock — so how a run ends was
+**never taught in the mode Marc plays**. It now also fires on `0 < tiles <
+cost`. Both ids seal for a veteran in `decodeProgress`.
+
+**The chips.** Opening one chip's card marked the game as having just spoken,
+and the pace — which holds a chip back — hid the other for four placements.
+A chip is now offered once and stays until opened (`offerDots`, shell state
+updated while rendering), and a chip's card no longer counts as the game
+speaking, since it was asked for.
+
+**Verified.** 1489 unit tests (phases, the forced pop, each tour step, magic as
+a card in the tour only, the clockless last gasp, both languages, the chips
+staying); an e2e that builds a pocket, is refused a placement, sees the
+sentence, pops, and places again; the earlier walk e2e. Sweep at 0. First paint
+192.6 KB, 0.2 KB over: the bar moved 197,000 → 198,000, reason in `budget.json`.
+
+**Not verified, and it is Marc's.** The French of the five new coach lines. Whether the tour
+reads as one idea at a time on the phone (the cadence is the CARD_GAP pace plus
+the coach's once-per-step line). The chips fix is unit-tested, not driven in a
+browser: a deal that offers two chips at once cannot be held still. And a
+first run that never ends never leaves the tour, by design.

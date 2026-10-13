@@ -16,7 +16,10 @@ import {
   told,
   type Moment,
   coachStep,
+  offerDots,
   guided,
+  mustPop,
+  phaseOf,
 } from './teaching';
 import { walk } from './walk';
 
@@ -66,8 +69,8 @@ const taughtExcept = (...keep: readonly string[]): Progress =>
     ...EMPTY_PROGRESS,
   });
 
-/** A device whose first pop has landed: nothing is held back for the walk. */
-const WALKED: Progress = meet({ ...EMPTY_PROGRESS }, 'walked');
+/** A device whose first run has been walked and toured: nothing is held back. */
+const WALKED: Progress = meet(meet({ ...EMPTY_PROGRESS }, 'walked'), 'toured');
 
 describe('the teaching drip', () => {
   it('opens on STORY: the first thing a stranger is told is what this place is', () => {
@@ -350,15 +353,22 @@ describe('the chips keep the pace too (2026-10-12)', () => {
   });
 });
 
-describe('the first run is walked (2026-10-12)', () => {
-  it('walks a device until its first pop has landed, and then never again', () => {
-    expect(guided(EMPTY_PROGRESS)).toBe(true);
+describe('the first run is walked, then toured (2026-10-12)', () => {
+  const walkLessons = ['story', 'goal', 'place', 'colours', 'ripe', 'pop'] as const;
+  const afterWalk = walkLessons.reduce<Progress>((p, id) => told(p, id), EMPTY_PROGRESS);
+  const touring = told(afterWalk, 'walked');
+
+  it('has three phases: walk until the first pop lands, tour until the first run ends', () => {
+    expect(phaseOf(EMPTY_PROGRESS)).toBe('walk');
     // The card about popping is not the pop.
-    expect(guided(told(EMPTY_PROGRESS, 'pop'))).toBe(true);
+    expect(phaseOf(afterWalk)).toBe('walk');
+    expect(phaseOf(touring)).toBe('tour');
+    expect(phaseOf(WALKED)).toBe('free');
+    expect(guided(touring)).toBe(true);
     expect(guided(WALKED)).toBe(false);
   });
 
-  it('says one thing per step: place, colours, surround, then pop', () => {
+  it('says one thing per step of the walk: place, colours, surround, then pop', () => {
     expect(coachStep(momentAt(0), EMPTY_PROGRESS)).toBe('place');
     // The lit tile the place line points at is real: one is chosen at the start.
     expect(momentAt(0).hud.draft.some((d) => d.selected)).toBe(true);
@@ -369,24 +379,96 @@ describe('the first run is walked (2026-10-12)', () => {
     expect(coachStep(ripe, WALKED)).toBeNull();
   });
 
-  it('holds every other lesson and every chip back until then', () => {
+  it('forces the first pop: a waiting pocket refuses placement, and only in the walk', () => {
+    const base = momentAt(3);
+    const ripe = { ...base, hud: { ...base.hud, canHarvest: true } };
+    expect(mustPop(ripe, EMPTY_PROGRESS)).toBe(true);
+    expect(mustPop(base, EMPTY_PROGRESS)).toBe(false);
+    // Once the pop has landed the player is free to place with a pocket waiting.
+    expect(mustPop(ripe, touring)).toBe(false);
+    expect(mustPop(ripe, WALKED)).toBe(false);
+    expect(mustPop({ ...ripe, hud: { ...ripe.hud, ended: true } }, EMPTY_PROGRESS)).toBe(false);
+  });
+
+  it('tours the rest of the first run: build, bank the biggest, then how it ends', () => {
+    const base = momentAt(4);
+    const at = (tiles: number, cost: number, canHarvest: boolean) => ({
+      ...base,
+      hud: { ...base.hud, tiles, cost, canHarvest },
+    });
+    expect(coachStep(at(30, 1, false), touring)).toBe('build');
+    // Plenty of tiles: a pocket waiting is no reason to stop building.
+    expect(coachStep(at(30, 1, true), touring)).toBe('build');
+    expect(coachStep(at(4, 1, true), touring)).toBe('bank');
+    // Nothing ripe: nothing to bank, keep building.
+    expect(coachStep(at(4, 1, false), touring)).toBe('build');
+    // Fewer tiles than the next placement costs: the end, taught.
+    expect(coachStep(at(2, 3, true), touring)).toBe('end');
+    expect(coachStep(at(0, 3, false), touring)).toBe('end');
+  });
+
+  it('holds every other lesson and every chip back until the first run has ended', () => {
     const now = momentAt(14);
-    const meetWalk = ['story', 'goal', 'place', 'colours', 'ripe', 'pop'].reduce(
-      (p, id) => told(p, id as 'story'),
-      EMPTY_PROGRESS,
-    );
-    expect(nextLesson(now, meetWalk)).toBeNull();
-    expect(newDots(now, meetWalk)).toEqual([]);
-    // Held back, not dropped: the same board speaks once the walk is over.
-    expect(nextLesson(now, told(meetWalk, 'walked'))).not.toBeNull();
+    expect(nextLesson(now, afterWalk)).toBeNull();
+    expect(newDots(now, afterWalk)).toEqual([]);
+    expect(newDots(now, touring)).toEqual([]);
+    // Held back, not dropped: the same board speaks once the first run is over.
+    expect(nextLesson(now, WALKED)).not.toBeNull();
+  });
+
+  it('explains LUCK, then MAGIC as a card (a chip nobody taps is a lesson that never happens)', () => {
+    const now = { ...momentAt(10), hud: { ...momentAt(10).hud, luck: 3 } };
+    expect(nextLesson(now, touring)).toEqual({ id: 'luck', as: 'card' });
+    const told1 = told(touring, 'luck');
+    expect(nextLesson(now, told1)).toEqual({ id: 'rare', as: 'card' });
+    expect(nextLesson(now, told(told1, 'rare'))).toBeNull();
+    // Outside the tour MAGIC stays a chip, never a card.
+    expect(nextLesson(now, told(WALKED, 'luck'))?.id).not.toBe('rare');
+  });
+
+  it('teaches how a run ends where there is no clock, not only on the last placement', () => {
+    const base = momentAt(4);
+    const ending = { ...base, hud: { ...base.hud, left: null, tiles: 2, cost: 3 } };
+    const calm = { ...base, hud: { ...base.hud, left: null, tiles: 30, cost: 3 } };
+    // A device that has been told everything else.
+    const hungry = taughtExcept('lastGasp');
+    expect(nextLesson(ending, hungry)?.id).toBe('lastGasp');
+    expect(nextLesson(calm, hungry)).toBeNull();
   });
 
   it('the coach has words in both languages', () => {
     for (const locale of ['en', 'fr-CA'] as const) {
       const s = stringsFor(locale);
-      for (const step of ['place', 'match', 'grow', 'pop'] as const) {
+      for (const step of [
+        'place',
+        'match',
+        'grow',
+        'pop',
+        'popFirst',
+        'build',
+        'bank',
+        'end',
+      ] as const) {
         expect(s.coach[step].length).toBeGreaterThan(20);
       }
     }
+  });
+});
+
+describe('a chip stays until it is opened (2026-10-12)', () => {
+  it('keeps both chips when one is opened, and when the pace would hide them', () => {
+    // Both offered; the pace now says there is nothing fresh.
+    const both = offerDots([], ['territory', 'rareUnique'], WALKED);
+    expect(both).toEqual(['territory', 'rareUnique']);
+    expect(offerDots(both, [], WALKED)).toEqual(both);
+    // Opening one (its lesson met) takes that one away and leaves the other.
+    expect(offerDots(both, [], told(WALKED, 'territory'))).toEqual(['rareUnique']);
+  });
+
+  it('adds a new chip after the ones already showing', () => {
+    expect(offerDots(['territory'], ['territory', 'shrine'], WALKED)).toEqual([
+      'territory',
+      'shrine',
+    ]);
   });
 });

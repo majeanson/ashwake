@@ -251,6 +251,12 @@ export type Strings = {
     readonly match: string;
     readonly grow: string;
     readonly pop: string;
+    /** What a refused placement says while the first pocket waits to be popped. */
+    readonly popFirst: string;
+    /** The tour, after the first pop: build, cash the biggest, how it ends. */
+    readonly build: string;
+    readonly bank: string;
+    readonly end: string;
   };
   /** The drip's one line on a poor hand: REDRAW exists, and what it costs. */
   readonly rerollHint: (cost: number) => string;

@@ -282,6 +282,12 @@ export const STRINGS_EN: Strings = {
     match:
       'Most tiles earn WORTH from neighbours of their own colour, so place the next ones beside matches. Each colour also bends that rule its own way: THE FOUR GROUNDS explains them.',
     grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in. Each placement spends tiles from your supply, so build with a plan.',
+    popFirst:
+      'Pop this pocket before you place anything else. Tap a ripe tile to price it, then press POP.',
+    build:
+      'Now keep building. A bigger pocket pays more than its pieces, so grow one on purpose, but every placement spends tiles from TILES.',
+    bank: 'Tiles are running low. Cash your biggest pocket now: tap its ripe tile to price it, then press POP. Tiles are what keep you placing.',
+    end: `With fewer tiles than the COST, you can still place. ${LAST_GASP_RULE} At zero with nothing ripe to pop, the run ends. That is the shape of the game, not a mistake you made.`,
     pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP: it gives you tiles back to keep placing, and points toward your score.',
   },
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
