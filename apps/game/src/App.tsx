@@ -58,7 +58,7 @@ import { LensPanel } from './screens/LensPanel';
 import { LessonCard } from './screens/LessonCard';
 import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
-import { Manual } from './screens/Manual';
+import { Manual, type ManualOpen } from './screens/Manual';
 import { Device } from './screens/Device';
 import { More } from './screens/More';
 import { Purse } from './screens/Purse';
@@ -1637,6 +1637,21 @@ function Game() {
   );
 
   const manual = useDoor('manual');
+  /**
+   * WHERE THE MANUAL IS OPENED AT (2026-10-13, Marc's linking decision): a
+   * card's HOW TO PLAY › names its lesson, and the book opens on that section.
+   * `n` keys the `Manual`, so a second request while it is open is a second
+   * opening rather than a prop it ignores. MENU's plain open passes nothing and
+   * clears it — a stale place must never survive a Escape-closed manual.
+   */
+  const [manualAt, setManualAt] = useState<(ManualOpen & { readonly n: number }) | null>(null);
+  const openManual = useCallback(
+    (at?: ManualOpen) => {
+      setManualAt((was) => (at === undefined ? null : { ...at, n: (was?.n ?? 0) + 1 }));
+      manual.show();
+    },
+    [manual],
+  );
   const settings = useDoor('settings');
   const more = useDoor('more');
   const shop = useDoor('shop');
@@ -3308,16 +3323,60 @@ function Game() {
    * block. Splitting those apart is the whole point of the extraction, so the
    * narrowing gets a name too instead of an assertion at each use.
    */
-  const teaching = mayTeach({
-    card,
-    said: saidCard !== null,
-    touring,
-    speaking,
-    watching: film !== null,
-    ended: snap.hud.ended,
-  })
-    ? card
-    : null;
+  const teaching =
+    mayTeach({
+      card,
+      said: saidCard !== null,
+      touring,
+      speaking,
+      watching: film !== null,
+      ended: snap.hud.ended,
+    }) && !manual.open
+      ? card
+      : null;
+
+  /**
+   * The story and the goal are told by a tap: GOT IT, or the HOW TO PLAY › link
+   * that tells them and then opens the book (2026-10-13).
+   *
+   * A card's dismissal is a quiet beat, and for PLACE the decisive one: its
+   * moment is true only before the first placement, and the only thing between
+   * this card and that placement is this tap. Judged against the ledger this
+   * dismissal just wrote, which React does not hold yet — the write itself stays
+   * functional so it cannot clobber a concurrent grant.
+   */
+  /** HOW TO PLAY › from a card: the book opens where the card was opened. */
+  const openManualFor = (opened: { readonly lesson: LessonId; readonly row?: RowKey }): void =>
+    openManual(
+      opened.row === undefined ? { at: opened.lesson } : { at: opened.lesson, row: opened.row },
+    );
+
+  const tellOpener = (id: 'story' | 'goal'): void => {
+    setProgress((p) => told(p, id));
+    markSpoke(session.get().hud.placements);
+    speakLesson(told(progress, id), session.get());
+  };
+
+  /**
+   * A lesson card has been READ — by its GOT IT, by a term tapped inside it, or
+   * by HOW TO PLAY › (2026-10-13). One path, so the three cannot disagree about
+   * what was told: a fired card replaced by a term card or the book is told
+   * first, or it would fire again the moment the replacement closed. THE MAP's
+   * card tells the concept AND the kind it showed (\`toldBy\`).
+   *
+   * A fired card spends the game's turn to speak (\`markSpoke\`). A chip's card
+   * was ASKED for, so it is not the game speaking, and marking it hid the other
+   * chip for four placements (Marc's second screenshot: _"if i press one, the
+   * other gets deleted"_).
+   */
+  const tellMoment = (id: TeachId, how: 'fired' | 'chip'): void => {
+    const tells = toldBy(id, session.get().board);
+    const after = tells.reduce(told, progress);
+    setProgress((p) => tells.reduce(told, p));
+    if (how === 'fired') markSpoke(session.get().hud.placements);
+    else setDotOpen(null);
+    speakLesson(after, session.get());
+  };
 
   /**
    * A desktop, or anything else with a real pointer.
@@ -4143,6 +4202,9 @@ function Game() {
              teaching ledger is the same one the drip writes, so a section
              appears on the run after the card that taught it. */
           met={progress.met}
+          key={manualAt?.n ?? 0}
+          open={manualAt ?? undefined}
+          onTerm={openTerm}
           onBack={manual.hide}
         />
       )}
@@ -4225,7 +4287,7 @@ function Game() {
           sound={isEnabled(features, 'ui.sound')}
           onSound={() => setSound(!isEnabled(features, 'ui.sound'))}
           onBack={more.hide}
-          onHowToPlay={() => manual.show()}
+          onHowToPlay={() => openManual()}
           onTutorial={replayTutorial}
           onFame={() => fame.show()}
           onSettings={() => settings.show()}
@@ -4537,25 +4599,19 @@ function Game() {
         to drift. Ahead of every other card by construction (`shell/teaching`'s
         `ORDER`), so it is the first thing a stranger's first run says.
       */}
-      {card === 'story' && saidCard === null && film === null && (
+      {card === 'story' && saidCard === null && film === null && !manual.open && (
         <SaidCard
           text={`${s.ui.theStory}\n${s.story.join('\n')}`}
           theme={theme}
           s={s}
           onTerm={openTerm}
-          onDismiss={() => {
-            /*
-             * A card's dismissal is a quiet beat, and for PLACE the decisive
-             * one: its moment is true only before the first placement, and
-             * the only thing between this card and that placement is this
-             * tap. Judged against the ledger this dismissal just wrote,
-             * which React does not hold yet — the write itself stays
-             * functional so it cannot clobber a concurrent grant.
-             */
-            setProgress((p) => told(p, 'story'));
-            markSpoke(session.get().hud.placements);
-            speakLesson(told(progress, 'story'), session.get());
+          // HOW TO PLAY › tells the card, then opens the book at THE EXPEDITION
+          // (2026-10-13): the same quiet beat as GOT IT, then the door.
+          onManual={() => {
+            tellOpener('story');
+            openManual({ at: 'expedition' });
           }}
+          onDismiss={() => tellOpener('story')}
         />
       )}
 
@@ -4565,17 +4621,17 @@ function Game() {
         `SaidCard` door and the same reasoning — `s.goal` is the one source, so
         there is no `LESSONS` entry.
       */}
-      {card === 'goal' && saidCard === null && film === null && (
+      {card === 'goal' && saidCard === null && film === null && !manual.open && (
         <SaidCard
           text={`${s.ui.theGoal}\n${s.howItWorks}`}
           theme={theme}
           s={s}
           onTerm={openTerm}
-          onDismiss={() => {
-            setProgress((p) => told(p, 'goal'));
-            markSpoke(session.get().hud.placements);
-            speakLesson(told(progress, 'goal'), session.get());
+          onManual={() => {
+            tellOpener('goal');
+            openManual({ at: 'expedition' });
           }}
+          onDismiss={() => tellOpener('goal')}
         />
       )}
 
@@ -4616,14 +4672,25 @@ function Game() {
           // does not: that reader already met the concept.
           firstContact
           dismiss={s.ui.gotIt}
+          /*
+           * A TERM OR HOW TO PLAY › TELLS THE CARD FIRST (2026-10-13, Marc's
+           * linking decision). The player chose to go further into it, so it
+           * was read; left untold it would fire again the moment the term card
+           * closed. The trip to look at the hex is skipped — they have gone to
+           * read, not to look. `term` is ONE slot, so the term card replaces
+           * this one rather than stacking on it.
+           */
+          onTerm={(id, row) => {
+            tellMoment(teaching, 'fired');
+            openTerm(id, row);
+          }}
+          onManual={() => {
+            const at = opensAt(teaching, snap.board);
+            tellMoment(teaching, 'fired');
+            openManualFor(at);
+          }}
           onDismiss={() => {
-            // The same quiet beat the story card spends — see above. THE MAP's
-            // card tells the concept AND the kind it showed (`toldBy`).
-            const tells = toldBy(teaching, session.get().board);
-            const after = tells.reduce(told, progress);
-            setProgress((p) => tells.reduce(told, p));
-            markSpoke(session.get().hud.placements);
-            speakLesson(after, session.get());
+            tellMoment(teaching, 'fired');
             /*
              * AND GO AND LOOK AT IT, where the lesson was about a place.
              *
@@ -4652,15 +4719,17 @@ function Game() {
           s={s}
           firstContact
           dismiss={s.ui.gotIt}
+          onTerm={(id, row) => {
+            tellMoment(dotOpen, 'chip');
+            openTerm(id, row);
+          }}
+          onManual={() => {
+            const at = opensAt(dotOpen);
+            tellMoment(dotOpen, 'chip');
+            openManualFor(at);
+          }}
           onDismiss={() => {
-            const tells = toldBy(dotOpen, session.get().board);
-            const after = tells.reduce(told, progress);
-            setProgress((p) => tells.reduce(told, p));
-            setDotOpen(null);
-            // No `markSpoke`: a chip's card was ASKED for, so it is not the game
-            // speaking, and marking it hid the other chip for four placements
-            // (Marc's second screenshot: _"if i press one, the other gets deleted"_).
-            speakLesson(after, session.get());
+            tellMoment(dotOpen, 'chip');
             showOnBoard(dotOpen);
           }}
         />
@@ -4673,6 +4742,13 @@ function Game() {
           theme={theme}
           s={s}
           dismiss={s.ui.gotIt}
+          // A term tapped in a term card REPLACES it (one slot): the chain
+          // cannot grow past one card.
+          onTerm={openTerm}
+          onManual={() => {
+            setTerm(null);
+            openManual(term.row === undefined ? { at: term.id } : { at: term.id, row: term.row });
+          }}
           onDismiss={() => setTerm(null)}
         />
       )}

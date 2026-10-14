@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { TUNING } from '@content/tuning';
 import { NAME } from '@meta/identity';
 import type { Theme } from '@theme/tokens';
@@ -7,8 +7,10 @@ import {
   lessonDetail,
   lessonLines,
   lessonName,
+  lessonOf,
   type Lesson,
   type LessonId,
+  type RowKey,
 } from '@view/lessons';
 import type { FigureId } from '@view/figure';
 import type { TeachId } from '@meta/progress';
@@ -17,7 +19,7 @@ import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { Figure } from '../ui/Figure';
 import { Panel } from '../ui/Panel';
-import { ProseLines } from '../ui/Prose';
+import { ProseLines, type OnTerm } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
 import { momentsOf } from '../shell/teaching';
 import { panelOf, tabOf, Tabs } from '../ui/Tabs';
@@ -122,6 +124,16 @@ function metHere(lesson: Lesson, met: ReadonlySet<TeachId> | null): boolean {
  * A figure is claimed by the FIRST lesson on the tab that carries it; every
  * lesson after gets `null` and reads under the picture already there.
  */
+/**
+ * The tab a lesson's section is printed on, or null where this manual does not
+ * print it (no tab, or not yet met on this device — `metHere`).
+ */
+function tabFor(id: LessonId | undefined, met: ReadonlySet<TeachId> | null): TabId | null {
+  const lesson = id === undefined ? undefined : lessonOf(id);
+  if (lesson?.tab === undefined || !metHere(lesson, met)) return null;
+  return lesson.tab;
+}
+
 function drawnOnce(
   lessons: readonly Lesson[],
   met: ReadonlySet<TeachId> | null,
@@ -172,12 +184,65 @@ type ManualProps = {
    * gallery, a bare test, the audit's shots. See `metHere`.
    */
   readonly met?: readonly TeachId[];
+  /**
+   * WHERE TO OPEN (2026-10-13): a card's HOW TO PLAY › lands on its lesson's
+   * section, at the row it was opened at where it has one. Absent is the menu's
+   * plain open, on the first tab.
+   */
+  readonly open?: ManualOpen | undefined;
+  /**
+   * A term whose section this manual does not print (not yet met on this
+   * device, say) opens its card as it does anywhere else. A term whose section
+   * IS printed navigates the book instead (`go`), never a card over a book.
+   */
+  readonly onTerm: OnTerm;
   readonly onBack: () => void;
 };
 
-export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
+/** A lesson, and the row of it, to scroll the manual to. */
+export type ManualOpen = { readonly at: LessonId; readonly row?: RowKey | undefined };
+
+/** How long a section or row sent to by a link stays lit. */
+const FLASH_MS = 1600;
+
+export function Manual({ theme, s, keyboard, mode, met, open, onTerm, onBack }: ManualProps) {
   const known = met === undefined ? null : new Set(met);
-  const [on, setOn] = useState<TabId>(TABS[0]);
+  const [on, setOn] = useState<TabId>(() => tabFor(open?.at, known) ?? TABS[0]);
+  // The place to scroll to. A fresh object per request, so asking for the same
+  // section twice scrolls twice.
+  const [goto, setGoto] = useState<ManualOpen | null>(open === undefined ? null : { ...open });
+
+  /*
+   * A tapped term NAVIGATES THE BOOK (2026-10-13, Marc's linking decision;
+   * this reverses 2026-08-29's "nothing in the manual is tappable"): switch to
+   * the tab the term's lesson lives on and scroll to its section, leading its
+   * row where the word is a row's own. A card over the book would repeat the
+   * section it names.
+   */
+  const go: OnTerm = (id, row) => {
+    const tab = tabFor(id, known);
+    if (tab === null) {
+      onTerm(id, row);
+      return;
+    }
+    setOn(tab);
+    setGoto(row === undefined ? { at: id } : { at: id, row });
+  };
+
+  useEffect(() => {
+    if (goto === null) return;
+    const section = document.getElementById(`manual-${goto.at}`);
+    const row =
+      goto.row === undefined ? null : (section?.querySelector(`[data-row="${goto.row}"]`) ?? null);
+    const target = row ?? section;
+    target?.scrollIntoView?.({ block: 'start' });
+    target?.classList.add('manual-flash');
+    const timer = setTimeout(() => target?.classList.remove('manual-flash'), FLASH_MS);
+    return () => {
+      clearTimeout(timer);
+      target?.classList.remove('manual-flash');
+    };
+  }, [goto]);
 
   return (
     <Panel
@@ -265,7 +330,7 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
           need of it. */}
       {drawnOnce(sectionsOf(on), known).map(({ id, lesson, figure }) => (
         <Fragment key={id}>
-          <Section lesson={lesson} figure={figure} theme={theme} s={s} />
+          <Section lesson={lesson} figure={figure} theme={theme} s={s} onTerm={go} />
           {id === 'expedition' && mode !== undefined && mode !== 'world' && (
             <WhichGame mode={mode} s={s} />
           )}
@@ -329,25 +394,20 @@ function WhichGame({
 /**
  * One lesson, printed whole.
  *
- * **Nothing in the manual is tappable** (Marc, 2026-08-29: "make sure cache,
- * site, shrine, etc. are not clickable ... they should get the explanation
- * directly readable"). Elsewhere a term IS a button that opens a card saying
- * what it means, and that is right where the word appears alone — in a toast,
- * on the end screen, inside another lesson's card. Here it is not: the manual
- * is the place those cards quote, so tapping CACHE opened a card repeating the
- * section two inches below it, and every noun in a paragraph looked like a
- * control.
- *
- * `Prose` already draws a term as plain inked text when no handler is given,
- * so this is a prop NOT PASSED rather than a second rendering path. The words
- * keep their colour — a term still looks like the game's own vocabulary — and
- * simply stop pretending to be buttons.
+ * **Its terms are buttons since 2026-10-13** (Marc's linking decision: if the
+ * game names it, you can tap it). This reverses 2026-08-29's ruling — "make
+ * sure cache, site, shrine, etc. are not clickable" — which was right about
+ * what the tap DID then: it opened a card repeating the section two inches
+ * below. It no longer does that. A tap here scrolls the book to the section the
+ * word names (`Manual`'s `go`), and the word that names THIS section stays
+ * plain text (`Prose`'s `within`), so no paragraph links to itself.
  */
 function Section({
   lesson,
   figure,
   theme,
   s,
+  onTerm,
 }: {
   readonly lesson: Lesson;
   /** The figure to draw under this section, or null where a section above it
@@ -355,6 +415,7 @@ function Section({
   readonly figure: FigureId | null;
   readonly theme: Theme;
   readonly s: Strings;
+  readonly onTerm: OnTerm;
 }) {
   const lines = lessonLines(lesson, TUNING, theme, s);
   const rows = lesson.rows?.(TUNING, theme, s) ?? [];
@@ -364,7 +425,7 @@ function Section({
   if (lines.length === 0) return null;
 
   return (
-    <section className="lesson">
+    <section className="lesson" id={`manual-${lesson.id}`}>
       {/*
         The heading wears the lesson's own mark, where it has one: a rule about
         a thing you can SEE on the board should be findable by that thing. The
@@ -383,15 +444,17 @@ function Section({
         </span>
         <span>{lessonName(lesson, s)}</span>
       </h2>
-      <ProseLines text={lines.join('\n')} s={s} />
-      {rows.length > 0 && <TipRows rows={rows} theme={theme} s={s} withLines />}
+      <ProseLines text={lines.join('\n')} s={s} onTerm={onTerm} within={lesson.id} />
+      {rows.length > 0 && (
+        <TipRows rows={rows} theme={theme} s={s} withLines onTerm={onTerm} within={lesson.id} />
+      )}
       {lesson.manualFigure !== undefined && (
         <Figure id={lesson.manualFigure} theme={theme} s={s} caption />
       )}
       {figure !== null && <Figure id={figure} theme={theme} s={s} caption />}
       {detail.length > 0 && (
         <Fold summary={s.ui.details}>
-          <ProseLines text={detail.join('\n')} s={s} />
+          <ProseLines text={detail.join('\n')} s={s} onTerm={onTerm} within={lesson.id} />
         </Fold>
       )}
     </section>

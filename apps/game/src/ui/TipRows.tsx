@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 import type { TipRow } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { Hex } from './Hex';
+import type { LessonId } from '@view/lessons';
 import { Prose, type OnTerm } from './Prose';
 import { useGroundArt, useTerrainArt } from '../shell/art';
 
@@ -37,6 +38,7 @@ export function TipRows({
   theme,
   s,
   onTerm,
+  within,
   withLines,
   lead,
 }: {
@@ -44,6 +46,8 @@ export function TipRows({
   readonly theme: Theme;
   readonly s: Strings;
   readonly onTerm?: OnTerm | undefined;
+  /** The lesson these rows belong to: its own terms are not buttons (`Prose`). */
+  readonly within?: LessonId | undefined;
   /** Draw each row's `lines` under it. The manual does; a card is the rule
    *  and its tiles only, so it does not. */
   readonly withLines?: boolean | undefined;
@@ -144,7 +148,7 @@ export function TipRows({
             ? row.lines.map((line, n) => (
                 <p className="ground-advice" key={line.head ?? n}>
                   {line.head !== undefined && <strong>{line.head}</strong>}{' '}
-                  <Prose text={line.text} s={s} onTerm={onTerm} />
+                  <Prose text={line.text} s={s} onTerm={onTerm} within={within} />
                 </p>
               ))
             : null;
@@ -155,7 +159,7 @@ export function TipRows({
               <span>
                 {row.name !== undefined && <b className="tip-name">{row.name}</b>}
                 {row.name !== undefined && ' '}
-                <Prose text={row.text} s={s} onTerm={onTerm} />
+                <Prose text={row.text} s={s} onTerm={onTerm} within={within} />
               </span>
               {value}
             </p>

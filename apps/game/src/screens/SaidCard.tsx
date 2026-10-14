@@ -42,6 +42,9 @@ type SaidCardProps = {
   readonly s: Strings;
   readonly onDismiss: () => void;
   readonly onTerm: OnTerm;
+  /** HOW TO PLAY ›, for the story and goal cards only (they open the expedition);
+   *  a receipt has none. */
+  readonly onManual?: (() => void) | undefined;
   /**
    * An offer the receipt makes. Only the crossing has one, and it is a
    * two-tap arm because it forgets a world — the dismiss button becomes STAY
@@ -79,6 +82,7 @@ export function SaidCard({
   s,
   onDismiss,
   onTerm,
+  onManual,
   offer,
   wear,
   icon,
@@ -96,6 +100,7 @@ export function SaidCard({
       name={lead.trim()}
       dismiss={offer === undefined ? s.ui.gotIt : s.claim.stay}
       onDismiss={onDismiss}
+      {...(onManual === undefined ? {} : { manual: { label: s.ui.howToPlay, onOpen: onManual } })}
       {...(offer !== undefined
         ? {
             action: <Confirming label={offer.label} armed={offer.armed} onConfirm={offer.onTake} />,

@@ -4087,3 +4087,38 @@ button.caravan-ask.waiting {
   margin-inline-end: 0.2em;
   vertical-align: -0.1em;
 }
+
+/*
+ * THE CARD'S WAY TO THE BOOK (2026-10-13; Marc's linking decision). One quiet
+ * line above the buttons, on the trailing edge: the same `.quiet` voice the front
+ * door's KEEP THE SEED speaks in.
+ */
+.card-manual {
+  margin: 0;
+  text-align: end;
+}
+
+/*
+ * WHERE THE MANUAL WAS SENT (2026-10-13): a section or a row arrived at from a
+ * card's HOW TO PLAY or a tapped term is lit for a moment. The wash is the
+ * lead row's (`.tip-lead`); under reduced motion it just holds, then goes.
+ */
+.manual-flash {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .manual-flash {
+    animation: manual-flash 1.6s ease-out;
+  }
+}
+
+@keyframes manual-flash {
+  from {
+    background: color-mix(in srgb, var(--accent) 34%, transparent);
+  }
+  to {
+    background: color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}

@@ -45,9 +45,25 @@ type CardProps = {
   readonly action?: ReactNode;
   /** Colours the name, for MAGIC and UNIQUE. */
   readonly ink?: 'ink-magic' | 'ink-unique' | undefined;
+  /**
+   * THE WAY TO THE BOOK (2026-10-13, Marc's linking decision): one quiet link
+   * under the buttons, "HOW TO PLAY ›", for a card that teaches. A receipt has
+   * none — it is about something that just happened, not a rule.
+   */
+  readonly manual?: { readonly label: string; readonly onOpen: () => void } | undefined;
 };
 
-export function Card({ id, icon, name, children, dismiss, onDismiss, action, ink }: CardProps) {
+export function Card({
+  id,
+  icon,
+  name,
+  children,
+  dismiss,
+  onDismiss,
+  action,
+  ink,
+  manual,
+}: CardProps) {
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,6 +102,20 @@ export function Card({ id, icon, name, children, dismiss, onDismiss, action, ink
           </p>
         )}
         {children}
+        {/* Above the buttons in the markup, so the dismiss stays the card's LAST
+            button (a dozen specs and the audit reach it that way). */}
+        {manual !== undefined && (
+          <p className="card-manual">
+            <button
+              type="button"
+              className="quiet"
+              data-action="card-manual"
+              onClick={manual.onOpen}
+            >
+              {manual.label}&nbsp;<span aria-hidden="true">›</span>
+            </button>
+          </p>
+        )}
         <p className="card-acts">
           {action}
           <button type="button" onClick={onDismiss}>

@@ -78,29 +78,36 @@ function Marked({
 type ProseProps = {
   readonly text: string;
   readonly s: Strings;
-  /** Opens the term card. Omitted where prose is decorative — a card's own
-   *  body, say, whose terms would open a card over a card. */
+  /** Opens the term. Omitted only where prose is decorative; a card's body and
+   *  the manual's sections carry one since 2026-10-13. */
   readonly onTerm?: OnTerm | undefined;
+  /**
+   * THE LESSON THIS PROSE IS PART OF (2026-10-13, Marc's linking decision). A
+   * term that resolves to it is drawn as plain inked text, not a button: a card
+   * for POP should not offer a button that opens POP, and neither should POP's
+   * own section of the manual. Decided here, once, so no screen has to remember.
+   */
+  readonly within?: LessonId | undefined;
 };
 
-export function Prose({ text, s, onTerm }: ProseProps) {
-  return <>{inked(text, s, onTerm)}</>;
+export function Prose({ text, s, onTerm, within }: ProseProps) {
+  return <>{inked(text, s, onTerm, within)}</>;
 }
 
 /** Prose that may be several lines — `\n` is how the core joins sentences. */
-export function ProseLines({ text, s, onTerm }: ProseProps) {
+export function ProseLines({ text, s, onTerm, within }: ProseProps) {
   return (
     <>
       {text.split('\n').map((line, i) => (
         // The index is the identity: these are lines of one string, and there
         // is nothing else about a line to key on.
-        <p key={i}>{inked(line, s, onTerm)}</p>
+        <p key={i}>{inked(line, s, onTerm, within)}</p>
       ))}
     </>
   );
 }
 
-function inked(text: string, s: Strings, onTerm?: OnTerm): ReactNode {
+function inked(text: string, s: Strings, onTerm?: OnTerm, within?: LessonId): ReactNode {
   const terms = conceptTerms(s);
   const byWord = new Map(terms.map((term) => [term.term.toLocaleUpperCase(), term]));
 
@@ -108,7 +115,7 @@ function inked(text: string, s: Strings, onTerm?: OnTerm): ReactNode {
   return text.split(conceptPattern(s)).map((piece, i) => {
     const term = i % 2 === 1 ? byWord.get(piece.toLocaleUpperCase()) : undefined;
     if (term === undefined) return <Fragment key={i}>{rarityInked(piece, s, i)}</Fragment>;
-    if (onTerm === undefined) {
+    if (onTerm === undefined || term.id === within) {
       return (
         <Marked key={i} id={term.id} worn={wearsMark(term.id, piece, s)}>
           <span className={term.ink}>{piece}</span>

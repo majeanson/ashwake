@@ -368,3 +368,99 @@ test('the first pop is forced: a waiting pocket refuses placement until it is po
   expect(await tilesLeft(page)).not.toBe(tiles);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('HOW TO PLAY › on the opening cards tells them and opens the book at THE EXPEDITION', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-13, Marc's linking decision: every card that teaches carries one
+   * quiet link to the book, at that card's own section. The story is the first
+   * card a stranger meets, so it is the first one asked.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await page.locator('[data-door="begin"]').click();
+
+  const card = page.locator('.card-scrim .card');
+  await expect(card).toContainText(/THE STORY|L’HISTOIRE/);
+  await card.locator('[data-action="card-manual"]').click();
+
+  const manual = page.locator('[data-panel="manual"]');
+  await expect(manual).toBeVisible();
+  await expect(page.locator('[data-tab="start"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(manual.locator('#manual-expedition')).toBeInViewport();
+  // The card was told: no card sits over the book, and nothing is waiting but
+  // the NEXT opener (the goal), which holds off until the book is closed.
+  await expect(page.locator('.card-scrim')).toHaveCount(0);
+
+  await manual.locator('.panel-back').click();
+  await expect(manual).toHaveCount(0);
+  await expect(page.locator('.card-scrim .card')).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
+  await expect(page.locator('.card-scrim .card')).not.toContainText(/THE STORY|L’HISTOIRE/);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('HOW TO PLAY › on a fired lesson card lands on its section, and the lesson stays told', async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7');
+  await begin(page);
+
+  const pop = page.locator('[data-card="lesson-pop"]');
+  for (let i = 0; i < 40 && (await pop.count()) === 0; i++) {
+    try {
+      await placeOneTile(page, { keepCards: true });
+    } catch {
+      break;
+    }
+    await page.waitForTimeout(150);
+    if ((await pop.count()) === 0) await clearCards(page);
+  }
+  await expect(pop, 'the walk never raised POP’s card').toHaveCount(1);
+  await pop.locator('[data-action="card-manual"]').click();
+
+  const manual = page.locator('[data-panel="manual"]');
+  await expect(manual).toBeVisible();
+  await expect(page.locator('[data-tab="start"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(manual.locator('#manual-pop')).toBeInViewport();
+  await expect(page.locator('[data-card]')).toHaveCount(0);
+
+  // Told: closing the book does not bring the card back.
+  await manual.locator('.panel-back').click();
+  await page.waitForTimeout(400);
+  await expect(page.locator('[data-card="lesson-pop"]')).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('a term in the book takes you to its section, on whichever tab it lives', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+  await begin(page);
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+
+  const manual = page.locator('[data-panel="manual"]');
+  // The START tab names LUCK (POP's WHEN line); LUCK lives on the HAND tab.
+  await expect(manual.locator('#manual-luck')).toHaveCount(0);
+  const luck = manual
+    .locator('button.term')
+    .filter({ hasText: /^(LUCK|CHANCE)$/ })
+    .first();
+  await luck.scrollIntoViewIfNeeded();
+  await luck.click();
+
+  await expect(page.locator('[data-tab="hand"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(manual.locator('#manual-luck')).toBeInViewport();
+  // A book, not a card over a book.
+  await expect(page.locator('.card-scrim')).toHaveCount(0);
+  // And the section the reader is in never links to itself.
+  await expect(
+    manual
+      .locator('#manual-luck > p')
+      .first()
+      .locator('button.term')
+      .filter({ hasText: /^(LUCK|CHANCE)$/ }),
+  ).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

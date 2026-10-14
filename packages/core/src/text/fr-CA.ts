@@ -778,7 +778,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     steerSure: (name, draws, paid) =>
       `${name} à coup sûr${D}: une main entière${draws === 0 ? '' : draws === 1 ? ', et la prochaine pioche aussi' : `, et les ${nb(draws)} prochaines pioches aussi`}. ${nb(paid)} chance.`,
     forge: (paid) =>
-      `Forgé UNIQUE${D}: sauvage, et chaque appariement compte double, des deux côtés. ${nb(paid)} chance.`,
+      `Forgé UNIQUE${D}: sauvage, et chaque ressemblance compte double, des deux côtés. ${nb(paid)} chance.`,
     tithe: (paid, relics) =>
       `${nb(paid)} chance sacrifiée pour ${nb(relics)} relique${pl(relics, '', 's')}.`,
   },

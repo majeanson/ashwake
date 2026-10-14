@@ -909,13 +909,11 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   await page.locator('[data-tab="world"]').click();
 
   /*
-   * And NOTHING in the manual is tappable (2026-08-29).
-   *
-   * The legend's destinations used to be buttons that opened the term card, on
-   * the argument that the card is where the definition lives and a legend
-   * repeating it would be a second copy. True of the sentence and wrong about
-   * the screen. Marc: "make sure cache, site, shrine, etc. are not clickable
-   * ... they should get the explanation directly readable."
+   * The rows are not buttons, but the WORDS in the book are (2026-10-13, Marc's
+   * linking decision, reversing 2026-08-29's "nothing in the manual is
+   * tappable"): a tap scrolls the book to the section the word names, and the
+   * word that names the section you are in stays plain text. The tap itself is walked in the teaching
+   * spec; this holds the other half: a destination row is still a row.
    */
   // The destinations are THE MAP's rows now, each leading with the board's own
   // lit hex and carrying its rule beside it.
@@ -926,10 +924,6 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
     await shrine.evaluate((el) => el.tagName.toLowerCase()),
     'a destination row is still a button',
   ).not.toBe('button');
-  expect(
-    await panel(page, 'manual').locator('button.term').count(),
-    'the manual still linkifies its own prose',
-  ).toBe(0);
 
   /*
    * The row IS the explanation (2026-08-30).

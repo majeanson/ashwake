@@ -119,3 +119,45 @@ describe('the words that are also buttons wear the button’s mark (2026-10-12)'
     expect(screen.getByRole('button', { name: 'POP' })).toBeDefined();
   });
 });
+
+describe('a term that names the lesson it sits in is not a link (2026-10-13)', () => {
+  it('draws it as plain inked text, and still links every other lesson', () => {
+    const onTerm = vi.fn();
+    render(<Prose text="A tile RIPENS; spend LUCK." s={s} onTerm={onTerm} within="pop" />);
+    // RIPENS is POP's own word: text, not a button.
+    expect(screen.queryByRole('button', { name: 'RIPENS' })).toBeNull();
+    expect(screen.getByText('RIPENS')).toBeInTheDocument();
+    // LUCK is another lesson's, so it is still tappable.
+    expect(screen.getByRole('button', { name: 'LUCK' })).toBeInTheDocument();
+  });
+
+  it('links the same word when the prose is not inside that lesson', () => {
+    render(<Prose text="A tile RIPENS." s={s} onTerm={() => undefined} within="luck" />);
+    expect(screen.getByRole('button', { name: 'RIPENS' })).toBeInTheDocument();
+  });
+
+  it('applies to every line of a multi-line answer', () => {
+    render(
+      <ProseLines
+        text={'It RIPENS.\nIt RIPENS again.'}
+        s={s}
+        onTerm={() => undefined}
+        within="pop"
+      />,
+    );
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+
+  it('guards a row’s word by its lesson: CACHE inside THE MAP is text, outside it a row link', async () => {
+    const cache = s.lesson.map.row.cache.terms[0]!;
+    const onTerm = vi.fn();
+    const inside = render(<Prose text={`A ${cache} here.`} s={s} onTerm={onTerm} within="map" />);
+    expect(screen.queryByRole('button', { name: cache })).toBeNull();
+    inside.unmount();
+
+    render(<Prose text={`A ${cache} here.`} s={s} onTerm={onTerm} within="pop" />);
+    await userEvent.click(screen.getByRole('button', { name: cache }));
+    // The lesson, and the ROW of it to lead.
+    expect(onTerm).toHaveBeenCalledWith('map', 'cache');
+  });
+});

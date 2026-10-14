@@ -12,7 +12,7 @@ import {
 import type { Strings } from '@text/Strings';
 import { Card } from '../ui/Card';
 import { Figure } from '../ui/Figure';
-import { ProseLines } from '../ui/Prose';
+import { ProseLines, type OnTerm } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
 
 /**
@@ -24,8 +24,12 @@ import { TipRows } from '../ui/TipRows';
  * thing three ways. Ashwake 1 kept them in step by hand; here there is nothing
  * to keep in step.
  *
- * Its own prose carries no term buttons: a term inside a card would open a card
- * over a card, which is a stack nobody asked for.
+ * **Its terms are buttons since 2026-10-13** (Marc's linking decision: if the
+ * game names it, you can tap it). Until then a card's prose carried none, on
+ * 2026-08-29's argument that a term inside a card opens a card over a card.
+ * The stack is capped where the card is hosted (`App` holds ONE term slot, so
+ * a tap replaces the card) and the term that names THIS lesson is plain text
+ * (`Prose`'s `within`).
  *
  * **`firstContact` is the one thing the trio does not share** (2026-08-30). A
  * lesson may keep a sentence for the moment it is first met — RIPE's "tap it to
@@ -48,6 +52,11 @@ type LessonCardProps = {
   /** The row of the lesson to lead, where it has rows and one was asked about:
    *  a chip for CACHE, a tap on a cache, a destination just found. */
   readonly row?: RowKey | undefined;
+  /** A tapped term in the body or the rows. */
+  readonly onTerm: OnTerm;
+  /** HOW TO PLAY ›: close this card and open the manual at this lesson (at the
+   *  row it was opened at, where it has one). */
+  readonly onManual: () => void;
 };
 
 export function LessonCard({
@@ -58,6 +67,8 @@ export function LessonCard({
   onDismiss,
   firstContact,
   row,
+  onTerm,
+  onManual,
 }: LessonCardProps) {
   const lesson = lessonOf(id);
   if (lesson === undefined) return null;
@@ -71,6 +82,7 @@ export function LessonCard({
       ink={lesson.ink}
       dismiss={dismiss}
       onDismiss={onDismiss}
+      manual={{ label: s.ui.howToPlay, onOpen: onManual }}
     >
       <ProseLines
         text={
@@ -79,12 +91,21 @@ export function LessonCard({
             : lessonDefine(lesson, TUNING, theme, s)
         }
         s={s}
+        onTerm={onTerm}
+        within={id}
       />
       {draws === 'figure' && lesson.figure !== undefined && (
         <Figure id={lesson.figure} theme={theme} s={s} />
       )}
       {draws === 'rows' && lesson.rows !== undefined && (
-        <TipRows rows={lesson.rows(TUNING, theme, s)} theme={theme} s={s} lead={row} />
+        <TipRows
+          rows={lesson.rows(TUNING, theme, s)}
+          theme={theme}
+          s={s}
+          lead={row}
+          onTerm={onTerm}
+          within={id}
+        />
       )}
     </Card>
   );
