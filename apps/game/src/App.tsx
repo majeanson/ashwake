@@ -1644,10 +1644,19 @@ function Game() {
    * opening rather than a prop it ignores. MENU's plain open passes nothing and
    * clears it — a stale place must never survive a Escape-closed manual.
    */
-  const [manualAt, setManualAt] = useState<(ManualOpen & { readonly n: number }) | null>(null);
+  const [manualAt, setManualAt] = useState<
+    (ManualOpen & { readonly n: number; readonly also: readonly TeachId[] }) | null
+  >(null);
+  /**
+   * `also`: moments to print the book as if they had been told, for a card
+   * that went to the book WITHOUT being told (2026-10-14, Marc: _"when we press
+   * on Comment jouer … we come back and the card is gone and we seem out of the
+   * tutorial"_). The card is still owed, so its section is not in the ledger,
+   * and a book that hid the section it was sent to would open on nothing.
+   */
   const openManual = useCallback(
-    (at?: ManualOpen) => {
-      setManualAt((was) => (at === undefined ? null : { ...at, n: (was?.n ?? 0) + 1 }));
+    (at?: ManualOpen, also: readonly TeachId[] = []) => {
+      setManualAt((was) => (at === undefined ? null : { ...at, n: (was?.n ?? 0) + 1, also }));
       manual.show();
     },
     [manual],
@@ -3331,7 +3340,9 @@ function Game() {
       speaking,
       watching: film !== null,
       ended: snap.hud.ended,
-    }) && !manual.open
+    }) &&
+    !manual.open &&
+    term === null
       ? card
       : null;
   /** The lesson (and row) the fired card is about, computed once per render. */
@@ -3339,15 +3350,19 @@ function Game() {
   /** And the chip's: a chip's row never depends on the board. */
   const dotAt = dotOpen === null ? null : opensAt(dotOpen);
   /**
-   * Room for a card that is not a receipt, a film or the book: the story, the
-   * goal and a chip's card all stand down for the same three things. (The fired
-   * card has its own rule, `mayTeach`, which also asks them.)
+   * Room for a card that is not a receipt, a film, the book or a term card: the
+   * story, the goal and a chip's card all stand down for the same four things.
+   * (The fired card has its own rule, `mayTeach`, which asks them too.)
+   *
+   * STANDING DOWN IS NOT BEING TOLD. A card that gives way to a term card or to
+   * the book is still owed, so it is back the moment they close — the player
+   * who went to read about a word is returned to the card they were on.
    */
-  const cardRoom = saidCard === null && film === null && !manual.open;
+  const cardRoom = saidCard === null && film === null && !manual.open && term === null;
 
   /**
-   * The story and the goal are told by a tap: GOT IT, or the HOW TO PLAY › link
-   * that tells them and then opens the book (2026-10-13).
+   * The story and the goal are told by GOT IT. HOW TO PLAY › does not tell them
+   * (2026-10-14): it opens the book and the card is back when the book closes.
    *
    * A card's dismissal is a quiet beat, and for PLACE the decisive one: its
    * moment is true only before the first placement, and the only thing between
@@ -3355,11 +3370,11 @@ function Game() {
    * dismissal just wrote, which React does not hold yet — the write itself stays
    * functional so it cannot clobber a concurrent grant.
    */
-  /** HOW TO PLAY › from a card: the book opens where the card was opened. */
-  const openManualFor = (opened: {
-    readonly lesson: LessonId;
-    readonly row?: RowKey | undefined;
-  }): void => openManual({ at: opened.lesson, row: opened.row });
+  /** HOW TO PLAY ›: the book opens where the card was opened. */
+  const openManualFor = (
+    opened: { readonly lesson: LessonId; readonly row?: RowKey | undefined },
+    also: readonly TeachId[] = [],
+  ): void => openManual({ at: opened.lesson, row: opened.row }, also);
 
   const tellOpener = (id: 'story' | 'goal'): void => {
     setProgress((p) => told(p, id));
@@ -3368,11 +3383,9 @@ function Game() {
   };
 
   /**
-   * A lesson card has been READ — by its GOT IT, by a term tapped inside it, or
-   * by HOW TO PLAY › (2026-10-13). One path, so the three cannot disagree about
-   * what was told: a fired card replaced by a term card or the book is told
-   * first, or it would fire again the moment the replacement closed. THE MAP's
-   * card tells the concept AND the kind it showed (\`toldBy\`).
+   * A lesson card has been READ — by its GOT IT, and only that (2026-10-14: a
+   * term or HOW TO PLAY › leaves the card owed, and it is back when they close).
+   * THE MAP's card tells the concept AND the kind it showed (\`toldBy\`).
    *
    * A fired card spends the game's turn to speak (\`markSpoke\`). A chip's card
    * was ASKED for, so it is not the game speaking, and marking it hid the other
@@ -4211,9 +4224,9 @@ function Game() {
           /* The manual grows with the world — see `Manual`'s `met`. The
              teaching ledger is the same one the drip writes, so a section
              appears on the run after the card that taught it. */
-          met={progress.met}
+          met={manualAt === null ? progress.met : [...progress.met, ...manualAt.also]}
           key={manualAt?.n ?? 0}
-          open={manualAt ?? undefined}
+          open={manualAt === null ? undefined : { at: manualAt.at, row: manualAt.row }}
           onTerm={openTerm}
           onBack={manual.hide}
         />
@@ -4615,12 +4628,9 @@ function Game() {
           theme={theme}
           s={s}
           onTerm={openTerm}
-          // HOW TO PLAY › tells the card, then opens the book at THE EXPEDITION
-          // (2026-10-13): the same quiet beat as GOT IT, then the door.
-          onManual={() => {
-            tellOpener('story');
-            openManual({ at: 'expedition' });
-          }}
+          // HOW TO PLAY › opens the book at THE EXPEDITION and leaves the card
+          // owed: it is back when the book closes.
+          onManual={() => openManual({ at: 'expedition' }, ['story'])}
           onDismiss={() => tellOpener('story')}
         />
       )}
@@ -4637,10 +4647,7 @@ function Game() {
           theme={theme}
           s={s}
           onTerm={openTerm}
-          onManual={() => {
-            tellOpener('goal');
-            openManual({ at: 'expedition' });
-          }}
+          onManual={() => openManual({ at: 'expedition' }, ['goal'])}
           onDismiss={() => tellOpener('goal')}
         />
       )}
@@ -4683,21 +4690,15 @@ function Game() {
           firstContact
           dismiss={s.ui.gotIt}
           /*
-           * A TERM OR HOW TO PLAY › TELLS THE CARD FIRST (2026-10-13, Marc's
-           * linking decision). The player chose to go further into it, so it
-           * was read; left untold it would fire again the moment the term card
-           * closed. The trip to look at the hex is skipped — they have gone to
-           * read, not to look. `term` is ONE slot, so the term card replaces
-           * this one rather than stacking on it.
+           * A TERM OR HOW TO PLAY › DOES NOT TELL THE CARD (2026-10-14, Marc:
+           * _"we come back and the card is gone and we seem out of the
+           * tutorial"_; this reverses 2026-10-13). The card gives way — to the
+           * term card, or to the book — and is back when they close, still
+           * owed, so a detour from a lesson never skips it. The book prints
+           * the section the card is about while it is owed (`also`).
            */
-          onTerm={(id, row) => {
-            tellMoment(teaching, 'fired');
-            openTerm(id, row);
-          }}
-          onManual={() => {
-            tellMoment(teaching, 'fired');
-            openManualFor(teachingAt);
-          }}
+          onTerm={openTerm}
+          onManual={() => openManualFor(teachingAt, toldBy(teaching, snap.board))}
           onDismiss={() => {
             tellMoment(teaching, 'fired');
             /*
@@ -4728,14 +4729,8 @@ function Game() {
           s={s}
           firstContact
           dismiss={s.ui.gotIt}
-          onTerm={(id, row) => {
-            tellMoment(dotOpen, 'chip');
-            openTerm(id, row);
-          }}
-          onManual={() => {
-            tellMoment(dotOpen, 'chip');
-            openManualFor(dotAt);
-          }}
+          onTerm={openTerm}
+          onManual={() => openManualFor(dotAt, toldBy(dotOpen, snap.board))}
           onDismiss={() => {
             tellMoment(dotOpen, 'chip');
             showOnBoard(dotOpen);

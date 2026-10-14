@@ -10910,3 +10910,17 @@ it has now failed in a full-suite run in two sessions and in none alone.
 inside every bar; `teaching.spec.ts` 15/15 on Chromium. **Not verified, and
 it is Marc's:** everything in NEXT.md §1 (round thirteen) — plus how a term
 card now looks with no HOW TO PLAY link.
+
+**Same day, Marc, from the phone: _"when we press on Comment jouer in the cards,
+we come back and the card is gone and we seem out of the tutorial."_** The
+2026-10-13 linking build told a card the instant HOW TO PLAY › (or a term in it)
+was tapped, so the book's close left no card and the walk one step on. It
+reverses that: a detour from a card tells nothing. The fired, chip, story and
+goal cards stand down for the book AND for a term card (`cardRoom`; `teaching`
+asks `term === null` too) and are back, unchanged, when either closes; only GOT
+IT tells. The book still prints the section the card is about while the card is
+owed — `openManual(at, also)`, `also` being `toldBy` of the card, added to the
+ledger for that one opening and for nothing else. e2e: the three HOW TO PLAY ›
+and term specs now assert the card returns and that its own GOT IT moves on
+(`teaching.spec.ts`). **Not verified, Marc's:** the same on the phone, in
+French — the story card's COMMENT JOUER ›, then back.
