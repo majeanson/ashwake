@@ -32,55 +32,70 @@ type LessonHead = {
 export type TaughtId = keyof LessonStrings;
 
 type LessonStrings = {
-  readonly ripe: LessonHead & {
-    readonly core: string;
-    readonly stoneAsh: (red: string) => string;
-    readonly stone: string;
-    readonly cardLean: string;
-    readonly cardPlain: string;
-  };
-  readonly pop: LessonHead & {
-    readonly core: string;
-    /** The draw lean, where a manual reader can find it (2026-09-03). It was
-     *  said only in `ripe.cardLean`, a first-contact sentence the manual never
-     *  prints — so a rule that steers every draw after a pop was unfindable
-     *  once the RIPE card was dismissed. Spoken only while pops pay luck and
-     *  bias draws, the same condition `cardLean` keeps. */
-    readonly lean: string;
-    /** The timing choice — small-and-often against big-and-late — moved here
-     *  from `view.harvest.firstPopWhen` (2026-09-04), which only the
-     *  first-ever-pop toast ever read. A reader who dismissed that toast once
-     *  had no way back to the one sentence that explains why waiting can be
-     *  worth it, since the RÉCOLTER door never repeated it. */
-    readonly when: string;
+  /**
+   * THE EXPEDITION (2026-10-13): what you are doing here, before any rule. Its
+   * `core` is the shared `howItWorks` (the goal card quotes the same clause),
+   * so what it keeps is the three lines that say what a run costs and what
+   * comes home, and the marks of the board that are not rules (a wall, a legal
+   * edge). It never fires as a card of its own: the story and the goal are its
+   * delivery, and the manual is its home.
+   */
+  readonly expedition: LessonHead & {
+    /** Three lines; the second composes with the shape-of-the-game clause. */
+    readonly lines: readonly string[];
+    readonly row: {
+      /** A wall: the board's mark and the toast that names it share `core`.
+       *  The row prints no name of its own: the sentence leads with it. */
+      readonly wall: LessonHead & { readonly core: string };
+      /** The glowing edge of a hex you may place on. */
+      readonly legal: LessonHead & { readonly core: string };
+    };
   };
   /**
-   * The other thing a ripe pocket can be spent on (2026-08-30).
-   *
-   * It had no lesson at all, in either language: the button has been on the
-   * board since Stage 3 and nothing anywhere said what pressing it does. Found
-   * while giving POP and SACRIFICE their marks — Marc: *"make em icons,
-   * associate in how to play and cards too"* — because a mark can only be
-   * associated with words that exist. `CLAUDE.md`'s standing rule is to grep
-   * for a consumer of every action a screen can produce; this is the same gap
-   * seen from the other end, an action with no explanation.
-   *
-   * Not a `TeachId`: it teaches no MOMENT and spends no ledger entry. It joins
-   * `pocket`, `worth` and the rest of `LessonId`'s extras — concepts the
-   * manual explains and the drip never interrupts anybody with.
+   * POP (2026-10-13): ripening, the pocket, a tile's worth, the pop itself and
+   * what it leaves behind are ONE concept (they were RIPE, POCKET, WORTH, POP,
+   * SIZE BONUS, STONE and REACH). The first four sentences are the beats; the
+   * marks and numbers around them are its rows.
    */
-  readonly sacrifice: LessonHead & {
-    /** What the action IS, and it holds under every dial: a lesson may never
-     *  go silent, which `lessons.test.ts` checks against BARE_TUNING. */
+  readonly pop: LessonHead & {
+    /** The inflections of the verb, which wear the button's mark in prose
+     *  (`Prose`'s TERM_MARK): a subset of `terms`. */
+    readonly verb: readonly string[];
+    /** A tile ripens when surrounded, and shows its worth. */
+    readonly ripens: string;
+    /** What a pocket is: the first two sentences of the old POCKET lesson. */
+    readonly pocket: string;
+    /** First contact only: tap a ripe tile to price its pocket. */
+    readonly pocketCard: string;
     readonly core: string;
-    /** What it pays, which a dial CAN turn off. Split from `core` for exactly
-     *  that reason — a world where burning pays nothing should not be told it
-     *  pays relics, and should still be told what the button does. */
-    readonly pays: string;
+    readonly worth: string;
+    /** The draw lean, where a manual reader can find it (2026-09-03). Spoken
+     *  only while pops pay luck and bias draws. */
+    readonly lean: string;
+    /** The timing choice, small-and-often against big-and-late (2026-09-04). */
+    readonly when: string;
+    /** What surrounds a ripening tile besides tiles; `red` counts stone. */
+    readonly surroundsAsh: (red: string) => string;
+    readonly surrounds: string;
+    readonly row: {
+      /** The ripe tile's ring; its sentence leads with its own name. */
+      readonly ripeEdge: LessonHead & { readonly core: string };
+      readonly stone: LessonHead & {
+        readonly coreAsh: (red: string) => string;
+        readonly core: string;
+      };
+      readonly sizeBonus: LessonHead & {
+        readonly coreCapped: (cap: number) => string;
+        readonly core: string;
+      };
+      readonly reach: LessonHead & {
+        readonly core: string;
+        /** The multiplier rule, silent where `distanceStep` is zeroed. Shares
+         *  its sentence with `view.stat.reach` (one constant per language). */
+        readonly multiplier: (step: number) => string;
+      };
+    };
   };
-  readonly pocket: LessonHead & { readonly core: string };
-  readonly worth: LessonHead & { readonly core: string };
-  readonly stone: LessonHead & { readonly coreAsh: (red: string) => string; readonly core: string };
   /**
    * MAGIC (2026-10-13): the two rarities are one concept, the way the fog is.
    * `core` is the magic rule; the unique rule is its row, and the card's own
@@ -187,21 +202,6 @@ type LessonStrings = {
     readonly coreMany: (slots: number) => string;
     readonly coreOne: string;
     readonly more: string;
-  };
-  readonly sizeBonus: LessonHead & {
-    readonly coreCapped: (cap: number) => string;
-    readonly core: string;
-  };
-  /**
-   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four). The cost
-   * is THE RUN'S END's now (`end`), field and lens are THE MAP's, and `reach`
-   * is a word the manual prints for everyone.
-   */
-  readonly reach: LessonHead & {
-    readonly core: string;
-    /** The multiplier rule, silent where `distanceStep` is zeroed. Shares its
-     *  sentence with `view.stat.reach` (one constant per language). */
-    readonly multiplier: (step: number) => string;
   };
   /**
    * THE MAP (2026-10-13): the fog, its destinations and the lens are one
@@ -1029,15 +1029,6 @@ export type Strings = {
      * cycles rather than four that crowd the board, which is Ashwake 1's
      * argument for the cluster restated: a phone already has a pinch.
      */
-    /**
-     * The manual's opening — what an expedition IS, before any rule.
-     *
-     * Not a lesson, and deliberately: a lesson teaches a TERM, carries a
-     * figure and is remembered in the teaching ledger. This teaches none, and
-     * exists because the manual opened on RIPE — a mechanic — and never once
-     * said what the player was doing or that running out is how a run ends
-     * rather than a mistake they made.
-     */
     /** Said when a hidden find grants a perk — the shelf gaining one. */
     readonly perkFound: (name: string) => string;
     /** Said when a shrine woke a system for this world. */
@@ -1066,7 +1057,6 @@ export type Strings = {
     readonly watchRun: string;
     readonly watchSkip: string;
     readonly watching: (step: number, of: number) => string;
-    readonly expedition: { readonly title: string; readonly lines: readonly string[] };
     /**
      * THE VIEW BUTTON'S THREE STOPS (2026-09-08, Marc: *"Revise all 3 camera
      * modes so the third one is always 'my own custom view' ... Other two would
@@ -1501,19 +1491,6 @@ export type Strings = {
     readonly relicsHeld: (n: number) => string;
     /** How much of the perk pool this device has found. */
     readonly perksTally: (found: number, all: number) => string;
-    /**
-     * The legend's own headings — every mark the board can show, and what it
-     * means (Marc, 2026-08-29: "adding visuals and assets and symbols in the
-     * how to play").
-     *
-     * The manual explained the rules and never showed the alphabet they are
-     * written in: a player meets a glyph on a hex and the only way to learn it
-     * was to tap that hex, which needs them to have walked there first.
-     */
-    readonly legendMarks: string;
-    readonly legendWall: string;
-    readonly legendRipe: string;
-    readonly legendLegal: string;
     readonly privacy: string;
     /**
      * The way to the third-party notices (2026-09-09).

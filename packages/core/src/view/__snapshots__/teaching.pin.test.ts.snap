@@ -74,6 +74,93 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
 }
 `;
 
+exports[`the teaching pins — every word, exactly as it reads today · en > pins POP, THE EXPEDITION and CARAVAN: names, terms, lessons, cards, figures and rows 1`] = `
+{
+  "caravan · card · BARE_TUNING · daylight": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size. The line under the header says when it is IN TOWN: that is the moment to try a pop.",
+  "caravan · card · BARE_TUNING · settlement": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size. The line under the header says when it is IN TOWN: that is the moment to try a pop.",
+  "caravan · card · TUNING · daylight": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size. The line under the header says when it is IN TOWN: that is the moment to try a pop.",
+  "caravan · card · TUNING · settlement": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size. The line under the header says when it is IN TOWN: that is the moment to try a pop.",
+  "caravan · figures": [
+    "-",
+    "-",
+  ],
+  "caravan · lesson · BARE_TUNING · daylight": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · lesson · BARE_TUNING · settlement": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · lesson · TUNING · daylight": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · lesson · TUNING · settlement": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · name": "CARAVAN",
+  "caravan · terms": [
+    "CARAVAN",
+  ],
+  "expedition · card · BARE_TUNING · daylight": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · card · BARE_TUNING · settlement": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · card · TUNING · daylight": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · card · TUNING · settlement": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · figures": [
+    "-",
+    "place",
+  ],
+  "expedition · lesson · BARE_TUNING · daylight": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · lesson · BARE_TUNING · settlement": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · lesson · TUNING · daylight": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · lesson · TUNING · settlement": "Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. You are walking out into a dark plane, and you push on as far as your tiles last. Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made. Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.",
+  "expedition · name": "THE EXPEDITION",
+  "expedition · row · legal · BARE_TUNING · daylight": " | Legal edge: you may place here. | legal",
+  "expedition · row · legal · BARE_TUNING · settlement": " | Legal edge: you may place here. | legal",
+  "expedition · row · legal · TUNING · daylight": " | Legal edge: you may place here. | legal",
+  "expedition · row · legal · TUNING · settlement": " | Legal edge: you may place here. | legal",
+  "expedition · row · wall · BARE_TUNING · daylight": " | Wall: cannot be built on. It still surrounds. | wall",
+  "expedition · row · wall · BARE_TUNING · settlement": " | Wall: cannot be built on. It still surrounds. | wall",
+  "expedition · row · wall · TUNING · daylight": " | Wall: cannot be built on. It still surrounds. | wall",
+  "expedition · row · wall · TUNING · settlement": " | Wall: cannot be built on. It still surrounds. | wall",
+  "expedition · terms": [
+    "wall: WALL: ",
+    "legal: LEGAL EDGE: ",
+  ],
+  "firstPop": "YOUR FIRST POP
+The pocket turned to STONE. It still surrounds, but never matches. Ground you have cashed grows poorer; the world stays rich farther out.",
+  "pop · card · BARE_TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround; none of them match. Tap any ripe tile to price its pocket; the buttons show what it pays.",
+  "pop · card · BARE_TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround; none of them match. Tap any ripe tile to price its pocket; the buttons show what it pays.",
+  "pop · card · TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match. Tap any ripe tile to price its pocket; the buttons show what it pays.",
+  "pop · card · TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match. Tap any ripe tile to price its pocket; the buttons show what it pays.",
+  "pop · figures": [
+    "pop",
+    "ripen",
+  ],
+  "pop · lesson · BARE_TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround; none of them match.",
+  "pop · lesson · BARE_TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround; none of them match.",
+  "pop · lesson · TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
+  "pop · lesson · TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
+  "pop · name": "POP",
+  "pop · row · reach · BARE_TUNING · daylight": "REACH | REACH is how far from home you have built. Every 4 hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops. | ",
+  "pop · row · reach · BARE_TUNING · settlement": "REACH | REACH is how far from home you have built. Every 4 hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops. | ",
+  "pop · row · reach · TUNING · daylight": "REACH | REACH is how far from home you have built. Every 3 hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops. | ",
+  "pop · row · reach · TUNING · settlement": "REACH | REACH is how far from home you have built. Every 3 hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops. | ",
+  "pop · row · ripeEdge · BARE_TUNING · daylight": " | RIPE edge: that tile is ready to harvest. | ripe",
+  "pop · row · ripeEdge · BARE_TUNING · settlement": " | RIPE edge: that tile is ready to harvest. | ripe",
+  "pop · row · ripeEdge · TUNING · daylight": " | RIPE edge: that tile is ready to harvest. | ripe",
+  "pop · row · ripeEdge · TUNING · settlement": " | RIPE edge: that tile is ready to harvest. | ripe",
+  "pop · row · sizeBonus · BARE_TUNING · daylight": "SIZE BONUS | The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied. | ",
+  "pop · row · sizeBonus · BARE_TUNING · settlement": "SIZE BONUS | The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied. | ",
+  "pop · row · sizeBonus · TUNING · daylight": "SIZE BONUS | The SIZE BONUS is one point of multiplier per tile in a pocket, up to 20. Past that a bigger pocket still pays more worth, but no more multiplier. | ",
+  "pop · row · sizeBonus · TUNING · settlement": "SIZE BONUS | The SIZE BONUS is one point of multiplier per tile in a pocket, up to 20. Past that a bigger pocket still pays more worth, but no more multiplier. | ",
+  "pop · row · stone · BARE_TUNING · daylight": "STONE | STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches. | stone",
+  "pop · row · stone · BARE_TUNING · settlement": "STONE | STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches. | stone",
+  "pop · row · stone · TUNING · daylight": "STONE | STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only QUARRY counts it as a match. | stone",
+  "pop · row · stone · TUNING · settlement": "STONE | STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only QUARRY counts it as a match. | stone",
+  "pop · terms": [
+    "POCKET",
+    "RIPENS",
+    "WORTH",
+    "POP",
+    "ripeEdge: RIPE EDGE: ",
+    "stone: STONE: STONE",
+    "sizeBonus: SIZE BONUS: SIZE BONUS",
+    "reach: REACH: ",
+  ],
+}
+`;
+
 exports[`the teaching pins — every word, exactly as it reads today · en > pins THE MAP: its core, its card, and each row with its words and lines 1`] = `
 {
   "card · BARE_TUNING · daylight": "The world remembers. Ground you have walked stays on the map between runs, dimmed under the fog, and unclaimed destinations glow through it. Tap remembered fog to light its ground. Every destination pays the moment a placed tile touches it.",
@@ -123,6 +210,10 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
 
 exports[`the teaching pins — every word, exactly as it reads today · en > pins every glossary definition, over both tunings and both directions 1`] = `
 {
+  "caravan · BARE_TUNING · daylight": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · BARE_TUNING · settlement": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · TUNING · daylight": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
+  "caravan · TUNING · settlement": "Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which. While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.",
   "grounds · BARE_TUNING · daylight": "Every tile is one of these four, and each one scores its own way.",
   "grounds · BARE_TUNING · settlement": "Every tile is one of these four, and each one scores its own way.",
   "grounds · TUNING · daylight": "Every tile is one of these four, and each one scores its own way.",
@@ -131,97 +222,36 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "luck · BARE_TUNING · settlement": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
   "luck · TUNING · daylight": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
   "luck · TUNING · settlement": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
-  "pocket · BARE_TUNING · daylight": "A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. Tap any ripe tile to price its pocket; the buttons show what it pays.",
-  "pocket · BARE_TUNING · settlement": "A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. Tap any ripe tile to price its pocket; the buttons show what it pays.",
-  "pocket · TUNING · daylight": "A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. Tap any ripe tile to price its pocket; the buttons show what it pays.",
-  "pocket · TUNING · settlement": "A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. Tap any ripe tile to price its pocket; the buttons show what it pays.",
-  "pop · BARE_TUNING · daylight": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
-  "pop · BARE_TUNING · settlement": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
-  "pop · TUNING · daylight": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
-  "pop · TUNING · settlement": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
-  "ripe · BARE_TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround; none of them match.",
-  "ripe · BARE_TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround; none of them match.",
-  "ripe · TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
-  "ripe · TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
-  "sacrifice · BARE_TUNING · daylight": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
-  "sacrifice · BARE_TUNING · settlement": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
-  "sacrifice · TUNING · daylight": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
-  "sacrifice · TUNING · settlement": "SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.",
-  "sizeBonus · BARE_TUNING · daylight": "The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied.",
-  "sizeBonus · BARE_TUNING · settlement": "The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied.",
-  "sizeBonus · TUNING · daylight": "The SIZE BONUS is one point of multiplier per tile in a pocket, up to 20. Past that a bigger pocket still pays more worth, but no more multiplier.",
-  "sizeBonus · TUNING · settlement": "The SIZE BONUS is one point of multiplier per tile in a pocket, up to 20. Past that a bigger pocket still pays more worth, but no more multiplier.",
+  "pop · BARE_TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround; none of them match.",
+  "pop · BARE_TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround; none of them match.",
+  "pop · TUNING · daylight": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
+  "pop · TUNING · settlement": "Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it. A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops. WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays. POP also leans your next draws toward the colour you popped. Small and often buys LUCK and steers your draws. Big and late buys tiles and score. Stone, walls and the map’s edge all surround. Only QUARRY counts stone as a match.",
   "stash · BARE_TUNING · daylight": "The dashed STASH slot keeps one tile for later. Tap to stash the selected tile; tap it again to trade that tile back. Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.",
   "stash · BARE_TUNING · settlement": "The dashed STASH slot keeps one tile for later. Tap to stash the selected tile; tap it again to trade that tile back. Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.",
   "stash · TUNING · daylight": "The dashed STASH slot keeps one tile for later. Tap to stash the selected tile; tap it again to trade that tile back. Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.",
   "stash · TUNING · settlement": "The dashed STASH slot keeps one tile for later. Tap to stash the selected tile; tap it again to trade that tile back. Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.",
-  "stone · BARE_TUNING · daylight": "STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches.",
-  "stone · BARE_TUNING · settlement": "STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches.",
-  "stone · TUNING · daylight": "STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only QUARRY counts it as a match.",
-  "stone · TUNING · settlement": "STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only QUARRY counts it as a match.",
-  "worth · BARE_TUNING · daylight": "WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.",
-  "worth · BARE_TUNING · settlement": "WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.",
-  "worth · TUNING · daylight": "WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.",
-  "worth · TUNING · settlement": "WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.",
 }
 `;
 
 exports[`the teaching pins — every word, exactly as it reads today · en > pins every glossary entry’s terms, mark and ink 1`] = `
 [
   {
-    "icon": "tile",
-    "id": "ripe",
-    "ink": null,
-    "terms": [
-      "RIPENS",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "worth",
-    "ink": null,
-    "terms": [
-      "WORTH",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "pocket",
-    "ink": null,
-    "terms": [
-      "POCKET",
-    ],
-  },
-  {
     "icon": "pop",
     "id": "pop",
     "ink": null,
     "terms": [
+      "POCKET",
+      "RIPENS",
+      "WORTH",
       "POP",
     ],
   },
   {
-    "icon": null,
-    "id": "sizeBonus",
+    "icon": "caravan",
+    "id": "caravan",
     "ink": null,
     "terms": [
-      "SIZE BONUS",
-    ],
-  },
-  {
-    "icon": "sacrifice",
-    "id": "sacrifice",
-    "ink": null,
-    "terms": [
-      "SACRIFICE",
-    ],
-  },
-  {
-    "icon": "stone",
-    "id": "stone",
-    "ink": null,
-    "terms": [
-      "STONE",
+      "CARAVAN",
     ],
   },
   {
@@ -480,6 +510,94 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
 }
 `;
 
+exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins POP, THE EXPEDITION and CARAVAN: names, terms, lessons, cards, figures and rows 1`] = `
+{
+  "caravan · card · BARE_TUNING · daylight": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille. La ligne sous l’en-tête dit quand elle est EN VILLE : c’est le moment d’essayer une récolte.",
+  "caravan · card · BARE_TUNING · settlement": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille. La ligne sous l’en-tête dit quand elle est EN VILLE : c’est le moment d’essayer une récolte.",
+  "caravan · card · TUNING · daylight": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille. La ligne sous l’en-tête dit quand elle est EN VILLE : c’est le moment d’essayer une récolte.",
+  "caravan · card · TUNING · settlement": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille. La ligne sous l’en-tête dit quand elle est EN VILLE : c’est le moment d’essayer une récolte.",
+  "caravan · figures": [
+    "-",
+    "-",
+  ],
+  "caravan · lesson · BARE_TUNING · daylight": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · lesson · BARE_TUNING · settlement": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · lesson · TUNING · daylight": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · lesson · TUNING · settlement": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · name": "CARAVANE",
+  "caravan · terms": [
+    "CARAVANE",
+  ],
+  "expedition · card · BARE_TUNING · daylight": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · card · BARE_TUNING · settlement": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · card · TUNING · daylight": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · card · TUNING · settlement": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · figures": [
+    "-",
+    "place",
+  ],
+  "expedition · lesson · BARE_TUNING · daylight": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · lesson · BARE_TUNING · settlement": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · lesson · TUNING · daylight": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · lesson · TUNING · settlement": "Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent. Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part. Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.",
+  "expedition · name": "L’EXPÉDITION",
+  "expedition · row · legal · BARE_TUNING · daylight": " | Bord permis : tu peux poser ici. | legal",
+  "expedition · row · legal · BARE_TUNING · settlement": " | Bord permis : tu peux poser ici. | legal",
+  "expedition · row · legal · TUNING · daylight": " | Bord permis : tu peux poser ici. | legal",
+  "expedition · row · legal · TUNING · settlement": " | Bord permis : tu peux poser ici. | legal",
+  "expedition · row · wall · BARE_TUNING · daylight": " | Mur : impossible d’y bâtir. Il entoure quand même. | wall",
+  "expedition · row · wall · BARE_TUNING · settlement": " | Mur : impossible d’y bâtir. Il entoure quand même. | wall",
+  "expedition · row · wall · TUNING · daylight": " | Mur : impossible d’y bâtir. Il entoure quand même. | wall",
+  "expedition · row · wall · TUNING · settlement": " | Mur : impossible d’y bâtir. Il entoure quand même. | wall",
+  "expedition · terms": [
+    "wall: MUR: ",
+    "legal: BORD PERMIS: ",
+  ],
+  "firstPop": "TA PREMIÈRE RÉCOLTE
+La poche est devenue de la PIERRE. Elle entoure encore, mais elle ne ressemble jamais. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.",
+  "pop · card · BARE_TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
+  "pop · card · BARE_TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
+  "pop · card · TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
+  "pop · card · TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
+  "pop · figures": [
+    "pop",
+    "ripen",
+  ],
+  "pop · lesson · BARE_TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.",
+  "pop · lesson · BARE_TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.",
+  "pop · lesson · TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
+  "pop · lesson · TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
+  "pop · name": "RÉCOLTER",
+  "pop · row · reach · BARE_TUNING · daylight": "PORTÉE | La PORTÉE, c’est jusqu’où tu as bâti depuis le départ. Chaque 4 hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée. | ",
+  "pop · row · reach · BARE_TUNING · settlement": "PORTÉE | La PORTÉE, c’est jusqu’où tu as bâti depuis le départ. Chaque 4 hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée. | ",
+  "pop · row · reach · TUNING · daylight": "PORTÉE | La PORTÉE, c’est jusqu’où tu as bâti depuis le départ. Chaque 3 hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée. | ",
+  "pop · row · reach · TUNING · settlement": "PORTÉE | La PORTÉE, c’est jusqu’où tu as bâti depuis le départ. Chaque 3 hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée. | ",
+  "pop · row · ripeEdge · BARE_TUNING · daylight": " | Bord MÛR : cette tuile est prête à récolter. | ripe",
+  "pop · row · ripeEdge · BARE_TUNING · settlement": " | Bord MÛR : cette tuile est prête à récolter. | ripe",
+  "pop · row · ripeEdge · TUNING · daylight": " | Bord MÛR : cette tuile est prête à récolter. | ripe",
+  "pop · row · ripeEdge · TUNING · settlement": " | Bord MÛR : cette tuile est prête à récolter. | ripe",
+  "pop · row · sizeBonus · BARE_TUNING · daylight": "BONUS DE TAILLE | Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée. | ",
+  "pop · row · sizeBonus · BARE_TUNING · settlement": "BONUS DE TAILLE | Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée. | ",
+  "pop · row · sizeBonus · TUNING · daylight": "BONUS DE TAILLE | Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à 20. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur. | ",
+  "pop · row · sizeBonus · TUNING · settlement": "BONUS DE TAILLE | Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à 20. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur. | ",
+  "pop · row · stone · BARE_TUNING · daylight": "PIERRE | La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais. | stone",
+  "pop · row · stone · BARE_TUNING · settlement": "PIERRE | La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais. | stone",
+  "pop · row · stone · TUNING · daylight": "PIERRE | La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules CARRIÈRE la comptent comme une ressemblance. | stone",
+  "pop · row · stone · TUNING · settlement": "PIERRE | La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules CARRIÈRE la comptent comme une ressemblance. | stone",
+  "pop · terms": [
+    "RÉCOLTER",
+    "RÉCOLTE",
+    "VALEUR",
+    "MÛRIT",
+    "POCHE",
+    "ripeEdge: BORD MÛR: ",
+    "stone: PIERRE: PIERRE",
+    "sizeBonus: BONUS DE TAILLE: BONUS DE TAILLE",
+    "reach: PORTÉE: ",
+  ],
+}
+`;
+
 exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins THE MAP: its core, its card, and each row with its words and lines 1`] = `
 {
   "card · BARE_TUNING · daylight": "Le monde se souvient. Le sol que tu as parcouru reste sur la carte entre les parties, tamisé sous le brouillard, et les destinations non réclamées luisent au travers. Touche le brouillard dont tu te souviens pour éclairer son sol. Chaque destination paie dès qu’une tuile posée la touche.",
@@ -529,6 +647,10 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
 
 exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins every glossary definition, over both tunings and both directions 1`] = `
 {
+  "caravan · BARE_TUNING · daylight": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · BARE_TUNING · settlement": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · TUNING · daylight": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
+  "caravan · TUNING · settlement": "De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle. Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.",
   "grounds · BARE_TUNING · daylight": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
   "grounds · BARE_TUNING · settlement": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
   "grounds · TUNING · daylight": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
@@ -537,67 +659,19 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "luck · BARE_TUNING · settlement": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
   "luck · TUNING · daylight": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
   "luck · TUNING · settlement": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
-  "pocket · BARE_TUNING · daylight": "Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
-  "pocket · BARE_TUNING · settlement": "Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
-  "pocket · TUNING · daylight": "Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
-  "pocket · TUNING · settlement": "Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.",
-  "pop · BARE_TUNING · daylight": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
-  "pop · BARE_TUNING · settlement": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
-  "pop · TUNING · daylight": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
-  "pop · TUNING · settlement": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
-  "ripe · BARE_TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.",
-  "ripe · BARE_TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.",
-  "ripe · TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
-  "ripe · TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
-  "sacrifice · BARE_TUNING · daylight": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
-  "sacrifice · BARE_TUNING · settlement": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
-  "sacrifice · TUNING · daylight": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
-  "sacrifice · TUNING · settlement": "SACRIFIER brûle une poche mûre au lieu de l’encaisser : pas de tuiles, pas de points, rien qui revienne dans cette partie.",
-  "sizeBonus · BARE_TUNING · daylight": "Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée.",
-  "sizeBonus · BARE_TUNING · settlement": "Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée.",
-  "sizeBonus · TUNING · daylight": "Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à 20. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur.",
-  "sizeBonus · TUNING · settlement": "Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à 20. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur.",
+  "pop · BARE_TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.",
+  "pop · BARE_TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.",
+  "pop · TUNING · daylight": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
+  "pop · TUNING · settlement": "Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR : le nombre de voisines qui lui ressemblent. Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte. La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie. RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score. La pierre, les murs et le bord de la carte entourent aussi. Seules CARRIÈRE comptent la pierre comme une ressemblance.",
   "stash · BARE_TUNING · daylight": "La case pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la tuile choisie; touche-la encore pour reprendre cette tuile. Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.",
   "stash · BARE_TUNING · settlement": "La case pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la tuile choisie; touche-la encore pour reprendre cette tuile. Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.",
   "stash · TUNING · daylight": "La case pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la tuile choisie; touche-la encore pour reprendre cette tuile. Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.",
   "stash · TUNING · settlement": "La case pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la tuile choisie; touche-la encore pour reprendre cette tuile. Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.",
-  "stone · BARE_TUNING · daylight": "La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais.",
-  "stone · BARE_TUNING · settlement": "La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais.",
-  "stone · TUNING · daylight": "La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules CARRIÈRE la comptent comme une ressemblance.",
-  "stone · TUNING · settlement": "La PIERRE, c’est du sol usé : ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules CARRIÈRE la comptent comme une ressemblance.",
-  "worth · BARE_TUNING · daylight": "La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.",
-  "worth · BARE_TUNING · settlement": "La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.",
-  "worth · TUNING · daylight": "La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.",
-  "worth · TUNING · settlement": "La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance : la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.",
 }
 `;
 
 exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins every glossary entry’s terms, mark and ink 1`] = `
 [
-  {
-    "icon": "tile",
-    "id": "ripe",
-    "ink": null,
-    "terms": [
-      "MÛRIT",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "worth",
-    "ink": null,
-    "terms": [
-      "VALEUR",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "pocket",
-    "ink": null,
-    "terms": [
-      "POCHE",
-    ],
-  },
   {
     "icon": "pop",
     "id": "pop",
@@ -605,30 +679,17 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     "terms": [
       "RÉCOLTER",
       "RÉCOLTE",
+      "VALEUR",
+      "MÛRIT",
+      "POCHE",
     ],
   },
   {
-    "icon": null,
-    "id": "sizeBonus",
+    "icon": "caravan",
+    "id": "caravan",
     "ink": null,
     "terms": [
-      "BONUS DE TAILLE",
-    ],
-  },
-  {
-    "icon": "sacrifice",
-    "id": "sacrifice",
-    "ink": null,
-    "terms": [
-      "SACRIFIER",
-    ],
-  },
-  {
-    "icon": "stone",
-    "id": "stone",
-    "ink": null,
-    "terms": [
-      "PIERRE",
+      "CARAVANE",
     ],
   },
   {

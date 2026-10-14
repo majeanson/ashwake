@@ -92,6 +92,17 @@ export function TipRows({
                 />
                 <Icon name={row.destination} />
               </span>
+            ) : row.ring === 'ripe' || row.ring === 'legal' ? (
+              // The bare ring the board draws round a hex that may be popped, or
+              // one that may be placed on (the Legend's two edge rows).
+              <span className="tip-lit">
+                <Hex
+                  id={`tip-edge-${row.ring}-${withLines === true ? 'manual' : 'card'}`}
+                  className="tip-lit-hex"
+                  theme={theme}
+                  ring={row.ring === 'ripe' ? theme.board.ripeEdge : theme.board.legalEdge}
+                />
+              </span>
             ) : row.ring !== undefined ? (
               // A rare tile, the way the board rings it: a blue ground in the
               // rarity's own colour (the `rare` figure's cell).
@@ -104,6 +115,19 @@ export function TipRows({
                   art={ground.blue}
                   ring={theme.ink[row.ring]}
                 />
+              </span>
+            ) : row.ground !== undefined ? (
+              // Stone or a wall: the board's baked hex with the row's own mark
+              // on it (the Legend's two terrain rows).
+              <span className="tip-lit">
+                <Hex
+                  id={`tip-ground-${row.ground}-${withLines === true ? 'manual' : 'card'}`}
+                  className="tip-lit-hex"
+                  theme={theme}
+                  ground={row.ground}
+                  art={ground[row.ground]}
+                />
+                {row.icon !== undefined && <Icon name={row.icon} />}
               </span>
             ) : row.icon !== undefined ? (
               <Icon name={row.icon} />

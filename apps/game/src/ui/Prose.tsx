@@ -19,15 +19,30 @@ const TERM_MARK: Partial<Record<LessonId, IconName>> = {
 };
 
 /**
+ * POP is also the lesson of POCKET, WORTH and RIPENS (2026-10-13), and only the
+ * verb is the button: those three open the same lesson and wear no mark.
+ */
+const wearsMark = (id: LessonId, term: string, s: Strings): boolean =>
+  id !== 'pop' || s.lesson.pop.verb.includes(term.toLocaleUpperCase(s.locale));
+
+/**
  * What a tapped term does: the lesson it opens, and the row of it to lead where
  * the word is a row's own (CACHE opens THE MAP at the cache row, 2026-10-13).
  */
 export type OnTerm = (id: LessonId, row?: RowKey) => void;
 
 /** The mark and the word, held together so a line never breaks between them. */
-function Marked({ id, children }: { readonly id: LessonId; readonly children: ReactNode }) {
+function Marked({
+  id,
+  worn,
+  children,
+}: {
+  readonly id: LessonId;
+  readonly worn: boolean;
+  readonly children: ReactNode;
+}) {
   const mark = TERM_MARK[id];
-  if (mark === undefined) return <>{children}</>;
+  if (mark === undefined || !worn) return <>{children}</>;
   return (
     <span className="term-marked">
       <span className="term-mark">
@@ -95,13 +110,13 @@ function inked(text: string, s: Strings, onTerm?: OnTerm): ReactNode {
     if (term === undefined) return <Fragment key={i}>{rarityInked(piece, s, i)}</Fragment>;
     if (onTerm === undefined) {
       return (
-        <Marked key={i} id={term.id}>
+        <Marked key={i} id={term.id} worn={wearsMark(term.id, piece, s)}>
           <span className={term.ink}>{piece}</span>
         </Marked>
       );
     }
     return (
-      <Marked key={i} id={term.id}>
+      <Marked key={i} id={term.id} worn={wearsMark(term.id, piece, s)}>
         <button
           key={i}
           type="button"

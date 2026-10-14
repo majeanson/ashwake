@@ -1,6 +1,7 @@
 import { TUNING } from '@content/tuning';
 import type { Theme } from '@theme/tokens';
 import {
+  cardDraws,
   lessonCardDefine,
   lessonDefine,
   lessonName,
@@ -60,6 +61,7 @@ export function LessonCard({
 }: LessonCardProps) {
   const lesson = lessonOf(id);
   if (lesson === undefined) return null;
+  const draws = cardDraws(lesson, row);
 
   return (
     <Card
@@ -78,8 +80,10 @@ export function LessonCard({
         }
         s={s}
       />
-      {lesson.figure !== undefined && <Figure id={lesson.figure} theme={theme} s={s} />}
-      {lesson.rows !== undefined && (
+      {draws === 'figure' && lesson.figure !== undefined && (
+        <Figure id={lesson.figure} theme={theme} s={s} />
+      )}
+      {draws === 'rows' && lesson.rows !== undefined && (
         <TipRows rows={lesson.rows(TUNING, theme, s)} theme={theme} s={s} lead={row} />
       )}
     </Card>

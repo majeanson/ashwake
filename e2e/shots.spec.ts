@@ -168,15 +168,16 @@ for (const [name, query] of ANGLES) {
  * the cascade's last tile has gone. It is the only way to see, in a still,
  * that the COLOUR is above the board while the grey is already under it.
  */
-test('shoots the manual’s legend', async ({ page }) => {
-  // Every mark the board can show, in one place — the answer to "adding
-  // visuals and assets and symbols in the how to play".
+test('shoots the manual’s marks', async ({ page }) => {
+  // The marks the board can show that are not places, beside the rules that use
+  // them (the Legend that listed them is gone, 2026-10-13): POP's and THE
+  // EXPEDITION's rows on the first tab.
   const errors = watchErrors(page);
   await page.goto('/?theme=settlement&taught=1');
   await page.locator('[data-door="menu"]').click();
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
-  await page.locator('[data-tab="world"]').click();
-  await page.locator('.legend').waitFor({ state: 'visible' });
+  await page.locator('[data-tab="start"]').click();
+  await page.locator('[data-row="wall"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(300);
   await mkdir(SHOTS, { recursive: true });
   await writeFile(join(SHOTS, 's5-legend.png'), await page.screenshot());

@@ -157,6 +157,7 @@ import {
   nextLesson,
   offerDots,
   opensAt,
+  purseOpened,
   sinceSpoke,
   toastLine,
   tourTarget,
@@ -3224,9 +3225,16 @@ function Game() {
      * and its dismissal tells `purse`. It used to build a card of its own
      * (`purseLesson`) and mark the moment told on the OPEN, which spent the
      * ledger entry whether or not the card was ever read.
+     *
+     * **And it is the same card as the tour's LUCK card** (2026-10-13), so a
+     * device that has already been told LUCK is not told it again: the open
+     * marks `purse` silently and raises nothing. Only a purse opened BEFORE
+     * the tour's LUCK moment raises the card.
      */
-    if (opening && !hasMet(progress, 'purse')) setDotOpen('purse');
-  }, [purseOpen, progress]);
+    const raised = opening ? purseOpened(progress) : null;
+    if (raised === 'silent') setProgress((p) => told(p, 'purse'));
+    else if (raised === 'card') setDotOpen('purse');
+  }, [purseOpen, progress, setProgress]);
 
   /*
    * And the asking is spent here — on the STARTING TILE, not on the frame.

@@ -107,11 +107,19 @@ type Slot = {
    * the tour forces — see `nextLesson`'s exception for the territory.
    */
   readonly after?: TeachId;
+  /**
+   * Other moments that dismissing this card tells with it (2026-10-13), for a
+   * card that delivers two. The walk's RIPE card is POP's whole first contact —
+   * ripening, the pocket, the pop — so it tells `pop` as well, and there is no
+   * second card moments later. `TEACH_IDS` keeps `pop` for the ledgers that
+   * hold it; `teaching.test.ts` lists the companions explicitly.
+   */
+  readonly tells?: readonly TeachId[];
   /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
   readonly phase?: 'walk' | 'tour';
   /**
    * Present (as `false`) when the pace never holds this back. The opening
-   * beats come before there is a pace to keep; RIPE and POP are the two ideas
+   * beats come before there is a pace to keep; RIPE (which is POP's card too) is the idea
    * the game cannot be played without, and waiting four placements to hear
    * what a ripe tile is would be the confusion the gate exists to cure; THE
    * FOUR GROUNDS is what the first placement is a choice between, so it is told
@@ -177,9 +185,9 @@ const KIND_MOMENT: Readonly<Partial<Record<string, TeachId>>> = {
  *
  * ## What `target` deliberately leaves out
  *
- * **POP**, though `hud.canHarvest` is as true of a place as RIPE is. Its card
- * explains a BUTTON, and the pocket it would fly to is the same pocket RIPE's
- * card just flew to a beat earlier — two trips to one hex, for one idea.
+ * **POP's second half**: the walk's one POP card is the RIPE moment, and it
+ * flies to the first ripe tile. The pop moment itself (`canHarvest`) has no
+ * card of its own any more, so there is no second trip to the same pocket.
  *
  * **RARE and UNIQUE**, which are in the hand; **LUCK, THE PURSE, RELICS, THE
  * COLOURS, the story** and the cost line, which are about the run rather than
@@ -215,6 +223,8 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'story',
     as: 'card',
+    // A SaidCard delivers it (`App`), but the manual's opening is its home.
+    opens: { lesson: 'expedition' },
     phase: 'walk',
     paced: false,
     // Ahead of PLACE by construction: true from the first frame of any run,
@@ -225,6 +235,7 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'goal',
     as: 'card',
+    opens: { lesson: 'expedition' },
     phase: 'walk',
     paced: false,
     // Right behind the story, on the same first frame: what this place is, then
@@ -234,15 +245,21 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'place',
     as: 'toast',
+    opens: { lesson: 'expedition' },
     phase: 'walk',
     paced: false,
     // The first thing anyone sees: there is somewhere to put a tile.
     when: ({ placed, board }) => !placed && board.cells.some((c) => c.legal),
     line: (_now, _t, _theme, s) => s.coach.place,
   },
+  // THE WALK'S ONE POP CARD (2026-10-13, Marc): MÛR and RÉCOLTER were two cards
+  // moments apart. The first ripe tile raises POP's card, which teaches ripening,
+  // the pocket and the pop together, and its dismissal tells `pop` too.
   {
     id: 'ripe',
     as: 'card',
+    opens: { lesson: 'pop' },
+    tells: ['pop'],
     phase: 'walk',
     paced: false,
     // `target` and `when` differ here on purpose: the moment is the HUD's count
@@ -251,23 +268,15 @@ export const SCHEDULE: readonly Slot[] = [
     when: ({ hud }) => hud.ripeCount > 0,
     target: (board) => board.cells.find((c) => c.ripe)?.key ?? null,
   },
-  {
-    id: 'pop',
-    as: 'card',
-    phase: 'walk',
-    paced: false,
-    when: ({ hud }) => hud.canHarvest,
-  },
   // The caravan's card, the first time it is IN TOWN with a pocket to try
-  // (2026-09-30). POP is true whenever it is, and comes first, so the card
-  // about a reason to pop never lands before the card about popping. It
-  // stands ten placements, so a card held back a beat is not missed.
+  // (2026-09-30). It is a free-phase card, so the walk's POP card has always
+  // been told by then: the card about a reason to pop never lands before the
+  // card about popping.
   {
     id: 'caravan',
     as: 'card',
     // In town AND something to pop: the card says "that is the moment to try a
-    // pop", so it fires when a pop can be tried — and never ahead of POP's own
-    // card, whose moment is exactly `canHarvest`.
+    // pop", so it fires when a pop can be tried.
     when: ({ hud }) => hud.caravan === 'town' && hud.canHarvest,
   },
   {
@@ -326,8 +335,10 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'wall',
     as: 'toast',
+    // The wall's own row in THE EXPEDITION: the toast and the row are one sentence.
+    opens: { lesson: 'expedition', row: 'wall' },
     ...onCell((c) => c.kind === 'wall'),
-    line: (_now, _t, _theme, s) => s.ui.legendWall,
+    line: (_now, _t, _theme, s) => s.lesson.expedition.row.wall.core,
   },
   {
     id: 'field',
@@ -457,12 +468,14 @@ export const momentsOf = (lesson: LessonId): readonly TeachId[] =>
  * (2026-10-13). Usually the one: but THE MAP's card tells the concept AND the
  * kind of destination it showed, so that kind does not come back as a chip;
  * and a kind's card forced on the tour (a territory) tells the concept it
- * belongs to, because the player has now seen the map. A toast tells only
- * itself.
+ * belongs to, because the player has now seen the map.  A card with `tells` (the walk's RIPE card, which is POP's too)
+ * tells its companions. A toast tells only itself.
  */
 export function toldBy(id: TeachId, board: BoardView): readonly TeachId[] {
   const slot = SCHEDULE.find((s) => s.id === id);
-  if (slot === undefined || slot.as === 'toast' || slot.opens?.lesson !== 'map') return [id];
+  if (slot === undefined || slot.as === 'toast') return [id];
+  if (slot.tells !== undefined) return [id, ...slot.tells];
+  if (slot.opens?.lesson !== 'map') return [id];
   if (id !== 'map') return [id, 'map'];
   const kind = KIND_MOMENT[board.cells.find(anyDestination)?.landmark ?? ''];
   return kind === undefined ? [id] : [id, kind];
@@ -679,6 +692,15 @@ export const toastLine = (
  */
 export const tourTarget = (id: TeachId, board: BoardView): HexKey | null =>
   SCHEDULE.find((slot) => slot.id === id)?.target?.(board) ?? null;
+
+/**
+ * What opening the purse does (2026-10-13). The purse's card IS the LUCK
+ * lesson's, so a device the tour has already told LUCK is not told it twice:
+ * the open marks `purse` silently and raises nothing. Opened before that, the
+ * purse raises the card (whose dismissal tells `purse`). Already told, nothing.
+ */
+export const purseOpened = (progress: Progress): 'card' | 'silent' | null =>
+  hasMet(progress, 'purse') ? null : hasMet(progress, 'luck') ? 'silent' : 'card';
 
 /** Mark one told. Idempotent, so a double-dismiss cannot double-write. */
 export const told = (progress: Progress, id: TeachId): Progress => meet(progress, id);

@@ -319,7 +319,7 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
    * legend whose alphabet is in a different hand from the board's is teaching a
    * second alphabet.
    *
-   * The pin is IDENTITY, not resemblance: the file a legend swatch points at
+   * The pin is IDENTITY, not resemblance: the file a row's swatch points at
    * must be the file the hand's own card points at. Anything weaker passes
    * while the two drift.
    */
@@ -337,16 +337,17 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
   await openMore(page);
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  await page.locator('[data-tab="world"]').click();
+  await page.locator('[data-tab="start"]').click();
   await page.waitForTimeout(800);
 
-  // What the LEGEND draws: the two grounds the hand never holds (a legend
-  // names STONE and WALL and the board draws both). The four the hand does
-  // hold live on the GROUNDS tab since 2026-10-13, as the rows' own marks.
+  // What the START tab's rows draw: the two grounds the hand never holds (STONE
+  // is a row of POP and a WALL a row of THE EXPEDITION, and the board draws
+  // both; the Legend that listed them is gone, 2026-10-13). The four the hand
+  // does hold live on the GROUNDS tab, as the rows' own marks.
   const inLegend = await page
-    .locator('.legend-swatch image')
+    .locator('[data-panel="manual"] .tip-lit image')
     .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-  expect(inLegend.length, 'the legend draws no baked ground').toBeGreaterThan(0);
+  expect(inLegend.length, 'the START rows draw no baked ground').toBeGreaterThan(0);
   await page.locator('[data-tab="grounds"]').click();
   await page.waitForTimeout(800);
   const inGrounds = await page
@@ -894,17 +895,18 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   await page.locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
 
+  // The marks that are not places — stone, a wall, the ripe and legal edges —
+  // are rows beside the rules that use them (2026-10-13; the Legend is gone):
+  // POP's and THE EXPEDITION's, on the first tab. The grounds are one tab over,
+  // the destinations are THE MAP's rows below, and the rare ring is MAGIC's.
+  await page.locator('[data-tab="start"]').click();
+  await expect(page.locator('.legend'), 'the Legend came back').toHaveCount(0);
+  for (const row of ['stone', 'ripeEdge', 'wall', 'legal'])
+    await expect(
+      panel(page, 'manual').locator(`[data-row="${row}"] .tip-lit .tip-lit-hex`),
+      row,
+    ).toHaveCount(1);
   await page.locator('[data-tab="world"]').click();
-  const legend = page.locator('.legend');
-  await legend.waitFor({ state: 'visible' });
-
-  // The marks that are not places: stone, a wall, the ripe and legal edges (the
-  // grounds moved one tab over on 2026-10-13, the destinations into THE MAP's
-  // rows below, and the rare ring into MAGIC).
-  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(2);
-  // The swatches are the DIRECTION's own fills, so the legend repaints with
-  // the board rather than being a second copy of the palette.
-  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(4);
 
   /*
    * And NOTHING in the manual is tappable (2026-08-29).
@@ -922,7 +924,7 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   await expect(shrine.locator('.tip-lit')).toHaveCount(1);
   expect(
     await shrine.evaluate((el) => el.tagName.toLowerCase()),
-    'a legend row is still a button',
+    'a destination row is still a button',
   ).not.toBe('button');
   expect(
     await panel(page, 'manual').locator('button.term').count(),
@@ -956,7 +958,6 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
     1,
   );
   await expect(panel(page, 'manual').locator('[data-row="lens"] .ground-advice')).toHaveCount(2);
-  expect(await legend.locator('.legend-note').count()).toBeGreaterThan(0);
 
   expect(errors).toEqual([]);
 });

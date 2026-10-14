@@ -72,7 +72,7 @@ import { colourLesson, type TipRow } from './view';
  *
  * The CONDITIONS live here — which sentence a dial selects, whether a beat is
  * spoken at all — and the SENTENCES live in `text/` (`en.ts`, `fr-CA.ts`). A
- * beat reads `s.lesson.ripe.stoneAsh(name)` rather than carrying the words,
+ * beat reads `s.lesson.pop.surroundsAsh(name)` rather than carrying the words,
  * so French and English can never disagree about when a rule applies, only
  * about how it is put. `name` and `terms` come from the same place, because
  * the tappable spelling of a concept is a fact of the language.
@@ -84,21 +84,9 @@ import { colourLesson, type TipRow } from './view';
  * A superset of `TeachId` — the drip's ledger — because some concepts are
  * words the manual prints without ever firing a card for them. Most of the
  * extras are the ones `glossary.ts` added on 2026-08-27 for exactly that
- * reason; `reach` joined 2026-09-03, when the manual's audit found the
- * distance multiplier stated only behind the HUD's stat tap.
+ * reason.
  */
-export type LessonId =
-  | TeachId
-  | 'pocket'
-  | 'worth'
-  | 'stash'
-  | 'sizeBonus'
-  | 'stone'
-  | 'sacrifice'
-  | 'reach'
-  | 'grounds'
-  | 'magic'
-  | 'end';
+export type LessonId = TeachId | 'expedition' | 'stash' | 'grounds' | 'magic' | 'end';
 
 /** A hex has six sides, and the ground advice's figures are "all six paying". */
 const SIDES = 6;
@@ -144,10 +132,18 @@ export type Lesson = {
   readonly beats: readonly Beat[];
   /**
    * Where the manual prints this lesson as a section. Absent means the lesson
-   * is reachable only through its term card and the Legend (sacrifice, stone). A tab's sections print in
-   * the order they stand in .
+   * is reachable only through its term card. A tab's sections print in the
+   * order they stand in `LESSONS`.
    */
   readonly tab?: ManualTab;
+  /**
+   * Printed for everyone, whatever this device has been told (2026-10-13).
+   * Every other section with a moment grows in when it is met (the manual
+   * `metHere`); THE EXPEDITION is what the manual has always opened on, and the
+   * moments that tell it (the story, the goal, the first placement, a wall) are
+   * not a reason to hide it from a reader who has met none yet.
+   */
+  readonly ungated?: true;
   /**
    * A set this lesson lists, one row each: THE FOUR GROUNDS (2026-09-30).
    *
@@ -169,10 +165,11 @@ export type Lesson = {
    * The picture of this rule. Travels WITH the lesson, so every door that
    * teaches it draws the same one — which is the whole of Marc's ask.
    *
-   * A lesson has a figure or rows, never both: a portrait teaching card
+   * A CARD draws a figure or rows, never both: a portrait teaching card
    * already runs icon, lead, body and button, and both together overflow it.
-   * `lessons.test.ts` asserts it.
-   *
+   * A lesson that has both (POP) draws the figure on the card the game fires
+   * and its rows in the manual, and leads a row when a card is opened at one
+   * (`cardDraws`). `lessons.test.ts` asserts it.
    */
   readonly figure?: FigureId;
   /**
@@ -192,6 +189,14 @@ export type RowKey =
   | 'territory'
   | 'find'
   | 'lens'
+  // POP's rows that are named words (the stone a pop leaves, the size bonus,
+  // reach) and the ring marks, and THE EXPEDITION's two marks (2026-10-13).
+  | 'ripeEdge'
+  | 'stone'
+  | 'sizeBonus'
+  | 'reach'
+  | 'wall'
+  | 'legal'
   // MAGIC's two rarities (2026-10-13).
   | 'magic'
   | 'unique'
@@ -213,6 +218,20 @@ type RowHead = {
    *  and UNIQUE's, which `rarityInked` always gave them). */
   readonly ink?: 'ink-magic' | 'ink-unique';
 };
+
+/**
+ * What a CARD draws under a lesson's words (2026-10-13): its figure, or its
+ * rows, never both. A lesson with only one draws that one. POP has both: the
+ * fired card draws the `pop` figure and the manual draws the rows, but a card
+ * opened AT a row (a tap on PIERRE) draws the rows, led by the one asked about,
+ * because the figure cannot answer it.
+ */
+export const cardDraws = (lesson: Lesson, row: RowKey | undefined): 'figure' | 'rows' | null =>
+  lesson.rows !== undefined && (row !== undefined || lesson.figure === undefined)
+    ? 'rows'
+    : lesson.figure !== undefined
+      ? 'figure'
+      : null;
 
 /**
  * What this lesson is CALLED — the manual's heading, the teach card's lead,
@@ -315,69 +334,98 @@ export function lessonCardDefine(lesson: Lesson, t: Tuning, theme: Theme, s: Str
  * `text/`, one file per language, under the same keys.
  *
  * Figures are attached here because they are already keyed by the same
- * concepts: `ripen` is the `ripe` lesson's picture, `pop` is `pop`'s, `rare` is
+ * concepts: `ripen` and `pop` are POP's pictures, `place` is THE EXPEDITION's, `rare` is
  * MAGIC's, `stash` is THE STASH's.
  */
 export const LESSONS: readonly Lesson[] = [
   // ORDER IS THE MANUAL'S READING ORDER (moved from Manual.tsx's SECTIONS).
-  // Filter by `tab` and the sequence is the section order. WORTH and POCKET
-  // come before the lessons that use them (2026-10-11): RIPE says "shows its
-  // WORTH", POP cashes a POCKET, SIZE BONUS multiplies a pocket's worth.
-  // THE CARAVAN sits beside BOUNTY (2026-09-30): the other reason a pop pays
-  // more. Lessons without a tab sit beside their kin.
+  // Filter by `tab` and the sequence is the section order: START reads
+  // EXPEDITION (what you are doing), POP (the verb and everything it leaves),
+  // THE RUN'S END. THE CARAVAN sits beside THE MAP's bounty (2026-09-30): the
+  // other reason a pop pays more. Lessons without a tab sit beside their kin.
   /**
-   * The worked example of the rule the registry runs on: **where a card and
-   * the manual say one rule differently, the manual's sentence wins.** Its
-   * prose is Marc's own 2026-08-27 concision pass ("be more concise and
-   * simple, straight to the point, less words"); the cards were written
-   * 2026-08-19/20 and revised piecemeal, and the newer human-reviewed wording
-   * is the one to keep.
+   * THE EXPEDITION (2026-10-13): what you are doing here, before any rule. Its
+   * `core` is the shared `howItWorks`, so the goal card (a `SaidCard`, which
+   * quotes that clause and is this lesson's delivery with the story) and the
+   * manual's opening are one wording; its `more` is the three lines that say
+   * what a run costs and what comes home (`ui.expedition`, which moved here
+   * word for word). The second line composes with the shape-of-the-game clause
+   * the coach's last step also reads.
+   *
+   * It never fires as a card of its own, so it has no icon and no figure of
+   * its own on a card: the manual draws the `place` figure under its rows, which
+   * are the marks of the board that are not rules — a wall (the wall toast's
+   * own sentence) and the glowing edge of a hex you may place on. The `place`
+   * and `wall` moments, and the story and goal cards, `open` this lesson
+   * (`shell/teaching.ts`); it is printed for everyone, as the expedition block
+   * always was (`ungated`).
    */
   {
-    id: 'ripe',
+    id: 'expedition',
     tab: 'start',
-    icon: TILE_ICON,
-    figure: 'ripen',
+    ungated: true,
+    manualFigure: 'place',
     beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.ripe.core },
+      { at: 'core', say: (_t, _theme, s) => s.howItWorks },
+      ...[0, 1, 2].map((n): Beat => ({
+        say: (_t, _theme, s) => s.lesson.expedition.lines[n] ?? null,
+      })),
+    ],
+    rows: (_t, _theme, s) => [
+      // Neither prints its name: the sentence leads with it ("Mur : ...").
       {
-        say: (t, theme, s) =>
-          t.redAshMatches
-            ? s.lesson.ripe.stoneAsh(namesOf(theme, s.locale).red)
-            : s.lesson.ripe.stone,
+        key: 'wall',
+        ground: 'wall',
+        icon: CONCEPT_ICON.wall,
+        text: s.lesson.expedition.row.wall.core,
+      },
+      { key: 'legal', ring: 'legal', text: s.lesson.expedition.row.legal.core },
+    ],
+    rowHeads: (s) => [
+      {
+        key: 'wall',
+        name: s.lesson.expedition.row.wall.name,
+        terms: s.lesson.expedition.row.wall.terms,
       },
       {
-        // Card only. The timing fork belongs at DISCOVERY (Marc, Day 2: "the
-        // early vs pop explanation should come before our first pop success")
-        // — the manual states it under POP, which a player meeting their first
-        // ripe tile has not read.
-        at: 'card',
-        say: (t, _theme, s) =>
-          t.luckPerPop > 0 && t.colourBiasDraws > 0
-            ? s.lesson.ripe.cardLean
-            : s.lesson.ripe.cardPlain,
+        key: 'legal',
+        name: s.lesson.expedition.row.legal.name,
+        terms: s.lesson.expedition.row.legal.terms,
       },
     ],
   },
-  {
-    id: 'worth',
-    tab: 'start',
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.worth.core }],
-  },
-  {
-    id: 'pocket',
-    tab: 'start',
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pocket.core }],
-  },
+  /**
+   * POP (2026-10-13): a tile ripens, a pocket is a ripe tile and its ripe
+   * neighbours, a tile's worth is what ripening shows, and a pop cashes the
+   * pocket and leaves stone. RIPE, POCKET, WORTH, POP, SIZE BONUS, STONE and
+   * REACH were seven lessons that each explained one clause of the other six;
+   * the first three sentences are its `core` in the order a player meets them.
+   *
+   * Its rows are the manual's depth — the ripe edge, stone, the size bonus and
+   * reach, each the sentence it was — and the FIRED card draws the `pop` figure
+   * instead (`cardDraws`): a portrait card cannot carry both. A card opened at
+   * a row (PIERRE, BONUS DE TAILLE) leads that row instead. The `ripen` figure
+   * is the manual's, under the rows.
+   *
+   * RIPE's two first-contact sentences (`cardLean`, `cardPlain`) are gone: what
+   * they told the player is `pop.core` (cash it now or let it grow), `lean`
+   * (the draw lean, under the same dials) and the card beat below (tap a ripe
+   * tile to price its pocket). One card is the walk's now — the `ripe` moment's
+   * dismissal tells both `ripe` and `pop` (`toldBy`).
+   */
   {
     id: 'pop',
     tab: 'start',
     icon: CONCEPT_ICON.pop,
     figure: 'pop',
+    manualFigure: 'ripen',
     beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.pop.ripens },
+      { at: 'core', say: (_t, _theme, s) => s.lesson.pop.pocket },
       { at: 'core', say: (_t, _theme, s) => s.lesson.pop.core },
+      { say: (_t, _theme, s) => s.lesson.pop.worth },
       // The draw lean, findable by a manual reader (2026-09-03). It was said
-      // only in `ripe.cardLean` — a first-contact sentence the manual never
+      // only in the old `ripe.cardLean` — a first-contact sentence the manual never
       // prints — under the same condition this beat keeps.
       {
         say: (t, _theme, s) =>
@@ -389,20 +437,52 @@ export const LESSONS: readonly Lesson[] = [
       // once could never see again, on the one door that exists to explain
       // POP.
       { say: (_t, _theme, s) => s.lesson.pop.when },
-    ],
-  },
-  {
-    id: 'sizeBonus',
-    tab: 'start',
-    beats: [
       {
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.harvestSizeCap > 0
-            ? s.lesson.sizeBonus.coreCapped(t.harvestSizeCap)
-            : s.lesson.sizeBonus.core,
+        say: (t, theme, s) =>
+          t.redAshMatches
+            ? s.lesson.pop.surroundsAsh(namesOf(theme, s.locale).red)
+            : s.lesson.pop.surrounds,
       },
+      // First contact only: the card fires at the first ripe tile, where the
+      // player has not read the pocket's price yet.
+      { at: 'card', say: (_t, _theme, s) => s.lesson.pop.pocketCard },
     ],
+    rowHeads: (s) => {
+      const r = s.lesson.pop.row;
+      return [
+        { key: 'ripeEdge', name: r.ripeEdge.name, terms: r.ripeEdge.terms },
+        { key: 'stone', name: r.stone.name, terms: r.stone.terms },
+        { key: 'sizeBonus', name: r.sizeBonus.name, terms: r.sizeBonus.terms },
+        { key: 'reach', name: r.reach.name, terms: r.reach.terms },
+      ];
+    },
+    rows: (t, theme, s) => {
+      const r = s.lesson.pop.row;
+      return [
+        // The ripe tile's ring; the sentence leads with its own name.
+        { key: 'ripeEdge', ring: 'ripe', text: r.ripeEdge.core },
+        {
+          key: 'stone',
+          ground: 'stone',
+          icon: CONCEPT_ICON.stone,
+          name: r.stone.name,
+          text: t.redAshMatches ? r.stone.coreAsh(namesOf(theme, s.locale).red) : r.stone.core,
+        },
+        {
+          key: 'sizeBonus',
+          name: r.sizeBonus.name,
+          text: t.harvestSizeCap > 0 ? r.sizeBonus.coreCapped(t.harvestSizeCap) : r.sizeBonus.core,
+        },
+        {
+          key: 'reach',
+          name: r.reach.name,
+          text:
+            t.distanceStep > 0
+              ? `${r.reach.core} ${r.reach.multiplier(t.distanceStep)}`
+              : r.reach.core,
+        },
+      ];
+    },
   },
   /**
    * THE RUN'S END (2026-10-13): the cost's clock, the last placement and the
@@ -455,49 +535,9 @@ export const LESSONS: readonly Lesson[] = [
       },
     ],
   },
-  /*
-   * The two ways to spend a pocket, side by side (2026-08-30).
-   *
-   * Both wear the mark their BUTTON wears — Marc: *"make em icons, associate in
-   * how to play and cards too"* — so a flame on the action bar and the flame at
-   * the head of this section are the same shape saying the same thing, and the
-   * receipt a burn leaves wears it a third time.
-   *
-   * SACRIFICE had no lesson at all until this: the button has been on the board
-   * since Stage 3 and nothing in either language said what pressing it does.
-   * Its sentences are written from the DIALS, so a world where burning pays
-   * nothing says nothing.
-   */
-  {
-    id: 'sacrifice',
-    icon: CONCEPT_ICON.sacrifice,
-    beats: [
-      // What the action IS holds under every dial. A lesson may never go
-      // silent — `lessons.test.ts` runs every one of them against BARE_TUNING
-      // and this one said nothing at all for one build.
-      { at: 'core', say: (_t, _theme, s) => s.lesson.sacrifice.core },
-      // What it PAYS can be turned off, and then the sentence is not spoken:
-      // the same rule `redAshMatches` and `holdSlots` follow. A world where
-      // burning pays nothing is not told that it pays relics.
-      {
-        at: 'core',
-        say: (t, _theme, s) => (t.burnRelics > 0 ? s.lesson.sacrifice.pays : null),
-      },
-    ],
-  },
-  {
-    id: 'stone',
-    icon: CONCEPT_ICON.stone,
-    beats: [
-      {
-        at: 'core',
-        say: (t, theme, s) =>
-          t.redAshMatches
-            ? s.lesson.stone.coreAsh(namesOf(theme, s.locale).red)
-            : s.lesson.stone.core,
-      },
-    ],
-  },
+  // SACRIFICE was deleted here on 2026-10-13 (Marc's merge ruling): `burnRelics` and
+  // `burnLuck` are 0 for good, so its lesson was unreachable. Resurrectable from git
+  // (the commit before this one still has it, with the strings under lesson.sacrifice).
   /**
    * THE MAP (2026-10-13): the fog, its destinations and the lens are ONE
    * concept. Eight lessons (cache, site, shrine, territory, find, bounty,
@@ -610,19 +650,6 @@ export const LESSONS: readonly Lesson[] = [
     // FAINT MEANS SPENT. It sits under the rows in the manual; a card (which
     // has the rows) does not draw it.
     manualFigure: 'destinations',
-  },
-  {
-    id: 'reach',
-    // Moves to POP when the pop family folds (phase 6 of the one-teaching-system plan).
-    tab: 'world',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.reach.core },
-      {
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.distanceStep > 0 ? s.lesson.reach.multiplier(t.distanceStep) : null,
-      },
-    ],
   },
   /**
    * THE CARAVAN (2026-09-30, Marc: _"add respective how to play, guide,

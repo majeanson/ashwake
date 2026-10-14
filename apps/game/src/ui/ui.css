@@ -3448,100 +3448,6 @@ a:visited {
 }
 
 /*
- * The legend: every mark the board can show, and what it means.
- *
- * A grid rather than prose, because a legend is a LIST and reading one is
- * scanning rather than reading. The mark column is fixed so the names line up
- * down the panel whatever alphabet they are in.
- */
-.legend ul {
-  list-style: none;
-  margin: 0 0 var(--gap);
-  padding: 0;
-  display: grid;
-  gap: 0.3rem;
-}
-
-.legend li {
-  display: grid;
-  grid-template-columns: var(--mark-col) var(--mark-col) minmax(0, 1fr);
-  align-items: center;
-  gap: 0.4rem;
-}
-
-/*
- * A row that carries a whole rule (2026-08-30).
- *
- * The destinations and STONE print their lesson beside their mark now, so
- * those rows are paragraphs rather than labels. Centring a 1.4rem swatch
- * against three lines of prose floats it in the middle of the sentence; the
- * mark belongs at the top, beside the name it marks.
- */
-.legend li.tall {
-  align-items: start;
-}
-
-.legend li.tall > .legend-mark,
-.legend li.tall > .legend-swatch {
-  margin-top: 0.1rem;
-}
-
-/* The NAME stays the board's own vocabulary and the sentence steps back, so a
-   row can be scanned for its term without reading every rule under it. */
-.legend-term {
-  color: var(--ink);
-  font-family: var(--font-label);
-  letter-spacing: var(--label-tracking);
-}
-
-/* `.legend li > .legend-mark:first-child { grid-column: 2 }` stood here to
-   hold the column for a row with no swatch. Every row leads with a swatch
-   since 2026-09-03 (Marc: "if we have the indent, we have a standard on all
-   line"), so the rule had nothing left to catch — and a future swatchless row
-   should get a swatch, not the escape hatch back. */
-
-.legend-mark {
-  font-size: 1.05rem;
-  text-align: center;
-}
-
-/*
- * A swatch is a HEX, drawn (2026-08-30).
- *
- * It was a 1.4rem rounded square of the terrain's flat fill, and an edge was
- * the same square with a border. The board draws neither: a ground is a baked,
- * textured hex and an edge is a ring around one. `GroundSwatch` draws both
- * from `corners()`, so the shape here follows the direction's facing and the
- * texture is the very PNG the board composites — Marc: "in how to play we
- * reuse the same visuals as in game for all."
- *
- * `.legend-edge` went with the square: a ring is a property of the drawing
- * now, not a border on a box.
- */
-.legend-swatch {
-  display: block;
-  width: 1.4rem;
-  height: 1.4rem;
-}
-
-/*
- * The name always takes the LAST column, whatever came before it.
- *
- * Without this a row with a swatch and no mark put its name in the mark's
- * 1.6rem column, and a sentence set four characters wide is not a legend, it
- * is a stack. The grid is what keeps the names in line down the panel; the
- * placement has to be explicit because the rows genuinely differ — a ground
- * has both a swatch and a mark, a destination has only a mark, spent ground
- * has only a swatch.
- */
-.legend-name {
-  grid-column: 3;
-  font-size: 0.85rem;
-  color: var(--ink-dim);
-  overflow-wrap: anywhere;
-}
-
-/*
  * The end screen's hero: the direction's own board scene, baked.
  *
  * Full-bleed across the panel and cropped from the bottom, because the scene
@@ -3601,14 +3507,6 @@ a:visited {
    pixel of it back in the row. */
 .tile > .tile-mark {
   position: relative;
-}
-
-/* A ground's power, said beside its name in the legend — the one row there
-   with no section under it to explain it. Wrapped rather than truncated: it
-   is a sentence, and a sentence cut off mid-word teaches nothing. */
-.legend-note {
-  display: block;
-  font-size: 0.8rem;
 }
 
 /*

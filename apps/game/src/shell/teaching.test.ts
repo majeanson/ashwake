@@ -20,6 +20,7 @@ import {
   coachStep,
   offerDots,
   opensAt,
+  purseOpened,
   toldBy,
   guided,
   mustPop,
@@ -123,10 +124,10 @@ describe('the teaching drip', () => {
     expect(next?.as).toBe('card');
   });
 
-  it('tells the CARAVAN when it is in town with a pop to try, and never before POP', () => {
+  it('tells the CARAVAN when it is in town with a pop to try, and never before the POP card', () => {
     // 2026-09-30. Its own card says "that is the moment to try a pop", so it
-    // fires only while one can be tried; and POP's moment is exactly that, so
-    // the card about popping always lands first.
+    // fires only while one can be tried; and the walk's POP card (the RIPE
+    // moment, which tells `pop` too) stands ahead of it in the schedule.
     const walked = momentAt(8);
     const at = (caravan: Moment['hud']['caravan'], canHarvest: boolean): Moment => ({
       ...walked,
@@ -138,7 +139,8 @@ describe('the teaching drip', () => {
     });
     for (const quiet of [at('town', false), at('coming', true), at('left', true), at(null, true)])
       expect(nextLesson(quiet, taughtExcept('caravan'))).toBeNull();
-    expect(nextLesson(at('town', true), taughtExcept('pop', 'caravan'))?.id).toBe('pop');
+    const ahead = SCHEDULE.map((s) => s.id);
+    expect(ahead.indexOf('ripe')).toBeLessThan(ahead.indexOf('caravan'));
   });
 
   it('says ONE thing, however many moments are true at once', () => {
@@ -239,10 +241,43 @@ describe('every card the drip can fire', () => {
 });
 
 describe('the schedule covers every moment (2026-10-13)', () => {
-  it('has one slot per teachable id, apart from the two written by the first pop and run', () => {
+  it('has one slot per teachable id, apart from the two written by the first pop and run and the companions a card tells', () => {
     const ids = SCHEDULE.map((s) => s.id);
     expect(new Set(ids).size, 'a duplicate slot').toBe(ids.length);
-    expect(new Set<string>([...ids, 'walked', 'toured'])).toEqual(new Set<string>(TEACH_IDS));
+    // The ledger keeps `pop` (a device that holds it must still decode), but the
+    // walk has ONE card for ripening and popping now: RIPE's, which tells `pop`.
+    // This list is the whole of the exception, so a moment dropped from the
+    // schedule by accident is not mistaken for one dropped on purpose.
+    const companions = SCHEDULE.flatMap((s) => s.tells ?? []);
+    expect(companions).toEqual(['pop']);
+    expect(new Set<string>([...ids, 'walked', 'toured', ...companions])).toEqual(
+      new Set<string>(TEACH_IDS),
+    );
+    expect(ids).not.toContain('pop');
+  });
+
+  it('puts the pop family under POP and the expedition’s moments under THE EXPEDITION', () => {
+    expect([...momentsOf('pop')].sort()).toEqual(['ripe']);
+    expect([...momentsOf('expedition')].sort()).toEqual(['goal', 'place', 'story', 'wall']);
+    expect(opensAt('ripe')).toEqual({ lesson: 'pop' });
+    expect(opensAt('wall')).toEqual({ lesson: 'expedition', row: 'wall' });
+  });
+
+  it('tells POP with the one walk card: ripe tells pop, and nothing else does', () => {
+    const { board } = destinations();
+    expect(toldBy('ripe', board)).toEqual(['ripe', 'pop']);
+    const device = toldBy('ripe', board).reduce(told, EMPTY_PROGRESS);
+    expect(device.met).toEqual(['ripe', 'pop']);
+    // No second card for the pop: with RIPE told the walk goes on to the pop.
+    const now = { ...momentAt(3), hud: { ...momentAt(3).hud, canHarvest: true } };
+    expect(nextLesson(now, taughtExcept('pop'))).toBeNull();
+  });
+
+  it('opens the purse silently when LUCK is already told, and with the card when not', () => {
+    expect(purseOpened(EMPTY_PROGRESS)).toBe('card');
+    expect(purseOpened(told(EMPTY_PROGRESS, 'luck'))).toBe('silent');
+    expect(purseOpened(told(EMPTY_PROGRESS, 'purse'))).toBeNull();
+    expect(purseOpened(told(told(EMPTY_PROGRESS, 'luck'), 'purse'))).toBeNull();
   });
 
   // 2026-10-13. The ledger names a moment and the registry a concept: the
@@ -657,7 +692,6 @@ describe('THE MAP is one card, then chips (2026-10-13)', () => {
     const { board } = destinations();
     expect(toldBy('lens', board)).toEqual(['lens']);
     expect(toldBy('field', board)).toEqual(['field']);
-    expect(toldBy('ripe', board)).toEqual(['ripe']);
     expect(toldBy('cache', board)).toEqual(['cache', 'map']);
   });
 });

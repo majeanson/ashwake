@@ -232,6 +232,103 @@ test('HOW TO PLAY opens on the game in two sentences, and its tabs run most impo
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('the START tab is THE EXPEDITION, POP and THE RUN’S END, with the marks beside the rules that use them', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-13. The hand-written expedition block, the seven pop-family
+   * sections and the Legend's last four rows became three lessons. The Legend
+   * is gone: a wall and the legal edge are rows of THE EXPEDITION, stone and
+   * the ripe edge are rows of POP, and each mark is drawn the board's way.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?taught=1');
+  await begin(page);
+  await openMore(page);
+  await page.locator('[data-panel="more"] [data-go="manual"]').click();
+
+  const manual = page.locator('[data-panel="manual"]');
+  await expect(page.locator('.legend'), 'the Legend came back').toHaveCount(0);
+  const heads = await manual
+    .locator('section.lesson > h2')
+    .evaluateAll((els) => els.map((el) => (el.textContent ?? '').trim()));
+  expect(heads.slice(0, 3)).toEqual([
+    expect.stringMatching(/^THE EXPEDITION$|^L’EXPÉDITION$/),
+    expect.stringMatching(/^POP$|^RÉCOLTER$/),
+    expect.stringMatching(/^THE RUN’S END$|^LA FIN DE LA PARTIE$/),
+  ]);
+
+  const expedition = manual.locator('section.lesson').first();
+  // Its rows: a wall on the board's own wall hex, and a bare legal ring.
+  await expect(expedition.locator('[data-row="wall"] .tip-lit .tip-lit-hex')).toHaveCount(1);
+  await expect(expedition.locator('[data-row="legal"] .tip-lit .tip-lit-hex')).toHaveCount(1);
+  await expect(expedition).toContainText(/Wall|Mur/);
+  // The `place` figure under the rows.
+  await expect(expedition.locator('figure')).toHaveCount(1);
+
+  const pop = manual.locator('section.lesson').nth(1);
+  for (const row of ['ripeEdge', 'stone', 'sizeBonus', 'reach'])
+    await expect(pop.locator(`[data-row="${row}"]`), row).toHaveCount(1);
+  // Both of POP's pictures: the ripening one and the pocket.
+  await expect(pop.locator('figure')).toHaveCount(2);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('the walked first run raises ONE card for ripening and popping, and none after the pop', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-13, Marc: MÛR and RÉCOLTER were two cards moments apart. The first
+   * ripe tile raises POP's card (ripening, the pocket, the pop) and its
+   * dismissal tells both moments, so the pop that follows is a receipt and not
+   * a second lesson.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7');
+  await begin(page);
+
+  const seen: string[] = [];
+  const note = async (): Promise<void> => {
+    await page.waitForTimeout(150);
+    const ids = await page
+      .locator('[data-card]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute('data-card') ?? '?'));
+    for (const id of ids) if (seen.at(-1) !== id) seen.push(id);
+  };
+  let refused = false;
+  for (let i = 0; i < 40 && !refused; i++) {
+    try {
+      await placeOneTile(page, { keepCards: true });
+    } catch {
+      refused = true;
+    }
+    await note();
+    await clearCards(page);
+  }
+  expect(refused, 'a ripe pocket never stopped the placing').toBe(true);
+  expect(
+    seen.filter((id) => id === 'lesson-pop'),
+    seen.join(' → '),
+  ).toHaveLength(1);
+  expect(seen, 'the old RIPE card came back').not.toContain('lesson-ripe');
+
+  await page
+    .getByRole('button', { name: /POP|RÉCOLT/ })
+    .first()
+    .click();
+  for (let i = 0; i < 24; i++) {
+    await note();
+    await clearCards(page);
+  }
+  await placeOneTile(page, { keepCards: true });
+  await note();
+  expect(
+    seen.filter((id) => id === 'lesson-pop'),
+    `POP's card came back after the pop: ${seen.join(' → ')}`,
+  ).toHaveLength(1);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('the first pop is forced: a waiting pocket refuses placement until it is popped', async ({
   page,
 }) => {

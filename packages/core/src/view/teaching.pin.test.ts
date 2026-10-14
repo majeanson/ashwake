@@ -250,6 +250,45 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     });
 
     /**
+     * POP, THE EXPEDITION and CARAVAN (2026-10-13): seven lessons became POP
+     * (RIPE, POCKET, WORTH, POP, SIZE BONUS, STONE, REACH), the manual's
+     * hand-written opening and the Legend's last four rows became THE
+     * EXPEDITION, and CARAVAN gained its tappable word. Each is pinned as its
+     * words, its first-contact card, its figure and every row with the marks it
+     * draws and the words that open it. The first-pop receipt's one reworded
+     * French sentence is here too.
+     */
+    it('pins POP, THE EXPEDITION and CARAVAN: names, terms, lessons, cards, figures and rows', () => {
+      const out: Record<string, string | readonly string[]> = {};
+      for (const id of ['expedition', 'pop', 'caravan'] as const) {
+        const lesson = LESSONS.find((l) => l.id === id);
+        if (lesson === undefined) throw new Error(`${id} is gone`);
+        out[`${id} · name`] = s.lesson[id].name;
+        out[`${id} · terms`] = [
+          ...lessonTerms(lesson, s),
+          ...(lesson.rowHeads?.(s).map((h) => `${h.key}: ${h.name}: ${h.terms.join(', ')}`) ?? []),
+        ];
+        out[`${id} · figures`] = [lesson.figure ?? '-', lesson.manualFigure ?? '-'];
+        for (const [tName, t] of TUNINGS) {
+          for (const [themeName, theme] of THEMES) {
+            const at = `${tName} · ${themeName}`;
+            out[`${id} · lesson · ${at}`] = lessonDefine(lesson, t, theme, s);
+            out[`${id} · card · ${at}`] = lessonCardDefine(lesson, t, theme, s);
+            for (const row of lesson.rows?.(t, theme, s) ?? []) {
+              out[`${id} · row · ${row.key} · ${at}`] = [
+                row.name ?? '',
+                row.text,
+                row.ring ?? row.ground ?? row.icon ?? '',
+              ].join(' | ');
+            }
+          }
+        }
+      }
+      out['firstPop'] = s.view.harvest.firstPop;
+      expect(out).toMatchSnapshot();
+    });
+
+    /**
      * The stat notes — the tap-a-number lesson — read off a real opening board
      * so the live clauses (the cost curve's current price, the luck conversion
      * rate) are in the pinned string rather than a placeholder.

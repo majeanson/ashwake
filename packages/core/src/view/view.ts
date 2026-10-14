@@ -1745,11 +1745,18 @@ export type TipRow = {
    */
   readonly destination?: IconName;
   /**
-   * A rare tile's own swatch (2026-10-13): a blue ground ringed in this
-   * rarity's colour, the `rare` figure's cell, for a row that is about what
-   * the ring means.
+   * A ring's own swatch (2026-10-13), for a row that is about what a ring
+   * means. A rare tile's is a blue ground ringed in the rarity's colour (the
+   * `rare` figure's cell); the ripe and legal edges are the bare ring the
+   * board draws around a hex, with nothing under it.
    */
-  readonly ring?: 'magic' | 'unique';
+  readonly ring?: 'magic' | 'unique' | 'ripe' | 'legal';
+  /**
+   * A terrain that is not a ground (2026-10-13): the stone a pop leaves and the
+   * wall, drawn as the board's own baked hex with this row's `icon` over it —
+   * the marks the Legend used to list.
+   */
+  readonly ground?: 'stone' | 'wall';
   // `art`, the baked tile as a data URL, went on 2026-09-30: no caller ever
   // supplied one, and `TipRows` now draws the bake for any `colour` row.
 };

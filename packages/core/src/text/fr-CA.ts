@@ -69,49 +69,82 @@ export const STRINGS_FR: Strings = {
   typography: { sentenceEnd: /[.!?…»]$/ },
 
   lesson: {
-    ripe: {
-      name: 'MÛR',
-      terms: ['MÛRIT'],
-      core: `Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR${D}: le nombre de voisines qui lui ressemblent.`,
-      stoneAsh: (red) =>
-        `La pierre, les murs et le bord de la carte entourent aussi. Seules ${red} comptent la pierre comme une ressemblance.`,
-      stone: 'La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.',
-      cardLean:
-        'Touche-la pour évaluer sa poche, puis choisis. RÉCOLTER tout de suite paie plus tôt et fait pencher tes prochaines pioches vers la couleur récoltée. Attendre la laisse grandir, et une grosse poche paie plus que ses morceaux.',
-      cardPlain: `Touche-la pour évaluer sa poche, puis choisis${D}: RÉCOLTER tout de suite, ou la laisser grandir. Une grosse poche paie plus que ses morceaux.`,
+    /**
+     * L’EXPÉDITION (2026-10-13): ce que tu fais ici, avant toute règle. Son
+     * cœur est `howItWorks`, que la carte du but cite aussi; elle garde les
+     * trois lignes sur ce que coûte une partie et ce qui rentre, et les marques
+     * du plateau qui ne sont pas des règles. Les phrases n’ont pas bougé.
+     */
+    expedition: {
+      name: 'L’EXPÉDITION',
+      terms: [],
+      lines: [
+        'Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent.',
+        `Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et ${mid(SHAPE)}`,
+        'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
+      ],
+      row: {
+        wall: {
+          name: 'MUR',
+          terms: [],
+          core: `Mur${D}: impossible d’y bâtir. Il entoure quand même.`,
+        },
+        legal: {
+          name: 'BORD PERMIS',
+          terms: [],
+          core: `Bord permis${D}: tu peux poser ici.`,
+        },
+      },
     },
+    /**
+     * RÉCOLTER (2026-10-13): mûrir, la poche, la valeur, la récolte et ce qu’elle
+     * laisse sont un seul concept (MÛR, POCHE, VALEUR, RÉCOLTER, BONUS DE TAILLE,
+     * PIERRE et PORTÉE). Les phrases n’ont pas bougé; les deux phrases d’accueil
+     * de MÛR sont mortes, car le cœur, la suite et la carte les disent déjà.
+     */
     pop: {
       name: 'RÉCOLTER',
-      terms: ['RÉCOLTER', 'RÉCOLTE'],
+      terms: ['RÉCOLTER', 'RÉCOLTE', 'VALEUR', 'MÛRIT', 'POCHE'],
+      verb: ['RÉCOLTER', 'RÉCOLTE'],
+      ripens: `Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR${D}: le nombre de voisines qui lui ressemblent.`,
+      pocket:
+        'Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup.',
+      pocketCard:
+        'Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.',
       core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.`,
+      worth: `La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance${D}: la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.`,
       lean: 'RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée.',
       when: 'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
-    },
-    sacrifice: {
-      name: 'SACRIFIER',
-      // SACRIFICE is not here: a term has to appear in its own lesson
-      // (`lessons.test.ts`), and the sentences say SACRIFIER — which is what
-      // the button says too.
-      terms: ['SACRIFIER'],
-      core: `SACRIFIER brûle une poche mûre au lieu de l’encaisser${D}: pas de tuiles, pas de points, rien qui revienne dans cette partie.`,
-      pays: `Ce que ça paie à la place, ce sont des RELIQUES, et les reliques te suivent quand la partie finit${D}: une poche que tu ne peux pas te permettre d’attendre achète la prochaine partie.`,
-    },
-    pocket: {
-      name: 'POCHE',
-      terms: ['POCHE'],
-      core: 'Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup. Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.',
-    },
-    worth: {
-      name: 'VALEUR',
-      terms: ['VALEUR'],
-      core: `La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance${D}: la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.`,
-    },
-    stone: {
-      name: 'PIERRE',
-      terms: ['PIERRE'],
-      coreAsh: (red) =>
-        `La PIERRE, c’est du sol usé${D}: ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules ${red} la comptent comme une ressemblance.`,
-      core: `La PIERRE, c’est du sol usé${D}: ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais.`,
+      surroundsAsh: (red) =>
+        `La pierre, les murs et le bord de la carte entourent aussi. Seules ${red} comptent la pierre comme une ressemblance.`,
+      surrounds: 'La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.',
+      row: {
+        ripeEdge: {
+          name: 'BORD MÛR',
+          terms: [],
+          core: `Bord MÛR${D}: cette tuile est prête à récolter.`,
+        },
+        stone: {
+          name: 'PIERRE',
+          terms: ['PIERRE'],
+          coreAsh: (red) =>
+            `La PIERRE, c’est du sol usé${D}: ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules ${red} la comptent comme une ressemblance.`,
+          core: `La PIERRE, c’est du sol usé${D}: ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais.`,
+        },
+        sizeBonus: {
+          name: 'BONUS DE TAILLE',
+          terms: ['BONUS DE TAILLE'],
+          coreCapped: (cap) =>
+            `Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à ${cap}. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur.`,
+          core: 'Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée.',
+        },
+        reach: {
+          name: 'PORTÉE',
+          terms: [],
+          core: 'La PORTÉE, c’est jusqu’où tu as bâti depuis le départ.',
+          multiplier: (step) => REACH_RULE(step),
+        },
+      },
     },
     /** MAGIQUE (2026-10-13): rare et unique sont un seul concept; ses rangées
      *  portent les mots. Les phrases n’ont pas bougé. */
@@ -152,7 +185,7 @@ export const STRINGS_FR: Strings = {
     },
     caravan: {
       name: 'CARAVANE',
-      terms: [],
+      terms: ['CARAVANE'],
       core: 'De temps en temps, la CARAVANE arrive en ville et veut une poche d’une certaine taille, petite ou grande, sans jamais dire laquelle.',
       try: 'Tant qu’elle est EN VILLE, récolte une poche de trois tuiles ou plus. Si elle convient, la caravane la prend et tu choisis une marchandise parmi trois, bonne jusqu’à la fin de la partie. Si elle n’en veut pas, elle voulait l’autre taille.',
       card: `La ligne sous l’en-tête dit quand elle est EN VILLE${D}: c’est le moment d’essayer une récolte.`,
@@ -216,19 +249,6 @@ export const STRINGS_FR: Strings = {
       coreOne:
         'La case pointillée RÉSERVE met une tuile de côté. Touche-la pour y mettre la tuile choisie; touche-la encore pour reprendre cette tuile.',
       more: 'Les tuiles en réserve survivent à une repioche. Mets-y une rare, ou la couleur qu’une poche attend.',
-    },
-    sizeBonus: {
-      name: 'BONUS DE TAILLE',
-      terms: ['BONUS DE TAILLE'],
-      coreCapped: (cap) =>
-        `Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à ${cap}. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur.`,
-      core: 'Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée.',
-    },
-    reach: {
-      name: 'PORTÉE',
-      terms: [],
-      core: 'La PORTÉE, c’est jusqu’où tu as bâti depuis le départ.',
-      multiplier: (step) => REACH_RULE(step),
     },
     /**
      * LA CARTE (2026-10-13): le brouillard, ses destinations et la lentille
@@ -392,7 +412,7 @@ export const STRINGS_FR: Strings = {
     },
     harvest: {
       firstPop: `TA PREMIÈRE RÉCOLTE
-La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie jamais. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
+La poche est devenue de la PIERRE. Elle entoure encore, mais elle ne ressemble jamais. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
 
       head: (count, worth) => `RÉCOLTÉ ${count}, valeur totale ${d1(worth)}`,
       bountyCollected: (bonus) => `Prime ×${bonus}${D}: ENCAISSÉE.`,
@@ -870,14 +890,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     watchRun: 'REVOIR LA PARTIE',
     watchSkip: 'PASSER',
     watching: (step, of) => `Rediffusion · ${step} / ${of}`,
-    expedition: {
-      title: 'L’EXPÉDITION',
-      lines: [
-        'Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent.',
-        `Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et ${mid(SHAPE)}`,
-        'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
-      ],
-    },
     camera: { flat: 'À PLAT', home: 'DÉFAUT', mine: 'MA VUE' },
     sharpness: {
       label: 'NETTETÉ',
@@ -1089,10 +1101,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       lastError: 'DERNIÈRE ERREUR',
       noError: 'Rien n’a brisé sur cet appareil.',
     },
-    legendMarks: 'LES AUTRES MARQUES',
-    legendWall: `Mur${D}: impossible d’y bâtir. Il entoure quand même.`,
-    legendRipe: `Bord MÛR${D}: cette tuile est prête à récolter.`,
-    legendLegal: `Bord permis${D}: tu peux poser ici.`,
     privacy: `Rien ne quitte ton téléphone${D}: pas de compte, pas d’analytique, pas de serveur. Partager n’envoie que ce que tu vois dans la feuille de partage, et un rapport de plantage seulement si tu touches ENVOYER LE RAPPORT.`,
     notices: 'Polices et icônes : les mentions',
   },

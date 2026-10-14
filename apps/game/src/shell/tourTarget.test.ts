@@ -79,7 +79,7 @@ const DECLINED: readonly TeachId[] = [
   'story', // what this place is; no place in it
   'goal', // what to do; no place in it either
   'place', // the legal edge, which is everywhere at once
-  'pop', // a button, and RIPE has just flown to the same pocket
+  'pop', // a companion of RIPE (ripe tells it), which already flew to the pocket
   'costRise', // the run's own arithmetic
   'rare',
   'rareUnique', // in the hand

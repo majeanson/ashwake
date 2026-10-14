@@ -32,7 +32,7 @@ describe('prose', () => {
 
     expect(onTerm).toHaveBeenCalledTimes(1);
     // The id is the core's, not a string this component invented.
-    expect(onTerm.mock.calls[0]?.[0]).toBe('ripe');
+    expect(onTerm.mock.calls[0]?.[0]).toBe('pop');
   });
 
   it('leaves prose alone where there is nothing to open', () => {
@@ -91,10 +91,10 @@ describe('prose', () => {
   it('opens the same definition the core would print', () => {
     // The trio's pin: what a tapped term shows is `lessonDefine`, not a
     // sentence this layer wrote.
-    const ripe = LESSONS.find((l) => l.id === 'ripe')!;
-    const body = lessonDefine(ripe, TUNING, theme, s);
+    const pop = LESSONS.find((l) => l.id === 'pop')!;
+    const body = lessonDefine(pop, TUNING, theme, s);
     expect(body.length).toBeGreaterThan(0);
-    expect(lessonName(ripe, s)).toBe(s.lesson.ripe.name);
+    expect(lessonName(pop, s)).toBe(s.lesson.pop.name);
   });
 });
 
@@ -106,8 +106,12 @@ describe('the words that are also buttons wear the button’s mark (2026-10-12)'
     const french = render(<Prose text="RÉCOLTE une poche et dépense de la CHANCE." s={fr} />);
     expect(french.container.querySelectorAll('.term-mark svg')).toHaveLength(2);
 
-    const plain = render(<Prose text="A tile RIPENS when surrounded." s={s} />);
+    // POP is also the lesson of RIPENS, POCKET and WORTH (2026-10-13): they open
+    // it, and wear no mark, because only the verb is the button.
+    const plain = render(<Prose text="A tile RIPENS in a POCKET of known WORTH." s={s} />);
     expect(plain.container.querySelectorAll('.term-mark')).toHaveLength(0);
+    const frenchPlain = render(<Prose text="Une POCHE MÛRIT; sa VALEUR s’affiche." s={fr} />);
+    expect(frenchPlain.container.querySelectorAll('.term-mark')).toHaveLength(0);
   });
 
   it('keeps the word as text, so a tap target and a screen reader still find it', () => {

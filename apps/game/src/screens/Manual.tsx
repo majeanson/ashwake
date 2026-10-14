@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { TUNING } from '@content/tuning';
 import { NAME } from '@meta/identity';
 import type { Theme } from '@theme/tokens';
@@ -16,7 +16,6 @@ import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { Figure } from '../ui/Figure';
-import { Legend } from './Legend';
 import { Panel } from '../ui/Panel';
 import { ProseLines } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
@@ -77,43 +76,14 @@ const KEY_LINES = [
  *
  * AFTER is gone with them rather than left as an empty tab.
  *
- * **SACRIFICE left the START tab on 2026-09-03**, when the mechanic itself
- * was cut (`burnRelics`/`burnLuck` both 0 in `TUNING` for good — see
- * `LOG.md` Session 43). Its lesson stays in `lessons.ts` and its teach-card
- * plumbing stays gated exactly as it always was; the difference is this list
- * no longer forces it onto a `?taught=1` device or the no-ledger gallery
- * fallback, both of which otherwise show every section unconditionally. A
- * real player was already never going to meet it — the first-contact card
- * that would mark it met can no longer fire — so this only closes the two
- * synthetic paths that don't go through that gate.
- *
- * **The five destinations and STONE left the PLAY tab on 2026-08-30**, and
- * they did not lose a word doing it. Marc: *"in how to play, we have the
- * destinations enumerated, then later on explanations, make sure all is one."*
- * The tab opened with the legend naming the five places, then printed a
- * section for four of them saying what they do — the same five things, twice,
- * in one tab, each pass carrying half the answer. `Legend` now prints the
- * mark, the name and `lessonDefine` on one row, which is the very function
- * these sections were calling, so there is one place and not two.
- *
- * BOUNTY stays a section: it is a rule a SITE opens, not a mark on the board,
- * so it has no row in an alphabet.
- *
- * **Four sections landed 2026-09-03, on Marc's pick of all four** (the manual
- * vs engine audit, `NEXT.md` §1): THE COST closes START, because EXPEDITION
- * says placements cost tiles and nothing said the price rises for good;
- * REACH, NATIVE GROUND and THE FOG join PLAY, beside the board facts they
- * are about. `costRise`, `field` and `lens` are teach ids, so those three
- * grow in when their toast speaks — the same ledger as every gated section —
- * while REACH is a scoring rule with no moment of its own and prints for
- * everyone.
- *
- * **THE MAP took the rest of the PLAY tab on 2026-10-13**, and the tab became
- * WORLD. BOUNTY, NATIVE GROUND, THE FOG and the lens block above are lines
- * under its rows now (a row's `lines` print here, never on a card), and the
- * Legend's five destinations are its first five rows, each leading with the
- * lit hex it used to draw. What is left of the Legend is the marks that are
- * not places.
+ * **The marks of the board are rows now (2026-10-13).** The Legend listed every
+ * mark the board can show beside the sections that explained them; the
+ * destinations moved under THE MAP, the grounds under THE FOUR GROUNDS, the
+ * rare ring under MAGIC, and the last four — stone, the ripe edge under POP, a
+ * wall and the legal edge under THE EXPEDITION — in this phase, so each mark
+ * now sits beside the rule that uses it. A row's `lines` print here, never on
+ * a card. SACRIFICE is gone (its dials are 0 for good; `lessons.ts` says where
+ * to find it in git).
  */
 const sectionsOf = (tab: TabId): readonly Lesson[] => LESSONS.filter((l) => l.tab === tab);
 
@@ -138,11 +108,11 @@ const sectionsOf = (tab: TabId): readonly Lesson[] => LESSONS.filter((l) => l.ta
  * itself keeps: `met === null` means "nothing is known about what is known",
  * which is not the same as "nothing has been met".
  */
-function metHere(id: LessonId, met: ReadonlySet<TeachId> | null): boolean {
-  if (met === null) return true;
+function metHere(lesson: Lesson, met: ReadonlySet<TeachId> | null): boolean {
+  if (met === null || lesson.ungated === true) return true;
   // Told by the moments that open it (`colours` tells `grounds`). The ones no
   // moment ever fires for — see above — have none, and are never gated.
-  const moments = momentsOf(id);
+  const moments = momentsOf(lesson.id);
   return moments.length === 0 || moments.some((moment) => met.has(moment));
 }
 
@@ -160,7 +130,7 @@ function drawnOnce(
   const out: { id: LessonId; lesson: Lesson; figure: FigureId | null }[] = [];
   for (const lesson of lessons) {
     const { id } = lesson;
-    if (!metHere(id, met)) continue;
+    if (!metHere(lesson, met)) continue;
     const figure = lesson.figure !== undefined && !drawn.has(lesson.figure) ? lesson.figure : null;
     if (figure !== null) drawn.add(figure);
     out.push({ id, lesson, figure });
@@ -171,7 +141,7 @@ function drawnOnce(
 /** Whether a tab still has sections a player has not unlocked — the quiet
  *  promise that HOW TO PLAY is not all there is yet. */
 const grows = (lessons: readonly Lesson[], met: ReadonlySet<TeachId> | null): boolean =>
-  met !== null && lessons.some((l) => !metHere(l.id, met));
+  met !== null && lessons.some((l) => !metHere(l, met));
 
 type ManualProps = {
   readonly theme: Theme;
@@ -222,7 +192,9 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
           base="manual"
           growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
-          tabs={TABS.filter((id) => id !== 'grounds' || metHere('grounds', known)).map((id) => ({
+          tabs={TABS.filter(
+            (id) => id !== 'grounds' || sectionsOf(id).some((l) => metHere(l, known)),
+          ).map((id) => ({
             id,
             label: s.ui.tabs[id],
             // A tab with sections still to unlock says so — see `Tab.grows`.
@@ -234,45 +206,19 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
       }
     >
       {/*
-        The legend opens the WORLD tab: the marks that are not places, before
-        any of the rules that use them. A player who has met a glyph on a hex
-        had no way to learn it but to tap that hex, which needed them to have
-        walked there first. The places themselves are THE MAP's rows below
-        (2026-10-13).
-      */}
-      {on === 'world' && <Legend theme={theme} s={s} />}
-
-      {/*
-        What an expedition IS, before any rule (2026-08-29).
+        THE EXPEDITION opens the manual (2026-08-29; a lesson since 2026-10-13,
+        so it is the first section of the registry's START tab and no longer a
+        block of its own).
 
         Marc: *"instead of START call it EXPEDITION or similar and then explain
         its normal to die or have some kind of backstory"*. The manual opened
         on RIPE — a mechanic — and never said what the player was doing or that
         running out of tiles is how a run ENDS rather than how it is failed.
-        A roguelite that does not say so reads as a game you keep losing.
-
-        Not a lesson: it teaches no term and is not something the teaching
-        ledger should remember having said once. The figure under it is the
-        `place` figure, drawn at last (2026-09-03): it existed since Stage 3
-        with its caption written, pinned and translated — "Glowing edges are
-        where a tile may go. The faint number is what it would pay." — and no
-        lesson carried it, so nothing ever drew it. "You place tiles" is this
-        section's own first claim, and this is the picture of doing it.
+        A roguelite that does not say so reads as a game you keep losing. The
+        game in two sentences is its core, the same words the goal card says
+        (2026-10-12, Marc), and the `place` figure under its rows is drawn at
+        last (2026-09-03).
       */}
-      {on === 'start' && (
-        <section className="lesson">
-          <h2 className="panel-title marked">
-            <span>{s.ui.expedition.title}</span>
-          </h2>
-          {/* The game in two sentences, first (2026-10-12, Marc): the same words the
-              second card of the opening says, so there is one wording. */}
-          <p>{s.howItWorks}</p>
-          {s.ui.expedition.lines.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-          <Figure id="place" theme={theme} s={s} caption />
-        </section>
-      )}
 
       {/*
         WHICH GAME — see `mode` (2026-09-02).
@@ -313,13 +259,17 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
         in the registry because it is a fact about a PAGE, not about a
         lesson: a teaching card shows the same figure and should.
       */}
-      {/* WHICH GAME: straight under the opening for a reader in a shared or daily
-          run (the section exists for the reader in the wrong run), and after the
-          rules for one in their own world, who has the least need of it. */}
-      {on === 'start' && mode !== undefined && mode !== 'world' && <WhichGame mode={mode} s={s} />}
-
+      {/* WHICH GAME: straight under the opening (THE EXPEDITION) for a reader in a
+          shared or daily run (the section exists for the reader in the wrong
+          run), and after the rules for one in their own world, who has the least
+          need of it. */}
       {drawnOnce(sectionsOf(on), known).map(({ id, lesson, figure }) => (
-        <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
+        <Fragment key={id}>
+          <Section lesson={lesson} figure={figure} theme={theme} s={s} />
+          {id === 'expedition' && mode !== undefined && mode !== 'world' && (
+            <WhichGame mode={mode} s={s} />
+          )}
+        </Fragment>
       ))}
 
       {on === 'start' && mode === 'world' && <WhichGame mode={mode} s={s} />}

@@ -3,13 +3,14 @@ import { BARE_TUNING, COLOURS, TUNING, type Tuning } from '@content/tuning';
 import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { DAYLIGHT } from '@theme/themes/daylight';
 import { SETTLEMENT } from '@theme/themes/settlement';
-import type { Theme } from '@theme/tokens';
+import { namesOf, type Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
 import type { Strings } from '@text/Strings';
 import { FIGURES } from './figure';
 import {
   LESSONS,
+  cardDraws,
   lessonCardDefine,
   lessonCore,
   lessonDefine,
@@ -291,18 +292,36 @@ describe('the territory row answers for the board it is read on', () => {
 
 describe('the lesson registry, whatever the language', () => {
   /**
-   * A figure OR rows, never both — the portrait-card rule, stated where the
-   * data is so a future lesson cannot quietly break it. A teaching card
-   * already runs glyph, lead, body and button; a hex figure AND four marked
-   * rows overflow an 844px screen.
+   * A CARD draws a figure OR rows, never both — the portrait-card rule, stated
+   * where the data is so a future lesson cannot quietly break it. A teaching
+   * card already runs glyph, lead, body and button; a hex figure AND four
+   * marked rows overflow an 844px screen.
+   *
+   * Until 2026-10-13 the rule was on the LESSON: no lesson had both. POP does
+   * now (the fired card draws the `pop` figure; the manual draws the rows and
+   * the `ripen` figure), so the rule moved to what the card draws
+   * (`cardDraws`), and the lessons allowed to hold both are listed, so a
+   * third is a decision rather than an accident.
    */
   it('never asks a card to carry a figure and rows at once', () => {
+    const both: string[] = [];
     for (const lesson of LESSONS) {
-      expect(
-        lesson.figure !== undefined && lesson.rows !== undefined,
-        `${lesson.id} has both a figure and rows`,
-      ).toBe(false);
+      for (const row of [undefined, ...(lesson.rowHeads?.(STRINGS_EN) ?? []).map((h) => h.key)]) {
+        const draws = cardDraws(lesson, row);
+        if (lesson.figure === undefined && lesson.rows === undefined) {
+          expect(draws, `${lesson.id} draws something it does not have`).toBeNull();
+        } else {
+          expect(draws, `${lesson.id} draws nothing`).not.toBeNull();
+          expect(draws === 'figure' ? lesson.figure : lesson.rows).toBeDefined();
+        }
+      }
+      if (lesson.figure !== undefined && lesson.rows !== undefined) both.push(lesson.id);
     }
+    expect(both, 'a lesson holds both a card figure and rows').toEqual(['pop']);
+    // A fired POP card is the picture; a card opened at STONE is the row.
+    const pop = LESSONS.find((l) => l.id === 'pop')!;
+    expect(cardDraws(pop, undefined)).toBe('figure');
+    expect(cardDraws(pop, 'stone')).toBe('rows');
   });
 
   it('points every figure at one the table actually holds', () => {
@@ -569,6 +588,147 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       expect(row).toMatchObject({ key: 'relic', name: s.lesson.end.row.relic.name });
       expect(row?.text).toBe(s.lesson.end.row.relic.core);
       expect(end.rowHeads?.(s)[0]?.name).toBe(row?.name);
+    });
+  },
+);
+
+/**
+ * POP and THE EXPEDITION (2026-10-13): seven lessons became POP, and the
+ * manual's hand-written opening plus the Legend's last four rows became THE
+ * EXPEDITION. The invariants each kept, stated once over beats and rows.
+ */
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
+  'the pop and expedition lessons · %s',
+  (_l, s) => {
+    const lesson = (id: string) => {
+      const found = LESSONS.find((l) => l.id === id);
+      if (found === undefined) throw new Error(`${id} is gone`);
+      return found;
+    };
+    const pop = lesson('pop');
+    const expedition = lesson('expedition');
+
+    it('reads START as the expedition, the pop, then the run’s end', () => {
+      expect(LESSONS.filter((l) => l.tab === 'start').map((l) => l.id)).toEqual([
+        'expedition',
+        'pop',
+        'end',
+      ]);
+      for (const gone of ['ripe', 'pocket', 'worth', 'sizeBonus', 'stone', 'reach', 'sacrifice'])
+        expect(
+          LESSONS.find((l) => l.id === gone),
+          `${gone} is its own lesson again`,
+        ).toBeUndefined();
+    });
+
+    it('opens POP with ripening, the pocket and the pop, in that order, as its core', () => {
+      const p = s.lesson.pop;
+      expect(lessonCore(pop, TUNING, SETTLEMENT, s)).toBe(`${p.ripens} ${p.pocket} ${p.core}`);
+      const lines = lessonLines(pop, TUNING, SETTLEMENT, s);
+      expect(lines).toContain(p.worth);
+      expect(lines).toContain(p.when);
+      // The tap-a-ripe-tile sentence is the card's alone.
+      expect(lines).not.toContain(p.pocketCard);
+      expect(lessonCardDefine(pop, TUNING, SETTLEMENT, s).endsWith(p.pocketCard)).toBe(true);
+    });
+
+    it('keeps the draw lean and the surrounds fork under the dials that speak them', () => {
+      const p = s.lesson.pop;
+      const lean = (t: Tuning) => lessonLines(pop, t, SETTLEMENT, s).includes(p.lean);
+      expect(lean(TUNING)).toBe(TUNING.luckPerPop > 0 && TUNING.colourBiasDraws > 0);
+      expect(lean({ ...TUNING, luckPerPop: 0 })).toBe(false);
+      const ash = lessonLines(pop, { ...TUNING, redAshMatches: true }, SETTLEMENT, s);
+      const plain = lessonLines(pop, { ...TUNING, redAshMatches: false }, SETTLEMENT, s);
+      expect(ash.some((l) => l.startsWith(p.surroundsAsh('').slice(0, 10)))).toBe(true);
+      expect(plain).toContain(p.surrounds);
+      expect(ash).not.toContain(p.surrounds);
+    });
+
+    it('answers to POCKET, WORTH and the verb as one lesson, and to its rows’ words at their rows', () => {
+      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      for (const term of s.lesson.pop.terms)
+        expect(byTerm.get(term), term).toMatchObject({ id: 'pop' });
+      expect(byTerm.get(s.lesson.pop.row.stone.terms[0]!)).toMatchObject({
+        id: 'pop',
+        row: 'stone',
+      });
+      expect(byTerm.get(s.lesson.pop.row.sizeBonus.terms[0]!)).toMatchObject({
+        id: 'pop',
+        row: 'sizeBonus',
+      });
+      // The verb is a subset of the terms: it is what wears the button’s mark.
+      for (const word of s.lesson.pop.verb) expect(s.lesson.pop.terms).toContain(word);
+    });
+
+    it('lists the ripe edge, stone, the size bonus and reach as rows, each the sentence it was', () => {
+      const r = s.lesson.pop.row;
+      const rows = pop.rows?.(TUNING, SETTLEMENT, s) ?? [];
+      expect(rows.map((x) => x.key)).toEqual(['ripeEdge', 'stone', 'sizeBonus', 'reach']);
+      expect(rows[0]).toMatchObject({ ring: 'ripe', text: r.ripeEdge.core });
+      expect(rows[1]).toMatchObject({ ground: 'stone', name: r.stone.name });
+      expect(rows[1]?.text).toBe(
+        TUNING.redAshMatches ? r.stone.coreAsh(namesOf(SETTLEMENT, s.locale).red) : r.stone.core,
+      );
+      expect(rows[2]?.text).toBe(
+        TUNING.harvestSizeCap > 0
+          ? r.sizeBonus.coreCapped(TUNING.harvestSizeCap)
+          : r.sizeBonus.core,
+      );
+      // Reach states its multiplier only while the dial is on.
+      expect(rows[3]?.text).toBe(`${r.reach.core} ${r.reach.multiplier(TUNING.distanceStep)}`);
+      expect(pop.rows?.({ ...TUNING, distanceStep: 0 }, SETTLEMENT, s)[3]?.text).toBe(r.reach.core);
+      // A row that prints a name prints the head’s.
+      const heads = pop.rowHeads?.(s) ?? [];
+      for (const row of rows)
+        if (row.name !== undefined)
+          expect(heads.find((h) => h.key === row.key)?.name).toBe(row.name);
+      // The row whose sentence leads with its own name does not repeat it.
+      expect(rows[0]?.name).toBeUndefined();
+    });
+
+    it('names every row term in its own row', () => {
+      for (const head of pop.rowHeads?.(s) ?? []) {
+        for (const term of head.terms) {
+          const row = pop.rows?.(TUNING, SETTLEMENT, s).find((x) => x.key === head.key);
+          expect(
+            `${row?.name ?? ''} ${row?.text ?? ''}`.toLocaleUpperCase(s.locale),
+            `${head.key}: "${term}"`,
+          ).toContain(term);
+        }
+      }
+    });
+
+    it('opens THE EXPEDITION on the shared clause, then its three lines, for everyone', () => {
+      expect(lessonCore(expedition, TUNING, SETTLEMENT, s)).toBe(s.howItWorks);
+      expect(lessonLines(expedition, TUNING, SETTLEMENT, s)).toEqual([
+        s.howItWorks,
+        ...s.lesson.expedition.lines,
+      ]);
+      expect(s.lesson.expedition.lines).toHaveLength(3);
+      expect(expedition.ungated).toBe(true);
+      expect(expedition.manualFigure).toBe('place');
+      expect(lessonTerms(expedition, s)).toEqual([]);
+    });
+
+    it('lists the wall and the legal edge as THE EXPEDITION’s rows, in the sentences they were', () => {
+      const rows = expedition.rows?.(TUNING, SETTLEMENT, s) ?? [];
+      expect(rows).toEqual([
+        {
+          key: 'wall',
+          ground: 'wall',
+          icon: CONCEPT_ICON.wall,
+          text: s.lesson.expedition.row.wall.core,
+        },
+        { key: 'legal', ring: 'legal', text: s.lesson.expedition.row.legal.core },
+      ]);
+      expect(expedition.rowHeads?.(s).map((h) => h.key)).toEqual(['wall', 'legal']);
+    });
+
+    it('gives CARAVAN a tappable word, and a card opened at one of its words says the caravan', () => {
+      const caravan = lesson('caravan');
+      expect(lessonTerms(caravan, s)).toHaveLength(1);
+      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      expect(byTerm.get(lessonTerms(caravan, s)[0]!)).toMatchObject({ id: 'caravan' });
     });
   },
 );

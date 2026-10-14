@@ -67,47 +67,78 @@ export const STRINGS_EN: Strings = {
   typography: { sentenceEnd: /[.!?]$/ },
 
   lesson: {
-    ripe: {
-      name: 'RIPE',
-      terms: ['RIPENS'],
-      core: 'Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it.',
-      stoneAsh: (red) =>
-        `Stone, walls and the map’s edge all surround. Only ${red} counts stone as a match.`,
-      stone: 'Stone, walls and the map’s edge all surround; none of them match.',
-      cardLean:
-        'Tap it to price its pocket, then choose. POP now pays sooner and leans your next draws toward the colour you popped. Wait, and the pocket grows: a bigger one pays more than its pieces.',
-      cardPlain:
-        'Tap it to price its pocket, then choose: POP now, or keep growing it. A bigger pocket pays more than its pieces.',
+    /**
+     * THE EXPEDITION (2026-10-13): what you are doing here, before any rule. Its
+     * core is `howItWorks`, which the goal card quotes too; it keeps the three
+     * lines on what a run costs and what comes home, and the board's marks that
+     * are not rules. The sentences did not move.
+     */
+    expedition: {
+      name: 'THE EXPEDITION',
+      terms: [],
+      lines: [
+        'You are walking out into a dark plane, and you push on as far as your tiles last.',
+        `Every placement costs tiles. Popping pays them back. A run ends when you run out, and ${mid(SHAPE)}`,
+        'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
+      ],
+      row: {
+        wall: {
+          name: 'WALL',
+          terms: [],
+          core: 'Wall: cannot be built on. It still surrounds.',
+        },
+        legal: { name: 'LEGAL EDGE', terms: [], core: 'Legal edge: you may place here.' },
+      },
     },
+    /**
+     * POP (2026-10-13): ripening, the pocket, worth, the pop and what it leaves
+     * behind are one concept (RIPE, POCKET, WORTH, POP, SIZE BONUS, STONE and
+     * REACH). The sentences did not move, except that RIPE's two first-contact
+     * sentences are gone: the core, the lean and the card beats cover them.
+     */
     pop: {
       name: 'POP',
-      terms: ['POP'],
+      terms: ['POCKET', 'RIPENS', 'WORTH', 'POP'],
+      verb: ['POP'],
+      ripens:
+        'Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it.',
+      pocket: 'A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one.',
+      pocketCard: 'Tap any ripe tile to price its pocket; the buttons show what it pays.',
       core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
+      worth:
+        'WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.',
       lean: 'POP also leans your next draws toward the colour you popped.',
       when: 'Small and often buys LUCK and steers your draws. Big and late buys tiles and score.',
-    },
-    sacrifice: {
-      name: 'SACRIFICE',
-      terms: ['SACRIFICE'],
-      core: 'SACRIFICE burns a ripe pocket instead of cashing it: no tiles, no points, nothing back into this run.',
-      pays: 'What it pays instead is RELICS, which follow you out when the run ends. A pocket you cannot afford to wait on buys the next run.',
-    },
-    pocket: {
-      name: 'POCKET',
-      terms: ['POCKET'],
-      core: 'A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one. Tap any ripe tile to price its pocket; the buttons show what it pays.',
-    },
-    worth: {
-      name: 'WORTH',
-      terms: ['WORTH'],
-      core: 'WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.',
-    },
-    stone: {
-      name: 'STONE',
-      terms: ['STONE'],
-      coreAsh: (red) =>
-        `STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only ${red} counts it as a match.`,
-      core: 'STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches.',
+      surroundsAsh: (red) =>
+        `Stone, walls and the map’s edge all surround. Only ${red} counts stone as a match.`,
+      surrounds: 'Stone, walls and the map’s edge all surround; none of them match.',
+      row: {
+        ripeEdge: {
+          name: 'RIPE EDGE',
+          terms: [],
+          core: 'RIPE edge: that tile is ready to harvest.',
+        },
+        stone: {
+          name: 'STONE',
+          terms: ['STONE'],
+          coreAsh: (red) =>
+            `STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only ${red} counts it as a match.`,
+          core: 'STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches.',
+        },
+        sizeBonus: {
+          name: 'SIZE BONUS',
+          terms: ['SIZE BONUS'],
+          coreCapped: (cap) =>
+            `The SIZE BONUS is one point of multiplier per tile in a pocket, up to ${cap}. Past that a bigger pocket still pays more worth, but no more multiplier.`,
+          core: 'The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied.',
+        },
+        reach: {
+          name: 'REACH',
+          terms: [],
+          core: 'REACH is how far from home you have built.',
+          multiplier: (step) => REACH_RULE(step),
+        },
+      },
     },
     /** MAGIC (2026-10-13): rare and unique are one concept; its rows carry the
      *  words. The sentences did not move. */
@@ -147,7 +178,7 @@ export const STRINGS_EN: Strings = {
     },
     caravan: {
       name: 'CARAVAN',
-      terms: [],
+      terms: ['CARAVAN'],
       core: 'Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which.',
       try: 'While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.',
       card: 'The line under the header says when it is IN TOWN: that is the moment to try a pop.',
@@ -210,19 +241,6 @@ export const STRINGS_EN: Strings = {
       coreOne:
         'The dashed STASH slot keeps one tile for later. Tap to stash the selected tile; tap it again to trade that tile back.',
       more: 'Stashed tiles survive a redraw. Save a rare, or the colour a pocket is waiting for.',
-    },
-    sizeBonus: {
-      name: 'SIZE BONUS',
-      terms: ['SIZE BONUS'],
-      coreCapped: (cap) =>
-        `The SIZE BONUS is one point of multiplier per tile in a pocket, up to ${cap}. Past that a bigger pocket still pays more worth, but no more multiplier.`,
-      core: 'The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied.',
-    },
-    reach: {
-      name: 'REACH',
-      terms: [],
-      core: 'REACH is how far from home you have built.',
-      multiplier: (step) => REACH_RULE(step),
     },
     /**
      * THE MAP (2026-10-13): the fog, its destinations and the lens are one
@@ -847,14 +865,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     watchRun: 'REPLAY',
     watchSkip: 'SKIP',
     watching: (step, of) => `Replay · ${step} / ${of}`,
-    expedition: {
-      title: 'THE EXPEDITION',
-      lines: [
-        'You are walking out into a dark plane, and you push on as far as your tiles last.',
-        `Every placement costs tiles. Popping pays them back. A run ends when you run out, and ${mid(SHAPE)}`,
-        'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
-      ],
-    },
     /** The camera cluster. `home` is its third control, shown only once the
      *  board has been turned or leaned away from the angle it opens at. */
     camera: { flat: 'FLAT', home: 'DEFAULT', mine: 'MY VIEW' },
@@ -1067,10 +1077,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       lastError: 'LAST ERROR',
       noError: 'Nothing has broken on this device.',
     },
-    legendMarks: 'THE OTHER MARKS',
-    legendWall: 'Wall: cannot be built on. It still surrounds.',
-    legendRipe: 'RIPE edge: that tile is ready to harvest.',
-    legendLegal: 'Legal edge: you may place here.',
     privacy:
       'Nothing leaves your phone: no account, no analytics, no server. Sharing sends only what you see in the share sheet, and a crash report only if you tap SEND REPORT.',
     notices: 'Fonts and icons: the notices',
