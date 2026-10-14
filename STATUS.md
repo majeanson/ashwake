@@ -4,7 +4,31 @@ What is DONE and VERIFIED, so future work starts from trust instead of
 re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
-Newest, **2026-10-12 — the first minute after two strangers (`LOG.md`
+Newest, **2026-10-13 — the teaching is one system (`LOG.md` Session 132),
+built and verified end to end, not yet looked at on a phone, not yet
+pushed.** Marc's word: _"one single entity … uniformize and simplify … don't
+be afraid to change."_ Thirty-three named ideas are nine concepts —
+L'EXPÉDITION, RÉCOLTER, LES QUATRE SOLS, MAGIQUE, CHANCE, LA CARTE, LA FIN DE
+LA PARTIE, CARAVANE, RÉSERVE — one wording each, in one registry
+(`view/lessons.ts`) that the manual, the fired cards, the chips, the term
+cards and the drip's one SCHEDULE table (`shell/teaching.ts`) all derive
+from; every concept name is tappable wherever it is printed and every card
+opens the manual at its own section (COMMENT JOUER ›). A fresh device sees 8
+interrupting cards where it saw 11 (site and relic are chips, MÛR and
+RÉCOLTER are one card — each Marc's ruling). One new ledger id, `map`, sealed
+in `decodeProgress` for any save that met a landmark piecemeal; every old id
+survives as a delivery moment. Seven commits, `6489522` → `7e9b39a`, each
+green on typecheck, lint, the unit suite, the byte-identical golden sim,
+sweep at 0 and the budget before the next began; after the last, the full
+e2e on both engines: 369 passed, 14 skipped, and one WebKit failure that is
+the recorded 2026-09-10 `placeOneTile` machine flake (untouched spec; passed
+alone immediately). Unit tests 1498 → **1565**. What this checkpoint does
+NOT claim: any look on a phone — the six-row LA CARTE card in portrait, the
+row marks, SOLS's spacing, the card footer — all named as Marc's in
+`NEXT.md` §1 (round thirteen), which supersedes the never-answered round
+twelve.
+
+Before it: **2026-10-12 — the first minute after two strangers (`LOG.md`
 Session 127), built and unit-verified, not yet looked at on a phone.** The
 freeze is lifted by Marc. A "HOW IT WORKS" card after the story, a pace of one
 new idea per four placements, NEW chips, UNDO, and a chosen first world

@@ -29,8 +29,18 @@ played the live game and came back with _"je comprends tellement pas ce jeu"_
 and _"trop d'information trop vite trop tôt"_ (`LOG.md` Session 127). What
 landed: the game in two sentences as a card after the story, a pace of one new
 idea per four placements, NEW chips for the lessons about a thing, UNDO, and a
-chosen first world. **Round twelve (§1) is its look, and Session C waits for it.**
+chosen first world.
 Everything below this paragraph that says "frozen" is the state before it.
+
+**2026-10-13: the teaching is one system, by Marc's word** (_"one single
+entity … uniformize and simplify … don't be afraid to change"_, `LOG.md`
+Session 132): thirty-three named ideas are nine concepts, one wording each,
+the manual derives from the registry, every concept name is tappable
+everywhere and every card opens the manual at its section. A fresh device
+sees 8 interrupting cards where it saw 11. Seven commits, `6489522` →
+`7e9b39a`, each green on the whole chain; **none pushed yet.** Round twelve's
+sheet items describe the screen before this and are superseded: **round
+thirteen (§1) is the new look, and Session C waits for it.**
 
 **Session A passed clean on 2026-09-24**, on the phone sheet (§1), and the
 first minute is **frozen from today until Session C has run.** The same
@@ -76,36 +86,34 @@ doors) can still ship.
 
 ---
 
-## 1. Marc, on the phone — round twelve, the first minute after two strangers
+## 1. Marc, on the phone — round thirteen, the one teaching system
 
-**Build this and play it as a stranger would**: clear the site's data (or a
-fresh browser profile), open it, and do not touch anything the first card does
-not say. Four questions:
+**Round twelve was never answered and is superseded** (2026-10-13, Session
+132): its items describe cards and tabs that no longer exist. Round twelve's
+four questions still stand where they carry over (the pace, seed 933, UNDO
+and the chips, the REDRAW hint) and round thirteen adds the merge's own
+looks. **Play it as a stranger would**: clear the site's data, open it, touch
+nothing the first card does not say.
 
-- **The second card** ("HOW IT WORKS"): does it land as _"oh, that's the
-  game"_? The French is a draft (`howItWorks`, `fr-CA.ts`) and is yours.
-- **The pace**: after the cards, is the first minute one idea at a time, or is
-  there still a place where it is too much too soon?
-- **The first board** (seed 933: a site at the 1st placement, a wall at the
-  1st, a cache by the 6th, the first pop around the 9th, a poor hand soon
-  after): is it a good first board, and is the first pop something a stranger
-  would reach without help?
-- **UNDO** (always there, left of the view button) and **the NEW chip** (at the head of the cluster, after four placements): does either read as
-  belonging, or as clutter? And **the REDRAW hint**: on a poor hand, once, a line says what REDRAW
-  costs. Did it come at a moment you could use it, and did you press REDRAW?
+- **The walk, at 8 cards**: story → HOW IT WORKS → LES QUATRE SOLS → ONE
+  RÉCOLTER card at the first ripe tile (it teaches mûrir → poche → récolter
+  in one card now). Does it read as one idea at a time, and is that one card
+  too heavy?
+- **LA CARTE's card**: six rows (cache, site, sanctuaire, territoire,
+  trouvaille, la lentille) with the found kind's row led. Does it fit in
+  portrait, and do the destination marks on the rows read at a glance?
+- **The manual's four tabs** — EXPÉDITION · SOLS · MONDE · MAIN: is the
+  order right, and does SOLS's per-ground pick/watch spacing read as four
+  blocks or as a wall?
+- **The links**: concept words are tappable everywhere now, and every card
+  has COMMENT JOUER › at its foot. Does the footer read as quiet or as
+  clutter, and does a term tap inside the manual land where you expect?
+- **Two fewer interruptions**: the first SITE and the first relic are NEW
+  chips now, not cards. Did you notice them, and did you tap?
 
-**Also new, from your first screenshot:** the first toast is one sentence ("Tap a
-glowing edge to place your tile."), POP and LUCK wear their button's mark in
-every sentence, and SETTINGS has REPLAY THE TUTORIAL (new run, every lesson
-again, from the story). Say if the sentence you disliked was the HOW IT WORKS
-card's second one instead.
-
-**Found on the way, and fixed:** when the caravan was in town and took a
-pocket, its pick-one-of-three sheet opened over the pop result's ✕ and DÉTAILS,
-so neither could be pressed until the sheet was answered. The result now stands
-on the sheet's top edge (`--toast-lift`, published by `CaravanPicker`). On the
-narrowest phone with three long French wares the sheet fills the board and the
-overlap that is left is the sheet's; a phone will say whether that matters.
+**The French is the review surface**: every changed sentence is in its
+commit's message (`d2ec3aa` → `7e9b39a`), and the pin snapshots hold the
+whole catalogue.
 
 ---
 

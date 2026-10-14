@@ -10779,3 +10779,85 @@ territory is a card in the tour and a chip after it, and never brings the shrine
 with it). Sweep at 0, first paint unchanged at 192.6 KB. **Not driven in a
 browser:** the fog reset (the canvas cannot be asked what is remembered; the
 door is tested, not the picture) and the territory card on a real tour.
+
+### Session 132 — one teaching system: thirty-three names became nine (2026-10-13)
+
+**The question.** Does a game whose every concept has ONE name, ONE wording and
+ONE home — reachable from a card, from the manual, and from the word itself,
+wherever it is printed — read as a smaller game than the same rules under
+thirty-three names? Unanswered until Session C; this is the build of it.
+
+Marc: _"lets revise how to play, tutorial, cards, new concepts as one single
+entity that uniformize and simplify the concepts and introduce them at the
+right time, all linked and centralized … dont be afraid to change."_ Planned
+with him in one sitting (the plan file holds every ruling), then built as
+seven commits, each green on the whole chain before the next began; the work
+was executed by subagents against written briefs, with every French sentence
+decided here and the uncertain ones put to Marc.
+
+What was fragmented: `view/lessons.ts` half-central (24 lessons), **nine
+hand-synced lists** in `shell/teaching.ts` (ORDER, CARDS, DOTS, UNPACED,
+ALLOWED, `isTrue`, `toastLine`, plus `tourTarget`'s copied predicates and the
+manual's SECTIONS) each enumerating the same concepts separately; cards that
+bypassed the registry (story, HOW IT WORKS, the purse, the first pop); and
+~14 concepts worded two to six ways — the grounds alone had `colourLesson`,
+`powerOf`, `strategy.pick` and `coach.match`.
+
+The seven commits, `6489522` → `7e9b39a`:
+
+1. **The SCHEDULE** (`6489522`): the nine lists are one ordered table of
+   slots — `{id, as, phase?, paced?, when, target?, line?}` — and `when` and
+   `target` share one cell predicate per slot, so the copied-predicates drift
+   class is dead with the copy. A coverage test holds the table against
+   `TEACH_IDS`.
+2. **The registry says where a lesson lives** (`ec9d7bb`): `Lesson.tab`,
+   `LESSONS` in manual reading order, SECTIONS deleted.
+3. **LES QUATRE SOLS** (`d2ec3aa`): `powerOf`, `strategy` and GroundGuide
+   folded; the rule line is the one source, the pick lines keep only the
+   judgement (they restated the rule's numbers one line under the rule).
+4. **LA CARTE** (`e918cea`, Marc's name): fog + cache + site (PRIME folded
+   under it) + sanctuaire + territoire (TERRE NATALE under it) + trouvaille +
+   LA LENTILLE, one lesson, one row per kind. New ledger id `map`;
+   `decodeProgress` seals it for any ledger that met a landmark piecemeal;
+   cache and site are chips gated `after: 'map'`. Tabs: EXPÉDITION · SOLS ·
+   MONDE · MAIN (SOLS and MONDE are Marc's).
+5. **MAGIQUE, CHANCE, LA FIN DE LA PARTIE** (`7c91ecb`, the last name
+   Marc's): rare+unique one lesson; the purse card IS the luck lesson now
+   (`purseLesson` and `SetLesson` deleted, the rows read the same
+   `view.purse` functions the sheet prints); cost + last gasp + reliques +
+   the shop sentence one lesson, `relic` a chip (Marc's ruling). The clock
+   sentence and the shape-of-the-game sentence became shared constants —
+   each was typed out twice.
+6. **RÉCOLTER and L'EXPÉDITION** (`33e1760`): ripe/pocket/worth/size
+   bonus/stone/reach one lesson; story, HOW IT WORKS, place and the walls one
+   home; Legend deleted, its four surviving rows housed (ripe and stone under
+   RÉCOLTER, mur and bord permis under L'EXPÉDITION); SACRIFICE's lesson
+   deleted (dials 0 for good, note at the site). **The walk's MÛR and
+   RÉCOLTER cards are ONE card** (Marc's ruling): a fresh device sees 8
+   interrupting cards where it saw 11.
+7. **The links** (`7e9b39a`): a concept's name is tappable everywhere prose
+   is drawn — the manual and the cards included, reversing 2026-08-29 on
+   Marc's word — with a self-link guard; in the manual a term tap navigates
+   the book instead of floating a card over it; and every lesson card
+   carries COMMENT JOUER ›, which opens the manual at that section and row.
+   Receipts carry no link.
+
+**Uniformization found on the way:** French said "matching" two ways —
+«ressemblance» (everywhere) and «appariement» (`onceARun.unique`, the first
+pop's receipt, the forge receipt). All «ressemblance» now.
+
+**Verified.** 1565 unit tests (was 1498 when the pass began); `pnpm sim`
+byte-identical at every commit; sweep 0 findings at every commit; budget
+inside every bar; the full e2e suite on both engines after the last commit:
+**369 passed, 14 skipped, 1 failed** — `board.spec.ts:186` on WebKit,
+`placeOneTile: no legal hex found`, the exact recorded machine flake of
+2026-09-10, in a spec none of the seven commits touched; retried alone after.
+Old saves: every old ledger id survives as a delivery moment; `map` is the
+one new id, sealed for ledgers that met a landmark already, and a mid-walk
+ledger is proven unsealed.
+
+**Not verified, and it is Marc's.** Every look: the six-row LA CARTE card in
+portrait, the destination marks on rows, the row pick/watch spacing on SOLS,
+the led-row highlight, the COMMENT JOUER › footer, and whether 8 cards at the
+new pace read as one idea at a time. The sheet's round twelve described the
+pre-merge first minute and is superseded; a new round carries these.
