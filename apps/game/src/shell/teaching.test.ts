@@ -8,7 +8,7 @@ import { createSession, type Snapshot } from './store';
 import { lessonOf } from '@view/lessons';
 import {
   CARD_GAP,
-  CARDS,
+  SCHEDULE,
   newDots,
   nextLesson,
   sinceSpoke,
@@ -212,8 +212,21 @@ describe('every card the drip can fire', () => {
     // it in `ORDER`, never spoke. STORY has its own card in `App`, and PURSE
     // is raised by opening the purse (`purseLesson`) and never by a moment.
     const ownCard = new Set(['story', 'goal', 'purse']);
-    for (const id of CARDS)
+    for (const { id } of SCHEDULE.filter((s) => s.as === 'card'))
       if (!ownCard.has(id)) expect(lessonOf(id), `${id} has no lesson to draw`).toBeDefined();
+  });
+});
+
+describe('the schedule covers every moment (2026-10-13)', () => {
+  it('has one slot per teachable id, apart from the two written by the first pop and run', () => {
+    const ids = SCHEDULE.map((s) => s.id);
+    expect(new Set(ids).size, 'a duplicate slot').toBe(ids.length);
+    expect(new Set<string>([...ids, 'walked', 'toured'])).toEqual(new Set<string>(TEACH_IDS));
+  });
+
+  it('gives every chip a moment to be offered by', () => {
+    for (const slot of SCHEDULE.filter((s) => s.as === 'chip'))
+      expect(typeof slot.when, slot.id).toBe('function');
   });
 });
 
@@ -285,7 +298,7 @@ describe('the NEW chips (2026-10-12): offered, never fired', () => {
 
   it('draws no card for a chip lesson until it is tapped', () => {
     for (const id of ['rare', 'rareUnique', 'territory', 'shrine'] as const) {
-      expect(CARDS.has(id)).toBe(false);
+      expect(SCHEDULE.find((s) => s.id === id)?.as, id).toBe('chip');
       expect(lessonOf(id), `${id} needs a lesson for its chip to open`).toBeDefined();
     }
   });

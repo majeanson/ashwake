@@ -108,7 +108,6 @@ import {
   writeTimeline,
   type Slot,
 } from './shell/storage';
-import { tourTarget } from './shell/tourTarget';
 import { isTutorialRun, tutorialDoor } from './shell/tutorialRun';
 import { onceARun, type OnceId } from './shell/onceARun';
 import { runningDry } from './shell/dry';
@@ -166,6 +165,7 @@ import {
   offerDots,
   sinceSpoke,
   toastLine,
+  tourTarget,
   told,
 } from './shell/teaching';
 import { NewChips } from './screens/NewChips';
@@ -1206,9 +1206,9 @@ function Game() {
    * then back"*. Widened 2026-09-08: *"yes do the same for caches, sites and
    * territories and other concepts on the map"*.
    *
-   * Which hex each lesson means is `shell/tourTarget.ts`, and which lessons
-   * mean one at all — POP, RARE and the run's own numbers do not, WALL and
-   * FIELD do and are declined there with the reason.
+   * Which hex each lesson means is `tourTarget` in `shell/teaching.ts`, and which
+   * lessons mean one at all — POP, RARE and the run's own numbers do not (no
+   * `target` on their slot), WALL and FIELD do.
    *
    * **`touring` is the whole mechanism, and it is a gate rather than a queue.**
    * The drip fires one card per moment and a dismissal can raise the next

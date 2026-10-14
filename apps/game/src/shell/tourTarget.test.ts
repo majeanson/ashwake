@@ -4,24 +4,21 @@ import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress, type TeachId } from '@meta/progress';
 import { createSession, type Snapshot } from './store';
-import { newDots, nextLesson, type Moment } from './teaching';
-import { tourTarget } from './tourTarget';
+import { newDots, nextLesson, tourTarget, type Moment } from './teaching';
 import { walk } from './walk';
 
 /**
  * Where a lesson points (2026-09-08).
  *
- * `tourTarget` copies each moment's predicate out of `shell/teaching.ts` —
- * deliberately, and the copy is the whole hazard. One file decides whether a
- * card is due and the other decides which hex it means, and a predicate edited
- * on one side leaves the other pointing at nothing, or at the wrong nothing.
- * That failure is silent: the card still fires, the camera simply does not go.
+ * Since 2026-10-13 `tourTarget` is a lookup over `SCHEDULE`, and every slot
+ * about a cell asks `when` and `target` through ONE predicate, so the old
+ * copy-drift hazard is gone for the destinations, WALL and FIELD. RIPE is the
+ * exception: its moment is the HUD's `ripeCount` and its place is the first
+ * ripe cell, two readings that must agree.
  *
- * So the pin below is not "does `tourTarget` return what `tourTarget` returns".
- * It is the one invariant that spans both files: **a targeted lesson has a hex
- * exactly when its moment is true**, asked over thirty real boards. If
- * `teaching.ts` narrows `cache` to unclaimed-and-not-a-beacon, or `ripe` starts
- * counting something else, this fails on the same day.
+ * So the pin below is the one invariant that still spans both: **a targeted
+ * lesson has a hex exactly when its moment is true**, asked over thirty real
+ * boards. If `ripeCount` starts counting something else, this fails the same day.
  *
  * The boards come from a real session walked by `walk`, for `teaching.test.ts`'s
  * reason: a hand-built `BoardView` is a test of a fixture, and the fields in
@@ -67,7 +64,7 @@ const onlyUnmet = (id: TeachId): Progress =>
 // WALL and FIELD joined on 2026-09-08, on Marc's answer: all seven concepts
 // that stand on the map get the trip. They are the two toast-class entries —
 // spoken while a hand is still moving rather than off a card just dismissed —
-// and so the two most worth watching in Session A. See `tourTarget.ts`.
+// and so the two most worth watching in Session A. See `SCHEDULE`.
 const TARGETED: readonly TeachId[] = [
   'ripe',
   'cache',

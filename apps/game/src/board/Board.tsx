@@ -212,7 +212,7 @@ export type BoardHandle = {
    * that meant closer or merely centred, *"zoom out then zoom in then back"*.
    * Widened 2026-09-08 to every concept the drip teaches that stands on the
    * map: *"yes do the same for caches, sites and territories"*. Which hexes
-   * those are is `shell/tourTarget.ts`; this only knows how to go and look.
+   * those are is `tourTarget` in `shell/teaching.ts`; this only knows how to go and look.
    *
    * A `visit` shows where something HAPPENED and keeps the player's zoom on
    * purpose. This one answers a different question — "which of these is the

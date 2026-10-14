@@ -1,6 +1,7 @@
 import { type Tuning } from '@content/tuning';
+import type { HexKey } from '@engine/hex';
 import { hasMet, meet, type Progress, type TeachId } from '@meta/progress';
-import type { BoardView } from '@render/Renderer';
+import type { BoardView, CellView } from '@render/Renderer';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
 import { statNote, type HudView } from '@view/view';
@@ -35,76 +36,6 @@ type Teach = {
   readonly as: 'card' | 'toast';
 };
 
-/**
- * The order moments are asked in.
- *
- * Roughly the order a first run meets them, with the two that describe the
- * board's own state — a tile ripening, a pocket ready — ahead of the ones that
- * describe the economy, because a player who does not know what RIPE means
- * cannot use anything they are told about cost.
- */
-const ORDER: readonly TeachId[] = [
-  'story',
-  'goal',
-  'place',
-  'ripe',
-  'pop',
-  // The caravan's card, the first time it is IN TOWN with a pocket to try
-  // (2026-09-30). POP is true whenever it is, and comes first, so the card
-  // about a reason to pop never lands before the card about popping. It
-  // stands ten placements, so a card held back a beat is not missed.
-  'caravan',
-  'costRise',
-  'cache',
-  'site',
-  'shrine',
-  'territory',
-  'wall',
-  'field',
-  'rare',
-  'rareUnique',
-  'lens',
-  'luck',
-  'reroll',
-  'purse',
-  'relic',
-  'colours',
-  'lastGasp',
-];
-
-/**
- * Which ones interrupt. A concept earns a card; a consequence gets a line.
- *
- * Exported for one test (2026-09-30): every id here must be a card something
- * DRAWS. COLOURS sat in this set with no lesson for a month, so `LessonCard`
- * drew nothing, nothing told it, and LAST GASP behind it never spoke.
- */
-export const CARDS = new Set<TeachId>([
-  'story',
-  'goal',
-  'ripe',
-  'pop',
-  'caravan',
-  'cache',
-  'site',
-  'luck',
-  'purse',
-  'relic',
-  'colours',
-]);
-
-/**
- * THE ONES THAT DO NOT INTERRUPT (2026-10-12, Marc: _"card with new dot"_).
- *
- * A magic tile, a unique tile, a territory and a shrine are each worth a card
- * and none is worth stopping the game for: the player can be playing perfectly
- * well without knowing what they are. They wait as a NEW chip over the hand,
- * and the card opens when it is tapped. They are not in `CARDS` because
- * nothing fires them, and `nextLesson` passes over them, so a chip nobody has
- * tapped never holds back a lesson behind it.
- */
-const DOTS: ReadonlySet<TeachId> = new Set<TeachId>(['rare', 'rareUnique', 'territory', 'shrine']);
-
 export type Moment = {
   readonly board: BoardView;
   readonly hud: HudView;
@@ -117,6 +48,281 @@ export type Moment = {
    */
   readonly since?: number | undefined;
 };
+
+type Phase = 'walk' | 'tour' | 'free';
+
+/**
+ * One moment, everything the game knows about it, in one place (2026-10-13).
+ *
+ * This was nine hand-synced lists — the order, the card set, the chip set, the
+ * unpaced set, the per-phase allowance, `isTrue`'s switch, `toastLine`'s
+ * switch, and `tourTarget`'s copy of the cell predicates — and a new moment
+ * had to land in each by hand. `TEACH_IDS` coverage is a test now
+ * (`teaching.test.ts`), so a moment missing from this table fails loudly.
+ */
+type Slot = {
+  readonly id: TeachId;
+  /**
+   * Card, toast or chip. **Which ones interrupt:** a concept earns a card; a
+   * consequence gets a line.
+   *
+   * A chip is THE ONES THAT DO NOT INTERRUPT (2026-10-12, Marc: _"card with new
+   * dot"_): a magic tile, a unique tile, a territory and a shrine are each
+   * worth a card and none is worth stopping the game for: the player can be
+   * playing perfectly well without knowing what they are. They wait as a NEW
+   * chip over the hand, and the card opens when it is tapped. Nothing FIRES
+   * them, and `nextLesson` passes over them, so a chip nobody has tapped never
+   * holds back a lesson behind it.
+   *
+   * Every card here must be one something DRAWS (2026-09-30): COLOURS sat in
+   * the card set with no lesson for a month, so `LessonCard` drew nothing,
+   * nothing told it, and LAST GASP behind it never spoke.
+   */
+  readonly as: 'card' | 'toast' | 'chip';
+  /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
+  readonly phase?: 'walk' | 'tour';
+  /**
+   * Present (as `false`) when the pace never holds this back. The opening
+   * beats come before there is a pace to keep; RIPE and POP are the two ideas
+   * the game cannot be played without, and waiting four placements to hear
+   * what a ripe tile is would be the confusion the gate exists to cure; THE
+   * FOUR GROUNDS is what the first placement is a choice between, so it is told
+   * the moment there is one; LAST GASP is the one lesson whose moment passes
+   * with the next placement.
+   */
+  readonly paced?: false;
+  /**
+   * Whether the moment is happening.
+   *
+   * Every one reads the CURRENT view and nothing else — no diffing, no
+   * remembered previous frame. A moment that is true for as long as its
+   * condition holds is a moment that cannot be missed because a frame was
+   * dropped, and the ledger is what stops it firing twice.
+   */
+  readonly when: (now: Moment) => boolean;
+  /**
+   * The hex a lesson is ABOUT, where a lesson is about a hex at all (see
+   * `tourTarget`). A slot about a cell asks `when` and `target` through ONE
+   * cell predicate, so the card and the trip cannot drift apart.
+   */
+  readonly target?: (board: BoardView) => HexKey | null;
+  /**
+   * The toast's own words — one line per toast-class moment (2026-09-03). Null
+   * means the moment's evidence is gone from the board: the caller says nothing
+   * and the ledger keeps the moment armed. See `toastLine`.
+   */
+  readonly line?: (now: Moment, t: Tuning, theme: Theme, s: Strings) => string | null;
+};
+
+/** A slot whose moment is a cell on the board: `when` and `target` share `p`. */
+const onCell = (p: (c: CellView) => boolean): Pick<Slot, 'when' | 'target'> => ({
+  when: (now) => now.board.cells.some(p),
+  target: (board) => board.cells.find(p)?.key ?? null,
+});
+
+/** The four destinations, all one test — a fifth reward kind lands here or nowhere. */
+const landmark =
+  (id: 'cache' | 'site' | 'shrine' | 'territory') =>
+  (c: CellView): boolean =>
+    c.kind === 'landmark' && !c.claimed && c.landmark === id;
+
+/**
+ * Every moment, in the order they are asked.
+ *
+ * Roughly the order a first run meets them, with the two that describe the
+ * board's own state — a tile ripening, a pocket ready — ahead of the ones that
+ * describe the economy, because a player who does not know what RIPE means
+ * cannot use anything they are told about cost.
+ *
+ * ## What `target` deliberately leaves out
+ *
+ * **POP**, though `hud.canHarvest` is as true of a place as RIPE is. Its card
+ * explains a BUTTON, and the pocket it would fly to is the same pocket RIPE's
+ * card just flew to a beat earlier — two trips to one hex, for one idea.
+ *
+ * **RARE and UNIQUE**, which are in the hand; **LUCK, THE PURSE, RELICS, THE
+ * COLOURS, the story** and the cost line, which are about the run rather than
+ * about ground.
+ *
+ * ## WALL and FIELD were the interesting omission, and they are IN (2026-09-08)
+ *
+ * Marc, 2026-09-06, of the shrine: _"zoom on it then zoom back where the user
+ * was (same view) so its clearer"_; and 2026-09-08, of the rest: _"yes do the
+ * same for caches, sites and territories and other concepts on the map"_.
+ *
+ * They are the two toast-class places — a line beside a game still in motion,
+ * spoken on the quiet beat after a placement — and were argued out on the
+ * strength of the oldest camera ruling here, Marc, 2026-08-29: _"when we
+ * place a tile, make sure the map doesnt move and stays stationary, it always
+ * zoom in or zoom out a bit and its annoying."_ Put to him with that argument
+ * on 2026-09-08, he chose **fly to them too**: all seven concepts on the map
+ * get the same treatment.
+ *
+ * **The ruling is not broken by this, and the distinction is worth keeping
+ * straight.** What Marc objected to was the board moving on EVERY placement —
+ * an ambient, unasked-for drift that made the map feel unstable. Each of these
+ * fires **once per device, ever**, the first time that idea is met. A trip
+ * nobody can trigger twice is an event, not a behaviour; the ruling is about
+ * the behaviour.
+ *
+ * They are still the two entries most worth watching in Session A, for the one
+ * reason that has not changed: unlike the five above, these speak while the
+ * player's hand is still moving. If either reads as the map running away,
+ * dropping their `target` is one line each.
+ */
+export const SCHEDULE: readonly Slot[] = [
+  {
+    id: 'story',
+    as: 'card',
+    phase: 'walk',
+    paced: false,
+    // Ahead of PLACE by construction: true from the first frame of any run,
+    // board geometry included, so it is the one card a stranger cannot fail to
+    // meet.
+    when: () => true,
+  },
+  {
+    id: 'goal',
+    as: 'card',
+    phase: 'walk',
+    paced: false,
+    // Right behind the story, on the same first frame: what this place is, then
+    // what to do in it.
+    when: () => true,
+  },
+  {
+    id: 'place',
+    as: 'toast',
+    phase: 'walk',
+    paced: false,
+    // The first thing anyone sees: there is somewhere to put a tile.
+    when: ({ placed, board }) => !placed && board.cells.some((c) => c.legal),
+    line: (_now, _t, _theme, s) => s.coach.place,
+  },
+  {
+    id: 'ripe',
+    as: 'card',
+    phase: 'walk',
+    paced: false,
+    // `target` and `when` differ here on purpose: the moment is the HUD's count
+    // of ripe tiles, the place is the first ripe cell. `tourTarget.test.ts`
+    // pins that they agree over real boards.
+    when: ({ hud }) => hud.ripeCount > 0,
+    target: (board) => board.cells.find((c) => c.ripe)?.key ?? null,
+  },
+  {
+    id: 'pop',
+    as: 'card',
+    phase: 'walk',
+    paced: false,
+    when: ({ hud }) => hud.canHarvest,
+  },
+  // The caravan's card, the first time it is IN TOWN with a pocket to try
+  // (2026-09-30). POP is true whenever it is, and comes first, so the card
+  // about a reason to pop never lands before the card about popping. It
+  // stands ten placements, so a card held back a beat is not missed.
+  {
+    id: 'caravan',
+    as: 'card',
+    // In town AND something to pop: the card says "that is the moment to try a
+    // pop", so it fires when a pop can be tried — and never ahead of POP's own
+    // card, whose moment is exactly `canHarvest`.
+    when: ({ hud }) => hud.caravan === 'town' && hud.canHarvest,
+  },
+  {
+    id: 'costRise',
+    as: 'toast',
+    when: ({ hud }) => hud.cost > 1,
+    line: (now, t, _theme, s) => statNote('cost', now.hud, t, s),
+  },
+  { id: 'cache', as: 'card', ...onCell(landmark('cache')) },
+  { id: 'site', as: 'card', ...onCell(landmark('site')) },
+  { id: 'shrine', as: 'chip', ...onCell(landmark('shrine')) },
+  // In the tour a territory is a card, not a chip: see `nextLesson`.
+  { id: 'territory', as: 'chip', phase: 'tour', ...onCell(landmark('territory')) },
+  {
+    id: 'wall',
+    as: 'toast',
+    ...onCell((c) => c.kind === 'wall'),
+    line: (_now, _t, _theme, s) => s.ui.legendWall,
+  },
+  {
+    id: 'field',
+    as: 'toast',
+    ...onCell((c) => c.kind === 'empty' && c.native !== null),
+    line: (now, _t, theme, s) => {
+      const cell = now.board.cells.find((c) => c.kind === 'empty' && c.native !== null);
+      return cell?.native == null ? null : s.view.hex.native(namesOf(theme, s.locale)[cell.native]);
+    },
+  },
+  // In the tour MAGIC is a card, told once LUCK has been: see `nextLesson`.
+  {
+    id: 'rare',
+    as: 'chip',
+    phase: 'tour',
+    when: ({ hud }) => hud.draft.some((c) => c.rarity === 'magic'),
+  },
+  {
+    id: 'rareUnique',
+    as: 'chip',
+    when: ({ hud }) => hud.draft.some((c) => c.rarity === 'unique'),
+  },
+  {
+    id: 'lens',
+    as: 'toast',
+    // Only worth explaining once there is enough board to sort through.
+    when: ({ board }) => board.cells.filter((c) => c.kind === 'tile').length >= 6,
+    line: (_now, _t, _theme, s) => s.lensHint,
+  },
+  { id: 'luck', as: 'card', phase: 'tour', when: ({ hud }) => hud.luck > 0 },
+  {
+    id: 'reroll',
+    as: 'toast',
+    // A poor hand AND the luck to do something about it: a hint about a button
+    // that cannot be pressed is a taunt.
+    when: ({ hud }) =>
+      hud.poorHand && hud.spends.some((spend) => spend.on === 'reroll' && spend.affordable),
+    line: (now, _t, _theme, s) => {
+      const row = now.hud.spends.find((spend) => spend.on === 'reroll');
+      return row === undefined ? null : s.rerollHint(row.cost);
+    },
+  },
+  {
+    id: 'purse',
+    as: 'card',
+    /*
+     * Fired by the player OPENING the purse, not by having one, so it is
+     * never true here — see `App`'s `onPurse`, which raises
+     * `purseLesson`'s card and then marks it told.
+     *
+     * That handler marked it told and showed NOTHING until 2026-08-30, so
+     * this `false` was load-bearing for a lesson that could not fire from
+     * anywhere. A moment that is always false is only honest while
+     * something else owns the moment; when nothing does, it is a lesson
+     * spending its own ledger entry to say nothing.
+     */
+    when: () => false,
+  },
+  { id: 'relic', as: 'card', when: ({ hud }) => hud.relics > 0 },
+  {
+    id: 'colours',
+    as: 'card',
+    phase: 'walk',
+    paced: false,
+    when: ({ placed, hud }) => placed && hud.draft.length > 0,
+  },
+  {
+    id: 'lastGasp',
+    as: 'toast',
+    paced: false,
+    // The clock's last placement, or — in a run with no clock, which is most of
+    // them — fewer tiles than the next one costs. It read only the first, so it
+    // never fired where there is no clock (2026-10-12).
+    when: ({ hud }) =>
+      (hud.left !== null && hud.left <= 1) || (hud.tiles > 0 && hud.tiles < hud.cost),
+    line: (_now, _t, _theme, s) => s.lastGaspRule,
+  },
+];
 
 /**
  * THE PACE (2026-10-12, two strangers: _"trop d'information trop vite trop
@@ -136,16 +342,6 @@ export const CARD_GAP = 4;
  */
 export const sinceSpoke = (spokeAt: number | null, placements: number): number | undefined =>
   spokeAt === null || spokeAt > placements ? undefined : placements - spokeAt;
-
-/**
- * What is never held back. The opening beats come before there is a pace to
- * keep; RIPE and POP are the two ideas the game cannot be played without, and
- * waiting four placements to hear what a ripe tile is would be the confusion
- * this gate exists to cure; THE FOUR GROUNDS is what the first placement is
- * a choice between, so it is told the moment there is one; LAST GASP is the
- * one lesson whose moment passes with the next placement.
- */
-const UNPACED = new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'lastGasp']);
 
 /**
  * THE FIRST RUN IS WALKED (2026-10-12, Marc: _"take the user by the hand and
@@ -173,16 +369,11 @@ export const guided = (progress: Progress): boolean => phaseOf(progress) !== 'fr
  * - **tour**: from that pop until the first run ends. LUCK, then MAGIC, then
  *   build one big pocket and cash it, then how a run ends.
  * - **free**: everything else, as the drip has always had it.
+ *
+ * What may still speak in each is the slot's `phase`. Held back, not dropped.
  */
-type Phase = 'walk' | 'tour' | 'free';
 export const phaseOf = (progress: Progress): Phase =>
   !hasMet(progress, 'walked') ? 'walk' : !hasMet(progress, 'toured') ? 'tour' : 'free';
-
-/** What may still speak, by phase. Held back, not dropped. */
-const ALLOWED: Readonly<Record<'walk' | 'tour', ReadonlySet<TeachId>>> = {
-  walk: new Set<TeachId>(['story', 'goal', 'place', 'colours', 'ripe', 'pop']),
-  tour: new Set<TeachId>(['luck', 'rare', 'territory']),
-};
 
 /**
  * Whether the player must pop before they may place (the walk's one hard
@@ -201,7 +392,7 @@ type CoachStep = 'place' | 'match' | 'grow' | 'pop' | 'build' | 'bank' | 'end';
 
 /**
  * Which step, or null when the walk is over. Read from the current view only,
- * like `isTrue`: no remembered frame, so a step cannot be missed.
+ * like each slot's `when`: no remembered frame, so a step cannot be missed.
  */
 export function coachStep(now: Moment, progress: Progress): CoachStep | null {
   const phase = phaseOf(progress);
@@ -230,7 +421,7 @@ export function coachStep(now: Moment, progress: Progress): CoachStep | null {
  * For one day this function skipped toast-class moments, because the drip's
  * audit found the toast half had NO SPEAKER: `App` consumed `nextLesson`
  * only where `as === 'card'`, so a returned toast was words nobody saw that
- * stood in front of every card behind it in `ORDER` — `wall` alone blocked
+ * stood in front of every card behind it in `SCHEDULE` — `wall` alone blocked
  * MAGIC, UNIQUE, LUCK, RELICS and COLOURS on every fresh device. The
  * fifteenth mechanic of the unconsumed-consumer shape, and the first that
  * was silently eating OTHER mechanics.
@@ -244,7 +435,8 @@ export function coachStep(now: Moment, progress: Progress): CoachStep | null {
  */
 export function nextLesson(now: Moment, progress: Progress): Teach | null {
   const phase = phaseOf(progress);
-  for (const id of ORDER) {
+  for (const slot of SCHEDULE) {
+    const { id } = slot;
     // In the tour MAGIC and a TERRITORY are cards, not chips: a chip nobody
     // taps is a lesson that never happens. MAGIC is told once LUCK has been,
     // because a magic tile cannot be dealt on cue and so the concept is taught
@@ -253,12 +445,12 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     // dismissal flies the camera to it like every place's does.
     const magicTurn = phase === 'tour' && id === 'rare';
     const tourCard = magicTurn || (phase === 'tour' && id === 'territory');
-    if (hasMet(progress, id) || (DOTS.has(id) && !tourCard)) continue;
+    if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
-    if (phase !== 'free' && !ALLOWED[phase].has(id)) continue;
-    if (!(magicTurn ? hasMet(progress, 'luck') : isTrue(id, now))) continue;
-    if (!UNPACED.has(id) && now.since !== undefined && now.since < CARD_GAP) continue;
-    return { id, as: CARDS.has(id) || tourCard ? 'card' : 'toast' };
+    if (phase !== 'free' && slot.phase !== phase) continue;
+    if (!(magicTurn ? hasMet(progress, 'luck') : slot.when(now))) continue;
+    if (slot.paced !== false && now.since !== undefined && now.since < CARD_GAP) continue;
+    return { id, as: slot.as === 'toast' ? 'toast' : 'card' };
   }
   return null;
 }
@@ -274,7 +466,9 @@ export const newDots = (now: Moment, progress: Progress): readonly TeachId[] =>
   // and a sentence is the clutter this pace exists to prevent.
   guided(progress) || (now.since !== undefined && now.since < CARD_GAP)
     ? []
-    : ORDER.filter((id) => DOTS.has(id) && !hasMet(progress, id) && isTrue(id, now));
+    : SCHEDULE.filter((s) => s.as === 'chip' && !hasMet(progress, s.id) && s.when(now)).map(
+        (s) => s.id,
+      );
 
 /**
  * The chips a run has offered, in the order they came, and not yet opened
@@ -307,124 +501,27 @@ export const offerDots = (
  *
  * Null means the moment's evidence is gone from the board (a `field` cell no
  * longer in view): the caller says nothing and the ledger keeps the moment
- * armed.
+ * armed. A card-class id has no line: the card is its voice.
  */
-export function toastLine(
+export const toastLine = (
   id: TeachId,
   now: Moment,
   t: Tuning,
   theme: Theme,
   s: Strings,
-): string | null {
-  switch (id) {
-    case 'place':
-      return s.coach.place;
-    case 'costRise':
-      return statNote('cost', now.hud, t, s);
-    case 'wall':
-      return s.ui.legendWall;
-    case 'field': {
-      const cell = now.board.cells.find((c) => c.kind === 'empty' && c.native !== null);
-      return cell?.native == null ? null : s.view.hex.native(namesOf(theme, s.locale)[cell.native]);
-    }
-    case 'lens':
-      return s.lensHint;
-    case 'reroll': {
-      const row = now.hud.spends.find((spend) => spend.on === 'reroll');
-      return row === undefined ? null : s.rerollHint(row.cost);
-    }
-    case 'lastGasp':
-      return s.lastGaspRule;
-    default:
-      // A card-class id has no line: the card is its voice.
-      return null;
-  }
-}
+): string | null => SCHEDULE.find((slot) => slot.id === id)?.line?.(now, t, theme, s) ?? null;
+
+/**
+ * The hex a lesson is ABOUT, where a lesson is about a hex at all.
+ *
+ * `find` over the slot's cell predicate in the same order as its `when`'s
+ * `some`, so the card that fires and the hex it flies to are the same cell,
+ * sharing one predicate (`onCell`) rather than a copy that could drift.
+ * `tourTarget.test.ts` pins that a target exists exactly when the moment is
+ * true. Null for every lesson that is not about a place.
+ */
+export const tourTarget = (id: TeachId, board: BoardView): HexKey | null =>
+  SCHEDULE.find((slot) => slot.id === id)?.target?.(board) ?? null;
 
 /** Mark one told. Idempotent, so a double-dismiss cannot double-write. */
 export const told = (progress: Progress, id: TeachId): Progress => meet(progress, id);
-
-/**
- * Whether a moment is happening.
- *
- * Every one of these reads the CURRENT view and nothing else — no diffing, no
- * remembered previous frame. A moment that is true for as long as its condition
- * holds is a moment that cannot be missed because a frame was dropped, and the
- * ledger is what stops it firing twice.
- */
-function isTrue(id: TeachId, now: Moment): boolean {
-  const { board, hud, placed } = now;
-  switch (id) {
-    case 'story':
-      // Ahead of PLACE by construction (see `ORDER`): true from the first
-      // frame of any run, board geometry included, so it is the one card a
-      // stranger cannot fail to meet.
-      return true;
-    case 'goal':
-      // Right behind the story by `ORDER`, on the same first frame: what this
-      // place is, then what to do in it.
-      return true;
-    case 'place':
-      // The first thing anyone sees: there is somewhere to put a tile.
-      return !placed && board.cells.some((c) => c.legal);
-    case 'ripe':
-      return hud.ripeCount > 0;
-    case 'pop':
-      return hud.canHarvest;
-    case 'caravan':
-      // In town AND something to pop: the card says "that is the moment to
-      // try a pop", so it fires when a pop can be tried — and never ahead of
-      // POP's own card, whose moment is exactly `canHarvest`.
-      return hud.caravan === 'town' && hud.canHarvest;
-    case 'costRise':
-      return hud.cost > 1;
-    case 'cache':
-    case 'site':
-    case 'shrine':
-    case 'territory':
-      return board.cells.some((c) => c.kind === 'landmark' && !c.claimed && c.landmark === id);
-    case 'wall':
-      return board.cells.some((c) => c.kind === 'wall');
-    case 'field':
-      return board.cells.some((c) => c.kind === 'empty' && c.native !== null);
-    case 'rare':
-      return hud.draft.some((c) => c.rarity === 'magic');
-    case 'rareUnique':
-      return hud.draft.some((c) => c.rarity === 'unique');
-    case 'lens':
-      // Only worth explaining once there is enough board to sort through.
-      return board.cells.filter((c) => c.kind === 'tile').length >= 6;
-    case 'luck':
-      return hud.luck > 0;
-    case 'reroll':
-      // A poor hand AND the luck to do something about it: a hint about a
-      // button that cannot be pressed is a taunt.
-      return hud.poorHand && hud.spends.some((spend) => spend.on === 'reroll' && spend.affordable);
-    case 'purse':
-      /*
-       * Fired by the player OPENING the purse, not by having one, so it is
-       * never true here — see `App`'s `onPurse`, which raises
-       * `purseLesson`'s card and then marks it told.
-       *
-       * That handler marked it told and showed NOTHING until 2026-08-30, so
-       * this `false` was load-bearing for a lesson that could not fire from
-       * anywhere. A moment that is always false is only honest while
-       * something else owns the moment; when nothing does, it is a lesson
-       * spending its own ledger entry to say nothing.
-       */
-      return false;
-    case 'relic':
-      return hud.relics > 0;
-    case 'colours':
-      return placed && hud.draft.length > 0;
-    case 'lastGasp':
-      // The clock's last placement, or — in a run with no clock, which is
-      // most of them — fewer tiles than the next one costs. It read only the
-      // first, so it never fired where there is no clock (2026-10-12).
-      return (hud.left !== null && hud.left <= 1) || (hud.tiles > 0 && hud.tiles < hud.cost);
-    case 'toured':
-    case 'walked':
-      // Written by the first pop that lands, never by a moment.
-      return false;
-  }
-}
