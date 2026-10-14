@@ -8,7 +8,14 @@ import type { Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
 import type { Strings } from '@text/Strings';
-import { LESSONS, lessonDefine, lessonDetail, lessonTerms, type Lesson } from './lessons';
+import {
+  LESSONS,
+  lessonCardDefine,
+  lessonDefine,
+  lessonDetail,
+  lessonTerms,
+  type Lesson,
+} from './lessons';
 import { perkRows } from './tips';
 import { colourLesson, statNote, toHudView } from './view';
 
@@ -169,6 +176,41 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
           ).join(' | ');
         }
       }
+      expect(out).toMatchSnapshot();
+    });
+
+    /**
+     * THE MAP (2026-10-13): the one lesson that now holds the fog, its
+     * destinations and the lens. Its `core` and first-contact card are pinned
+     * as sentences; each row as the name, the words that open it, its sentence
+     * and the manual-depth lines under it. These replace the glossary keys of
+     * the eight lessons it absorbed (cache, site, shrine, territory, find,
+     * bounty, field, lens).
+     */
+    it('pins THE MAP: its core, its card, and each row with its words and lines', () => {
+      const map = LESSONS.find((l) => l.id === 'map');
+      if (map === undefined) throw new Error('THE MAP is gone');
+      const out: Record<string, string | readonly string[]> = {};
+      out['name'] = s.lesson.map.name;
+      out['terms'] = map.rowHeads?.(s).map((h) => `${h.key}: ${h.terms.join(', ')}`) ?? [];
+      for (const [tName, t] of TUNINGS) {
+        for (const [themeName, theme] of THEMES) {
+          out[`map · ${tName} · ${themeName}`] = lessonDefine(map, t, theme, s);
+          out[`card · ${tName} · ${themeName}`] = lessonCardDefine(map, t, theme, s);
+          for (const row of map.rows?.(t, theme, s) ?? []) {
+            out[`row · ${row.key} · ${tName} · ${themeName}`] = [
+              row.name ?? '',
+              row.text,
+              ...(row.lines ?? []).map((line) => line.text),
+            ].join(' | ');
+          }
+        }
+      }
+      // A territory on a board with no ledger says its other sentence.
+      out['territory · no ledger'] =
+        map
+          .rows?.({ ...TUNING, territoryPays: TUNING.cachePays }, SETTLEMENT, s)
+          .find((r) => r.key === 'territory')?.text ?? '';
       expect(out).toMatchSnapshot();
     });
 

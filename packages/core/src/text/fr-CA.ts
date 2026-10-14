@@ -95,42 +95,6 @@ export const STRINGS_FR: Strings = {
       terms: ['VALEUR'],
       core: `La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance${D}: la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.`,
     },
-    cache: {
-      name: 'CACHE',
-      terms: ['CACHE'],
-      coreRing: (pays, perRing) =>
-        `Une CACHE paie ${pays} tuiles sur-le-champ, +${perRing} par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.`,
-      core: (pays) =>
-        `Une CACHE paie ${pays} tuiles sur-le-champ dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.`,
-    },
-    site: {
-      name: 'SITE',
-      terms: ['SITE'],
-      core: (pays) =>
-        `Un SITE se réclame en posant une tuile qui le touche. Il paie alors ${pays} points × sa distance du départ, et il ouvre une PRIME${D}: un bonus de plus à aller chercher (voir PRIME). Les sites se réarment à chaque partie, alors un site réclamé vaut la peine d’y retourner.`,
-    },
-    shrine: {
-      name: 'SANCTUAIRE',
-      terms: ['SANCTUAIRE'],
-      core: 'Un SANCTUAIRE allume un système pour ton monde, pour de bon, dès que tu le réclames. Une fois tous les sanctuaires éveillés, le suivant offre plutôt un passage vers un nouveau monde.',
-    },
-    territory: {
-      name: 'TERRITOIRE',
-      terms: ['TERRITOIRE'],
-      core: (radius, tiles, cap) =>
-        `Un TERRITOIRE rend le sol à ${radius} hex à la ronde natal de sa couleur, pour de bon.${
-          tiles > 0
-            ? ` Chacun que tu tiens fait commencer tes prochaines parties avec +${tiles} tuiles, jusqu’à +${cap}.`
-            : ''
-        }`,
-      pays: (radius, tiles) =>
-        `Un TERRITOIRE te donne +${nb(tiles)} tuiles et rend le sol à ${radius} hex à la ronde natal de sa couleur. Sur ce plateau, ça dure la partie, à moins que tu gardes le plateau comme l’un de tes mondes.`,
-    },
-    find: {
-      name: 'TROUVAILLE',
-      terms: ['TROUVAILLES', 'TROUVAILLE'],
-      core: 'Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.',
-    },
     stone: {
       name: 'PIERRE',
       terms: ['PIERRE'],
@@ -157,12 +121,6 @@ export const STRINGS_FR: Strings = {
       name: 'RELIQUES',
       terms: ['RELIQUES', 'RELIQUE'],
       core: `Les reliques ne sont pas des points. Elles achètent la PROCHAINE partie${D}: elles te suivent quand une partie finit, et LA BOUTIQUE de l’écran de fin les dépense, alors chaque partie démarre plus fort que la précédente.`,
-    },
-    bounty: {
-      name: 'PRIME',
-      terms: ['PRIME'],
-      core: (need, radius, bonus) =>
-        `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site, en prenant les POINTS (pas les tuiles)${D}: cette récolte marque ×${bonus}. Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant que celle-ci attend.`,
     },
     caravan: {
       name: 'CARAVANE',
@@ -253,15 +211,67 @@ export const STRINGS_FR: Strings = {
       core: 'La PORTÉE, c’est jusqu’où tu as bâti depuis le départ.',
       multiplier: (step) => REACH_RULE(step),
     },
-    field: {
-      name: 'TERRE NATALE',
-      terms: [],
-      core: `Le sol qu’un TERRITOIRE tient est natal de sa couleur${D}: une tuile de cette couleur posée là vaut un de plus.`,
-    },
-    lens: {
-      name: 'LE BROUILLARD',
+    /**
+     * LA CARTE (2026-10-13): le brouillard, ses destinations et la lentille
+     * sont un seul concept. Huit leçons (cache, site, sanctuaire, territoire,
+     * trouvaille, prime, terre natale, brouillard) et le bloc du manuel sur la
+     * lentille y sont devenus des rangées; les phrases n’ont pas bougé, sauf
+     * celle du SITE, qui ne renvoie plus à la PRIME (la règle est dessous).
+     */
+    map: {
+      name: 'LA CARTE',
       terms: [],
       core: 'Le monde se souvient. Le sol que tu as parcouru reste sur la carte entre les parties, tamisé sous le brouillard, et les destinations non réclamées luisent au travers.',
+      pays: 'Chaque destination paie dès qu’une tuile posée la touche.',
+      row: {
+        cache: {
+          name: 'CACHE',
+          terms: ['CACHE'],
+          coreRing: (pays, perRing) =>
+            `Une CACHE paie ${pays} tuiles sur-le-champ, +${perRing} par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.`,
+          core: (pays) =>
+            `Une CACHE paie ${pays} tuiles sur-le-champ dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.`,
+        },
+        site: {
+          name: 'SITE',
+          terms: ['PRIME', 'SITE'],
+          bountyName: 'PRIME',
+          core: (pays) =>
+            `Un SITE se réclame en posant une tuile qui le touche. Il paie alors ${pays} points × sa distance du départ, et il ouvre une PRIME. Les sites se réarment à chaque partie, alors un site réclamé vaut la peine d’y retourner.`,
+          bounty: (need, radius, bonus) =>
+            `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site, en prenant les POINTS (pas les tuiles)${D}: cette récolte marque ×${bonus}. Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant que celle-ci attend.`,
+        },
+        shrine: {
+          name: 'SANCTUAIRE',
+          terms: ['SANCTUAIRE'],
+          core: 'Un SANCTUAIRE allume un système pour ton monde, pour de bon, dès que tu le réclames. Une fois tous les sanctuaires éveillés, le suivant offre plutôt un passage vers un nouveau monde.',
+        },
+        territory: {
+          name: 'TERRITOIRE',
+          terms: ['TERRITOIRE'],
+          core: (radius, tiles, cap) =>
+            `Un TERRITOIRE rend le sol à ${radius} hex à la ronde natal de sa couleur, pour de bon.${
+              tiles > 0
+                ? ` Chacun que tu tiens fait commencer tes prochaines parties avec +${tiles} tuiles, jusqu’à +${cap}.`
+                : ''
+            }`,
+          pays: (radius, tiles) =>
+            `Un TERRITOIRE te donne +${nb(tiles)} tuiles et rend le sol à ${radius} hex à la ronde natal de sa couleur. Sur ce plateau, ça dure la partie, à moins que tu gardes le plateau comme l’un de tes mondes.`,
+          native: `Le sol qu’un TERRITOIRE tient est natal de sa couleur${D}: une tuile de cette couleur posée là vaut un de plus.`,
+        },
+        find: {
+          name: 'TROUVAILLE',
+          terms: ['TROUVAILLES', 'TROUVAILLE'],
+          core: 'Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.',
+        },
+        lens: {
+          name: 'LA LENTILLE',
+          terms: [],
+          open: `Le bouton loupe à côté de la CHANCE ouvre la lentille${D}: une ligne par sol, avec combien de ses tuiles sont en place, ce qu’elles valent et combien sont mûres.`,
+          hold: 'Touche une ligne pour tenir la lentille sur ce sol. Le plateau l’éclaire, et le panneau montre son pouvoir et ses stats; l’onglet LE PRIX montre ce que sa meilleure poche rapporterait si tu la récoltais maintenant. Touche la ligne encore pour lâcher.',
+          read: 'Touche n’importe quelle ligne d’un tableau pour lire ce qu’elle veut dire. Garder le doigt appuyé sur une tuile de ta main éclaire son sol de la même façon.',
+        },
+      },
     },
   },
   luckCore: LUCK_CORE,
@@ -780,7 +790,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     forge: 'FORGER',
     sacrificeLuck: 'SACRIFIER LA CHANCE',
     sacrificeLuckFor: (relics) => `SACRIFIER LA CHANCE POUR ${relics}`,
-    tabs: { start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN', grounds: 'COULEURS' },
+    tabs: { start: 'EXPÉDITION', grounds: 'SOLS', world: 'MONDE', hand: 'MAIN' },
     fame: {
       title: 'TEMPLE DE LA RENOMMÉE',
       diary: 'JOURNAL',
@@ -851,14 +861,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
         'Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent.',
         'Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part.',
         'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
-      ],
-    },
-    lensGuide: {
-      title: 'LA LENTILLE',
-      lines: [
-        `Le bouton loupe à côté de la CHANCE ouvre la lentille${D}: une ligne par sol, avec combien de ses tuiles sont en place, ce qu’elles valent et combien sont mûres.`,
-        'Touche une ligne pour tenir la lentille sur ce sol. Le plateau l’éclaire, et le panneau montre son pouvoir et ses stats; l’onglet LE PRIX montre ce que sa meilleure poche rapporterait si tu la récoltais maintenant. Touche la ligne encore pour lâcher.',
-        'Touche n’importe quelle ligne d’un tableau pour lire ce qu’elle veut dire. Garder le doigt appuyé sur une tuile de ta main éclaire son sol de la même façon.',
       ],
     },
     camera: { flat: 'À PLAT', home: 'DÉFAUT', mine: 'MA VUE' },
@@ -1072,7 +1074,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       lastError: 'DERNIÈRE ERREUR',
       noError: 'Rien n’a brisé sur cet appareil.',
     },
-    legendPlaces: 'LES DESTINATIONS',
     legendMarks: 'LES AUTRES MARQUES',
     legendRare: 'Une tuile rare posée porte un anneau de sa couleur, et se tient plus haute.',
     legendWall: `Mur${D}: impossible d’y bâtir. Il entoure quand même.`,

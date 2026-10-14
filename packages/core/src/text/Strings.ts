@@ -80,43 +80,11 @@ type LessonStrings = {
   };
   readonly pocket: LessonHead & { readonly core: string };
   readonly worth: LessonHead & { readonly core: string };
-  readonly cache: LessonHead & {
-    readonly coreRing: (pays: number, perRing: number) => string;
-    readonly core: (pays: number) => string;
-  };
-  readonly site: LessonHead & { readonly core: (pays: number) => string };
-  readonly shrine: LessonHead & { readonly core: string };
-  /**
-   * The territory lesson, and the one sentence that has to know which KIND of
-   * board it is being read on (2026-09-09).
-   *
-   * A territory pays four ways and three of them need a ledger: the field it
-   * unfurls, `territoryTiles` into every later run's purse, +10 relics on the
-   * crossing, and greeting a later run already yours. On a daily or a shared
-   * board only the first is live — so `core` quoted the two dead numbers and
-   * the word "for good", and never mentioned `territoryPays`, the one number
-   * a territory there actually hands over. `pays` is the same sentence for
-   * that board, and `lessons.ts` picks between them on the dial rather than on
-   * a run kind, so it cannot disagree with what the engine paid.
-   */
-  readonly territory: LessonHead & {
-    readonly core: (radius: number, tiles: number, cap: number) => string;
-    readonly pays: (radius: number, tiles: number) => string;
-  };
-  /** A hidden find, which is a DESTINATION like the four above it. It had no
-   *  lesson of its own until 2026-08-30, and `LESSON_FOR_REWARD` pointed it at
-   *  RELICS instead — so the legend printed a find's mark beside the word
-   *  RELICS, and tapping a find on the board opened the card about the
-   *  currency rather than about the thing you had just touched. */
-  readonly find: LessonHead & { readonly core: string };
   readonly stone: LessonHead & { readonly coreAsh: (red: string) => string; readonly core: string };
   readonly rare: LessonHead & { readonly core: string };
   readonly rareUnique: LessonHead & { readonly core: string };
   readonly luck: LessonHead & { readonly core: string };
   readonly relic: LessonHead & { readonly core: string };
-  readonly bounty: LessonHead & {
-    readonly core: (need: number, radius: number, bonus: number) => string;
-  };
   /**
    * THE CARAVAN (2026-09-30, Marc: _"add respective how to play, guide,
    * hints, etc. for caravans"_). A first-contact card the first time it is in
@@ -210,12 +178,60 @@ type LessonStrings = {
      *  sentence with `view.stat.reach` (one constant per language). */
     readonly multiplier: (step: number) => string;
   };
-  readonly field: LessonHead & { readonly core: string };
-  readonly lens: LessonHead & {
-    /** The world's memory, which nothing in the manual stated: walked ground
-     *  persists under the fog and destinations glow through it. The section's
-     *  second sentence is `lensHint`, shared with the drip's toast. */
+  /**
+   * THE MAP (2026-10-13): the fog, its destinations and the lens are one
+   * concept. It replaced eight lessons that each said one piece of it (cache,
+   * site, shrine, territory, find, bounty, field, lens) and a manual block
+   * (`ui.lensGuide`). `core` is the world's memory; `pays` is the one sentence
+   * that ties the destinations together, and only the fired card prints it.
+   * Each `row` is one thing on the map, with the manual-depth lines it keeps.
+   */
+  readonly map: LessonHead & {
     readonly core: string;
+    /** First contact only: what every destination has in common. */
+    readonly pays: string;
+    readonly row: {
+      readonly cache: LessonHead & {
+        readonly coreRing: (pays: number, perRing: number) => string;
+        readonly core: (pays: number) => string;
+      };
+      readonly site: LessonHead & {
+        /** What a site's second payout is called, where a button says it. */
+        readonly bountyName: string;
+        readonly core: (pays: number) => string;
+        /** The bounty rule, this row's manual-depth line. */
+        readonly bounty: (need: number, radius: number, bonus: number) => string;
+      };
+      readonly shrine: LessonHead & { readonly core: string };
+      /**
+       * The territory row, and the one sentence that has to know which KIND of
+       * board it is being read on (2026-09-09).
+       *
+       * A territory pays four ways and three of them need a ledger: the field
+       * it unfurls, `territoryTiles` into every later run's purse, +10 relics
+       * on the crossing, and greeting a later run already yours. On a daily or
+       * a shared board only the first is live — so `core` quoted the two dead
+       * numbers and the word "for good", and never mentioned `territoryPays`,
+       * the one number a territory there actually hands over. `pays` is the
+       * same sentence for that board, and `lessons.ts` picks between them on
+       * the dial rather than on a run kind, so it cannot disagree with what
+       * the engine paid.
+       */
+      readonly territory: LessonHead & {
+        readonly core: (radius: number, tiles: number, cap: number) => string;
+        readonly pays: (radius: number, tiles: number) => string;
+        /** Native ground, this row's manual-depth line (it was NATIVE GROUND). */
+        readonly native: string;
+      };
+      /** A hidden find, which is a DESTINATION like the four above it. */
+      readonly find: LessonHead & { readonly core: string };
+      /** The lens: three lines, none of them a term (it was `ui.lensGuide`). */
+      readonly lens: LessonHead & {
+        readonly open: string;
+        readonly hold: string;
+        readonly read: string;
+      };
+    };
   };
 };
 
@@ -834,7 +850,7 @@ export type Strings = {
      */
     readonly tabs: {
       readonly start: string;
-      readonly play: string;
+      readonly world: string;
       readonly hand: string;
       readonly grounds: string;
     };
@@ -1028,9 +1044,6 @@ export type Strings = {
     readonly watchSkip: string;
     readonly watching: (step: number, of: number) => string;
     readonly expedition: { readonly title: string; readonly lines: readonly string[] };
-    /** The manual's section on the lens button and its panel — a control, not a
-     *  term, so it has no lesson (the `expedition` shape). */
-    readonly lensGuide: { readonly title: string; readonly lines: readonly string[] };
     /**
      * THE VIEW BUTTON'S THREE STOPS (2026-09-08, Marc: *"Revise all 3 camera
      * modes so the third one is always 'my own custom view' ... Other two would
@@ -1474,7 +1487,6 @@ export type Strings = {
      * written in: a player meets a glyph on a hex and the only way to learn it
      * was to tap that hex, which needs them to have walked there first.
      */
-    readonly legendPlaces: string;
     readonly legendMarks: string;
     readonly legendRare: string;
     readonly legendWall: string;

@@ -12,12 +12,11 @@ import {
 } from '@meta/progress';
 import type { Theme } from '@theme/tokens';
 import { Icon } from '../ui/Icon';
-import type { LessonId } from '@view/lessons';
 import { perkRows } from '@view/tips';
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Panel } from '../ui/Panel';
-import { Prose } from '../ui/Prose';
+import { Prose, type OnTerm } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
 
 /**
@@ -41,7 +40,7 @@ type ShopProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly onProgress: (next: (was: Progress) => Progress) => void;
-  readonly onTerm: (id: LessonId) => void;
+  readonly onTerm: OnTerm;
   /** Given, the shop is a panel; omitted, it is a section of another screen. */
   readonly onBack?: (() => void) | undefined;
 };

@@ -1730,7 +1730,21 @@ export type TipRow = {
    * when to take it and what undoes it. Drawn only by hosts that ask for them
    * (`TipRows` `withLines`), so a card stays a card.
    */
-  readonly lines?: readonly { readonly head: string; readonly text: string }[];
+  readonly lines?: readonly { readonly head?: string; readonly text: string }[];
+  /**
+   * The row's own address inside its lesson (2026-10-13): what a NEW chip, a
+   * term or a board tap names to open THE MAP at this row. A host leads the row
+   * it is asked for.
+   */
+  readonly key?: string;
+  /** The thing the row is about, set in bold before its sentence. */
+  readonly name?: string;
+  /**
+   * A DESTINATION, drawn the board's way: a lit hex on the wall's ground
+   * wearing this mark (the `destinations` figure's own cell). Only registry
+   * marks, like `icon`.
+   */
+  readonly destination?: IconName;
   // `art`, the baked tile as a data URL, went on 2026-09-30: no caller ever
   // supplied one, and `TipRows` now draws the bake for any `colour` row.
 };

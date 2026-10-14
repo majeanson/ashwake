@@ -175,7 +175,7 @@ test('shoots the manual’s legend', async ({ page }) => {
   await page.goto('/?theme=settlement&taught=1');
   await page.locator('[data-door="menu"]').click();
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
-  await page.locator('[data-tab="play"]').click();
+  await page.locator('[data-tab="world"]').click();
   await page.locator('.legend').waitFor({ state: 'visible' });
   await page.waitForTimeout(300);
   await mkdir(SHOTS, { recursive: true });

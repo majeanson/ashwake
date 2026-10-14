@@ -1,7 +1,7 @@
 import type { TeachId } from '@meta/progress';
 import type { Strings } from '@text/Strings';
-import { lessonName, lessonOf } from '@view/lessons';
-import { opensOf } from '../shell/teaching';
+import { lessonOf, rowName } from '@view/lessons';
+import { opensAt } from '../shell/teaching';
 
 /**
  * What the game has to say that is not worth stopping for (2026-10-12).
@@ -14,8 +14,9 @@ import { opensOf } from '../shell/teaching';
  * answer one tap away, in the same card an interruption would have shown.
  *
  * Which chips, and when, is `shell/teaching`'s `newDots`; this only draws them.
- * The name on the chip is the lesson's own name, so a chip and its card can
- * never disagree about what is being offered.
+ * The name on the chip is the row's name where the lesson has rows and the
+ * lesson's own otherwise, so a chip and its card can never disagree about what
+ * is being offered.
  */
 export function NewChips({
   ids,
@@ -30,9 +31,12 @@ export function NewChips({
   return (
     <div className="new-chips" data-hud="new-chips">
       {ids.map((id) => {
-        const lesson = lessonOf(opensOf(id));
+        const { lesson: opened, row } = opensAt(id);
+        const lesson = lessonOf(opened);
         if (lesson === undefined) return null;
-        const name = lessonName(lesson, s);
+        // The ROW's name where there is one (CACHE, SHRINE), the lesson's own
+        // otherwise (MAGIC): a chip offers the thing in view, not its concept.
+        const name = rowName(lesson, row, s);
         return (
           <button
             key={id}

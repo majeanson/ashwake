@@ -4,7 +4,7 @@ import { hasMet, meet, type Progress, type TeachId } from '@meta/progress';
 import type { BoardView, CellView } from '@render/Renderer';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
-import type { LessonId } from '@view/lessons';
+import { LESSON_FOR_REWARD, type LessonId, type RowKey } from '@view/lessons';
 import { statNote, type HudView } from '@view/view';
 
 /**
@@ -81,13 +81,32 @@ type Slot = {
    */
   readonly as: 'card' | 'toast' | 'chip';
   /**
-   * The lesson this moment opens, where it is not the moment's own id
-   * (2026-10-13). The ledger names a MOMENT and the registry names a CONCEPT;
-   * they were the same word until THE FOUR GROUNDS took over the `colours`
-   * moment's lesson. Absent means the lesson with the slot's own id. Read
-   * through `opensOf`, never directly.
+   * The lesson this moment opens, and the row of it to lead, where it is not
+   * the moment's own id (2026-10-13). The ledger names a MOMENT and the
+   * registry names a CONCEPT; they were the same word until THE FOUR GROUNDS
+   * took over the `colours` moment's lesson, and THE MAP took the fog's six.
+   * Absent means the lesson with the slot's own id. Read through `opensAt`,
+   * never directly.
+   *
+   * The row is a function where the slot cannot know it from its id: the map
+   * card opens at the row of whichever destination it found on the board,
+   * through the same predicate its `when` and `target` use.
+   *
+   * A toast carries `opens` too, though nothing opens it: it says which
+   * concept the moment belongs to, and the manual's "has this device met it"
+   * (`momentsOf`) reads that.
    */
-  readonly opens?: LessonId;
+  readonly opens?: {
+    readonly lesson: LessonId;
+    readonly row?: RowKey | ((board: BoardView) => RowKey | undefined);
+  };
+  /**
+   * A moment that must already have been told before this one is OFFERED
+   * (2026-10-13): the fog's chips wait for THE MAP, so a chip never explains
+   * a kind before the concept it belongs to. It holds a chip back, not a card
+   * the tour forces — see `nextLesson`'s exception for the territory.
+   */
+  readonly after?: TeachId;
   /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
   readonly phase?: 'walk' | 'tour';
   /**
@@ -134,6 +153,19 @@ const landmark =
   (id: 'cache' | 'site' | 'shrine' | 'territory') =>
   (c: CellView): boolean =>
     c.kind === 'landmark' && !c.claimed && c.landmark === id;
+
+/** A destination in view that has not been reached, whatever it pays: THE
+ *  MAP's moment, and the one cell its card opens at and flies to. */
+const anyDestination = (c: CellView): boolean =>
+  c.kind === 'landmark' && !c.claimed && c.landmark !== null;
+
+/** The kinds that have a moment of their own to be told (a find has none). */
+const KIND_MOMENT: Readonly<Partial<Record<string, TeachId>>> = {
+  cache: 'cache',
+  site: 'site',
+  shrine: 'shrine',
+  territory: 'territory',
+};
 
 /**
  * Every moment, in the order they are asked.
@@ -244,11 +276,52 @@ export const SCHEDULE: readonly Slot[] = [
     when: ({ hud }) => hud.cost > 1,
     line: (now, t, _theme, s) => statNote('cost', now.hud, t, s),
   },
-  { id: 'cache', as: 'card', ...onCell(landmark('cache')) },
-  { id: 'site', as: 'card', ...onCell(landmark('site')) },
-  { id: 'shrine', as: 'chip', ...onCell(landmark('shrine')) },
+  // THE MAP (2026-10-13): the first unclaimed destination in view tells the
+  // concept, at the row of the kind it found; the kinds that come after it are
+  // chips, offered once the concept has been told. Dismissing it tells the
+  // concept AND that kind (`toldBy`).
+  {
+    id: 'map',
+    as: 'card',
+    opens: {
+      lesson: 'map',
+      row: (board) => {
+        const cell = board.cells.find(anyDestination);
+        return cell?.landmark == null ? undefined : LESSON_FOR_REWARD[cell.landmark].row;
+      },
+    },
+    ...onCell(anyDestination),
+  },
+  {
+    id: 'cache',
+    as: 'chip',
+    after: 'map',
+    opens: { lesson: 'map', row: 'cache' },
+    ...onCell(landmark('cache')),
+  },
+  {
+    id: 'site',
+    as: 'chip',
+    after: 'map',
+    opens: { lesson: 'map', row: 'site' },
+    ...onCell(landmark('site')),
+  },
+  {
+    id: 'shrine',
+    as: 'chip',
+    after: 'map',
+    opens: { lesson: 'map', row: 'shrine' },
+    ...onCell(landmark('shrine')),
+  },
   // In the tour a territory is a card, not a chip: see `nextLesson`.
-  { id: 'territory', as: 'chip', phase: 'tour', ...onCell(landmark('territory')) },
+  {
+    id: 'territory',
+    as: 'chip',
+    phase: 'tour',
+    after: 'map',
+    opens: { lesson: 'map', row: 'territory' },
+    ...onCell(landmark('territory')),
+  },
   {
     id: 'wall',
     as: 'toast',
@@ -258,6 +331,8 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'field',
     as: 'toast',
+    // Native ground is the territory row's depth.
+    opens: { lesson: 'map', row: 'territory' },
     ...onCell((c) => c.kind === 'empty' && c.native !== null),
     line: (now, _t, theme, s) => {
       const cell = now.board.cells.find((c) => c.kind === 'empty' && c.native !== null);
@@ -279,6 +354,7 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'lens',
     as: 'toast',
+    opens: { lesson: 'map', row: 'lens' },
     // Only worth explaining once there is enough board to sort through.
     when: ({ board }) => board.cells.filter((c) => c.kind === 'tile').length >= 6,
     line: (_now, _t, _theme, s) => s.lensHint,
@@ -315,7 +391,7 @@ export const SCHEDULE: readonly Slot[] = [
   { id: 'relic', as: 'card', when: ({ hud }) => hud.relics > 0 },
   {
     id: 'colours',
-    opens: 'grounds',
+    opens: { lesson: 'grounds' },
     as: 'card',
     phase: 'walk',
     paced: false,
@@ -334,9 +410,25 @@ export const SCHEDULE: readonly Slot[] = [
   },
 ];
 
-/** The lesson a moment's card, chip or term opens: its slot's `opens`, else its own id. */
-export const opensOf = (id: TeachId): LessonId =>
-  SCHEDULE.find((slot) => slot.id === id)?.opens ?? id;
+/**
+ * The lesson a moment's card, chip or term opens, and the row of it to lead:
+ * its slot's `opens`, else its own id. Without a board a row that depends on
+ * one is left unsaid (a chip's row never does).
+ */
+export function opensAt(
+  id: TeachId,
+  board?: BoardView,
+): { readonly lesson: LessonId; readonly row?: RowKey } {
+  const opens = SCHEDULE.find((slot) => slot.id === id)?.opens;
+  if (opens === undefined) return { lesson: id };
+  const row =
+    typeof opens.row === 'function'
+      ? board === undefined
+        ? undefined
+        : opens.row(board)
+      : opens.row;
+  return row === undefined ? { lesson: opens.lesson } : { lesson: opens.lesson, row };
+}
 
 /**
  * The moments that tell a lesson, for the manual's "has this device met it":
@@ -344,7 +436,23 @@ export const opensOf = (id: TeachId): LessonId =>
  * Empty for a lesson no moment ever fires, which the manual never gates.
  */
 export const momentsOf = (lesson: LessonId): readonly TeachId[] =>
-  SCHEDULE.filter((slot) => (slot.opens ?? slot.id) === lesson).map((slot) => slot.id);
+  SCHEDULE.filter((slot) => (slot.opens?.lesson ?? slot.id) === lesson).map((slot) => slot.id);
+
+/**
+ * Every moment that dismissing this card (or opening this chip) tells
+ * (2026-10-13). Usually the one: but THE MAP's card tells the concept AND the
+ * kind of destination it showed, so that kind does not come back as a chip;
+ * and a kind's card forced on the tour (a territory) tells the concept it
+ * belongs to, because the player has now seen the map. A toast tells only
+ * itself.
+ */
+export function toldBy(id: TeachId, board: BoardView): readonly TeachId[] {
+  const slot = SCHEDULE.find((s) => s.id === id);
+  if (slot === undefined || slot.as === 'toast' || slot.opens?.lesson !== 'map') return [id];
+  if (id !== 'map') return [id, 'map'];
+  const kind = KIND_MOMENT[board.cells.find(anyDestination)?.landmark ?? ''];
+  return kind === undefined ? [id] : [id, kind];
+}
 
 /**
  * THE PACE (2026-10-12, two strangers: _"trop d'information trop vite trop
@@ -464,10 +572,16 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     // because a magic tile cannot be dealt on cue and so the concept is taught
     // on its own turn; a territory is told as it comes into view (2026-10-13,
     // Marc: _"explain territories as they spawn on tiles too"_), and the card's
-    // dismissal flies the camera to it like every place's does.
+    // dismissal flies the camera to it like every place's does. That card is
+    // THE MAP at the territory row (2026-10-13), so it tells the territory AND
+    // the concept (`toldBy`), and it does not wait on `after`: it is the card
+    // that satisfies it.
     const magicTurn = phase === 'tour' && id === 'rare';
     const tourCard = magicTurn || (phase === 'tour' && id === 'territory');
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
+    // The tour's territory card IS the map card at that row (2026-10-13), so it
+    // does not wait for the concept it is about to tell.
+    if (!tourCard && slot.after !== undefined && !hasMet(progress, slot.after)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;
     if (!(magicTurn ? hasMet(progress, 'luck') : slot.when(now))) continue;
@@ -476,6 +590,12 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
   }
   return null;
 }
+
+/** Whether the moment a slot waits on (`after`) has been told; no `after`, always. */
+const afterMet = (id: TeachId, progress: Progress): boolean => {
+  const after = SCHEDULE.find((slot) => slot.id === id)?.after;
+  return after === undefined || hasMet(progress, after);
+};
 
 /**
  * The chips that are showing: every non-interrupting moment that is true and
@@ -488,9 +608,10 @@ export const newDots = (now: Moment, progress: Progress): readonly TeachId[] =>
   // and a sentence is the clutter this pace exists to prevent.
   guided(progress) || (now.since !== undefined && now.since < CARD_GAP)
     ? []
-    : SCHEDULE.filter((s) => s.as === 'chip' && !hasMet(progress, s.id) && s.when(now)).map(
-        (s) => s.id,
-      );
+    : SCHEDULE.filter(
+        (s) =>
+          s.as === 'chip' && !hasMet(progress, s.id) && afterMet(s.id, progress) && s.when(now),
+      ).map((s) => s.id);
 
 /**
  * The chips a run has offered, in the order they came, and not yet opened
@@ -507,7 +628,7 @@ export const offerDots = (
   progress: Progress,
 ): readonly TeachId[] =>
   [...offered, ...fresh.filter((id) => !offered.includes(id))].filter(
-    (id) => !hasMet(progress, id),
+    (id) => !hasMet(progress, id) && afterMet(id, progress),
   );
 
 /**

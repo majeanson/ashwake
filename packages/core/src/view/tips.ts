@@ -1,6 +1,6 @@
 import type { PerkId } from '@meta/progress';
 import type { Strings } from '@text/Strings';
-import { LESSONS, lessonTerms, type LessonId } from './lessons';
+import { LESSONS, lessonTerms, type LessonId, type RowKey } from './lessons';
 import type { TipRow } from './view';
 
 /**
@@ -23,6 +23,9 @@ import type { TipRow } from './view';
 type ConceptTerm = {
   readonly term: string;
   readonly id: LessonId;
+  /** The row of the lesson this word opens it at (2026-10-13): CACHE opens THE
+   *  MAP at the cache row. Absent for a word that is the lesson's own. */
+  readonly row?: RowKey;
   readonly ink?: 'ink-magic' | 'ink-unique';
 };
 
@@ -45,6 +48,9 @@ export function conceptTerms(s: Strings): readonly ConceptTerm[] {
       out.push(
         entry.ink === undefined ? { term, id: entry.id } : { term, id: entry.id, ink: entry.ink },
       );
+    }
+    for (const head of entry.rowHeads?.(s) ?? []) {
+      for (const term of head.terms) out.push({ term, id: entry.id, row: head.key });
     }
   }
   out.sort((a, b) => b.term.length - a.term.length);

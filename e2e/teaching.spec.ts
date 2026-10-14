@@ -222,7 +222,7 @@ test('HOW TO PLAY opens on the game in two sentences, and its tabs run most impo
   const tabs = await manual
     .locator('[data-tab]')
     .evaluateAll((els) => els.map((el) => el.getAttribute('data-tab')));
-  expect(tabs).toEqual(['start', 'grounds', 'play', 'hand']);
+  expect(tabs).toEqual(['start', 'grounds', 'world', 'hand']);
 
   // The first paragraph of the first tab is the summary, the one the second
   // opening card says.

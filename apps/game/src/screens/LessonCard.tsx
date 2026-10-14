@@ -1,6 +1,13 @@
 import { TUNING } from '@content/tuning';
 import type { Theme } from '@theme/tokens';
-import { lessonCardDefine, lessonDefine, lessonName, lessonOf, type LessonId } from '@view/lessons';
+import {
+  lessonCardDefine,
+  lessonDefine,
+  lessonName,
+  lessonOf,
+  type LessonId,
+  type RowKey,
+} from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { Card } from '../ui/Card';
 import { Figure } from '../ui/Figure';
@@ -37,9 +44,20 @@ type LessonCardProps = {
   /** Fired BY a moment rather than opened by a tap: it adds the lesson's
    *  first-contact sentence, where the lesson keeps one. */
   readonly firstContact?: boolean | undefined;
+  /** The row of the lesson to lead, where it has rows and one was asked about:
+   *  a chip for CACHE, a tap on a cache, a destination just found. */
+  readonly row?: RowKey | undefined;
 };
 
-export function LessonCard({ id, theme, s, dismiss, onDismiss, firstContact }: LessonCardProps) {
+export function LessonCard({
+  id,
+  theme,
+  s,
+  dismiss,
+  onDismiss,
+  firstContact,
+  row,
+}: LessonCardProps) {
   const lesson = lessonOf(id);
   if (lesson === undefined) return null;
 
@@ -62,7 +80,7 @@ export function LessonCard({ id, theme, s, dismiss, onDismiss, firstContact }: L
       />
       {lesson.figure !== undefined && <Figure id={lesson.figure} theme={theme} s={s} />}
       {lesson.rows !== undefined && (
-        <TipRows rows={lesson.rows(TUNING, theme, s)} theme={theme} s={s} />
+        <TipRows rows={lesson.rows(TUNING, theme, s)} theme={theme} s={s} lead={row} />
       )}
     </Card>
   );

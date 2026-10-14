@@ -1,11 +1,10 @@
 import type { IconName } from '@theme/icons';
 import type { Theme } from '@theme/tokens';
 import type { TipRow } from '@view/view';
-import type { LessonId } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { Card } from '../ui/Card';
 import { Confirming } from '../ui/Confirming';
-import { ProseLines } from '../ui/Prose';
+import { ProseLines, type OnTerm } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
 
 /**
@@ -42,7 +41,7 @@ type SaidCardProps = {
   readonly theme: Theme;
   readonly s: Strings;
   readonly onDismiss: () => void;
-  readonly onTerm: (id: LessonId) => void;
+  readonly onTerm: OnTerm;
   /**
    * An offer the receipt makes. Only the crossing has one, and it is a
    * two-tap arm because it forgets a world — the dismiss button becomes STAY

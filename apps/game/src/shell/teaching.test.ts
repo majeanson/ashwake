@@ -14,11 +14,13 @@ import {
   nextLesson,
   sinceSpoke,
   toastLine,
+  tourTarget,
   told,
   type Moment,
   coachStep,
   offerDots,
-  opensOf,
+  opensAt,
+  toldBy,
   guided,
   mustPop,
   phaseOf,
@@ -73,6 +75,21 @@ const taughtExcept = (...keep: readonly string[]): Progress =>
 
 /** A device whose first run has been walked and toured: nothing is held back. */
 const WALKED: Progress = meet(meet({ ...EMPTY_PROGRESS }, 'walked'), 'toured');
+
+/** The same device once THE MAP has been told: the fog's chips are on offer. */
+const MAPPED: Progress = meet(WALKED, 'map');
+
+/** Seed 122 at depth 20 puts all four destinations on one board unclaimed. */
+const destinations = (): Moment => {
+  const s = createSession({
+    seed: 122,
+    theme: resolveTheme(null),
+    strings: stringsFor(pickLocale(['en'])),
+  });
+  walk(s, 20);
+  const snap = s.get();
+  return { board: snap.board, hud: snap.hud, placed: true };
+};
 
 describe('the teaching drip', () => {
   it('opens on STORY: the first thing a stranger is told is what this place is', () => {
@@ -216,7 +233,7 @@ describe('every card the drip can fire', () => {
     const ownCard = new Set(['story', 'goal', 'purse']);
     for (const { id } of SCHEDULE.filter((s) => s.as === 'card'))
       if (!ownCard.has(id))
-        expect(lessonOf(opensOf(id)), `${id} has no lesson to draw`).toBeDefined();
+        expect(lessonOf(opensAt(id).lesson), `${id} has no lesson to draw`).toBeDefined();
   });
 });
 
@@ -228,19 +245,42 @@ describe('the schedule covers every moment (2026-10-13)', () => {
   });
 
   // 2026-10-13. The ledger names a moment and the registry a concept: the
-  // `colours` moment tells THE FOUR GROUNDS, and everything that draws a
-  // lesson goes through `opensOf`.
+  // `colours` moment tells THE FOUR GROUNDS, the fog's six tell THE MAP, and
+  // everything that draws a lesson goes through `opensAt`.
   it('opens a lesson that exists, and the manual can find its moment again', () => {
+    const { board } = destinations();
     for (const slot of SCHEDULE) {
-      const lesson = opensOf(slot.id);
+      const { lesson, row } = opensAt(slot.id, board);
       if (slot.opens === undefined) {
         expect(lesson, `${slot.id} opens something other than itself`).toBe(slot.id);
         continue;
       }
       expect(lessonOf(lesson), `${slot.id} opens a lesson that is not there`).toBeDefined();
       expect(momentsOf(lesson), `${lesson} is not told by ${slot.id}`).toContain(slot.id);
+      // A row it names is a row the lesson has, in both languages.
+      if (row !== undefined) {
+        for (const locale of ['en', 'fr-CA'] as const) {
+          const heads = lessonOf(lesson)?.rowHeads?.(stringsFor(locale)) ?? [];
+          expect(
+            heads.map((h) => h.key),
+            `${slot.id} opens a row ${row} that is not there`,
+          ).toContain(row);
+        }
+      }
     }
-    expect(opensOf('colours')).toBe('grounds');
+    expect(opensAt('colours').lesson).toBe('grounds');
+  });
+
+  it('gives every chip of the map a row to lead, so its label is the thing offered', () => {
+    for (const slot of SCHEDULE.filter((s) => s.as === 'chip' && s.opens?.lesson === 'map')) {
+      expect(opensAt(slot.id).row, slot.id).toBeDefined();
+    }
+  });
+
+  it('moves the fog’s six moments, and only them, under THE MAP', () => {
+    expect([...momentsOf('map')].sort()).toEqual(
+      ['map', 'cache', 'site', 'shrine', 'territory', 'lens', 'field'].sort(),
+    );
   });
 
   it('gives every chip a moment to be offered by', () => {
@@ -293,8 +333,8 @@ describe('the NEW chips (2026-10-12): offered, never fired', () => {
   });
 
   it('offers a chip while its moment is true and until it is opened', () => {
-    // CACHE is a card; the chips are the four that are not. A board that shows
-    // one of them offers it, and opening it (telling it) clears it.
+    // The destinations are chips once THE MAP has been told. A board that
+    // shows one of them offers it, and opening it (telling it) clears it.
     // Seed 122 at depth 20 puts all four destinations on one board unclaimed
     // (see `tourTarget.test.ts`, which chose it by looking at the boards).
     let found = false;
@@ -307,9 +347,9 @@ describe('the NEW chips (2026-10-12): offered, never fired', () => {
       walk(s, n);
       const snap = s.get();
       const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
-      for (const id of newDots(now, WALKED)) {
+      for (const id of newDots(now, MAPPED)) {
         found = true;
-        expect(newDots(now, told(WALKED, id))).not.toContain(id);
+        expect(newDots(now, told(MAPPED, id))).not.toContain(id);
       }
     }
     expect(found, 'no walked board ever showed a chip').toBe(true);
@@ -318,7 +358,10 @@ describe('the NEW chips (2026-10-12): offered, never fired', () => {
   it('draws no card for a chip lesson until it is tapped', () => {
     for (const id of ['rare', 'rareUnique', 'territory', 'shrine'] as const) {
       expect(SCHEDULE.find((s) => s.id === id)?.as, id).toBe('chip');
-      expect(lessonOf(id), `${id} needs a lesson for its chip to open`).toBeDefined();
+      expect(
+        lessonOf(opensAt(id).lesson),
+        `${id} needs a lesson for its chip to open`,
+      ).toBeDefined();
     }
   });
 });
@@ -379,9 +422,9 @@ describe('the chips keep the pace too (2026-10-12)', () => {
     walk(s, 20);
     const snap = s.get();
     const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
-    expect(newDots(now, WALKED).length).toBeGreaterThan(0);
-    expect(newDots({ ...now, since: CARD_GAP - 1 }, WALKED)).toEqual([]);
-    expect(newDots({ ...now, since: CARD_GAP }, WALKED).length).toBeGreaterThan(0);
+    expect(newDots(now, MAPPED).length).toBeGreaterThan(0);
+    expect(newDots({ ...now, since: CARD_GAP - 1 }, MAPPED)).toEqual([]);
+    expect(newDots({ ...now, since: CARD_GAP }, MAPPED).length).toBeGreaterThan(0);
   });
 });
 
@@ -490,15 +533,15 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
 describe('a chip stays until it is opened (2026-10-12)', () => {
   it('keeps both chips when one is opened, and when the pace would hide them', () => {
     // Both offered; the pace now says there is nothing fresh.
-    const both = offerDots([], ['territory', 'rareUnique'], WALKED);
+    const both = offerDots([], ['territory', 'rareUnique'], MAPPED);
     expect(both).toEqual(['territory', 'rareUnique']);
-    expect(offerDots(both, [], WALKED)).toEqual(both);
+    expect(offerDots(both, [], MAPPED)).toEqual(both);
     // Opening one (its lesson met) takes that one away and leaves the other.
-    expect(offerDots(both, [], told(WALKED, 'territory'))).toEqual(['rareUnique']);
+    expect(offerDots(both, [], told(MAPPED, 'territory'))).toEqual(['rareUnique']);
   });
 
   it('adds a new chip after the ones already showing', () => {
-    expect(offerDots(['territory'], ['territory', 'shrine'], WALKED)).toEqual([
+    expect(offerDots(['territory'], ['territory', 'shrine'], MAPPED)).toEqual([
       'territory',
       'shrine',
     ]);
@@ -531,8 +574,72 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
     expect(nextLesson(board(), afterTerritory)?.id).not.toBe('shrine');
   });
 
-  it('is a chip again once the first run is over', () => {
-    expect(nextLesson(board(), WALKED)?.id).not.toBe('territory');
-    expect(newDots(board(), WALKED)).toContain('territory');
+  it('is a chip again once the first run is over, and the map card comes first', () => {
+    // Free of the tour, the first destination in view tells THE MAP; the
+    // territory waits behind it as a chip.
+    expect(nextLesson(board(), taughtExcept('map'))?.id).toBe('map');
+    expect(newDots(board(), WALKED)).not.toContain('territory');
+    expect(nextLesson(board(), MAPPED)?.id).not.toBe('territory');
+    expect(newDots(board(), MAPPED)).toContain('territory');
+  });
+
+  it('is the map card at the territory row, and tells the territory AND the map', () => {
+    // The tour's exception bypasses `after`: this card tells the concept, so it
+    // cannot wait on itself.
+    expect(touring.met).not.toContain('map');
+    expect(nextLesson(board(), touring)).toEqual({ id: 'territory', as: 'card' });
+    expect(opensAt('territory')).toEqual({ lesson: 'map', row: 'territory' });
+    expect(toldBy('territory', board().board)).toEqual(['territory', 'map']);
+  });
+});
+
+describe('THE MAP is one card, then chips (2026-10-13)', () => {
+  it('fires on the first unclaimed destination, paced, and opens at that destination’s row', () => {
+    const now = destinations();
+    const device = taughtExcept('map');
+    expect(nextLesson(now, device)).toEqual({ id: 'map', as: 'card' });
+    // Paced like the cache card it replaced.
+    expect(nextLesson({ ...now, since: CARD_GAP - 1 }, device)).toBeNull();
+    // The row is the kind of the cell it found, through the predicate its
+    // `when` and `target` share.
+    const target = tourTarget('map', now.board);
+    const cell = now.board.cells.find((c) => c.key === target);
+    expect(cell?.kind).toBe('landmark');
+    expect(cell?.claimed).toBe(false);
+    expect(opensAt('map', now.board)).toEqual({ lesson: 'map', row: cell?.landmark });
+    // With no board there is no row to name.
+    expect(opensAt('map')).toEqual({ lesson: 'map' });
+  });
+
+  it('tells the concept and the kind it showed, so that kind is not offered again', () => {
+    const { board } = destinations();
+    const kind = board.cells.find((c) => c.kind === 'landmark' && !c.claimed)?.landmark;
+    expect(kind).toBeDefined();
+    const tells = toldBy('map', board);
+    expect(tells).toEqual(['map', kind]);
+    // The other kinds in view are chips now; the one told is not.
+    const after = tells.reduce(told, WALKED);
+    const dots = newDots({ board, hud: destinations().hud, placed: true }, after);
+    expect(dots).not.toContain(kind);
+    expect(dots.length).toBeGreaterThan(0);
+  });
+
+  it('keeps the fog’s chips back until the map has been told', () => {
+    const now = destinations();
+    for (const id of ['cache', 'site', 'shrine', 'territory'] as const)
+      expect(newDots(now, WALKED), id).not.toContain(id);
+    expect(newDots(now, MAPPED).length).toBeGreaterThan(0);
+    // The gate is the ledger's, not the board's: an offered chip is withdrawn
+    // too, should the concept somehow be unmet.
+    expect(offerDots(['shrine'], [], WALKED)).toEqual([]);
+    expect(offerDots(['shrine'], [], MAPPED)).toEqual(['shrine']);
+  });
+
+  it('tells a toast only itself: the lens and native ground are told as themselves', () => {
+    const { board } = destinations();
+    expect(toldBy('lens', board)).toEqual(['lens']);
+    expect(toldBy('field', board)).toEqual(['field']);
+    expect(toldBy('ripe', board)).toEqual(['ripe']);
+    expect(toldBy('cache', board)).toEqual(['cache', 'map']);
   });
 });

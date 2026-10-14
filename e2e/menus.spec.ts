@@ -337,7 +337,7 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
   await openMore(page);
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  await page.locator('[data-tab="play"]').click();
+  await page.locator('[data-tab="world"]').click();
   await page.waitForTimeout(800);
 
   // What the LEGEND draws: the two grounds the hand never holds (a legend
@@ -451,7 +451,7 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await clean('MORE, off the board');
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  for (const tab of ['start', 'play', 'hand', 'grounds']) {
+  for (const tab of ['start', 'grounds', 'world', 'hand']) {
     await page.locator(`[data-tab="${tab}"]`).click();
     await clean(`the manual's ${tab} tab`);
   }
@@ -894,15 +894,16 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   await page.locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
 
-  await page.locator('[data-tab="play"]').click();
+  await page.locator('[data-tab="world"]').click();
   const legend = page.locator('.legend');
   await legend.waitFor({ state: 'visible' });
 
-  // Five destinations and the other marks (the four grounds moved one tab over).
-  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(8);
+  // The marks that are not places (the grounds moved one tab over on
+  // 2026-10-13, and the destinations into THE MAP's rows, below).
+  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(3);
   // The swatches are the DIRECTION's own fills, so the legend repaints with
   // the board rather than being a second copy of the palette.
-  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(8);
+  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(5);
 
   /*
    * And NOTHING in the manual is tappable (2026-08-29).
@@ -913,8 +914,11 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
    * the screen. Marc: "make sure cache, site, shrine, etc. are not clickable
    * ... they should get the explanation directly readable."
    */
-  const shrine = legend.locator('[data-term="shrine"]');
+  // The destinations are THE MAP's rows now, each leading with the board's own
+  // lit hex and carrying its rule beside it.
+  const shrine = panel(page, 'manual').locator('[data-row="shrine"]');
   await expect(shrine).toBeVisible();
+  await expect(shrine.locator('.tip-lit')).toHaveCount(1);
   expect(
     await shrine.evaluate((el) => el.tagName.toLowerCase()),
     'a legend row is still a button',
@@ -943,7 +947,14 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
     'a destination is explained twice on one tab again',
   ).toBe(0);
 
-  // And a destination says what it DOES beside its name.
+  // And a destination says what it DOES beside its name, with the map's rule
+  // for each kind: a site's bounty and a territory's native ground under them.
+  await expect(shrine.locator('.tip-name')).toHaveCount(1);
+  await expect(panel(page, 'manual').locator('[data-row="site"] .ground-advice')).toHaveCount(1);
+  await expect(panel(page, 'manual').locator('[data-row="territory"] .ground-advice')).toHaveCount(
+    1,
+  );
+  await expect(panel(page, 'manual').locator('[data-row="lens"] .ground-advice')).toHaveCount(2);
   expect(await legend.locator('.legend-note').count()).toBeGreaterThan(0);
 
   expect(errors).toEqual([]);
@@ -1117,7 +1128,7 @@ test('a scrolled panel keeps its head, top and bottom', async ({ page }) => {
   const manual = panel(page, 'manual');
   await manual.waitFor({ state: 'visible' });
   // The longest tab, so there is certainly something to scroll.
-  await page.locator('[data-tab="play"]').click();
+  await page.locator('[data-tab="world"]').click();
   await page.waitForTimeout(300);
 
   const body = manual.locator('.panel-body');

@@ -2,13 +2,12 @@ import type { Progress } from '@meta/progress';
 import { hasBeenPlayed, type WorldMemory } from '@meta/world';
 import type { Theme } from '@theme/tokens';
 import { arcNote, type HudView } from '@view/view';
-import type { LessonId } from '@view/lessons';
 import { GOALS, type GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
 import { Icon } from '../ui/Icon';
 import { CHROME_ICON } from '@theme/icons';
-import { Prose } from '../ui/Prose';
+import { Prose, type OnTerm } from '../ui/Prose';
 import { useEffect, useRef, useState } from 'react';
 import type { Standing } from '../shell/settle';
 import { SLOTS, type Slot } from '../shell/storage';
@@ -45,7 +44,7 @@ type EndScreenProps = {
   readonly theme: Theme;
   readonly progress: Progress;
   readonly onNewRun: () => void;
-  readonly onTerm: (id: LessonId) => void;
+  readonly onTerm: OnTerm;
   readonly onProgress: (next: (was: Progress) => Progress) => void;
   readonly onMore: () => void;
   /**

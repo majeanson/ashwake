@@ -148,6 +148,12 @@ export const TEACH_IDS = [
   // signpost's own pocket-ready line word for word, and a toast-class moment
   // had no speaker anyway (see `shell/teaching.ts`). `decodeProgress` drops
   // unknown ids by contract, so a stored ledger holding it costs nothing.
+  // THE MAP's grouping card (2026-10-13): the fog, its destinations and the
+  // lens are one concept now, and the first unclaimed destination on screen
+  // tells all of it at once. The ids below stay as DELIVERY MOMENTS (a chip
+  // for each kind, a toast for the lens and native ground); this one is the
+  // concept. `decodeProgress` seals it for a ledger that met any of them.
+  'map',
   'cache',
   'site',
   'territory',
@@ -495,6 +501,12 @@ export function decodeProgress(raw: string | null): Progress {
     // 'toured' likewise, past the lessons the tour itself teaches.
     const TOUR = new Set<string>([...WALK, 'walked', 'luck', 'rare']);
     if (!taught.includes('toured') && taught.some((id) => !TOUR.has(id))) taught.push('toured');
+    // 'map' groups the fog's moments (2026-10-13). A ledger that holds any of
+    // them has had the fog explained piecemeal, one kind at a time — seal the
+    // grouping card rather than re-teach it. A mid-walk ledger holds none (the
+    // walk's own lessons are all in WALK), so it keeps 'map' armed.
+    const FOG = ['cache', 'site', 'shrine', 'territory', 'lens', 'field'];
+    if (!taught.includes('map') && taught.some((id) => FOG.includes(id))) taught.push('map');
 
     return {
       relics: Math.max(0, Math.floor(purse)) + refund,

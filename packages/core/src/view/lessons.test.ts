@@ -18,6 +18,7 @@ import {
   lessonName,
   lessonOf,
   lessonTerms,
+  type RowKey,
 } from './lessons';
 import { conceptPattern, conceptTerms } from './tips';
 import { colourLesson } from './view';
@@ -133,6 +134,22 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the lesson registry
         [...lengths].sort((a, b) => b - a),
         `${lesson.id}'s terms are not longest-first`,
       ).toEqual(lengths);
+      // A row's words are claimed the same way (2026-10-13): CACHE opens THE
+      // MAP at the cache row, so no other lesson or row may also answer to it.
+      for (const head of lesson.rowHeads?.(s) ?? []) {
+        for (const term of head.terms) {
+          expect(term, `${lesson.id}/${head.key}: "${term}" is not uppercase`).toBe(
+            term.toLocaleUpperCase(s.locale),
+          );
+          expect(seen.has(term), `"${term}" is claimed by a lesson and a row`).toBe(false);
+          seen.add(term);
+        }
+        const rowLengths = head.terms.map((term) => term.length);
+        expect(
+          [...rowLengths].sort((a, b) => b - a),
+          `${lesson.id}/${head.key}'s terms are not longest-first`,
+        ).toEqual(rowLengths);
+      }
     }
   });
 
@@ -238,7 +255,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the lesson registry
   });
 });
 
-describe('the territory lesson answers for the board it is read on', () => {
+describe('the territory row answers for the board it is read on', () => {
   /**
    * A card explaining the mark under the thumb must not describe a territory
    * the player cannot have (2026-09-09).
@@ -250,11 +267,13 @@ describe('the territory lesson answers for the board it is read on', () => {
    */
   for (const s of [STRINGS_EN, STRINGS_FR]) {
     it(`quotes the dial that is live, in ${s.locale}`, () => {
-      const lesson = LESSONS.find((l) => l.id === 'territory');
-      if (lesson === undefined) throw new Error('the territory lesson is gone');
-      const world = lessonCore(lesson, TUNING, SETTLEMENT, s);
+      const lesson = LESSONS.find((l) => l.id === 'map');
+      if (lesson === undefined) throw new Error('THE MAP is gone');
+      const territory = (t: Tuning): string =>
+        lesson.rows?.(t, SETTLEMENT, s).find((row) => row.key === 'territory')?.text ?? '';
+      const world = territory(TUNING);
       const noLedger: Tuning = { ...TUNING, territoryPays: TUNING.cachePays };
-      const board = lessonCore(lesson, noLedger, SETTLEMENT, s);
+      const board = territory(noLedger);
 
       expect(world, 'a world stopped naming its later-run bonus').toContain(
         String(TUNING.territoryTiles),
@@ -369,3 +388,84 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     });
   },
 );
+
+/**
+ * THE MAP (2026-10-13): one concept, six rows. The invariants the eight
+ * lessons it replaced each kept, stated once over its rows.
+ */
+const ROWS: readonly RowKey[] = ['cache', 'site', 'shrine', 'territory', 'find', 'lens'];
+
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the map lesson · %s', (_l, s) => {
+  const map = LESSONS.find((l) => l.id === 'map');
+  if (map === undefined) throw new Error('THE MAP is gone');
+  const rowsOf = (t: Tuning, theme: Theme) => map.rows?.(t, theme, s) ?? [];
+
+  it('lists its six rows in order, each with a name, a sentence and a mark, under every tuning', () => {
+    for (const [name, t, theme] of CASES) {
+      const rows = rowsOf(t, theme);
+      expect(
+        rows.map((r) => r.key),
+        name,
+      ).toEqual([...ROWS]);
+      for (const row of rows) {
+        expect(row.name, `${row.key} · ${name}`).toBeTruthy();
+        expect(row.text, `${row.key} · ${name}`).toMatch(s.typography.sentenceEnd);
+        expect(
+          row.destination !== undefined || row.icon !== undefined,
+          `${row.key} has no mark`,
+        ).toBe(true);
+        for (const line of row.lines ?? [])
+          expect(line.text, `${row.key} · ${name}`).toMatch(s.typography.sentenceEnd);
+      }
+    }
+  });
+
+  it('names every row the way its row head says, so a chip and its row cannot differ', () => {
+    const heads = map.rowHeads?.(s) ?? [];
+    expect(heads.map((h) => h.key)).toEqual([...ROWS]);
+    for (const row of rowsOf(TUNING, SETTLEMENT)) {
+      expect(heads.find((h) => h.key === row.key)?.name).toBe(row.name);
+    }
+  });
+
+  it('keeps the bounty under the site, native ground under the territory and two lens lines', () => {
+    const rows = rowsOf(TUNING, SETTLEMENT);
+    expect(rows.find((r) => r.key === 'site')?.lines).toHaveLength(1);
+    expect(rows.find((r) => r.key === 'territory')?.lines).toHaveLength(1);
+    expect(rows.find((r) => r.key === 'lens')?.lines).toHaveLength(2);
+    expect(rows.find((r) => r.key === 'cache')?.lines).toBeUndefined();
+  });
+
+  it('opens with the world’s memory and keeps what every destination shares for the card', () => {
+    expect(lessonCore(map, TUNING, SETTLEMENT, s)).toBe(s.lesson.map.core);
+    expect(lessonCardDefine(map, TUNING, SETTLEMENT, s)).toContain(s.lesson.map.pays);
+    expect(lessonDefine(map, TUNING, SETTLEMENT, s)).not.toContain(s.lesson.map.pays);
+    // The invitation is the toast's own sentence.
+    expect(lessonDefine(map, TUNING, SETTLEMENT, s)).toContain(s.lensHint);
+  });
+
+  it('answers to each row’s words, with the row they open', () => {
+    const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+    for (const head of map.rowHeads?.(s) ?? []) {
+      for (const term of head.terms) {
+        expect(byTerm.get(term), term).toMatchObject({ id: 'map', row: head.key });
+      }
+    }
+  });
+
+  it('names every row term in its own row, in some economy', () => {
+    for (const head of map.rowHeads?.(s) ?? []) {
+      for (const term of head.terms) {
+        const spoken = CASES.some(([, t, theme]) =>
+          rowsOf(t, theme)
+            .filter((r) => r.key === head.key)
+            .flatMap((r) => [r.name ?? '', r.text, ...(r.lines ?? []).map((l) => l.text)])
+            .join(' ')
+            .toLocaleUpperCase(s.locale)
+            .includes(term),
+        );
+        expect(spoken, `${head.key}: "${term}" never appears in its own row`).toBe(true);
+      }
+    }
+  });
+});

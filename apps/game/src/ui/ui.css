@@ -1166,6 +1166,44 @@ button[disabled] {
   border-radius: var(--radius-sm);
 }
 
+/* A row's name, in the board's own vocabulary face (THE MAP, 2026-10-13): the
+   thing the sentence is about, so the list can be scanned for CACHE or SITE. */
+.tip-name {
+  color: var(--ink);
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+}
+
+/* A DESTINATION's mark, the board's way: the lit hex on the wall's ground (the
+   `destinations` figure's own cell) with the destination's mark on it. The
+   legend drew these as two columns; a row has one, so the mark sits on the hex.
+   Looks unchecked on a phone: the finding to confirm, not a decision. */
+.tip-lit {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.tip-lit > * {
+  grid-area: 1 / 1;
+}
+.tip-lit-hex {
+  width: 100%;
+  height: 100%;
+}
+.tip-lit > :not(.tip-lit-hex) {
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+/* The row a card or a tap asked about, led and marked. */
+.tip-lead {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.4rem;
+  margin-inline: -0.4rem;
+}
+
 /*
  * A disclosure that looks like a control (2026-08-29).
  *

@@ -2,7 +2,7 @@ import { CARAVAN_BANDS, WARE_IDS } from '@content/caravan';
 import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { waresOnSale } from '@engine/caravan';
 import type { TeachId } from '@meta/progress';
-import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
+import { CHROME_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings, TaughtId } from '@text/Strings';
 import type { FigureId } from './figure';
@@ -90,11 +90,9 @@ export type LessonId =
   | TeachId
   | 'pocket'
   | 'worth'
-  | 'bounty'
   | 'stash'
   | 'sizeBonus'
   | 'stone'
-  | 'find'
   | 'sacrifice'
   | 'reach'
   | 'grounds';
@@ -126,7 +124,7 @@ type Beat = {
 /**
  * The manual tabs that hold lesson sections.
  */
-type ManualTab = 'start' | 'grounds' | 'play' | 'hand';
+type ManualTab = 'start' | 'grounds' | 'world' | 'hand';
 
 export type Lesson = {
   /** One of the concepts the catalogue has words for — a subset of `LessonId`,
@@ -143,8 +141,7 @@ export type Lesson = {
   readonly beats: readonly Beat[];
   /**
    * Where the manual prints this lesson as a section. Absent means the lesson
-   * is reachable only through its term card and the Legend (sacrifice, cache,
-   * site, shrine, territory, find, stone). A tab's sections print in
+   * is reachable only through its term card and the Legend (sacrifice, stone). A tab's sections print in
    * the order they stand in .
    */
   readonly tab?: ManualTab;
@@ -158,6 +155,14 @@ export type Lesson = {
    */
   readonly rows?: (t: Tuning, theme: Theme, s: Strings) => readonly TipRow[];
   /**
+   * What each row is CALLED, and the words that open it (2026-10-13). A row is
+   * a thing the concept lists — THE MAP's cache, site, shrine — and it has a
+   * name a NEW chip wears and terms a sentence can make tappable, so a tap on
+   * CACHE opens the map at the cache row. Absent where a lesson's rows are
+   * only a table (THE FOUR GROUNDS).
+   */
+  readonly rowHeads?: (s: Strings) => readonly RowHead[];
+  /**
    * The picture of this rule. Travels WITH the lesson, so every door that
    * teaches it draws the same one — which is the whole of Marc's ask.
    *
@@ -167,6 +172,24 @@ export type Lesson = {
    *
    */
   readonly figure?: FigureId;
+  /**
+   * A figure only the MANUAL draws, under the rows (2026-10-13). A card
+   * carries rows or a figure, never both (see `figure`); the manual has the
+   * room, and THE MAP's `destinations` caption is the one sentence that says
+   * a faint destination is a spent one.
+   */
+  readonly manualFigure?: FigureId;
+};
+
+/** The things THE MAP lists, one row each (2026-10-13). */
+export type RowKey = 'cache' | 'site' | 'shrine' | 'territory' | 'find' | 'lens';
+
+/** A row's name and tappable spellings, like a lesson's own. */
+type RowHead = {
+  readonly key: RowKey;
+  readonly name: string;
+  /** UPPERCASE, longest first — merged with the lessons' own by `tips.ts`. */
+  readonly terms: readonly string[];
 };
 
 /**
@@ -174,6 +197,14 @@ export type Lesson = {
  * the term card's title — in the language asked for.
  */
 export const lessonName = (lesson: Lesson, s: Strings): string => s.lesson[lesson.id].name;
+
+/**
+ * What a row of this lesson is called, or the lesson's own name where it has
+ * no such row — the label of a NEW chip (2026-10-13), which offers CACHE or
+ * SHRINE rather than the concept they live in.
+ */
+export const rowName = (lesson: Lesson, row: RowKey | undefined, s: Strings): string =>
+  lesson.rowHeads?.(s).find((head) => head.key === row)?.name ?? lessonName(lesson, s);
 
 /**
  * UPPERCASE, longest first — the spellings `tips.ts`'s matcher alternates
@@ -426,95 +457,129 @@ export const LESSONS: readonly Lesson[] = [
       },
     ],
   },
+  /**
+   * THE MAP (2026-10-13): the fog, its destinations and the lens are ONE
+   * concept. Eight lessons (cache, site, shrine, territory, find, bounty,
+   * native ground, the fog) each said a piece of it, and a manual block said
+   * the lens — and the legend listed the destinations a thumb's length above
+   * the sections that explained them. Now the concept is its `core` (the
+   * world remembers) and its ROWS: one per thing on the map, each the lesson's
+   * own sentence it used to be, with the manual's depth under it (`lines`:
+   * the bounty under the site, native ground under the territory, the lens's
+   * other two lines under the lens).
+   *
+   * The ledger keeps cache, site, shrine, territory, lens and field as the
+   * MOMENTS that tell it (`shell/teaching.ts` says which row each opens); `map`
+   * is the concept's own, told by the first destination in view.
+   *
+   * `lensHint` is the toast's own sentence and stays shared: the manual and
+   * the drip cannot describe the gesture two ways.
+   */
+  {
+    id: 'map',
+    tab: 'world',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.map.core },
+      { say: (_t, _theme, s) => s.lensHint },
+      // The one thing every destination has in common, for the card that fires
+      // the first time one is in view; the rows say what each pays.
+      { at: 'card', say: (_t, _theme, s) => s.lesson.map.pays },
+    ],
+    rowHeads: (s) => {
+      const r = s.lesson.map.row;
+      return [
+        { key: 'cache', name: r.cache.name, terms: r.cache.terms },
+        { key: 'site', name: r.site.name, terms: r.site.terms },
+        { key: 'shrine', name: r.shrine.name, terms: r.shrine.terms },
+        { key: 'territory', name: r.territory.name, terms: r.territory.terms },
+        { key: 'find', name: r.find.name, terms: r.find.terms },
+        { key: 'lens', name: r.lens.name, terms: r.lens.terms },
+      ];
+    },
+    rows: (t, _theme, s) => {
+      const r = s.lesson.map.row;
+      return [
+        {
+          key: 'cache',
+          destination: LANDMARK_ICON.cache,
+          name: r.cache.name,
+          text:
+            t.cachePaysPerRing > 0
+              ? r.cache.coreRing(t.cachePays, t.cachePaysPerRing)
+              : r.cache.core(t.cachePays),
+        },
+        {
+          key: 'site',
+          destination: LANDMARK_ICON.site,
+          name: r.site.name,
+          text: r.site.core(t.sitePays),
+          lines: [{ text: r.site.bounty(t.questNeed, t.questRadius, t.questBonus) }],
+        },
+        {
+          key: 'shrine',
+          destination: LANDMARK_ICON.shrine,
+          name: r.shrine.name,
+          text: r.shrine.core,
+        },
+        {
+          key: 'territory',
+          destination: LANDMARK_ICON.territory,
+          name: r.territory.name,
+          /*
+           * THE DIAL PICKS THE SENTENCE (2026-09-09).
+           *
+           * `core` quotes `territoryTiles` and `territoryTilesCap` — the bonus
+           * a HELD territory pays into every later run's purse — and ends the
+           * first clause with "for good". On a daily or a shared board both
+           * numbers are dead (there is no later run in this world to pay) and
+           * "for good" is false unless the player keeps the board, while the
+           * one number that IS paid, `territoryPays`, went unmentioned. So the
+           * card explaining the mark under the thumb described a territory the
+           * player could not have.
+           *
+           * Forked on the dial rather than on a run kind, which is this file's
+           * hard boundary: a beat sees `(Tuning, Theme, Strings)` and nothing
+           * else. It is also the stronger statement — `territoryPays` being
+           * raised is exactly the condition under which the engine pays, so
+           * the lesson and the payment cannot come apart.
+           */
+          text:
+            t.territoryPays > 0
+              ? r.territory.pays(t.territoryRadius, t.territoryPays)
+              : r.territory.core(t.territoryRadius, t.territoryTiles, t.territoryTilesCap),
+          lines: [{ text: r.territory.native }],
+        },
+        {
+          key: 'find',
+          destination: LANDMARK_ICON.find,
+          name: r.find.name,
+          text: r.find.core,
+        },
+        {
+          key: 'lens',
+          // The magnifier the camera cluster's button wears.
+          icon: CHROME_ICON.lens,
+          name: r.lens.name,
+          text: r.lens.open,
+          lines: [{ text: r.lens.hold }, { text: r.lens.read }],
+        },
+      ];
+    },
+    // The `destinations` figure's caption is the one place the manual says that
+    // FAINT MEANS SPENT. It sits under the rows in the manual; a card (which
+    // has the rows) does not draw it.
+    manualFigure: 'destinations',
+  },
   {
     id: 'reach',
-    tab: 'play',
+    // Moves to POP when the pop family folds (phase 6 of the one-teaching-system plan).
+    tab: 'world',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.reach.core },
       {
         at: 'core',
         say: (t, _theme, s) =>
           t.distanceStep > 0 ? s.lesson.reach.multiplier(t.distanceStep) : null,
-      },
-    ],
-  },
-  {
-    id: 'cache',
-    icon: LANDMARK_ICON.cache,
-    beats: [
-      {
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.cachePaysPerRing > 0
-            ? s.lesson.cache.coreRing(t.cachePays, t.cachePaysPerRing)
-            : s.lesson.cache.core(t.cachePays),
-      },
-    ],
-  },
-  {
-    id: 'site',
-    icon: LANDMARK_ICON.site,
-    beats: [{ at: 'core', say: (t, _theme, s) => s.lesson.site.core(t.sitePays) }],
-  },
-  {
-    id: 'shrine',
-    icon: LANDMARK_ICON.shrine,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.shrine.core }],
-  },
-  {
-    id: 'territory',
-    icon: LANDMARK_ICON.territory,
-    beats: [
-      {
-        /*
-         * THE DIAL PICKS THE SENTENCE (2026-09-09).
-         *
-         * `core` quotes `territoryTiles` and `territoryTilesCap` — the bonus
-         * a HELD territory pays into every later run's purse — and ends the
-         * first clause with "for good". On a daily or a shared board both
-         * numbers are dead (there is no later run in this world to pay) and
-         * "for good" is false unless the player keeps the board, while the one
-         * number that IS paid, `territoryPays`, went unmentioned. So the card
-         * explaining the mark under the thumb described a territory the player
-         * could not have.
-         *
-         * Forked on the dial rather than on a run kind, which is this file's
-         * hard boundary: a beat sees `(Tuning, Theme, Strings)` and nothing
-         * else. It is also the stronger statement — `territoryPays` being
-         * raised is exactly the condition under which the engine pays, so the
-         * lesson and the payment cannot come apart.
-         */
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.territoryPays > 0
-            ? s.lesson.territory.pays(t.territoryRadius, t.territoryPays)
-            : s.lesson.territory.core(t.territoryRadius, t.territoryTiles, t.territoryTilesCap),
-      },
-    ],
-  },
-  /**
-   * A hidden find, which is a destination like the other four (2026-08-30).
-   *
-   * It had no lesson: `LESSON_FOR_REWARD` pointed `find` at RELICS, on the
-   * argument that what a find gives you is a perk and RELICS is where the game
-   * explains what you carry out of a run. True of the reward and wrong about
-   * the QUESTION: a player tapping a shimmer is asking what that mark is, and
-   * the answer they got was a paragraph about the end-screen shop. The legend
-   * printed the same mismatch as a row reading "◈ RELICS".
-   */
-  {
-    id: 'find',
-    icon: LANDMARK_ICON.find,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.find.core }],
-  },
-  {
-    id: 'bounty',
-    tab: 'play',
-    icon: LANDMARK_ICON.site,
-    beats: [
-      {
-        at: 'core',
-        say: (t, _theme, s) => s.lesson.bounty.core(t.questNeed, t.questRadius, t.questBonus),
       },
     ],
   },
@@ -532,7 +597,7 @@ export const LESSONS: readonly Lesson[] = [
    */
   {
     id: 'caravan',
-    tab: 'play',
+    tab: 'world',
     icon: CONCEPT_ICON.caravan,
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.caravan.core },
@@ -559,21 +624,6 @@ export const LESSONS: readonly Lesson[] = [
             ? s.lesson.caravan.ware(s.caravan.ware[ware].name, s.caravan.ware[ware].note)
             : null,
       })),
-    ],
-  },
-  {
-    id: 'field',
-    tab: 'play',
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.field.core }],
-  },
-  {
-    id: 'lens',
-    tab: 'play',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.lens.core },
-      // The invitation is the toast's own sentence (`lensHint`), so the
-      // manual and the drip cannot describe the gesture two ways.
-      { say: (_t, _theme, s) => s.lensHint },
     ],
   },
   {
@@ -724,29 +774,28 @@ export function lessonOf(id: LessonId): Lesson | undefined {
 }
 
 /**
- * Which lesson explains which destination.
+ * Which lesson, and which row of it, explains which destination.
  *
- * One registry, because two screens ask the same question: the manual's legend
- * lists the five places, and a tap on the board opens the card for whatever
- * was tapped (2026-08-29, Marc: "make sure we can click on the map for caches,
- * shrines, etc. and we get the card explaining what it is"). It lived as a
- * private table inside `Legend.tsx` while the board had no way to ask at all —
- * so the answer existed in one place and was needed in two, which is how the
- * two come to disagree about what a `find` is called.
+ * One registry, because two screens ask the same question: the manual lists
+ * the places, and a tap on the board opens the card for whatever was tapped
+ * (2026-08-29, Marc: "make sure we can click on the map for caches, shrines,
+ * etc. and we get the card explaining what it is"). Since 2026-10-13 every
+ * answer is THE MAP, at the row of the kind that was touched.
  *
- * **A FIND has its own lesson since 2026-08-30.** It used to map to RELICS, on
- * the argument that what a find gives you is a perk and RELICS is where this
- * game explains the things you carry out of a run. That is true of the reward
- * and wrong about the question being asked: a legend row reading "◈ RELICS"
- * names the mark after its consequence, and a tap on a find opened a card
- * about the end-screen currency instead of about the thing under the thumb.
+ * A FIND has its own row (2026-08-30): it used to map to RELICS, on the
+ * argument that what a find gives you is a perk, which is true of the reward
+ * and wrong about the QUESTION — a player tapping a shimmer is asking what
+ * that mark is.
  */
 export const LESSON_FOR_REWARD: Readonly<
-  Record<'cache' | 'site' | 'shrine' | 'territory' | 'find', LessonId>
+  Record<
+    'cache' | 'site' | 'shrine' | 'territory' | 'find',
+    { readonly lesson: 'map'; readonly row: RowKey }
+  >
 > = {
-  cache: 'cache',
-  site: 'site',
-  shrine: 'shrine',
-  territory: 'territory',
-  find: 'find',
+  cache: { lesson: 'map', row: 'cache' },
+  site: { lesson: 'map', row: 'site' },
+  shrine: { lesson: 'map', row: 'shrine' },
+  territory: { lesson: 'map', row: 'territory' },
+  find: { lesson: 'map', row: 'find' },
 };

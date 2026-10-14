@@ -1,14 +1,20 @@
 import { TUNING } from '@content/tuning';
-import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON } from '@theme/icons';
+import { CONCEPT_ICON, TILE_ICON } from '@theme/icons';
 import type { Theme } from '@theme/tokens';
-import { LESSON_FOR_REWARD, lessonDefine, lessonName, lessonOf } from '@view/lessons';
+import { lessonDefine, lessonName, lessonOf } from '@view/lessons';
 import type { Strings } from '@text/Strings';
 import { useGroundArt } from '../shell/art';
-import { Figure } from '../ui/Figure';
 import { Hex } from '../ui/Hex';
 import { Icon } from '../ui/Icon';
 
 /**
+ * THE MARKS THAT ARE NOT PLACES (2026-10-13). The destinations left this legend
+ * for THE MAP, whose rows draw the same lit hex and carry the rule beside it;
+ * the grounds went to THE FOUR GROUNDS the day before. What is left is the
+ * rest of the alphabet — a rare ring, stone, a wall, the ripe and legal edges —
+ * until those move under MAGIC, POP and THE EXPEDITION and this file goes
+ * (phase 6 of the one-teaching-system plan).
+ *
  * Every mark the board can show you, and what it means (Stage 5, 2026-08-29).
  *
  * Marc's ask: *"adding visuals and assets and symbols in the how to play"*.
@@ -63,11 +69,6 @@ import { Icon } from '../ui/Icon';
  * to catch and is gone.
  */
 
-/** The five destinations, and the lesson that names and explains each. */
-const PLACES = (Object.keys(LESSON_FOR_REWARD) as (keyof typeof LESSON_FOR_REWARD)[]).map(
-  (reward) => ({ reward, id: LESSON_FOR_REWARD[reward] }),
-);
-
 type LegendProps = {
   readonly theme: Theme;
   readonly s: Strings;
@@ -92,60 +93,6 @@ export function Legend({ theme, s }: LegendProps) {
      * so nothing about this moved a pixel.
      */
     <section className="legend">
-      {/* The four grounds live one tab over, in THE FOUR GROUNDS (2026-10-13). */}
-      <h2 className="fact-label">{s.ui.legendPlaces}</h2>
-      <ul>
-        {PLACES.map(({ reward, id }) => {
-          const lesson = lessonOf(id);
-          if (lesson === undefined) return null;
-          return (
-            <li key={reward} className="tall">
-              {/* The board's own picture of an unclaimed destination: a hex on
-                  the wall's ground, lit — the `destinations` figure's cell,
-                  one per row, so every legend row leads with a swatch. */}
-              <Hex
-                id={`legend-${reward}`}
-                className="legend-swatch"
-                theme={theme}
-                ground="wall"
-                art={art.wall}
-                ring={theme.ink.lit}
-              />
-              <span className="legend-mark" aria-hidden="true">
-                <Icon name={LANDMARK_ICON[reward]} />
-              </span>
-              {/*
-                A NAME, not a button (2026-08-29). It was tappable, on the
-                argument that the term card is where the full definition lives
-                and a legend repeating it would be a second copy. True of the
-                sentence, wrong about the screen — and moot since 2026-08-30,
-                because the definition is now right here and there is nothing
-                left for a card to add. Marc: "make sure cache, site, shrine,
-                etc. are not clickable ... they should get the explanation
-                directly readable."
-              */}
-              <span className="legend-name" data-term={id}>
-                <b className="legend-term">{lessonName(lesson, s)}</b>{' '}
-                <span className="legend-note note">{lessonDefine(lesson, TUNING, theme, s)}</span>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/*
-        The `destinations` figure, drawn at last (2026-09-03).
-
-        It has existed since Stage 3 with a caption written, pinned and
-        translated — "Lit is unclaimed and still pays. Faint means you have
-        already spent it." — and NO lesson carried it, so nothing ever drew
-        it: the manual's figures reach a page only through `Lesson.figure`.
-        That caption is also the one place the manual states FAINT MEANS
-        SPENT (`render/labels.test.ts`'s rule), which a list of live marks
-        cannot show. It belongs to this list, so it hangs under it.
-      */}
-      <Figure id="destinations" theme={theme} s={s} caption />
-
       <h2 className="fact-label">{s.ui.legendMarks}</h2>
       <ul>
         <li>

@@ -46,7 +46,7 @@ import { economyFor } from './shell/economy';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { parseThemeId } from '@theme/index';
-import { LESSON_FOR_REWARD, type LessonId } from '@view/lessons';
+import { LESSON_FOR_REWARD, type LessonId, type RowKey } from '@view/lessons';
 import { tourMs } from './board/flight';
 import type { BoardHandle } from './board/Board';
 import { preloadAssets } from './board/assets';
@@ -163,11 +163,12 @@ import {
   newDots,
   nextLesson,
   offerDots,
-  opensOf,
+  opensAt,
   sinceSpoke,
   toastLine,
   tourTarget,
   told,
+  toldBy,
 } from './shell/teaching';
 import { NewChips } from './screens/NewChips';
 import { walk, walkToEnd } from './shell/walk';
@@ -733,7 +734,13 @@ function Game() {
   /** The lens panel, over the hand — see `screens/LensPanel`. One sheet at a
    *  time: opening this closes the purse and the purse closes this. */
   const [lensOpen, setLensOpen] = useState(false);
-  const [term, setTerm] = useState<LessonId | null>(null);
+  /** The term card that is open: the lesson, and the row of it to lead where
+   *  the word was a row's own (CACHE opens THE MAP at the cache row). */
+  const [term, setTerm] = useState<{ readonly id: LessonId; readonly row?: RowKey } | null>(null);
+  const openTerm = useCallback(
+    (id: LessonId, row?: RowKey) => setTerm(row === undefined ? { id } : { id, row }),
+    [],
+  );
   /**
    * A new build has taken over underneath this page.
    *
@@ -2505,11 +2512,11 @@ function Game() {
        * however you arrive at it.
        */
       if (tap.does === 'card' && cell.landmark !== null) {
-        setTerm(LESSON_FOR_REWARD[cell.landmark]);
+        openTerm(LESSON_FOR_REWARD[cell.landmark].lesson, LESSON_FOR_REWARD[cell.landmark].row);
       }
       say(describe(key));
     },
-    [act, session, s, theme, lens, describe, say, touring, putTourDown, reel, closeReel],
+    [act, session, s, theme, lens, describe, say, touring, putTourDown, reel, closeReel, openTerm],
   );
 
   /**
@@ -4070,7 +4077,7 @@ function Game() {
             s={s}
             theme={theme}
             progress={progress}
-            onTerm={setTerm}
+            onTerm={openTerm}
             onNewRun={newRun}
             onProgress={setProgress}
             onMore={() => more.show()}
@@ -4395,7 +4402,7 @@ function Game() {
           theme={theme}
           s={s}
           onProgress={setProgress}
-          onTerm={setTerm}
+          onTerm={openTerm}
           onBack={shop.hide}
         />
       )}
@@ -4525,7 +4532,7 @@ function Game() {
           rows={saidCard.rows}
           theme={theme}
           s={s}
-          onTerm={setTerm}
+          onTerm={openTerm}
           onDismiss={() => {
             setSaidCard(null);
             setCardPerk(null);
@@ -4569,7 +4576,7 @@ function Game() {
           text={`${s.ui.theStory}\n${s.story.join('\n')}`}
           theme={theme}
           s={s}
-          onTerm={setTerm}
+          onTerm={openTerm}
           onDismiss={() => {
             /*
              * A card's dismissal is a quiet beat, and for PLACE the decisive
@@ -4597,7 +4604,7 @@ function Game() {
           text={`${s.ui.theGoal}\n${s.howItWorks}`}
           theme={theme}
           s={s}
-          onTerm={setTerm}
+          onTerm={openTerm}
           onDismiss={() => {
             setProgress((p) => told(p, 'goal'));
             markSpoke(session.get().hud.placements);
@@ -4634,7 +4641,8 @@ function Game() {
       */}
       {teaching !== null && (
         <LessonCard
-          id={opensOf(teaching)}
+          id={opensAt(teaching, snap.board).lesson}
+          row={opensAt(teaching, snap.board).row}
           theme={theme}
           s={s}
           // FIRED by a moment, so it carries the lesson's first-contact
@@ -4643,9 +4651,11 @@ function Game() {
           firstContact
           dismiss={s.ui.gotIt}
           onDismiss={() => {
-            // The same quiet beat the story card spends — see above.
-            const after = told(progress, teaching);
-            setProgress((p) => told(p, teaching));
+            // The same quiet beat the story card spends — see above. THE MAP's
+            // card tells the concept AND the kind it showed (`toldBy`).
+            const tells = toldBy(teaching, session.get().board);
+            const after = tells.reduce(told, progress);
+            setProgress((p) => tells.reduce(told, p));
             markSpoke(session.get().hud.placements);
             speakLesson(after, session.get());
             /*
@@ -4670,14 +4680,16 @@ function Game() {
       */}
       {dotOpen !== null && teaching === null && saidCard === null && film === null && (
         <LessonCard
-          id={opensOf(dotOpen)}
+          id={opensAt(dotOpen).lesson}
+          row={opensAt(dotOpen).row}
           theme={theme}
           s={s}
           firstContact
           dismiss={s.ui.gotIt}
           onDismiss={() => {
-            const after = told(progress, dotOpen);
-            setProgress((p) => told(p, dotOpen));
+            const tells = toldBy(dotOpen, session.get().board);
+            const after = tells.reduce(told, progress);
+            setProgress((p) => tells.reduce(told, p));
             setDotOpen(null);
             // No `markSpoke`: a chip's card was ASKED for, so it is not the game
             // speaking, and marking it hid the other chip for four placements
@@ -4690,7 +4702,8 @@ function Game() {
 
       {term !== null && film === null && (
         <LessonCard
-          id={term}
+          id={term.id}
+          row={term.row}
           theme={theme}
           s={s}
           dismiss={s.ui.gotIt}

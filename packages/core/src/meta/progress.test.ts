@@ -531,3 +531,27 @@ describe('the walked seal (2026-10-12)', () => {
     expect(decodeProgress(encodeProgress(meet(midWalk, 'cache'))).met).toContain('walked');
   });
 });
+
+describe('the map seal (2026-10-13)', () => {
+  const decode = (...ids: string[]) =>
+    decodeProgress(JSON.stringify({ relics: 0, bought: {}, met: ids })).met;
+
+  it('seals a device that met any one of the fog’s moments piecemeal', () => {
+    // THE MAP groups cache, site, shrine, territory, lens and field. A ledger
+    // that holds one has had the fog explained a kind at a time: not re-taught.
+    for (const id of ['cache', 'site', 'shrine', 'territory', 'lens', 'field']) {
+      expect(decode('story', 'goal', id), id).toContain('map');
+    }
+  });
+
+  it('leaves a mid-walk ledger armed: the walk’s own lessons are not the fog', () => {
+    const met = decode('story', 'goal', 'place', 'ripe');
+    expect(met).not.toContain('map');
+    expect(met).toEqual(['story', 'goal', 'place', 'ripe']);
+  });
+
+  it('does not seal a device on lessons that are not the fog, and keeps one already met', () => {
+    expect(decode('story', 'goal', 'luck', 'walked', 'toured')).not.toContain('map');
+    expect(decode('story', 'goal', 'map').filter((id) => id === 'map')).toHaveLength(1);
+  });
+});

@@ -90,42 +90,6 @@ export const STRINGS_EN: Strings = {
       terms: ['WORTH'],
       core: 'WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.',
     },
-    cache: {
-      name: 'CACHE',
-      terms: ['CACHE'],
-      coreRing: (pays, perRing) =>
-        `A CACHE pays ${pays} tiles on the spot, +${perRing} per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.`,
-      core: (pays) =>
-        `A CACHE pays ${pays} tiles on the spot, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.`,
-    },
-    site: {
-      name: 'SITE',
-      terms: ['SITE'],
-      core: (pays) =>
-        `A SITE is claimed by building a tile touching it. It pays ${pays} points × its distance from home, and opens a BOUNTY: one more bonus to go and collect (see BOUNTY). Sites re-arm every run, so a claimed one is worth returning to.`,
-    },
-    shrine: {
-      name: 'SHRINE',
-      terms: ['SHRINE'],
-      core: 'A SHRINE switches a system on for your world, permanently, the moment you claim it. Once every shrine unlock is woken, the next one offers a crossing to a new world instead.',
-    },
-    territory: {
-      name: 'TERRITORY',
-      terms: ['TERRITORY'],
-      core: (radius, tiles, cap) =>
-        `A TERRITORY claims the ground within ${radius} hexes as native to its colour, for good.${
-          tiles > 0
-            ? ` Each one held starts your later runs with +${tiles} tiles, up to +${cap}.`
-            : ''
-        }`,
-      pays: (radius, tiles) =>
-        `A TERRITORY hands you +${tiles} tiles and claims the ground within ${radius} hexes as native to its colour. On this board it lasts the run, unless you keep the board as one of your worlds.`,
-    },
-    find: {
-      name: 'FIND',
-      terms: ['FINDS', 'FIND'],
-      core: 'A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.',
-    },
     stone: {
       name: 'STONE',
       terms: ['STONE'],
@@ -152,12 +116,6 @@ export const STRINGS_EN: Strings = {
       name: 'RELICS',
       terms: ['RELICS', 'RELIC'],
       core: 'Relics are not points. They buy the NEXT run: they follow you out when a run ends, and THE SHOP on the end screen spends them, so every run starts stronger than the last.',
-    },
-    bounty: {
-      name: 'BOUNTY',
-      terms: ['BOUNTY'],
-      core: (need, radius, bonus) =>
-        `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star, taking POINTS (not tiles): that pop scores ×${bonus}. Only one bounty at a time; another site opens no second one while this one waits.`,
     },
     caravan: {
       name: 'CARAVAN',
@@ -246,15 +204,68 @@ export const STRINGS_EN: Strings = {
       core: 'REACH is how far from home you have built.',
       multiplier: (step) => REACH_RULE(step),
     },
-    field: {
-      name: 'NATIVE GROUND',
-      terms: [],
-      core: 'Ground a TERRITORY holds is native to its colour: a tile of that colour placed there is worth one more.',
-    },
-    lens: {
-      name: 'THE FOG',
+    /**
+     * THE MAP (2026-10-13): the fog, its destinations and the lens are one
+     * concept. Eight lessons (cache, site, shrine, territory, find, bounty,
+     * native ground, the fog) and the manual's lens block became rows; the
+     * sentences did not move, except the SITE's, which no longer points at
+     * BOUNTY (the rule stands directly under it).
+     */
+    map: {
+      name: 'THE MAP',
       terms: [],
       core: 'The world remembers. Ground you have walked stays on the map between runs, dimmed under the fog, and unclaimed destinations glow through it.',
+      pays: 'Every destination pays the moment a placed tile touches it.',
+      row: {
+        cache: {
+          name: 'CACHE',
+          terms: ['CACHE'],
+          coreRing: (pays, perRing) =>
+            `A CACHE pays ${pays} tiles on the spot, +${perRing} per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.`,
+          core: (pays) =>
+            `A CACHE pays ${pays} tiles on the spot, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.`,
+        },
+        site: {
+          name: 'SITE',
+          terms: ['BOUNTY', 'SITE'],
+          bountyName: 'BOUNTY',
+          core: (pays) =>
+            `A SITE is claimed by building a tile touching it. It pays ${pays} points × its distance from home, and it opens a BOUNTY. Sites re-arm every run, so a claimed one is worth returning to.`,
+          bounty: (need, radius, bonus) =>
+            `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star, taking POINTS (not tiles): that pop scores ×${bonus}. Only one bounty at a time; another site opens no second one while this one waits.`,
+        },
+        shrine: {
+          name: 'SHRINE',
+          terms: ['SHRINE'],
+          core: 'A SHRINE switches a system on for your world, permanently, the moment you claim it. Once every shrine unlock is woken, the next one offers a crossing to a new world instead.',
+        },
+        territory: {
+          name: 'TERRITORY',
+          terms: ['TERRITORY'],
+          core: (radius, tiles, cap) =>
+            `A TERRITORY claims the ground within ${radius} hexes as native to its colour, for good.${
+              tiles > 0
+                ? ` Each one held starts your later runs with +${tiles} tiles, up to +${cap}.`
+                : ''
+            }`,
+          pays: (radius, tiles) =>
+            `A TERRITORY hands you +${tiles} tiles and claims the ground within ${radius} hexes as native to its colour. On this board it lasts the run, unless you keep the board as one of your worlds.`,
+          native:
+            'Ground a TERRITORY holds is native to its colour: a tile of that colour placed there is worth one more.',
+        },
+        find: {
+          name: 'FIND',
+          terms: ['FINDS', 'FIND'],
+          core: 'A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.',
+        },
+        lens: {
+          name: 'THE LENS',
+          terms: [],
+          open: 'The magnifier button beside LUCK opens the lens: one row per ground, with how many of its tiles are standing, what they are worth, and how much of it is ripe.',
+          hold: 'Tap a row to hold the lens on that ground. The board lights it, and the panel shows its power and stats; THE PRICE tab shows how its best pocket would score if you popped it now. Tap the row again to let go.',
+          read: 'Tap any line in a table to read what it means. Pressing and holding a tile in your hand lights its ground the same way.',
+        },
+      },
     },
   },
   luckCore: LUCK_CORE,
@@ -766,7 +777,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
     sacrificeLuckFor: (relics) => `SACRIFICE LUCK FOR ${relics}`,
-    tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND', grounds: 'COLOURS' },
+    tabs: { start: 'EXPEDITION', grounds: 'GROUNDS', world: 'WORLD', hand: 'HAND' },
     fame: {
       title: 'HALL OF FAME',
       diary: 'DIARY',
@@ -831,14 +842,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     /** The camera cluster. `home` is its third control, shown only once the
      *  board has been turned or leaned away from the angle it opens at. */
-    lensGuide: {
-      title: 'THE LENS',
-      lines: [
-        'The magnifier button beside LUCK opens the lens: one row per ground, with how many of its tiles are standing, what they are worth, and how much of it is ripe.',
-        'Tap a row to hold the lens on that ground. The board lights it, and the panel shows its power and stats; THE PRICE tab shows how its best pocket would score if you popped it now. Tap the row again to let go.',
-        'Tap any line in a table to read what it means. Pressing and holding a tile in your hand lights its ground the same way.',
-      ],
-    },
     camera: { flat: 'FLAT', home: 'DEFAULT', mine: 'MY VIEW' },
     sharpness: {
       label: 'SHARPNESS',
@@ -1049,7 +1052,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       lastError: 'LAST ERROR',
       noError: 'Nothing has broken on this device.',
     },
-    legendPlaces: 'THE DESTINATIONS',
     legendMarks: 'THE OTHER MARKS',
     legendRare: 'A placed rare tile wears a ring in its own colour, and stands taller.',
     legendWall: 'Wall: cannot be built on. It still surrounds.',

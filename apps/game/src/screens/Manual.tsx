@@ -40,7 +40,7 @@ import { panelOf, tabOf, Tabs } from '../ui/Tabs';
  * 2026-08-27 after it kept dismissing the manual mid-sentence.
  */
 
-const TABS = ['start', 'grounds', 'play', 'hand'] as const;
+const TABS = ['start', 'grounds', 'world', 'hand'] as const;
 type TabId = (typeof TABS)[number];
 
 /** The key list, in the order somebody learns it: point at a hex, act on it,
@@ -107,6 +107,13 @@ const KEY_LINES = [
  * grow in when their toast speaks — the same ledger as every gated section —
  * while REACH is a scoring rule with no moment of its own and prints for
  * everyone.
+ *
+ * **THE MAP took the rest of the PLAY tab on 2026-10-13**, and the tab became
+ * WORLD. BOUNTY, NATIVE GROUND, THE FOG and the lens block above are lines
+ * under its rows now (a row's `lines` print here, never on a card), and the
+ * Legend's five destinations are its first five rows, each leading with the
+ * lit hex it used to draw. What is left of the Legend is the marks that are
+ * not places.
  */
 const sectionsOf = (tab: TabId): readonly Lesson[] => LESSONS.filter((l) => l.tab === tab);
 
@@ -227,12 +234,13 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
       }
     >
       {/*
-        The legend opens the PLAY tab: every mark the board can show, before
+        The legend opens the WORLD tab: the marks that are not places, before
         any of the rules that use them. A player who has met a glyph on a hex
         had no way to learn it but to tap that hex, which needed them to have
-        walked there first.
+        walked there first. The places themselves are THE MAP's rows below
+        (2026-10-13).
       */}
-      {on === 'play' && <Legend theme={theme} s={s} />}
+      {on === 'world' && <Legend theme={theme} s={s} />}
 
       {/*
         What an expedition IS, before any rule (2026-08-29).
@@ -327,20 +335,6 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
               <li key={id}>{s.ui.board.keys[id]}</li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {/* THE LENS — the one control in the manual (2026-10-11): the panel
-          beside LUCK had no section, so "tap a ground to hold the lens" was
-          only ever said in the panel's own footer. */}
-      {on === 'play' && (
-        <section className="lesson">
-          <h2 className="panel-title marked">
-            <span>{s.ui.lensGuide.title}</span>
-          </h2>
-          {s.ui.lensGuide.lines.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
         </section>
       )}
     </Panel>
@@ -441,6 +435,9 @@ function Section({
       </h2>
       <ProseLines text={lines.join('\n')} s={s} />
       {rows.length > 0 && <TipRows rows={rows} theme={theme} s={s} withLines />}
+      {lesson.manualFigure !== undefined && (
+        <Figure id={lesson.manualFigure} theme={theme} s={s} caption />
+      )}
       {figure !== null && <Figure id={figure} theme={theme} s={s} caption />}
       {detail.length > 0 && (
         <Fold summary={s.ui.details}>

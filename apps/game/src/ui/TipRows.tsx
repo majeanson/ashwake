@@ -1,12 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CHROME_ICON } from '@theme/icons';
 import { hex, type Theme } from '@theme/tokens';
 import { Icon } from './Icon';
 import type { TipRow } from '@view/view';
 import type { Strings } from '@text/Strings';
-import { Prose } from './Prose';
-import type { LessonId } from '@view/lessons';
-import { useTerrainArt } from '../shell/art';
+import { Hex } from './Hex';
+import { Prose, type OnTerm } from './Prose';
+import { useGroundArt, useTerrainArt } from '../shell/art';
 
 /**
  * A marked list (Stage 3, 2026-08-29).
@@ -38,21 +38,39 @@ export function TipRows({
   s,
   onTerm,
   withLines,
+  lead,
 }: {
   readonly rows: readonly TipRow[];
   readonly theme: Theme;
   readonly s: Strings;
-  readonly onTerm?: ((id: LessonId) => void) | undefined;
+  readonly onTerm?: OnTerm | undefined;
   /** Draw each row's `lines` under it. The manual does; a card is the rule
    *  and its tiles only, so it does not. */
   readonly withLines?: boolean | undefined;
+  /**
+   * The row to LEAD (2026-10-13): a card opened at CACHE, or by a tap on a
+   * cache, reads the cache first. It is set first, marked, and scrolled into
+   * view, so a manual (which keeps the registry's order) and a card (which has
+   * the room for six rows and not for six rows beneath the one asked about)
+   * agree on which row was meant.
+   */
+  readonly lead?: string | undefined;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const art = useTerrainArt(theme.id);
+  const ground = useGroundArt(theme.id);
+  const led = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    led.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [lead]);
   const priced = rows.some((row) => row.value !== undefined);
+  const ordered =
+    lead === undefined
+      ? rows
+      : [...rows.filter((row) => row.key === lead), ...rows.filter((row) => row.key !== lead)];
   const list = (
     <>
-      {rows.map((row, i) => {
+      {ordered.map((row, i) => {
         const mark = (
           <span className="tip-mark" aria-hidden="true">
             {row.colour !== undefined && art[row.colour] !== null ? (
@@ -62,6 +80,18 @@ export function TipRows({
                 className="tip-swatch"
                 style={{ background: hex(theme.terrain[row.colour].fill) }}
               />
+            ) : row.destination !== undefined ? (
+              <span className="tip-lit">
+                <Hex
+                  id={`tip-lit-${row.key ?? i}-${withLines === true ? 'manual' : 'card'}`}
+                  className="tip-lit-hex"
+                  theme={theme}
+                  ground="wall"
+                  art={ground.wall}
+                  ring={theme.ink.lit}
+                />
+                <Icon name={row.destination} />
+              </span>
             ) : row.icon !== undefined ? (
               <Icon name={row.icon} />
             ) : null}
@@ -74,9 +104,10 @@ export function TipRows({
         // block with it.
         const lines =
           withLines === true && row.lines !== undefined
-            ? row.lines.map((line) => (
-                <p className="ground-advice" key={line.head}>
-                  <strong>{line.head}</strong> <Prose text={line.text} s={s} onTerm={onTerm} />
+            ? row.lines.map((line, n) => (
+                <p className="ground-advice" key={line.head ?? n}>
+                  {line.head !== undefined && <strong>{line.head}</strong>}{' '}
+                  <Prose text={line.text} s={s} onTerm={onTerm} />
                 </p>
               ))
             : null;
@@ -85,15 +116,23 @@ export function TipRows({
             <p className={row.total === true ? 'tip-row total' : 'tip-row'} key={i}>
               {mark}
               <span>
+                {row.name !== undefined && <b className="tip-name">{row.name}</b>}
+                {row.name !== undefined && ' '}
                 <Prose text={row.text} s={s} onTerm={onTerm} />
               </span>
               {value}
             </p>
           );
-          return lines === null ? (
-            line
-          ) : (
-            <div key={i} data-ground={row.colour}>
+          if (lines === null && row.key === undefined) return line;
+          const isLead = lead !== undefined && row.key === lead;
+          return (
+            <div
+              key={i}
+              data-ground={row.colour}
+              data-row={row.key}
+              className={isLead ? 'tip-lead' : undefined}
+              ref={isLead ? led : undefined}
+            >
               {line}
               {lines}
             </div>

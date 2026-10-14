@@ -1810,9 +1810,9 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   await page.waitForTimeout(700);
 
   const scrim = page.locator('.card-scrim');
-  const place = page.locator(
-    '#lesson-shrine-name, #lesson-cache-name, #lesson-site-name, #lesson-territory-name',
-  );
+  // One card for the whole family since 2026-10-13: THE MAP, at the row of
+  // whichever destination came into view first.
+  const place = page.locator('#lesson-map-name');
   // The lessons are paced (`CARD_GAP` placements apart), so the card for a
   // place comes after some building: dismiss what is up, build, look again.
   for (let i = 0; i < 24 && (await place.count()) === 0; i++) {
@@ -1825,6 +1825,13 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
     await page.waitForTimeout(120);
   }
   expect(await place.count(), 'no card for a place ever came').toBe(1);
+  // ...and it opens at the row of the destination that fired it, led first.
+  const led = page.locator('[data-card="lesson-map"] .tip-lead');
+  await expect(led, 'the map card led no row').toHaveCount(1);
+  expect(
+    await page.locator('[data-card="lesson-map"] [data-row]').first().getAttribute('class'),
+    'the led row is not the first',
+  ).toContain('tip-lead');
 
   // The card now comes some placements in (the pace), so the camera is still
   // easing after the last tile: let it come to rest first.

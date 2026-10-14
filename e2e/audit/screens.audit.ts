@@ -260,7 +260,7 @@ const SCREENS: readonly Screen[] = [
    * they are the longest prose in the build: the places a clipped line or an
    * unreadable note would actually happen.
    */
-  { name: 'manual-play', query: FRESH, reach: viaTab('play') },
+  { name: 'manual-world', query: FRESH, reach: viaTab('world') },
   { name: 'manual-expedition', query: FRESH, reach: viaTab('start') },
   { name: 'manual-hand', query: FRESH, reach: viaTab('hand') },
   { name: 'settings', query: FRESH, reach: viaMore('settings') },

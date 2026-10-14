@@ -67,6 +67,7 @@ const onlyUnmet = (id: TeachId): Progress =>
 // and so the two most worth watching in Session A. See `SCHEDULE`.
 const TARGETED: readonly TeachId[] = [
   'ripe',
+  'map',
   'cache',
   'site',
   'shrine',
@@ -140,6 +141,13 @@ describe('the hex a lesson means', () => {
         expect(cell?.landmark).toBe(id);
         // Never a destination already reached: the card explains what it would
         // pay, and a claimed one has paid.
+        expect(cell?.claimed).toBe(false);
+      }
+      // THE MAP's cell is any destination in view that has not been reached.
+      const first = tourTarget('map', board);
+      if (first !== null) {
+        const cell = board.cells.find((c) => c.key === first);
+        expect(cell?.kind).toBe('landmark');
         expect(cell?.claimed).toBe(false);
       }
       const ripe = tourTarget('ripe', board);

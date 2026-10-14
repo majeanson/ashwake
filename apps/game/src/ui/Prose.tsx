@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
-import type { LessonId } from '@view/lessons';
+import type { LessonId, RowKey } from '@view/lessons';
 import { conceptPattern, conceptTerms, rarityPattern } from '@view/tips';
 import type { Strings } from '@text/Strings';
 import { CONCEPT_ICON, type IconName } from '@theme/icons';
@@ -17,6 +17,12 @@ const TERM_MARK: Partial<Record<LessonId, IconName>> = {
   pop: CONCEPT_ICON.pop,
   luck: CONCEPT_ICON.luck,
 };
+
+/**
+ * What a tapped term does: the lesson it opens, and the row of it to lead where
+ * the word is a row's own (CACHE opens THE MAP at the cache row, 2026-10-13).
+ */
+export type OnTerm = (id: LessonId, row?: RowKey) => void;
 
 /** The mark and the word, held together so a line never breaks between them. */
 function Marked({ id, children }: { readonly id: LessonId; readonly children: ReactNode }) {
@@ -59,7 +65,7 @@ type ProseProps = {
   readonly s: Strings;
   /** Opens the term card. Omitted where prose is decorative — a card's own
    *  body, say, whose terms would open a card over a card. */
-  readonly onTerm?: ((id: LessonId) => void) | undefined;
+  readonly onTerm?: OnTerm | undefined;
 };
 
 export function Prose({ text, s, onTerm }: ProseProps) {
@@ -79,7 +85,7 @@ export function ProseLines({ text, s, onTerm }: ProseProps) {
   );
 }
 
-function inked(text: string, s: Strings, onTerm?: (id: LessonId) => void): ReactNode {
+function inked(text: string, s: Strings, onTerm?: OnTerm): ReactNode {
   const terms = conceptTerms(s);
   const byWord = new Map(terms.map((term) => [term.term.toLocaleUpperCase(), term]));
 
@@ -118,7 +124,7 @@ function inked(text: string, s: Strings, onTerm?: (id: LessonId) => void): React
            * checks disagreeing about who is allowed to be small.
            */
           data-audit-compact=""
-          onClick={() => onTerm(term.id)}
+          onClick={() => onTerm(term.id, term.row)}
         >
           {piece}
         </button>

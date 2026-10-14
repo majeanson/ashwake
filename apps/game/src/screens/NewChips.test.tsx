@@ -17,14 +17,17 @@ describe('the NEW chips', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('names each lesson by its own name, and opens the one that is tapped', async () => {
+  it('names each chip by its lesson, or by its ROW of THE MAP, and opens the one that is tapped', async () => {
     const onOpen = vi.fn();
     render(<NewChips ids={['rare', 'shrine']} s={en} onOpen={onOpen} />);
     const chips = screen.getAllByRole('button');
     expect(chips).toHaveLength(2);
     expect(chips[0]?.getAttribute('data-new-chip')).toBe('rare');
+    expect(chips[0]?.getAttribute('aria-label')).toBe(`${en.ui.newChip}: ${en.lesson.rare.name}`);
     // The accessible name carries NEW and the lesson, so a screen reader hears an offer.
-    expect(chips[1]?.getAttribute('aria-label')).toBe(`${en.ui.newChip}: ${en.lesson.shrine.name}`);
+    expect(chips[1]?.getAttribute('aria-label')).toBe(
+      `${en.ui.newChip}: ${en.lesson.map.row.shrine.name}`,
+    );
     await userEvent.click(chips[1]!);
     expect(onOpen).toHaveBeenCalledWith('shrine');
   });
@@ -32,7 +35,7 @@ describe('the NEW chips', () => {
   it('speaks French', () => {
     render(<NewChips ids={['territory']} s={fr} onOpen={() => undefined} />);
     expect(screen.getByRole('button').getAttribute('aria-label')).toBe(
-      `${fr.ui.newChip}: ${fr.lesson.territory.name}`,
+      `${fr.ui.newChip}: ${fr.lesson.map.row.territory.name}`,
     );
   });
 });
