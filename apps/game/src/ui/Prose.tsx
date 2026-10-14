@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import type { LessonId, RowKey } from '@view/lessons';
-import { conceptPattern, conceptTerms, rarityPattern } from '@view/tips';
+import { conceptLookup } from '@view/tips';
 import type { Strings } from '@text/Strings';
 import { CONCEPT_ICON, type IconName } from '@theme/icons';
 import { Icon } from './Icon';
@@ -108,11 +108,10 @@ export function ProseLines({ text, s, onTerm, within }: ProseProps) {
 }
 
 function inked(text: string, s: Strings, onTerm?: OnTerm, within?: LessonId): ReactNode {
-  const terms = conceptTerms(s);
-  const byWord = new Map(terms.map((term) => [term.term.toLocaleUpperCase(), term]));
+  const { pattern, byWord } = conceptLookup(s);
 
   // `split` with a capturing group puts the matches at the odd indices.
-  return text.split(conceptPattern(s)).map((piece, i) => {
+  return text.split(pattern).map((piece, i) => {
     const term = i % 2 === 1 ? byWord.get(piece.toLocaleUpperCase()) : undefined;
     if (term === undefined) return <Fragment key={i}>{rarityInked(piece, s, i)}</Fragment>;
     if (onTerm === undefined || term.id === within) {
@@ -158,7 +157,7 @@ function inked(text: string, s: Strings, onTerm?: OnTerm, within?: LessonId): Re
 /** MAGIC and UNIQUE wear their own colours wherever the words appear, so the
  *  prose and the palette agree about what a rare thing is. */
 function rarityInked(text: string, s: Strings, offset: number): ReactNode {
-  return text.split(rarityPattern(s)).map((piece, i) => {
+  return text.split(conceptLookup(s).rarity).map((piece, i) => {
     if (i % 2 === 0) return <Fragment key={i}>{piece}</Fragment>;
     const magic = piece.toLocaleUpperCase() === s.lesson.magic.row.magic.name.toLocaleUpperCase();
     return (

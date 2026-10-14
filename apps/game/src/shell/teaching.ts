@@ -111,8 +111,9 @@ type Slot = {
    * Other moments that dismissing this card tells with it (2026-10-13), for a
    * card that delivers two. The walk's RIPE card is POP's whole first contact —
    * ripening, the pocket, the pop — so it tells `pop` as well, and there is no
-   * second card moments later. `TEACH_IDS` keeps `pop` for the ledgers that
-   * hold it; `teaching.test.ts` lists the companions explicitly.
+   * second card moments later. The purse's card is LUCK's, so it tells `luck`.
+   * `TEACH_IDS` keeps `pop` for the ledgers that hold it; `teaching.test.ts`
+   * lists the companions explicitly.
    */
   readonly tells?: readonly TeachId[];
   /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
@@ -390,8 +391,11 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'purse',
     as: 'card',
-    // The purse's card IS the LUCK lesson's (2026-10-13), its rows the buttons.
+    // The purse's card IS the LUCK lesson's (2026-10-13), its rows the buttons,
+    // so reading it tells LUCK too: the tour's own LUCK card must not come
+    // back with the same words once this one has been read.
     opens: { lesson: 'luck' },
+    tells: ['luck'],
     /*
      * Fired by the player OPENING the purse, not by having one, so it is
      * never true here — see `App`'s `onPurse`, which raises LUCK's card and
@@ -601,14 +605,11 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     // Marc: _"explain territories as they spawn on tiles too"_), and the card's
     // dismissal flies the camera to it like every place's does. That card is
     // THE MAP at the territory row (2026-10-13), so it tells the territory AND
-    // the concept (`toldBy`), and it does not wait on `after`: it is the card
-    // that satisfies it.
+    // the concept (`toldBy`), and so it is not held for `after`, which only a
+    // chip waits on (`afterMet`): it is the card that satisfies it.
     const magicTurn = phase === 'tour' && id === 'rare';
     const tourCard = magicTurn || (phase === 'tour' && id === 'territory');
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
-    // The tour's territory card IS the map card at that row (2026-10-13), so it
-    // does not wait for the concept it is about to tell.
-    if (!tourCard && slot.after !== undefined && !hasMet(progress, slot.after)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;
     if (!(magicTurn ? hasMet(progress, 'luck') : slot.when(now))) continue;
@@ -697,7 +698,8 @@ export const tourTarget = (id: TeachId, board: BoardView): HexKey | null =>
  * What opening the purse does (2026-10-13). The purse's card IS the LUCK
  * lesson's, so a device the tour has already told LUCK is not told it twice:
  * the open marks `purse` silently and raises nothing. Opened before that, the
- * purse raises the card (whose dismissal tells `purse`). Already told, nothing.
+ * purse raises the card (whose dismissal tells `purse` and `luck`). Already told,
+ * nothing.
  */
 export const purseOpened = (progress: Progress): 'card' | 'silent' | null =>
   hasMet(progress, 'purse') ? null : hasMet(progress, 'luck') ? 'silent' : 'card';

@@ -134,6 +134,14 @@ function tabFor(id: LessonId | undefined, met: ReadonlySet<TeachId> | null): Tab
   return lesson.tab;
 }
 
+/**
+ * Whether the manual prints this lesson for a device that has met `met`: the
+ * question a HOW TO PLAY › link asks before it offers a trip to a section that
+ * is not there to arrive at.
+ */
+export const manualPrints = (id: LessonId, met: readonly TeachId[]): boolean =>
+  tabFor(id, new Set(met)) !== null;
+
 function drawnOnce(
   lessons: readonly Lesson[],
   met: ReadonlySet<TeachId> | null,

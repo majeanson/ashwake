@@ -21,7 +21,10 @@ import {
   lessonTerms,
   type RowKey,
 } from './lessons';
-import { conceptPattern, conceptTerms } from './tips';
+import { conceptLookup } from './tips';
+
+/** Every term, longest first: the lookup's own order. */
+const termsOf = (s: Strings) => [...conceptLookup(s).byWord.values()];
 import { colourLesson } from './view';
 
 /**
@@ -218,11 +221,24 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the lesson registry
    * accents, which `\b` could never see — and never inside a longer word.
    */
   it('matches every term as a whole word, and never inside another', () => {
-    const pattern = conceptPattern(s);
-    for (const { term } of conceptTerms(s)) {
+    const pattern = conceptLookup(s).pattern;
+    for (const { term } of termsOf(s)) {
       const found = [...`x ${term} x`.matchAll(pattern)].map((m) => m[1]);
       expect(found, `"${term}" is not matched as a word`).toEqual([term]);
       expect([...`x ${term}z x`.matchAll(pattern)], `"${term}" matched inside a word`).toEqual([]);
+    }
+  });
+
+  /**
+   * Every paragraph of every card, row and section asks for the lookup, so it is
+   * built once per locale — and resolves a matched word, in any case, to the
+   * term the pattern found.
+   */
+  it('builds its lookup once per locale, and resolves every term by its word', () => {
+    expect(conceptLookup(s)).toBe(conceptLookup(s));
+    const { byWord } = conceptLookup(s);
+    for (const entry of termsOf(s)) {
+      expect(byWord.get(entry.term.toLocaleUpperCase()), entry.term).toBe(entry);
     }
   });
 
@@ -464,7 +480,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the map lesson · %
   });
 
   it('answers to each row’s words, with the row they open', () => {
-    const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+    const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
     for (const head of map.rowHeads?.(s) ?? []) {
       for (const term of head.terms) {
         expect(byTerm.get(term), term).toMatchObject({ id: 'map', row: head.key });
@@ -516,7 +532,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     });
 
     it('answers to MAGIC and UNIQUE as rows of one lesson, each in its own ink', () => {
-      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
       expect(byTerm.get(s.lesson.magic.row.magic.name)).toMatchObject({
         id: 'magic',
         row: 'magic',
@@ -580,7 +596,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
 
     it('opens RELICS at its row, which carries the shop sentence', () => {
       const end = lesson('end');
-      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
       for (const term of s.lesson.end.row.relic.terms) {
         expect(byTerm.get(term), term).toMatchObject({ id: 'end', row: 'relic' });
       }
@@ -645,7 +661,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     });
 
     it('answers to POCKET, WORTH and the verb as one lesson, and to its rows’ words at their rows', () => {
-      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
       for (const term of s.lesson.pop.terms)
         expect(byTerm.get(term), term).toMatchObject({ id: 'pop' });
       expect(byTerm.get(s.lesson.pop.row.stone.terms[0]!)).toMatchObject({
@@ -727,7 +743,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     it('gives CARAVAN a tappable word, and a card opened at one of its words says the caravan', () => {
       const caravan = lesson('caravan');
       expect(lessonTerms(caravan, s)).toHaveLength(1);
-      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
       expect(byTerm.get(lessonTerms(caravan, s)[0]!)).toMatchObject({ id: 'caravan' });
     });
   },

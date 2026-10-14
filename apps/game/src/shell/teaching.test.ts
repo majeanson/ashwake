@@ -249,7 +249,9 @@ describe('the schedule covers every moment (2026-10-13)', () => {
     // This list is the whole of the exception, so a moment dropped from the
     // schedule by accident is not mistaken for one dropped on purpose.
     const companions = SCHEDULE.flatMap((s) => s.tells ?? []);
-    expect(companions).toEqual(['pop']);
+    expect(companions).toEqual(['pop', 'luck']);
+    // `luck` has a slot of its own (the tour's card); only `pop` is a companion alone.
+    expect(companions.filter((id) => !ids.includes(id))).toEqual(['pop']);
     expect(new Set<string>([...ids, 'walked', 'toured', ...companions])).toEqual(
       new Set<string>(TEACH_IDS),
     );
@@ -271,6 +273,17 @@ describe('the schedule covers every moment (2026-10-13)', () => {
     // No second card for the pop: with RIPE told the walk goes on to the pop.
     const now = { ...momentAt(3), hud: { ...momentAt(3).hud, canHarvest: true } };
     expect(nextLesson(now, taughtExcept('pop'))).toBeNull();
+  });
+
+  it('tells LUCK with the purse card, so the tour’s LUCK card does not repeat it', () => {
+    expect(toldBy('purse', destinations().board)).toEqual(['purse', 'luck']);
+    // The purse opened first, mid-tour, before the pace has let LUCK's own card
+    // out: once that card is read, LUCK is not offered a second time.
+    const now = { ...momentAt(3), hud: { ...momentAt(3).hud, luck: 1 } };
+    const tour = meet({ ...EMPTY_PROGRESS }, 'walked');
+    expect(nextLesson(now, tour)).toEqual({ id: 'luck', as: 'card' });
+    const read = toldBy('purse', destinations().board).reduce(told, tour);
+    expect(nextLesson(now, read)).not.toEqual({ id: 'luck', as: 'card' });
   });
 
   it('opens the purse silently when LUCK is already told, and with the card when not', () => {

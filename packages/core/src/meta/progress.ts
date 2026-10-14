@@ -498,8 +498,10 @@ export function decodeProgress(raw: string | null): Progress {
     // so only a ledger holding something BEYOND them belongs to a veteran.
     const WALK = new Set<string>(['story', 'goal', 'place', 'ripe', 'pop', 'colours']);
     if (!taught.includes('walked') && taught.some((id) => !WALK.has(id))) taught.push('walked');
-    // 'toured' likewise, past the lessons the tour itself teaches.
-    const TOUR = new Set<string>([...WALK, 'walked', 'luck', 'rare']);
+    // 'toured' likewise, past the lessons the tour itself teaches: LUCK, MAGIC,
+    // a territory as it comes into view (whose card also tells THE MAP), and
+    // the purse, whose card is LUCK's and which the player may open at any time.
+    const TOUR = new Set<string>([...WALK, 'walked', 'luck', 'rare', 'territory', 'map', 'purse']);
     if (!taught.includes('toured') && taught.some((id) => !TOUR.has(id))) taught.push('toured');
     // 'map' groups the fog's moments (2026-10-13). A ledger that holds any of
     // them has had the fog explained piecemeal, one kind at a time — seal the

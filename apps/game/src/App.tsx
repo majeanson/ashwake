@@ -58,7 +58,7 @@ import { LensPanel } from './screens/LensPanel';
 import { LessonCard } from './screens/LessonCard';
 import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
-import { Manual, type ManualOpen } from './screens/Manual';
+import { Manual, manualPrints, type ManualOpen } from './screens/Manual';
 import { Device } from './screens/Device';
 import { More } from './screens/More';
 import { Purse } from './screens/Purse';
@@ -3237,7 +3237,7 @@ function Game() {
      * whose rows are the drawer's buttons, so this raises the same card the
      * tour's LUCK moment does, the same way a NEW chip raises its own. The
      * card holds the screen — read once ever, and a list is not a glance —
-     * and its dismissal tells `purse`. It used to build a card of its own
+     * and its dismissal tells `purse` and `luck`. It used to build a card of its own
      * (`purseLesson`) and mark the moment told on the OPEN, which spent the
      * ledger entry whether or not the card was ever read.
      *
@@ -3334,6 +3334,16 @@ function Game() {
     }) && !manual.open
       ? card
       : null;
+  /** The lesson (and row) the fired card is about, computed once per render. */
+  const teachingAt = teaching === null ? null : opensAt(teaching, snap.board);
+  /** And the chip's: a chip's row never depends on the board. */
+  const dotAt = dotOpen === null ? null : opensAt(dotOpen);
+  /**
+   * Room for a card that is not a receipt, a film or the book: the story, the
+   * goal and a chip's card all stand down for the same three things. (The fired
+   * card has its own rule, `mayTeach`, which also asks them.)
+   */
+  const cardRoom = saidCard === null && film === null && !manual.open;
 
   /**
    * The story and the goal are told by a tap: GOT IT, or the HOW TO PLAY › link
@@ -3346,10 +3356,10 @@ function Game() {
    * functional so it cannot clobber a concurrent grant.
    */
   /** HOW TO PLAY › from a card: the book opens where the card was opened. */
-  const openManualFor = (opened: { readonly lesson: LessonId; readonly row?: RowKey }): void =>
-    openManual(
-      opened.row === undefined ? { at: opened.lesson } : { at: opened.lesson, row: opened.row },
-    );
+  const openManualFor = (opened: {
+    readonly lesson: LessonId;
+    readonly row?: RowKey | undefined;
+  }): void => openManual({ at: opened.lesson, row: opened.row });
 
   const tellOpener = (id: 'story' | 'goal'): void => {
     setProgress((p) => told(p, id));
@@ -4599,7 +4609,7 @@ function Game() {
         to drift. Ahead of every other card by construction (`shell/teaching`'s
         `ORDER`), so it is the first thing a stranger's first run says.
       */}
-      {card === 'story' && saidCard === null && film === null && !manual.open && (
+      {card === 'story' && cardRoom && (
         <SaidCard
           text={`${s.ui.theStory}\n${s.story.join('\n')}`}
           theme={theme}
@@ -4621,7 +4631,7 @@ function Game() {
         `SaidCard` door and the same reasoning — `s.goal` is the one source, so
         there is no `LESSONS` entry.
       */}
-      {card === 'goal' && saidCard === null && film === null && !manual.open && (
+      {card === 'goal' && cardRoom && (
         <SaidCard
           text={`${s.ui.theGoal}\n${s.howItWorks}`}
           theme={theme}
@@ -4661,10 +4671,10 @@ function Game() {
         withdrawn before it could be read. Held now until the board has
         finished saying what it is already saying.
       */}
-      {teaching !== null && (
+      {teaching !== null && teachingAt !== null && (
         <LessonCard
-          id={opensAt(teaching, snap.board).lesson}
-          row={opensAt(teaching, snap.board).row}
+          id={teachingAt.lesson}
+          row={teachingAt.row}
           theme={theme}
           s={s}
           // FIRED by a moment, so it carries the lesson's first-contact
@@ -4685,9 +4695,8 @@ function Game() {
             openTerm(id, row);
           }}
           onManual={() => {
-            const at = opensAt(teaching, snap.board);
             tellMoment(teaching, 'fired');
-            openManualFor(at);
+            openManualFor(teachingAt);
           }}
           onDismiss={() => {
             tellMoment(teaching, 'fired');
@@ -4711,10 +4720,10 @@ function Game() {
         is the same quiet beat, and for a territory or a shrine the same trip to
         look at it.
       */}
-      {dotOpen !== null && teaching === null && saidCard === null && film === null && (
+      {dotOpen !== null && dotAt !== null && teaching === null && cardRoom && (
         <LessonCard
-          id={opensAt(dotOpen).lesson}
-          row={opensAt(dotOpen).row}
+          id={dotAt.lesson}
+          row={dotAt.row}
           theme={theme}
           s={s}
           firstContact
@@ -4724,9 +4733,8 @@ function Game() {
             openTerm(id, row);
           }}
           onManual={() => {
-            const at = opensAt(dotOpen);
             tellMoment(dotOpen, 'chip');
-            openManualFor(at);
+            openManualFor(dotAt);
           }}
           onDismiss={() => {
             tellMoment(dotOpen, 'chip');
@@ -4745,10 +4753,17 @@ function Game() {
           // A term tapped in a term card REPLACES it (one slot): the chain
           // cannot grow past one card.
           onTerm={openTerm}
-          onManual={() => {
-            setTerm(null);
-            openManual(term.row === undefined ? { at: term.id } : { at: term.id, row: term.row });
-          }}
+          // Only where the book prints the lesson: a word tapped before its
+          // moment has been told has no section to arrive at, and the book
+          // would open on its first tab and show nothing for the tap.
+          onManual={
+            manualPrints(term.id, progress.met)
+              ? () => {
+                  setTerm(null);
+                  openManualFor({ lesson: term.id, row: term.row });
+                }
+              : undefined
+          }
           onDismiss={() => setTerm(null)}
         />
       )}

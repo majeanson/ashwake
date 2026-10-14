@@ -65,15 +65,26 @@ export function Card({
   manual,
 }: CardProps) {
   const panel = useRef<HTMLDivElement>(null);
+  /*
+   * The newest `onDismiss`, read by the Escape handler. Callers pass a fresh
+   * arrow on every render, so depending on it would re-run the effect — and its
+   * `focus()` — on every render of `App`, pulling a keyboard reader off the
+   * term or HOW TO PLAY button they had tabbed to. Focus is the card's to take
+   * once, when it opens.
+   */
+  const dismissNow = useRef(onDismiss);
+  useEffect(() => {
+    dismissNow.current = onDismiss;
+  });
 
   useEffect(() => {
     panel.current?.focus();
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') onDismiss();
+      if (event.key === 'Escape') dismissNow.current();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onDismiss]);
+  }, []);
 
   return (
     <div className="card-scrim">

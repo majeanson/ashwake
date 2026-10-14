@@ -29,19 +29,34 @@ type ConceptTerm = {
   readonly ink?: 'ink-magic' | 'ink-unique';
 };
 
-const TERMS_BY_LOCALE = new Map<string, readonly ConceptTerm[]>();
+/** Everything a host needs to find the tappable words in prose, built once per
+ *  locale: every card, row and manual section is read through it, and each
+ *  paragraph of each used to rebuild the lot. */
+type ConceptLookup = {
+  /** The pattern a host splits prose on to find the tappable words; its matches
+   *  are the odd pieces. */
+  readonly pattern: RegExp;
+  /** A matched word, upper-cased, to the term it is. */
+  readonly byWord: ReadonlyMap<string, ConceptTerm>;
+  /** MAGIC and UNIQUE, wherever the WORDS appear, so prose and palette agree
+   *  (Marc, 2026-08-20: "as well as documentation and anywhere it speaks about
+   *  it"). Inked rather than tapped; uppercase only: the capitals are the
+   *  vocabulary. */
+  readonly rarity: RegExp;
+};
+
+const LOOKUP_BY_LOCALE = new Map<string, ConceptLookup>();
 
 /**
  * Every term the lessons answer to, longest first — so RELICS is never cut
  * short into RELIC and SIZE BONUS is never split at its own space — with the
  * entry each one opens. Built from LESSONS itself, where MAGIC and
  * UNIQUE live as the rows of `magic` (and wear their own ink), so this needs
- * no second list to keep in sync. `lessons.test.ts`
- * guarantees no two entries share a term, in either language.
+ * no second list to keep in sync. No two entries may share a term, in either
+ * language: `conceptLookup` throws on one, and `lessons.test.ts` builds it for
+ * both.
  */
-export function conceptTerms(s: Strings): readonly ConceptTerm[] {
-  const cached = TERMS_BY_LOCALE.get(s.locale);
-  if (cached !== undefined) return cached;
+function buildTerms(s: Strings): readonly ConceptTerm[] {
   const out: ConceptTerm[] = [];
   for (const entry of LESSONS) {
     for (const term of lessonTerms(entry, s)) {
@@ -60,14 +75,13 @@ export function conceptTerms(s: Strings): readonly ConceptTerm[] {
     }
   }
   out.sort((a, b) => b.term.length - a.term.length);
-  TERMS_BY_LOCALE.set(s.locale, out);
   return out;
 }
 
 const escape = (term: string): string => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
- * The pattern a host splits prose on to find the tappable words.
+ * A pattern that matches any of `alternatives` as a whole word.
  *
  * Unicode-aware since the second language (2026-08-28): `\b` is an ASCII
  * word boundary in JavaScript, so `\bRÉSERVE\b` never matched at all and
@@ -75,20 +89,29 @@ const escape = (term: string): string => term.replace(/[.*+?^${}()|[\]\\]/g, '\\
  * boundary is now "not touching a letter or a digit", which is what a word
  * boundary means in French as well as English.
  */
-export function conceptPattern(s: Strings): RegExp {
-  const alternation = conceptTerms(s)
-    .map((c) => escape(c.term))
-    .join('|');
-  return new RegExp(`(?<![\\p{L}\\p{N}])(${alternation})(?![\\p{L}\\p{N}])`, 'gu');
-}
+const wholeWords = (alternatives: readonly string[]): RegExp =>
+  new RegExp(`(?<![\\p{L}\\p{N}])(${alternatives.map(escape).join('|')})(?![\\p{L}\\p{N}])`, 'gu');
 
-/** MAGIC and UNIQUE, wherever the WORDS appear, so prose and palette agree
- *  (Marc, 2026-08-20: "as well as documentation and anywhere it speaks about
- *  it"). Uppercase only: the capitals are the vocabulary. */
-export function rarityPattern(s: Strings): RegExp {
-  const magic = escape(s.lesson.magic.row.magic.name);
-  const unique = escape(s.lesson.magic.row.unique.name);
-  return new RegExp(`(?<![\\p{L}\\p{N}])(${magic}|${unique})(?![\\p{L}\\p{N}])`, 'gu');
+/** The locale's lookup, built on first use and kept: the strings of a locale do
+ *  not change under a running page. */
+export function conceptLookup(s: Strings): ConceptLookup {
+  const cached = LOOKUP_BY_LOCALE.get(s.locale);
+  if (cached !== undefined) return cached;
+  const terms = buildTerms(s);
+  const byWord = new Map<string, ConceptTerm>();
+  for (const entry of terms) {
+    const word = entry.term.toLocaleUpperCase();
+    // Two entries on one word would silently leave one of them unreachable.
+    if (byWord.has(word)) throw new Error(`"${entry.term}" names two lessons (${s.locale})`);
+    byWord.set(word, entry);
+  }
+  const built: ConceptLookup = {
+    pattern: wholeWords(terms.map((c) => c.term)),
+    byWord,
+    rarity: wholeWords([s.lesson.magic.row.magic.name, s.lesson.magic.row.unique.name]),
+  };
+  LOOKUP_BY_LOCALE.set(s.locale, built);
+  return built;
 }
 
 /**

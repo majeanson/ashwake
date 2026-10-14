@@ -55,8 +55,9 @@ type LessonCardProps = {
   /** A tapped term in the body or the rows. */
   readonly onTerm: OnTerm;
   /** HOW TO PLAY ›: close this card and open the manual at this lesson (at the
-   *  row it was opened at, where it has one). */
-  readonly onManual: () => void;
+   *  row it was opened at, where it has one). Absent where the manual does not
+   *  print the lesson yet, so there is no link to a section that is not there. */
+  readonly onManual?: (() => void) | undefined;
 };
 
 export function LessonCard({
@@ -82,7 +83,7 @@ export function LessonCard({
       ink={lesson.ink}
       dismiss={dismiss}
       onDismiss={onDismiss}
-      manual={{ label: s.ui.howToPlay, onOpen: onManual }}
+      manual={onManual === undefined ? undefined : { label: s.ui.howToPlay, onOpen: onManual }}
     >
       <ProseLines
         text={

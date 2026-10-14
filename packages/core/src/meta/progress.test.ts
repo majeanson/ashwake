@@ -532,6 +532,28 @@ describe('the walked seal (2026-10-12)', () => {
   });
 });
 
+describe('the toured seal (2026-10-13)', () => {
+  const decode = (...ids: string[]) =>
+    decodeProgress(JSON.stringify({ relics: 0, bought: {}, met: ids })).met;
+  const WALKED = ['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'walked'];
+
+  it('keeps a device mid-tour toured-armed through every lesson the tour itself tells', () => {
+    // A reload or a service-worker update mid-tour must not end the tour: the
+    // MAGIC card, the bank step and the end step would never run. The tour tells
+    // LUCK, MAGIC, a territory (and with it THE MAP) and, if the player opens
+    // it, the purse.
+    for (const id of ['luck', 'rare', 'territory', 'map', 'purse']) {
+      expect(decode(...WALKED, id), id).not.toContain('toured');
+    }
+    expect(decode(...WALKED, 'luck', 'territory', 'map', 'purse')).not.toContain('toured');
+  });
+
+  it('seals one that has met a lesson only a free run teaches', () => {
+    expect(decode(...WALKED, 'luck', 'cache')).toContain('toured');
+    expect(decode(...WALKED, 'relic')).toContain('toured');
+  });
+});
+
 describe('the map seal (2026-10-13)', () => {
   const decode = (...ids: string[]) =>
     decodeProgress(JSON.stringify({ relics: 0, bought: {}, met: ids })).met;

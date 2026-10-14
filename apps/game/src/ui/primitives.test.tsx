@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
+import { Card } from './Card';
 import { Confirming } from './Confirming';
 import { DialogStack, useDoor } from './dialog';
 import { Panel, PanelMenu } from './Panel';
@@ -217,5 +218,62 @@ describe('tabs', () => {
       'fame-tabpanel-diary',
     );
     expect(screen.getByRole('tab', { name: 'TOTALS' })).not.toHaveAttribute('aria-controls');
+  });
+});
+
+describe('a card', () => {
+  // A caller passes a fresh `onDismiss` arrow on every render of `App`.
+  function Rerendering({ onDismiss }: { readonly onDismiss: () => void }) {
+    const [, tick] = useState(0);
+    return (
+      <>
+        <button type="button" onClick={() => tick((n) => n + 1)}>
+          RERENDER
+        </button>
+        <Card
+          id="luck"
+          dismiss="GOT IT"
+          onDismiss={() => onDismiss()}
+          manual={{ label: 'HOW TO PLAY', onOpen: () => undefined }}
+        >
+          <p>words</p>
+        </Card>
+      </>
+    );
+  }
+
+  it('takes focus once, so a re-render does not pull a keyboard reader off a button', async () => {
+    render(<Rerendering onDismiss={() => undefined} />);
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
+
+    const link = screen.getByRole('button', { name: /HOW TO PLAY/ });
+    link.focus();
+    // `click` on the outside button would move focus itself, so re-render by
+    // dispatching on it directly and then check where focus is.
+    screen.getByRole('button', { name: 'RERENDER', hidden: true }).click();
+    await Promise.resolve();
+    expect(document.activeElement).toBe(link);
+  });
+
+  it('dismisses on Escape with the newest callback, not the first', async () => {
+    const calls: string[] = [];
+    function Host() {
+      const [n, setN] = useState(0);
+      return (
+        <>
+          <button type="button" onClick={() => setN(1)}>
+            NEXT
+          </button>
+          <Card id="luck" dismiss="GOT IT" onDismiss={() => calls.push(`v${n}`)}>
+            <p>words</p>
+          </Card>
+        </>
+      );
+    }
+    render(<Host />);
+    screen.getByRole('button', { name: 'NEXT', hidden: true }).click();
+    await Promise.resolve();
+    await userEvent.keyboard('{Escape}');
+    expect(calls).toEqual(['v1']);
   });
 });
