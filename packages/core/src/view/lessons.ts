@@ -1,5 +1,5 @@
 import { CARAVAN_BANDS, WARE_IDS } from '@content/caravan';
-import { COLOURS, type Tuning } from '@content/tuning';
+import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { waresOnSale } from '@engine/caravan';
 import type { TeachId } from '@meta/progress';
 import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
@@ -96,7 +96,11 @@ export type LessonId =
   | 'stone'
   | 'find'
   | 'sacrifice'
-  | 'reach';
+  | 'reach'
+  | 'grounds';
+
+/** A hex has six sides, and the ground advice's figures are "all six paying". */
+const SIDES = 6;
 
 /** How heavy a sentence is. Absent means `more`. */
 type Weight = 'core' | 'more' | 'card' | 'detail';
@@ -120,10 +124,9 @@ type Beat = {
 };
 
 /**
- * The manual tabs that hold lesson sections. `colours` is not one: it draws
- * `GroundGuide`, not sections.
+ * The manual tabs that hold lesson sections.
  */
-type ManualTab = 'start' | 'play' | 'hand';
+type ManualTab = 'start' | 'grounds' | 'play' | 'hand';
 
 export type Lesson = {
   /** One of the concepts the catalogue has words for — a subset of `LessonId`,
@@ -141,7 +144,7 @@ export type Lesson = {
   /**
    * Where the manual prints this lesson as a section. Absent means the lesson
    * is reachable only through its term card and the Legend (sacrifice, cache,
-   * site, shrine, territory, find, stone, colours). A tab's sections print in
+   * site, shrine, territory, find, stone). A tab's sections print in
    * the order they stand in .
    */
   readonly tab?: ManualTab;
@@ -644,16 +647,74 @@ export const LESSONS: readonly Lesson[] = [
    * card and the hand cannot describe a ground two ways; `TipRows` draws the
    * baked tile beside it. A ground whose power is off says nothing, and the
    * lead still does.
+   *
+   * **The manual's COLOURS tab is this lesson (2026-10-13).** It was a second
+   * block, `strategy`, that restated the rule's numbers beside the rule. Now
+   * each row also carries `lines` (when to take the ground, what undoes it)
+   * for the manual to draw, and the advice that holds for every ground is the
+   * DETAILS fold's. A card prints neither: first contact is the rule and four
+   * tiles.
+   *
+   * The id is `grounds`, not the ledger's `colours`: the moment keeps its old
+   * name so no device forgets it was told, and its slot `opens` this lesson
+   * (`shell/teaching.ts`).
    */
   {
-    id: 'colours',
+    id: 'grounds',
+    tab: 'grounds',
     icon: TILE_ICON,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.colours.core }],
-    rows: (t, theme, s) =>
-      COLOURS.flatMap((colour): TipRow[] => {
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.grounds.core },
+      { at: 'detail', say: (_t, _theme, s) => s.lesson.grounds.general.pocket },
+      {
+        at: 'detail',
+        say: (_t, theme, s) => s.lesson.grounds.general.compare(namesOf(theme, s.locale)),
+      },
+      {
+        at: 'detail',
+        say: (t, theme, s) =>
+          s.lesson.grounds.general.stone(t.redAshMatches ? namesOf(theme, s.locale).red : null),
+      },
+      { at: 'detail', say: (_t, _theme, s) => s.lesson.grounds.general.distance },
+      { at: 'detail', say: (_t, _theme, s) => s.lesson.grounds.general.hand },
+    ],
+    rows: (t, theme, s) => {
+      const g = s.lesson.grounds;
+      // Six sides, all paying: the green crowd bonus lands on every one past
+      // the first. A ring of yellow pays the larger of a match and company on
+      // every side, but only where company counts every stranger; counting
+      // distinct colours caps it at three, and there is no single figure to
+      // quote.
+      const advice: Record<Colour, { pick: string; watch: string }> = {
+        green: {
+          pick: g.green.pick(SIDES + (SIDES - 1) * t.greenCrowdBonus),
+          watch: g.green.watch,
+        },
+        yellow: {
+          pick: g.yellow.pick(
+            t.yellowCompanyAll ? SIDES * Math.max(1, t.yellowCompanyBonus) : null,
+          ),
+          watch: g.yellow.watch,
+        },
+        red: { pick: g.red.pick(t.redAshWalls), watch: g.red.watch },
+        blue: { pick: g.blue.pick(t.blueTideCap), watch: g.blue.watch(t.blueTideCap) },
+      };
+      return COLOURS.flatMap((colour): TipRow[] => {
         const text = colourLesson(colour, t, theme, s);
-        return text === null ? [] : [{ colour, text }];
-      }),
+        return text === null
+          ? []
+          : [
+              {
+                colour,
+                text,
+                lines: [
+                  { head: g.pickWhen, text: advice[colour].pick },
+                  { head: g.watchFor, text: advice[colour].watch },
+                ],
+              },
+            ];
+      });
+    },
   },
 ];
 

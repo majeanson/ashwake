@@ -37,11 +37,15 @@ export function TipRows({
   theme,
   s,
   onTerm,
+  withLines,
 }: {
   readonly rows: readonly TipRow[];
   readonly theme: Theme;
   readonly s: Strings;
   readonly onTerm?: ((id: LessonId) => void) | undefined;
+  /** Draw each row's `lines` under it. The manual does; a card is the rule
+   *  and its tiles only, so it does not. */
+  readonly withLines?: boolean | undefined;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const art = useTerrainArt(theme.id);
@@ -65,8 +69,19 @@ export function TipRows({
         );
         const value =
           row.value !== undefined ? <span className="tip-value">{row.value}</span> : null;
+        // The manual's depth under a row: when to take a ground, what undoes
+        // it (2026-10-13). Set in under the row's mark so the lines read as one
+        // block with it.
+        const lines =
+          withLines === true && row.lines !== undefined
+            ? row.lines.map((line) => (
+                <p className="ground-advice" key={line.head}>
+                  <strong>{line.head}</strong> <Prose text={line.text} s={s} onTerm={onTerm} />
+                </p>
+              ))
+            : null;
         if (row.hint === undefined) {
-          return (
+          const line = (
             <p className={row.total === true ? 'tip-row total' : 'tip-row'} key={i}>
               {mark}
               <span>
@@ -74,6 +89,14 @@ export function TipRows({
               </span>
               {value}
             </p>
+          );
+          return lines === null ? (
+            line
+          ) : (
+            <div key={i} data-ground={row.colour}>
+              {line}
+              {lines}
+            </div>
           );
         }
         // A hinted row's label is plain text: a Prose term is a button of its

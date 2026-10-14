@@ -340,14 +340,23 @@ test('the manual draws the game’s own pictures, and lines them all up', async 
   await page.locator('[data-tab="play"]').click();
   await page.waitForTimeout(800);
 
-  // What the LEGEND draws. Same files, plus the two grounds the hand never
-  // holds: a legend names STONE and WALL and the board draws both.
+  // What the LEGEND draws: the two grounds the hand never holds (a legend
+  // names STONE and WALL and the board draws both). The four the hand does
+  // hold live on the GROUNDS tab since 2026-10-13, as the rows' own marks.
   const inLegend = await page
     .locator('.legend-swatch image')
     .evaluateAll((els) => els.map((el) => el.getAttribute('href')));
   expect(inLegend.length, 'the legend draws no baked ground').toBeGreaterThan(0);
+  await page.locator('[data-tab="grounds"]').click();
+  await page.waitForTimeout(800);
+  const inGrounds = await page
+    .locator('[data-panel="manual"] .tip-mark img')
+    .evaluateAll((els) => els.map((el) => el.getAttribute('src')));
   for (const src of inHand) {
-    expect(inLegend, `the legend does not draw ${src}, which the hand does`).toContain(src);
+    expect(
+      [...inLegend, ...inGrounds],
+      `the manual does not draw ${src}, which the hand does`,
+    ).toContain(src);
   }
   expect(
     inLegend.some((h) => h?.includes('terrain.stone')),
@@ -442,7 +451,7 @@ test('every mark on every screen is drawn, not typed', async ({ page }) => {
   await clean('MORE, off the board');
   await panel(page, 'more').locator('[data-go="manual"]').click();
   await panel(page, 'manual').waitFor({ state: 'visible' });
-  for (const tab of ['start', 'play', 'hand', 'colours']) {
+  for (const tab of ['start', 'play', 'hand', 'grounds']) {
     await page.locator(`[data-tab="${tab}"]`).click();
     await clean(`the manual's ${tab} tab`);
   }
@@ -889,11 +898,11 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   const legend = page.locator('.legend');
   await legend.waitFor({ state: 'visible' });
 
-  // Four grounds, five destinations, and the other marks.
-  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(10);
+  // Five destinations and the other marks (the four grounds moved one tab over).
+  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(8);
   // The swatches are the DIRECTION's own fills, so the legend repaints with
   // the board rather than being a second copy of the palette.
-  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(4);
+  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(8);
 
   /*
    * And NOTHING in the manual is tappable (2026-08-29).
@@ -934,7 +943,7 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
     'a destination is explained twice on one tab again',
   ).toBe(0);
 
-  // And a ground says what it DOES beside its name.
+  // And a destination says what it DOES beside its name.
   expect(await legend.locator('.legend-note').count()).toBeGreaterThan(0);
 
   expect(errors).toEqual([]);

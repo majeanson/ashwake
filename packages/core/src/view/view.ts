@@ -1724,6 +1724,13 @@ export type TipRow = {
   readonly colour?: Colour;
   /** An icon from the registry, for a row that is not a ground. */
   readonly icon?: IconName;
+  /**
+   * Small labelled lines under the row (2026-10-13): the manual's depth for a
+   * row, which a card does not carry. THE FOUR GROUNDS sets two per ground,
+   * when to take it and what undoes it. Drawn only by hosts that ask for them
+   * (`TipRows` `withLines`), so a card stays a card.
+   */
+  readonly lines?: readonly { readonly head: string; readonly text: string }[];
   // `art`, the baked tile as a data URL, went on 2026-09-30: no caller ever
   // supplied one, and `TipRows` now draws the bake for any `colour` row.
 };
@@ -1853,33 +1860,12 @@ export function statNote(id: string, hud: HudView, t: Tuning, s: Strings): strin
  * `text/` could not see it and `text.test.ts` — which walks the catalogues —
  * could not catch it: every colour card in the game read "MARKET — company."
  * in English and in French while both catalogues were clean. It is the same
- * D4 argument `powerHead` below makes about its colon, and the same place it
- * was already resolved. **A sentence assembled outside `text/` is a sentence
+ * D4 argument that puts a colon's spacing in the catalogue, and the same place
+ * it was already resolved. **A sentence assembled outside `text/` is a sentence
  * no language rule is holding.**
  */
 export function groundHead(name: string, word: string, s: Strings): string {
   return name.toLowerCase() === word.toLowerCase() ? `${name}.` : s.view.groundHead(name, word);
-}
-
-/**
- * The same rule, for the one-clause POWER line (2026-08-29).
- *
- * `powerOf` prints " · crowds: +2 worth per MOSS neighbour…" — the word, then
- * the rule. A direction whose ground name already IS the power word has
- * nothing to put in front, and printing it anyway gives settlement
- * " · farm: +2 worth per FARM neighbour", which is the stutter `groundHead`
- * was written to stop, in the other door. So this returns the prefix or
- * nothing, and the catalogue interpolates it either way.
- *
- * Lowercase, because the clause is a fragment inside a sentence and the
- * catalogue has always printed these words lowercase. **The word only** — the
- * colon after it belongs to the catalogue, because in Québec French it is
- * preceded by a narrow no-break space and in English it is not, and that is a
- * fact about a language rather than about a power (D4, and `text.test.ts`
- * would have caught it).
- */
-function powerHead(name: string, word: string): string {
-  return name.toLowerCase() === word.toLowerCase() ? '' : word.toLowerCase();
 }
 
 /**
@@ -1904,41 +1890,6 @@ export function colourLesson(colour: Colour, t: Tuning, theme: Theme, s: Strings
       return t.redAshMatches ? c.red(head, t.redAshWalls) : null;
     case 'blue':
       return t.blueTideEvery > 0 ? c.blue(head, t.blueTideEvery) : null;
-  }
-}
-
-/**
- * The colour's power, in one clause, with its numbers read from the live
- * tuning — same no-staleness contract as the manual. Empty string when the
- * personalities are off (the bounded game), so the tip stays honest there.
- *
- * **It takes a THEME as of 2026-08-29, and the old comment beside its one pin
- * said why it should not:** *"`powerOf` takes no theme — it names a dial, not
- * a terrain."* True of the dial and false of the sentence. Two of the four
- * clauses named a ground — "beside red", "per green neighbour" — in words no
- * direction shows anywhere, and the leading word was `colourWord`, which was
- * one shared set containing torchlit's own ASH and TIDE. So the tip under a
- * settlement card read `· ash: … beside red …` while the card above it said
- * QUARRY.
- *
- * Both halves come from the direction now: the ground's name where the clause
- * points at a ground, and the power word where the direction has one to add.
- */
-export function powerOf(colour: Colour, t: Tuning, theme: Theme, s: Strings): string {
-  const p = s.view.power;
-  const n = namesOf(theme, s.locale)[colour];
-  const head = powerHead(n, powersOf(theme, s.locale)[colour]);
-  switch (colour) {
-    case 'green':
-      return t.greenCrowdBonus > 0 ? p.green(head, n, t.greenCrowdBonus) : '';
-    case 'yellow':
-      return t.yellowCompanyBonus > 0
-        ? p.yellow(head, t.yellowCompanyBonus, t.yellowCompanyAll)
-        : '';
-    case 'red':
-      return t.redAshMatches ? p.red(head, n, t.redAshWalls) : '';
-    case 'blue':
-      return t.blueTideEvery > 0 ? p.blue(head, t.blueTideEvery) : '';
   }
 }
 

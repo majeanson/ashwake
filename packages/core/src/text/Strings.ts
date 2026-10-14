@@ -135,12 +135,45 @@ type LessonStrings = {
   };
   /**
    * THE FOUR GROUNDS (2026-09-30), Ashwake 1's one card for all four (Marc,
-   * 2026-08-27: _"teach all tiles at one in a beautiful tip"_). It never
-   * shipped in this body: the drip fired `colours` into a card with no
-   * lesson. The lead is `core`; each ground's row is `view.colour`'s own
-   * sentence, the one a second tap on a card says.
+   * 2026-08-27: _"teach all tiles at one in a beautiful tip"_). The lead is
+   * `core`; each ground's row is `view.colour`'s own sentence, the one a
+   * second tap on a card says.
+   *
+   * ONE SOURCE FOR EVERY GROUND SENTENCE (2026-10-13). The manual's COLOURS
+   * tab (Marc, 2026-10-12: _"add more strategy in how to play towards
+   * colours"_) used to be a block of its own, `strategy`, restating the rule's
+   * numbers beside the rule. It is this lesson's now: the rule is
+   * `colourLesson`, and what is left here is the judgement only. Functions
+   * take numbers and names, never read state (D4), and the numbers come from
+   * the live tuning so the tab cannot go stale.
    */
-  readonly colours: LessonHead & { readonly core: string };
+  readonly grounds: LessonHead & {
+    readonly core: string;
+    /** The sub-head over each ground's reason to take it. */
+    readonly pickWhen: string;
+    /** The sub-head over what undoes it. */
+    readonly watchFor: string;
+    /** The advice that holds for every ground. `n` is the direction's own
+     *  ground names; `red` is null where no ground counts stone. */
+    readonly general: {
+      readonly pocket: string;
+      readonly compare: (n: Readonly<Record<Colour, string>>) => string;
+      readonly stone: (red: string | null) => string;
+      readonly distance: string;
+      readonly hand: string;
+    };
+    /** `ring` is what a tile ringed by its own colour is worth. */
+    readonly green: { readonly pick: (ring: number) => string; readonly watch: string };
+    /** `ring` is null where yellow counts distinct colours, which has no
+     *  single full-ring figure to quote. */
+    readonly yellow: { readonly pick: (ring: number | null) => string; readonly watch: string };
+    readonly red: { readonly pick: (walls: boolean) => string; readonly watch: string };
+    /** `cap` is the most its extra can reach; 0 where it is uncapped. */
+    readonly blue: {
+      readonly pick: (cap: number) => string;
+      readonly watch: (cap: number) => string;
+    };
+  };
   readonly stash: LessonHead & {
     readonly coreMany: (slots: number) => string;
     readonly coreOne: string;
@@ -209,39 +242,6 @@ export type Strings = {
    *  sentence (2026-10-12, Marc: the second one — what the faint number is —
    *  was too much on the first screen; it has its own door in the manual). */
   /**
-   * CHOOSING A GROUND (2026-10-12, Marc: _"add more strategy in how to play
-   * towards colours"_): the manual's COLOURS tab. Each ground's RULE is
-   * `colourLesson`, the sentence every other door says; this is what the rule
-   * is FOR. Functions take numbers and names, never read state (D4), and the
-   * numbers come from the live tuning so the tab cannot go stale.
-   */
-  readonly strategy: {
-    readonly head: string;
-    readonly pickWhen: string;
-    readonly watchFor: string;
-    /** The advice that holds for every ground. `n` is the direction's own
-     *  ground names; `red` is null where no ground counts stone. */
-    readonly general: {
-      readonly pocket: string;
-      readonly compare: (n: Readonly<Record<Colour, string>>) => string;
-      readonly stone: (red: string | null) => string;
-      readonly distance: string;
-      readonly hand: string;
-    };
-    readonly green: {
-      readonly pick: (bonus: number, ring: number) => string;
-      readonly watch: string;
-    };
-    /** `ring` is null where yellow counts distinct colours, which has no
-     *  single full-ring figure to quote. */
-    readonly yellow: { readonly pick: (ring: number | null) => string; readonly watch: string };
-    readonly red: { readonly pick: (walls: boolean) => string; readonly watch: string };
-    readonly blue: {
-      readonly pick: (every: number, cap: number) => string;
-      readonly watch: (cap: number) => string;
-    };
-  };
-  /**
    * THE FIRST RUN'S COACH (2026-10-12, Marc: _"take the user by the hand and
    * walk them through their actions and why they do it"_). One line per step,
    * each saying what to do and why, spoken while nothing else is.
@@ -267,8 +267,8 @@ export type Strings = {
      *
      * The WORDS and their punctuation, never the rule: `view#groundHead` still
      * decides whether a direction that named its ground after its power gets a
-     * word at all. It lives here for the same reason `powerHead`'s colon does
-     * (D4): Québec French puts a narrow no-break space before a colon and
+     * word at all. It lives here for the same reason as every colon (D4):
+     * Québec French puts a narrow no-break space before one and
      * English does not, and that is a fact about a language.
      */
     readonly groundHead: (name: string, word: string) => string;
@@ -431,19 +431,6 @@ export type Strings = {
       readonly green: (head: string, name: string, bonus: number) => string;
       readonly yellow: (head: string, bonus: number, all: boolean) => string;
       readonly red: (head: string, walls: boolean) => string;
-      readonly blue: (head: string, every: number) => string;
-    };
-    /**
-     * The one-clause version. `head` is the power word and its colon, or an
-     * empty string where the direction's ground name already says it
-     * (`view#powerHead`); `name` is that ground name, so a clause that points
-     * at a ground says QUARRY rather than "red" — a word the game shows
-     * nowhere else.
-     */
-    readonly power: {
-      readonly green: (head: string, name: string, bonus: number) => string;
-      readonly yellow: (head: string, bonus: number, all: boolean) => string;
-      readonly red: (head: string, name: string, walls: boolean) => string;
       readonly blue: (head: string, every: number) => string;
     };
     readonly hex: {
@@ -849,7 +836,7 @@ export type Strings = {
       readonly start: string;
       readonly play: string;
       readonly hand: string;
-      readonly colours: string;
+      readonly grounds: string;
     };
     /**
      * "There is more behind this tab", said out loud (2026-09-02).
@@ -1487,7 +1474,6 @@ export type Strings = {
      * written in: a player meets a glyph on a hex and the only way to learn it
      * was to tap that hex, which needs them to have walked there first.
      */
-    readonly legendGrounds: string;
     readonly legendPlaces: string;
     readonly legendMarks: string;
     readonly legendRare: string;

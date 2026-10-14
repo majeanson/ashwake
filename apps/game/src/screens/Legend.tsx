@@ -1,8 +1,7 @@
-import { COLOURS, TUNING } from '@content/tuning';
-import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON } from '@theme/icons';
-import { namesOf, type Theme } from '@theme/tokens';
+import { TUNING } from '@content/tuning';
+import { CONCEPT_ICON, LANDMARK_ICON, TILE_ICON } from '@theme/icons';
+import type { Theme } from '@theme/tokens';
 import { LESSON_FOR_REWARD, lessonDefine, lessonName, lessonOf } from '@view/lessons';
-import { powerOf } from '@view/view';
 import type { Strings } from '@text/Strings';
 import { useGroundArt } from '../shell/art';
 import { Figure } from '../ui/Figure';
@@ -75,7 +74,6 @@ type LegendProps = {
 };
 
 export function Legend({ theme, s }: LegendProps) {
-  const names = namesOf(theme, s.locale);
   const art = useGroundArt(theme.id);
   const stone = lessonOf('stone');
 
@@ -94,45 +92,7 @@ export function Legend({ theme, s }: LegendProps) {
      * so nothing about this moved a pixel.
      */
     <section className="legend">
-      <h2 className="fact-label">{s.ui.legendGrounds}</h2>
-      <ul>
-        {COLOURS.map((colour) => (
-          <li key={colour} className="tall">
-            <Hex
-              id={`legend-${colour}`}
-              className="legend-swatch"
-              theme={theme}
-              ground={colour}
-              art={art[colour]}
-            />
-            <span className="legend-mark" aria-hidden="true">
-              <Icon name={COLOUR_ICON[colour]} />
-            </span>
-            {/*
-              The grounds say what they DO, right here.
-
-              They are the one thing in this legend with no section under it —
-              the manual teaches RIPE and POCKET and CACHE, and never once says
-              what MOSS is for. So a player met four names, four colours and
-              four marks, and had to find the answer by tapping a card in the
-              hand. `powerOf` is the core's one-line statement of a colour's
-              power and is already what the hand's card prints, so this is the
-              same sentence in a second place rather than a second sentence.
-              A dial at zero returns '' and the row is just a name again.
-            */}
-            <span className="legend-name">
-              <b className="legend-term">{names[colour]}</b>
-              {powerOf(colour, TUNING, theme, s) === '' ? null : (
-                <span className="legend-note note">
-                  {' '}
-                  {clause(powerOf(colour, TUNING, theme, s))}
-                </span>
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
-
+      {/* The four grounds live one tab over, in THE FOUR GROUNDS (2026-10-13). */}
       <h2 className="fact-label">{s.ui.legendPlaces}</h2>
       <ul>
         {PLACES.map(({ reward, id }) => {
@@ -265,18 +225,3 @@ export function Legend({ theme, s }: LegendProps) {
     </section>
   );
 }
-
-/**
- * `powerOf` returns an APPENDABLE fragment — it opens with " · " because it
- * was written to be tacked onto a line that already said something, which is
- * how Ashwake 1's card used it. The legend is its only caller today, and it
- * prints the clause on its own after the ground's name, so that separator
- * arrives with nothing on its left.
- *
- * Visible enough to fix once the power WORD started being dropped for a
- * direction whose names already say it (2026-08-29) — before that the "·" had
- * "crowds:" behind it and read as punctuation rather than as a leftover.
- * Trimmed here rather than in the catalogue, because the fragment is correct
- * for what it is; this is one host printing it standalone.
- */
-const clause = (power: string): string => power.replace(/^ · /, '');

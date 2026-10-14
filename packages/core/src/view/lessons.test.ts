@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BARE_TUNING, TUNING, type Tuning } from '@content/tuning';
+import { BARE_TUNING, COLOURS, TUNING, type Tuning } from '@content/tuning';
 import { COLOUR_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { DAYLIGHT } from '@theme/themes/daylight';
 import { SETTLEMENT } from '@theme/themes/settlement';
@@ -20,6 +20,7 @@ import {
   lessonTerms,
 } from './lessons';
 import { conceptPattern, conceptTerms } from './tips';
+import { colourLesson } from './view';
 
 /**
  * The registry's own rules — the ones that keep it a single source rather than
@@ -302,3 +303,69 @@ describe('the lesson registry, whatever the language', () => {
     }
   });
 });
+
+/**
+ * THE FOUR GROUNDS holds every ground sentence (2026-10-13). The manual's
+ * COLOURS tab used to be `groundGuide`, a second builder restating the rule's
+ * numbers; its invariants moved here with the content.
+ */
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
+  'the four grounds lesson · %s',
+  (_l, s) => {
+    const grounds = LESSONS.find((l) => l.id === 'grounds');
+    if (grounds === undefined) throw new Error('THE FOUR GROUNDS is gone');
+    const rowsOf = (t: Tuning, theme: Theme) => grounds.rows?.(t, theme, s) ?? [];
+
+    for (const theme of [SETTLEMENT, DAYLIGHT]) {
+      it(`gives every ground its card's rule, a reason to take it and a warning (${theme.id})`, () => {
+        const rows = rowsOf(TUNING, theme);
+        expect(rows.map((r) => r.colour)).toEqual([...COLOURS]);
+        for (const row of rows) {
+          // The rule is `colourLesson` verbatim, so the tab and the card cannot
+          // describe a ground two ways.
+          expect(row.text).toBe(colourLesson(row.colour!, TUNING, theme, s));
+          expect(row.lines?.map((l) => l.head)).toEqual([
+            s.lesson.grounds.pickWhen,
+            s.lesson.grounds.watchFor,
+          ]);
+          for (const text of [row.text, ...(row.lines ?? []).map((l) => l.text)]) {
+            expect(text.length, `${row.colour}`).toBeGreaterThan(15);
+            expect(text, `${row.colour}: ${text}`).toMatch(s.typography.sentenceEnd);
+          }
+        }
+      });
+
+      it(`teaches nothing about a ground whose power is off, and still leads (${theme.id})`, () => {
+        expect(rowsOf(BARE_TUNING, theme)).toEqual([]);
+        expect(lessonCore(grounds, BARE_TUNING, theme, s)).not.toBe('');
+        // The advice for every ground is not about one power.
+        expect(lessonDetail(grounds, BARE_TUNING, theme, s).length).toBeGreaterThan(0);
+      });
+    }
+
+    it('keeps the advice for every ground in the DETAILS fold, never on the card', () => {
+      const detail = lessonDetail(grounds, TUNING, SETTLEMENT, s);
+      expect(detail).toHaveLength(5);
+      const card = lessonCardDefine(grounds, TUNING, SETTLEMENT, s);
+      for (const line of detail) expect(card).not.toContain(line);
+    });
+
+    it('quotes the live tuning, not a copy of it', () => {
+      const tweaked: Tuning = { ...TUNING, greenCrowdBonus: 1, blueTideCap: 2 };
+      const pick = (t: Tuning, colour: string) =>
+        rowsOf(t, SETTLEMENT).find((r) => r.colour === colour)!.lines![0]!.text;
+      // A full green ring: six matches, five crowd bonuses on top.
+      expect(pick(TUNING, 'green')).toContain(s.locale === 'en' ? '9.5' : '9,5');
+      expect(pick(tweaked, 'green')).toContain('11');
+      expect(pick(tweaked, 'blue')).toContain('+2');
+    });
+
+    it('does not quote a full-ring figure for yellow where it counts distinct colours', () => {
+      const distinct: Tuning = { ...TUNING, yellowCompanyAll: false };
+      const yellow = (t: Tuning) =>
+        rowsOf(t, SETTLEMENT).find((r) => r.colour === 'yellow')!.lines![0]!.text;
+      expect(yellow(TUNING)).toMatch(/\d/);
+      expect(yellow(distinct)).not.toMatch(/\d/);
+    });
+  },
+);

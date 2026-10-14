@@ -31,16 +31,6 @@ import type { Strings } from './Strings';
  * re-recorded in the same commit, deliberately and for this reason (`LOG.md`).
  */
 
-/**
- * The power word and its colon, or nothing at all.
- *
- * `view#powerHead` hands over the word or an empty string (a direction whose
- * ground name already says its power has nothing to add), and the punctuation
- * is set here rather than there because English puts no space before a colon
- * and Québec French puts a narrow no-break one. That is a fact about a
- * language, not about a power (D4).
- */
-const pw = (word: string): string => (word === '' ? '' : `${word}: `);
 /** A value that can carry one decimal, rounded to the nearest tenth. */
 const d1 = (n: number): string => fmt1(n, 'en');
 /** A percentage, which in English is just the number and a sign. */
@@ -181,10 +171,50 @@ export const STRINGS_EN: Strings = {
         `It stays ${every} placements, then is away 1 to ${away} before it comes back.`,
       ware: (name, note) => `${name}: ${note}`,
     },
-    colours: {
+    grounds: {
       name: 'THE FOUR GROUNDS',
-      terms: [],
+      terms: ['THE FOUR GROUNDS'],
       core: 'Every tile is one of these four, and each one scores its own way.',
+      pickWhen: 'PICK IT WHEN',
+      watchFor: 'WATCH FOR',
+      general: {
+        pocket:
+          'A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile.',
+        compare: (n) =>
+          `No ground wins everywhere. ${n.yellow} is steady, ${n.green} climbs highest in a crowd, ${n.red} grows as the ground is spent, and ${n.blue} pays far from home.`,
+        stone: (red) =>
+          red === null
+            ? 'Popped ground turns to stone. It helps tiles ripen, but it pays no one a match.'
+            : `Popped ground turns to stone. It helps tiles ripen, but it pays a match only to ${red}.`,
+        distance:
+          'Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward.',
+        hand: 'You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.',
+      },
+      green: {
+        pick: (ring) =>
+          `When you can keep one crowd growing: ringed by its own colour, a tile is worth ${d1(ring)}.`,
+        watch: 'Alone in mixed ground it earns no bonus, only plain matches.',
+      },
+      yellow: {
+        pick: (ring) =>
+          ring === null
+            ? 'When the ground around you is mixed.'
+            : `When the ground around you is mixed: once ringed, it is worth ${d1(ring)}.`,
+        watch:
+          'Stone, walls and the map’s edge pay it nothing, and it gives other colours no match. Late in a run, as pops leave stone, it earns less.',
+      },
+      red: {
+        pick: (walls) =>
+          `Beside stone${walls ? ' and walls' : ''}. Your own pops leave stone, so it gets better as a run goes on.`,
+        watch: 'On fresh open ground it earns only plain matches.',
+      },
+      blue: {
+        pick: (cap) => (cap > 0 ? `Far from home, up to +${cap}.` : 'Far from home.'),
+        watch: (cap) =>
+          cap > 0
+            ? `Its extra is small (at most +${cap}), so near home or on its own it is just plain matches. Choose it where it also has neighbours of its own colour.`
+            : 'Near home it earns nothing extra.',
+      },
     },
     stash: {
       name: 'STASH',
@@ -232,50 +262,6 @@ export const STRINGS_EN: Strings = {
   rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Tap remembered fog to light its ground.',
-  strategy: {
-    head: 'CHOOSING A GROUND',
-    pickWhen: 'PICK IT WHEN',
-    watchFor: 'WATCH FOR',
-    general: {
-      pocket:
-        'A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile.',
-      compare: (n) =>
-        `No ground wins everywhere. ${n.yellow} is steady, ${n.green} climbs highest in a crowd, ${n.red} grows as the ground is spent, and ${n.blue} pays far from home.`,
-      stone: (red) =>
-        red === null
-          ? 'Popped ground turns to stone. It helps tiles ripen, but it pays no one a match.'
-          : `Popped ground turns to stone. It helps tiles ripen, but it pays a match only to ${red}.`,
-      distance:
-        'Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward.',
-      hand: 'You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.',
-    },
-    green: {
-      pick: (bonus, ring) =>
-        `When you can keep one crowd growing. Every neighbour of its own colour past the first adds +${d1(bonus)}, so a tile ringed by its own colour is worth ${d1(ring)}.`,
-      watch: 'Alone in mixed ground it earns no bonus, only plain matches.',
-    },
-    yellow: {
-      pick: (ring) =>
-        ring === null
-          ? 'When the ground around you is mixed. It is paid for the different colours beside it.'
-          : `When the ground around you is mixed. Every neighbouring tile pays it, whatever its colour, so once ringed it is worth ${d1(ring)}.`,
-      watch:
-        'Stone, walls and the map’s edge pay it nothing, and it gives other colours no match. Late in a run, as pops leave stone, it earns less.',
-    },
-    red: {
-      pick: (walls) =>
-        `Beside stone${walls ? ' and walls' : ''}, which count as matches for it. Your own pops leave stone, so it gets better as a run goes on.`,
-      watch: 'On fresh open ground it earns only plain matches.',
-    },
-    blue: {
-      pick: (every, cap) =>
-        `Far from home. It adds +1 worth per ${every} hexes out${cap > 0 ? `, up to +${cap}` : ''}.`,
-      watch: (cap) =>
-        cap > 0
-          ? `Its extra is small (at most +${cap}), so near home or on its own it is just plain matches. Choose it where it also has neighbours of its own colour.`
-          : 'Near home it earns nothing extra.',
-    },
-  },
   coach: {
     place:
       'The tiles under the board are your hand, and the lit one is the next you will place. Tap a glowing edge on the board to put it down: every tile you place is ground you build, and ground is what scores.',
@@ -432,15 +418,6 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
         `${head} Stone${walls ? ' and walls' : ''} count as matches for it: it feeds on the spent ground everyone else abandons.`,
       blue: (head, every) =>
         `${head} Worth little at home, a lot on the frontier: +1 worth per ${every} hexes from home.`,
-    },
-    power: {
-      green: (head, name, bonus) =>
-        ` · ${pw(head)}+${bonus} worth per ${name} neighbour past the first`,
-      yellow: (head, bonus, all) =>
-        ` · ${pw(head)}+${bonus} worth per ${all ? 'differently-coloured neighbour' : 'different colour beside it'}`,
-      red: (head, name, walls) =>
-        ` · ${pw(head)}stone${walls ? ' and walls' : ''} beside ${name} count as matches`,
-      blue: (head, every) => ` · ${pw(head)}+1 worth per ${every} hexes from home`,
     },
     hex: {
       cacheClaimed: 'CACHE: already claimed. It gave its tiles.',
@@ -789,7 +766,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     forge: 'FORGE',
     sacrificeLuck: 'SACRIFICE LUCK',
     sacrificeLuckFor: (relics) => `SACRIFICE LUCK FOR ${relics}`,
-    tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND', colours: 'COLOURS' },
+    tabs: { start: 'EXPEDITION', play: 'PLAY', hand: 'HAND', grounds: 'COLOURS' },
     fame: {
       title: 'HALL OF FAME',
       diary: 'DIARY',
@@ -1072,7 +1049,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       lastError: 'LAST ERROR',
       noError: 'Nothing has broken on this device.',
     },
-    legendGrounds: 'THE GROUNDS',
     legendPlaces: 'THE DESTINATIONS',
     legendMarks: 'THE OTHER MARKS',
     legendRare: 'A placed rare tile wears a ring in its own colour, and stands taller.',

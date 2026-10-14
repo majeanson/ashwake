@@ -164,7 +164,7 @@ test('the first run is walked: one coach line per step, and nothing else in the 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('HOW TO PLAY has a COLOURS tab: each ground, when to take it, what to watch for', async ({
+test('HOW TO PLAY has a COLOURS tab: THE FOUR GROUNDS, each with when to take it and what to watch for', async ({
   page,
 }) => {
   /*
@@ -178,10 +178,12 @@ test('HOW TO PLAY has a COLOURS tab: each ground, when to take it, what to watch
   await begin(page);
   await openMore(page);
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
-  await page.locator('[data-tab="colours"]').click();
+  await page.locator('[data-tab="grounds"]').click();
 
   const manual = page.locator('[data-panel="manual"]');
-  await expect(manual).toContainText(/CHOOSING A GROUND|CHOISIR UN SOL/);
+  // One source (2026-10-13): the tab is THE FOUR GROUNDS lesson, not a block of
+  // its own, so it wears the lesson's name and the shared advice is its DETAILS.
+  await expect(manual).toContainText(/THE FOUR GROUNDS|LES QUATRE SOLS/);
   await expect(manual.locator('[data-ground]')).toHaveCount(4);
   for (const colour of ['green', 'yellow', 'red', 'blue']) {
     const block = manual.locator(`[data-ground="${colour}"]`);
@@ -198,7 +200,7 @@ test('the COLOURS tab waits for a stranger to meet the four grounds', async ({ p
   await openMore(page);
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
   await expect(page.locator('[data-tab="start"]')).toBeVisible();
-  await expect(page.locator('[data-tab="colours"]')).toHaveCount(0);
+  await expect(page.locator('[data-tab="grounds"]')).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -220,7 +222,7 @@ test('HOW TO PLAY opens on the game in two sentences, and its tabs run most impo
   const tabs = await manual
     .locator('[data-tab]')
     .evaluateAll((els) => els.map((el) => el.getAttribute('data-tab')));
-  expect(tabs).toEqual(['start', 'colours', 'play', 'hand']);
+  expect(tabs).toEqual(['start', 'grounds', 'play', 'hand']);
 
   // The first paragraph of the first tab is the summary, the one the second
   // opening card says.

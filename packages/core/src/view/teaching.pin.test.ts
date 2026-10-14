@@ -8,9 +8,9 @@ import type { Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
 import type { Strings } from '@text/Strings';
-import { LESSONS, lessonDefine, lessonTerms, type Lesson } from './lessons';
+import { LESSONS, lessonDefine, lessonDetail, lessonTerms, type Lesson } from './lessons';
 import { perkRows } from './tips';
-import { colourLesson, powerOf, statNote, toHudView } from './view';
+import { colourLesson, statNote, toHudView } from './view';
 
 /**
  * The pins, written BEFORE the lesson registry moved a single string.
@@ -138,14 +138,35 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
      * it, which is what makes the difference between two fictions VISIBLE in a
      * file Marc reads rather than a thing you have to run the game to see.
      */
-    it('pins the colour lessons and powers, over both tunings and both directions', () => {
+    it('pins the colour lessons and THE FOUR GROUNDS, over both tunings and both directions', () => {
       const out: Record<string, string | null> = {};
       for (const [tName, t] of TUNINGS) {
         for (const colour of COLOURS) {
           for (const [themeName, theme] of THEMES) {
-            out[`power · ${colour} · ${tName} · ${themeName}`] = powerOf(colour, t, theme, s);
             out[`lesson · ${colour} · ${tName} · ${themeName}`] = colourLesson(colour, t, theme, s);
           }
+        }
+      }
+      // THE FOUR GROUNDS (2026-10-13): the one lesson that now holds every
+      // ground sentence. Its rows are the rule plus the manual's two lines
+      // under each; its DETAILS are the advice that holds for every ground.
+      // The `power · …` keys this replaced were `powerOf`, deleted with it.
+      const grounds = LESSONS.find((l) => l.id === 'grounds');
+      if (grounds === undefined) throw new Error('THE FOUR GROUNDS is gone');
+      for (const [tName, t] of TUNINGS) {
+        for (const [themeName, theme] of THEMES) {
+          for (const row of grounds.rows?.(t, theme, s) ?? []) {
+            out[`grounds · ${row.colour} · ${tName} · ${themeName}`] = [
+              row.text,
+              ...(row.lines ?? []).map((line) => `${line.head} ${line.text}`),
+            ].join(' | ');
+          }
+          out[`grounds · detail · ${tName} · ${themeName}`] = lessonDetail(
+            grounds,
+            t,
+            theme,
+            s,
+          ).join(' | ');
         }
       }
       expect(out).toMatchSnapshot();

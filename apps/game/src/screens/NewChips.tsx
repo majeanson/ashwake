@@ -1,6 +1,7 @@
 import type { TeachId } from '@meta/progress';
 import type { Strings } from '@text/Strings';
 import { lessonName, lessonOf } from '@view/lessons';
+import { opensOf } from '../shell/teaching';
 
 /**
  * What the game has to say that is not worth stopping for (2026-10-12).
@@ -29,7 +30,7 @@ export function NewChips({
   return (
     <div className="new-chips" data-hud="new-chips">
       {ids.map((id) => {
-        const lesson = lessonOf(id);
+        const lesson = lessonOf(opensOf(id));
         if (lesson === undefined) return null;
         const name = lessonName(lesson, s);
         return (

@@ -37,10 +37,6 @@ const pl = (n: number, one: string, many: string): string => (n > 1 ? many : one
 const nb = (n: number): string => fmtInt(n, 'fr-CA');
 /** Une valeur qui peut porter une décimale, arrondie à un dixième. */
 const d1 = (n: number): string => fmt1(n, 'fr-CA');
-/** Le mot de pouvoir et son deux-points — avec l’espace fine, ou rien du tout.
- *  Voir `view#powerHead` : une direction dont le nom du sol dit déjà son
- *  pouvoir n’a rien à ajouter. */
-const pw = (word: string): string => (word === '' ? '' : `${word}${D}: `);
 const pc = (n: number): string => fmtPct(n, 'fr-CA');
 const capitalize = (s: string): string => `${s[0]!.toLocaleUpperCase('fr-CA')}${s.slice(1)}`;
 
@@ -180,10 +176,51 @@ export const STRINGS_FR: Strings = {
         `Elle reste ${nb(every)} placements, puis s’absente de 1 à ${nb(away)} placements avant de revenir.`,
       ware: (name, note) => `${name}${D}: ${note}`,
     },
-    colours: {
+    grounds: {
       name: 'LES QUATRE SOLS',
-      terms: [],
+      terms: ['LES QUATRE SOLS'],
       core: 'Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.',
+      pickWhen: 'À CHOISIR QUAND',
+      watchFor: 'ATTENTION À',
+      general: {
+        pocket:
+          'Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule.',
+        compare: (n) =>
+          `Aucun sol ne gagne partout${D}: ${n.yellow} est régulier, ${n.green} monte le plus haut en foule, ${n.red} s’enrichit à mesure que le sol s’use, et ${n.blue} paie loin du départ.`,
+        stone: (red) =>
+          red === null
+            ? 'Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance à personne.'
+            : `Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance qu’à ${red}.`,
+        distance:
+          'La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance.',
+        hand: 'Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.',
+      },
+      green: {
+        pick: (ring) =>
+          `Quand tu peux faire grossir une seule foule${D}: entourée de sa propre couleur, elle vaut ${d1(ring)}.`,
+        watch:
+          'Seule en terrain mixte, elle ne gagne aucun bonus, seulement les ressemblances ordinaires.',
+      },
+      yellow: {
+        pick: (ring) =>
+          ring === null
+            ? 'Quand le terrain autour est mélangé.'
+            : `Quand le terrain autour est mélangé${D}: une fois entourée, elle vaut ${d1(ring)}.`,
+        watch:
+          'La pierre, les murs et le bord de la carte ne lui rapportent rien, et elle ne donne aucune ressemblance aux autres couleurs. En fin de partie, quand les récoltes ont laissé de la pierre, elle rapporte moins.',
+      },
+      red: {
+        pick: (walls) =>
+          `À côté de la pierre${walls ? ' et des murs' : ''}. Tes propres récoltes laissent de la pierre, alors elle s’améliore à mesure que la partie avance.`,
+        watch: 'Sur un sol neuf et ouvert, elle ne rapporte que les ressemblances ordinaires.',
+      },
+      blue: {
+        pick: (cap) => (cap > 0 ? `Loin du départ, jusqu’à +${cap}.` : 'Loin du départ.'),
+        watch: (cap) =>
+          cap > 0
+            ? `Son extra est petit (+${cap} au plus), alors près du départ ou seule elle ne rapporte que les ressemblances ordinaires. Choisis-la là où elle a aussi des voisines de sa couleur.`
+            : 'Près du départ, elle ne rapporte rien de plus.',
+      },
     },
     stash: {
       name: 'RÉSERVE',
@@ -232,51 +269,6 @@ export const STRINGS_FR: Strings = {
   rareCard: 'Dépense-la là où beaucoup de tuiles se touchent.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
-  strategy: {
-    head: 'CHOISIR UN SOL',
-    pickWhen: 'À CHOISIR QUAND',
-    watchFor: 'ATTENTION À',
-    general: {
-      pocket:
-        'Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule.',
-      compare: (n) =>
-        `Aucun sol ne gagne partout${D}: ${n.yellow} est régulier, ${n.green} monte le plus haut en foule, ${n.red} s’enrichit à mesure que le sol s’use, et ${n.blue} paie loin du départ.`,
-      stone: (red) =>
-        red === null
-          ? 'Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance à personne.'
-          : `Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance qu’à ${red}.`,
-      distance:
-        'La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance.',
-      hand: 'Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.',
-    },
-    green: {
-      pick: (bonus, ring) =>
-        `Quand tu peux faire grossir une seule foule. Chaque voisine de sa couleur après la première ajoute +${d1(bonus)}, alors une tuile entourée de sa propre couleur vaut ${d1(ring)}.`,
-      watch:
-        'Seule en terrain mixte, elle ne gagne aucun bonus, seulement les ressemblances ordinaires.',
-    },
-    yellow: {
-      pick: (ring) =>
-        ring === null
-          ? 'Quand le terrain autour est mélangé. Elle est payée pour les couleurs différentes à ses côtés.'
-          : `Quand le terrain autour est mélangé. Chaque tuile voisine la paie, peu importe sa couleur, alors une fois entourée, elle vaut ${d1(ring)}.`,
-      watch:
-        'La pierre, les murs et le bord de la carte ne lui rapportent rien, et elle ne donne aucune ressemblance aux autres couleurs. En fin de partie, quand les récoltes ont laissé de la pierre, elle rapporte moins.',
-    },
-    red: {
-      pick: (walls) =>
-        `À côté de la pierre${walls ? ' et des murs' : ''}, qui comptent comme des ressemblances pour elle. Tes propres récoltes laissent de la pierre, alors elle s’améliore à mesure que la partie avance.`,
-      watch: 'Sur un sol neuf et ouvert, elle ne rapporte que les ressemblances ordinaires.',
-    },
-    blue: {
-      pick: (every, cap) =>
-        `Loin du départ. Elle ajoute +1 de valeur par ${every} hex d’éloignement${cap > 0 ? `, jusqu’à +${cap}` : ''}.`,
-      watch: (cap) =>
-        cap > 0
-          ? `Son extra est petit (+${cap} au plus), alors près du départ ou seule elle ne rapporte que les ressemblances ordinaires. Choisis-la là où elle a aussi des voisines de sa couleur.`
-          : 'Près du départ, elle ne rapporte rien de plus.',
-    },
-  },
   coach: {
     place: `Les tuiles sous le plateau forment ta main, et la tuile éclairée est la prochaine que tu poseras. Touche une arête lumineuse du plateau pour la poser${D}: chaque tuile posée agrandit ton terrain, et c’est le terrain qui marque.`,
     match:
@@ -431,18 +423,6 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
         `${head} La pierre${walls ? ' et les murs' : ''} compte${walls ? 'nt' : ''} comme des ressemblances pour elles${D}: elles se nourrissent du sol usé que tout le monde abandonne.`,
       blue: (head, every) =>
         `${head} Vaut peu au départ, beaucoup à la frontière${D}: +1 de valeur par ${every} hex de distance du départ.`,
-    },
-    power: {
-      green: (head, name, bonus) =>
-        ` · ${pw(head)}+${bonus} de valeur par voisine ${name} passé la première`,
-      yellow: (head, bonus, all) =>
-        ` · ${pw(head)}+${bonus} de valeur par ${all ? 'voisine d’une autre couleur' : 'couleur différente à côté'}`,
-      // « à côté de NOM » : les huit noms de sol des quatre directions
-      // commencent par une consonne, donc pas d’élision à faire. Une direction
-      // qui nommerait un sol ÉTABLE ou ÎLE en aurait besoin — et ce serait ici.
-      red: (head, name, walls) =>
-        ` · ${pw(head)}la pierre${walls ? ' et les murs' : ''} à côté de ${name} compte${walls ? 'nt' : ''} comme des ressemblances`,
-      blue: (head, every) => ` · ${pw(head)}+1 de valeur par ${every} hex de distance du départ`,
     },
     hex: {
       cacheClaimed: `CACHE${D}: déjà réclamée. Elle a donné ses tuiles.`,
@@ -800,7 +780,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     forge: 'FORGER',
     sacrificeLuck: 'SACRIFIER LA CHANCE',
     sacrificeLuckFor: (relics) => `SACRIFIER LA CHANCE POUR ${relics}`,
-    tabs: { start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN', colours: 'COULEURS' },
+    tabs: { start: 'EXPÉDITION', play: 'JOUER', hand: 'MAIN', grounds: 'COULEURS' },
     fame: {
       title: 'TEMPLE DE LA RENOMMÉE',
       diary: 'JOURNAL',
@@ -1092,7 +1072,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       lastError: 'DERNIÈRE ERREUR',
       noError: 'Rien n’a brisé sur cet appareil.',
     },
-    legendGrounds: 'LES SOLS',
     legendPlaces: 'LES DESTINATIONS',
     legendMarks: 'LES AUTRES MARQUES',
     legendRare: 'Une tuile rare posée porte un anneau de sa couleur, et se tient plus haute.',

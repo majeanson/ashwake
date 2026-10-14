@@ -163,6 +163,7 @@ import {
   newDots,
   nextLesson,
   offerDots,
+  opensOf,
   sinceSpoke,
   toastLine,
   tourTarget,
@@ -4633,7 +4634,7 @@ function Game() {
       */}
       {teaching !== null && (
         <LessonCard
-          id={teaching}
+          id={opensOf(teaching)}
           theme={theme}
           s={s}
           // FIRED by a moment, so it carries the lesson's first-contact
@@ -4669,7 +4670,7 @@ function Game() {
       */}
       {dotOpen !== null && teaching === null && saidCard === null && film === null && (
         <LessonCard
-          id={dotOpen}
+          id={opensOf(dotOpen)}
           theme={theme}
           s={s}
           firstContact

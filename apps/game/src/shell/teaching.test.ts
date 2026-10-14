@@ -9,6 +9,7 @@ import { lessonOf } from '@view/lessons';
 import {
   CARD_GAP,
   SCHEDULE,
+  momentsOf,
   newDots,
   nextLesson,
   sinceSpoke,
@@ -17,6 +18,7 @@ import {
   type Moment,
   coachStep,
   offerDots,
+  opensOf,
   guided,
   mustPop,
   phaseOf,
@@ -213,7 +215,8 @@ describe('every card the drip can fire', () => {
     // is raised by opening the purse (`purseLesson`) and never by a moment.
     const ownCard = new Set(['story', 'goal', 'purse']);
     for (const { id } of SCHEDULE.filter((s) => s.as === 'card'))
-      if (!ownCard.has(id)) expect(lessonOf(id), `${id} has no lesson to draw`).toBeDefined();
+      if (!ownCard.has(id))
+        expect(lessonOf(opensOf(id)), `${id} has no lesson to draw`).toBeDefined();
   });
 });
 
@@ -222,6 +225,22 @@ describe('the schedule covers every moment (2026-10-13)', () => {
     const ids = SCHEDULE.map((s) => s.id);
     expect(new Set(ids).size, 'a duplicate slot').toBe(ids.length);
     expect(new Set<string>([...ids, 'walked', 'toured'])).toEqual(new Set<string>(TEACH_IDS));
+  });
+
+  // 2026-10-13. The ledger names a moment and the registry a concept: the
+  // `colours` moment tells THE FOUR GROUNDS, and everything that draws a
+  // lesson goes through `opensOf`.
+  it('opens a lesson that exists, and the manual can find its moment again', () => {
+    for (const slot of SCHEDULE) {
+      const lesson = opensOf(slot.id);
+      if (slot.opens === undefined) {
+        expect(lesson, `${slot.id} opens something other than itself`).toBe(slot.id);
+        continue;
+      }
+      expect(lessonOf(lesson), `${slot.id} opens a lesson that is not there`).toBeDefined();
+      expect(momentsOf(lesson), `${lesson} is not told by ${slot.id}`).toContain(slot.id);
+    }
+    expect(opensOf('colours')).toBe('grounds');
   });
 
   it('gives every chip a moment to be offered by', () => {

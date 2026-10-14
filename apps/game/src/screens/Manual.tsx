@@ -11,15 +11,16 @@ import {
   type LessonId,
 } from '@view/lessons';
 import type { FigureId } from '@view/figure';
-import { TEACH_IDS, type TeachId } from '@meta/progress';
+import type { TeachId } from '@meta/progress';
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { Figure } from '../ui/Figure';
-import { GroundGuide } from './GroundGuide';
 import { Legend } from './Legend';
 import { Panel } from '../ui/Panel';
 import { ProseLines } from '../ui/Prose';
+import { TipRows } from '../ui/TipRows';
+import { momentsOf } from '../shell/teaching';
 import { panelOf, tabOf, Tabs } from '../ui/Tabs';
 
 /**
@@ -39,7 +40,7 @@ import { panelOf, tabOf, Tabs } from '../ui/Tabs';
  * 2026-08-27 after it kept dismissing the manual mid-sentence.
  */
 
-const TABS = ['start', 'colours', 'play', 'hand'] as const;
+const TABS = ['start', 'grounds', 'play', 'hand'] as const;
 type TabId = (typeof TABS)[number];
 
 /** The key list, in the order somebody learns it: point at a hex, act on it,
@@ -60,10 +61,11 @@ const KEY_LINES = [
 
 /**
  * Which lessons belong under which tab, in reading order. The registry says
- * (`Lesson.tab`, and array order in `LESSONS`); this only filters it. `colours`
- * has no lesson sections: it is `GroundGuide`, and its tab appears when THE FOUR
- * GROUNDS has been met, like every section that grows in. The history below
- * is why the lessons sit where they do.
+ * (`Lesson.tab`, and array order in `LESSONS`); this only filters it. The
+ * GROUNDS tab is THE FOUR GROUNDS lesson and nothing else (2026-10-13: it was
+ * a block of its own, `GroundGuide`), and it appears when that lesson has
+ * been met, like every section that grows in. The history below is why the
+ * lessons sit where they do.
  *
  * **Regrouped 2026-08-29** (Marc): a lesson belongs beside the thing it is
  * about, not on a tab named for when you happen to meet it. AFTER held the
@@ -131,9 +133,10 @@ const sectionsOf = (tab: TabId): readonly Lesson[] => LESSONS.filter((l) => l.ta
  */
 function metHere(id: LessonId, met: ReadonlySet<TeachId> | null): boolean {
   if (met === null) return true;
-  // The six that no card ever fires for — see above.
-  if (!(TEACH_IDS as readonly string[]).includes(id)) return true;
-  return met.has(id as TeachId);
+  // Told by the moments that open it (`colours` tells `grounds`). The ones no
+  // moment ever fires for — see above — have none, and are never gated.
+  const moments = momentsOf(id);
+  return moments.length === 0 || moments.some((moment) => met.has(moment));
 }
 
 /**
@@ -212,7 +215,7 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
           base="manual"
           growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
-          tabs={TABS.filter((id) => id !== 'colours' || metHere('colours', known)).map((id) => ({
+          tabs={TABS.filter((id) => id !== 'grounds' || metHere('grounds', known)).map((id) => ({
             id,
             label: s.ui.tabs[id],
             // A tab with sections still to unlock says so — see `Tab.grows`.
@@ -306,8 +309,6 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
           run (the section exists for the reader in the wrong run), and after the
           rules for one in their own world, who has the least need of it. */}
       {on === 'start' && mode !== undefined && mode !== 'world' && <WhichGame mode={mode} s={s} />}
-
-      {on === 'colours' && <GroundGuide theme={theme} s={s} />}
 
       {drawnOnce(sectionsOf(on), known).map(({ id, lesson, figure }) => (
         <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
@@ -412,6 +413,7 @@ function Section({
   readonly s: Strings;
 }) {
   const lines = lessonLines(lesson, TUNING, theme, s);
+  const rows = lesson.rows?.(TUNING, theme, s) ?? [];
   const detail = lessonDetail(lesson, TUNING, theme, s);
   // A dial turned to zero removes its own sentences, so a section can be empty
   // — and an empty heading is worse than an absent one.
@@ -438,6 +440,7 @@ function Section({
         <span>{lessonName(lesson, s)}</span>
       </h2>
       <ProseLines text={lines.join('\n')} s={s} />
+      {rows.length > 0 && <TipRows rows={rows} theme={theme} s={s} withLines />}
       {figure !== null && <Figure id={figure} theme={theme} s={s} caption />}
       {detail.length > 0 && (
         <Fold summary={s.ui.details}>

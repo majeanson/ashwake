@@ -14,6 +14,10 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "find · BARE_TUNING · settlement": "A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
   "find · TUNING · daylight": "A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
   "find · TUNING · settlement": "A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
+  "grounds · BARE_TUNING · daylight": "Every tile is one of these four, and each one scores its own way.",
+  "grounds · BARE_TUNING · settlement": "Every tile is one of these four, and each one scores its own way.",
+  "grounds · TUNING · daylight": "Every tile is one of these four, and each one scores its own way.",
+  "grounds · TUNING · settlement": "Every tile is one of these four, and each one scores its own way.",
   "luck · BARE_TUNING · daylight": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
   "luck · BARE_TUNING · settlement": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
   "luck · TUNING · daylight": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
@@ -225,6 +229,14 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
       "RELIC",
     ],
   },
+  {
+    "icon": "tile",
+    "id": "grounds",
+    "ink": null,
+    "terms": [
+      "THE FOUR GROUNDS",
+    ],
+  },
 ]
 `;
 
@@ -350,8 +362,20 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
 }
 `;
 
-exports[`the teaching pins — every word, exactly as it reads today · en > pins the colour lessons and powers, over both tunings and both directions 1`] = `
+exports[`the teaching pins — every word, exactly as it reads today · en > pins the colour lessons and THE FOUR GROUNDS, over both tunings and both directions 1`] = `
 {
+  "grounds · blue · TUNING · daylight": "ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home. | PICK IT WHEN Far from home, up to +1. | WATCH FOR Its extra is small (at most +1), so near home or on its own it is just plain matches. Choose it where it also has neighbours of its own colour.",
+  "grounds · blue · TUNING · settlement": "ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home. | PICK IT WHEN Far from home, up to +1. | WATCH FOR Its extra is small (at most +1), so near home or on its own it is just plain matches. Choose it where it also has neighbours of its own colour.",
+  "grounds · detail · BARE_TUNING · daylight": "A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile. | No ground wins everywhere. MARKET is steady, FARM climbs highest in a crowd, QUARRY grows as the ground is spent, and ROADS pays far from home. | Popped ground turns to stone. It helps tiles ripen, but it pays no one a match. | Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward. | You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.",
+  "grounds · detail · BARE_TUNING · settlement": "A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile. | No ground wins everywhere. MARKET is steady, FARM climbs highest in a crowd, QUARRY grows as the ground is spent, and ROADS pays far from home. | Popped ground turns to stone. It helps tiles ripen, but it pays no one a match. | Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward. | You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.",
+  "grounds · detail · TUNING · daylight": "A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile. | No ground wins everywhere. MARKET is steady, FARM climbs highest in a crowd, QUARRY grows as the ground is spent, and ROADS pays far from home. | Popped ground turns to stone. It helps tiles ripen, but it pays a match only to QUARRY. | Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward. | You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.",
+  "grounds · detail · TUNING · settlement": "A pocket pays all its tiles’ worth added up, so plan the pocket and not the single tile. | No ground wins everywhere. MARKET is steady, FARM climbs highest in a crowd, QUARRY grows as the ground is spent, and ROADS pays far from home. | Popped ground turns to stone. It helps tiles ripen, but it pays a match only to QUARRY. | Distance raises every pocket’s multiplier the same way, so as a run goes on, build outward. | You cannot always pick your ground. Take the one that suits the spot you are about to fill, and spend luck to steer your hand when a big pocket is waiting for one.",
+  "grounds · green · TUNING · daylight": "FARM. Wants one big mob of its own colour: +0.7 worth per FARM neighbour past the first. | PICK IT WHEN When you can keep one crowd growing: ringed by its own colour, a tile is worth 9.5. | WATCH FOR Alone in mixed ground it earns no bonus, only plain matches.",
+  "grounds · green · TUNING · settlement": "FARM. Wants one big mob of its own colour: +0.7 worth per FARM neighbour past the first. | PICK IT WHEN When you can keep one crowd growing: ringed by its own colour, a tile is worth 9.5. | WATCH FOR Alone in mixed ground it earns no bonus, only plain matches.",
+  "grounds · red · TUNING · daylight": "QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons. | PICK IT WHEN Beside stone and walls. Your own pops leave stone, so it gets better as a run goes on. | WATCH FOR On fresh open ground it earns only plain matches.",
+  "grounds · red · TUNING · settlement": "QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons. | PICK IT WHEN Beside stone and walls. Your own pops leave stone, so it gets better as a run goes on. | WATCH FOR On fresh open ground it earns only plain matches.",
+  "grounds · yellow · TUNING · daylight": "MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour. | PICK IT WHEN When the ground around you is mixed: once ringed, it is worth 6. | WATCH FOR Stone, walls and the map’s edge pay it nothing, and it gives other colours no match. Late in a run, as pops leave stone, it earns less.",
+  "grounds · yellow · TUNING · settlement": "MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour. | PICK IT WHEN When the ground around you is mixed: once ringed, it is worth 6. | WATCH FOR Stone, walls and the map’s edge pay it nothing, and it gives other colours no match. Late in a run, as pops leave stone, it earns less.",
   "lesson · blue · BARE_TUNING · daylight": null,
   "lesson · blue · BARE_TUNING · settlement": null,
   "lesson · blue · TUNING · daylight": "ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
@@ -368,22 +392,6 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "lesson · yellow · BARE_TUNING · settlement": null,
   "lesson · yellow · TUNING · daylight": "MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
   "lesson · yellow · TUNING · settlement": "MARKET. Scores in messy mixed ground: +1 worth per differently-coloured neighbour.",
-  "power · blue · BARE_TUNING · daylight": "",
-  "power · blue · BARE_TUNING · settlement": "",
-  "power · blue · TUNING · daylight": " · +1 worth per 6 hexes from home",
-  "power · blue · TUNING · settlement": " · +1 worth per 6 hexes from home",
-  "power · green · BARE_TUNING · daylight": "",
-  "power · green · BARE_TUNING · settlement": "",
-  "power · green · TUNING · daylight": " · +0.7 worth per FARM neighbour past the first",
-  "power · green · TUNING · settlement": " · +0.7 worth per FARM neighbour past the first",
-  "power · red · BARE_TUNING · daylight": "",
-  "power · red · BARE_TUNING · settlement": "",
-  "power · red · TUNING · daylight": " · stone and walls beside QUARRY count as matches",
-  "power · red · TUNING · settlement": " · stone and walls beside QUARRY count as matches",
-  "power · yellow · BARE_TUNING · daylight": "",
-  "power · yellow · BARE_TUNING · settlement": "",
-  "power · yellow · TUNING · daylight": " · +1 worth per differently-coloured neighbour",
-  "power · yellow · TUNING · settlement": " · +1 worth per differently-coloured neighbour",
 }
 `;
 
@@ -401,6 +409,10 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "find · BARE_TUNING · settlement": "Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
   "find · TUNING · daylight": "Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
   "find · TUNING · settlement": "Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
+  "grounds · BARE_TUNING · daylight": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
+  "grounds · BARE_TUNING · settlement": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
+  "grounds · TUNING · daylight": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
+  "grounds · TUNING · settlement": "Chaque tuile est l’un de ces quatre sols, et chacun marque à sa façon.",
   "luck · BARE_TUNING · daylight": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
   "luck · BARE_TUNING · settlement": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
   "luck · TUNING · daylight": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
@@ -613,6 +625,14 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
       "RELIQUE",
     ],
   },
+  {
+    "icon": "tile",
+    "id": "grounds",
+    "ink": null,
+    "terms": [
+      "LES QUATRE SOLS",
+    ],
+  },
 ]
 `;
 
@@ -738,8 +758,20 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
 }
 `;
 
-exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins the colour lessons and powers, over both tunings and both directions 1`] = `
+exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins the colour lessons and THE FOUR GROUNDS, over both tunings and both directions 1`] = `
 {
+  "grounds · blue · TUNING · daylight": "CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ. | À CHOISIR QUAND Loin du départ, jusqu’à +1. | ATTENTION À Son extra est petit (+1 au plus), alors près du départ ou seule elle ne rapporte que les ressemblances ordinaires. Choisis-la là où elle a aussi des voisines de sa couleur.",
+  "grounds · blue · TUNING · settlement": "CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ. | À CHOISIR QUAND Loin du départ, jusqu’à +1. | ATTENTION À Son extra est petit (+1 au plus), alors près du départ ou seule elle ne rapporte que les ressemblances ordinaires. Choisis-la là où elle a aussi des voisines de sa couleur.",
+  "grounds · detail · BARE_TUNING · daylight": "Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule. | Aucun sol ne gagne partout : MARCHÉ est régulier, FERME monte le plus haut en foule, CARRIÈRE s’enrichit à mesure que le sol s’use, et CHEMINS paie loin du départ. | Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance à personne. | La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance. | Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.",
+  "grounds · detail · BARE_TUNING · settlement": "Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule. | Aucun sol ne gagne partout : MARCHÉ est régulier, FERME monte le plus haut en foule, CARRIÈRE s’enrichit à mesure que le sol s’use, et CHEMINS paie loin du départ. | Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance à personne. | La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance. | Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.",
+  "grounds · detail · TUNING · daylight": "Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule. | Aucun sol ne gagne partout : MARCHÉ est régulier, FERME monte le plus haut en foule, CARRIÈRE s’enrichit à mesure que le sol s’use, et CHEMINS paie loin du départ. | Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance qu’à CARRIÈRE. | La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance. | Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.",
+  "grounds · detail · TUNING · settlement": "Une récolte paie la valeur de toutes ses tuiles additionnées, alors planifie la poche et non la tuile seule. | Aucun sol ne gagne partout : MARCHÉ est régulier, FERME monte le plus haut en foule, CARRIÈRE s’enrichit à mesure que le sol s’use, et CHEMINS paie loin du départ. | Le sol récolté devient pierre. Elle aide les tuiles à mûrir, mais ne donne de ressemblance qu’à CARRIÈRE. | La distance relève le multiplicateur de toutes les poches de la même façon, alors bâtis vers l’extérieur à mesure que la partie avance. | Tu ne choisis pas toujours ton sol. Prends celui qui convient à l’endroit que tu t’apprêtes à remplir, et dépense de la CHANCE pour orienter ta main quand une grosse poche en attend un.",
+  "grounds · green · TUNING · daylight": "FERME. Veut une seule grosse gang de sa couleur : +0.7 de valeur par voisine FERME passé la première. | À CHOISIR QUAND Quand tu peux faire grossir une seule foule : entourée de sa propre couleur, elle vaut 9,5. | ATTENTION À Seule en terrain mixte, elle ne gagne aucun bonus, seulement les ressemblances ordinaires.",
+  "grounds · green · TUNING · settlement": "FERME. Veut une seule grosse gang de sa couleur : +0.7 de valeur par voisine FERME passé la première. | À CHOISIR QUAND Quand tu peux faire grossir une seule foule : entourée de sa propre couleur, elle vaut 9,5. | ATTENTION À Seule en terrain mixte, elle ne gagne aucun bonus, seulement les ressemblances ordinaires.",
+  "grounds · red · TUNING · daylight": "CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne. | À CHOISIR QUAND À côté de la pierre et des murs. Tes propres récoltes laissent de la pierre, alors elle s’améliore à mesure que la partie avance. | ATTENTION À Sur un sol neuf et ouvert, elle ne rapporte que les ressemblances ordinaires.",
+  "grounds · red · TUNING · settlement": "CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne. | À CHOISIR QUAND À côté de la pierre et des murs. Tes propres récoltes laissent de la pierre, alors elle s’améliore à mesure que la partie avance. | ATTENTION À Sur un sol neuf et ouvert, elle ne rapporte que les ressemblances ordinaires.",
+  "grounds · yellow · TUNING · daylight": "MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur. | À CHOISIR QUAND Quand le terrain autour est mélangé : une fois entourée, elle vaut 6. | ATTENTION À La pierre, les murs et le bord de la carte ne lui rapportent rien, et elle ne donne aucune ressemblance aux autres couleurs. En fin de partie, quand les récoltes ont laissé de la pierre, elle rapporte moins.",
+  "grounds · yellow · TUNING · settlement": "MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur. | À CHOISIR QUAND Quand le terrain autour est mélangé : une fois entourée, elle vaut 6. | ATTENTION À La pierre, les murs et le bord de la carte ne lui rapportent rien, et elle ne donne aucune ressemblance aux autres couleurs. En fin de partie, quand les récoltes ont laissé de la pierre, elle rapporte moins.",
   "lesson · blue · BARE_TUNING · daylight": null,
   "lesson · blue · BARE_TUNING · settlement": null,
   "lesson · blue · TUNING · daylight": "CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
@@ -756,21 +788,5 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "lesson · yellow · BARE_TUNING · settlement": null,
   "lesson · yellow · TUNING · daylight": "MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
   "lesson · yellow · TUNING · settlement": "MARCHÉ. Marque dans le sol mêlé : +1 de valeur par voisine d’une autre couleur.",
-  "power · blue · BARE_TUNING · daylight": "",
-  "power · blue · BARE_TUNING · settlement": "",
-  "power · blue · TUNING · daylight": " · +1 de valeur par 6 hex de distance du départ",
-  "power · blue · TUNING · settlement": " · +1 de valeur par 6 hex de distance du départ",
-  "power · green · BARE_TUNING · daylight": "",
-  "power · green · BARE_TUNING · settlement": "",
-  "power · green · TUNING · daylight": " · +0.7 de valeur par voisine FERME passé la première",
-  "power · green · TUNING · settlement": " · +0.7 de valeur par voisine FERME passé la première",
-  "power · red · BARE_TUNING · daylight": "",
-  "power · red · BARE_TUNING · settlement": "",
-  "power · red · TUNING · daylight": " · la pierre et les murs à côté de CARRIÈRE comptent comme des ressemblances",
-  "power · red · TUNING · settlement": " · la pierre et les murs à côté de CARRIÈRE comptent comme des ressemblances",
-  "power · yellow · BARE_TUNING · daylight": "",
-  "power · yellow · BARE_TUNING · settlement": "",
-  "power · yellow · TUNING · daylight": " · +1 de valeur par voisine d’une autre couleur",
-  "power · yellow · TUNING · settlement": " · +1 de valeur par voisine d’une autre couleur",
 }
 `;

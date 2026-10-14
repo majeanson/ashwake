@@ -4,6 +4,7 @@ import { hasMet, meet, type Progress, type TeachId } from '@meta/progress';
 import type { BoardView, CellView } from '@render/Renderer';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
+import type { LessonId } from '@view/lessons';
 import { statNote, type HudView } from '@view/view';
 
 /**
@@ -79,6 +80,14 @@ type Slot = {
    * nothing told it, and LAST GASP behind it never spoke.
    */
   readonly as: 'card' | 'toast' | 'chip';
+  /**
+   * The lesson this moment opens, where it is not the moment's own id
+   * (2026-10-13). The ledger names a MOMENT and the registry names a CONCEPT;
+   * they were the same word until THE FOUR GROUNDS took over the `colours`
+   * moment's lesson. Absent means the lesson with the slot's own id. Read
+   * through `opensOf`, never directly.
+   */
+  readonly opens?: LessonId;
   /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
   readonly phase?: 'walk' | 'tour';
   /**
@@ -306,6 +315,7 @@ export const SCHEDULE: readonly Slot[] = [
   { id: 'relic', as: 'card', when: ({ hud }) => hud.relics > 0 },
   {
     id: 'colours',
+    opens: 'grounds',
     as: 'card',
     phase: 'walk',
     paced: false,
@@ -323,6 +333,18 @@ export const SCHEDULE: readonly Slot[] = [
     line: (_now, _t, _theme, s) => s.lastGaspRule,
   },
 ];
+
+/** The lesson a moment's card, chip or term opens: its slot's `opens`, else its own id. */
+export const opensOf = (id: TeachId): LessonId =>
+  SCHEDULE.find((slot) => slot.id === id)?.opens ?? id;
+
+/**
+ * The moments that tell a lesson, for the manual's "has this device met it":
+ * the lesson's own id where that is a moment, and every slot that `opens` it.
+ * Empty for a lesson no moment ever fires, which the manual never gates.
+ */
+export const momentsOf = (lesson: LessonId): readonly TeachId[] =>
+  SCHEDULE.filter((slot) => (slot.opens ?? slot.id) === lesson).map((slot) => slot.id);
 
 /**
  * THE PACE (2026-10-12, two strangers: _"trop d'information trop vite trop
