@@ -5,8 +5,8 @@ re-checking. Updated at checkpoints only. The reasoning lives in `LOG.md`; the
 rules in `CLAUDE.md`.
 
 Newest, **2026-10-13 — the teaching is one system (`LOG.md` Session 132),
-built and verified end to end, not yet looked at on a phone, not yet
-pushed.** Marc's word: _"one single entity … uniformize and simplify … don't
+built and verified end to end, pushed 2026-10-14 with the fixes of a review
+(`LOG.md` Session 133), not yet looked at on a phone.** Marc's word: _"one single entity … uniformize and simplify … don't
 be afraid to change."_ Thirty-three named ideas are nine concepts —
 L'EXPÉDITION, RÉCOLTER, LES QUATRE SOLS, MAGIQUE, CHANCE, LA CARTE, LA FIN DE
 LA PARTIE, CARAVANE, RÉSERVE — one wording each, in one registry

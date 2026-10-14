@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expect, test } from '@playwright/test';
+import { expect, test, type TestInfo } from '@playwright/test';
 import {
   assertLooksLikeAPicture,
   begin,
@@ -29,6 +29,22 @@ import {
 const BREAK = String.fromCharCode(10);
 
 const SHOTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'docs', 'shots');
+
+/**
+ * Keep a picture for the repository — from CHROMIUM ONLY (2026-10-14).
+ *
+ * Both engines run this spec and used to write the same files, and `test:e2e`
+ * runs WebKit last, so every committed shot was replaced by WebKit's: the
+ * chrome with NO board in it (30 KB where Chromium's is 96 KB), and the
+ * tilt and relief variants byte-identical. WebKit passes the spec all the same,
+ * because what it asserts is the canvas's own picture, not the page capture
+ * written here; the spec stays a smoke test there and keeps nothing.
+ */
+async function saveShot(testInfo: TestInfo, file: string, bytes: Buffer): Promise<void> {
+  if (testInfo.project.name !== 'chromium') return;
+  await mkdir(SHOTS, { recursive: true });
+  await writeFile(join(SHOTS, file), bytes);
+}
 
 const ANGLES = [
   ['s2-board-top', 'tilt=0'],
@@ -76,7 +92,7 @@ const ANGLES = [
 test.use({ viewport: { width: 390, height: 844 } });
 
 for (const [name, query] of ANGLES) {
-  test(`draws ${name}`, async ({ page }) => {
+  test(`draws ${name}`, async ({ page }, testInfo) => {
     const errors = watchErrors(page);
     /*
      * THE WAIT FOR THE FONT WAS ACCIDENTAL, AND IT IS EXPLICIT NOW
@@ -153,8 +169,7 @@ for (const [name, query] of ANGLES) {
     // The canvas alone is what has to BE a picture; the whole phone is what
     // gets looked at, because a board is judged next to the chrome over it.
     assertLooksLikeAPicture(picture.bytes, name);
-    await mkdir(SHOTS, { recursive: true });
-    await writeFile(join(SHOTS, `${name}.png`), await page.screenshot());
+    await saveShot(testInfo, `${name}.png`, await page.screenshot());
 
     expect(errors, errors.join('\n')).toEqual([]);
   });
@@ -168,7 +183,7 @@ for (const [name, query] of ANGLES) {
  * the cascade's last tile has gone. It is the only way to see, in a still,
  * that the COLOUR is above the board while the grey is already under it.
  */
-test('shoots the manual’s marks', async ({ page }) => {
+test('shoots the manual’s marks', async ({ page }, testInfo) => {
   // The marks the board can show that are not places, beside the rules that use
   // them (the Legend that listed them is gone, 2026-10-13): POP's and THE
   // EXPEDITION's rows on the first tab.
@@ -179,8 +194,7 @@ test('shoots the manual’s marks', async ({ page }) => {
   await page.locator('[data-tab="start"]').click();
   await page.locator('[data-row="wall"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(300);
-  await mkdir(SHOTS, { recursive: true });
-  await writeFile(join(SHOTS, 's5-legend.png'), await page.screenshot());
+  await saveShot(testInfo, 's5-legend.png', await page.screenshot());
   expect(errors, errors.join(BREAK)).toEqual([]);
 });
 
@@ -208,7 +222,7 @@ test.describe('the harvest', () => {
     test.skip(browserName !== 'chromium', 'the board does not become a picture on WebKit — P6.1');
   });
 
-  test('catches the harvest in the air', async ({ page }) => {
+  test('catches the harvest in the air', async ({ page }, testInfo) => {
     const errors = watchErrors(page);
     // `taught=1`: a device that has met every lesson, so the board is the only
     // thing in the picture. A card over it would make this a picture of a card.
@@ -224,7 +238,6 @@ test.describe('the harvest', () => {
     await expect(pop).toBeVisible();
     await pop.click();
 
-    await mkdir(SHOTS, { recursive: true });
     // Three instants, because an animation judged from one still is an animation
     // judged from luck: the burst, the arc, and the tail of the cascade.
     let last = 0;
@@ -236,7 +249,7 @@ test.describe('the harvest', () => {
       // board effect, so the board is what gets photographed.
       const shot = await page.locator('canvas').screenshot();
       assertLooksLikeAPicture(shot, `the harvest at ${at}ms`);
-      await writeFile(join(SHOTS, `s2d-pop-${at}.png`), shot);
+      await saveShot(testInfo, `s2d-pop-${at}.png`, shot);
     }
 
     expect(errors, errors.join('\n')).toEqual([]);
@@ -251,38 +264,37 @@ test.describe('the harvest', () => {
    */
 });
 
-test('shoots the first minute', async ({ page }) => {
+test('shoots the first minute', async ({ page }, testInfo) => {
   const errors = watchErrors(page);
   await page.goto('/?seed=7');
-  await mkdir(SHOTS, { recursive: true });
 
   await page.locator('[data-door="begin"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(500);
-  await writeFile(join(SHOTS, 's3-door.png'), await page.screenshot());
+  await saveShot(testInfo, 's3-door.png', await page.screenshot());
 
   await page.locator('[data-door="begin"]').click();
   await page.locator('[data-hud="stats"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(400);
   if ((await page.locator('.card-scrim').count()) > 0) {
-    await writeFile(join(SHOTS, 's3-teaching.png'), await page.screenshot());
+    await saveShot(testInfo, 's3-teaching.png', await page.screenshot());
   }
   await clearCards(page);
   await page.waitForTimeout(400);
-  await writeFile(join(SHOTS, 's3-playing.png'), await page.screenshot());
+  await saveShot(testInfo, 's3-playing.png', await page.screenshot());
 
   // The board's one door: MENU straight into MORE, then the manual.
   await page.locator('[data-go="quick"]').click();
   await page.waitForTimeout(200);
-  await writeFile(join(SHOTS, 's3-more.png'), await page.screenshot());
+  await saveShot(testInfo, 's3-more.png', await page.screenshot());
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
   await page.waitForTimeout(300);
-  await writeFile(join(SHOTS, 's3-manual.png'), await page.screenshot());
+  await saveShot(testInfo, 's3-manual.png', await page.screenshot());
 
   await page.locator('[data-panel="manual"] .panel-back').click();
   await page.locator('[data-panel="more"]').waitFor({ state: 'visible' });
   await page.locator('[data-panel="more"] [data-go="settings"]').click();
   await page.waitForTimeout(300);
-  await writeFile(join(SHOTS, 's3-settings.png'), await page.screenshot());
+  await saveShot(testInfo, 's3-settings.png', await page.screenshot());
 
   // How a run ends, which is the screen the whole gate turns on.
   await page.goto('/?seed=7&end=1');
@@ -290,12 +302,12 @@ test('shoots the first minute', async ({ page }) => {
   await clearCards(page);
   await page.locator('[data-hud="end"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(300);
-  await writeFile(join(SHOTS, 's3-end.png'), await page.screenshot());
+  await saveShot(testInfo, 's3-end.png', await page.screenshot());
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('shoots the luck purse, open', async ({ page }) => {
+test('shoots the luck purse, open', async ({ page }, testInfo) => {
   /**
    * The purse, as a picture (Marc, 2026-08-29: "add a screenshot and improve
    * ui/ux for when [luck] popup is up, its ugly").
@@ -317,7 +329,6 @@ test('shoots the luck purse, open', async ({ page }) => {
   await page.locator('[data-hud="purse"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(200);
 
-  await mkdir(SHOTS, { recursive: true });
-  await writeFile(join(SHOTS, 's5-purse.png'), await page.screenshot());
+  await saveShot(testInfo, 's5-purse.png', await page.screenshot());
   expect(errors, errors.join(BREAK)).toEqual([]);
 });

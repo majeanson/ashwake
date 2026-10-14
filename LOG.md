@@ -10861,3 +10861,52 @@ portrait, the destination marks on rows, the row pick/watch spacing on SOLS,
 the led-row highlight, the COMMENT JOUER › footer, and whether 8 cards at the
 new pace read as one idea at a time. The sheet's round twelve described the
 pre-merge first minute and is superseded; a new round carries these.
+
+### Session 133 — the review of Session 132, and the shots that had no board (2026-10-14)
+
+**The question.** Did the seven commits that merged the teaching into one
+system leave behind bugs a first-minute stranger would meet? Answered by a
+high-effort review of `6489522^..HEAD`, then every finding fixed (`89ac9d7`).
+
+**Fixed, each with a test that fails without it:**
+
+1. **The purse card repeated LUCK.** It IS LUCK's card, but dismissing it told
+   only `purse`, so the tour's own LUCK card fired again four placements later.
+   The `purse` slot now `tells: ['luck']`.
+2. **A reload mid-tour ended the tour.** `decodeProgress`'s `TOUR` set lacked
+   `territory`, `map` and `purse`, which the tour now tells, so a save holding
+   one sealed `toured`: no MAGIC card, no bank step, no end step.
+3. **HOW TO PLAY › from a term card could open on nothing.** A word tapped
+   before its moment was told has no section in the book. `manualPrints` asks
+   the manual; the link is absent where it would arrive nowhere.
+4. **`Card` stole focus on every `App` render.** The effect depended on
+   `onDismiss`, a fresh arrow each render; it now takes focus once and reads
+   the latest callback from a ref.
+5. **The chip card could stand over the manual**; story, goal and chip cards
+   now share one `cardRoom`.
+6. Dead `after` check in `nextLesson` removed; `opensAt` computed once per card.
+7. `view/tips.ts`: one cached `conceptLookup` per locale (the docblock said
+   the patterns were memoised; only the term list was). It also **throws on a
+   duplicate term**, which makes the comment "lessons.test.ts guarantees no
+   two entries share a term" true — no such test existed.
+
+The sweep caught the refactor's own orphans (`conceptTerms`, `conceptPattern`,
+a `terms` field read only by tests) and they were removed rather than ruled.
+
+**The shots with no board.** The 33 modified `docs/shots/*.png` left by the
+2026-10-13 e2e run were not a regression: `shots.spec.ts` runs on both engines
+and wrote the SAME files, and `test:e2e` runs WebKit last, so WebKit's captures
+(chrome and no hexes, 30 KB where Chromium's are 96 KB, the tilt and relief
+variants byte-identical) replaced the committed ones. WebKit passes the spec
+because it asserts the canvas's own picture, not the page capture. `saveShot`
+now writes only from Chromium; a WebKit run was checked to leave every file
+untouched. The shots are regenerated from Chromium.
+
+**The WebKit `board.spec.ts:186` flake**, again: not reproduced, 168 passes in
+four repeats of the whole file on WebKit. Still the recorded machine flake;
+it has now failed in a full-suite run in two sessions and in none alone.
+
+**Verified.** 1576 unit tests; `pnpm sim` byte-identical; sweep 0; budget
+inside every bar; `teaching.spec.ts` 15/15 on Chromium. **Not verified, and
+it is Marc's:** everything in NEXT.md §1 (round thirteen) — plus how a term
+card now looks with no HOW TO PLAY link.
