@@ -190,7 +190,11 @@ export function Tile({ colour, rarity, theme, s, selected, slot, art, onPick, on
         badge and the name before.
       */}
       <span className="visually-hidden">
-        {rare && <span>{rarity === 'magic' ? s.lesson.rare.name : s.lesson.rareUnique.name}</span>}
+        {rare && (
+          <span>
+            {rarity === 'magic' ? s.lesson.magic.row.magic.name : s.lesson.magic.row.unique.name}
+          </span>
+        )}
         <span>{name}</span>
       </span>
     </Box>

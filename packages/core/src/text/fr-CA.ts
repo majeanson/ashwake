@@ -44,6 +44,17 @@ const LUCK_CORE = 'La CHANCE est une bourse, pas un score.';
 const RARE_STAR =
   'Une tuile rare posée porte un anneau de sa couleur et se tient plus haute, pour que son pouvoir reste repérable sur une carte pleine.';
 const LAST_GASP_RULE = `Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas${D}: seule une récolte te ramène au-dessus de zéro.`;
+/** The two rarity rules (2026-10-13): the MAGIC lesson, its UNIQUE row and the
+ *  tap-a-tile answers (`view.rarity`) all say these, and only these. */
+const MAGIC_RULE = `MAGIQUE est passe-partout${D}: elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.`;
+const UNIQUE_RULE = `UNIQUE est passe-partout et pèse lourd${D}: chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés.`;
+/** The clock and the shape of the game (2026-10-13): each is read by both of
+ *  its doors — the cost's lesson and its stat note, the coach's last step and
+ *  the manual's opening — so neither is worded twice. */
+const CLOCK = 'il ne redescend jamais. C’est l’horloge qui finit chaque partie.';
+const SHAPE = 'C’est la forme du jeu, pas une erreur de ta part.';
+/** A whole sentence begun mid-sentence: `et c’est la forme du jeu…`. */
+const mid = (s: string): string => `${s[0]!.toLocaleLowerCase('fr-CA')}${s.slice(1)}`;
 /** The cost curve and the reach rule, shared between the stat note and the
  *  manual's own sections (2026-09-03) — the `LUCK_CORE` pattern: one clause,
  *  two doors, no second wording to drift. */
@@ -102,25 +113,42 @@ export const STRINGS_FR: Strings = {
         `La PIERRE, c’est du sol usé${D}: ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais seules ${red} la comptent comme une ressemblance.`,
       core: `La PIERRE, c’est du sol usé${D}: ce qu’une tuile devient après sa récolte. Elle entoure encore ses voisines et les aide à mûrir, mais elle ne ressemble jamais.`,
     },
-    rare: {
+    /** MAGIQUE (2026-10-13): rare et unique sont un seul concept; ses rangées
+     *  portent les mots. Les phrases n’ont pas bougé. */
+    magic: {
       name: 'MAGIQUE',
-      terms: ['MAGIQUE'],
-      core: `MAGIQUE est passe-partout${D}: elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.`,
-    },
-    rareUnique: {
-      name: 'UNIQUE',
-      terms: ['UNIQUE'],
-      core: `UNIQUE est passe-partout et pèse lourd${D}: chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés.`,
+      terms: [],
+      core: MAGIC_RULE,
+      card: 'Dépense-la là où beaucoup de tuiles se touchent.',
+      row: {
+        magic: { name: 'MAGIQUE', terms: ['MAGIQUE'] },
+        unique: { name: 'UNIQUE', terms: ['UNIQUE'], core: UNIQUE_RULE },
+      },
     },
     luck: {
       name: 'CHANCE',
       terms: ['CHANCE'],
       core: `${LUCK_CORE} Chaque récolte en paie un peu, et la rangée sous ta main la dépense${D}: une nouvelle pioche, une couleur appelée, une tuile rare forgée.`,
+      spend: (lost) =>
+        `Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre${D}: ${lost}. Dépense-la.`,
     },
-    relic: {
-      name: 'RELIQUES',
-      terms: ['RELIQUES', 'RELIQUE'],
-      core: `Les reliques ne sont pas des points. Elles achètent la PROCHAINE partie${D}: elles te suivent quand une partie finit, et LA BOUTIQUE de l’écran de fin les dépense, alors chaque partie démarre plus fort que la précédente.`,
+    /** LA FIN DE LA PARTIE (2026-10-13): le coût, la dernière pose et les
+     *  reliques. Les phrases n’ont pas bougé; l’horloge est partagée avec la
+     *  note du COÛT. */
+    end: {
+      name: 'LA FIN DE LA PARTIE',
+      terms: [],
+      core: 'Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine.',
+      rises: `Le prix ne fait que monter; ${CLOCK}`,
+      curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
+      curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
+      row: {
+        relic: {
+          name: 'RELIQUES',
+          terms: ['RELIQUES', 'RELIQUE'],
+          core: `Les reliques ne sont pas des points. Elles achètent la PROCHAINE partie${D}: elles te suivent quand une partie finit, et LA BOUTIQUE de l’écran de fin les dépense, alors chaque partie démarre plus fort que la précédente.`,
+        },
+      },
     },
     caravan: {
       name: 'CARAVANE',
@@ -196,15 +224,6 @@ export const STRINGS_FR: Strings = {
         `Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche, jusqu’à ${cap}. Passé ça, une plus grosse poche paie plus de valeur, mais pas plus de multiplicateur.`,
       core: 'Le BONUS DE TAILLE, c’est un point de multiplicateur par tuile dans une poche. Plus il s’en récolte ensemble, plus la valeur est multipliée.',
     },
-    costRise: {
-      name: 'LE COÛT',
-      terms: [],
-      core: 'Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine.',
-      rises:
-        'Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie.',
-      curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
-      curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
-    },
     reach: {
       name: 'PORTÉE',
       terms: [],
@@ -276,7 +295,6 @@ export const STRINGS_FR: Strings = {
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,
-  rareCard: 'Dépense-la là où beaucoup de tuiles se touchent.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
   coach: {
@@ -288,7 +306,7 @@ export const STRINGS_FR: Strings = {
     build:
       'Maintenant, continue de bâtir. Une grosse poche paie plus que ses morceaux, alors fais-en grandir une exprès, mais chaque pose dépense des tuiles, et TUILES te dit combien il t’en reste.',
     bank: `Tes tuiles s’épuisent. Encaisse ta plus grosse poche maintenant${D}: touche sa tuile mûre pour l’évaluer, puis appuie sur RÉCOLTER. Les tuiles sont ce qui te garde en train de poser.`,
-    end: `Avec moins de tuiles que le COÛT, tu peux quand même poser. ${LAST_GASP_RULE} À zéro sans rien de mûr à récolter, la partie finit. C’est la forme du jeu, pas une erreur de ta part.`,
+    end: `Avec moins de tuiles que le COÛT, tu peux quand même poser. ${LAST_GASP_RULE} À zéro sans rien de mûr à récolter, la partie finit. ${SHAPE}`,
     pop: `Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER${D}: ça te redonne des tuiles pour continuer à poser, et des points pour ton score.`,
   },
   rerollHint: (cost) =>
@@ -354,8 +372,8 @@ export const STRINGS_FR: Strings = {
           : `Tout ce que tu as bâti a été récolté.`),
     },
     rarity: {
-      magic: `MAGIQUE est passe-partout${D}: elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.`,
-      unique: `UNIQUE est passe-partout et pèse lourd${D}: chaque ressemblance dont elle fait partie compte DOUBLE, des deux côtés.`,
+      magic: MAGIC_RULE,
+      unique: UNIQUE_RULE,
     },
     pocket: {
       head: (count, worth) => `POCHE DE ${count}, valeur totale ${d1(worth)}.`,
@@ -405,9 +423,6 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       lostPartly: (pct) =>
         `la fin de la partie ne rend que ${pc(pct)} de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue`,
       lostAll: 'ce qui reste à la fin de la partie est perdu net',
-      lead: (lost) =>
-        `LA CHANCE, ÇA SE DÉPENSE\n` +
-        `Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre${D}: ${lost}. Dépense-la.`,
     },
     stat: {
       tiles: `TUILES${D}: ce qui te garde en vie. Chaque pose en dépense; les récoltes, les caches et les territoires en redonnent. À zéro sans rien de mûr à récolter, la partie finit.`,
@@ -421,7 +436,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
       costCurveGrace: COST_CURVE_GRACE,
       costCurvePlain: COST_CURVE_PLAIN,
       cost: (cost, curve) =>
-        `COÛT${D}: le prix de la prochaine pose, ${cost}. ${curve}, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. ${LAST_GASP_RULE}`,
+        `COÛT${D}: le prix de la prochaine pose, ${cost}. ${curve}, et ${CLOCK} ${LAST_GASP_RULE}`,
       left: `RESTE${D}: les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.`,
     },
     colour: {
@@ -553,7 +568,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle n’apparie ja
   },
   onceARun: {
     newGround: `TERRAIN NEUF${D}: plus loin que ce monde n’est jamais allé.`,
-    unique: `UNIQUE${D}: chaque appariement compte double, des deux côtés.`,
+    unique: `UNIQUE${D}: chaque ressemblance compte DOUBLE, des deux côtés.`,
   },
   goalMet: (goal, relics) => `OBJECTIF ATTEINT${D}: ${goal} · +${relics} reliques`,
   goal: {
@@ -859,7 +874,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       title: 'L’EXPÉDITION',
       lines: [
         'Tu marches vers une plaine noire, et tu pousses aussi loin que tes tuiles le permettent.',
-        'Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et c’est la forme du jeu, pas une erreur de ta part.',
+        `Chaque pose coûte des tuiles. Récolter en redonne. Une partie finit quand tu n’en as plus, et ${mid(SHAPE)}`,
         'Les reliques rentrent avec toi. La boutique les dépense, alors la prochaine expédition commence plus forte que celle-ci.',
       ],
     },
@@ -1075,7 +1090,6 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       noError: 'Rien n’a brisé sur cet appareil.',
     },
     legendMarks: 'LES AUTRES MARQUES',
-    legendRare: 'Une tuile rare posée porte un anneau de sa couleur, et se tient plus haute.',
     legendWall: `Mur${D}: impossible d’y bâtir. Il entoure quand même.`,
     legendRipe: `Bord MÛR${D}: cette tuile est prête à récolter.`,
     legendLegal: `Bord permis${D}: tu peux poser ici.`,

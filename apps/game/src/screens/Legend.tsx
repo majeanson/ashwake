@@ -1,5 +1,5 @@
 import { TUNING } from '@content/tuning';
-import { CONCEPT_ICON, TILE_ICON } from '@theme/icons';
+import { CONCEPT_ICON } from '@theme/icons';
 import type { Theme } from '@theme/tokens';
 import { lessonDefine, lessonName, lessonOf } from '@view/lessons';
 import type { Strings } from '@text/Strings';
@@ -10,10 +10,11 @@ import { Icon } from '../ui/Icon';
 /**
  * THE MARKS THAT ARE NOT PLACES (2026-10-13). The destinations left this legend
  * for THE MAP, whose rows draw the same lit hex and carry the rule beside it;
- * the grounds went to THE FOUR GROUNDS the day before. What is left is the
- * rest of the alphabet — a rare ring, stone, a wall, the ripe and legal edges —
- * until those move under MAGIC, POP and THE EXPEDITION and this file goes
- * (phase 6 of the one-teaching-system plan).
+ * the grounds went to THE FOUR GROUNDS the day before, and the rare ring went
+ * to MAGIC (its UNIQUE row draws the ringed tile, its figure the pair). What is
+ * left is stone, a wall, the ripe and legal edges — until those move under POP
+ * and THE EXPEDITION and this file goes (phase 6 of the one-teaching-system
+ * plan).
  *
  * Every mark the board can show you, and what it means (Stage 5, 2026-08-29).
  *
@@ -95,23 +96,6 @@ export function Legend({ theme, s }: LegendProps) {
     <section className="legend">
       <h2 className="fact-label">{s.ui.legendMarks}</h2>
       <ul>
-        <li>
-          {/* What the sentence beside it claims: a ground ringed in a rarity's
-              colour. The `rare` figure's own first cell (blue, ringed magic),
-              so this row's swatch and the HAND tab's picture agree. */}
-          <Hex
-            id="legend-rare"
-            className="legend-swatch"
-            theme={theme}
-            ground="blue"
-            art={art.blue}
-            ring={theme.ink.magic}
-          />
-          <span className="legend-mark" aria-hidden="true">
-            <Icon name={TILE_ICON} />
-          </span>
-          <span className="legend-name">{s.ui.legendRare}</span>
-        </li>
         <li className="tall">
           <Hex
             id="legend-stone"

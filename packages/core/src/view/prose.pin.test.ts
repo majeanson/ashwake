@@ -9,9 +9,7 @@ import { FEATURES, featureText } from '@meta/features';
 import { SHED_LADDER, shedNote } from '@meta/shedLadder';
 import { UNLOCKS, unlockLabel } from '@meta/world';
 import { dailyBadge, recordDaily } from '@meta/daily';
-import { DAYLIGHT } from '@theme/themes/daylight';
 import { SETTLEMENT } from '@theme/themes/settlement';
-import type { Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
 import { ordinal } from '@text/format';
@@ -23,7 +21,6 @@ import {
   epitaphFor,
   harvestNote,
   pocketNote,
-  purseLesson,
   rarityLine,
   toHudView,
   whatGlows,
@@ -35,7 +32,7 @@ import {
  * registry moved a string. That file pinned what the registry was about to
  * touch; this one pins everything ELSE a player reads that the core produces:
  * the pocket and harvest receipts, the tap-a-hex descriptions, the epitaph
- * pools, the guide and hint lines, the purse card, the figure captions, and
+ * pools, the guide and hint lines, the figure captions, and
  * the small labels in `meta/` and `content/`.
  *
  * In Ashwake 1 most of these were held by the manual snapshots in
@@ -53,10 +50,6 @@ const LANGUAGES: readonly Strings[] = [STRINGS_EN, STRINGS_FR];
 const TUNINGS: readonly (readonly [string, Tuning])[] = [
   ['TUNING', TUNING],
   ['BARE_TUNING', BARE_TUNING],
-];
-const THEMES: readonly (readonly [string, Theme])[] = [
-  ['settlement', SETTLEMENT],
-  ['daylight', DAYLIGHT],
 ];
 
 /** Place along the rules' own order until something is ripe (or the run ends). */
@@ -151,16 +144,6 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
         rarityLine('unique', s),
         rarityLine(undefined, s),
       ]).toMatchSnapshot();
-    });
-
-    it('pins the purse card over both tunings and both directions', () => {
-      const out: Record<string, unknown> = {};
-      for (const [tName, t] of TUNINGS) {
-        for (const [themeName, theme] of THEMES) {
-          out[`${tName} · ${themeName}`] = purseLesson(t, theme, s);
-        }
-      }
-      expect(out).toMatchSnapshot();
     });
 
     /**

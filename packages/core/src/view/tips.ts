@@ -34,9 +34,9 @@ const TERMS_BY_LOCALE = new Map<string, readonly ConceptTerm[]>();
 /**
  * Every term the lessons answer to, longest first — so RELICS is never cut
  * short into RELIC and SIZE BONUS is never split at its own space — with the
- * entry each one opens. Built from LESSONS itself, which is where MAGIC and
- * UNIQUE already live as its `rare`/`rareUnique` entries, so this needs no
- * second list to keep in sync with the ink they wear. `lessons.test.ts`
+ * entry each one opens. Built from LESSONS itself, where MAGIC and
+ * UNIQUE live as the rows of `magic` (and wear their own ink), so this needs
+ * no second list to keep in sync. `lessons.test.ts`
  * guarantees no two entries share a term, in either language.
  */
 export function conceptTerms(s: Strings): readonly ConceptTerm[] {
@@ -50,7 +50,13 @@ export function conceptTerms(s: Strings): readonly ConceptTerm[] {
       );
     }
     for (const head of entry.rowHeads?.(s) ?? []) {
-      for (const term of head.terms) out.push({ term, id: entry.id, row: head.key });
+      for (const term of head.terms) {
+        out.push(
+          head.ink === undefined
+            ? { term, id: entry.id, row: head.key }
+            : { term, id: entry.id, row: head.key, ink: head.ink },
+        );
+      }
     }
   }
   out.sort((a, b) => b.term.length - a.term.length);
@@ -80,8 +86,8 @@ export function conceptPattern(s: Strings): RegExp {
  *  (Marc, 2026-08-20: "as well as documentation and anywhere it speaks about
  *  it"). Uppercase only: the capitals are the vocabulary. */
 export function rarityPattern(s: Strings): RegExp {
-  const magic = escape(s.lesson.rare.name);
-  const unique = escape(s.lesson.rareUnique.name);
+  const magic = escape(s.lesson.magic.row.magic.name);
+  const unique = escape(s.lesson.magic.row.unique.name);
   return new RegExp(`(?<![\\p{L}\\p{N}])(${magic}|${unique})(?![\\p{L}\\p{N}])`, 'gu');
 }
 

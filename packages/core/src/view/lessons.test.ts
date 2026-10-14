@@ -469,3 +469,106 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))('the map lesson · %
     }
   });
 });
+
+/**
+ * MAGIC, LUCK and THE RUN'S END (2026-10-13): three concepts folded from seven
+ * lessons, a purse card and a shop sentence. The invariants each kept, stated
+ * once over its rows.
+ */
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
+  'the magic, luck and run’s-end lessons · %s',
+  (_l, s) => {
+    const lesson = (id: string) => {
+      const found = LESSONS.find((l) => l.id === id);
+      if (found === undefined) throw new Error(`${id} is gone`);
+      return found;
+    };
+
+    it('says the two rarity rules one way: the lesson, its row and the tap-a-tile line', () => {
+      const magic = lesson('magic');
+      expect(lessonCore(magic, TUNING, SETTLEMENT, s)).toBe(s.view.rarity.magic);
+      expect(s.lesson.magic.row.unique.core).toBe(s.view.rarity.unique);
+      const rows = magic.rows?.(TUNING, SETTLEMENT, s) ?? [];
+      expect(rows.map((r) => r.key)).toEqual(['unique']);
+      expect(rows[0]?.ring).toBe('unique');
+      // The first-contact sentence is the card's alone.
+      expect(lessonCardDefine(magic, TUNING, SETTLEMENT, s)).toContain(s.lesson.magic.card);
+      expect(lessonDefine(magic, TUNING, SETTLEMENT, s)).not.toContain(s.lesson.magic.card);
+    });
+
+    it('answers to MAGIC and UNIQUE as rows of one lesson, each in its own ink', () => {
+      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      expect(byTerm.get(s.lesson.magic.row.magic.name)).toMatchObject({
+        id: 'magic',
+        row: 'magic',
+        ink: 'ink-magic',
+      });
+      expect(byTerm.get(s.lesson.magic.row.unique.name)).toMatchObject({
+        id: 'magic',
+        row: 'unique',
+        ink: 'ink-unique',
+      });
+      // Each word is spoken by the lesson it opens.
+      const spoken =
+        lessonDefine(lesson('magic'), TUNING, SETTLEMENT, s) +
+        (lesson('magic').rows?.(TUNING, SETTLEMENT, s) ?? []).map((r) => r.text).join(' ');
+      expect(spoken).toContain(s.lesson.magic.row.magic.name);
+      expect(spoken).toContain(s.lesson.magic.row.unique.name);
+    });
+
+    it('lists the purse’s buttons as LUCK’s rows, in the words the purse sheet uses', () => {
+      const luck = lesson('luck');
+      const rows = luck.rows?.(TUNING, SETTLEMENT, s) ?? [];
+      const p = s.view.purse;
+      expect(rows.map((r) => r.key)).toEqual([
+        'redraw',
+        'steer',
+        'steer',
+        'steer',
+        'steer',
+        'forge',
+      ]);
+      expect(rows[0]?.text).toBe(p.redraw(TUNING.luckRerollCost));
+      expect(rows.at(-1)?.text).toBe(p.forge(TUNING.luckForgeCost));
+      expect(rows.filter((r) => r.key === 'steer').map((r) => r.colour)).toEqual([...COLOURS]);
+      // A world with no buttons teaches none, and still leads.
+      expect(luck.rows?.(BARE_TUNING, SETTLEMENT, s)).toEqual([]);
+      expect(lessonCore(luck, BARE_TUNING, SETTLEMENT, s)).not.toBe('');
+    });
+
+    it('keeps “you CAN lose it all” on the first-contact card, naming what the end pays', () => {
+      const luck = lesson('luck');
+      const card = lessonCardDefine(luck, TUNING, SETTLEMENT, s);
+      expect(card).toContain(s.view.purse.lostPartly(Math.round(TUNING.luckToRelics * 100)));
+      expect(lessonCardDefine(luck, BARE_TUNING, SETTLEMENT, s)).toContain(s.view.purse.lostAll);
+      expect(lessonDefine(luck, TUNING, SETTLEMENT, s)).not.toContain('CAN');
+    });
+
+    it('speaks THE RUN’S END from the stat note’s own clock and the toast’s own rule', () => {
+      const end = lesson('end');
+      const lines = lessonLines(end, TUNING, SETTLEMENT, s);
+      expect(lines).toContain(s.lesson.end.rises);
+      expect(lines).toContain(s.lastGaspRule);
+      // The clock reads the same inside the stat note.
+      const clock = s.lesson.end.rises.slice(s.lesson.end.rises.indexOf(';') + 2);
+      expect(s.view.stat.cost(1, 'It rises').includes(clock)).toBe(true);
+      // A flattened curve is not told it rises, but still says what a placement costs.
+      const flat: Tuning = { ...TUNING, costRisesEvery: 0 };
+      expect(lessonLines(end, flat, SETTLEMENT, s)).not.toContain(s.lesson.end.rises);
+      expect(lessonCore(end, flat, SETTLEMENT, s)).toBe(s.lesson.end.core);
+      expect(lessonDetail(end, flat, SETTLEMENT, s)).toEqual([]);
+    });
+
+    it('opens RELICS at its row, which carries the shop sentence', () => {
+      const end = lesson('end');
+      const byTerm = new Map(conceptTerms(s).map((c) => [c.term, c]));
+      for (const term of s.lesson.end.row.relic.terms) {
+        expect(byTerm.get(term), term).toMatchObject({ id: 'end', row: 'relic' });
+      }
+      const row = end.rows?.(TUNING, SETTLEMENT, s)[0];
+      expect(row).toMatchObject({ key: 'relic', name: s.lesson.end.row.relic.name });
+      expect(row?.text).toBe(s.lesson.end.row.relic.core);
+      expect(end.rowHeads?.(s)[0]?.name).toBe(row?.name);
+    });
+  },
+);

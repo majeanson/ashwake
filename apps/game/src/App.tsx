@@ -10,14 +10,7 @@ import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
 import { distance, key, parse, type HexKey } from '@engine/hex';
 import { namesOf } from '@theme/tokens';
-import {
-  colourLesson,
-  debugLine,
-  describeHexOf,
-  pocketNote,
-  purseLesson,
-  rememberedNativeAt,
-} from '@view/view';
+import { colourLesson, debugLine, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
 import { isEnabled } from '@meta/features';
 import {
   EMPTY_PROGRESS,
@@ -641,21 +634,6 @@ function Game() {
    * the two cannot come apart.
    */
   const [cardPerk, setCardPerk] = useState<PerkId | null>(null);
-  /**
-   * The id for an utterance the SHELL raises rather than the session.
-   *
-   * `Said.id` is "said again" versus "still saying" — the identity a card is
-   * keyed on so a second one is a second card. The session mints them for the
-   * receipts; anything the shell raises on its own needs one from somewhere,
-   * and a counter that only ever moves one way is the whole of it. It moves
-   * DOWN: negative ids cannot collide with a session's, which count up.
-   *
-   * The sentence said "only goes up" until 2026-09-10 while the one caller
-   * decrements — true of the mechanism, backwards about the direction, and the
-   * next line explains why the direction is the point. Found reading the
-   * region for `PASS.md` P2.8.
-   */
-  const shellSaid = useRef(0);
   /** Goals this run was the one to meet, for the end screen. */
   const [goals, setGoals] = useState<readonly GoalId[]>([]);
   /**
@@ -3238,37 +3216,17 @@ function Game() {
      * having one: a lesson about spending is no use before there is
      * anything to spend it on.
      *
-     * **And it actually teaches, since 2026-08-30.** `purseLesson`
-     * builds the whole card from the LIVE tuning — the lead sentence
-     * plus one row per button the drawer offers, each quoting its own
-     * button face and its own price — and it is what Marc asked for
-     * twice in Ashwake 1 ("first luck drawer expand we should explain
-     * all actions", then again because the first answer did not land).
-     * It had **no caller in this body**: `purse` is in the teaching
-     * ledger and in the CARDS set, `isTrue('purse')` returns false by
-     * design because the OPEN is the moment, and this handler marked
-     * the lesson TOLD without ever showing it. So the drip's most
-     * expensive card was a line that spent its own ledger entry.
-     *
-     * Through `saidCard` rather than `LessonCard`: there is no
-     * `purse` lesson in `LESSONS` and there should not be — this
-     * arrives with its sentences and its rows already written, which
-     * is exactly what `SaidCard` takes. It holds the screen: read once
-     * ever, and a list is not a glance.
+     * **And it actually teaches, since 2026-08-30** — and since 2026-10-13
+     * through the ordinary lesson card: `purse` opens LUCK (`shell/teaching`),
+     * whose rows are the drawer's buttons, so this raises the same card the
+     * tour's LUCK moment does, the same way a NEW chip raises its own. The
+     * card holds the screen — read once ever, and a list is not a glance —
+     * and its dismissal tells `purse`. It used to build a card of its own
+     * (`purseLesson`) and mark the moment told on the OPEN, which spent the
+     * ledger entry whether or not the card was ever read.
      */
-    if (opening && !hasMet(progress, 'purse')) {
-      const lesson = purseLesson(snap.state.tuning, theme, s);
-      shellSaid.current -= 1;
-      setSaidCard({
-        text: lesson.text,
-        rows: lesson.rows,
-        icon: lesson.icon,
-        card: true,
-        id: shellSaid.current,
-      });
-    }
-    setProgress((p) => told(p, 'purse'));
-  }, [purseOpen, progress, snap.state.tuning, theme, s, setProgress]);
+    if (opening && !hasMet(progress, 'purse')) setDotOpen('purse');
+  }, [purseOpen, progress]);
 
   /*
    * And the asking is spent here — on the STARTING TILE, not on the frame.

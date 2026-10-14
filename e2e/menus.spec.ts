@@ -898,12 +898,13 @@ test('the manual shows the alphabet the rules are written in', async ({ page }) 
   const legend = page.locator('.legend');
   await legend.waitFor({ state: 'visible' });
 
-  // The marks that are not places (the grounds moved one tab over on
-  // 2026-10-13, and the destinations into THE MAP's rows, below).
-  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(3);
+  // The marks that are not places: stone, a wall, the ripe and legal edges (the
+  // grounds moved one tab over on 2026-10-13, the destinations into THE MAP's
+  // rows below, and the rare ring into MAGIC).
+  expect(await legend.locator('.legend-mark').count()).toBeGreaterThanOrEqual(2);
   // The swatches are the DIRECTION's own fills, so the legend repaints with
   // the board rather than being a second copy of the palette.
-  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(5);
+  expect(await legend.locator('.legend-swatch').count()).toBeGreaterThanOrEqual(4);
 
   /*
    * And NOTHING in the manual is tappable (2026-08-29).

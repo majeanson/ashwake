@@ -273,6 +273,7 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'costRise',
     as: 'toast',
+    opens: { lesson: 'end' },
     when: ({ hud }) => hud.cost > 1,
     line: (now, t, _theme, s) => statNote('cost', now.hud, t, s),
   },
@@ -344,11 +345,13 @@ export const SCHEDULE: readonly Slot[] = [
     id: 'rare',
     as: 'chip',
     phase: 'tour',
+    opens: { lesson: 'magic', row: 'magic' },
     when: ({ hud }) => hud.draft.some((c) => c.rarity === 'magic'),
   },
   {
     id: 'rareUnique',
     as: 'chip',
+    opens: { lesson: 'magic', row: 'unique' },
     when: ({ hud }) => hud.draft.some((c) => c.rarity === 'unique'),
   },
   {
@@ -363,6 +366,7 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'reroll',
     as: 'toast',
+    opens: { lesson: 'luck' },
     // A poor hand AND the luck to do something about it: a hint about a button
     // that cannot be pressed is a taunt.
     when: ({ hud }) =>
@@ -375,10 +379,12 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'purse',
     as: 'card',
+    // The purse's card IS the LUCK lesson's (2026-10-13), its rows the buttons.
+    opens: { lesson: 'luck' },
     /*
      * Fired by the player OPENING the purse, not by having one, so it is
-     * never true here — see `App`'s `onPurse`, which raises
-     * `purseLesson`'s card and then marks it told.
+     * never true here — see `App`'s `onPurse`, which raises LUCK's card and
+     * tells this moment when it is dismissed.
      *
      * That handler marked it told and showed NOTHING until 2026-08-30, so
      * this `false` was load-bearing for a lesson that could not fire from
@@ -388,7 +394,14 @@ export const SCHEDULE: readonly Slot[] = [
      */
     when: () => false,
   },
-  { id: 'relic', as: 'card', when: ({ hud }) => hud.relics > 0 },
+  // The first relic no longer interrupts (2026-10-13, Marc): a chip that opens
+  // THE RUN'S END at its relic row.
+  {
+    id: 'relic',
+    as: 'chip',
+    opens: { lesson: 'end', row: 'relic' },
+    when: ({ hud }) => hud.relics > 0,
+  },
   {
     id: 'colours',
     opens: { lesson: 'grounds' },
@@ -400,6 +413,7 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'lastGasp',
     as: 'toast',
+    opens: { lesson: 'end' },
     paced: false,
     // The clock's last placement, or — in a run with no clock, which is most of
     // them — fewer tiles than the next one costs. It read only the first, so it

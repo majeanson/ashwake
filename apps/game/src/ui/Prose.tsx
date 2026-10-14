@@ -138,7 +138,7 @@ function inked(text: string, s: Strings, onTerm?: OnTerm): ReactNode {
 function rarityInked(text: string, s: Strings, offset: number): ReactNode {
   return text.split(rarityPattern(s)).map((piece, i) => {
     if (i % 2 === 0) return <Fragment key={i}>{piece}</Fragment>;
-    const magic = piece.toLocaleUpperCase() === s.lesson.rare.name.toLocaleUpperCase();
+    const magic = piece.toLocaleUpperCase() === s.lesson.magic.row.magic.name.toLocaleUpperCase();
     return (
       <span key={`${offset}-${i}`} className={magic ? 'ink-magic' : 'ink-unique'}>
         {piece}

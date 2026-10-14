@@ -23,13 +23,26 @@ describe('the NEW chips', () => {
     const chips = screen.getAllByRole('button');
     expect(chips).toHaveLength(2);
     expect(chips[0]?.getAttribute('data-new-chip')).toBe('rare');
-    expect(chips[0]?.getAttribute('aria-label')).toBe(`${en.ui.newChip}: ${en.lesson.rare.name}`);
+    expect(chips[0]?.getAttribute('aria-label')).toBe(
+      `${en.ui.newChip}: ${en.lesson.magic.row.magic.name}`,
+    );
     // The accessible name carries NEW and the lesson, so a screen reader hears an offer.
     expect(chips[1]?.getAttribute('aria-label')).toBe(
       `${en.ui.newChip}: ${en.lesson.map.row.shrine.name}`,
     );
     await userEvent.click(chips[1]!);
     expect(onOpen).toHaveBeenCalledWith('shrine');
+  });
+
+  it('names the unique and relic chips by their ROW of MAGIC and of THE RUN’S END', () => {
+    render(<NewChips ids={['rareUnique', 'relic']} s={en} onOpen={() => undefined} />);
+    const chips = screen.getAllByRole('button');
+    expect(chips[0]?.getAttribute('aria-label')).toBe(
+      `${en.ui.newChip}: ${en.lesson.magic.row.unique.name}`,
+    );
+    expect(chips[1]?.getAttribute('aria-label')).toBe(
+      `${en.ui.newChip}: ${en.lesson.end.row.relic.name}`,
+    );
   });
 
   it('speaks French', () => {

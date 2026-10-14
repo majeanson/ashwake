@@ -41,6 +41,18 @@ const RARE_STAR =
   'A placed rare tile wears a ring in its own colour and stands taller, so its power stays findable on a full map.';
 const LAST_GASP_RULE =
   'You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.';
+/** The two rarity rules (2026-10-13): the MAGIC lesson, its UNIQUE row and the
+ *  tap-a-tile answers (`view.rarity`) all say these, and only these. */
+const MAGIC_RULE =
+  'MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.';
+const UNIQUE_RULE = 'UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides.';
+/** The clock and the shape of the game (2026-10-13): each is read by both of
+ *  its doors — the cost's lesson and its stat note, the coach's last step and
+ *  the manual's opening — so neither is worded twice. */
+const CLOCK = 'it never comes back down. It is the clock that ends every run.';
+const SHAPE = 'That is the shape of the game, not a mistake you made.';
+/** A whole sentence begun mid-sentence: `and that is the shape of the game…`. */
+const mid = (s: string): string => `${s[0]!.toLocaleLowerCase('en')}${s.slice(1)}`;
 /** The cost curve and the reach rule, shared between the stat note and the
  *  manual's own sections (2026-09-03) — the `LUCK_CORE` pattern: one clause,
  *  two doors, no second wording to drift. */
@@ -97,25 +109,41 @@ export const STRINGS_EN: Strings = {
         `STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but only ${red} counts it as a match.`,
       core: 'STONE is spent ground: what a tile becomes after it pops. It still surrounds neighbours, so it helps them ripen, but it never matches.',
     },
-    rare: {
+    /** MAGIC (2026-10-13): rare and unique are one concept; its rows carry the
+     *  words. The sentences did not move. */
+    magic: {
       name: 'MAGIC',
-      terms: ['MAGIC'],
-      core: 'MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.',
-    },
-    rareUnique: {
-      name: 'UNIQUE',
-      terms: ['UNIQUE'],
-      core: 'UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides.',
+      terms: [],
+      core: MAGIC_RULE,
+      card: 'Spend it where many tiles touch.',
+      row: {
+        magic: { name: 'MAGIC', terms: ['MAGIC'] },
+        unique: { name: 'UNIQUE', terms: ['UNIQUE'], core: UNIQUE_RULE },
+      },
     },
     luck: {
       name: 'LUCK',
       terms: ['LUCK'],
       core: `${LUCK_CORE} Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.`,
+      spend: (lost) =>
+        `Every button under your hand is priced in luck, and you CAN lose it all: ${lost}. Spend it.`,
     },
-    relic: {
-      name: 'RELICS',
-      terms: ['RELICS', 'RELIC'],
-      core: 'Relics are not points. They buy the NEXT run: they follow you out when a run ends, and THE SHOP on the end screen spends them, so every run starts stronger than the last.',
+    /** THE RUN'S END (2026-10-13): the cost, the last placement and the relics.
+     *  The sentences did not move; the clock is shared with the COST stat note. */
+    end: {
+      name: 'THE RUN’S END',
+      terms: [],
+      core: 'Every placement spends tiles; the COST stat is the next one’s price.',
+      rises: `The price only rises; ${CLOCK}`,
+      curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
+      curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
+      row: {
+        relic: {
+          name: 'RELICS',
+          terms: ['RELICS', 'RELIC'],
+          core: 'Relics are not points. They buy the NEXT run: they follow you out when a run ends, and THE SHOP on the end screen spends them, so every run starts stronger than the last.',
+        },
+      },
     },
     caravan: {
       name: 'CARAVAN',
@@ -190,14 +218,6 @@ export const STRINGS_EN: Strings = {
         `The SIZE BONUS is one point of multiplier per tile in a pocket, up to ${cap}. Past that a bigger pocket still pays more worth, but no more multiplier.`,
       core: 'The SIZE BONUS is one point of multiplier per tile in a pocket. The more that pops together, the more its worth is multiplied.',
     },
-    costRise: {
-      name: 'THE COST',
-      terms: [],
-      core: 'Every placement spends tiles; the COST stat is the next one’s price.',
-      rises: 'The price only rises; it never comes back down. It is the clock that ends every run.',
-      curveGrace: (base, grace, every) => `${COST_CURVE_GRACE(base, grace, every)}.`,
-      curvePlain: (every) => `${COST_CURVE_PLAIN(every)}.`,
-    },
     reach: {
       name: 'REACH',
       terms: [],
@@ -270,7 +290,6 @@ export const STRINGS_EN: Strings = {
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,
-  rareCard: 'Spend it where many tiles touch.',
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Tap remembered fog to light its ground.',
   coach: {
@@ -284,7 +303,7 @@ export const STRINGS_EN: Strings = {
     build:
       'Now keep building. A bigger pocket pays more than its pieces, so grow one on purpose, but every placement spends tiles from TILES.',
     bank: 'Tiles are running low. Cash your biggest pocket now: tap its ripe tile to price it, then press POP. Tiles are what keep you placing.',
-    end: `With fewer tiles than the COST, you can still place. ${LAST_GASP_RULE} At zero with nothing ripe to pop, the run ends. That is the shape of the game, not a mistake you made.`,
+    end: `With fewer tiles than the COST, you can still place. ${LAST_GASP_RULE} At zero with nothing ripe to pop, the run ends. ${SHAPE}`,
     pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP: it gives you tiles back to keep placing, and points toward your score.',
   },
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
@@ -348,9 +367,8 @@ export const STRINGS_EN: Strings = {
           : `Everything you built was popped.`),
     },
     rarity: {
-      magic:
-        'MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.',
-      unique: 'UNIQUE is wild and heavy: every match it is part of counts DOUBLE, for both sides.',
+      magic: MAGIC_RULE,
+      unique: UNIQUE_RULE,
     },
     pocket: {
       head: (count, worth) => `POCKET OF ${count}, total worth ${d1(worth)}.`,
@@ -399,9 +417,6 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       lostPartly: (pct) =>
         `the run’s end pays back only ${pct}% of whatever is left, so a full purse you die on is mostly gone`,
       lostAll: 'whatever is left when the run ends is lost outright',
-      lead: (lost) =>
-        `LUCK IS FOR SPENDING\n` +
-        `Every button under your hand is priced in luck, and you CAN lose it all: ${lost}. Spend it.`,
     },
     stat: {
       tiles:
@@ -417,7 +432,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       costCurveGrace: COST_CURVE_GRACE,
       costCurvePlain: COST_CURVE_PLAIN,
       cost: (cost, curve) =>
-        `COST: the next placement’s price, ${cost}. ${curve}, and it never comes back down. It is the clock that ends every run. ${LAST_GASP_RULE}`,
+        `COST: the next placement’s price, ${cost}. ${curve}, and ${CLOCK} ${LAST_GASP_RULE}`,
       left: 'LEFT: placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.',
     },
     colour: {
@@ -836,7 +851,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       title: 'THE EXPEDITION',
       lines: [
         'You are walking out into a dark plane, and you push on as far as your tiles last.',
-        'Every placement costs tiles. Popping pays them back. A run ends when you run out, and that is the shape of the game, not a mistake you made.',
+        `Every placement costs tiles. Popping pays them back. A run ends when you run out, and ${mid(SHAPE)}`,
         'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
       ],
     },
@@ -1053,7 +1068,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       noError: 'Nothing has broken on this device.',
     },
     legendMarks: 'THE OTHER MARKS',
-    legendRare: 'A placed rare tile wears a ring in its own colour, and stands taller.',
     legendWall: 'Wall: cannot be built on. It still surrounds.',
     legendRipe: 'RIPE edge: that tile is ready to harvest.',
     legendLegal: 'Legal edge: you may place here.',

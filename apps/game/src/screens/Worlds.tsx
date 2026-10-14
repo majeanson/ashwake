@@ -160,7 +160,7 @@ export function Worlds({ s, active, here, worlds, onBack, onOpen, onAbandon, cam
             armed={s.ui.newWorldArmed(active)}
             onConfirm={() => onAbandon(active)}
           />
-          <p className="note">{s.lesson.relic.core}</p>
+          <p className="note">{s.lesson.end.row.relic.core}</p>
         </section>
       )}
     </Panel>

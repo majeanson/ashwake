@@ -201,12 +201,12 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "POP",
     ],
     [
-      "costRise",
-      "THE COST",
-    ],
-    [
       "sizeBonus",
       "SIZE BONUS",
+    ],
+    [
+      "end",
+      "THE RUN’S END",
     ],
     [
       "sacrifice",
@@ -233,20 +233,12 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "LUCK",
     ],
     [
-      "rare",
+      "magic",
       "MAGIC",
-    ],
-    [
-      "rareUnique",
-      "UNIQUE",
     ],
     [
       "stash",
       "STASH",
-    ],
-    [
-      "relic",
-      "RELICS",
     ],
     [
       "grounds",
@@ -318,85 +310,10 @@ The score: worth 1 × size bonus 1 × distance 1 + worth 1 × 2 for the placing.
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today · en > pins the purse card over both tunings and both directions 1`] = `
-{
-  "BARE_TUNING · daylight": {
-    "icon": "luck",
-    "rows": [],
-    "text": "LUCK IS FOR SPENDING
-Every button under your hand is priced in luck, and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
-  },
-  "BARE_TUNING · settlement": {
-    "icon": "luck",
-    "rows": [],
-    "text": "LUCK IS FOR SPENDING
-Every button under your hand is priced in luck, and you CAN lose it all: whatever is left when the run ends is lost outright. Spend it.",
-  },
-  "TUNING · daylight": {
-    "icon": "luck",
-    "rows": [
-      {
-        "text": "REDRAW · 12. Throw this hand away for a new one.",
-      },
-      {
-        "colour": "green",
-        "text": "FARM · 20. A whole hand of FARM, and the next 3 draws too.",
-      },
-      {
-        "colour": "yellow",
-        "text": "MARKET · 20. A whole hand of MARKET, and the next 3 draws too.",
-      },
-      {
-        "colour": "red",
-        "text": "QUARRY · 20. A whole hand of QUARRY, and the next 3 draws too.",
-      },
-      {
-        "colour": "blue",
-        "text": "ROADS · 20. A whole hand of ROADS, and the next 3 draws too.",
-      },
-      {
-        "text": "FORGE · 40. Turn the selected tile UNIQUE.",
-      },
-    ],
-    "text": "LUCK IS FOR SPENDING
-Every button under your hand is priced in luck, and you CAN lose it all: the run’s end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
-  },
-  "TUNING · settlement": {
-    "icon": "luck",
-    "rows": [
-      {
-        "text": "REDRAW · 12. Throw this hand away for a new one.",
-      },
-      {
-        "colour": "green",
-        "text": "FARM · 20. A whole hand of FARM, and the next 3 draws too.",
-      },
-      {
-        "colour": "yellow",
-        "text": "MARKET · 20. A whole hand of MARKET, and the next 3 draws too.",
-      },
-      {
-        "colour": "red",
-        "text": "QUARRY · 20. A whole hand of QUARRY, and the next 3 draws too.",
-      },
-      {
-        "colour": "blue",
-        "text": "ROADS · 20. A whole hand of ROADS, and the next 3 draws too.",
-      },
-      {
-        "text": "FORGE · 40. Turn the selected tile UNIQUE.",
-      },
-    ],
-    "text": "LUCK IS FOR SPENDING
-Every button under your hand is priced in luck, and you CAN lose it all: the run’s end pays back only 5% of whatever is left, so a full purse you die on is mostly gone. Spend it.",
-  },
-}
-`;
-
 exports[`the prose pins — every other word, exactly as it reads today · en > pins the rarity lines 1`] = `
 [
-  "MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
-  "UNIQUE is wild and heavy: every match it is part of counts DOUBLE, for both sides.",
+  "MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
+  "UNIQUE is wild and heavy: every match it makes counts DOUBLE, for both sides.",
   null,
 ]
 `;
@@ -555,7 +472,7 @@ QUARRY. Stone and walls count as matches for it: it feeds on the spent ground ev
 ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
   "TUNING · detour · -2,2": "QUARRY tile, worth 3. It ripens when all six sides are covered.
 QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
-MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
   "TUNING · detour · -2,4": "CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
   "TUNING · detour · -3,0": "Open ground: you can build here once something of yours touches it.",
   "TUNING · detour · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
@@ -579,10 +496,10 @@ ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from ho
 ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
   "TUNING · detour · 2,1": "FARM tile, worth 3. It ripens when all six sides are covered.
 FARM. Wants one big mob of its own colour: +0.7 worth per FARM neighbour past the first.
-MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
   "TUNING · detour · 3,-1": "FARM tile, worth 4. It ripens when all six sides are covered.
 FARM. Wants one big mob of its own colour: +0.7 worth per FARM neighbour past the first.
-MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
   "TUNING · detour · 3,-2": "ROADS tile, worth 2. It ripens when all six sides are covered.
 ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
   "TUNING · home · -1,-1": "MARKET tile, worth 5. It ripens when all six sides are covered.
@@ -599,7 +516,7 @@ QUARRY. Stone and walls count as matches for it: it feeds on the spent ground ev
 ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
   "TUNING · home · -2,2": "QUARRY tile, worth 3. It ripens when all six sides are covered.
 QUARRY. Stone and walls count as matches for it: it feeds on the spent ground everyone else abandons.
-MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
   "TUNING · home · -2,4": "CACHE: build a tile touching it to claim 10 tiles on the spot. Build your chain out to it.",
   "TUNING · home · -3,0": "Open ground: you can build here once something of yours touches it.",
   "TUNING · home · -6,0": "Remembered from an earlier run. This run has not grown here yet.",
@@ -623,10 +540,10 @@ ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from ho
 ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
   "TUNING · home · 2,1": "FARM tile, worth 3. It ripens when all six sides are covered.
 FARM. Wants one big mob of its own colour: +0.7 worth per FARM neighbour past the first.
-MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
   "TUNING · home · 3,-1": "FARM tile, worth 4. It ripens when all six sides are covered.
 FARM. Wants one big mob of its own colour: +0.7 worth per FARM neighbour past the first.
-MAGIC is wild: it matches every neighbouring tile, whatever the colour, and they match it back.",
+MAGIC is wild: it matches every neighbour whatever the colour, and they match it back.",
   "TUNING · home · 3,-2": "ROADS tile, worth 2. It ripens when all six sides are covered.
 ROADS. Worth little at home, a lot on the frontier: +1 worth per 6 hexes from home.",
 }
@@ -833,12 +750,12 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "RÉCOLTER",
     ],
     [
-      "costRise",
-      "LE COÛT",
-    ],
-    [
       "sizeBonus",
       "BONUS DE TAILLE",
+    ],
+    [
+      "end",
+      "LA FIN DE LA PARTIE",
     ],
     [
       "sacrifice",
@@ -865,20 +782,12 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "CHANCE",
     ],
     [
-      "rare",
+      "magic",
       "MAGIQUE",
-    ],
-    [
-      "rareUnique",
-      "UNIQUE",
     ],
     [
       "stash",
       "RÉSERVE",
-    ],
-    [
-      "relic",
-      "RELIQUES",
     ],
     [
       "grounds",
@@ -950,85 +859,10 @@ Le score : valeur 1 × bonus de taille 1 × distance 1 + valeur 1 × 2 pour la
 }
 `;
 
-exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the purse card over both tunings and both directions 1`] = `
-{
-  "BARE_TUNING · daylight": {
-    "icon": "luck",
-    "rows": [],
-    "text": "LA CHANCE, ÇA SE DÉPENSE
-Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui reste à la fin de la partie est perdu net. Dépense-la.",
-  },
-  "BARE_TUNING · settlement": {
-    "icon": "luck",
-    "rows": [],
-    "text": "LA CHANCE, ÇA SE DÉPENSE
-Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : ce qui reste à la fin de la partie est perdu net. Dépense-la.",
-  },
-  "TUNING · daylight": {
-    "icon": "luck",
-    "rows": [
-      {
-        "text": "REPIOCHER · 12. Jette cette main pour une nouvelle.",
-      },
-      {
-        "colour": "green",
-        "text": "FERME · 20. Une main entière de FERME, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "colour": "yellow",
-        "text": "MARCHÉ · 20. Une main entière de MARCHÉ, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "colour": "red",
-        "text": "CARRIÈRE · 20. Une main entière de CARRIÈRE, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "colour": "blue",
-        "text": "CHEMINS · 20. Une main entière de CHEMINS, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "text": "FORGER · 40. Rends UNIQUE la tuile choisie.",
-      },
-    ],
-    "text": "LA CHANCE, ÇA SE DÉPENSE
-Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin de la partie ne rend que 5 % de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue. Dépense-la.",
-  },
-  "TUNING · settlement": {
-    "icon": "luck",
-    "rows": [
-      {
-        "text": "REPIOCHER · 12. Jette cette main pour une nouvelle.",
-      },
-      {
-        "colour": "green",
-        "text": "FERME · 20. Une main entière de FERME, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "colour": "yellow",
-        "text": "MARCHÉ · 20. Une main entière de MARCHÉ, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "colour": "red",
-        "text": "CARRIÈRE · 20. Une main entière de CARRIÈRE, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "colour": "blue",
-        "text": "CHEMINS · 20. Une main entière de CHEMINS, et les 3 prochaines pioches aussi.",
-      },
-      {
-        "text": "FORGER · 40. Rends UNIQUE la tuile choisie.",
-      },
-    ],
-    "text": "LA CHANCE, ÇA SE DÉPENSE
-Chaque bouton sous ta main se paie en chance, et tu PEUX tout perdre : la fin de la partie ne rend que 5 % de ce qui reste, alors une bourse pleine sur laquelle tu meurs est presque toute perdue. Dépense-la.",
-  },
-}
-`;
-
 exports[`the prose pins — every other word, exactly as it reads today · fr-CA > pins the rarity lines 1`] = `
 [
-  "MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
-  "UNIQUE est passe-partout et pèse lourd : chaque ressemblance dont elle fait partie compte DOUBLE, des deux côtés.",
+  "MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+  "UNIQUE est passe-partout et pèse lourd : chaque ressemblance qu’elle fait compte DOUBLE, des deux côtés.",
   null,
 ]
 `;
@@ -1187,7 +1021,7 @@ CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles :
 CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
   "TUNING · detour · -2,2": "Tuile CARRIÈRE, valeur 3. Elle mûrit quand ses six côtés sont couverts.
 CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
-MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · detour · -2,4": "CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
   "TUNING · detour · -3,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
   "TUNING · detour · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
@@ -1211,10 +1045,10 @@ CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 h
 CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
   "TUNING · detour · 2,1": "Tuile FERME, valeur 3. Elle mûrit quand ses six côtés sont couverts.
 FERME. Veut une seule grosse gang de sa couleur : +0.7 de valeur par voisine FERME passé la première.
-MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · detour · 3,-1": "Tuile FERME, valeur 4. Elle mûrit quand ses six côtés sont couverts.
 FERME. Veut une seule grosse gang de sa couleur : +0.7 de valeur par voisine FERME passé la première.
-MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · detour · 3,-2": "Tuile CHEMINS, valeur 2. Elle mûrit quand ses six côtés sont couverts.
 CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
   "TUNING · home · -1,-1": "Tuile MARCHÉ, valeur 5. Elle mûrit quand ses six côtés sont couverts.
@@ -1231,7 +1065,7 @@ CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles :
 CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
   "TUNING · home · -2,2": "Tuile CARRIÈRE, valeur 3. Elle mûrit quand ses six côtés sont couverts.
 CARRIÈRE. La pierre et les murs comptent comme des ressemblances pour elles : elles se nourrissent du sol usé que tout le monde abandonne.
-MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · home · -2,4": "CACHE : pose une tuile qui la touche pour réclamer 10 tuiles sur-le-champ. Fais grandir ta chaîne jusque-là.",
   "TUNING · home · -3,0": "Sol libre : tu peux bâtir ici dès que quelque chose à toi le touche.",
   "TUNING · home · -6,0": "Souvenir d’une partie d’avant. Cette partie n’a pas encore poussé ici.",
@@ -1255,10 +1089,10 @@ CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 h
 CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
   "TUNING · home · 2,1": "Tuile FERME, valeur 3. Elle mûrit quand ses six côtés sont couverts.
 FERME. Veut une seule grosse gang de sa couleur : +0.7 de valeur par voisine FERME passé la première.
-MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · home · 3,-1": "Tuile FERME, valeur 4. Elle mûrit quand ses six côtés sont couverts.
 FERME. Veut une seule grosse gang de sa couleur : +0.7 de valeur par voisine FERME passé la première.
-MAGIQUE est passe-partout : elle ressemble à chaque tuile voisine, peu importe la couleur, et elles lui ressemblent en retour.",
+MAGIQUE est passe-partout : elle ressemble à chaque voisine, peu importe la couleur, et elles lui ressemblent en retour.",
   "TUNING · home · 3,-2": "Tuile CHEMINS, valeur 2. Elle mûrit quand ses six côtés sont couverts.
 CHEMINS. Vaut peu au départ, beaucoup à la frontière : +1 de valeur par 6 hex de distance du départ.",
 }

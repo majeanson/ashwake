@@ -54,9 +54,14 @@ describe('prose', () => {
   });
 
   it('colours MAGIC and UNIQUE wherever the words appear', () => {
-    render(<Prose text={`${s.lesson.rare.name} and ${s.lesson.rareUnique.name}.`} s={s} />);
-    expect(screen.getByText(s.lesson.rare.name)).toHaveClass('ink-magic');
-    expect(screen.getByText(s.lesson.rareUnique.name)).toHaveClass('ink-unique');
+    render(
+      <Prose
+        text={`${s.lesson.magic.row.magic.name} and ${s.lesson.magic.row.unique.name}.`}
+        s={s}
+      />,
+    );
+    expect(screen.getByText(s.lesson.magic.row.magic.name)).toHaveClass('ink-magic');
+    expect(screen.getByText(s.lesson.magic.row.unique.name)).toHaveClass('ink-unique');
   });
 
   it('splits a multi-line answer into paragraphs', () => {

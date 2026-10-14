@@ -1008,14 +1008,16 @@ test('the view cycle hands the board back, and never loses the board you made', 
 
 test('the first time the purse opens, it says what luck buys', async ({ page }) => {
   /*
-   * `purseLesson` builds the whole card from the LIVE tuning: the
-   * use-it-or-lose-it sentence, then one row per button the drawer offers, each
-   * quoting its own button face and its own price. Marc asked for it twice in
+   * LUCK's card is built from the LIVE tuning: its first-contact sentence (the
+   * use-it-or-lose-it one), then one row per button the drawer offers, each
+   * quoting its own button face and its own price. Opening the purse raises
+   * that ordinary lesson card (2026-10-13; it was a card of its own, built by
+   * `purseLesson`). Marc asked for it twice in
    * Ashwake 1 — "first luck drawer expand we should explain all actions", then
    * again because the first answer did not land.
    *
    * It had no caller in this body. `purse` sits in the teaching ledger and in
-   * the CARDS set, `isTrue('purse')` returns false by design because the OPEN
+   * the schedule, its `when` is false by design because the OPEN
    * is the moment, and the handler marked the lesson TOLD without ever showing
    * it — so the drip's most expensive card spent its own ledger entry to say
    * nothing. Found 2026-08-30 by grepping for a consumer.
@@ -1034,7 +1036,8 @@ test('the first time the purse opens, it says what luck buys', async ({ page }) 
   const card = page.locator('.card-scrim .card');
   await expect(card, 'opening the purse taught nothing').toBeVisible({ timeout: 4000 });
   // The lead is the one fact a price cannot say, and it is Marc's own phrasing.
-  await expect(card).toContainText(/LUCK IS FOR SPENDING|LA CHANCE, ÇA SE DÉPENSE/);
+  await expect(card).toContainText(/you CAN lose it all|tu PEUX tout perdre/);
+  await expect(page.locator('[data-card="lesson-luck"]')).toBeVisible();
   // And the rows: one per button, so the card is a LIST rather than a
   // paragraph you have to parse to use.
   expect(

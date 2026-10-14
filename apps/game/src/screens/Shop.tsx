@@ -111,7 +111,7 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
         </h2>
         {progress.found.length === 0 && (
           <p className="note">
-            <Prose text={s.lesson.relic.core} s={s} onTerm={onTerm} />
+            <Prose text={s.lesson.end.row.relic.core} s={s} onTerm={onTerm} />
           </p>
         )}
         {PERKS.filter((perk) => progress.found.includes(perk.id)).map((perk) => {

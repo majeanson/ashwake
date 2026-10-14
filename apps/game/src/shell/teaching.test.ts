@@ -228,9 +228,10 @@ describe('every card the drip can fire', () => {
   it('is a card something draws', () => {
     // 2026-09-30. COLOURS was in `CARDS` with no lesson, so `LessonCard`
     // returned nothing for it: never shown, never told, and LAST GASP, behind
-    // it in `ORDER`, never spoke. STORY has its own card in `App`, and PURSE
-    // is raised by opening the purse (`purseLesson`) and never by a moment.
-    const ownCard = new Set(['story', 'goal', 'purse']);
+    // it in `ORDER`, never spoke. STORY and GOAL have their own cards in `App`;
+    // PURSE is raised by opening the purse and never by a moment, but it draws
+    // an ordinary lesson card now (LUCK's, 2026-10-13), so it is checked too.
+    const ownCard = new Set(['story', 'goal']);
     for (const { id } of SCHEDULE.filter((s) => s.as === 'card'))
       if (!ownCard.has(id))
         expect(lessonOf(opensAt(id).lesson), `${id} has no lesson to draw`).toBeDefined();
@@ -269,6 +270,23 @@ describe('the schedule covers every moment (2026-10-13)', () => {
       }
     }
     expect(opensAt('colours').lesson).toBe('grounds');
+  });
+
+  it('moves rare + unique under MAGIC, the purse and the reroll hint under LUCK, and the cost, last gasp and relics under THE RUN’S END', () => {
+    expect([...momentsOf('magic')].sort()).toEqual(['rare', 'rareUnique']);
+    expect([...momentsOf('luck')].sort()).toEqual(['luck', 'purse', 'reroll']);
+    expect([...momentsOf('end')].sort()).toEqual(['costRise', 'lastGasp', 'relic']);
+    expect(opensAt('rare')).toEqual({ lesson: 'magic', row: 'magic' });
+    expect(opensAt('rareUnique')).toEqual({ lesson: 'magic', row: 'unique' });
+    expect(opensAt('purse')).toEqual({ lesson: 'luck' });
+    expect(opensAt('relic')).toEqual({ lesson: 'end', row: 'relic' });
+  });
+
+  it('makes the first relic a chip, not a card: it no longer interrupts', () => {
+    expect(SCHEDULE.find((s) => s.id === 'relic')?.as).toBe('chip');
+    // The cost and the last placement stay the toasts they were.
+    expect(SCHEDULE.find((s) => s.id === 'costRise')?.as).toBe('toast');
+    expect(SCHEDULE.find((s) => s.id === 'lastGasp')?.as).toBe('toast');
   });
 
   it('gives every chip of the map a row to lead, so its label is the thing offered', () => {
@@ -325,7 +343,7 @@ describe('the pace (2026-10-12): one new idea at a time', () => {
 
 describe('the NEW chips (2026-10-12): offered, never fired', () => {
   it('never returns a chip lesson from the drip, so one cannot hold a card back', () => {
-    for (const id of ['rare', 'rareUnique', 'territory', 'shrine'] as const) {
+    for (const id of ['rare', 'rareUnique', 'territory', 'shrine', 'relic'] as const) {
       for (const n of [0, 3, 8, 20]) {
         expect(nextLesson(momentAt(n), taughtExcept(id))?.id).not.toBe(id);
       }
@@ -356,7 +374,7 @@ describe('the NEW chips (2026-10-12): offered, never fired', () => {
   });
 
   it('draws no card for a chip lesson until it is tapped', () => {
-    for (const id of ['rare', 'rareUnique', 'territory', 'shrine'] as const) {
+    for (const id of ['rare', 'rareUnique', 'territory', 'shrine', 'relic'] as const) {
       expect(SCHEDULE.find((s) => s.id === id)?.as, id).toBe('chip');
       expect(
         lessonOf(opensAt(id).lesson),

@@ -388,7 +388,7 @@ function Row({
               },
               { label: s.ui.fame.detail.claims, value: entry.detail.claims },
               { label: s.ui.fame.detail.quests, value: entry.detail.quests },
-              { label: s.lesson.relic.name, icon: 'relic', value: entry.detail.relics },
+              { label: s.lesson.end.row.relic.name, icon: 'relic', value: entry.detail.relics },
             ]}
           />
         </>

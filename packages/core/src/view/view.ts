@@ -19,7 +19,6 @@ import {
   ripeClusters,
   ripeKeys,
   scoreOf,
-  steerDrawsAfterHand,
   territoryPaysAt,
   withinBeaconHorizon,
   worthOf,
@@ -1745,75 +1744,15 @@ export type TipRow = {
    * marks, like `icon`.
    */
   readonly destination?: IconName;
+  /**
+   * A rare tile's own swatch (2026-10-13): a blue ground ringed in this
+   * rarity's colour, the `rare` figure's cell, for a row that is about what
+   * the ring means.
+   */
+  readonly ring?: 'magic' | 'unique';
   // `art`, the baked tile as a data URL, went on 2026-09-30: no caller ever
   // supplied one, and `TipRows` now draws the bake for any `colour` row.
 };
-
-/** A card that teaches a set: the lead, and the rows under it. */
-type SetLesson = {
-  readonly text: string;
-  /** The mark the card leads with. Beside the words rather than inside them:
-   *  a mark has been an icon rather than a character since 2026-08-30, and a
-   *  character was the only kind you could have prefixed into a string. */
-  readonly icon: IconName;
-  readonly rows: readonly TipRow[];
-};
-
-/**
- * The purse fold's first-contact card (Marc, 2026-08-20), built from the
- * LIVE tuning like every explanation in the game: only rows whose dials
- * are on get named, the rates are the run's own numbers, and the one fact
- * the fold's prices never say leads the close — luck is use-it-or-lose-it.
- *
- * ROWS since 2026-08-27 (Marc: "make sure the luck is for spending card is
- * explained with new lines, not a whole paragraph — similar to the 4 tiles
- * explained"). It was one sentence with the four ground names parenthesised
- * inside a semicolon list inside a clause: every spend the fold offers,
- * collapsed into prose you had to parse to use. The buttons are a LIST, so
- * the card is a list — one row per button, each quoting its own button face
- * and its own price, and the four steers wearing the ground colours the
- * buttons are bordered with.
- */
-export function purseLesson(t: Tuning, theme: Theme, s: Strings): SetLesson {
-  // Named as the BUTTONS are named (2026-08-27, Marc: "first luck drawer
-  // expand we should explain all actions" — a second time, because the
-  // first answer did not land). The card used to say "a fresh hand
-  // (REROLL)" over a button reading REDRAW, and "a hand drawn toward a
-  // colour you name (STEER)" over four buttons wearing the ground's own
-  // names, with the word STEER nowhere on screen. It explained all the
-  // actions in a vocabulary that matched none of them, which is the same
-  // as explaining none. Every row below now quotes its own button face.
-  const n = namesOf(theme, s.locale);
-  const p = s.view.purse;
-  const rows: TipRow[] = [
-    ...(t.luckRerollCost > 0 ? [{ text: p.redraw(t.luckRerollCost) }] : []),
-    // One row per BUTTON, in the order the fold draws them (`spendsFor`):
-    // redraw, the four grounds, forge, tithe. The steers were a parenthesised
-    // list inside somebody else's sentence; they are four buttons on screen,
-    // so they are four lines here, each wearing its ground's own colour.
-    ...(t.luckSteerCost > 0
-      ? COLOURS.map((colour): TipRow => ({
-          colour,
-          text: (t.steerSure ? p.steerSure : p.steer)(
-            n[colour],
-            t.luckSteerCost,
-            steerDrawsAfterHand(t),
-          ),
-        }))
-      : []),
-    ...(t.luckForgeCost > 0 ? [{ text: p.forge(t.luckForgeCost) }] : []),
-    ...(t.titheRate > 0 ? [{ text: p.sacrifice(Math.round(t.titheRate * 100)) }] : []),
-  ];
-  // One paragraph, then the list — the use-it-or-lose-it fact is the REASON
-  // to read the rows, so it goes above them rather than below (2026-08-27:
-  // as its own trailing paragraph it sat between the intro and the list and
-  // read like a footer that had slid up the card).
-  // "You CAN lose it all" is Marc's own phrasing (2026-08-20: "explain all
-  // and that you can lose it all too") and is pinned by name — the rows
-  // print their prices, and this is the one thing a price cannot say.
-  const lost = t.luckToRelics > 0 ? p.lostPartly(Math.round(t.luckToRelics * 100)) : p.lostAll;
-  return { text: p.lead(lost), icon: 'luck', rows };
-}
 
 /**
  * One stat, explained in this run's own numbers — the tap-a-symbol

@@ -1,6 +1,7 @@
 import { CARAVAN_BANDS, WARE_IDS } from '@content/caravan';
 import { COLOURS, type Colour, type Tuning } from '@content/tuning';
 import { waresOnSale } from '@engine/caravan';
+import { steerDrawsAfterHand } from '@engine/rules';
 import type { TeachId } from '@meta/progress';
 import { CHROME_ICON, CONCEPT_ICON, LANDMARK_ICON, TILE_ICON, type IconName } from '@theme/icons';
 import { namesOf, type Theme } from '@theme/tokens';
@@ -95,7 +96,9 @@ export type LessonId =
   | 'stone'
   | 'sacrifice'
   | 'reach'
-  | 'grounds';
+  | 'grounds'
+  | 'magic'
+  | 'end';
 
 /** A hex has six sides, and the ground advice's figures are "all six paying". */
 const SIDES = 6;
@@ -136,7 +139,7 @@ export type Lesson = {
    *  shape and which three of the marks were having answered by a wordmark
    *  font. */
   readonly icon?: IconName;
-  /** MAGIC and UNIQUE keep the ink `rarityInked` already gives them. */
+  /** The ink the lesson's name wears on its card: MAGIC keeps the one `rarityInked` gave it. */
   readonly ink?: 'ink-magic' | 'ink-unique';
   readonly beats: readonly Beat[];
   /**
@@ -182,7 +185,23 @@ export type Lesson = {
 };
 
 /** The things THE MAP lists, one row each (2026-10-13). */
-export type RowKey = 'cache' | 'site' | 'shrine' | 'territory' | 'find' | 'lens';
+export type RowKey =
+  | 'cache'
+  | 'site'
+  | 'shrine'
+  | 'territory'
+  | 'find'
+  | 'lens'
+  // MAGIC's two rarities (2026-10-13).
+  | 'magic'
+  | 'unique'
+  // LUCK's buttons, one row each as the purse draws them.
+  | 'redraw'
+  | 'steer'
+  | 'forge'
+  | 'sacrifice'
+  // THE RUN'S END's relics.
+  | 'relic';
 
 /** A row's name and tappable spellings, like a lesson's own. */
 type RowHead = {
@@ -190,6 +209,9 @@ type RowHead = {
   readonly name: string;
   /** UPPERCASE, longest first — merged with the lessons' own by `tips.ts`. */
   readonly terms: readonly string[];
+  /** The ink its words wear in prose, where it is not the plain term's (MAGIC's
+   *  and UNIQUE's, which `rarityInked` always gave them). */
+  readonly ink?: 'ink-magic' | 'ink-unique';
 };
 
 /**
@@ -369,38 +391,6 @@ export const LESSONS: readonly Lesson[] = [
       { say: (_t, _theme, s) => s.lesson.pop.when },
     ],
   },
-  /**
-   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four).
-   *
-   * Each is a rule the engine enforces that no manual surface stated — the
-   * words existed behind a tap (`statNote`, `describeHexOf`) and nowhere a
-   * reader could browse. `costRise`, `field` and `lens` are teach ids, so
-   * their sections grow into the manual when their toast speaks; `reach`
-   * prints for everyone.
-   */
-  {
-    id: 'costRise',
-    tab: 'start',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.costRise.core },
-      // The curve's direction can be flattened (`costRisesEvery: 0`), and
-      // then the clock sentence is not spoken: a run that never gets dearer
-      // is not told it does.
-      {
-        at: 'core',
-        say: (t, _theme, s) => (t.costRisesEvery > 0 ? s.lesson.costRise.rises : null),
-      },
-      {
-        at: 'detail',
-        say: (t, _theme, s) =>
-          t.costRisesEvery > 0
-            ? t.costGrace > 0
-              ? s.lesson.costRise.curveGrace(t.baseCost, t.costGrace, t.costRisesEvery)
-              : s.lesson.costRise.curvePlain(t.costRisesEvery)
-            : null,
-      },
-    ],
-  },
   {
     id: 'sizeBonus',
     tab: 'start',
@@ -411,6 +401,57 @@ export const LESSONS: readonly Lesson[] = [
           t.harvestSizeCap > 0
             ? s.lesson.sizeBonus.coreCapped(t.harvestSizeCap)
             : s.lesson.sizeBonus.core,
+      },
+    ],
+  },
+  /**
+   * THE RUN'S END (2026-10-13): the cost's clock, the last placement and the
+   * relics a run leaves with are ONE concept. Three lessons and a shop sentence
+   * each said a piece of how a run finishes (`costRise`, `relic`, and the
+   * LAST GASP toast's rule); the last START section reads in that order now —
+   * what a placement costs, that it only rises, the forgiven last placement —
+   * and the relic is its row.
+   *
+   * The ledger keeps `costRise` and `lastGasp` as the toasts that tell it and
+   * `relic` as the chip that opens it at the relic row (`shell/teaching.ts`).
+   * The clock sentence is the stat note's own clause (`CLOCK`), and the last
+   * gasp is the toast's own rule (`s.lastGaspRule`), so no door words either
+   * twice. A flattened curve (`costRisesEvery: 0`) drops `rises` and the
+   * arithmetic: a run that never gets dearer is not told it does.
+   */
+  {
+    id: 'end',
+    tab: 'start',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.end.core },
+      {
+        at: 'core',
+        say: (t, _theme, s) => (t.costRisesEvery > 0 ? s.lesson.end.rises : null),
+      },
+      { say: (_t, _theme, s) => s.lastGaspRule },
+      {
+        at: 'detail',
+        say: (t, _theme, s) =>
+          t.costRisesEvery > 0
+            ? t.costGrace > 0
+              ? s.lesson.end.curveGrace(t.baseCost, t.costGrace, t.costRisesEvery)
+              : s.lesson.end.curvePlain(t.costRisesEvery)
+            : null,
+      },
+    ],
+    rowHeads: (s) => [
+      {
+        key: 'relic',
+        name: s.lesson.end.row.relic.name,
+        terms: s.lesson.end.row.relic.terms,
+      },
+    ],
+    rows: (_t, _theme, s) => [
+      {
+        key: 'relic',
+        icon: CONCEPT_ICON.relic,
+        name: s.lesson.end.row.relic.name,
+        text: s.lesson.end.row.relic.core,
       },
     ],
   },
@@ -626,44 +667,106 @@ export const LESSONS: readonly Lesson[] = [
       })),
     ],
   },
+  /**
+   * LUCK (2026-10-13) is the purse's card too. Opening the purse used to raise
+   * a card of its own, `purseLesson` (LUCK IS FOR SPENDING), through the Said
+   * door with its own sentences and rows; now it raises THIS lesson's card, so
+   * the fired LUCK card, the purse's first open, the manual and the term card
+   * are one thing with one set of words.
+   *
+   * The rows are the purse's buttons, one per button in the order the drawer
+   * draws them (`spendsFor`), each quoting its own face and its own price, and
+   * they read the SAME `s.view.purse` functions the sheet itself does. The one
+   * fact a price cannot say — luck is use-it-or-lose-it, and "you CAN lose it
+   * all" is Marc's own phrasing (2026-08-20) — is the card's `spend` beat.
+   * Only rows whose dials are on are named; the steers fork on `steerSure`.
+   */
   {
     id: 'luck',
     tab: 'hand',
     icon: CONCEPT_ICON.luck,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.luck.core }],
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.luck.core },
+      {
+        at: 'card',
+        say: (t, _theme, s) => {
+          const p = s.view.purse;
+          return s.lesson.luck.spend(
+            t.luckToRelics > 0 ? p.lostPartly(Math.round(t.luckToRelics * 100)) : p.lostAll,
+          );
+        },
+      },
+    ],
+    rows: (t, theme, s) => {
+      // Named as the BUTTONS are named (2026-08-27, Marc: "first luck drawer
+      // expand we should explain all actions"): every row quotes its own face.
+      const n = namesOf(theme, s.locale);
+      const p = s.view.purse;
+      return [
+        ...(t.luckRerollCost > 0 ? [{ key: 'redraw', text: p.redraw(t.luckRerollCost) }] : []),
+        // The steers were a parenthesised list inside somebody else's sentence;
+        // they are four buttons on screen, so four lines, each in its ground's
+        // own colour.
+        ...(t.luckSteerCost > 0
+          ? COLOURS.map((colour): TipRow => ({
+              key: 'steer',
+              colour,
+              text: (t.steerSure ? p.steerSure : p.steer)(
+                n[colour],
+                t.luckSteerCost,
+                steerDrawsAfterHand(t),
+              ),
+            }))
+          : []),
+        ...(t.luckForgeCost > 0 ? [{ key: 'forge', text: p.forge(t.luckForgeCost) }] : []),
+        ...(t.titheRate > 0
+          ? [{ key: 'sacrifice', text: p.sacrifice(Math.round(t.titheRate * 100)) }]
+          : []),
+      ];
+    },
   },
   /**
-   * The two rarities, and the sentence they share.
+   * MAGIC (2026-10-13): the two rarities are one concept. They were two
+   * lessons that each carried the shared star sentence and the figure, and a
+   * manual section COMPOSED of the pair; now it is one lesson whose `core` is
+   * the magic rule, whose UNIQUE rule is its row, and whose first-contact
+   * sentence is what to do with one. The rules are shared constants in each
+   * catalogue, so a tap on a tile (`view.rarity`) says them the same way.
    *
-   * "A placed rare tile wears a star" is true of both and belongs to neither,
-   * so both carry it — a MAGIC card that did not say it would be teaching half
-   * a rule. The manual's RARE TILES section is COMPOSED of these two lessons
-   * rather than being one of them, so it prints each core once and the shared
-   * sentence once; sections were never one-lesson-shaped, and this is the pair
-   * that proves it.
+   * The MAGIC row is not drawn: the card's `core` IS that sentence, and a row
+   * repeating it a line below would be the same words twice. It keeps its
+   * `rowHeads` entry, because the word MAGIQUE still opens this lesson and a
+   * rare chip is named by it. A card carries rows or a figure, so the `rare`
+   * figure is the manual's (under the rows), and the card draws the UNIQUE
+   * row's own ringed tile.
    */
   {
-    id: 'rare',
+    id: 'magic',
     tab: 'hand',
     ink: 'ink-magic',
     icon: TILE_ICON,
-    figure: 'rare',
+    manualFigure: 'rare',
     beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.rare.core },
+      { at: 'core', say: (_t, _theme, s) => s.lesson.magic.core },
       { say: (_t, _theme, s) => s.rareStar },
-      { at: 'card', say: (_t, _theme, s) => s.rareCard },
+      { at: 'card', say: (_t, _theme, s) => s.lesson.magic.card },
     ],
-  },
-  {
-    id: 'rareUnique',
-    tab: 'hand',
-    ink: 'ink-unique',
-    icon: TILE_ICON,
-    figure: 'rare',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.rareUnique.core },
-      { say: (_t, _theme, s) => s.rareStar },
-      { at: 'card', say: (_t, _theme, s) => s.rareCard },
+    rowHeads: (s) => [
+      {
+        key: 'magic',
+        name: s.lesson.magic.row.magic.name,
+        terms: s.lesson.magic.row.magic.terms,
+        ink: 'ink-magic',
+      },
+      {
+        key: 'unique',
+        name: s.lesson.magic.row.unique.name,
+        terms: s.lesson.magic.row.unique.terms,
+        ink: 'ink-unique',
+      },
+    ],
+    rows: (_t, _theme, s) => [
+      { key: 'unique', ring: 'unique', text: s.lesson.magic.row.unique.core },
     ],
   },
   {
@@ -681,12 +784,6 @@ export const LESSONS: readonly Lesson[] = [
       // anybody would care.
       { say: (_t, _theme, s) => s.lesson.stash.more },
     ],
-  },
-  {
-    id: 'relic',
-    tab: 'hand',
-    icon: CONCEPT_ICON.relic,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.relic.core }],
   },
   /**
    * THE FOUR GROUNDS (2026-09-30): Ashwake 1's card, built at last. Marc,

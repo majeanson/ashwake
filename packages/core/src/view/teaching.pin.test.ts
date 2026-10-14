@@ -215,6 +215,41 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     });
 
     /**
+     * MAGIC, LUCK and THE RUN'S END (2026-10-13): three concepts folded from
+     * rare + rareUnique, luck + the purse's card, and costRise + relic (+ the
+     * last gasp and the shop sentence). Each is pinned as its words, its first-
+     * contact card and every row with the words that open it. The purse's card
+     * (`purseLesson`) is LUCK's card and rows now, so its pin lives here.
+     */
+    it('pins MAGIC, LUCK and THE RUN’S END: names, terms, lessons, cards and rows', () => {
+      const out: Record<string, string | readonly string[]> = {};
+      for (const id of ['magic', 'luck', 'end'] as const) {
+        const lesson = LESSONS.find((l) => l.id === id);
+        if (lesson === undefined) throw new Error(`${id} is gone`);
+        out[`${id} · name`] = s.lesson[id].name;
+        out[`${id} · terms`] = [
+          ...lessonTerms(lesson, s),
+          ...(lesson.rowHeads?.(s).map((h) => `${h.key}: ${h.terms.join(', ')}`) ?? []),
+        ];
+        for (const [tName, t] of TUNINGS) {
+          for (const [themeName, theme] of THEMES) {
+            const at = `${tName} · ${themeName}`;
+            out[`${id} · lesson · ${at}`] = lessonDefine(lesson, t, theme, s);
+            out[`${id} · card · ${at}`] = lessonCardDefine(lesson, t, theme, s);
+            out[`${id} · detail · ${at}`] = lessonDetail(lesson, t, theme, s).join(' | ');
+            for (const row of lesson.rows?.(t, theme, s) ?? []) {
+              out[`${id} · row · ${row.key} · ${row.colour ?? '-'} · ${at}`] = [
+                row.name ?? '',
+                row.text,
+              ].join(' | ');
+            }
+          }
+        }
+      }
+      expect(out).toMatchSnapshot();
+    });
+
+    /**
      * The stat notes — the tap-a-number lesson — read off a real opening board
      * so the live clauses (the cost curve's current price, the luck conversion
      * rate) are in the pinned string rather than a placeholder.

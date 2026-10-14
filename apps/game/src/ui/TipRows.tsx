@@ -92,6 +92,19 @@ export function TipRows({
                 />
                 <Icon name={row.destination} />
               </span>
+            ) : row.ring !== undefined ? (
+              // A rare tile, the way the board rings it: a blue ground in the
+              // rarity's own colour (the `rare` figure's cell).
+              <span className="tip-lit">
+                <Hex
+                  id={`tip-ring-${row.key ?? i}-${withLines === true ? 'manual' : 'card'}`}
+                  className="tip-lit-hex"
+                  theme={theme}
+                  ground="blue"
+                  art={ground.blue}
+                  ring={theme.ink[row.ring]}
+                />
+              </span>
             ) : row.icon !== undefined ? (
               <Icon name={row.icon} />
             ) : null}

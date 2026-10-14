@@ -81,10 +81,51 @@ type LessonStrings = {
   readonly pocket: LessonHead & { readonly core: string };
   readonly worth: LessonHead & { readonly core: string };
   readonly stone: LessonHead & { readonly coreAsh: (red: string) => string; readonly core: string };
-  readonly rare: LessonHead & { readonly core: string };
-  readonly rareUnique: LessonHead & { readonly core: string };
-  readonly luck: LessonHead & { readonly core: string };
-  readonly relic: LessonHead & { readonly core: string };
+  /**
+   * MAGIC (2026-10-13): the two rarities are one concept, the way the fog is.
+   * `core` is the magic rule; the unique rule is its row, and the card's own
+   * sentence (what to do with one) is `card`. Both rules are shared constants
+   * in each catalogue, read here and by `view.rarity`, so a tap on a tile and
+   * the lesson say them one way.
+   */
+  readonly magic: LessonHead & {
+    readonly core: string;
+    /** First contact only: what to do with a rare tile in hand. */
+    readonly card: string;
+    readonly row: {
+      readonly magic: LessonHead;
+      readonly unique: LessonHead & { readonly core: string };
+    };
+  };
+  /**
+   * LUCK (2026-10-13) absorbs the purse's card: opening the purse raises THIS
+   * lesson's card, and its rows are the purse's buttons (`view.purse` words,
+   * read by the sheet itself too). `spend` is the sentence the purse card led
+   * with, minus its shouting title.
+   */
+  readonly luck: LessonHead & {
+    readonly core: string;
+    /** First contact only. `lost` is `view.purse.lostPartly` or `lostAll`. */
+    readonly spend: (lost: string) => string;
+  };
+  /**
+   * THE RUN'S END (2026-10-13): the cost's clock, the last placement and the
+   * relics a run leaves with are one concept. `rises` and the stat note share
+   * the clock clause, so the two doors cannot say it two ways.
+   */
+  readonly end: LessonHead & {
+    /** What a placement costs, and it holds under every dial. */
+    readonly core: string;
+    /** The direction of the curve, which a dial CAN flatten. */
+    readonly rises: string;
+    /** The arithmetic, for the DETAILS fold (the stat note's own curve clause,
+     *  with the full stop a standalone beat requires). */
+    readonly curveGrace: (base: number, grace: number, every: number) => string;
+    readonly curvePlain: (every: number) => string;
+    readonly row: {
+      readonly relic: LessonHead & { readonly core: string };
+    };
+  };
   /**
    * THE CARAVAN (2026-09-30, Marc: _"add respective how to play, guide,
    * hints, etc. for caravans"_). A first-contact card the first time it is in
@@ -152,26 +193,10 @@ type LessonStrings = {
     readonly core: string;
   };
   /**
-   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four).
-   *
-   * An audit of the manual against the engine found four rules it enforces
-   * and no manual surface states — each had prose behind a tap somewhere
-   * (`statNote`, `describeHexOf`), so the words existed and a reader who did
-   * not know to tap could never meet them. `costRise`, `field` and `lens` are
-   * teach ids, so their sections grow into the manual the moment their toast
-   * speaks; `reach` is a word the manual prints for everyone.
+   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four). The cost
+   * is THE RUN'S END's now (`end`), field and lens are THE MAP's, and `reach`
+   * is a word the manual prints for everyone.
    */
-  readonly costRise: LessonHead & {
-    /** What a placement costs, and it holds under every dial. */
-    readonly core: string;
-    /** The direction of the curve, which a dial CAN flatten. */
-    readonly rises: string;
-    /** The arithmetic, for the DETAILS fold. The wording is the stat note's
-     *  own curve clause (one shared constant per language), with the full
-     *  stop a standalone beat requires. */
-    readonly curveGrace: (base: number, grace: number, every: number) => string;
-    readonly curvePlain: (every: number) => string;
-  };
   readonly reach: LessonHead & {
     readonly core: string;
     /** The multiplier rule, silent where `distanceStep` is zeroed. Shares its
@@ -248,7 +273,6 @@ export type Strings = {
   /** The clauses two or three doors share — see `view/lessons.ts`. */
   readonly luckCore: string;
   readonly rareStar: string;
-  readonly rareCard: string;
   readonly lastGaspRule: string;
   /** The lens's invitation (Marc's wording, 2026-09-03). Two doors read it —
    *  the drip's LENS toast and the manual's fog section — so the gesture is
@@ -423,7 +447,6 @@ export type Strings = {
       readonly sacrifice: (pct: number) => string;
       readonly lostPartly: (pct: number) => string;
       readonly lostAll: string;
-      readonly lead: (lost: string) => string;
     };
     readonly stat: {
       readonly tiles: string;
@@ -1488,7 +1511,6 @@ export type Strings = {
      * was to tap that hex, which needs them to have walked there first.
      */
     readonly legendMarks: string;
-    readonly legendRare: string;
     readonly legendWall: string;
     readonly legendRipe: string;
     readonly legendLegal: string;
