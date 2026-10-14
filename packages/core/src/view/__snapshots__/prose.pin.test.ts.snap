@@ -189,20 +189,36 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "RIPE",
     ],
     [
-      "pop",
-      "POP",
-    ],
-    [
-      "sacrifice",
-      "SACRIFICE",
+      "worth",
+      "WORTH",
     ],
     [
       "pocket",
       "POCKET",
     ],
     [
-      "worth",
-      "WORTH",
+      "pop",
+      "POP",
+    ],
+    [
+      "costRise",
+      "THE COST",
+    ],
+    [
+      "sizeBonus",
+      "SIZE BONUS",
+    ],
+    [
+      "sacrifice",
+      "SACRIFICE",
+    ],
+    [
+      "stone",
+      "STONE",
+    ],
+    [
+      "reach",
+      "REACH",
     ],
     [
       "cache",
@@ -225,8 +241,24 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "FIND",
     ],
     [
-      "stone",
-      "STONE",
+      "bounty",
+      "BOUNTY",
+    ],
+    [
+      "caravan",
+      "CARAVAN",
+    ],
+    [
+      "field",
+      "NATIVE GROUND",
+    ],
+    [
+      "lens",
+      "THE FOG",
+    ],
+    [
+      "luck",
+      "LUCK",
     ],
     [
       "rare",
@@ -237,48 +269,16 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "UNIQUE",
     ],
     [
-      "luck",
-      "LUCK",
+      "stash",
+      "STASH",
     ],
     [
       "relic",
       "RELICS",
     ],
     [
-      "bounty",
-      "BOUNTY",
-    ],
-    [
-      "caravan",
-      "CARAVAN",
-    ],
-    [
       "colours",
       "THE FOUR GROUNDS",
-    ],
-    [
-      "stash",
-      "STASH",
-    ],
-    [
-      "sizeBonus",
-      "SIZE BONUS",
-    ],
-    [
-      "costRise",
-      "THE COST",
-    ],
-    [
-      "reach",
-      "REACH",
-    ],
-    [
-      "field",
-      "NATIVE GROUND",
-    ],
-    [
-      "lens",
-      "THE FOG",
     ],
   ],
   "shared": {
@@ -849,20 +849,36 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "MÛR",
     ],
     [
-      "pop",
-      "RÉCOLTER",
-    ],
-    [
-      "sacrifice",
-      "SACRIFIER",
+      "worth",
+      "VALEUR",
     ],
     [
       "pocket",
       "POCHE",
     ],
     [
-      "worth",
-      "VALEUR",
+      "pop",
+      "RÉCOLTER",
+    ],
+    [
+      "costRise",
+      "LE COÛT",
+    ],
+    [
+      "sizeBonus",
+      "BONUS DE TAILLE",
+    ],
+    [
+      "sacrifice",
+      "SACRIFIER",
+    ],
+    [
+      "stone",
+      "PIERRE",
+    ],
+    [
+      "reach",
+      "PORTÉE",
     ],
     [
       "cache",
@@ -885,8 +901,24 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "TROUVAILLE",
     ],
     [
-      "stone",
-      "PIERRE",
+      "bounty",
+      "PRIME",
+    ],
+    [
+      "caravan",
+      "CARAVANE",
+    ],
+    [
+      "field",
+      "TERRE NATALE",
+    ],
+    [
+      "lens",
+      "LE BROUILLARD",
+    ],
+    [
+      "luck",
+      "CHANCE",
     ],
     [
       "rare",
@@ -897,48 +929,16 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
       "UNIQUE",
     ],
     [
-      "luck",
-      "CHANCE",
+      "stash",
+      "RÉSERVE",
     ],
     [
       "relic",
       "RELIQUES",
     ],
     [
-      "bounty",
-      "PRIME",
-    ],
-    [
-      "caravan",
-      "CARAVANE",
-    ],
-    [
       "colours",
       "LES QUATRE SOLS",
-    ],
-    [
-      "stash",
-      "RÉSERVE",
-    ],
-    [
-      "sizeBonus",
-      "BONUS DE TAILLE",
-    ],
-    [
-      "costRise",
-      "LE COÛT",
-    ],
-    [
-      "reach",
-      "PORTÉE",
-    ],
-    [
-      "field",
-      "TERRE NATALE",
-    ],
-    [
-      "lens",
-      "LE BROUILLARD",
     ],
   ],
   "shared": {

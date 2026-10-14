@@ -59,7 +59,11 @@ const KEY_LINES = [
 ] as const;
 
 /**
- * Which lessons belong under which tab, in reading order.
+ * Which lessons belong under which tab, in reading order. The registry says
+ * (`Lesson.tab`, and array order in `LESSONS`); this only filters it. `colours`
+ * has no lesson sections: it is `GroundGuide`, and its tab appears when THE FOUR
+ * GROUNDS has been met, like every section that grows in. The history below
+ * is why the lessons sit where they do.
  *
  * **Regrouped 2026-08-29** (Marc): a lesson belongs beside the thing it is
  * about, not on a tab named for when you happen to meet it. AFTER held the
@@ -102,20 +106,7 @@ const KEY_LINES = [
  * while REACH is a scoring rule with no moment of its own and prints for
  * everyone.
  */
-const SECTIONS: Readonly<Record<TabId, readonly LessonId[]>> = {
-  // WORTH and POCKET before the lessons that use them (2026-10-11): RIPE says
-  // "shows its WORTH", POP cashes a POCKET, SIZE BONUS multiplies a pocket's
-  // worth — and POCKET sat on the next tab, WORTH after the bonus.
-  start: ['ripe', 'worth', 'pocket', 'pop', 'costRise', 'sizeBonus'],
-  // THE CARAVAN beside BOUNTY (2026-09-30): the other reason a pop pays
-  // more, and a section that grows in when its card has spoken.
-  play: ['reach', 'bounty', 'caravan', 'field', 'lens'],
-  hand: ['luck', 'rare', 'rareUnique', 'stash', 'relic'],
-  // COLOURS is not a list of lessons: it is `GroundGuide`, built from the
-  // colour rules and the strategy catalogue (2026-10-12). Its tab appears when
-  // THE FOUR GROUNDS has been met, like every section that grows in.
-  colours: [],
-};
+const sectionsOf = (tab: TabId): readonly Lesson[] => LESSONS.filter((l) => l.tab === tab);
 
 /**
  * THE MANUAL GROWS WITH THE WORLD (2026-09-02).
@@ -152,15 +143,14 @@ function metHere(id: LessonId, met: ReadonlySet<TeachId> | null): boolean {
  * lesson after gets `null` and reads under the picture already there.
  */
 function drawnOnce(
-  ids: readonly LessonId[],
+  lessons: readonly Lesson[],
   met: ReadonlySet<TeachId> | null,
 ): readonly { id: LessonId; lesson: Lesson; figure: FigureId | null }[] {
   const drawn = new Set<FigureId>();
   const out: { id: LessonId; lesson: Lesson; figure: FigureId | null }[] = [];
-  for (const id of ids) {
+  for (const lesson of lessons) {
+    const { id } = lesson;
     if (!metHere(id, met)) continue;
-    const lesson = LESSONS.find((l) => l.id === id);
-    if (lesson === undefined) continue;
     const figure = lesson.figure !== undefined && !drawn.has(lesson.figure) ? lesson.figure : null;
     if (figure !== null) drawn.add(figure);
     out.push({ id, lesson, figure });
@@ -170,8 +160,8 @@ function drawnOnce(
 
 /** Whether a tab still has sections a player has not unlocked — the quiet
  *  promise that HOW TO PLAY is not all there is yet. */
-const grows = (ids: readonly LessonId[], met: ReadonlySet<TeachId> | null): boolean =>
-  met !== null && ids.some((id) => !metHere(id, met));
+const grows = (lessons: readonly Lesson[], met: ReadonlySet<TeachId> | null): boolean =>
+  met !== null && lessons.some((l) => !metHere(l.id, met));
 
 type ManualProps = {
   readonly theme: Theme;
@@ -226,7 +216,7 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
             id,
             label: s.ui.tabs[id],
             // A tab with sections still to unlock says so — see `Tab.grows`.
-            grows: grows(SECTIONS[id], known),
+            grows: grows(sectionsOf(id), known),
           }))}
           on={on}
           onPick={setOn}
@@ -319,7 +309,7 @@ export function Manual({ theme, s, keyboard, mode, met, onBack }: ManualProps) {
 
       {on === 'colours' && <GroundGuide theme={theme} s={s} />}
 
-      {drawnOnce(SECTIONS[on], known).map(({ id, lesson, figure }) => (
+      {drawnOnce(sectionsOf(on), known).map(({ id, lesson, figure }) => (
         <Section key={id} lesson={lesson} figure={figure} theme={theme} s={s} />
       ))}
 

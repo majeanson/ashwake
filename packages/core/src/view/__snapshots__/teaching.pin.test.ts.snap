@@ -88,19 +88,11 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "icon": "pop",
-    "id": "pop",
+    "icon": null,
+    "id": "worth",
     "ink": null,
     "terms": [
-      "POP",
-    ],
-  },
-  {
-    "icon": "sacrifice",
-    "id": "sacrifice",
-    "ink": null,
-    "terms": [
-      "SACRIFICE",
+      "WORTH",
     ],
   },
   {
@@ -112,11 +104,35 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "icon": null,
-    "id": "worth",
+    "icon": "pop",
+    "id": "pop",
     "ink": null,
     "terms": [
-      "WORTH",
+      "POP",
+    ],
+  },
+  {
+    "icon": null,
+    "id": "sizeBonus",
+    "ink": null,
+    "terms": [
+      "SIZE BONUS",
+    ],
+  },
+  {
+    "icon": "sacrifice",
+    "id": "sacrifice",
+    "ink": null,
+    "terms": [
+      "SACRIFICE",
+    ],
+  },
+  {
+    "icon": "stone",
+    "id": "stone",
+    "ink": null,
+    "terms": [
+      "STONE",
     ],
   },
   {
@@ -161,11 +177,19 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "icon": "stone",
-    "id": "stone",
+    "icon": "site",
+    "id": "bounty",
     "ink": null,
     "terms": [
-      "STONE",
+      "BOUNTY",
+    ],
+  },
+  {
+    "icon": "luck",
+    "id": "luck",
+    "ink": null,
+    "terms": [
+      "LUCK",
     ],
   },
   {
@@ -185,11 +209,11 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     ],
   },
   {
-    "icon": "luck",
-    "id": "luck",
+    "icon": null,
+    "id": "stash",
     "ink": null,
     "terms": [
-      "LUCK",
+      "STASH",
     ],
   },
   {
@@ -199,30 +223,6 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     "terms": [
       "RELICS",
       "RELIC",
-    ],
-  },
-  {
-    "icon": "site",
-    "id": "bounty",
-    "ink": null,
-    "terms": [
-      "BOUNTY",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "stash",
-    "ink": null,
-    "terms": [
-      "STASH",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "sizeBonus",
-    "ink": null,
-    "terms": [
-      "SIZE BONUS",
     ],
   },
 ]
@@ -475,20 +475,11 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "icon": "pop",
-    "id": "pop",
+    "icon": null,
+    "id": "worth",
     "ink": null,
     "terms": [
-      "RÉCOLTER",
-      "RÉCOLTE",
-    ],
-  },
-  {
-    "icon": "sacrifice",
-    "id": "sacrifice",
-    "ink": null,
-    "terms": [
-      "SACRIFIER",
+      "VALEUR",
     ],
   },
   {
@@ -500,11 +491,36 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "icon": null,
-    "id": "worth",
+    "icon": "pop",
+    "id": "pop",
     "ink": null,
     "terms": [
-      "VALEUR",
+      "RÉCOLTER",
+      "RÉCOLTE",
+    ],
+  },
+  {
+    "icon": null,
+    "id": "sizeBonus",
+    "ink": null,
+    "terms": [
+      "BONUS DE TAILLE",
+    ],
+  },
+  {
+    "icon": "sacrifice",
+    "id": "sacrifice",
+    "ink": null,
+    "terms": [
+      "SACRIFIER",
+    ],
+  },
+  {
+    "icon": "stone",
+    "id": "stone",
+    "ink": null,
+    "terms": [
+      "PIERRE",
     ],
   },
   {
@@ -549,11 +565,19 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "icon": "stone",
-    "id": "stone",
+    "icon": "site",
+    "id": "bounty",
     "ink": null,
     "terms": [
-      "PIERRE",
+      "PRIME",
+    ],
+  },
+  {
+    "icon": "luck",
+    "id": "luck",
+    "ink": null,
+    "terms": [
+      "CHANCE",
     ],
   },
   {
@@ -573,11 +597,11 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     ],
   },
   {
-    "icon": "luck",
-    "id": "luck",
+    "icon": null,
+    "id": "stash",
     "ink": null,
     "terms": [
-      "CHANCE",
+      "RÉSERVE",
     ],
   },
   {
@@ -587,30 +611,6 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     "terms": [
       "RELIQUES",
       "RELIQUE",
-    ],
-  },
-  {
-    "icon": "site",
-    "id": "bounty",
-    "ink": null,
-    "terms": [
-      "PRIME",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "stash",
-    "ink": null,
-    "terms": [
-      "RÉSERVE",
-    ],
-  },
-  {
-    "icon": null,
-    "id": "sizeBonus",
-    "ink": null,
-    "terms": [
-      "BONUS DE TAILLE",
     ],
   },
 ]

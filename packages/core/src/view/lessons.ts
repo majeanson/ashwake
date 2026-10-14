@@ -119,6 +119,12 @@ type Beat = {
   readonly at?: Weight;
 };
 
+/**
+ * The manual tabs that hold lesson sections. `colours` is not one: it draws
+ * `GroundGuide`, not sections.
+ */
+type ManualTab = 'start' | 'play' | 'hand';
+
 export type Lesson = {
   /** One of the concepts the catalogue has words for — a subset of `LessonId`,
    *  because some teach ids are moments (`place`, `wall`) rather than terms. */
@@ -132,6 +138,13 @@ export type Lesson = {
   /** MAGIC and UNIQUE keep the ink `rarityInked` already gives them. */
   readonly ink?: 'ink-magic' | 'ink-unique';
   readonly beats: readonly Beat[];
+  /**
+   * Where the manual prints this lesson as a section. Absent means the lesson
+   * is reachable only through its term card and the Legend (sacrifice, cache,
+   * site, shrine, territory, find, stone, colours). A tab's sections print in
+   * the order they stand in .
+   */
+  readonly tab?: ManualTab;
   /**
    * A set this lesson lists, one row each: THE FOUR GROUNDS (2026-09-30).
    *
@@ -250,6 +263,12 @@ export function lessonCardDefine(lesson: Lesson, t: Tuning, theme: Theme, s: Str
  * MAGIC's, `stash` is THE STASH's.
  */
 export const LESSONS: readonly Lesson[] = [
+  // ORDER IS THE MANUAL'S READING ORDER (moved from Manual.tsx's SECTIONS).
+  // Filter by `tab` and the sequence is the section order. WORTH and POCKET
+  // come before the lessons that use them (2026-10-11): RIPE says "shows its
+  // WORTH", POP cashes a POCKET, SIZE BONUS multiplies a pocket's worth.
+  // THE CARAVAN sits beside BOUNTY (2026-09-30): the other reason a pop pays
+  // more. Lessons without a tab sit beside their kin.
   /**
    * The worked example of the rule the registry runs on: **where a card and
    * the manual say one rule differently, the manual's sentence wins.** Its
@@ -260,6 +279,7 @@ export const LESSONS: readonly Lesson[] = [
    */
   {
     id: 'ripe',
+    tab: 'start',
     icon: TILE_ICON,
     figure: 'ripen',
     beats: [
@@ -283,21 +303,19 @@ export const LESSONS: readonly Lesson[] = [
       },
     ],
   },
-  /*
-   * The two ways to spend a pocket, side by side (2026-08-30).
-   *
-   * Both wear the mark their BUTTON wears — Marc: *"make em icons, associate in
-   * how to play and cards too"* — so a flame on the action bar and the flame at
-   * the head of this section are the same shape saying the same thing, and the
-   * receipt a burn leaves wears it a third time.
-   *
-   * SACRIFICE had no lesson at all until this: the button has been on the board
-   * since Stage 3 and nothing in either language said what pressing it does.
-   * Its sentences are written from the DIALS, so a world where burning pays
-   * nothing says nothing.
-   */
+  {
+    id: 'worth',
+    tab: 'start',
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.worth.core }],
+  },
+  {
+    id: 'pocket',
+    tab: 'start',
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pocket.core }],
+  },
   {
     id: 'pop',
+    tab: 'start',
     icon: CONCEPT_ICON.pop,
     figure: 'pop',
     beats: [
@@ -317,6 +335,64 @@ export const LESSONS: readonly Lesson[] = [
       { say: (_t, _theme, s) => s.lesson.pop.when },
     ],
   },
+  /**
+   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four).
+   *
+   * Each is a rule the engine enforces that no manual surface stated — the
+   * words existed behind a tap (`statNote`, `describeHexOf`) and nowhere a
+   * reader could browse. `costRise`, `field` and `lens` are teach ids, so
+   * their sections grow into the manual when their toast speaks; `reach`
+   * prints for everyone.
+   */
+  {
+    id: 'costRise',
+    tab: 'start',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.costRise.core },
+      // The curve's direction can be flattened (`costRisesEvery: 0`), and
+      // then the clock sentence is not spoken: a run that never gets dearer
+      // is not told it does.
+      {
+        at: 'core',
+        say: (t, _theme, s) => (t.costRisesEvery > 0 ? s.lesson.costRise.rises : null),
+      },
+      {
+        at: 'detail',
+        say: (t, _theme, s) =>
+          t.costRisesEvery > 0
+            ? t.costGrace > 0
+              ? s.lesson.costRise.curveGrace(t.baseCost, t.costGrace, t.costRisesEvery)
+              : s.lesson.costRise.curvePlain(t.costRisesEvery)
+            : null,
+      },
+    ],
+  },
+  {
+    id: 'sizeBonus',
+    tab: 'start',
+    beats: [
+      {
+        at: 'core',
+        say: (t, _theme, s) =>
+          t.harvestSizeCap > 0
+            ? s.lesson.sizeBonus.coreCapped(t.harvestSizeCap)
+            : s.lesson.sizeBonus.core,
+      },
+    ],
+  },
+  /*
+   * The two ways to spend a pocket, side by side (2026-08-30).
+   *
+   * Both wear the mark their BUTTON wears — Marc: *"make em icons, associate in
+   * how to play and cards too"* — so a flame on the action bar and the flame at
+   * the head of this section are the same shape saying the same thing, and the
+   * receipt a burn leaves wears it a third time.
+   *
+   * SACRIFICE had no lesson at all until this: the button has been on the board
+   * since Stage 3 and nothing in either language said what pressing it does.
+   * Its sentences are written from the DIALS, so a world where burning pays
+   * nothing says nothing.
+   */
   {
     id: 'sacrifice',
     icon: CONCEPT_ICON.sacrifice,
@@ -334,8 +410,31 @@ export const LESSONS: readonly Lesson[] = [
       },
     ],
   },
-  { id: 'pocket', beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.pocket.core }] },
-  { id: 'worth', beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.worth.core }] },
+  {
+    id: 'stone',
+    icon: CONCEPT_ICON.stone,
+    beats: [
+      {
+        at: 'core',
+        say: (t, theme, s) =>
+          t.redAshMatches
+            ? s.lesson.stone.coreAsh(namesOf(theme, s.locale).red)
+            : s.lesson.stone.core,
+      },
+    ],
+  },
+  {
+    id: 'reach',
+    tab: 'play',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.reach.core },
+      {
+        at: 'core',
+        say: (t, _theme, s) =>
+          t.distanceStep > 0 ? s.lesson.reach.multiplier(t.distanceStep) : null,
+      },
+    ],
+  },
   {
     id: 'cache',
     icon: LANDMARK_ICON.cache,
@@ -406,62 +505,8 @@ export const LESSONS: readonly Lesson[] = [
     beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.find.core }],
   },
   {
-    id: 'stone',
-    icon: CONCEPT_ICON.stone,
-    beats: [
-      {
-        at: 'core',
-        say: (t, theme, s) =>
-          t.redAshMatches
-            ? s.lesson.stone.coreAsh(namesOf(theme, s.locale).red)
-            : s.lesson.stone.core,
-      },
-    ],
-  },
-  /**
-   * The two rarities, and the sentence they share.
-   *
-   * "A placed rare tile wears a star" is true of both and belongs to neither,
-   * so both carry it — a MAGIC card that did not say it would be teaching half
-   * a rule. The manual's RARE TILES section is COMPOSED of these two lessons
-   * rather than being one of them, so it prints each core once and the shared
-   * sentence once; sections were never one-lesson-shaped, and this is the pair
-   * that proves it.
-   */
-  {
-    id: 'rare',
-    ink: 'ink-magic',
-    icon: TILE_ICON,
-    figure: 'rare',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.rare.core },
-      { say: (_t, _theme, s) => s.rareStar },
-      { at: 'card', say: (_t, _theme, s) => s.rareCard },
-    ],
-  },
-  {
-    id: 'rareUnique',
-    ink: 'ink-unique',
-    icon: TILE_ICON,
-    figure: 'rare',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.rareUnique.core },
-      { say: (_t, _theme, s) => s.rareStar },
-      { at: 'card', say: (_t, _theme, s) => s.rareCard },
-    ],
-  },
-  {
-    id: 'luck',
-    icon: CONCEPT_ICON.luck,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.luck.core }],
-  },
-  {
-    id: 'relic',
-    icon: CONCEPT_ICON.relic,
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.relic.core }],
-  },
-  {
     id: 'bounty',
+    tab: 'play',
     icon: LANDMARK_ICON.site,
     beats: [
       {
@@ -484,6 +529,7 @@ export const LESSONS: readonly Lesson[] = [
    */
   {
     id: 'caravan',
+    tab: 'play',
     icon: CONCEPT_ICON.caravan,
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.caravan.core },
@@ -512,6 +558,83 @@ export const LESSONS: readonly Lesson[] = [
       })),
     ],
   },
+  {
+    id: 'field',
+    tab: 'play',
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.field.core }],
+  },
+  {
+    id: 'lens',
+    tab: 'play',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.lens.core },
+      // The invitation is the toast's own sentence (`lensHint`), so the
+      // manual and the drip cannot describe the gesture two ways.
+      { say: (_t, _theme, s) => s.lensHint },
+    ],
+  },
+  {
+    id: 'luck',
+    tab: 'hand',
+    icon: CONCEPT_ICON.luck,
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.luck.core }],
+  },
+  /**
+   * The two rarities, and the sentence they share.
+   *
+   * "A placed rare tile wears a star" is true of both and belongs to neither,
+   * so both carry it — a MAGIC card that did not say it would be teaching half
+   * a rule. The manual's RARE TILES section is COMPOSED of these two lessons
+   * rather than being one of them, so it prints each core once and the shared
+   * sentence once; sections were never one-lesson-shaped, and this is the pair
+   * that proves it.
+   */
+  {
+    id: 'rare',
+    tab: 'hand',
+    ink: 'ink-magic',
+    icon: TILE_ICON,
+    figure: 'rare',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.rare.core },
+      { say: (_t, _theme, s) => s.rareStar },
+      { at: 'card', say: (_t, _theme, s) => s.rareCard },
+    ],
+  },
+  {
+    id: 'rareUnique',
+    tab: 'hand',
+    ink: 'ink-unique',
+    icon: TILE_ICON,
+    figure: 'rare',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.rareUnique.core },
+      { say: (_t, _theme, s) => s.rareStar },
+      { at: 'card', say: (_t, _theme, s) => s.rareCard },
+    ],
+  },
+  {
+    id: 'stash',
+    tab: 'hand',
+    figure: 'stash',
+    beats: [
+      {
+        at: 'core',
+        say: (t, _theme, s) =>
+          t.holdSlots > 1 ? s.lesson.stash.coreMany(t.holdSlots) : s.lesson.stash.coreOne,
+      },
+      // The manual's second line, which the glossary's version had shortened
+      // to "Held tiles survive a redraw." — true, and missing the reason
+      // anybody would care.
+      { say: (_t, _theme, s) => s.lesson.stash.more },
+    ],
+  },
+  {
+    id: 'relic',
+    tab: 'hand',
+    icon: CONCEPT_ICON.relic,
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.relic.core }],
+  },
   /**
    * THE FOUR GROUNDS (2026-09-30): Ashwake 1's card, built at last. Marc,
    * 2026-08-27: _"teach all tiles at one in a beautiful tip"_. One card, not
@@ -531,88 +654,6 @@ export const LESSONS: readonly Lesson[] = [
         const text = colourLesson(colour, t, theme, s);
         return text === null ? [] : [{ colour, text }];
       }),
-  },
-  {
-    id: 'stash',
-    figure: 'stash',
-    beats: [
-      {
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.holdSlots > 1 ? s.lesson.stash.coreMany(t.holdSlots) : s.lesson.stash.coreOne,
-      },
-      // The manual's second line, which the glossary's version had shortened
-      // to "Held tiles survive a redraw." — true, and missing the reason
-      // anybody would care.
-      { say: (_t, _theme, s) => s.lesson.stash.more },
-    ],
-  },
-  {
-    id: 'sizeBonus',
-    beats: [
-      {
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.harvestSizeCap > 0
-            ? s.lesson.sizeBonus.coreCapped(t.harvestSizeCap)
-            : s.lesson.sizeBonus.core,
-      },
-    ],
-  },
-  /**
-   * THE FOUR SECTIONS THE MANUAL OWED (2026-09-03, Marc: all four).
-   *
-   * Each is a rule the engine enforces that no manual surface stated — the
-   * words existed behind a tap (`statNote`, `describeHexOf`) and nowhere a
-   * reader could browse. `costRise`, `field` and `lens` are teach ids, so
-   * their sections grow into the manual when their toast speaks; `reach`
-   * prints for everyone.
-   */
-  {
-    id: 'costRise',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.costRise.core },
-      // The curve's direction can be flattened (`costRisesEvery: 0`), and
-      // then the clock sentence is not spoken: a run that never gets dearer
-      // is not told it does.
-      {
-        at: 'core',
-        say: (t, _theme, s) => (t.costRisesEvery > 0 ? s.lesson.costRise.rises : null),
-      },
-      {
-        at: 'detail',
-        say: (t, _theme, s) =>
-          t.costRisesEvery > 0
-            ? t.costGrace > 0
-              ? s.lesson.costRise.curveGrace(t.baseCost, t.costGrace, t.costRisesEvery)
-              : s.lesson.costRise.curvePlain(t.costRisesEvery)
-            : null,
-      },
-    ],
-  },
-  {
-    id: 'reach',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.reach.core },
-      {
-        at: 'core',
-        say: (t, _theme, s) =>
-          t.distanceStep > 0 ? s.lesson.reach.multiplier(t.distanceStep) : null,
-      },
-    ],
-  },
-  {
-    id: 'field',
-    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.field.core }],
-  },
-  {
-    id: 'lens',
-    beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.lens.core },
-      // The invitation is the toast's own sentence (`lensHint`), so the
-      // manual and the drip cannot describe the gesture two ways.
-      { say: (_t, _theme, s) => s.lensHint },
-    ],
   },
 ];
 

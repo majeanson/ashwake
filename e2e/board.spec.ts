@@ -1686,7 +1686,7 @@ test('POP wears one mark, on the bar, in the manual and on the card', async ({ p
    * SACRIFICE was the second half of this test until 2026-09-03, when Marc
    * cut the mechanic entirely (`burnRelics`/`burnLuck` both 0 in `TUNING`
    * now — see `LOG.md`). The bar button, card receipt and manual section
-   * (`Manual.tsx` SECTIONS) are all gone with it, so this only has POP left
+   * (`LESSONS` tabs) are all gone with it, so this only has POP left
    * to check — a positive assertion that the bar button is gone stands in
    * for what used to be a mark comparison.
    */
