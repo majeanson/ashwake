@@ -414,16 +414,41 @@ export const LESSONS: readonly Lesson[] = [
    * dismissal tells both `ripe` and `pop` (`toldBy`).
    */
   {
+    id: 'ripe',
+    tab: 'start',
+    figure: 'ripen',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.ripe.ripens },
+      { at: 'core', say: (_t, _theme, s) => s.lesson.ripe.pocket },
+      { say: (_t, _theme, s) => s.lesson.ripe.worth },
+      {
+        say: (t, theme, s) =>
+          t.redAshMatches
+            ? s.lesson.ripe.surroundsAsh(namesOf(theme, s.locale).red)
+            : s.lesson.ripe.surrounds,
+      },
+      // First contact only: the card fires at the first ripe tile, where the
+      // player has not read the pocket's price yet.
+      { at: 'card', say: (_t, _theme, s) => s.lesson.ripe.pocketCard },
+    ],
+    rowHeads: (s) => {
+      const r = s.lesson.ripe.row;
+      return [{ key: 'ripeEdge', name: r.ripeEdge.name, terms: r.ripeEdge.terms }];
+    },
+    // The ripe tile's ring; the sentence leads with its own name.
+    rows: (_t, _theme, s) => [
+      { key: 'ripeEdge', ring: 'ripe', text: s.lesson.ripe.row.ripeEdge.core },
+    ],
+  },
+  {
     id: 'pop',
     tab: 'start',
     icon: CONCEPT_ICON.pop,
     figure: 'pop',
-    manualFigure: 'ripen',
     beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.pop.ripens },
-      { at: 'core', say: (_t, _theme, s) => s.lesson.pop.pocket },
       { at: 'core', say: (_t, _theme, s) => s.lesson.pop.core },
-      { say: (_t, _theme, s) => s.lesson.pop.worth },
+      { say: (_t, _theme, s) => s.lesson.pop.paid },
+      { say: (_t, _theme, s) => s.lesson.pop.wait },
       // The draw lean, findable by a manual reader (2026-09-03). It was said
       // only in the old `ripe.cardLean` — a first-contact sentence the manual never
       // prints — under the same condition this beat keeps.
@@ -437,20 +462,10 @@ export const LESSONS: readonly Lesson[] = [
       // once could never see again, on the one door that exists to explain
       // POP.
       { say: (_t, _theme, s) => s.lesson.pop.when },
-      {
-        say: (t, theme, s) =>
-          t.redAshMatches
-            ? s.lesson.pop.surroundsAsh(namesOf(theme, s.locale).red)
-            : s.lesson.pop.surrounds,
-      },
-      // First contact only: the card fires at the first ripe tile, where the
-      // player has not read the pocket's price yet.
-      { at: 'card', say: (_t, _theme, s) => s.lesson.pop.pocketCard },
     ],
     rowHeads: (s) => {
       const r = s.lesson.pop.row;
       return [
-        { key: 'ripeEdge', name: r.ripeEdge.name, terms: r.ripeEdge.terms },
         { key: 'stone', name: r.stone.name, terms: r.stone.terms },
         { key: 'sizeBonus', name: r.sizeBonus.name, terms: r.sizeBonus.terms },
         { key: 'reach', name: r.reach.name, terms: r.reach.terms },
@@ -459,8 +474,6 @@ export const LESSONS: readonly Lesson[] = [
     rows: (t, theme, s) => {
       const r = s.lesson.pop.row;
       return [
-        // The ripe tile's ring; the sentence leads with its own name.
-        { key: 'ripeEdge', ring: 'ripe', text: r.ripeEdge.core },
         {
           key: 'stone',
           ground: 'stone',

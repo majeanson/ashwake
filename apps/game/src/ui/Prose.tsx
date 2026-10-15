@@ -19,8 +19,8 @@ const TERM_MARK: Partial<Record<LessonId, IconName>> = {
 };
 
 /**
- * POP is also the lesson of POCKET, WORTH and RIPENS (2026-10-13), and only the
- * verb is the button: those three open the same lesson and wear no mark.
+ * Only POP's verb is the button: its row words (STONE, SIZE BONUS) open the same
+ * lesson and wear no mark.
  */
 const wearsMark = (id: LessonId, term: string, s: Strings): boolean =>
   id !== 'pop' || s.lesson.pop.verb.includes(term.toLocaleUpperCase(s.locale));

@@ -244,35 +244,33 @@ describe('the schedule covers every moment (2026-10-13)', () => {
   it('has one slot per teachable id, apart from the two written by the first pop and run and the companions a card tells', () => {
     const ids = SCHEDULE.map((s) => s.id);
     expect(new Set(ids).size, 'a duplicate slot').toBe(ids.length);
-    // The ledger keeps `pop` (a device that holds it must still decode), but the
-    // walk has ONE card for ripening and popping now: RIPE's, which tells `pop`.
     // This list is the whole of the exception, so a moment dropped from the
     // schedule by accident is not mistaken for one dropped on purpose.
     const companions = SCHEDULE.flatMap((s) => s.tells ?? []);
-    expect(companions).toEqual(['pop', 'luck']);
-    // `luck` has a slot of its own (the tour's card); only `pop` is a companion alone.
-    expect(companions.filter((id) => !ids.includes(id))).toEqual(['pop']);
+    expect(companions).toEqual(['luck']);
+    // `luck` has a slot of its own (the tour's card).
+    expect(companions.filter((id) => !ids.includes(id))).toEqual([]);
     expect(new Set<string>([...ids, 'walked', 'toured', ...companions])).toEqual(
       new Set<string>(TEACH_IDS),
     );
-    expect(ids).not.toContain('pop');
   });
 
-  it('puts the pop family under POP and the expedition’s moments under THE EXPEDITION', () => {
-    expect([...momentsOf('pop')].sort()).toEqual(['ripe']);
+  it('puts RIPE and POP under their own lessons and the expedition’s moments under THE EXPEDITION', () => {
+    expect([...momentsOf('ripe')].sort()).toEqual(['ripe']);
+    expect([...momentsOf('pop')].sort()).toEqual(['pop']);
     expect([...momentsOf('expedition')].sort()).toEqual(['goal', 'place', 'story', 'wall']);
-    expect(opensAt('ripe')).toEqual({ lesson: 'pop' });
+    expect(opensAt('ripe')).toEqual({ lesson: 'ripe' });
+    expect(opensAt('pop')).toEqual({ lesson: 'pop' });
     expect(opensAt('wall')).toEqual({ lesson: 'expedition', row: 'wall' });
   });
 
-  it('tells POP with the one walk card: ripe tells pop, and nothing else does', () => {
+  it('tells RIPE and POP with a card each: the walk has two short ones, not one wall', () => {
     const { board } = destinations();
-    expect(toldBy('ripe', board)).toEqual(['ripe', 'pop']);
-    const device = toldBy('ripe', board).reduce(told, EMPTY_PROGRESS);
-    expect(device.met).toEqual(['ripe', 'pop']);
-    // No second card for the pop: with RIPE told the walk goes on to the pop.
+    expect(toldBy('ripe', board)).toEqual(['ripe']);
+    expect(toldBy('pop', board)).toEqual(['pop']);
+    // With RIPE told the walk goes on to the pop, on the first pocket that can be cashed.
     const now = { ...momentAt(3), hud: { ...momentAt(3).hud, canHarvest: true } };
-    expect(nextLesson(now, taughtExcept('pop'))).toBeNull();
+    expect(nextLesson(now, taughtExcept('pop'))?.id).toBe('pop');
   });
 
   it('tells LUCK with the purse card, so the tour’s LUCK card does not repeat it', () => {

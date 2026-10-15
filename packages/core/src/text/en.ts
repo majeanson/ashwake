@@ -96,19 +96,17 @@ export const STRINGS_EN: Strings = {
      * REACH). The sentences did not move, except that RIPE's two first-contact
      * sentences are gone: the core, the lean and the card beats cover them.
      */
-    pop: {
-      name: 'POP',
-      terms: ['POCKET', 'RIPENS', 'WORTH', 'POP'],
-      verb: ['POP'],
+    /** RIPE and POP were one lesson from 2026-10-13 to 2026-10-14; the card was
+     *  a wall of text (Marc), so they are two again, each shorter. */
+    ripe: {
+      name: 'RIPE',
+      terms: ['POCKET', 'RIPENS', 'WORTH'],
       ripens:
         'Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it.',
       pocket: 'A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one.',
       pocketCard: 'Tap any ripe tile to price its pocket; the buttons show what it pays.',
-      core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
       worth:
-        'WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile. A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.',
-      lean: 'POP also leans your next draws toward the colour you popped.',
-      when: 'Small and often buys LUCK and steers your draws. Big and late buys tiles and score.',
+        'WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile.',
       surroundsAsh: (red) =>
         `Stone, walls and the map’s edge all surround. Only ${red} counts stone as a match.`,
       surrounds: 'Stone, walls and the map’s edge all surround; none of them match.',
@@ -118,6 +116,18 @@ export const STRINGS_EN: Strings = {
           terms: [],
           core: 'RIPE edge: that tile is ready to harvest.',
         },
+      },
+    },
+    pop: {
+      name: 'POP',
+      terms: ['POP'],
+      verb: ['POP'],
+      core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score.',
+      paid: 'A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.',
+      wait: 'Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
+      lean: 'POP also leans your next draws toward the colour you popped.',
+      when: 'Small and often buys LUCK and steers your draws. Big and late buys tiles and score.',
+      row: {
         stone: {
           name: 'STONE',
           terms: ['STONE'],

@@ -260,7 +260,7 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
      */
     it('pins POP, THE EXPEDITION and CARAVAN: names, terms, lessons, cards, figures and rows', () => {
       const out: Record<string, string | readonly string[]> = {};
-      for (const id of ['expedition', 'pop', 'caravan'] as const) {
+      for (const id of ['expedition', 'ripe', 'pop', 'caravan'] as const) {
         const lesson = LESSONS.find((l) => l.id === id);
         if (lesson === undefined) throw new Error(`${id} is gone`);
         out[`${id} · name`] = s.lesson[id].name;

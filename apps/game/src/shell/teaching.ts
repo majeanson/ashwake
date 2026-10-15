@@ -109,18 +109,17 @@ type Slot = {
   readonly after?: TeachId;
   /**
    * Other moments that dismissing this card tells with it (2026-10-13), for a
-   * card that delivers two. The walk's RIPE card is POP's whole first contact —
-   * ripening, the pocket, the pop — so it tells `pop` as well, and there is no
-   * second card moments later. The purse's card is LUCK's, so it tells `luck`.
-   * `TEACH_IDS` keeps `pop` for the ledgers that hold it; `teaching.test.ts`
-   * lists the companions explicitly.
+   * card that delivers two. The purse's card is LUCK's, so it tells `luck`.
+   * (The walk's RIPE card told `pop` too until 2026-10-14, when the two cards
+   * became short and separate again.) `teaching.test.ts` lists the companions
+   * explicitly.
    */
   readonly tells?: readonly TeachId[];
   /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
   readonly phase?: 'walk' | 'tour';
   /**
    * Present (as `false`) when the pace never holds this back. The opening
-   * beats come before there is a pace to keep; RIPE (which is POP's card too) is the idea
+   * beats come before there is a pace to keep; RIPE and POP are the two ideas
    * the game cannot be played without, and waiting four placements to hear
    * what a ripe tile is would be the confusion the gate exists to cure; THE
    * FOUR GROUNDS is what the first placement is a choice between, so it is told
@@ -253,14 +252,14 @@ export const SCHEDULE: readonly Slot[] = [
     when: ({ placed, board }) => !placed && board.cells.some((c) => c.legal),
     line: (_now, _t, _theme, s) => s.coach.place,
   },
-  // THE WALK'S ONE POP CARD (2026-10-13, Marc): MÛR and RÉCOLTER were two cards
-  // moments apart. The first ripe tile raises POP's card, which teaches ripening,
-  // the pocket and the pop together, and its dismissal tells `pop` too.
+  // TWO SHORT CARDS, back to back (2026-10-14, Marc: the one merged card was a
+  // wall of text): the first ripe tile raises RIPE's, and a pocket that can be
+  // cashed raises POP's right behind it. They are two lessons again, so each
+  // card is the length of its concept.
   {
     id: 'ripe',
     as: 'card',
-    opens: { lesson: 'pop' },
-    tells: ['pop'],
+    opens: { lesson: 'ripe' },
     phase: 'walk',
     paced: false,
     // `target` and `when` differ here on purpose: the moment is the HUD's count
@@ -268,6 +267,14 @@ export const SCHEDULE: readonly Slot[] = [
     // pins that they agree over real boards.
     when: ({ hud }) => hud.ripeCount > 0,
     target: (board) => board.cells.find((c) => c.ripe)?.key ?? null,
+  },
+  {
+    id: 'pop',
+    as: 'card',
+    opens: { lesson: 'pop' },
+    phase: 'walk',
+    paced: false,
+    when: ({ hud }) => hud.canHarvest,
   },
   // The caravan's card, the first time it is IN TOWN with a pocket to try
   // (2026-09-30). It is a free-phase card, so the walk's POP card has always
@@ -472,7 +479,7 @@ export const momentsOf = (lesson: LessonId): readonly TeachId[] =>
  * (2026-10-13). Usually the one: but THE MAP's card tells the concept AND the
  * kind of destination it showed, so that kind does not come back as a chip;
  * and a kind's card forced on the tour (a territory) tells the concept it
- * belongs to, because the player has now seen the map.  A card with `tells` (the walk's RIPE card, which is POP's too)
+ * belongs to, because the player has now seen the map.  A card with `tells` (the purse's, which is LUCK's too)
  * tells its companions. A toast tells only itself.
  */
 export function toldBy(id: TeachId, board: BoardView): readonly TeachId[] {

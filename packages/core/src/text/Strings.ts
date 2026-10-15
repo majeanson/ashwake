@@ -52,34 +52,47 @@ type LessonStrings = {
     };
   };
   /**
-   * POP (2026-10-13): ripening, the pocket, a tile's worth, the pop itself and
-   * what it leaves behind are ONE concept (they were RIPE, POCKET, WORTH, POP,
-   * SIZE BONUS, STONE and REACH). The first four sentences are the beats; the
-   * marks and numbers around them are its rows.
+   * RIPE (2026-10-14, Marc: the merged card was a wall of text): the half of
+   * the old POP lesson that is about a TILE — it ripens when surrounded, shows
+   * its worth, and touches its ripe neighbours in a pocket. What a pop does with
+   * a pocket is POP's.
    */
-  readonly pop: LessonHead & {
-    /** The inflections of the verb, which wear the button's mark in prose
-     *  (`Prose`'s TERM_MARK): a subset of `terms`. */
-    readonly verb: readonly string[];
+  readonly ripe: LessonHead & {
     /** A tile ripens when surrounded, and shows its worth. */
     readonly ripens: string;
-    /** What a pocket is: the first two sentences of the old POCKET lesson. */
+    /** What a pocket is. */
     readonly pocket: string;
     /** First contact only: tap a ripe tile to price its pocket. */
     readonly pocketCard: string;
-    readonly core: string;
+    /** What a tile's worth counts. */
     readonly worth: string;
-    /** The draw lean, where a manual reader can find it (2026-09-03). Spoken
-     *  only while pops pay luck and bias draws. */
-    readonly lean: string;
-    /** The timing choice, small-and-often against big-and-late (2026-09-04). */
-    readonly when: string;
     /** What surrounds a ripening tile besides tiles; `red` counts stone. */
     readonly surroundsAsh: (red: string) => string;
     readonly surrounds: string;
     readonly row: {
       /** The ripe tile's ring; its sentence leads with its own name. */
       readonly ripeEdge: LessonHead & { readonly core: string };
+    };
+  };
+  /**
+   * POP (2026-10-13, split 2026-10-14): what cashing a ripe pocket pays and
+   * leaves behind. Ripening and the pocket are RIPE's.
+   */
+  readonly pop: LessonHead & {
+    /** The inflections of the verb, which wear the button's mark in prose
+     *  (`Prose`'s TERM_MARK): a subset of `terms`. */
+    readonly verb: readonly string[];
+    readonly core: string;
+    /** What a pop scores: the pocket's worth added up. */
+    readonly paid: string;
+    /** Waiting grows the pocket and costs tiles. */
+    readonly wait: string;
+    /** The draw lean, where a manual reader can find it (2026-09-03). Spoken
+     *  only while pops pay luck and bias draws. */
+    readonly lean: string;
+    /** The timing choice, small-and-often against big-and-late (2026-09-04). */
+    readonly when: string;
+    readonly row: {
       readonly stone: LessonHead & {
         readonly coreAsh: (red: string) => string;
         readonly core: string;

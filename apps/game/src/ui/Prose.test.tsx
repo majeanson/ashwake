@@ -32,7 +32,7 @@ describe('prose', () => {
 
     expect(onTerm).toHaveBeenCalledTimes(1);
     // The id is the core's, not a string this component invented.
-    expect(onTerm.mock.calls[0]?.[0]).toBe('pop');
+    expect(onTerm.mock.calls[0]?.[0]).toBe('ripe');
   });
 
   it('leaves prose alone where there is nothing to open', () => {
@@ -106,8 +106,8 @@ describe('the words that are also buttons wear the button’s mark (2026-10-12)'
     const french = render(<Prose text="RÉCOLTE une poche et dépense de la CHANCE." s={fr} />);
     expect(french.container.querySelectorAll('.term-mark svg')).toHaveLength(2);
 
-    // POP is also the lesson of RIPENS, POCKET and WORTH (2026-10-13): they open
-    // it, and wear no mark, because only the verb is the button.
+    // RIPENS, POCKET and WORTH are RIPE's words: they wear no mark, because
+    // only the verb is the button.
     const plain = render(<Prose text="A tile RIPENS in a POCKET of known WORTH." s={s} />);
     expect(plain.container.querySelectorAll('.term-mark')).toHaveLength(0);
     const frenchPlain = render(<Prose text="Une POCHE MÛRIT; sa VALEUR s’affiche." s={fr} />);
@@ -123,8 +123,8 @@ describe('the words that are also buttons wear the button’s mark (2026-10-12)'
 describe('a term that names the lesson it sits in is not a link (2026-10-13)', () => {
   it('draws it as plain inked text, and still links every other lesson', () => {
     const onTerm = vi.fn();
-    render(<Prose text="A tile RIPENS; spend LUCK." s={s} onTerm={onTerm} within="pop" />);
-    // RIPENS is POP's own word: text, not a button.
+    render(<Prose text="A tile RIPENS; spend LUCK." s={s} onTerm={onTerm} within="ripe" />);
+    // RIPENS is RIPE's own word: text, not a button.
     expect(screen.queryByRole('button', { name: 'RIPENS' })).toBeNull();
     expect(screen.getByText('RIPENS')).toBeInTheDocument();
     // LUCK is another lesson's, so it is still tappable.
@@ -142,7 +142,7 @@ describe('a term that names the lesson it sits in is not a link (2026-10-13)', (
         text={'It RIPENS.\nIt RIPENS again.'}
         s={s}
         onTerm={() => undefined}
-        within="pop"
+        within="ripe"
       />,
     );
     expect(screen.queryAllByRole('button')).toHaveLength(0);

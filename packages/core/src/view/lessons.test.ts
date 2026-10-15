@@ -333,7 +333,7 @@ describe('the lesson registry, whatever the language', () => {
       }
       if (lesson.figure !== undefined && lesson.rows !== undefined) both.push(lesson.id);
     }
-    expect(both, 'a lesson holds both a card figure and rows').toEqual(['pop']);
+    expect(both, 'a lesson holds both a card figure and rows').toEqual(['ripe', 'pop']);
     // A fired POP card is the picture; a card opened at STONE is the row.
     const pop = LESSONS.find((l) => l.id === 'pop')!;
     expect(cardDraws(pop, undefined)).toBe('figure');
@@ -622,48 +622,55 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       return found;
     };
     const pop = lesson('pop');
+    const ripe = lesson('ripe');
     const expedition = lesson('expedition');
 
     it('reads START as the expedition, the pop, then the run’s end', () => {
       expect(LESSONS.filter((l) => l.tab === 'start').map((l) => l.id)).toEqual([
         'expedition',
+        'ripe',
         'pop',
         'end',
       ]);
-      for (const gone of ['ripe', 'pocket', 'worth', 'sizeBonus', 'stone', 'reach', 'sacrifice'])
+      for (const gone of ['pocket', 'worth', 'sizeBonus', 'stone', 'reach', 'sacrifice'])
         expect(
           LESSONS.find((l) => l.id === gone),
           `${gone} is its own lesson again`,
         ).toBeUndefined();
     });
 
-    it('opens POP with ripening, the pocket and the pop, in that order, as its core', () => {
+    it('opens RIPE with ripening and the pocket as its core, and POP with the pop', () => {
+      const r = s.lesson.ripe;
       const p = s.lesson.pop;
-      expect(lessonCore(pop, TUNING, SETTLEMENT, s)).toBe(`${p.ripens} ${p.pocket} ${p.core}`);
+      expect(lessonCore(ripe, TUNING, SETTLEMENT, s)).toBe(`${r.ripens} ${r.pocket}`);
+      expect(lessonCore(pop, TUNING, SETTLEMENT, s)).toBe(p.core);
+      expect(lessonLines(ripe, TUNING, SETTLEMENT, s)).toContain(r.worth);
       const lines = lessonLines(pop, TUNING, SETTLEMENT, s);
-      expect(lines).toContain(p.worth);
-      expect(lines).toContain(p.when);
+      for (const line of [p.paid, p.wait, p.when]) expect(lines).toContain(line);
       // The tap-a-ripe-tile sentence is the card's alone.
-      expect(lines).not.toContain(p.pocketCard);
-      expect(lessonCardDefine(pop, TUNING, SETTLEMENT, s).endsWith(p.pocketCard)).toBe(true);
+      expect(lessonLines(ripe, TUNING, SETTLEMENT, s)).not.toContain(r.pocketCard);
+      expect(lessonCardDefine(ripe, TUNING, SETTLEMENT, s).endsWith(r.pocketCard)).toBe(true);
     });
 
     it('keeps the draw lean and the surrounds fork under the dials that speak them', () => {
       const p = s.lesson.pop;
+      const r = s.lesson.ripe;
       const lean = (t: Tuning) => lessonLines(pop, t, SETTLEMENT, s).includes(p.lean);
       expect(lean(TUNING)).toBe(TUNING.luckPerPop > 0 && TUNING.colourBiasDraws > 0);
       expect(lean({ ...TUNING, luckPerPop: 0 })).toBe(false);
-      const ash = lessonLines(pop, { ...TUNING, redAshMatches: true }, SETTLEMENT, s);
-      const plain = lessonLines(pop, { ...TUNING, redAshMatches: false }, SETTLEMENT, s);
-      expect(ash.some((l) => l.startsWith(p.surroundsAsh('').slice(0, 10)))).toBe(true);
-      expect(plain).toContain(p.surrounds);
-      expect(ash).not.toContain(p.surrounds);
+      const ash = lessonLines(ripe, { ...TUNING, redAshMatches: true }, SETTLEMENT, s);
+      const plain = lessonLines(ripe, { ...TUNING, redAshMatches: false }, SETTLEMENT, s);
+      expect(ash.some((l) => l.startsWith(r.surroundsAsh('').slice(0, 10)))).toBe(true);
+      expect(plain).toContain(r.surrounds);
+      expect(ash).not.toContain(r.surrounds);
     });
 
-    it('answers to POCKET, WORTH and the verb as one lesson, and to its rows’ words at their rows', () => {
+    it('answers to POCKET and WORTH as RIPE, the verb as POP, and to its rows’ words at their rows', () => {
       const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
       for (const term of s.lesson.pop.terms)
         expect(byTerm.get(term), term).toMatchObject({ id: 'pop' });
+      for (const term of s.lesson.ripe.terms)
+        expect(byTerm.get(term), term).toMatchObject({ id: 'ripe' });
       expect(byTerm.get(s.lesson.pop.row.stone.terms[0]!)).toMatchObject({
         id: 'pop',
         row: 'stone',
@@ -676,30 +683,32 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       for (const word of s.lesson.pop.verb) expect(s.lesson.pop.terms).toContain(word);
     });
 
-    it('lists the ripe edge, stone, the size bonus and reach as rows, each the sentence it was', () => {
+    it('lists the ripe edge under RIPE, and stone, the size bonus and reach under POP', () => {
       const r = s.lesson.pop.row;
+      const ripeRows = ripe.rows?.(TUNING, SETTLEMENT, s) ?? [];
+      expect(ripeRows.map((x) => x.key)).toEqual(['ripeEdge']);
+      expect(ripeRows[0]).toMatchObject({ ring: 'ripe', text: s.lesson.ripe.row.ripeEdge.core });
+      // The row whose sentence leads with its own name does not repeat it.
+      expect(ripeRows[0]?.name).toBeUndefined();
       const rows = pop.rows?.(TUNING, SETTLEMENT, s) ?? [];
-      expect(rows.map((x) => x.key)).toEqual(['ripeEdge', 'stone', 'sizeBonus', 'reach']);
-      expect(rows[0]).toMatchObject({ ring: 'ripe', text: r.ripeEdge.core });
-      expect(rows[1]).toMatchObject({ ground: 'stone', name: r.stone.name });
-      expect(rows[1]?.text).toBe(
+      expect(rows.map((x) => x.key)).toEqual(['stone', 'sizeBonus', 'reach']);
+      expect(rows[0]).toMatchObject({ ground: 'stone', name: r.stone.name });
+      expect(rows[0]?.text).toBe(
         TUNING.redAshMatches ? r.stone.coreAsh(namesOf(SETTLEMENT, s.locale).red) : r.stone.core,
       );
-      expect(rows[2]?.text).toBe(
+      expect(rows[1]?.text).toBe(
         TUNING.harvestSizeCap > 0
           ? r.sizeBonus.coreCapped(TUNING.harvestSizeCap)
           : r.sizeBonus.core,
       );
       // Reach states its multiplier only while the dial is on.
-      expect(rows[3]?.text).toBe(`${r.reach.core} ${r.reach.multiplier(TUNING.distanceStep)}`);
-      expect(pop.rows?.({ ...TUNING, distanceStep: 0 }, SETTLEMENT, s)[3]?.text).toBe(r.reach.core);
+      expect(rows[2]?.text).toBe(`${r.reach.core} ${r.reach.multiplier(TUNING.distanceStep)}`);
+      expect(pop.rows?.({ ...TUNING, distanceStep: 0 }, SETTLEMENT, s)[2]?.text).toBe(r.reach.core);
       // A row that prints a name prints the head’s.
       const heads = pop.rowHeads?.(s) ?? [];
       for (const row of rows)
         if (row.name !== undefined)
           expect(heads.find((h) => h.key === row.key)?.name).toBe(row.name);
-      // The row whose sentence leads with its own name does not repeat it.
-      expect(rows[0]?.name).toBeUndefined();
     });
 
     it('names every row term in its own row', () => {

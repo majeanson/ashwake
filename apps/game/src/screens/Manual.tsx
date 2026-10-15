@@ -265,9 +265,9 @@ export function Manual({ theme, s, keyboard, mode, met, open, onTerm, onBack }: 
           base="manual"
           growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
-          tabs={TABS.filter(
-            (id) => id !== 'grounds' || sectionsOf(id).some((l) => metHere(l, known)),
-          ).map((id) => ({
+          // A tab with nothing printed on this device yet is not offered: an
+          // empty MONDE was a tab you tapped to find a blank page.
+          tabs={TABS.filter((id) => sectionsOf(id).some((l) => metHere(l, known))).map((id) => ({
             id,
             label: s.ui.tabs[id],
             // A tab with sections still to unlock says so — see `Tab.grows`.

@@ -102,19 +102,18 @@ export const STRINGS_FR: Strings = {
      * PIERRE et PORTÉE). Les phrases n’ont pas bougé; les deux phrases d’accueil
      * de MÛR sont mortes, car le cœur, la suite et la carte les disent déjà.
      */
-    pop: {
-      name: 'RÉCOLTER',
-      terms: ['RÉCOLTER', 'RÉCOLTE', 'VALEUR', 'MÛRIT', 'POCHE'],
-      verb: ['RÉCOLTER', 'RÉCOLTE'],
+    /** MÛR et RÉCOLTER étaient une seule leçon du 2026-10-13 au 2026-10-14; la
+     *  carte était un mur de texte (Marc), alors elles sont deux de nouveau,
+     *  chacune plus courte. */
+    ripe: {
+      name: 'MÛR',
+      terms: ['VALEUR', 'MÛRIT', 'POCHE'],
       ripens: `Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR${D}: le nombre de voisines qui lui ressemblent.`,
       pocket:
         'Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup.',
       pocketCard:
         'Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.',
-      core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.`,
-      worth: `La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance${D}: la même couleur, ou une tuile rare passe-partout. Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.`,
-      lean: 'RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée.',
-      when: 'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
+      worth: `La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance${D}: la même couleur, ou une tuile rare passe-partout.`,
       surroundsAsh: (red) =>
         `La pierre, les murs et le bord de la carte entourent aussi. Seules ${red} comptent la pierre comme une ressemblance.`,
       surrounds: 'La pierre, les murs et le bord de la carte entourent aussi; aucun ne ressemble.',
@@ -124,6 +123,18 @@ export const STRINGS_FR: Strings = {
           terms: [],
           core: `Bord MÛR${D}: cette tuile est prête à récolter.`,
         },
+      },
+    },
+    pop: {
+      name: 'RÉCOLTER',
+      terms: ['RÉCOLTER', 'RÉCOLTE'],
+      verb: ['RÉCOLTER', 'RÉCOLTE'],
+      core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score.`,
+      paid: 'Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.',
+      wait: 'Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.',
+      lean: 'RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée.',
+      when: 'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
+      row: {
         stone: {
           name: 'PIERRE',
           terms: ['PIERRE'],

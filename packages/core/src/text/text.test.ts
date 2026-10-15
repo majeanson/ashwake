@@ -335,7 +335,7 @@ describe('Québec French', () => {
     // The glossary Marc set; spelled without the accent these would be the
     // words a term matcher never finds.
     expect(STRINGS_FR.lesson.stash.name).toBe('RÉSERVE');
-    expect(STRINGS_FR.lesson.pop.terms).toContain('MÛRIT');
+    expect(STRINGS_FR.lesson.ripe.terms).toContain('MÛRIT');
     expect(STRINGS_FR.lesson.pop.name).toBe('RÉCOLTER');
   });
 
