@@ -673,10 +673,12 @@ function Game() {
    * count with it, which `forgetEnding` below spends.
    */
   const { speaking, speakAfter, silence } = useSpeaking();
+  const [showBackUp, setShowBackUp] = useState(false);
   const forgetEnding = useCallback(() => {
     silence();
     setGained({ perks: [], unlocks: [] });
     setEndWorld(null);
+    setShowBackUp(false);
     setGoals([]);
     setStanding(null);
     setDailyTry(null);
@@ -1319,8 +1321,6 @@ function Game() {
    * walked. The state object is the identity: the reducer produced exactly one
    * for this ending.
    */
-  const [showBackUp, setShowBackUp] = useState(false);
-
   const banked = useRef<GameState | null>(null);
 
   useEffect(() => {
@@ -1535,7 +1535,7 @@ function Game() {
      * line, because neither has a world and neither is the moment to talk
      * about keeping one.
      */
-    if (!wasSaid('backUpNote') && after.world.runs >= BACK_UP_AFTER_RUNS) {
+    if (!session.detour && !wasSaid('backUpNote') && after.world.runs >= BACK_UP_AFTER_RUNS) {
       markSaid('backUpNote');
       setShowBackUp(true);
     }

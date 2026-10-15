@@ -331,6 +331,22 @@ redrew worthless hands). Forge pays about 3× either per point of luck (+33%).
 Cheaper prices (reroll 8, steer 15) take them to +11% and +10%. **Ruled
 2026-10-01: leave it.** All three pay, and forge being the strong one is fine.
 
+**Prepping the post-Session-C move found seven failures that are not
+snapshots (2026-10-15, dials applied then reverted, nothing shipped).**
+With `beaconHorizon 3`, `cachePays 10`, `costGrace 40`, `costRisesEvery 10`,
+`pointsPerPop 0.20`: (1) the shop's maxed `findSense` (3) equals the beacon
+horizon, breaking `progress.test.ts` "never out to the beacons" — cap it or cut
+a level; (2) the maxed `cachePays` (22 against the pinned 18) and the base
+`costRisesEvery` (10 against 22) no longer match the `PRE_REBALANCE` pins in
+`progress.test.ts`; (3) the chosen first world's cache lands at placement 10,
+past `learn.test.ts`'s 8, and three territory tests in `teaching.test.ts` fail
+with it, so the first world must be re-chosen (a first-minute change, so after
+Session C). Plus 12 snapshots to re-record and `sim.golden.txt`.
+
+**And the end screen's crossing (2026-10-15 audit):** `MODES.md:30` lists a
+crossing offer on the world ending, and `EndScreen.tsx` has none (the only
+offer is the card when the last shrine wakes). Doc or screen is wrong.
+
 ## 4. Watching — no action unless it happens again
 
 - **A run saved on 2026-09-29 shows the caravan's size in its price.** It
@@ -399,11 +415,14 @@ Cheaper prices (reroll 8, steer 15) take them to +11% and +10%. **Ruled
 
 ## 5. Housekeeping with a date on it
 
-- **On or after 2026-10-09: delete `claim.shrineDetour` and
-  `view.hex.shrineDetour` / `shrineDetourClaimed`** from both catalogues. They
-  are reachable only by a `?seed=` run saved before 2026-09-09 and resumed
-  after, and a month is generous. Left past that, the next dead-text sweep
-  re-adjudicates them from scratch.
+- **~~Delete `claim.shrineDetour` and `view.hex.shrineDetour` /
+  `shrineDetourClaimed`~~ — NOT TRUE, checked 2026-10-15; keep them.** The
+  entry said they were reachable only by a `?seed=` run saved before
+  2026-09-09. They are reachable by every `?seed=` visitor today:
+  `boot.ts` sets `detour` from the URL, `Session.detour` reaches
+  `claimsBetween` (`store.ts`) and `describeHexOf` (`App.tsx` `describe`), and
+  `receipts.ts` / `view.ts` read it for the shrine. `receipts.test.ts` ("says
+  what shrines ARE on a detour") covers the claim.
 
 ---
 
