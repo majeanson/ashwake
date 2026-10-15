@@ -10924,3 +10924,41 @@ ledger for that one opening and for nothing else. e2e: the three HOW TO PLAY ›
 and term specs now assert the card returns and that its own GOT IT moves on
 (`teaching.spec.ts`). **Not verified, Marc's:** the same on the phone, in
 French — the story card's COMMENT JOUER ›, then back.
+
+### Session 134 — RÉCOLTER is two concepts again, and a tab with nothing in it is not offered (2026-10-14)
+
+**Question: is the first ripe tile's card still a wall of text if MÛR and
+RÉCOLTER are two short ones?** Marc, from the phone, with a screenshot of the
+merged card (about 150 words): _"how to play monde is empty … and separate into
+two concepts, this is too big a wall of text. simplify and be concise (without
+missing info)"_. Asked which first contact he wanted; he chose two cards back to
+back over one card.
+
+**What changed.** Session 132's `pop` lesson is two lessons: `ripe` (MÛR: a tile
+ripens, the VALEUR, the POCHE, what surrounds, the ripe edge; its card ends with
+the tap-a-ripe-tile line; figure `ripen`) and `pop` (RÉCOLTER: what it pays, the
+cost of waiting, the draw lean, small-and-often against big-and-late; rows PIERRE,
+BONUS DE TAILLE, PORTÉE; figure `pop`). No sentence was dropped; "Une récolte
+marque la valeur totale…" moved to RÉCOLTER and the repeated "La VALEUR compte…"
+tail left the old card. `Slot.tells` no longer carries `pop`: `ripe` and `pop`
+are two slots, `pop` firing on `canHarvest` right behind `ripe`, so a fresh
+device sees 9 interrupting cards where it saw 8. The START tab reads
+L'EXPÉDITION, MÛR, RÉCOLTER, LA FIN DE LA PARTIE. The pin snapshots (en and fr-CA)
+are re-recorded for the split; the French ones are Marc's review surface.
+
+**The empty MONDE.** The manual grows with what a device has met, and MONDE holds
+only THE MAP and THE CARAVAN, so a fresh device had a tab that opened on a blank
+page. `Manual` now offers only the tabs with a printed section (GROUNDS already
+did).
+
+**e2e.** The push went green on `ci`, `smoke` and `deploy` and red on four
+`teaching.spec.ts` tests that encoded the one-card design. Rewritten for two
+cards. The second card only comes once the camera has landed from the first's
+trip and no refusal toast is up, so a test that taps the board in that window
+never sees it — the specs dismiss one card and WAIT for the next
+(`dismissOne`), and `clearCards` is not used where two cards are expected.
+
+**Verified.** 1576 unit tests; typecheck, lint, `pnpm sim`, sweep 0 findings,
+budget; `teaching.spec.ts` 16/16 on Chromium. **Not verified, and it is Marc's:**
+the two cards on the phone, in French — is RÉCOLTER's card (core, paid, wait,
+lean, when) short enough, or does `wait` belong in the manual's DETAILS fold?

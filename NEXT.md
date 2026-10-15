@@ -37,7 +37,7 @@ entity … uniformize and simplify … don't be afraid to change"_, `LOG.md`
 Session 132): thirty-three named ideas are nine concepts, one wording each,
 the manual derives from the registry, every concept name is tappable
 everywhere and every card opens the manual at its section. A fresh device
-sees 8 interrupting cards where it saw 11. Seven commits, `6489522` →
+sees 8 interrupting cards where it saw 11 (9 since 2026-10-14, when the one POP card became two short ones, MÛR then RÉCOLTER: `LOG.md` Session 134). Seven commits, `6489522` →
 `7e9b39a`, each green on the whole chain, pushed 2026-10-14 with a review pass
 (`LOG.md` Session 133, `89ac9d7`). Round twelve's
 sheet items describe the screen before this and are superseded: **round

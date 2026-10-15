@@ -13,9 +13,10 @@ LA PARTIE, CARAVANE, RÉSERVE — one wording each, in one registry
 (`view/lessons.ts`) that the manual, the fired cards, the chips, the term
 cards and the drip's one SCHEDULE table (`shell/teaching.ts`) all derive
 from; every concept name is tappable wherever it is printed and every card
-opens the manual at its own section (COMMENT JOUER ›). A fresh device sees 8
-interrupting cards where it saw 11 (site and relic are chips, MÛR and
-RÉCOLTER are one card — each Marc's ruling). One new ledger id, `map`, sealed
+opens the manual at its own section (COMMENT JOUER ›). A fresh device sees 9
+interrupting cards where it saw 11 (site and relic are chips — Marc's ruling;
+MÛR and RÉCOLTER were one card for a day and are two short ones again since
+2026-10-14, `LOG.md` Session 134). One new ledger id, `map`, sealed
 in `decodeProgress` for any save that met a landmark piecemeal; every old id
 survives as a delivery moment. Seven commits, `6489522` → `7e9b39a`, each
 green on typecheck, lint, the unit suite, the byte-identical golden sim,

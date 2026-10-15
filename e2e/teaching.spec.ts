@@ -1,5 +1,52 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { begin, clearCards, openMore, placeOneTile, tilesLeft, watchErrors } from './helpers';
+
+/**
+ * Dismiss the card on screen, then give the NEXT one time to arrive. A card
+ * that has a trip (RIPE's flies to the pocket) holds the one behind it until
+ * the camera lands, and a tap on the board in that window raises the refusal's
+ * toast, which holds it back again. Returns whether another card came.
+ */
+async function dismissOne(page: Page): Promise<boolean> {
+  await page.locator('.card-scrim button').last().click({ force: true });
+  await page.waitForTimeout(100);
+  try {
+    await page.locator('[data-card]').first().waitFor({ timeout: 3000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Place until the walk raises the card `id`, dismissing the cards in front of
+ * it ONE at a time (2026-10-14: RIPE's card and POP's now come back to back, and
+ * `clearCards` would clear both). Returns the card's locator.
+ */
+async function walkToCard(page: Page, id: string) {
+  const card = page.locator(`[data-card="${id}"]`);
+  let refused = false;
+  for (let i = 0; i < 40 && (await card.count()) === 0; i++) {
+    if ((await page.locator('[data-card]').count()) > 0) {
+      await dismissOne(page);
+      continue;
+    }
+    // The refusal's own toast holds the next card back until it has gone, so
+    // once refused, WAIT for the card rather than tapping again.
+    if (refused) {
+      await page.waitForTimeout(400);
+      continue;
+    }
+    try {
+      await placeOneTile(page, { keepCards: true });
+    } catch {
+      // A ripe pocket refuses the next placement; the card may still be coming.
+      refused = true;
+    }
+    await page.waitForTimeout(150);
+  }
+  return card;
+}
 
 /**
  * THE FIRST MINUTE, AFTER TWO STRANGERS (2026-10-12).
@@ -232,7 +279,7 @@ test('HOW TO PLAY opens on the game in two sentences, and its tabs run most impo
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the START tab is THE EXPEDITION, POP and THE RUN’S END, with the marks beside the rules that use them', async ({
+test('the START tab is THE EXPEDITION, RIPE, POP and THE RUN’S END, with the marks beside the rules that use them', async ({
   page,
 }) => {
   /*
@@ -252,8 +299,9 @@ test('the START tab is THE EXPEDITION, POP and THE RUN’S END, with the marks b
   const heads = await manual
     .locator('section.lesson > h2')
     .evaluateAll((els) => els.map((el) => (el.textContent ?? '').trim()));
-  expect(heads.slice(0, 3)).toEqual([
+  expect(heads.slice(0, 4)).toEqual([
     expect.stringMatching(/^THE EXPEDITION$|^L’EXPÉDITION$/),
+    expect.stringMatching(/^RIPE$|^MÛR$/),
     expect.stringMatching(/^POP$|^RÉCOLTER$/),
     expect.stringMatching(/^THE RUN’S END$|^LA FIN DE LA PARTIE$/),
   ]);
@@ -266,22 +314,25 @@ test('the START tab is THE EXPEDITION, POP and THE RUN’S END, with the marks b
   // The `place` figure under the rows.
   await expect(expedition.locator('figure')).toHaveCount(1);
 
-  const pop = manual.locator('section.lesson').nth(1);
-  for (const row of ['ripeEdge', 'stone', 'sizeBonus', 'reach'])
+  // RIPE: its ring row and the ripening picture. POP: what a pop leaves, and
+  // the pocket picture.
+  const ripe = manual.locator('section.lesson').nth(1);
+  await expect(ripe.locator('[data-row="ripeEdge"]')).toHaveCount(1);
+  await expect(ripe.locator('figure')).toHaveCount(1);
+  const pop = manual.locator('section.lesson').nth(2);
+  for (const row of ['stone', 'sizeBonus', 'reach'])
     await expect(pop.locator(`[data-row="${row}"]`), row).toHaveCount(1);
-  // Both of POP's pictures: the ripening one and the pocket.
-  await expect(pop.locator('figure')).toHaveCount(2);
+  await expect(pop.locator('figure')).toHaveCount(1);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the walked first run raises ONE card for ripening and popping, and none after the pop', async ({
+test('the walked first run raises RIPE’s card then POP’s, each once, and neither after the pop', async ({
   page,
 }) => {
   /*
-   * 2026-10-13, Marc: MÛR and RÉCOLTER were two cards moments apart. The first
-   * ripe tile raises POP's card (ripening, the pocket, the pop) and its
-   * dismissal tells both moments, so the pop that follows is a receipt and not
-   * a second lesson.
+   * 2026-10-14, Marc: the one merged card was a wall of text. The first ripe
+   * tile raises RIPE's short card and POP's follows right behind it; the pop
+   * that comes after is a receipt, not a third lesson.
    */
   const errors = watchErrors(page);
   await page.goto('/?seed=7');
@@ -303,14 +354,17 @@ test('the walked first run raises ONE card for ripening and popping, and none af
       refused = true;
     }
     await note();
-    await clearCards(page);
+    while ((await page.locator('[data-card]').count()) > 0) {
+      if (await dismissOne(page)) await note();
+    }
   }
   expect(refused, 'a ripe pocket never stopped the placing').toBe(true);
-  expect(
-    seen.filter((id) => id === 'lesson-pop'),
-    seen.join(' → '),
-  ).toHaveLength(1);
-  expect(seen, 'the old RIPE card came back').not.toContain('lesson-ripe');
+  const once = (id: string) => seen.filter((x) => x === id);
+  expect(once('lesson-ripe'), seen.join(' → ')).toHaveLength(1);
+  expect(once('lesson-pop'), seen.join(' → ')).toHaveLength(1);
+  expect(seen.indexOf('lesson-ripe'), 'POP came before RIPE').toBeLessThan(
+    seen.indexOf('lesson-pop'),
+  );
 
   await page
     .getByRole('button', { name: /POP|RÉCOLT/ })
@@ -322,10 +376,8 @@ test('the walked first run raises ONE card for ripening and popping, and none af
   }
   await placeOneTile(page, { keepCards: true });
   await note();
-  expect(
-    seen.filter((id) => id === 'lesson-pop'),
-    `POP's card came back after the pop: ${seen.join(' → ')}`,
-  ).toHaveLength(1);
+  expect(once('lesson-ripe'), `RIPE's card came back: ${seen.join(' → ')}`).toHaveLength(1);
+  expect(once('lesson-pop'), `POP's card came back: ${seen.join(' → ')}`).toHaveLength(1);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -414,16 +466,7 @@ test('HOW TO PLAY › on a fired lesson card lands on its section, and the card 
   await page.goto('/?seed=7');
   await begin(page);
 
-  const pop = page.locator('[data-card="lesson-pop"]');
-  for (let i = 0; i < 40 && (await pop.count()) === 0; i++) {
-    try {
-      await placeOneTile(page, { keepCards: true });
-    } catch {
-      break;
-    }
-    await page.waitForTimeout(150);
-    if ((await pop.count()) === 0) await clearCards(page);
-  }
+  const pop = await walkToCard(page, 'lesson-pop');
   await expect(pop, 'the walk never raised POP’s card').toHaveCount(1);
   await pop.locator('[data-action="card-manual"]').click();
 
@@ -453,16 +496,7 @@ test('a term tapped in a fired card opens its own card, and the fired card is ba
   await page.goto('/?seed=7');
   await begin(page);
 
-  const pop = page.locator('[data-card="lesson-pop"]');
-  for (let i = 0; i < 40 && (await pop.count()) === 0; i++) {
-    try {
-      await placeOneTile(page, { keepCards: true });
-    } catch {
-      break;
-    }
-    await page.waitForTimeout(150);
-    if ((await pop.count()) === 0) await clearCards(page);
-  }
+  const pop = await walkToCard(page, 'lesson-pop');
   await expect(pop, 'the walk never raised POP’s card').toHaveCount(1);
 
   await pop.locator('button.term').first().click();
