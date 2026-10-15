@@ -644,9 +644,12 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       const p = s.lesson.pop;
       expect(lessonCore(ripe, TUNING, SETTLEMENT, s)).toBe(`${r.ripens} ${r.pocket}`);
       expect(lessonCore(pop, TUNING, SETTLEMENT, s)).toBe(p.core);
-      expect(lessonLines(ripe, TUNING, SETTLEMENT, s)).toContain(r.worth);
+      // The card is the idea and the next move; the depth is the DETAILS fold.
+      expect(lessonLines(ripe, TUNING, SETTLEMENT, s)).not.toContain(r.worth);
+      expect(lessonDetail(ripe, TUNING, SETTLEMENT, s)).toContain(r.worth);
       const lines = lessonLines(pop, TUNING, SETTLEMENT, s);
-      for (const line of [p.paid, p.wait, p.when]) expect(lines).toContain(line);
+      for (const line of [p.wait, p.when]) expect(lines).toContain(line);
+      expect(lessonDetail(pop, TUNING, SETTLEMENT, s)).toContain(p.paid);
       // The tap-a-ripe-tile sentence is the card's alone.
       expect(lessonLines(ripe, TUNING, SETTLEMENT, s)).not.toContain(r.pocketCard);
       expect(lessonCardDefine(ripe, TUNING, SETTLEMENT, s).endsWith(r.pocketCard)).toBe(true);
@@ -655,11 +658,11 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     it('keeps the draw lean and the surrounds fork under the dials that speak them', () => {
       const p = s.lesson.pop;
       const r = s.lesson.ripe;
-      const lean = (t: Tuning) => lessonLines(pop, t, SETTLEMENT, s).includes(p.lean);
+      const lean = (t: Tuning) => lessonDetail(pop, t, SETTLEMENT, s).includes(p.lean);
       expect(lean(TUNING)).toBe(TUNING.luckPerPop > 0 && TUNING.colourBiasDraws > 0);
       expect(lean({ ...TUNING, luckPerPop: 0 })).toBe(false);
-      const ash = lessonLines(ripe, { ...TUNING, redAshMatches: true }, SETTLEMENT, s);
-      const plain = lessonLines(ripe, { ...TUNING, redAshMatches: false }, SETTLEMENT, s);
+      const ash = lessonDetail(ripe, { ...TUNING, redAshMatches: true }, SETTLEMENT, s);
+      const plain = lessonDetail(ripe, { ...TUNING, redAshMatches: false }, SETTLEMENT, s);
       expect(ash.some((l) => l.startsWith(r.surroundsAsh('').slice(0, 10)))).toBe(true);
       expect(plain).toContain(r.surrounds);
       expect(ash).not.toContain(r.surrounds);
@@ -730,7 +733,6 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
         ...s.lesson.expedition.lines,
       ]);
       expect(s.lesson.expedition.lines).toHaveLength(3);
-      expect(expedition.ungated).toBe(true);
       expect(expedition.manualFigure).toBe('place');
       expect(lessonTerms(expedition, s)).toEqual([]);
     });
@@ -755,5 +757,32 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       const byTerm = new Map(termsOf(s).map((c) => [c.term, c]));
       expect(byTerm.get(lessonTerms(caravan, s)[0]!)).toMatchObject({ id: 'caravan' });
     });
+  },
+);
+
+/**
+ * THE TUTORIAL IS SIMPLE AND DIRECT (2026-10-15, Marc). A first-contact card is
+ * the idea and the next move; the depth is the manual's DETAILS fold, which the
+ * book prints for everyone. The merged MÛR + RÉCOLTER card was about 170 words
+ * and was re-split once already, so the ceiling is a test, not a hope. THE
+ * EXPEDITION is exempt: it never fires as a card, it is the manual's opening
+ * section (the story and goal cards carry its two sentences).
+ */
+const CARD_WORDS = 75;
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
+  'a first-contact card stays short · %s',
+  (_l, s) => {
+    for (const lesson of LESSONS) {
+      if (lesson.id === 'expedition') continue;
+      for (const [tName, t] of [
+        ['TUNING', TUNING],
+        ['BARE_TUNING', BARE_TUNING],
+      ] as const) {
+        it(`${lesson.id} · ${tName}`, () => {
+          const words = lessonCardDefine(lesson, t, SETTLEMENT, s).split(/s+/).length;
+          expect(words, `${lesson.id} is ${words} words`).toBeLessThanOrEqual(CARD_WORDS);
+        });
+      }
+    }
   },
 );

@@ -10962,3 +10962,45 @@ never sees it — the specs dismiss one card and WAIT for the next
 budget; `teaching.spec.ts` 16/16 on Chromium. **Not verified, and it is Marc's:**
 the two cards on the phone, in French — is RÉCOLTER's card (core, paid, wait,
 lean, when) short enough, or does `wait` belong in the manual's DETAILS fold?
+
+### Session 135 — the tutorial is short and the book is whole (2026-10-15)
+
+**Question: with each first-contact card held to about 75 words and the depth
+in the manual, is the first minute simple and direct enough?** Marc, after
+Session 134: _"tutorial should be simple and direct, how to play should be
+complete all the time"_. I measured every card in French first (MÛR 96, RÉCOLTER
+94, CARAVANE 83, CHANCE 75, FIN DE LA PARTIE 59, the rest under 53) and trimmed
+by weight, not by rewording: a sentence moved to the manual's DETAILS fold
+(`at: 'detail'`) leaves the card, the term card and the visible section, and
+stays in the book.
+
+**What moved to DETAILS.** MÛR: what VALEUR counts, and what surrounds a tile.
+RÉCOLTER: what a pop scores, and the draw lean. CARAVANE: "if it passes, it
+wanted the other size" (a new `refused` string, silent while the dial is 0).
+Cards are now MÛR 67, RÉCOLTER about 70, CARAVANE 74 words. THE EXPEDITION is
+exempt from the ceiling: it never fires as a card, it is the manual's opening.
+`lessons.test.ts` holds every card to 75 words in both languages over both
+tunings, so the merged card cannot creep back.
+
+**The book is complete, always.** The manual used to grow in as a device met
+each concept (2026-09-02), which is how MONDE was a blank page. It now prints
+every section for everyone: `metHere`, `grows`, `manualPrints`, `Lesson.ungated`,
+`Manual`'s `met` prop and the `also` plumbing that unlocked a section for one
+opening are gone, and so is the tab's "more to come" dot with its string
+(`Tab.grows`, `growsNote`, `tabGrows`, the CSS) — nothing sets it any more. A
+term card's COMMENT JOUER › link shows wherever the lesson has a section. e2e:
+"the manual grows with the world" became "complete for everyone, a virgin
+device included"; "the COLOURS tab waits" became "every tab opens on a section".
+
+**An orphaned server cost me a stale run.** The interrupted debug run left a
+`vite preview` on 4174 (created 22:25) with its `cmd` parent, so two later e2e
+runs read the previous build and the new specs failed against it. Stopped by
+process id, not by port; the full run then passed on a fresh build.
+
+**Verified.** Typecheck, lint, 1610 unit tests, sweep 0 (the sweep caught
+`momentsOf`, read only by tests once the manual stopped gating, and it moved
+into its test), pnpm sim byte-identical, budget; e2e Chromium 192/192.
+**WebKit `board.spec.ts:853`** ("dragging the board away did not empty the
+frame") fails 3/3 locally at HEAD **before** this session's changes too, passes
+in CI; recorded, not fixed. **Not verified, and it is Marc's:** the shorter
+cards and the always-whole book on the phone, in French.

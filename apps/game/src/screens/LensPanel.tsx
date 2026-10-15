@@ -136,7 +136,6 @@ export function LensPanel({ hud, tuning, theme, s, onHold }: LensPanelProps) {
                     ]}
                     on={tab}
                     onPick={setTab}
-                    growsNote={s.ui.tabGrows}
                   />
                 )}
                 <div

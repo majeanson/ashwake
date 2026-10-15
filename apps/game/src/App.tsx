@@ -39,7 +39,7 @@ import { economyFor } from './shell/economy';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { parseThemeId } from '@theme/index';
-import { LESSON_FOR_REWARD, type LessonId, type RowKey } from '@view/lessons';
+import { LESSON_FOR_REWARD, lessonOf, type LessonId, type RowKey } from '@view/lessons';
 import { tourMs } from './board/flight';
 import type { BoardHandle } from './board/Board';
 import { preloadAssets } from './board/assets';
@@ -58,7 +58,7 @@ import { LensPanel } from './screens/LensPanel';
 import { LessonCard } from './screens/LessonCard';
 import { SaidCard } from './screens/SaidCard';
 import { Fame } from './screens/Fame';
-import { Manual, manualPrints, type ManualOpen } from './screens/Manual';
+import { Manual, type ManualOpen } from './screens/Manual';
 import { Device } from './screens/Device';
 import { More } from './screens/More';
 import { Purse } from './screens/Purse';
@@ -1644,19 +1644,10 @@ function Game() {
    * opening rather than a prop it ignores. MENU's plain open passes nothing and
    * clears it — a stale place must never survive a Escape-closed manual.
    */
-  const [manualAt, setManualAt] = useState<
-    (ManualOpen & { readonly n: number; readonly also: readonly TeachId[] }) | null
-  >(null);
-  /**
-   * `also`: moments to print the book as if they had been told, for a card
-   * that went to the book WITHOUT being told (2026-10-14, Marc: _"when we press
-   * on Comment jouer … we come back and the card is gone and we seem out of the
-   * tutorial"_). The card is still owed, so its section is not in the ledger,
-   * and a book that hid the section it was sent to would open on nothing.
-   */
+  const [manualAt, setManualAt] = useState<(ManualOpen & { readonly n: number }) | null>(null);
   const openManual = useCallback(
-    (at?: ManualOpen, also: readonly TeachId[] = []) => {
-      setManualAt((was) => (at === undefined ? null : { ...at, n: (was?.n ?? 0) + 1, also }));
+    (at?: ManualOpen) => {
+      setManualAt((was) => (at === undefined ? null : { ...at, n: (was?.n ?? 0) + 1 }));
       manual.show();
     },
     [manual],
@@ -3371,10 +3362,10 @@ function Game() {
    * functional so it cannot clobber a concurrent grant.
    */
   /** HOW TO PLAY ›: the book opens where the card was opened. */
-  const openManualFor = (
-    opened: { readonly lesson: LessonId; readonly row?: RowKey | undefined },
-    also: readonly TeachId[] = [],
-  ): void => openManual({ at: opened.lesson, row: opened.row }, also);
+  const openManualFor = (opened: {
+    readonly lesson: LessonId;
+    readonly row?: RowKey | undefined;
+  }): void => openManual({ at: opened.lesson, row: opened.row });
 
   const tellOpener = (id: 'story' | 'goal'): void => {
     setProgress((p) => told(p, id));
@@ -4221,10 +4212,6 @@ function Game() {
           s={s}
           keyboard={keyboard}
           mode={mode}
-          /* The manual grows with the world — see `Manual`'s `met`. The
-             teaching ledger is the same one the drip writes, so a section
-             appears on the run after the card that taught it. */
-          met={manualAt === null ? progress.met : [...progress.met, ...manualAt.also]}
           key={manualAt?.n ?? 0}
           open={manualAt === null ? undefined : { at: manualAt.at, row: manualAt.row }}
           onTerm={openTerm}
@@ -4630,7 +4617,7 @@ function Game() {
           onTerm={openTerm}
           // HOW TO PLAY › opens the book at THE EXPEDITION and leaves the card
           // owed: it is back when the book closes.
-          onManual={() => openManual({ at: 'expedition' }, ['story'])}
+          onManual={() => openManual({ at: 'expedition' })}
           onDismiss={() => tellOpener('story')}
         />
       )}
@@ -4647,7 +4634,7 @@ function Game() {
           theme={theme}
           s={s}
           onTerm={openTerm}
-          onManual={() => openManual({ at: 'expedition' }, ['goal'])}
+          onManual={() => openManual({ at: 'expedition' })}
           onDismiss={() => tellOpener('goal')}
         />
       )}
@@ -4698,7 +4685,7 @@ function Game() {
            * the section the card is about while it is owed (`also`).
            */
           onTerm={openTerm}
-          onManual={() => openManualFor(teachingAt, toldBy(teaching, snap.board))}
+          onManual={() => openManualFor(teachingAt)}
           onDismiss={() => {
             tellMoment(teaching, 'fired');
             /*
@@ -4730,7 +4717,7 @@ function Game() {
           firstContact
           dismiss={s.ui.gotIt}
           onTerm={openTerm}
-          onManual={() => openManualFor(dotAt, toldBy(dotOpen, snap.board))}
+          onManual={() => openManualFor(dotAt)}
           onDismiss={() => {
             tellMoment(dotOpen, 'chip');
             showOnBoard(dotOpen);
@@ -4748,11 +4735,10 @@ function Game() {
           // A term tapped in a term card REPLACES it (one slot): the chain
           // cannot grow past one card.
           onTerm={openTerm}
-          // Only where the book prints the lesson: a word tapped before its
-          // moment has been told has no section to arrive at, and the book
-          // would open on its first tab and show nothing for the tap.
+          // Only where the book prints the lesson (a word with no section of
+          // its own has nowhere to arrive at).
           onManual={
-            manualPrints(term.id, progress.met)
+            lessonOf(term.id)?.tab !== undefined
               ? () => {
                   setTerm(null);
                   openManualFor({ lesson: term.id, row: term.row });

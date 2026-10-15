@@ -13,7 +13,6 @@ import {
   type RowKey,
 } from '@view/lessons';
 import type { FigureId } from '@view/figure';
-import type { TeachId } from '@meta/progress';
 import type { Strings } from '@text/Strings';
 import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
@@ -21,7 +20,6 @@ import { Figure } from '../ui/Figure';
 import { Panel } from '../ui/Panel';
 import { ProseLines, type OnTerm } from '../ui/Prose';
 import { TipRows } from '../ui/TipRows';
-import { momentsOf } from '../shell/teaching';
 import { panelOf, tabOf, Tabs } from '../ui/Tabs';
 
 /**
@@ -90,33 +88,17 @@ const KEY_LINES = [
 const sectionsOf = (tab: TabId): readonly Lesson[] => LESSONS.filter((l) => l.tab === tab);
 
 /**
- * THE MANUAL GROWS WITH THE WORLD (2026-09-02).
- *
- * Ashwake 1's rule, from `ideas/teaching.md`, and it had not travelled: a
- * section about a concept this device has not MET stays out, and each
- * first-contact card carries the words the manual will grow, so the two can
- * never disagree. This body printed all thirteen lessons to everyone — so a
- * stranger opening HOW TO PLAY in their first minute read about relics, the
- * stash, magic, unique and the luck purse before meeting any of them, which is
- * the exact wall the teaching drip exists to take down.
- *
- * A `LessonId` is a superset of `TeachId`: six of them are words the manual
- * prints without ever firing a card. Those are ungated, because there is no
- * ledger entry that could gate them and hiding one would mean hiding a term
- * another lesson uses.
- *
- * **A device with no ledger shows everything.** That is the gallery, a bare
- * test, and the audit's own shots, and it is the same degradation the drip
- * itself keeps: `met === null` means "nothing is known about what is known",
- * which is not the same as "nothing has been met".
+ * THE MANUAL IS COMPLETE, ALWAYS (2026-10-15, Marc: _"how to play should be
+ * complete all the time"_). It used to grow in as a device met each concept
+ * (2026-09-02), so a reader who opened it early found tabs with nothing on
+ * them — MONDE was a blank page. The first-contact CARDS are what is kept short
+ * and in order now; the book is where everything lives, and a fresh device may
+ * read all of it.
  */
-function metHere(lesson: Lesson, met: ReadonlySet<TeachId> | null): boolean {
-  if (met === null || lesson.ungated === true) return true;
-  // Told by the moments that open it (`colours` tells `grounds`). The ones no
-  // moment ever fires for — see above — have none, and are never gated.
-  const moments = momentsOf(lesson.id);
-  return moments.length === 0 || moments.some((moment) => met.has(moment));
-}
+
+/** The tab a lesson's section is printed on, or null where this manual does not print it. */
+const tabFor = (id: LessonId | undefined): TabId | null =>
+  (id === undefined ? undefined : lessonOf(id))?.tab ?? null;
 
 /**
  * The lessons of one tab, each with the figure it should actually draw.
@@ -124,44 +106,19 @@ function metHere(lesson: Lesson, met: ReadonlySet<TeachId> | null): boolean {
  * A figure is claimed by the FIRST lesson on the tab that carries it; every
  * lesson after gets `null` and reads under the picture already there.
  */
-/**
- * The tab a lesson's section is printed on, or null where this manual does not
- * print it (no tab, or not yet met on this device — `metHere`).
- */
-function tabFor(id: LessonId | undefined, met: ReadonlySet<TeachId> | null): TabId | null {
-  const lesson = id === undefined ? undefined : lessonOf(id);
-  if (lesson?.tab === undefined || !metHere(lesson, met)) return null;
-  return lesson.tab;
-}
-
-/**
- * Whether the manual prints this lesson for a device that has met `met`: the
- * question a HOW TO PLAY › link asks before it offers a trip to a section that
- * is not there to arrive at.
- */
-export const manualPrints = (id: LessonId, met: readonly TeachId[]): boolean =>
-  tabFor(id, new Set(met)) !== null;
-
 function drawnOnce(
   lessons: readonly Lesson[],
-  met: ReadonlySet<TeachId> | null,
 ): readonly { id: LessonId; lesson: Lesson; figure: FigureId | null }[] {
   const drawn = new Set<FigureId>();
   const out: { id: LessonId; lesson: Lesson; figure: FigureId | null }[] = [];
   for (const lesson of lessons) {
     const { id } = lesson;
-    if (!metHere(lesson, met)) continue;
     const figure = lesson.figure !== undefined && !drawn.has(lesson.figure) ? lesson.figure : null;
     if (figure !== null) drawn.add(figure);
     out.push({ id, lesson, figure });
   }
   return out;
 }
-
-/** Whether a tab still has sections a player has not unlocked — the quiet
- *  promise that HOW TO PLAY is not all there is yet. */
-const grows = (lessons: readonly Lesson[], met: ReadonlySet<TeachId> | null): boolean =>
-  met !== null && lessons.some((l) => !metHere(l, met));
 
 type ManualProps = {
   readonly theme: Theme;
@@ -186,13 +143,6 @@ type ManualProps = {
    */
   readonly mode?: 'world' | 'shared' | 'daily';
   /**
-   * What this device has been taught, so the manual can grow with it.
-   *
-   * `undefined` means no ledger is available and every section prints — the
-   * gallery, a bare test, the audit's shots. See `metHere`.
-   */
-  readonly met?: readonly TeachId[];
-  /**
    * WHERE TO OPEN (2026-10-13): a card's HOW TO PLAY › lands on its lesson's
    * section, at the row it was opened at where it has one. Absent is the menu's
    * plain open, on the first tab.
@@ -213,9 +163,8 @@ export type ManualOpen = { readonly at: LessonId; readonly row?: RowKey | undefi
 /** How long a section or row sent to by a link stays lit. */
 const FLASH_MS = 1600;
 
-export function Manual({ theme, s, keyboard, mode, met, open, onTerm, onBack }: ManualProps) {
-  const known = met === undefined ? null : new Set(met);
-  const [on, setOn] = useState<TabId>(() => tabFor(open?.at, known) ?? TABS[0]);
+export function Manual({ theme, s, keyboard, mode, open, onTerm, onBack }: ManualProps) {
+  const [on, setOn] = useState<TabId>(() => tabFor(open?.at) ?? TABS[0]);
   // The place to scroll to. A fresh object per request, so asking for the same
   // section twice scrolls twice.
   const [goto, setGoto] = useState<ManualOpen | null>(open === undefined ? null : { ...open });
@@ -228,7 +177,7 @@ export function Manual({ theme, s, keyboard, mode, met, open, onTerm, onBack }: 
    * section it names.
    */
   const go: OnTerm = (id, row) => {
-    const tab = tabFor(id, known);
+    const tab = tabFor(id);
     if (tab === null) {
       onTerm(id, row);
       return;
@@ -263,16 +212,8 @@ export function Manual({ theme, s, keyboard, mode, met, open, onTerm, onBack }: 
       head={
         <Tabs
           base="manual"
-          growsNote={s.ui.tabGrows}
           label={s.ui.howToPlay}
-          // A tab with nothing printed on this device yet is not offered: an
-          // empty MONDE was a tab you tapped to find a blank page.
-          tabs={TABS.filter((id) => sectionsOf(id).some((l) => metHere(l, known))).map((id) => ({
-            id,
-            label: s.ui.tabs[id],
-            // A tab with sections still to unlock says so — see `Tab.grows`.
-            grows: grows(sectionsOf(id), known),
-          }))}
+          tabs={TABS.map((id) => ({ id, label: s.ui.tabs[id] }))}
           on={on}
           onPick={setOn}
         />
@@ -336,7 +277,7 @@ export function Manual({ theme, s, keyboard, mode, met, open, onTerm, onBack }: 
           shared or daily run (the section exists for the reader in the wrong
           run), and after the rules for one in their own world, who has the least
           need of it. */}
-      {drawnOnce(sectionsOf(on), known).map(({ id, lesson, figure }) => (
+      {drawnOnce(sectionsOf(on)).map(({ id, lesson, figure }) => (
         <Fragment key={id}>
           <Section lesson={lesson} figure={figure} theme={theme} s={s} onTerm={go} />
           {id === 'expedition' && mode !== undefined && mode !== 'world' && (

@@ -93,8 +93,7 @@ type Slot = {
    * through the same predicate its `when` and `target` use.
    *
    * A toast carries `opens` too, though nothing opens it: it says which
-   * concept the moment belongs to, and the manual's "has this device met it"
-   * (`momentsOf`) reads that.
+   * concept the moment belongs to.
    */
   readonly opens?: {
     readonly lesson: LessonId;
@@ -465,14 +464,6 @@ export function opensAt(
       : opens.row;
   return row === undefined ? { lesson: opens.lesson } : { lesson: opens.lesson, row };
 }
-
-/**
- * The moments that tell a lesson, for the manual's "has this device met it":
- * the lesson's own id where that is a moment, and every slot that `opens` it.
- * Empty for a lesson no moment ever fires, which the manual never gates.
- */
-export const momentsOf = (lesson: LessonId): readonly TeachId[] =>
-  SCHEDULE.filter((slot) => (slot.opens?.lesson ?? slot.id) === lesson).map((slot) => slot.id);
 
 /**
  * Every moment that dismissing this card (or opening this chip) tells

@@ -190,7 +190,8 @@ export const STRINGS_EN: Strings = {
       name: 'CARAVAN',
       terms: ['CARAVAN'],
       core: 'Now and then the CARAVAN comes to town wanting a pocket of one size, small or big, and it never says which.',
-      try: 'While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run. If it passes, it wanted the other size.',
+      try: 'While it is IN TOWN, pop a pocket of three or more. If it fits, the caravan takes it and you choose one of three wares, each good for the rest of the run.',
+      refused: 'If it passes, it wanted the other size.',
       card: 'The line under the header says when it is IN TOWN: that is the moment to try a pop.',
       sizes: (smallMin, smallMax, bigMin) =>
         `Small is ${smallMin} to ${smallMax} tiles, big is ${bigMin} or more. Each visit wants one, and pays once.`,
@@ -852,7 +853,6 @@ Nothing new inside. A find grants only what you do not already carry, and only o
         quests: 'BOUNTIES',
       },
     },
-    tabGrows: 'more to come here as you play',
     language: 'LANGUAGE',
     languages: { 'fr-CA': 'FRANÇAIS', en: 'ENGLISH' },
     appearance: 'APPEARANCE',

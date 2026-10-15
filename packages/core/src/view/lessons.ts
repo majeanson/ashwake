@@ -137,14 +137,6 @@ export type Lesson = {
    */
   readonly tab?: ManualTab;
   /**
-   * Printed for everyone, whatever this device has been told (2026-10-13).
-   * Every other section with a moment grows in when it is met (the manual
-   * `metHere`); THE EXPEDITION is what the manual has always opened on, and the
-   * moments that tell it (the story, the goal, the first placement, a wall) are
-   * not a reason to hide it from a reader who has met none yet.
-   */
-  readonly ungated?: true;
-  /**
    * A set this lesson lists, one row each: THE FOUR GROUNDS (2026-09-30).
    *
    * Deleted and restored the same day. The sweep found it read and never set,
@@ -358,12 +350,11 @@ export const LESSONS: readonly Lesson[] = [
    * own sentence) and the glowing edge of a hex you may place on. The `place`
    * and `wall` moments, and the story and goal cards, `open` this lesson
    * (`shell/teaching.ts`); it is printed for everyone, as the expedition block
-   * always was (`ungated`).
+   * always was (the manual prints every section for everyone).
    */
   {
     id: 'expedition',
     tab: 'start',
-    ungated: true,
     manualFigure: 'place',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.howItWorks },
@@ -420,8 +411,11 @@ export const LESSONS: readonly Lesson[] = [
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.ripe.ripens },
       { at: 'core', say: (_t, _theme, s) => s.lesson.ripe.pocket },
-      { say: (_t, _theme, s) => s.lesson.ripe.worth },
+      // The depth is the manual's DETAILS fold (2026-10-15): the card is the
+      // idea and the next move, and nothing else.
+      { at: 'detail', say: (_t, _theme, s) => s.lesson.ripe.worth },
       {
+        at: 'detail',
         say: (t, theme, s) =>
           t.redAshMatches
             ? s.lesson.ripe.surroundsAsh(namesOf(theme, s.locale).red)
@@ -447,12 +441,13 @@ export const LESSONS: readonly Lesson[] = [
     figure: 'pop',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.pop.core },
-      { say: (_t, _theme, s) => s.lesson.pop.paid },
+      { at: 'detail', say: (_t, _theme, s) => s.lesson.pop.paid },
       { say: (_t, _theme, s) => s.lesson.pop.wait },
       // The draw lean, findable by a manual reader (2026-09-03). It was said
       // only in the old `ripe.cardLean` — a first-contact sentence the manual never
       // prints — under the same condition this beat keeps.
       {
+        at: 'detail',
         say: (t, _theme, s) =>
           t.luckPerPop > 0 && t.colourBiasDraws > 0 ? s.lesson.pop.lean : null,
       },
@@ -683,6 +678,10 @@ export const LESSONS: readonly Lesson[] = [
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.caravan.core },
       { say: (_t, _theme, s) => s.lesson.caravan.try },
+      {
+        at: 'detail',
+        say: (t, _theme, s) => (t.caravanEvery > 0 ? s.lesson.caravan.refused : null),
+      },
       { at: 'card', say: (_t, _theme, s) => s.lesson.caravan.card },
       {
         at: 'detail',

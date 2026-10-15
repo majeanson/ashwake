@@ -120,8 +120,8 @@ const open = (selector: string) => async (page: Page) => {
  * Open the manual and LAND on one of its tabs (2026-09-03).
  *
  * The click alone is flaky, and this is the third time it has bitten: the tab
- * row scrolls horizontally at 390 and `data-grows` changes the tabs' widths
- * between one device and another, so a click can be dispatched at a row that
+ * row scrolls horizontally at 390 and the tabs' widths differ between one
+ * device and another, so a click can be dispatched at a row that
  * re-lays-out underneath it. It cost `menus.spec.ts` a red run roughly one time
  * in three, and it failed one screen of a 183-screen audit — which, because a
  * partial run no longer writes, cost the whole report.

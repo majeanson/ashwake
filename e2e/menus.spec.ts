@@ -821,19 +821,14 @@ test('?themes=1 puts every direction one tap from the board', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
-test('the manual grows with the world', async ({ page }) => {
+test('the manual is complete for everyone, a virgin device included', async ({ page }) => {
   /*
-   * Ashwake 1's rule from `ideas/teaching.md`, restored 2026-09-02: a section
-   * about a concept this device has not MET stays out. This body printed all
-   * thirteen lessons to everyone, so a stranger opening HOW TO PLAY in their
-   * first minute read about relics, the stash, magic, unique and the luck purse
-   * before meeting any of them — the wall the teaching drip exists to take
-   * down, rebuilt inside the drip's own manual.
-   *
-   * The HAND tab is where the gating bites hardest: every lesson on it is a
-   * `TeachId`, so a virgin device sees almost none of it and a taught one sees
-   * all of it. The DOT is the other half — without it, a tab hiding three of
-   * five is indistinguishable from a tab that only ever had two.
+   * 2026-10-15, Marc: _"how to play should be complete all the time"_. This
+   * test was "the manual grows with the world" (2026-09-02, Ashwake 1's rule):
+   * a section about a concept this device had not met stayed out, and a dot
+   * marked the tab that held some back. It reversed: the first-contact cards
+   * are what is kept short, and the book is where everything lives, so a
+   * stranger and a veteran read the same book.
    */
   const errors = watchErrors(page);
   const read = async (url: string) => {
@@ -842,23 +837,8 @@ test('the manual grows with the world', async ({ page }) => {
     await panel(page, 'more').waitFor({ state: 'visible' });
     await page.locator('[data-go="manual"]').click();
     await panel(page, 'manual').waitFor({ state: 'visible' });
-    /*
-     * LAND ON THE TAB, and say so before reading it (2026-09-02).
-     *
-     * This test was flaky — roughly one run in three — and always in the
-     * reassuring-looking direction: it counted the sections of whichever tab
-     * happened to be showing, and if that was still MENU the count was 1 and
-     * the assertion failed against a manual that is perfectly correct. The tab
-     * row is horizontally scrollable at 390 and `data-grows` changes the tabs'
-     * widths between a virgin device and a taught one, so a click can be
-     * dispatched at a row that re-lays-out underneath it.
-     *
-     * **A test that reads a screen has to say which screen it is reading**, and
-     * the tab's own `aria-selected` is that statement — the same fact the
-     * player's screen reader is given. Polled rather than waited on, because a
-     * click that landed on the wrong tab is not a click that will come good on
-     * its own.
-     */
+    // Say which tab is being read before reading it (2026-09-02): the click
+    // alone is flaky against a row that re-lays-out underneath it.
     const hand = panel(page, 'manual').locator('.tab[data-tab="hand"]');
     await expect
       .poll(async () => {
@@ -866,20 +846,13 @@ test('the manual grows with the world', async ({ page }) => {
         return hand.getAttribute('aria-selected');
       })
       .toBe('true');
-    return {
-      sections: await panel(page, 'manual').locator('.panel-title').count(),
-      marks: await panel(page, 'manual').locator('.tab[data-grows]').count(),
-    };
+    return panel(page, 'manual').locator('.panel-title').count();
   };
 
   const virgin = await read('/');
   const veteran = await read('/?taught=1');
-
-  expect(virgin.sections, 'a virgin device is shown a shorter manual').toBeLessThan(
-    veteran.sections,
-  );
-  expect(virgin.marks, 'a tab holding sections back must say so').toBeGreaterThan(0);
-  expect(veteran.marks, 'a device that has met everything is promised nothing more').toBe(0);
+  expect(virgin, 'a virgin device reads the whole book').toBe(veteran);
+  expect(virgin).toBeGreaterThan(1);
   expect(errors).toEqual([]);
 });
 

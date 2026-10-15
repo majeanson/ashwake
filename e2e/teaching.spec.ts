@@ -240,14 +240,21 @@ test('HOW TO PLAY has a COLOURS tab: THE FOUR GROUNDS, each with when to take it
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the COLOURS tab waits for a stranger to meet the four grounds', async ({ page }) => {
+test('HOW TO PLAY is complete on a fresh device: every tab opens on a section', async ({
+  page,
+}) => {
+  // 2026-10-15, Marc: _"how to play should be complete all the time"_. The book
+  // used to grow in as concepts were met, and MONDE was a blank page.
   const errors = watchErrors(page);
   await page.goto('/');
   await begin(page);
   await openMore(page);
   await page.locator('[data-panel="more"] [data-go="manual"]').click();
-  await expect(page.locator('[data-tab="start"]')).toBeVisible();
-  await expect(page.locator('[data-tab="grounds"]')).toHaveCount(0);
+  const manual = page.locator('[data-panel="manual"]');
+  for (const tab of ['start', 'grounds', 'world', 'hand']) {
+    await page.locator(`[data-tab="${tab}"]`).click();
+    await expect(manual.locator('section.lesson').first(), tab).toBeVisible();
+  }
   expect(errors, errors.join('\n')).toEqual([]);
 });
 

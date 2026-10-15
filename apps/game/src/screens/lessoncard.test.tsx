@@ -5,7 +5,6 @@ import { pickLocale } from '@content/locale';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
 import { LessonCard } from './LessonCard';
-import { manualPrints } from './Manual';
 
 /**
  * HOW TO PLAY › on a lesson card (2026-10-13), and the one place it must not be
@@ -41,17 +40,5 @@ describe('a lesson card', () => {
   it('offers no link where there is no section to arrive at', () => {
     lesson();
     expect(document.querySelector('[data-action="card-manual"]')).toBeNull();
-  });
-});
-
-describe('what the manual prints', () => {
-  it('prints a lesson once a moment that tells it has been met, and not before', () => {
-    // MAGIC is told by `rare` (and `rareUnique`); a stranger has met neither.
-    expect(manualPrints('magic', [])).toBe(false);
-    expect(manualPrints('magic', ['rare'])).toBe(true);
-  });
-
-  it('prints a lesson no moment ever gates, for anyone', () => {
-    expect(manualPrints('expedition', [])).toBe(true);
   });
 });

@@ -33,16 +33,6 @@ import { useRef, type KeyboardEvent } from 'react';
 type Tab<Id extends string> = {
   readonly id: Id;
   readonly label: string;
-  /**
-   * This tab has more behind it than it is showing yet (2026-09-02).
-   *
-   * The manual grows with the world: a section about a concept this device has
-   * not met stays out. Without a mark, a tab that hides three of its five
-   * sections is indistinguishable from a tab that only ever had two, so the
-   * drip reads as a thinner game rather than as a game arriving in order.
-   * Ashwake 1 marked it and called the field `grows`.
-   */
-  readonly grows?: boolean;
 };
 
 type TabsProps<Id extends string> = {
@@ -59,9 +49,6 @@ type TabsProps<Id extends string> = {
   readonly tabs: readonly Tab<Id>[];
   readonly on: Id;
   readonly onPick: (id: Id) => void;
-  /** What a growing tab says out loud — `s.ui.tabGrows`. The catalogue's, so
-   *  the dot and the sentence cannot describe different things. */
-  readonly growsNote: string;
 };
 
 /** The id of one tab button. */
@@ -70,14 +57,7 @@ export const tabOf = (base: string, id: string): string => `${base}-tab-${id}`;
 /** The id of the region a tab controls — see `Panel`'s `tabbed`. */
 export const panelOf = (base: string, id: string): string => `${base}-tabpanel-${id}`;
 
-export function Tabs<Id extends string>({
-  base,
-  label,
-  tabs,
-  on,
-  onPick,
-  growsNote,
-}: TabsProps<Id>) {
+export function Tabs<Id extends string>({ base, label, tabs, on, onPick }: TabsProps<Id>) {
   // The buttons, so a key that moves the selection can move the focus with it.
   // Focus does not follow state on its own, and a tablist whose arrow keys
   // change the panel while leaving the focus behind is one a keyboard cannot
@@ -128,7 +108,6 @@ export function Tabs<Id extends string>({
             id={tabOf(base, tab.id)}
             className="tab"
             data-tab={tab.id}
-            data-grows={tab.grows === true ? '' : undefined}
             aria-selected={selected}
             // Only the tab that is ON names a region, because only one region
             // exists: the panel's scrollport is reused and carries the id of
@@ -140,11 +119,6 @@ export function Tabs<Id extends string>({
             onClick={() => onPick(tab.id)}
           >
             {tab.label}
-            {/* The dot was a `::after`, which is a thing only an eye can see —
-                so the one piece of information the mark exists to carry was
-                the one a screen reader never got (2026-09-02). The pseudo
-                stays for the look; this is the same sentence in words. */}
-            {tab.grows === true && <span className="visually-hidden">{growsNote}</span>}
           </button>
         );
       })}

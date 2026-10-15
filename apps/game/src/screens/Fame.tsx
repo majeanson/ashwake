@@ -117,7 +117,6 @@ export function Fame({
       head={
         <Tabs
           base="fame"
-          growsNote={s.ui.tabGrows}
           label={s.ui.fame.title}
           tabs={[
             { id: 'diary', label: s.ui.fame.diary },

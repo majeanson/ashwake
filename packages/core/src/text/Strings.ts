@@ -163,6 +163,8 @@ type LessonStrings = {
   readonly caravan: LessonHead & {
     readonly core: string;
     readonly try: string;
+    /** What it means when the caravan does not take the pocket (the DETAILS fold). */
+    readonly refused: string;
     /** First contact only: where to look for the moment to try. */
     readonly card: string;
     readonly sizes: (smallMin: number, smallMax: number, bigMin: number) => string;
@@ -890,17 +892,6 @@ export type Strings = {
       readonly hand: string;
       readonly grounds: string;
     };
-    /**
-     * "There is more behind this tab", said out loud (2026-09-02).
-     *
-     * The manual grows with the world, and a tab holding sections back wears a
-     * dot so the drip reads as a game arriving in order rather than as a
-     * thinner one. The dot was a `::after` on `[data-grows]` — a pseudo-element,
-     * which is to say a thing only an eye can see. A screen reader was told the
-     * tab existed and never told it had more coming, which is exactly the
-     * information the mark was added to carry.
-     */
-    readonly tabGrows: string;
     /** The hall of fame: what the room is called, and its two tabs. */
     readonly fame: {
       readonly title: string;

@@ -3,13 +3,12 @@ import { pickLocale } from '@content/locale';
 import { TUNING } from '@content/tuning';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
-import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress } from '@meta/progress';
+import { EMPTY_PROGRESS, meet, TEACH_IDS, type Progress, type TeachId } from '@meta/progress';
 import { createSession, type Snapshot } from './store';
-import { lessonOf } from '@view/lessons';
+import { lessonOf, type LessonId } from '@view/lessons';
 import {
   CARD_GAP,
   SCHEDULE,
-  momentsOf,
   newDots,
   nextLesson,
   sinceSpoke,
@@ -27,6 +26,10 @@ import {
   phaseOf,
 } from './teaching';
 import { walk } from './walk';
+
+/** The moments a lesson is told by: the slots that open it, or are it. */
+const momentsOf = (lesson: LessonId): readonly TeachId[] =>
+  SCHEDULE.filter((slot) => (slot.opens?.lesson ?? slot.id) === lesson).map((slot) => slot.id);
 
 /**
  * When the game speaks (2026-09-02).
