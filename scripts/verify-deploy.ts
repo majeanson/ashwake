@@ -295,6 +295,13 @@ const CSP_MUST_CARRY: readonly string[] = [
  */
 const CSP_MUST_NOT_CARRY: readonly string[] = ["'unsafe-inline'", "'unsafe-eval'", '__INLINE_'];
 
+/** The only sources `frame-ancestors` may name — see `public/_headers`. */
+const FRAME_ANCESTORS_ALLOWED: readonly string[] = [
+  "'self'",
+  'https://marcportal.com',
+  'https://*.marcportal.com',
+];
+
 const HEADERS_MUST_CARRY: readonly (readonly [string, string])[] = [
   ['x-content-type-options', 'nosniff'],
   ['referrer-policy', 'no-referrer'],
@@ -312,6 +319,15 @@ async function checkHeaders(base: string): Promise<void> {
   }
   for (const clause of CSP_MUST_NOT_CARRY) {
     if (csp.includes(clause)) throw new Error(`CSP still carries "${clause}": ${csp}`);
+  }
+  // Who may frame the game is an ALLOWLIST, so the check is that nothing has
+  // crept onto it — a bare `*` or a scheme source would let any page embed the
+  // game, and the clause check above would still pass.
+  const framers = /(?:^|;)\s*frame-ancestors\s+([^;]*)/.exec(csp)?.[1]?.trim().split(/\s+/) ?? [];
+  for (const source of framers) {
+    if (!FRAME_ANCESTORS_ALLOWED.includes(source)) {
+      throw new Error(`frame-ancestors lists "${source}", which is not on the allowlist: ${csp}`);
+    }
   }
   // `X-Frame-Options` must be ABSENT: it cannot express the allowlist, and a
   // stale DENY would veto the portfolio embed in engines that honour it.

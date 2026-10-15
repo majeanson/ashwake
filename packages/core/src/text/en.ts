@@ -1061,6 +1061,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     newVersion: 'NEW VERSION · TAP TO LOAD',
     install: 'INSTALL ASHWAKE',
+    openFull: 'OPEN THE FULL GAME',
     handInstall: 'Ashwake on your home screen: tap Share in Safari, then Add to Home Screen.',
     backUpNote: 'Your worlds live on this phone only. BACK UP, in SETTINGS, saves them.',
     inApp:

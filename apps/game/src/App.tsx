@@ -36,6 +36,7 @@ import {
   type WorldMemory,
 } from '@meta/world';
 import { economyFor } from './shell/economy';
+import { isFramed } from './shell/embedded';
 import { parseRoute } from '@meta/route';
 import { stringsFor } from '@text/index';
 import { parseThemeId } from '@theme/index';
@@ -758,7 +759,12 @@ function Game() {
    * own tests instead of forty lines a reader following a placement has to
    * walk past. The arguments moved with them.
    */
-  const { inApp, dismissInApp, offerInstall, showHandInstall } = useInstallOffer(!started);
+  // Inside another page (marcportal.com's preview) the door says less and the
+  // install offer waits for a visit that is the game's own — `shell/embedded.ts`.
+  const [framed] = useState(() => isFramed(window));
+  const { inApp, dismissInApp, offerInstall, showHandInstall } = useInstallOffer(
+    !started && !framed,
+  );
 
   const s = useMemo(() => stringsFor(locale), [locale]);
   /*
@@ -4202,6 +4208,7 @@ function Game() {
             day={daily === null ? undefined : dailyName(daily)}
             onInstall={offerInstall}
             handInstall={showHandInstall}
+            framed={framed}
           />
         </div>
       )}

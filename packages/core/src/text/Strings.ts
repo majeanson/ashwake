@@ -1665,6 +1665,12 @@ export type Strings = {
      */
     readonly install: string;
     /**
+     * The way out of a frame (2026-10-15). marcportal.com embeds the game, and a
+     * small inline preview is not the game: this opens the same page in its own
+     * tab. Printed only on a front door that is framed (`shell/embedded.ts`).
+     */
+    readonly openFull: string;
+    /**
      * HOW TO INSTALL BY HAND, on the platform with no dialog (2026-09-09).
      *
      * iOS never fires `beforeinstallprompt`, so `s.ui.install` — a BUTTON —

@@ -11004,3 +11004,38 @@ into its test), pnpm sim byte-identical, budget; e2e Chromium 192/192.
 frame") fails 3/3 locally at HEAD **before** this session's changes too, passes
 in CI; recorded, not fixed. **Not verified, and it is Marc's:** the shorter
 cards and the always-whole book on the phone, in French.
+
+---
+
+## Session 135 — marcportal.com frames the game (2026-10-15)
+
+**The question this session answered:** what does a stranger on a portfolio
+page see, inside a 1280x800 frame, and can the edge let them see it at all?
+
+**Headers.** `frame-ancestors 'self' https://marcportal.com
+https://*.marcportal.com`; `X-Frame-Options` removed (it has no multi-origin
+allowlist, and `frame-ancestors` supersedes it). `verify-deploy` now asserts the
+clause, asserts the old header is ABSENT, and fails if `frame-ancestors` names
+anything off the three-source allowlist (a bare `*` would pass the clause check).
+
+**A framed door says less** (`shell/embedded.ts`, `FrontDoor`'s `framed`):
+BEGIN, MENU and OPEN THE FULL GAME / OUVRIR LE JEU COMPLET (same URL, new tab,
+`noopener`). No DAILY, and the install offers are never started, so a framed
+visit does not spend the once-a-week showing. e2e: `framed.spec.ts`.
+
+**A wide screen keeps one column.** The header row and the note over the
+board's foot now take the dock's `--measure-wide` at >= 56rem. A phone is
+unchanged. This is an eye call at 1280x800 only — Marc has not seen it.
+
+**Looked at and left alone.**
+- *Idle attract on the door.* The board behind the door is a 7-hex stub, an
+  orbit would be a live render loop against the 2026-09-16 "dim it to save
+  battery" ruling, and the first minute is a one-shot for Session C.
+- *`og-image.png`.* It is `scripts/social.ts`'s baked Settlement scene by
+  design (ruled 2026-08-26). A 3D-body candidate was shot and was not better;
+  only `og:locale` was added.
+- *Low-power / hidden tab.* Already covered: `frameloop="demand"`, the resting
+  dim, `visibilitychange`, reduced motion, the render-scale dial.
+
+**For the portfolio card:** `docs/embed/ashwake-preview-1280x800.webp` (34 KB), a
+mid-run board for a click-to-load poster instead of a live frame.

@@ -74,6 +74,15 @@ type FrontDoorProps = {
    */
   readonly onInstall?: (() => void) | undefined;
   readonly handInstall?: boolean | undefined;
+  /**
+   * SHOWN INSIDE ANOTHER PAGE (2026-10-15) — marcportal.com's preview card.
+   *
+   * Whoever is looking did not come here to play, so the door is BEGIN and one
+   * way out: DAILY goes (a streak is a commitment a preview cannot keep) and
+   * the install offers are never passed in (`App`). The way out is the same
+   * page in its own tab, because a scaled-down frame is a poor place to play.
+   */
+  readonly framed?: boolean | undefined;
 };
 
 export function FrontDoor({
@@ -88,6 +97,7 @@ export function FrontDoor({
   day,
   onInstall,
   handInstall,
+  framed = false,
 }: FrontDoorProps) {
   const lockup = useArtSlot(themeId, 'ui.logo');
   return (
@@ -163,7 +173,7 @@ export function FrontDoor({
       {/* DAILY, uniform with BEGIN now — see the doc comment above and
           `.door-begin, .door-daily` in ui.css. Absent on a door that is
           already a daily's. */}
-      {mode !== 'daily' && (
+      {mode !== 'daily' && !framed && (
         <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
           {dailyBadge}
         </button>
@@ -193,6 +203,21 @@ export function FrontDoor({
           {s.ui.menu}
         </button>
       </nav>
+
+      {/* The way out of a frame — see `framed`. A real link, so middle-click
+          and "open in new tab" work, and `noopener` so the new tab cannot reach
+          back into the page that framed this one. */}
+      {framed && (
+        <a
+          className="door-out"
+          data-door="open-full"
+          href={window.location.href}
+          target="_blank"
+          rel="noopener"
+        >
+          {s.ui.openFull}
+        </a>
+      )}
     </div>
   );
 }

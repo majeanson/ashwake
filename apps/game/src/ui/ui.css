@@ -4099,3 +4099,43 @@ button.caravan-ask.waiting {
     background: color-mix(in srgb, var(--accent) 0%, transparent);
   }
 }
+
+/*
+ * THE WAY OUT OF A FRAME (2026-10-15) — `FrontDoor`'s `framed`.
+ *
+ * A link, so it is drawn as the quietest line on the door: the same label
+ * voice as MENU's neighbours, in the accent a link already wears, with a
+ * tap-sized box because it is the one thing a framed visitor might press
+ * besides BEGIN.
+ */
+.door-out {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  letter-spacing: var(--label-tracking);
+  font-size: 0.85rem;
+}
+
+/*
+ * A WIDE SCREEN KEEPS ONE COLUMN (2026-10-15, for marcportal.com's 1280x800
+ * preview and any desktop visitor).
+ *
+ * The hand, the actions and the purse already share `--measure-wide`
+ * (`.controls`, 2026-08-30), and the board is meant to fill everything, but the
+ * header row and the note over the board's foot ran the whole 1280px: four
+ * stats stretched into slabs, and a sentence a hundred and ninety characters
+ * long on one line. They take the dock's measure now, so the top of the screen
+ * and the bottom are the same column and the board is what is left between
+ * them. A phone is the case where this changes nothing: the padding is the
+ * larger of the old gutter and what is left over, and nothing is left over.
+ */
+@media (min-width: 56rem) {
+  .hud:has(.board-menu) {
+    padding-inline: max(0.4rem, calc((100% - var(--measure-wide)) / 2));
+  }
+  .toast {
+    padding-inline: max(var(--gap), calc((100% - var(--measure-wide)) / 2));
+  }
+}

@@ -1085,6 +1085,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     },
     newVersion: 'NOUVELLE VERSION · TOUCHER POUR CHARGER',
     install: 'INSTALLER ASHWAKE',
+    openFull: 'OUVRIR LE JEU COMPLET',
     handInstall: `Ashwake sur ton écran d’accueil${D}: touche Partager dans Safari, puis Sur l’écran d’accueil.`,
     backUpNote:
       'Tes mondes vivent seulement sur ce téléphone. SAUVEGARDER, dans les RÉGLAGES, les met à l’abri.',
