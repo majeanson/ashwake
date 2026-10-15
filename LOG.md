@@ -11007,7 +11007,7 @@ cards and the always-whole book on the phone, in French.
 
 ---
 
-## Session 135 — marcportal.com frames the game (2026-10-15)
+### Session 136 — marcportal.com frames the game (2026-10-15)
 
 **The question this session answered:** what does a stranger on a portfolio
 page see, inside a 1280x800 frame, and can the edge let them see it at all?
