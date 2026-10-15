@@ -1091,6 +1091,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     privacy:
       'Nothing leaves your phone: no account, no analytics, no server. Sharing sends only what you see in the share sheet, and a crash report only if you tap SEND REPORT.',
     notices: 'Fonts and icons: the notices',
+    builtBy: 'Built by marc.portal',
   },
   payout: {
     byColour: 'BY COLOUR',

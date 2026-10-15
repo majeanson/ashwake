@@ -1510,6 +1510,11 @@ export type Strings = {
      */
     readonly notices: string;
     /**
+     * The maker's backlink (2026-10-15), one plain line under the notices.
+     * The brand name is not translated; the sentence around it is.
+     */
+    readonly builtBy: string;
+    /**
      * What a tap on the board says when it cannot place.
      *
      * Ashwake 1 wrote all three straight into its tap handler in English. A

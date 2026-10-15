@@ -1114,6 +1114,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       noError: 'Rien n’a brisé sur cet appareil.',
     },
     privacy: `Rien ne quitte ton téléphone${D}: pas de compte, pas d’analytique, pas de serveur. Partager n’envoie que ce que tu vois dans la feuille de partage, et un rapport de plantage seulement si tu touches ENVOYER LE RAPPORT.`,
+    builtBy: 'Conçu par marc.portal',
     notices: 'Polices et icônes : les mentions',
   },
   payout: {

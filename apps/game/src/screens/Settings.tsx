@@ -380,6 +380,12 @@ export function Settings({
             {s.ui.notices}
           </a>
         </p>
+        {/* The maker's backlink (2026-10-15): one plain link, quiet, no badge. */}
+        <p className="note">
+          <a href="https://marcportal.com" target="_blank" rel="noopener">
+            {s.ui.builtBy}
+          </a>
+        </p>
       </section>
     </Panel>
   );
