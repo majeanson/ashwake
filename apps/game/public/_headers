@@ -70,12 +70,13 @@
 # `apps/game/src` writes a style attribute or a `<style>`: React sets styles
 # through the CSSOM, which no CSP governs.
 #
-# `frame-ancestors` and `X-Frame-Options` together: nobody frames this game,
-# and the second is for engines that never learned the first.
+# `frame-ancestors` names who may frame this game: itself and marcportal.com
+# (the portfolio embeds it, 2026-10-15). There is NO `X-Frame-Options` on
+# purpose: it has no multi-origin allowlist, so it could only say DENY (which
+# would veto the embed) or SAMEORIGIN, and `frame-ancestors` supersedes it.
 /*
-  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' __INLINE_SCRIPT_HASHES__ blob:; style-src 'self' __INLINE_STYLE_HASHES__; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://o4510241708244992.ingest.us.sentry.io; manifest-src 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self' https://marcportal.com https://*.marcportal.com; form-action 'none'; script-src 'self' __INLINE_SCRIPT_HASHES__ blob:; style-src 'self' __INLINE_STYLE_HASHES__; img-src 'self' data: blob:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://o4510241708244992.ingest.us.sentry.io; manifest-src 'self'
   X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
   Permissions-Policy: accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin

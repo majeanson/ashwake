@@ -260,7 +260,8 @@ async function servesAFile(base: string, path: string): Promise<void> {
  */
 const CSP_MUST_CARRY: readonly string[] = [
   "default-src 'self'",
-  "frame-ancestors 'none'",
+  // Who may frame the game: itself and the portfolio, nobody else.
+  "frame-ancestors 'self' https://marcportal.com https://*.marcportal.com",
   "object-src 'none'",
   "base-uri 'none'",
   // The board's glyph worker is started from a blob URL by
@@ -296,7 +297,6 @@ const CSP_MUST_NOT_CARRY: readonly string[] = ["'unsafe-inline'", "'unsafe-eval'
 
 const HEADERS_MUST_CARRY: readonly (readonly [string, string])[] = [
   ['x-content-type-options', 'nosniff'],
-  ['x-frame-options', 'DENY'],
   ['referrer-policy', 'no-referrer'],
 ];
 
@@ -313,6 +313,10 @@ async function checkHeaders(base: string): Promise<void> {
   for (const clause of CSP_MUST_NOT_CARRY) {
     if (csp.includes(clause)) throw new Error(`CSP still carries "${clause}": ${csp}`);
   }
+  // `X-Frame-Options` must be ABSENT: it cannot express the allowlist, and a
+  // stale DENY would veto the portfolio embed in engines that honour it.
+  const xfo = res.headers.get('x-frame-options');
+  if (xfo !== null) throw new Error(`x-frame-options is ${xfo}, want absent`);
   for (const [name, value] of HEADERS_MUST_CARRY) {
     const got = res.headers.get(name);
     if (got !== value) throw new Error(`${name} is ${got ?? 'absent'}, want ${value}`);
