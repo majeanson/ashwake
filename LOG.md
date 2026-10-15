@@ -11028,13 +11028,14 @@ board's foot now take the dock's `--measure-wide` at >= 56rem. A phone is
 unchanged. This is an eye call at 1280x800 only — Marc has not seen it.
 
 **Looked at and left alone.**
-- *Idle attract on the door.* The board behind the door is a 7-hex stub, an
+
+- _Idle attract on the door._ The board behind the door is a 7-hex stub, an
   orbit would be a live render loop against the 2026-09-16 "dim it to save
   battery" ruling, and the first minute is a one-shot for Session C.
-- *`og-image.png`.* It is `scripts/social.ts`'s baked Settlement scene by
+- _`og-image.png`._ It is `scripts/social.ts`'s baked Settlement scene by
   design (ruled 2026-08-26). A 3D-body candidate was shot and was not better;
   only `og:locale` was added.
-- *Low-power / hidden tab.* Already covered: `frameloop="demand"`, the resting
+- _Low-power / hidden tab._ Already covered: `frameloop="demand"`, the resting
   dim, `visibilitychange`, reduced motion, the render-scale dial.
 
 **For the portfolio card:** `docs/embed/ashwake-preview-1280x800.webp` (34 KB), a
