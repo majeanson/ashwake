@@ -11040,3 +11040,37 @@ unchanged. This is an eye call at 1280x800 only — Marc has not seen it.
 
 **For the portfolio card:** `docs/embed/ashwake-preview-1280x800.webp` (34 KB), a
 mid-run board for a click-to-load poster instead of a live frame.
+
+### Session 137 — the cue: a control lights while a lesson talks about it (2026-10-15)
+
+**Question.** Marc: _"in the tutorial if we showcase some actions or concepts,
+highlight them briefly until the user taps (example pop button, points in the
+header, etc.)"_. Does lighting the control the words name make the first minute
+clearer — or is a pulse on a phone one more thing in the way?
+
+**Built.** A cue is a control the game rings while it talks about it
+(`CueId`, `CUE_SELECTOR`, `CUE_MS` in `shell/teaching.ts`). It is armed by:
+the coach's seven steps (`stepCue`: hand, hand, TILES, POP, TILES, POP, TILES),
+the moments that name a control (`Slot.cue`: place and COLOURS -> hand, POP ->
+POP, cost -> COST, lens -> LENS, LUCK/purse/redraw -> the purse, last gasp ->
+TILES), a refused placement while a pocket waits (POP), and the first pop's
+card (POINTS, in the header, once it is read). It shows only while the player
+can act on it (`lit` in `App`: in play, no panel, no card up or due), goes out
+on a tap on that control or after `CUE_MS` (8 s; 0 turns cues off), and stays
+until pressed for the first walk's POP, which `mustPop` forces anyway. Drawn
+as an outline on `.shell[data-cue]` — still ring by default, pulsing only under
+`prefers-reduced-motion: no-preference`, no layout and no transform.
+
+**Not cued, on purpose.** UNDO, the camera, MENU and the stash: no coach or
+lesson sentence names them, and a glow on a control the words never mention is
+a mystery. Adding one means a sentence first.
+
+**Verified.** Typecheck, lint, 1616 unit tests, `pnpm sim` byte-identical,
+sweep 0 (`CoachStep` stays file-internal), budget bar moved 198,000 -> 199,000
+(reason in `budget.json`). A fresh device at 390x844 in Chromium: the hand rings
+after the opening cards and a tap on a tile puts it out.
+
+**Not verified, and it is Marc's:** how it LOOKS (the ring is `--accent`, a dark
+brown on parchment), whether 8 s is right, and the first minute on a phone. This
+touches the first minute, which `CLAUDE.md` holds still for Session C — it ships
+because Marc asked, and `CUE_MS = 0` takes it back out.

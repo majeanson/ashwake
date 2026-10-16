@@ -153,13 +153,19 @@ import { useMediaQuery, useReducedMotion } from './shell/useMedia';
 import { useDevice } from './shell/useDevice';
 import {
   coachStep,
+  CUE_MS,
+  CUE_SELECTOR,
+  type CueId,
+  cueOf,
   mustPop,
   newDots,
   nextLesson,
   offerDots,
   opensAt,
+  phaseOf,
   purseOpened,
   sinceSpoke,
+  stepCue,
   toastLine,
   tourTarget,
   told,
@@ -511,6 +517,15 @@ function Game() {
   /** The coach step last spoken, so a step is said once and again only after
    *  something louder (a receipt) has taken the strip. Null between runs. */
   const coached = useRef<string | null>(null);
+  /**
+   * The control the game is lighting right now, or null (2026-10-15). Armed when
+   * a lesson, a toast or a coach step talks about a control, put out by a tap on
+   * it or by `CUE_MS`; whether it SHOWS is `lit`, below. See `CueId`.
+   */
+  const [cue, setCue] = useState<CueId | null>(null);
+  const arm = useCallback((next: CueId | null) => {
+    if (next !== null && CUE_MS > 0) setCue(next);
+  }, []);
   /** The NEW chips this run has offered and the player has not opened. A chip,
    *  once showing, stays until it is tapped: the pace holds a NEW chip back, it
    *  does not take one away (2026-10-12). Cleared with every run. */
@@ -518,6 +533,7 @@ function Game() {
   const frameTheRun = useCallback(() => {
     // Every run opens through here: its coach starts from its first step.
     coached.current = null;
+    setCue(null);
     setOfferedDots([]);
     setFraming((n) => n + 1);
   }, []);
@@ -1187,9 +1203,10 @@ function Game() {
       setProgress((p) => told(p, due.id));
       markSpoke(at.hud.placements);
       say(line);
+      arm(cueOf(due.id));
       return true;
     },
-    [theme, s, say, setProgress, markSpoke],
+    [theme, s, say, setProgress, markSpoke, arm],
   );
 
   /**
@@ -1896,6 +1913,7 @@ function Game() {
         mustPop({ board: at.board, hud: at.hud, placed: at.hud.placements > 0 }, progress)
       ) {
         say(s.coach.popFirst);
+        arm('pop');
         return;
       }
       /*
@@ -2131,6 +2149,7 @@ function Game() {
           if (coached.current !== step) {
             coached.current = step;
             say(s.coach[step]);
+            arm(stepCue(step));
             // The ending has been explained: its toast need not say it again.
             if (step === 'end') setProgress((p) => told(p, 'lastGasp'));
           }
@@ -2236,7 +2255,11 @@ function Game() {
         // Through `speakAfter`, so the teaching is held for the whole wait as
         // well — this is the exact card Marc watched LUCK get shown over and
         // then taken away from. See `speaking`.
-        speakAfter(wait, () => setSaidCard(shown));
+        // And the score it just made lights in the header once the card is read.
+        speakAfter(wait, () => {
+          setSaidCard(shown);
+          arm('points');
+        });
         return;
       }
 
@@ -2308,6 +2331,7 @@ function Game() {
       daily,
       say,
       speakLesson,
+      arm,
     ],
   );
 
@@ -3342,6 +3366,35 @@ function Game() {
     term === null
       ? card
       : null;
+  /**
+   * THE CUE SHOWS only while the player can act on it: a run in play, nothing
+   * open over the board, no card up or due. Armed under a card, it waits, and
+   * the dismissal that clears the card is what lights it.
+   */
+  const lit =
+    cue !== null &&
+    playing &&
+    !anyOpen &&
+    card === null &&
+    saidCard === null &&
+    dotOpen === null &&
+    term === null;
+  useEffect(() => {
+    if (!lit || cue === null) return;
+    const out = () => setCue(null);
+    // The first walk's POP is the one thing the game will not let you skip
+    // (`mustPop`), so its ring stays until it is pressed.
+    const sticky = cue === 'pop' && phaseOf(progress) === 'walk';
+    const timer = sticky ? undefined : window.setTimeout(out, CUE_MS);
+    const tapped = (e: Event) => {
+      if (e.target instanceof Element && e.target.closest(CUE_SELECTOR[cue]) !== null) out();
+    };
+    document.addEventListener('click', tapped, true);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('click', tapped, true);
+    };
+  }, [lit, cue, progress]);
   /** The lesson (and row) the fired card is about, computed once per render. */
   const teachingAt = teaching === null ? null : opensAt(teaching, snap.board);
   /** And the chip's: a chip's row never depends on the board. */
@@ -3395,6 +3448,7 @@ function Game() {
     setProgress((p) => tells.reduce(told, p));
     if (how === 'fired') markSpoke(session.get().hud.placements);
     else setDotOpen(null);
+    arm(cueOf(id));
     speakLesson(after, session.get());
   };
 
@@ -3576,7 +3630,7 @@ function Game() {
       when the locale resolves, which is the statement that actually does
       anything.
     */
-    <div className="shell">
+    <div className="shell" data-cue={lit ? cue : undefined}>
       {playing && (
         <Hud
           hud={snap.hud}

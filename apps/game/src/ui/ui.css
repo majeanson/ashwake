@@ -4139,3 +4139,49 @@ button.caravan-ask.waiting {
     padding-inline: max(var(--gap), calc((100% - var(--measure-wide)) / 2));
   }
 }
+
+/*
+ * THE CUE (2026-10-15, Marc: "if we showcase some actions or concepts,
+ * highlight them briefly until the user taps"). `App` puts `data-cue` on the
+ * shell while a lesson is talking about one control; this draws the ring.
+ *
+ * An OUTLINE, not a shadow or a transform: it follows the control's own corners
+ * without taking its shadow, it takes no layout, and it leaves the box still,
+ * which Playwright's actionability check needs from anything it clicks. Still
+ * ring by default, pulsing only where motion is welcome. The ids are
+ * `CueId` / `CUE_SELECTOR` in `shell/teaching.ts`; keep the three in step.
+ */
+.shell[data-cue='hand'] [data-hud='hand'] .tile:not(.gap),
+.shell[data-cue='pop'] [data-action='pop'],
+.shell[data-cue='tiles'] [data-stat='tiles'],
+.shell[data-cue='points'] [data-stat='points'],
+.shell[data-cue='cost'] [data-stat='cost'],
+.shell[data-cue='purse'] [data-action='purse'],
+.shell[data-cue='lens'] [data-action='lens'] {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell[data-cue='hand'] [data-hud='hand'] .tile:not(.gap),
+  .shell[data-cue='pop'] [data-action='pop'],
+  .shell[data-cue='tiles'] [data-stat='tiles'],
+  .shell[data-cue='points'] [data-stat='points'],
+  .shell[data-cue='cost'] [data-stat='cost'],
+  .shell[data-cue='purse'] [data-action='purse'],
+  .shell[data-cue='lens'] [data-action='lens'] {
+    animation: cue-pulse 1.1s ease-in-out infinite;
+  }
+}
+
+@keyframes cue-pulse {
+  0%,
+  100% {
+    outline-offset: 2px;
+    outline-color: var(--accent);
+  }
+  50% {
+    outline-offset: 6px;
+    outline-color: transparent;
+  }
+}

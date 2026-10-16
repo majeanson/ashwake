@@ -8,6 +8,10 @@ import { createSession, type Snapshot } from './store';
 import { lessonOf, type LessonId } from '@view/lessons';
 import {
   CARD_GAP,
+  CUE_MS,
+  CUE_SELECTOR,
+  cueOf,
+  stepCue,
   SCHEDULE,
   newDots,
   nextLesson,
@@ -707,5 +711,26 @@ describe('THE MAP is one card, then chips (2026-10-13)', () => {
     expect(toldBy('lens', board)).toEqual(['lens']);
     expect(toldBy('field', board)).toEqual(['field']);
     expect(toldBy('cache', board)).toEqual(['cache', 'map']);
+  });
+});
+
+describe('cues (2026-10-15)', () => {
+  it('every cue a moment or a step names has a selector', () => {
+    const named = [
+      ...SCHEDULE.flatMap((slot) => (slot.cue === undefined ? [] : [slot.cue])),
+      ...(['place', 'match', 'grow', 'pop', 'build', 'bank', 'end'] as const).map(stepCue),
+    ];
+    expect(named.length).toBeGreaterThan(0);
+    for (const cue of named) expect(CUE_SELECTOR[cue]).toBeTruthy();
+  });
+
+  it('cueOf answers a moment, and null for one about no control', () => {
+    expect(cueOf('luck')).toBe('purse');
+    expect(cueOf('pop')).toBe('pop');
+    expect(cueOf('map')).toBeNull();
+  });
+
+  it('the dial is a positive number of ms, and 0 would turn cues off', () => {
+    expect(CUE_MS).toBeGreaterThan(0);
   });
 });

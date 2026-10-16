@@ -53,6 +53,35 @@ export type Moment = {
 type Phase = 'walk' | 'tour' | 'free';
 
 /**
+ * A CUE is a control the game lights while it talks about it (2026-10-15, Marc:
+ * _"if we showcase some actions or concepts, highlight them briefly until the
+ * user taps"_). The ring is CSS (`[data-cue]` on the shell in `ui.css`); the
+ * ids are what that stylesheet and `CUE_SELECTOR` both answer to.
+ *
+ * A cue is for a thing the sentence NAMES: a glow on a control the words never
+ * mention is a mystery with a ring on it. `hand` is the next tiles, `tiles`
+ * `points` and `cost` are the stat row's, `pop` `purse` `lens` the cluster's.
+ */
+export type CueId = 'hand' | 'pop' | 'tiles' | 'points' | 'cost' | 'purse' | 'lens';
+
+/** Where each cue lives in the DOM, for the tap that puts it out. */
+export const CUE_SELECTOR: Readonly<Record<CueId, string>> = {
+  hand: '[data-hud="hand"] .tile',
+  pop: '[data-action="pop"]',
+  tiles: '[data-stat="tiles"]',
+  points: '[data-stat="points"]',
+  cost: '[data-stat="cost"]',
+  purse: '[data-action="purse"]',
+  lens: '[data-action="lens"]',
+};
+
+/**
+ * How long a cue stays lit if nobody taps it, in ms; 0 turns cues off, as every
+ * system's dial does. Brief on purpose: a glow that never leaves is chrome.
+ */
+export const CUE_MS = 8000;
+
+/**
  * One moment, everything the game knows about it, in one place (2026-10-13).
  *
  * This was nine hand-synced lists — the order, the card set, the chip set, the
@@ -114,6 +143,8 @@ type Slot = {
    * explicitly.
    */
   readonly tells?: readonly TeachId[];
+  /** The control this moment talks about, lit once it has been said (`cueOf`). */
+  readonly cue?: CueId;
   /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
   readonly phase?: 'walk' | 'tour';
   /**
@@ -243,6 +274,7 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'place',
+    cue: 'hand',
     as: 'toast',
     opens: { lesson: 'expedition' },
     phase: 'walk',
@@ -269,6 +301,7 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'pop',
+    cue: 'pop',
     as: 'card',
     opens: { lesson: 'pop' },
     phase: 'walk',
@@ -288,6 +321,7 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'costRise',
+    cue: 'cost',
     as: 'toast',
     opens: { lesson: 'end' },
     when: ({ hud }) => hud.cost > 1,
@@ -374,15 +408,17 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'lens',
+    cue: 'lens',
     as: 'toast',
     opens: { lesson: 'map', row: 'lens' },
     // Only worth explaining once there is enough board to sort through.
     when: ({ board }) => board.cells.filter((c) => c.kind === 'tile').length >= 6,
     line: (_now, _t, _theme, s) => s.lensHint,
   },
-  { id: 'luck', as: 'card', phase: 'tour', when: ({ hud }) => hud.luck > 0 },
+  { id: 'luck', cue: 'purse', as: 'card', phase: 'tour', when: ({ hud }) => hud.luck > 0 },
   {
     id: 'reroll',
+    cue: 'purse',
     as: 'toast',
     opens: { lesson: 'luck' },
     // A poor hand AND the luck to do something about it: a hint about a button
@@ -396,6 +432,7 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'purse',
+    cue: 'purse',
     as: 'card',
     // The purse's card IS the LUCK lesson's (2026-10-13), its rows the buttons,
     // so reading it tells LUCK too: the tour's own LUCK card must not come
@@ -425,6 +462,7 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'colours',
+    cue: 'hand',
     opens: { lesson: 'grounds' },
     as: 'card',
     phase: 'walk',
@@ -433,6 +471,7 @@ export const SCHEDULE: readonly Slot[] = [
   },
   {
     id: 'lastGasp',
+    cue: 'tiles',
     as: 'toast',
     opens: { lesson: 'end' },
     paced: false,
@@ -568,6 +607,24 @@ export function coachStep(now: Moment, progress: Progress): CoachStep | null {
   // The first two tiles are about colour; after that, about surrounding.
   return now.hud.placements < 3 ? 'match' : 'grow';
 }
+
+/** What each coach step points at: the control its sentence tells the player to use. */
+const STEP_CUE: Readonly<Record<CoachStep, CueId>> = {
+  place: 'hand',
+  match: 'hand',
+  grow: 'tiles',
+  pop: 'pop',
+  build: 'tiles',
+  bank: 'pop',
+  end: 'tiles',
+};
+
+/** The control a coach step points at. */
+export const stepCue = (step: CoachStep): CueId => STEP_CUE[step];
+
+/** The control a moment talks about, or null where it is about no control. */
+export const cueOf = (id: TeachId): CueId | null =>
+  SCHEDULE.find((slot) => slot.id === id)?.cue ?? null;
 
 /**
  * The first thing worth saying that this device has not been told.
