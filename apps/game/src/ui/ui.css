@@ -1114,7 +1114,7 @@ button[disabled] {
   border: 0;
   background: none;
   color: var(--ink-dim);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   display: inline-grid;
   place-items: center;
 }
@@ -1124,7 +1124,7 @@ button[disabled] {
   gap: 0.4rem;
   justify-content: space-between;
   margin: 0.1rem 0 0.3rem 2.1rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 .tip-value {
   font-variant-numeric: tabular-nums;
@@ -1249,7 +1249,7 @@ button[disabled] {
   display: block;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--ink-dim);
 }
 
@@ -1755,7 +1755,7 @@ a:visited {
    * tuned against, spelled in px so raising the root cannot also raise the
    * one budget that was already spent.
    */
-  font-size: clamp(9.6px, 1.9vw, 11.52px);
+  font-size: clamp(9.6px, 1.9vw, 14px);
   white-space: nowrap;
   overflow: hidden;
   /*
@@ -2020,7 +2020,7 @@ a:visited {
   color: var(--accent);
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 /* ---- the camera cluster ------------------------------------------------- */
@@ -2075,7 +2075,7 @@ a:visited {
   background: var(--panel);
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 /*
@@ -2351,7 +2351,7 @@ a:visited {
   letter-spacing: var(--label-tracking);
   /* Only the empty stash slot still writes a word inside a card; it sets its
      own size (`.tile.hold`), and this is what it falls back to. */
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 /*
@@ -2439,7 +2439,7 @@ a:visited {
   color: var(--ink-faint);
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 /*
@@ -2515,7 +2515,7 @@ a:visited {
    * root bump makes everything else in the game bigger without asking this
    * already-tight budget to give up another letter.
    */
-  font-size: clamp(12.8px, 2.4vw, 15.2px);
+  font-size: clamp(12.8px, 2.4vw, 16px);
   /*
    * NOWRAP WITH NOWHERE TO GO (2026-09-02).
    *
@@ -2552,7 +2552,7 @@ a:visited {
 }
 
 .act-value {
-  font-size: clamp(0.58rem, 1.8vw, 0.7rem);
+  font-size: clamp(0.62rem, 1.8vw, 0.8rem);
   color: var(--ink-dim);
   white-space: nowrap;
 }
@@ -2759,11 +2759,11 @@ a:visited {
   border-radius: var(--radius-sm);
   background: var(--ground, var(--accent));
   color: var(--ink);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 .lens-detail .lens-rule {
   margin-bottom: 0.45rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .lens-main {
@@ -2775,7 +2775,7 @@ a:visited {
 }
 
 .lens-sub {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 .lens-figures {
@@ -2786,12 +2786,12 @@ a:visited {
 }
 
 .lens-tiles {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 .lens-foot {
   margin: 0.2rem 0.2rem 0;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
 }
 
 /* The LENS door, beside LUCK in the corner, in LUCK's own voice. */
@@ -2826,7 +2826,7 @@ a:visited {
    describe what the number to their left is buying. */
 .spends-odds {
   margin-inline-start: auto;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   text-align: end;
 }
 
@@ -2944,7 +2944,7 @@ a:visited {
  * miss is information rather than an announcement.
  */
 .end-run {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   letter-spacing: var(--label-tracking);
   color: var(--ink-dim);
   margin: 0;
@@ -3101,6 +3101,13 @@ a:visited {
 .arc-chart {
   display: block;
   width: 100%;
+/* The line is a control (it opens the relic card), so it keeps the 44px floor. */
+.end-banked .term {
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
   height: 3rem;
 }
 
@@ -3213,7 +3220,7 @@ a:visited {
   color: var(--accent);
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 /*
@@ -3281,7 +3288,7 @@ a:visited {
    thing a player can do with it besides SEND is read it out. */
 .crash-detail {
   font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--ink-dim);
   overflow-wrap: anywhere;
   white-space: pre-wrap;
@@ -3361,7 +3368,7 @@ a:visited {
   color: var(--ink-dim);
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.65rem;
+  font-size: 0.8rem;
 }
 
 .directions button[aria-pressed='true'] {
@@ -3419,7 +3426,7 @@ a:visited {
   gap: 0.2rem;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--accent);
   text-align: center;
 }
@@ -3641,7 +3648,7 @@ a:visited {
      paint over an open dialog is the bug `stacking.spec.ts` exists for. */
   z-index: var(--z-chrome);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   letter-spacing: 0.04em;
   padding: 0.4rem 0.6rem;
   background: var(--panel);
@@ -3667,7 +3674,7 @@ a:visited {
   padding: 0.3rem 0.45rem;
   border: 1px solid var(--panel-edge);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 /* A fact that has happened wears the accent — the one colour on this screen,
@@ -3712,7 +3719,7 @@ a:visited {
 .playtest-notes li .fact-label {
   grid-column: 1;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   color: var(--ink-dim);
 }
 
@@ -3739,7 +3746,7 @@ a:visited {
   background: var(--panel);
   border: 1px solid var(--panel-edge);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   line-height: 1.4;
   color: var(--ink-dim);
   /* The sheet is fixed-width text and must not be re-wrapped into a lie about
@@ -3815,7 +3822,7 @@ a:visited {
 .act-note {
   /* Inside POP since 2026-09-25, a third line under the value. */
   text-align: center;
-  font-size: clamp(0.58rem, 1.8vw, 0.7rem);
+  font-size: clamp(0.62rem, 1.8vw, 0.8rem);
   color: var(--ink-dim);
   white-space: nowrap;
   overflow: hidden;
@@ -3847,7 +3854,7 @@ a:visited {
   margin-inline-start: auto;
   font-family: var(--font-label);
   letter-spacing: var(--label-tracking);
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   color: var(--accent);
   /* It is a label, not a heading: it must never wrap the row onto a second
      line on the narrowest phone this game supports. */
@@ -3950,7 +3957,7 @@ a:visited {
      and a fixed size overflowed at 320 in both languages and at 360 in
      French. */
   letter-spacing: 0.04em;
-  font-size: min(0.72rem, 3.2vw);
+  font-size: clamp(0.62rem, 3.2vw, 0.85rem);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3962,7 +3969,8 @@ a:visited {
 }
 .caravan-ask.coming,
 .caravan-ask.left {
-  opacity: 0.7;
+  /* No opacity: it took the dim ink under 4.5:1 on daylight (3.97). */
+  color: var(--ink-dim);
 }
 button.caravan-ask.waiting {
   position: absolute;
@@ -4043,7 +4051,7 @@ button.caravan-ask.waiting {
 .new-chip-new {
   flex: none;
   color: var(--accent);
-  font-size: 0.7em;
+  font-size: 0.8em;
   letter-spacing: 0.08em;
 }
 
