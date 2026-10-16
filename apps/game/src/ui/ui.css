@@ -4185,3 +4185,28 @@ button.caravan-ask.waiting {
     outline-color: transparent;
   }
 }
+
+/*
+ * THE ENDING'S TOUR (2026-10-15) — the same ring as the board's cue, on the end
+ * screen, one part at a time (`EndStep` in `screens/EndScreen.tsx`). Keep the
+ * four selectors in step with its `END_SELECTOR`.
+ */
+.end[data-end-cue='relics'] [data-hud='banked'] .term,
+.end[data-end-cue='details'] [data-end='details'],
+.end[data-end-cue='shop'] [data-end='shop'],
+.end[data-end-cue='again'] [data-action='retry'],
+.end[data-end-cue='again'] [data-action='new-run'] {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .end[data-end-cue='relics'] [data-hud='banked'] .term,
+  .end[data-end-cue='details'] [data-end='details'],
+  .end[data-end-cue='shop'] [data-end='shop'],
+  .end[data-end-cue='again'] [data-action='retry'],
+  .end[data-end-cue='again'] [data-action='new-run'] {
+    animation: cue-pulse 1.1s ease-in-out infinite;
+  }
+}

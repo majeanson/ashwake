@@ -11074,3 +11074,23 @@ after the opening cards and a tap on a tile puts it out.
 brown on parchment), whether 8 s is right, and the first minute on a phone. This
 touches the first minute, which `CLAUDE.md` holds still for Session C — it ships
 because Marc asked, and `CUE_MS = 0` takes it back out.
+
+**Session 137, later — the ending's tour (Marc: _"do the same highlighting when
+ending a game in the end screen, explain relics and such"_).** The first
+finished run in a world (`standing.run === 1`, once ever; none on a daily or a
+detour) lights four parts of the end screen one at a time, in the order a thumb
+meets them going down: the relics line, DETAILS (why the number was what it
+was), THE SHOP, and the button that goes again (`EndStep`, `END_SELECTOR` in
+`screens/EndScreen.tsx`; the ring is the board cue's). A step is lit until
+tapped, scrolled into view when it lights, and the whole tour ends if left alone
+for `CUE_MS`; it waits while a card or panel is over the screen (`hold`).
+**The relics line is a real term now** (a `.term` button, always, not only in
+the tour): a tap opens THE RUN'S END at its relic row, the same card the NEW chip
+opens, so lighting it explains it and no sentence is new. Steps the screen does
+not show are not in the list (no relics line on a daily, no shop off a world).
+`CUE_MS = 0` turns both tours off. **Verified:** typecheck, lint, 1616 unit
+tests, sim byte-identical, sweep 0, budget under the same bar (193.9 KB), the six
+e2e specs that reach an ending on Chromium (120/120), and a look at 390x844:
+the relics term rings and scrolls in, its card opens, and DETAILS lights when it
+closes. **Marc's:** the look, the order, and whether DETAILS and THE SHOP want a
+sentence of their own (they have none: the shop rows explain themselves).

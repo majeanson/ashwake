@@ -79,7 +79,7 @@ export const CUE_SELECTOR: Readonly<Record<CueId, string>> = {
  * How long a cue stays lit if nobody taps it, in ms; 0 turns cues off, as every
  * system's dial does. Brief on purpose: a glow that never leaves is chrome.
  */
-export const CUE_MS = 8000;
+export const CUE_MS: number = 8000;
 
 /**
  * One moment, everything the game knows about it, in one place (2026-10-13).

@@ -15,6 +15,7 @@ import { Atlas } from './Atlas';
 import { Payout } from './Payout';
 import { Shop } from './Shop';
 import { statLabel } from './Hud';
+import { CUE_MS } from '../shell/teaching';
 import { useArtSlot } from '../shell/art';
 
 /**
@@ -190,6 +191,35 @@ type EndScreenProps = {
   readonly firstRun?: boolean | undefined;
   /** This run came from a shared link, so the chain can carry on from here. */
   readonly fromLink?: boolean;
+  /**
+   * LIGHT THE PARTS OF THIS SCREEN ONE AT A TIME (2026-10-15, Marc: _"do the
+   * same highlighting … in the end screen, explain relics and such"_) — see
+   * `EndStep`. The shell decides, as it does for `firstRun`: it is the
+   * device's first finished run in a world, once ever.
+   */
+  readonly tour?: boolean | undefined;
+  /** A card or panel is over this screen: the ring waits for it to close. */
+  readonly hold?: boolean | undefined;
+};
+
+/**
+ * THE ENDING'S TOUR (2026-10-15): the same idea as the board's cue
+ * (`shell/teaching.ts`, `CueId`) on the one screen that is a page rather than a
+ * board. The things worth pointing at, in the order a thumb meets them going
+ * down: what the run banked, why the number was what it was, what the bank
+ * buys, and the button that goes again. Each is lit until it is tapped (or
+ * `CUE_MS`), and the relics line is a real term, so lighting it is also
+ * explaining it. A step the screen does not show (no relics on a daily, no shop
+ * off a world) is not in the list.
+ */
+type EndStep = 'relics' | 'details' | 'shop' | 'again';
+
+/** Where each step lives, for the tap that moves the tour on and the scroll. */
+const END_SELECTOR: Readonly<Record<EndStep, string>> = {
+  relics: '[data-hud="banked"] .term',
+  details: '[data-end="details"]',
+  shop: '[data-end="shop"]',
+  again: '[data-action="retry"], [data-action="new-run"]',
 };
 
 /** How long COPIED stands before the button goes back to being a button. Long
@@ -220,6 +250,8 @@ export function EndScreen({
   onMore,
   onShare,
   goals,
+  tour,
+  hold,
 }: EndScreenProps) {
   /* The daily's KEEP THIS BOARD picker: shut until asked for, and `armed` is
      the slot whose second press would abandon it. Both reset with the screen,
@@ -284,6 +316,48 @@ export function EndScreen({
   const hero = useArtSlot(theme.id, 'ui.runEnd');
 
   const summary = hud.summary;
+  const steps: readonly EndStep[] =
+    tour !== true || CUE_MS === 0
+      ? []
+      : [
+          ...(world != null && hud.relics > 0 ? (['relics'] as const) : []),
+          ...(summary !== null ? (['details'] as const) : []),
+          ...(world != null ? (['shop'] as const) : []),
+          'again',
+        ];
+  const [at, setAt] = useState(0);
+  const step = steps[at] ?? null;
+  const lit = step !== null && hold !== true;
+  useEffect(() => {
+    if (!lit || step === null) return;
+    const selector = END_SELECTOR[step];
+    // Brought into view when it lights: the relics line is below the fold on a
+    // phone, and a ring nobody can see is the lesson not given.
+    const delay = window.setTimeout(
+      () =>
+        document.querySelector(selector)?.scrollIntoView({
+          block: 'center',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? 'auto'
+            : 'smooth',
+        }),
+      step === steps[0] ? 900 : 0,
+    );
+    // Left alone for `CUE_MS`, the tour is over rather than moving on under a
+    // thumb that is reading something else.
+    const out = window.setTimeout(() => setAt(steps.length), CUE_MS + 900);
+    const tapped = (e: Event) => {
+      if (e.target instanceof Element && e.target.closest(selector) !== null) setAt(at + 1);
+    };
+    document.addEventListener('click', tapped, true);
+    return () => {
+      window.clearTimeout(delay);
+      window.clearTimeout(out);
+      document.removeEventListener('click', tapped, true);
+    };
+    // `steps` is rebuilt every render; `at` and `step` are what it is a function of.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lit, step, at]);
   const arc = summary === null ? null : arcNote(summary, s);
 
   return (
@@ -294,7 +368,7 @@ export function EndScreen({
      * landmark at all. `board-host` goes `inert` for exactly this state
      * (`App.tsx`), so the two never compete for the one `role="main"`.
      */
-    <div className="end" data-hud="end" role="main">
+    <div className="end" data-hud="end" role="main" data-end-cue={lit ? step : undefined}>
       {/*
         THE BOARD YOU LEFT, AT THE TOP, AND IT IS A DOOR (Marc, 2026-09-25, of
         THE GROUND YOU WALKED and REPLAY at the foot of this screen:
@@ -467,7 +541,11 @@ export function EndScreen({
       */}
       {world != null && hud.relics > 0 && (
         <p className="note end-banked" data-hud="banked">
-          <Icon name="relic" /> {s.ui.ending.relicsBanked(hud.relics)}
+          {/* A term, so the line that names the currency explains it on a tap:
+              THE RUN'S END at its relic row, the same card the NEW chip opens. */}
+          <button type="button" className="term" onClick={() => onTerm('end', 'relic')}>
+            <Icon name="relic" /> {s.ui.ending.relicsBanked(hud.relics)}
+          </button>
         </p>
       )}
 
@@ -541,14 +619,16 @@ export function EndScreen({
 
       {/* Why the number was what it was, one tap down — see `Payout`. */}
       {summary !== null && (
-        <Payout
-          summary={summary}
-          points={hud.points}
-          reach={hud.depthValue}
-          harvests={harvests}
-          theme={theme}
-          s={s}
-        />
+        <div data-end="details">
+          <Payout
+            summary={summary}
+            points={hud.points}
+            reach={hud.depthValue}
+            harvests={harvests}
+            theme={theme}
+            s={s}
+          />
+        </div>
       )}
 
       {/* The relics this run earned are spent HERE, on the screen where they
@@ -563,7 +643,9 @@ export function EndScreen({
           bleeding onto a board that has no world (2026-09-03, Marc: "when
           playing dailies, dont show the shop or anything world-related"). */}
       {world != null && (
-        <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
+        <div data-end="shop">
+          <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
+        </div>
       )}
 
       {/*

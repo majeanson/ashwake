@@ -4233,6 +4233,11 @@ function Game() {
                Dark behind `ui.firstRun` until Session C has run. */
             firstRun={isEnabled(features, 'ui.firstRun') && standing?.run === 1}
             fromLink={session.detour}
+            /* THE ENDING'S TOUR: the device's first finished run in a world,
+               once ever (`standing.run` is null on a daily and a detour). It
+               waits while a card or panel is over the screen. */
+            tour={standing?.run === 1}
+            hold={anyOpen || term !== null}
           />
         </div>
       )}
