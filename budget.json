@@ -14,7 +14,7 @@
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
   "firstPaint": {
-    "gzip": 199000,
+    "gzip": 200000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -87,7 +87,13 @@
       "MOVED 2026-10-15, from 198,000 to 199,000, for THE CUE (LOG.md Session",
       "137). Measured 193.4 KB gzipped, 0.04 KB over: the cue table and the",
       "step map in shell/teaching.ts, the ring in ui.css, the tap-out effect in",
-      "App. No new sentences. First minute again; renderer-by-name untouched."
+      "App. No new sentences. First minute again; renderer-by-name untouched.",
+      "",
+      "MOVED 2026-10-16, from 199,000 to 200,000, for THE ENDING REWORKED",
+      "(LOG.md Session 138). Measured 194.4 KB gzipped, 0.1 KB over: the shop's",
+      "heading row, CE MONDE as a fold, the arc note under its curve, the nav",
+      "row, and the cue's three per-run sets in App. No new sentences; the",
+      "renderer-by-name check is untouched."
     ]
   },
   "renderer": {

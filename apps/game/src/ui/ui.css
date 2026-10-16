@@ -3148,29 +3148,72 @@ a:visited {
 
 .end .facts {
   width: min(var(--measure), 100%);
+  /* TWO ACROSS, always (2026-10-16): `auto-fit` found three at a phone's
+     width, where DESTINATIONS at 0.8rem is wider than a third of the column
+     and ran into PRIMES, and PLUS GROSSE's value broke over two lines. Three
+     rows of two, every label and value on one line, and the six never change
+     shape. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 /*
- * THIS WORLD, over the atlas on the ending (2026-09-01).
+ * THE TOUR'S WRAPPERS TAKE THE COLUMN'S MEASURE (2026-10-16).
  *
- * The screen already has a stat grid of the RUN, so the block under it needs
- * one word saying whose numbers these are. A label, at the same measure as
- * everything else in the column, with the gap above it that separates a heading
- * from the block before it rather than from its own.
+ * `[data-end="details"]` and `[data-end="shop"]` are bare divs put round the
+ * breakdown and the shop on 2026-10-15 so the ending's tour had something to
+ * light. A bare div in a centred flex column is shrink-wrapped, and the fold
+ * inside it asks for `100%` OF THAT — so DÉTAILS opened at its own content
+ * width, ~207px on a 390px phone: bars a thumb wide, every French source label
+ * on two lines, the curve's caption on the columns' feet. Marc's screenshot
+ * found it the next morning. The wrapper is a section of the column and takes
+ * the section's width.
  */
-.end-world-head {
+.end > [data-end] {
   width: min(var(--measure), 100%);
   text-align: start;
-  margin: var(--gap) 0 0;
 }
 
-/* The atlas keeps the column's measure like every other section here. */
+/*
+ * THE COLUMN'S RHYTHM (2026-10-16). One `--gap` between every line is right
+ * for the lines around the score and wrong between the blocks under them,
+ * which ran into each other: a step before each fold, the shop and the way
+ * out, so the screen reads as sections rather than as one list.
+ */
+.end > .fold,
+.end > [data-end],
+.end > .panel-menu {
+  margin-top: var(--gap);
+}
+
+/*
+ * The atlas on the ending is a LEDGER (2026-10-16), inside the CE MONDE fold:
+ * seven facts in a grid of three left one alone on its own row, and a world's
+ * standing reads as a list of terms and values the same way the payout does.
+ * The WORLDS panel keeps the grid.
+ */
 .end .atlas {
-  width: min(var(--measure), 100%);
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
   text-align: start;
+}
+.end .atlas .facts {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.end .atlas .facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--gap);
+  padding: 0.15rem 0;
+}
+.end .atlas .facts > div + div {
+  border-top: 1px solid var(--panel-edge);
+}
+.end .atlas .fact-value {
+  font-variant-numeric: tabular-nums;
 }
 
 .flag {
@@ -3194,7 +3237,10 @@ a:visited {
 
 .bar-row {
   display: grid;
-  grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr) 3rem;
+  /* 11rem, not 9 (2026-10-16): at 0.8rem with the label's tracking, VOISINES
+     PAREILLES and TAILLE DE LA POCHE are wider than 9rem and wrapped; at the
+     column's full measure the bar still keeps a third of the row. */
+  grid-template-columns: minmax(6rem, 12rem) minmax(0, 1fr) 3rem;
   align-items: center;
   gap: calc(var(--gap) / 2);
 }
@@ -3227,7 +3273,18 @@ a:visited {
 
 /* The run's shape. The chart stretches; the bars do not have to be square. */
 .arc {
-  margin: var(--gap) 0;
+  margin: var(--gap) 0 0;
+}
+
+/* The caption heads the chart (2026-10-16) and wears the same margin the
+   other section headings in this fold do. */
+.arc > figcaption {
+  margin: 0.83em 0;
+}
+
+/* The curve's sentence, under the curve. */
+.arc-note {
+  margin-top: var(--gap-sm);
 }
 
 .arc-chart {
@@ -3275,6 +3332,57 @@ a:visited {
 .shop-row .fold {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/*
+ * THE SHOP'S HEAD AND ITS ROWS' TITLES (2026-10-16, Marc: "rework this screen
+ * its bloated").
+ *
+ * The head is the name at one end and the balance at the other, in the
+ * heading voice the ending's other sections use. A row's title is its name
+ * and its rung on one line: the name was `.fact-value` at 1.1rem beside a
+ * bare level that wrapped under MONDES PLUS RICHES onto a row of its own.
+ */
+.shop-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--gap);
+}
+
+/* Inline flow, not flex: a name that wraps keeps its rung after its last
+   word, where a flex row sent the rung to the far edge of the column. */
+.shop-title {
+  min-width: 0;
+}
+
+.shop-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.shop-level {
+  display: inline;
+  margin-inline-start: var(--gap-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The two doors out that are not another run, side by side under SHARE.
+   Centred and a step smaller, so MENU PRINCIPAL holds one line in half the
+   column. */
+.end-nav-row {
+  display: flex;
+  gap: var(--gap);
+}
+
+.end-nav-row > button {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  padding-inline: 0.5rem;
+  font-size: 0.9rem;
 }
 
 /*

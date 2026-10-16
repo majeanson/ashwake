@@ -11159,3 +11159,45 @@ speaks on the placement AFTER a receipt, not at it, so the test's first draft
 asserted one action early. **Not re-asked:** whether a reminder with no ring is
 enough for a player who tapped nothing — the timeout alone does not count as
 found.
+
+**Session 138, later still — the ending, unbloated (Marc, with three
+screenshots of a French ending at 393px: _"rework this screen its bloated fix
+formatting and make it useful and nice be thorough"_).**
+
+**Found first, and it was a regression of the day before:** `[data-end]`, the
+bare divs put round DÉTAILS and the shop on 2026-10-15 so the tour could light
+them, are shrink-wrapped by the centred column, and the fold inside asks for
+`100%` of THAT — so DÉTAILS opened ~207px wide on a 390px phone: bars a thumb
+wide, every French source label on two lines, LA COURBE's caption on the
+columns' feet. The wrapper takes the column's measure now (`.end > [data-end]`).
+
+**Then the rest, each a decision stated at its declaration:** the six facts are
+two across, three rows, after three across ran DESTINATIONS into PRIMES at
+0.8rem and broke PLUS GROSSE's value over two lines; the curve's caption heads
+the chart like PAR COULEUR, and the arc sentence ("La partie a monté
+jusque-là…") moved from the loose column under it, where it describes the thing
+it stands under (`Payout.arcNote`); CE MONDE is a closed fold under DÉTAILS,
+its seven facts a ledger (`.end .atlas .facts`) instead of a grid of three with
+one orphan; the shop is NAMED on the ending — LA BOUTIQUE with the balance at
+the line's end — each upgrade's rung is `level/levels` after its name (the
+fraction the screen already speaks), the perks line reads the sentence
+(`perksTally`) rather than a trophy and "0/5", and the relic paragraph under
+an empty shelf stays in the panel only, since the relics term above opens the
+same card; the source bars' name column is 12rem so POUVOIR DE COULEUR holds
+one line; the way out is PARTAGER full width over MENU PRINCIPAL · MENU on one
+row; and a `--gap` step before each fold, the shop and the nav, so the column
+reads as sections.
+
+**Verified:** typecheck, lint, 1616 unit tests; the screen shot headless at
+390x844, fr-CA, torchlit, dark, every fold open, on the 300-run fixture
+(`?end=1&taught=1&runs=300`) — twice, the second after the facts and the nav
+row were corrected from the first — and the Chromium specs that pin the ending
+(menus, world, return, a11y, shots). **Marc's, on the phone:** two across or
+three; whether CE MONDE wants to be open on a first finished run; and the term
+button inside a perk's TU PERDS line (`RÉSERVE`), which breaks the sentence on
+every screen it is printed on and is older than this pass.
+
+**Budget bar moved, 199,000 -> 200,000** (`budget.json`): first paint measured
+194.4 KB gzipped against a 194.3 KB bar, 0.1 KB over — the shop's heading row,
+CE MONDE as a fold, the arc note under its curve, the nav row and the cue's
+three per-run sets. No new sentences; the renderer-by-name check is untouched.

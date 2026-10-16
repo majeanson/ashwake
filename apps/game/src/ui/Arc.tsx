@@ -43,6 +43,10 @@ export function Arc({
 
   return (
     <figure className="arc">
+      {/* The caption HEADS the chart (2026-10-16): under it, it sat on the
+          columns' feet and read as a row of the chart; above, it is the same
+          heading PAR COULEUR and the others wear. */}
+      <figcaption className="fact-label">{label}</figcaption>
       <svg
         className="arc-chart"
         viewBox={`0 0 100 ${H}`}
@@ -66,7 +70,6 @@ export function Arc({
           );
         })}
       </svg>
-      <figcaption className="fact-label">{label}</figcaption>
     </figure>
   );
 }

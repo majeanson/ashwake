@@ -5,6 +5,7 @@ import { arcNote, type HudView } from '@view/view';
 import { GOALS, type GoalId } from '@content/goals';
 import type { Strings } from '@text/Strings';
 import { FactGrid } from '../ui/FactGrid';
+import { Fold } from '../ui/Fold';
 import { Icon } from '../ui/Icon';
 import { CHROME_ICON } from '@theme/icons';
 import { Prose, type OnTerm } from '../ui/Prose';
@@ -560,12 +561,6 @@ export function EndScreen({
         </p>
       )}
 
-      {arc !== null && (
-        <p className="note">
-          <Prose text={arc} s={s} onTerm={onTerm} />
-        </p>
-      )}
-
       {/*
         WHAT CHANGED, as opposed to what was scored (2026-08-29).
 
@@ -590,21 +585,6 @@ export function EndScreen({
       )}
 
       {/*
-        WHERE THAT LEAVES THE WORLD (2026-09-01) — see `world` above.
-
-        Directly under the WOKE line, because the two are one sentence: this
-        run woke A FOURTH DRAFT CARD, and this world now stands at three
-        shrines of five with these three awake. The same component the WORLDS
-        panel shows, so a world reads the same wherever you meet it.
-      */}
-      {world != null && (
-        <>
-          <h2 className="fact-label end-world-head">{s.ui.thisWorld}</h2>
-          <Atlas world={world} s={s} />
-        </>
-      )}
-
-      {/*
         The SURVEY: what this run was the one to finish, for this world.
         Above the breakdown, because a goal met is the rarest thing an ending
         can carry and the payout is always there.
@@ -617,7 +597,9 @@ export function EndScreen({
         </ul>
       )}
 
-      {/* Why the number was what it was, one tap down — see `Payout`. */}
+      {/* Why the number was what it was, one tap down — see `Payout`. The arc's
+          sentence goes with it: it is the curve, said in words, and it stood
+          loose in the column above until 2026-10-16. */}
       {summary !== null && (
         <div data-end="details">
           <Payout
@@ -625,10 +607,29 @@ export function EndScreen({
             points={hud.points}
             reach={hud.depthValue}
             harvests={harvests}
+            arcNote={arc}
             theme={theme}
             s={s}
+            onTerm={onTerm}
           />
         </div>
+      )}
+
+      {/*
+        WHERE THAT LEAVES THE WORLD (2026-09-01) — see `world` above. The same
+        component the WORLDS panel shows, so a world reads the same wherever you
+        meet it.
+
+        FOLDED, under DÉTAILS, since 2026-10-16 (Marc: "rework this screen its
+        bloated"): seven facts in a three-column grid left one orphaned on its
+        own row, and a world's standing is reference beside a run's result — the
+        WOKE line above already says what this run changed. One tap, like the
+        breakdown, and drawn as a ledger inside (`.end .atlas .facts`).
+      */}
+      {world != null && (
+        <Fold summary={s.ui.thisWorld}>
+          <Atlas world={world} s={s} />
+        </Fold>
       )}
 
       {/* The relics this run earned are spent HERE, on the screen where they
@@ -737,12 +738,16 @@ export function EndScreen({
         <span className="visually-hidden" role="status">
           {said ?? ''}
         </span>
-        <button type="button" data-door="main" onClick={onMainMenu}>
-          {s.ui.mainMenu}
-        </button>
-        <button type="button" data-door="more" onClick={onMore}>
-          {s.ui.menu}
-        </button>
+        {/* The two ways out that are not another run, on one row (2026-10-16):
+            three full-width buttons under a shop was a column of bars. */}
+        <div className="end-nav-row">
+          <button type="button" data-door="main" onClick={onMainMenu}>
+            {s.ui.mainMenu}
+          </button>
+          <button type="button" data-door="more" onClick={onMore}>
+            {s.ui.menu}
+          </button>
+        </div>
       </nav>
 
       {/*

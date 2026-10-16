@@ -6,6 +6,7 @@ import type { Strings } from '@text/Strings';
 import { Arc } from '../ui/Arc';
 import { Bars } from '../ui/Bars';
 import { Fold } from '../ui/Fold';
+import { Prose, type OnTerm } from '../ui/Prose';
 
 /**
  * Where the points came from (Stage 4, 2026-08-29).
@@ -36,10 +37,24 @@ type PayoutProps = {
   readonly theme: Theme;
   /** Every scoring harvest's points, in the order they were taken. */
   readonly harvests: readonly number[];
+  /** The curve said in words — `arcNote` — printed under the chart it
+   *  describes (2026-10-16). Null where there is no summary to read it off. */
+  readonly arcNote?: string | null | undefined;
   readonly s: Strings;
+  /** For the terms in `arcNote`; omitted where the sentence is decorative. */
+  readonly onTerm?: OnTerm | undefined;
 };
 
-export function Payout({ summary, points, reach, harvests, theme, s }: PayoutProps) {
+export function Payout({
+  summary,
+  points,
+  reach,
+  harvests,
+  arcNote,
+  theme,
+  s,
+  onTerm,
+}: PayoutProps) {
   const split = summary.points;
   const names = namesOf(theme, s.locale);
 
@@ -84,6 +99,11 @@ export function Payout({ summary, points, reach, harvests, theme, s }: PayoutPro
       )}
 
       <Arc points={harvests} label={s.payout.arc} />
+      {arcNote != null && (
+        <p className="note arc-note">
+          <Prose text={arcNote} s={s} onTerm={onTerm} />
+        </p>
+      )}
 
       {split !== null && (
         <>

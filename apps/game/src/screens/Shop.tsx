@@ -57,10 +57,28 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
         dropped, which is the same silence with a fix in front of it. The
         digits stay for the eye and the sentence goes to the reader.
       */}
-      <p className="note">
-        <Icon name="relic" /> <span aria-hidden="true">{progress.relics}</span>
-        <span className="visually-hidden">{s.ui.relicsHeld(progress.relics)}</span>
-      </p>
+      {/*
+        NAMED, ON THE ENDING (2026-10-16, Marc: "rework this screen its
+        bloated"). As a section of the end screen the shop had no name at all —
+        the first-run line said "LA BOUTIQUE plus bas" and the tour lit a block
+        with a coin and a number at its head. One heading row: the name the
+        panel already wears, and the balance at its end. In the panel the title
+        bar says the name, so only the balance is printed.
+      */}
+      {onBack === undefined ? (
+        <h2 className="fact-label shop-head">
+          <span>{s.ui.shop}</span>
+          <span>
+            <Icon name="relic" /> <span aria-hidden="true">{progress.relics}</span>
+            <span className="visually-hidden">{s.ui.relicsHeld(progress.relics)}</span>
+          </span>
+        </h2>
+      ) : (
+        <p className="note">
+          <Icon name="relic" /> <span aria-hidden="true">{progress.relics}</span>
+          <span className="visually-hidden">{s.ui.relicsHeld(progress.relics)}</span>
+        </p>
+      )}
 
       <section>
         {UPGRADES.map((upgrade) => {
@@ -71,8 +89,15 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
           return (
             <div key={upgrade.id} className="shop-row">
               <div>
-                <span className="fact-value">{words.name}</span>{' '}
-                {level > 0 && <span className="fact-label">{level}</span>}
+                {/* The name and where it stands on its ladder, one line: a bare
+                    level under a long name wrapped onto a row of its own. The
+                    fraction is the one this screen already speaks (0/5). */}
+                <div className="shop-title">
+                  <span className="shop-name">{words.name}</span>
+                  <span className="fact-label shop-level">
+                    {level}/{upgrade.levels}
+                  </span>
+                </div>
                 <p className="note">
                   <Prose text={words.note} s={s} onTerm={onTerm} />
                 </p>
@@ -100,16 +125,15 @@ export function Shop({ progress, theme, s, onProgress, onTerm, onBack }: ShopPro
         {/* A heading called `3/5` is a landmark nobody can navigate by: heading
             lists are how a screen reader skims a panel, and a fraction says
             nothing about what it heads. */}
+        {/* The sentence, not the fraction (2026-10-16): "0/5" under a trophy
+            named nothing on the ending. The same words the reader already got. */}
         <h2 className="fact-label">
-          <Icon name="fame" />{' '}
-          <span aria-hidden="true">
-            {progress.found.length}/{PERKS.length}
-          </span>
-          <span className="visually-hidden">
-            {s.ui.perksTally(progress.found.length, PERKS.length)}
-          </span>
+          <Icon name="fame" /> {s.ui.perksTally(progress.found.length, PERKS.length)}
         </h2>
-        {progress.found.length === 0 && (
+        {/* What a relic IS, on an empty shelf — in the panel only. On the
+            ending the relics line above is a term that opens the same card,
+            and a paragraph of rules under the shop was the bloat. */}
+        {onBack !== undefined && progress.found.length === 0 && (
           <p className="note">
             <Prose text={s.lesson.end.row.relic.core} s={s} onTerm={onTerm} />
           </p>
