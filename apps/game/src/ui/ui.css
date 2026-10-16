@@ -3323,15 +3323,40 @@ a:visited {
   min-width: 0;
 }
 
-.shop-row button {
+/*
+ * THE ROW'S OWN BUTTON, and only that one (2026-10-16). This was `.shop-row
+ * button`, which also dressed every `.term` inside a perk's prose — RÉSERVE
+ * in TU PERDS, RÉCOLTE in COMMENT JOUER — in a buy button's 5.5rem by 44px,
+ * so the word stood on a line of its own with the sentence broken round it.
+ * The buy and wear buttons are the row's direct children; a term never is.
+ */
+.shop-row > button {
   flex: 0 0 auto;
   min-width: 5.5rem;
   min-height: var(--tap);
 }
 
-.shop-row .fold {
-  flex: 1 1 auto;
-  min-width: 0;
+/*
+ * A PERK'S DETAILS SPAN THE ROW (2026-10-16). The fold and the wear button
+ * shared a flex row, so an open perk's TU GAGNES / TU PERDS / COMMENT JOUER
+ * ran down a column two thirds of the width with the button floating beside
+ * it. The fold takes the whole row and the button sits over the summary's
+ * end instead: the summary leaves it room, and the details underneath run
+ * edge to edge.
+ */
+.shop-row:has(> .fold) {
+  display: block;
+  position: relative;
+}
+
+.shop-row:has(> .fold) > .fold > summary {
+  margin-inline-end: calc(5.5rem + var(--gap));
+}
+
+.shop-row:has(> .fold) > button {
+  position: absolute;
+  top: calc(var(--gap) / 2);
+  inset-inline-end: 0;
 }
 
 /*

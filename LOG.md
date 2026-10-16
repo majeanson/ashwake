@@ -11201,3 +11201,21 @@ every screen it is printed on and is older than this pass.
 194.4 KB gzipped against a 194.3 KB bar, 0.1 KB over — the shop's heading row,
 CE MONDE as a fold, the arc note under its curve, the nav row and the cue's
 three per-run sets. No new sentences; the renderer-by-name check is untouched.
+
+**Session 138, the evening — four from the radar, all Marc's choice.** (1) A
+perk's term broke its sentence: `.shop-row button` dressed every button in
+the row, the `.term` in TU PERDS and COMMENT JOUER included, in a buy
+button's 5.5rem by 44px — so RÉSERVE and RÉCOLTE stood on lines of their own.
+Shop rows only, not the manual; `.shop-row > button` now. (2) A perk's open
+details span the row: the fold takes the whole row and the wear button sits
+over its summary's end (`.shop-row:has(> .fold)`), where before the two shared
+a flex row and the prose ran down two thirds of the width. (3) A cue that ran
+out its `CUE_MS` is found too — a control rings at most once a run, tapped or
+not. (4) The stats do not flick on the row's first frame: `Hud` counts each
+stat's changes against the last `hud` it drew, during render, the way React
+adjusts state to a prop — a ref written in render and a setState in an effect
+are both `react-hooks` errors in this repo, which the first two drafts found.
+Round fourteen on the sheet gained `r14-rework`, the ending's own question
+(version 23). **Verified:** typecheck, lint, 1616 unit tests, the Chromium
+specs for the cue, the shop and the header (teaching, menus, hud, a11y), and
+a look at a perk row open on the 300-run fixture.

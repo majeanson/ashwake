@@ -531,7 +531,9 @@ function Game() {
    * every pop of the first run however often it had been tapped — the tap put
    * out one lighting and nothing remembered it. A tap is the player saying "I
    * see it"; the ring is for a control they have not found. Per run, like the
-   * chips: a new run has a new first minute.
+   * chips: a new run has a new first minute. And since later the same day a
+   * ring that ran out its `CUE_MS` counts too: a control rings at most ONCE a
+   * run, whichever way the ring ended.
    */
   const found = useRef<Set<CueId>>(new Set());
   /** The coach steps this run has rung for: a step said AGAIN after a receipt
@@ -3429,10 +3431,17 @@ function Game() {
     // The first walk's POP is the one thing the game will not let you skip
     // (`mustPop`), so its ring stays until it is pressed.
     const sticky = cue === 'pop' && phaseOf(progress) === 'walk';
-    const timer = sticky ? undefined : window.setTimeout(out, CUE_MS);
+    // A ring that ran its time out is found too (Marc, 2026-10-16, later):
+    // a control rings at most once a run, tapped or not.
+    const timer = sticky
+      ? undefined
+      : window.setTimeout(() => {
+          found.current.add(cue);
+          out();
+        }, CUE_MS);
     const tapped = (e: Event) => {
       if (e.target instanceof Element && e.target.closest(CUE_SELECTOR[cue]) !== null) {
-        // Tapped, so found for the run — the timeout alone does not count.
+        // Tapped, so found for the run.
         found.current.add(cue);
         out();
       }

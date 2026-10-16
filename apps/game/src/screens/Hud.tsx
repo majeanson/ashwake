@@ -60,14 +60,43 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
    * is in the `<b>`'s key, so a change remounts it and `.rose` plays again,
    * and the tap keeps its flick by bumping a counter into the same key. Under
    * reduced motion `.rose` is no animation at all and the key is harmless.
+   *
+   * NOT ON THE FIRST FRAME (Marc, later the same day): keyed on the value
+   * alone, all five lit together when the row mounted, which is an arrival
+   * and not a change. `changes` counts each stat's changes since the row came
+   * up; the key is that count, and `.rose` goes on only once it is past zero
+   * or the stat was asked about. Counted DURING RENDER, against the last
+   * `hud` this row drew — React's own pattern for state that follows a prop,
+   * and the one the compiler's lint allows: a ref written in render and a
+   * setState in an effect are both errors here, and an effect would also
+   * have drawn the digit once unlit before lighting it.
    */
   const [asked, setAsked] = useState<{ readonly id: StatId; readonly n: number } | null>(null);
+  const [drawn, setDrawn] = useState(hud);
+  const [changes, setChanges] = useState<Partial<Record<StatId, number>>>({});
+  if (drawn !== hud) {
+    setDrawn(hud);
+    const next = { ...changes };
+    let moved = false;
+    for (const id of STATS) {
+      const was = valueOf(id, drawn);
+      const now = valueOf(id, hud);
+      if (was !== null && now !== null && was !== now) {
+        next[id] = (next[id] ?? 0) + 1;
+        moved = true;
+      }
+    }
+    if (moved) setChanges(next);
+  }
 
   return (
     <div className="hud" data-hud="stats">
       {STATS.map((id) => {
         const shown = valueOf(id, hud);
         if (shown === null) return null;
+        const n = changes[id] ?? 0;
+        const askedN = asked?.id === id ? asked.n : 0;
+        const lit = n > 0 || askedN > 0;
         return (
           <button
             key={id}
@@ -111,7 +140,7 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
               */}
               <Icon name={STAT_ICON[id]} title={statLabel(id, s)} />
             </span>{' '}
-            <b key={`${shown}:${asked?.id === id ? asked.n : 0}`} className="stat-value rose">
+            <b key={`${n}:${askedN}`} className={lit ? 'stat-value rose' : 'stat-value'}>
               {shown}
             </b>
           </button>
