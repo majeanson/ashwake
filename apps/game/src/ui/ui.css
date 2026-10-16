@@ -1788,6 +1788,14 @@ a:visited {
   white-space: nowrap;
 }
 
+/*
+ * A number LIGHTS when it changes, and when it is asked about (2026-10-16).
+ *
+ * It was the tap's acknowledgement only; it is every change's now — `Hud`
+ * keys the value on its own text, so a placement remounts the digits that
+ * moved and this plays on exactly those. Accent to ink, the one acknowledgement
+ * this chrome has. Reduced motion: the number is simply there.
+ */
 @media (prefers-reduced-motion: no-preference) {
   .rose {
     animation: rose 400ms ease-out;
@@ -1824,6 +1832,26 @@ a:visited {
 .toast:empty,
 .notice-line:empty {
   display: none;
+}
+
+/*
+ * THE NOTE RISES (2026-10-16, Marc: "a little oomph").
+ *
+ * The one arrival over the board that still appeared on the next frame. The
+ * PARAGRAPH cannot be the thing that animates: it is the live region and has
+ * to stay in the document across every sentence, so `App` keys what is INSIDE
+ * it on the note's text — a plain line in a `.toast-text` span, a pop's line
+ * as its button and its ✕ — and those are what rise. `inline-block`, because a
+ * transform does nothing to an inline box.
+ */
+.toast-text {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast > * {
+    animation: rise var(--fade) ease-out;
+  }
 }
 
 /*
@@ -2367,6 +2395,53 @@ a:visited {
 .tile.chosen {
   border-color: var(--ink);
   background: var(--panel);
+}
+
+/*
+ * THE HAND DEALS IN, AND THE CHOSEN CARD LIFTS (2026-10-16, Marc: "a little
+ * oomph").
+ *
+ * A dealt card is an arrival, and the header's rule is that arrivals rise —
+ * each card has its own key in `ActionBar`, so only the card that is new
+ * rises, and a whole hand rises once when the run begins. The stagger is a
+ * hair per column, so a full deal reads as cards laid down rather than a row
+ * switched on. `both`, so a card waiting its turn is not drawn at full ink
+ * first. Only the hand (`data-hud`): the manual's figures draw the same card
+ * and a picture in a book does not arrive.
+ *
+ * The chosen card goes up two pixels on top of its box — a card picked up
+ * rather than a card outlined. The press scale rides on it.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-hud='hand'] .tile:not(.gap):not(.hold) {
+    animation: rise var(--fade) ease-out both;
+  }
+  [data-hud='hand'] .tile:nth-child(2) {
+    animation-delay: 35ms;
+  }
+  [data-hud='hand'] .tile:nth-child(3) {
+    animation-delay: 70ms;
+  }
+  [data-hud='hand'] .tile:nth-child(4) {
+    animation-delay: 105ms;
+  }
+  [data-hud='hand'] .tile:nth-child(n + 5) {
+    animation-delay: 140ms;
+  }
+
+  .tile {
+    transition:
+      background var(--fade) ease,
+      border-color var(--fade) ease,
+      color var(--fade) ease,
+      transform var(--fade) ease;
+  }
+  .tile.chosen {
+    transform: translateY(-2px);
+  }
+  .tile.chosen:active {
+    transform: translateY(-2px) scale(0.97);
+  }
 }
 
 /*
@@ -2935,6 +3010,56 @@ a:visited {
 }
 
 /*
+ * THE ENDING ARRIVES IN ORDER (2026-10-16, Marc: "a little oomph").
+ *
+ * The end is a scene, not a panel — nothing is behind it to wait for — so the
+ * no-slide rule for panels does not bind here, and the column comes in top
+ * down: the same 140ms rise every arrival gets, a hair later per line, held
+ * to the first eight lines so the shop and the diary below the fold do not
+ * queue behind them. The score is the one line that does more: it settles
+ * from a touch larger and from the accent, half a second, because it is the
+ * number the whole run was for. `both` on every one, so a line waiting its
+ * hair is not drawn first and then jumped.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .end > * {
+    animation: rise var(--fade) ease-out both;
+  }
+  .end > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .end > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .end > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .end > :nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .end > :nth-child(6) {
+    animation-delay: 200ms;
+  }
+  .end > :nth-child(7) {
+    animation-delay: 240ms;
+  }
+  .end > :nth-child(n + 8) {
+    animation-delay: 280ms;
+  }
+  .end > .end-score {
+    animation: settle 500ms ease-out both;
+    animation-delay: 80ms;
+  }
+  @keyframes settle {
+    from {
+      opacity: 0;
+      color: var(--accent);
+      transform: scale(1.06);
+    }
+  }
+}
+
+/*
  * WHICH RUN, and HOW IT STANDS (2026-09-02).
  *
  * Three lines around the score, in a deliberate hierarchy: RUN 41 above it in
@@ -2975,6 +3100,13 @@ a:visited {
   gap: 0.4em;
   margin: 0;
   color: var(--accent);
+}
+/* The line is a control (it opens the relic card), so it keeps the 44px floor. */
+.end-banked .term {
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
 }
 
 /*
@@ -3101,13 +3233,6 @@ a:visited {
 .arc-chart {
   display: block;
   width: 100%;
-/* The line is a control (it opens the relic card), so it keeps the 44px floor. */
-.end-banked .term {
-  min-height: var(--tap);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-}
   height: 3rem;
 }
 

@@ -51,7 +51,17 @@ type StatId = (typeof STATS)[number];
 const MINOR: ReadonlySet<StatId> = new Set(['map', 'cost', 'left']);
 
 export function Hud({ hud, s, onNote, menu }: HudProps) {
-  const [rose, setRose] = useState<StatId | null>(null);
+  /*
+   * A NUMBER LIGHTS WHEN IT CHANGES (2026-10-16, Marc: "a little oomph").
+   *
+   * `rose` — accent fading to ink over 400ms — fired on a TAP only, so a
+   * placement that took a tile and paid points moved two digits in the header
+   * with nothing to say it had. The flick is the number's own now: the value
+   * is in the `<b>`'s key, so a change remounts it and `.rose` plays again,
+   * and the tap keeps its flick by bumping a counter into the same key. Under
+   * reduced motion `.rose` is no animation at all and the key is harmless.
+   */
+  const [asked, setAsked] = useState<{ readonly id: StatId; readonly n: number } | null>(null);
 
   return (
     <div className="hud" data-hud="stats">
@@ -82,7 +92,7 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
             style={{ '--len': String(shown).length } as CSSProperties}
             onClick={() => {
               onNote(statNote(id, hud, TUNING, s));
-              setRose(id);
+              setAsked((was) => ({ id, n: (was?.n ?? 0) + 1 }));
             }}
           >
             <span className="stat-label">
@@ -101,7 +111,9 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
               */}
               <Icon name={STAT_ICON[id]} title={statLabel(id, s)} />
             </span>{' '}
-            <b className={`stat-value${rose === id ? ' rose' : ''}`}>{shown}</b>
+            <b key={`${shown}:${asked?.id === id ? asked.n : 0}`} className="stat-value rose">
+              {shown}
+            </b>
           </button>
         );
       })}

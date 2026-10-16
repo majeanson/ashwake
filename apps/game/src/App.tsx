@@ -3825,12 +3825,21 @@ function Game() {
               none of this, and it has been for exactly that reason since the
               toast moved over the board.
             */}
+            {/*
+              Keyed on the sentence (2026-10-16): the paragraph stays, and what
+              is inside it is remounted per note so `.toast > *`'s rise plays
+              for each new line rather than once for the first. A plain line
+              gets a span for the same reason — a text node cannot rise.
+            */}
             {note === null ? (
               ''
             ) : note.more === null ? (
-              note.text
+              <span key={note.text} className="toast-text">
+                {note.text}
+              </span>
             ) : (
               <button
+                key={note.text}
                 type="button"
                 className="toast-open"
                 data-action="pop-details"
@@ -3860,6 +3869,7 @@ function Game() {
             */}
             {note !== null && note.more !== null && (
               <button
+                key={`close:${note.text}`}
                 type="button"
                 className="toast-close"
                 data-action="pop-close"

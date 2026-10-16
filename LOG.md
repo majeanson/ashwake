@@ -11094,3 +11094,43 @@ e2e specs that reach an ending on Chromium (120/120), and a look at 390x844:
 the relics term rings and scrolls in, its card opens, and DETAILS lights when it
 closes. **Marc's:** the look, the order, and whether DETAILS and THE SHOP want a
 sentence of their own (they have none: the shop rows explain themselves).
+
+### Session 138 — a little oomph: four moments that snapped now move (2026-10-16)
+
+**Question.** Marc: _"lets look for beautifying this app, little bit of
+animation nothing too fancy but a little oomph"_. Where does the chrome still
+change on the next frame, and can those moments move inside the motion
+language the file already has — presses acknowledge with colour, arrivals
+rise over `--fade`, panels never slide, reduced motion keeps every
+acknowledgement that does not move — without adding a second one?
+
+**Found.** The board already breathes, leaps, flashes and sheds embers; the
+chrome rose on cards and drawers and nowhere else. Four moments snapped: a
+stat changing in the header (`.rose` fired on a tap only), a card dealt into
+the hand, the note over the board, and the ending's whole column. Marc chose
+all four.
+
+**Built.** (1) `Hud` keys each value on its own text plus a tap counter, so a
+changed digit remounts and `.rose` (accent to ink, 400ms) plays on exactly the
+stat that moved; the tap keeps its flick. (2) A dealt card rises with a 35ms
+stagger per column (`[data-hud='hand'] .tile`, so the manual's figures stay
+still), and the chosen card eases up two pixels; `.tile` gains a transform
+transition. (3) The toast's CHILDREN are keyed on the sentence — the `<p>` is
+the live region and never remounts — and `.toast > *` rises; a plain line
+gets a `.toast-text` span because a text node cannot transform. (4) The end
+column rises top-down at 40ms steps over its first eight lines, and the score
+alone settles from the accent and 1.06 scale over 500ms. Everything behind
+`prefers-reduced-motion: no-preference`; outside it every one of these is
+simply there, as before. The same commit's predecessor is the uncommitted
+0.8rem floor on small labels that was sitting in `ui.css`, landed on its own.
+
+**Verified.** Typecheck, lint, 1616 unit tests, `pnpm sim` byte-identical,
+sweep 0, budget under the bar (first paint 194.2 KB), 77/77 on Chromium across
+hud, cards, board, a11y, targets, teaching and stacking — Playwright's stability
+wait absorbs a 140ms rise without a `force`.
+
+**Marc's, on the phone:** whether the hand's stagger reads as cards laid down
+or as lag; whether the ending's cascade is right on a screen you have just
+lost on; and the first-minute rule — (1), (2) and (3) change what a stranger
+sees, so this is the kind of batch that belongs before Session A's last clean
+pass, not after.
