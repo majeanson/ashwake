@@ -11134,3 +11134,28 @@ or as lag; whether the ending's cascade is right on a screen you have just
 lost on; and the first-minute rule — (1), (2) and (3) change what a stranger
 sees, so this is the kind of batch that belongs before Session A's last clean
 pass, not after.
+
+**Session 138, later — a tapped cue stays out, and a tapped coach line stays
+away (Marc, from the phone: _"how many tiles remains keeps flashing even after
+I press on it, it comes back after a pop or similar"_; _"if we tap a popup text
+like 'Avec moins de tuiles que le COÛT…' make sure they don't come back on the
+next occasion"_).** The coach says its step again after every receipt
+(`coached.current = null` at each pop), and `build` and `end` both point at
+TILES, so the ring came back after every pop of the first run however often it
+had been tapped: a tap put out one lighting and nothing remembered it. Three
+sets on `App`, cleared with every run like the chips: `found` — a control
+tapped while it rang is not armed again; `rung` — a coach step rings on its
+first saying only, a re-say after a receipt is a reminder; `dismissed` — the
+toast's tap and Escape go through `putAway`, which notices when the line going
+is the coach's current step and the coach skips that step thereafter. A line a
+receipt pushed off the strip was never tapped and may still be said again.
+**Verified:** typecheck, lint, 1616 unit, sim byte-identical, sweep 0, budget
+under the bar; a new e2e (`teaching.spec.ts`, "a cue tapped out and a coach
+line tapped away stay away after the next pop") walks a fresh device to the
+forced first pop, taps BUILD's line and TILES away, pops a second pocket, places
+once more, and asserts neither came back — and FAILS without the fix on exactly
+Marc's symptom ("TILES rang again after the pop"). Found writing it: the coach
+speaks on the placement AFTER a receipt, not at it, so the test's first draft
+asserted one action early. **Not re-asked:** whether a reminder with no ring is
+enough for a player who tapped nothing — the timeout alone does not count as
+found.

@@ -523,8 +523,31 @@ function Game() {
    * it or by `CUE_MS`; whether it SHOWS is `lit`, below. See `CueId`.
    */
   const [cue, setCue] = useState<CueId | null>(null);
+  /**
+   * A CONTROL TAPPED WHILE IT RANG IS FOUND (2026-10-16, Marc: _"how many
+   * tiles remains keeps flashing even after I press on it, it comes back after
+   * a pop or similar"_). The coach says its step again after every receipt
+   * (`coached`), and `build` and `end` both point at TILES, so TILES rang after
+   * every pop of the first run however often it had been tapped — the tap put
+   * out one lighting and nothing remembered it. A tap is the player saying "I
+   * see it"; the ring is for a control they have not found. Per run, like the
+   * chips: a new run has a new first minute.
+   */
+  const found = useRef<Set<CueId>>(new Set());
+  /** The coach steps this run has rung for: a step said AGAIN after a receipt
+   *  is a reminder and rings nothing, whether or not the first ring was tapped. */
+  const rung = useRef<Set<string>>(new Set());
+  /**
+   * AND A COACH LINE TAPPED AWAY IS DONE (2026-10-16, Marc: _"if we tap a popup
+   * text like 'Avec moins de tuiles que le COÛT…' make sure they don't come
+   * back on the next occasion"_). The coach says its step again after each
+   * receipt, which is right for a line the receipt pushed off the strip and
+   * wrong for one the player put away themselves. `dismissCoach` records the
+   * tap; the coach skips a step in here for the rest of the run.
+   */
+  const dismissed = useRef<Set<string>>(new Set());
   const arm = useCallback((next: CueId | null) => {
-    if (next !== null && CUE_MS > 0) setCue(next);
+    if (next !== null && CUE_MS > 0 && !found.current.has(next)) setCue(next);
   }, []);
   /** The NEW chips this run has offered and the player has not opened. A chip,
    *  once showing, stays until it is tapped: the pace holds a NEW chip back, it
@@ -534,6 +557,9 @@ function Game() {
     // Every run opens through here: its coach starts from its first step.
     coached.current = null;
     setCue(null);
+    found.current.clear();
+    rung.current.clear();
+    dismissed.current.clear();
     setOfferedDots([]);
     setFraming((n) => n + 1);
   }, []);
@@ -785,6 +811,19 @@ function Game() {
   );
 
   const s = useMemo(() => stringsFor(locale), [locale]);
+  /**
+   * The toast's own dismissal — a tap on it, or Escape. The one thing it does
+   * beyond `say(null)` is remember when the line it put away was the coach's,
+   * so that step is not said again this run (`dismissed`). A line a receipt
+   * pushed off the strip never comes through here, and may be said again.
+   */
+  const putAway = useCallback((): void => {
+    const step = coached.current;
+    if (step !== null && note !== null && note.text === s.coach[step as keyof typeof s.coach]) {
+      dismissed.current.add(step);
+    }
+    say(null);
+  }, [note, s, say]);
   /*
    * A full disk says which rung it spent.
    *
@@ -2146,10 +2185,15 @@ function Game() {
           progress,
         );
         if (step !== null) {
-          if (coached.current !== step) {
+          // A step the player tapped away stays away — see `dismissed`.
+          if (coached.current !== step && !dismissed.current.has(step)) {
             coached.current = step;
             say(s.coach[step]);
-            arm(stepCue(step));
+            // Rung on the step's first saying only — see `rung`.
+            if (!rung.current.has(step)) {
+              rung.current.add(step);
+              arm(stepCue(step));
+            }
             // The ending has been explained: its toast need not say it again.
             if (step === 'end') setProgress((p) => told(p, 'lastGasp'));
           }
@@ -3387,7 +3431,11 @@ function Game() {
     const sticky = cue === 'pop' && phaseOf(progress) === 'walk';
     const timer = sticky ? undefined : window.setTimeout(out, CUE_MS);
     const tapped = (e: Event) => {
-      if (e.target instanceof Element && e.target.closest(CUE_SELECTOR[cue]) !== null) out();
+      if (e.target instanceof Element && e.target.closest(CUE_SELECTOR[cue]) !== null) {
+        // Tapped, so found for the run — the timeout alone does not count.
+        found.current.add(cue);
+        out();
+      }
     };
     document.addEventListener('click', tapped, true);
     return () => {
@@ -3491,7 +3539,7 @@ function Game() {
       // Escape with nothing open is the toast's dismissal — the gesture the
       // toast has always had for a finger, finally reachable without one.
       if (event.key === 'Escape') {
-        say(null);
+        putAway();
         return;
       }
       const command = commandFor(event);
@@ -3614,7 +3662,7 @@ function Game() {
     cycleView,
     snap.hud.draft.length,
     snap.hud.held,
-    say,
+    putAway,
   ]);
 
   return (
@@ -3809,7 +3857,7 @@ function Game() {
           argument for making a pop a card in the first place.
         */}
         {playing && (
-          <p className="toast" role="status" aria-live="polite" onClick={() => say(null)}>
+          <p className="toast" role="status" aria-live="polite" onClick={putAway}>
             {/*
               A note you can OPEN (2026-08-30).
 

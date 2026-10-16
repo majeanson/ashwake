@@ -428,6 +428,81 @@ test('the first pop is forced: a waiting pocket refuses placement until it is po
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('a cue tapped out and a coach line tapped away stay away after the next pop', async ({
+  page,
+}) => {
+  /*
+   * 2026-10-16, Marc: _"how many tiles remains keeps flashing even after I
+   * press on it, it comes back after a pop or similar"_, and _"if we tap a
+   * popup text like 'Avec moins de tuiles que le COÛT…' make sure they don't
+   * come back on the next occasion"_. The coach says its step again after
+   * every receipt, and its ring came back with it. Now a tap on the ringed
+   * control finds it for the run, and a tap on the coach's line puts that
+   * step away for the run; a reminder after a receipt rings nothing either.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?seed=7');
+  await begin(page);
+
+  // The walk: build until the first pocket is ripe, then the forced first pop.
+  let refused = false;
+  for (let i = 0; i < 40 && !refused; i++) {
+    try {
+      await placeOneTile(page);
+    } catch {
+      refused = true;
+    }
+  }
+  expect(refused, 'a ripe pocket never stopped the placing').toBe(true);
+  await page
+    .getByRole('button', { name: /POP|RÉCOLT/ })
+    .first()
+    .click();
+  await page.waitForTimeout(1200);
+  await clearCards(page);
+  // A receipt takes the strip; the coach says its next step on the placement
+  // AFTER the pop, not at it (`App`'s `said === null` clause).
+  await placeOneTile(page);
+
+  // The tour's first step points at TILES and says so.
+  const shell = page.locator('.shell');
+  const toast = page.locator('.toast');
+  const build = /Now keep building|Maintenant, continue de bâtir/;
+  await expect(shell).toHaveAttribute('data-cue', 'tiles');
+  await expect(toast).toContainText(build);
+
+  // Tap the line away, then tap the control it points at.
+  await toast.click();
+  await expect(toast).not.toContainText(build);
+  await expect(shell, 'the line going does not put the ring out').toHaveAttribute(
+    'data-cue',
+    'tiles',
+  );
+  await page.locator('[data-stat="tiles"]').click();
+  await expect(shell).not.toHaveAttribute('data-cue', 'tiles');
+
+  // Place until the next pocket is ripe and pop it: a receipt, after which the
+  // coach used to say BUILD again and ring TILES again.
+  const pop = page.locator('[data-action="pop"]');
+  let popped = false;
+  for (let i = 0; i < 40 && !popped; i++) {
+    await placeOneTile(page);
+    if ((await pop.count()) > 0 && (await pop.isEnabled())) {
+      await pop.click();
+      popped = true;
+    }
+  }
+  expect(popped, 'no second pocket ripened in forty placements').toBe(true);
+  await page.waitForTimeout(1200);
+  await clearCards(page);
+  // The placement after the receipt is where the re-say used to land.
+  await placeOneTile(page);
+  await page.waitForTimeout(500);
+  await expect(shell, 'TILES rang again after the pop').not.toHaveAttribute('data-cue', 'tiles');
+  await expect(toast, 'BUILD was said again after the pop').not.toContainText(build);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('HOW TO PLAY › on the opening cards opens the book at THE EXPEDITION, and the card is back', async ({
   page,
 }) => {
