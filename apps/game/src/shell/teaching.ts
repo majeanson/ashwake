@@ -1,5 +1,5 @@
 import { type Tuning } from '@content/tuning';
-import type { HexKey } from '@engine/hex';
+import { neighbourKeys, type HexKey } from '@engine/hex';
 import { hasMet, meet, type Progress, type TeachId } from '@meta/progress';
 import type { BoardView, CellView } from '@render/Renderer';
 import { namesOf, type Theme } from '@theme/tokens';
@@ -167,6 +167,12 @@ type Slot = {
    */
   readonly when: (now: Moment) => boolean;
   /**
+   * What `when` is while the first run is being guided (the walk and the tour),
+   * where that is stricter (2026-10-17): a lesson about a place is told when the
+   * player is ONE TILE from it, not whenever it is in view.
+   */
+  readonly guidedWhen?: (now: Moment) => boolean;
+  /**
    * The hex a lesson is ABOUT, where a lesson is about a hex at all (see
    * `tourTarget`). A slot about a cell asks `when` and `target` through ONE
    * cell predicate, so the card and the trip cannot drift apart.
@@ -191,6 +197,18 @@ const landmark =
   (id: 'cache' | 'site' | 'shrine' | 'territory') =>
   (c: CellView): boolean =>
     c.kind === 'landmark' && !c.claimed && c.landmark === id;
+
+/** A site that the very next tile can claim: a legal hex touches it. */
+const siteWithinOneTile = (now: Moment): boolean => {
+  const legal = new Set(now.board.cells.filter((c) => c.legal).map((c) => c.key));
+  return now.board.cells.some(
+    (c) =>
+      landmark('site')(c) &&
+      !c.beacon &&
+      !c.remembered &&
+      neighbourKeys(c.q, c.r).some((k) => legal.has(k)),
+  );
+};
 
 /** A destination in view that has not been reached, whatever it pays: THE
  *  MAP's moment, and the one cell its card opens at and flies to. */
@@ -359,6 +377,7 @@ export const SCHEDULE: readonly Slot[] = [
     after: 'map',
     opens: { lesson: 'map', row: 'site' },
     ...onCell(landmark('site')),
+    guidedWhen: siteWithinOneTile,
   },
   {
     id: 'shrine',
@@ -670,7 +689,9 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;
-    if (!(magicTurn ? hasMet(progress, 'luck') : slot.when(now))) continue;
+    const happening =
+      phase !== 'free' && slot.guidedWhen !== undefined ? slot.guidedWhen(now) : slot.when(now);
+    if (!(magicTurn ? hasMet(progress, 'luck') : happening)) continue;
     if (slot.paced !== false && now.since !== undefined && now.since < CARD_GAP) continue;
     return { id, as: slot.as === 'toast' ? 'toast' : 'card' };
   }

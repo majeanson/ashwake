@@ -4808,6 +4808,10 @@ function Game() {
           // sentence. The term card below is OPENED by a tap on a word and
           // does not: that reader already met the concept.
           firstContact
+          // A card about ONE kind of destination is that kind alone (2026-10-17,
+          // Marc: the site, "without explaining all types"); only THE MAP's own
+          // card leads with the concept.
+          skipIntro={teaching !== 'map'}
           dismiss={s.ui.gotIt}
           /*
            * A TERM OR HOW TO PLAY › DOES NOT TELL THE CARD (2026-10-14, Marc:

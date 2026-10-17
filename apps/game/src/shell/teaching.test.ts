@@ -635,12 +635,38 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
     ...(['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'walked'] as const),
   ].reduce<Progress>((p, id) => told(p, id), EMPTY_PROGRESS);
 
-  // A site is explained on the tour the way a territory is (2026-10-16): it is
-  // the first of the two in the schedule, so it speaks first.
+  // A site is explained on the tour the way a territory is (2026-10-16), but
+  // only when ONE TILE from it (2026-10-17): a legal hex touches it.
   const afterSite = told(touring, 'site');
+  const withSiteNext = (near: boolean): Moment => {
+    const now = board();
+    const site = now.board.cells.find((c) => c.kind === 'landmark' && c.landmark === 'site')!;
+    const [nq, nr] = [site.q + 1, site.r];
+    const cells = now.board.cells
+      .filter((c) => c.key !== `${nq},${nr}`)
+      // The site is made a real cell (this seed shows it as a far glow), and
+      // nothing else on the board is placeable.
+      .map((c) => ({ ...c, legal: false, ...(c.key === site.key ? { beacon: false } : {}) }));
+    if (near)
+      cells.push({
+        ...site,
+        key: `${nq},${nr}`,
+        q: nq,
+        r: nr,
+        kind: 'empty',
+        landmark: null,
+        legal: true,
+      });
+    return { ...now, board: { ...now.board, cells } };
+  };
+
+  it('explains the site only when the next tile can claim it, and not the other kinds', () => {
+    expect(nextLesson(withSiteNext(false), touring)?.id).not.toBe('site');
+    expect(nextLesson(withSiteNext(true), touring)).toEqual({ id: 'site', as: 'card' });
+  });
 
   it('is a card in the tour, not a chip', () => {
-    expect(nextLesson(board(), touring)).toEqual({ id: 'site', as: 'card' });
+    expect(nextLesson(board(), touring)?.id).not.toBe('site');
     expect(nextLesson(board(), afterSite)).toEqual({ id: 'territory', as: 'card' });
     expect(newDots(board(), touring)).toEqual([]);
   });
