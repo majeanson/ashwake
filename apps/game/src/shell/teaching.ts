@@ -199,19 +199,28 @@ const landmark =
     c.kind === 'landmark' && !c.claimed && c.landmark === id;
 
 /**
- * A site that the very next tile can claim: a legal hex touches it. It is a
- * BEACON at that moment, not a revealed cell — placing a tile reveals its
- * neighbours and claims a touching destination in the same move, so a site is
- * never seen unclaimed on revealed ground (2026-10-17: the first version asked
- * for a revealed one and so could never fire).
+ * A destination of this kind that the very next tile can claim: a legal hex
+ * touches it. It is a BEACON at that moment, not a revealed cell — placing a
+ * tile reveals its neighbours and claims a touching destination in the same
+ * move, so one is never seen unclaimed on revealed ground (2026-10-17: the
+ * first version asked for a revealed one and so could never fire).
  */
-const siteWithinOneTile = (board: BoardView): CellView | undefined => {
-  const legal = new Set(board.cells.filter((c) => c.legal).map((c) => c.key));
-  return board.cells.find(
-    (c) =>
-      landmark('site')(c) && !c.remembered && neighbourKeys(c.q, c.r).some((k) => legal.has(k)),
-  );
-};
+const withinOneTile =
+  (kind: 'cache' | 'site') =>
+  (board: BoardView): CellView | undefined => {
+    const legal = new Set(board.cells.filter((c) => c.legal).map((c) => c.key));
+    return board.cells.find(
+      (c) =>
+        landmark(kind)(c) && !c.remembered && neighbourKeys(c.q, c.r).some((k) => legal.has(k)),
+    );
+  };
+
+/** The tour's way of telling a kind: when the next tile reaches it, and the
+ *  camera goes to that one rather than the first in the list. */
+const oneTileAway = (kind: 'cache' | 'site'): Pick<Slot, 'guidedWhen' | 'target'> => ({
+  guidedWhen: (now) => withinOneTile(kind)(now.board) !== undefined,
+  target: (board) => (withinOneTile(kind)(board) ?? board.cells.find(landmark(kind)))?.key ?? null,
+});
 
 /** A destination in view that has not been reached, whatever it pays: THE
  *  MAP's moment, and the one cell its card opens at and flies to. */
@@ -367,9 +376,14 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'cache',
     as: 'chip',
+    // Told on the tour like the site, one tile before it (2026-10-17, Marc:
+    // caches showed on the horizon and said nothing).
+    phase: 'tour',
+    paced: false,
     after: 'map',
     opens: { lesson: 'map', row: 'cache' },
     ...onCell(landmark('cache')),
+    ...oneTileAway('cache'),
   },
   {
     id: 'site',
@@ -384,10 +398,7 @@ export const SCHEDULE: readonly Slot[] = [
     after: 'map',
     opens: { lesson: 'map', row: 'site' },
     ...onCell(landmark('site')),
-    guidedWhen: (now) => siteWithinOneTile(now.board) !== undefined,
-    // Fly to the site the card is about, not to the first one in the list.
-    target: (board) =>
-      (siteWithinOneTile(board) ?? board.cells.find(landmark('site')))?.key ?? null,
+    ...oneTileAway('site'),
   },
   {
     id: 'shrine',
@@ -696,7 +707,8 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     // the concept (`toldBy`), and so it is not held for `after`, which only a
     // chip waits on (`afterMet`): it is the card that satisfies it.
     const magicTurn = phase === 'tour' && id === 'rare';
-    const tourCard = magicTurn || (phase === 'tour' && (id === 'territory' || id === 'site'));
+    const tourCard =
+      magicTurn || (phase === 'tour' && (id === 'territory' || id === 'site' || id === 'cache'));
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;

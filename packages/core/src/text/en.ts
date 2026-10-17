@@ -281,7 +281,7 @@ export const STRINGS_EN: Strings = {
           core: (pays) =>
             `A SITE is claimed by building a tile touching it. It pays ${pays} points × its distance from home, and it opens a BOUNTY. Sites re-arm every run, so a claimed one is worth returning to.`,
           bounty: (need, radius, bonus) =>
-            `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star, taking POINTS (not tiles): that pop scores ×${bonus}. Only one bounty at a time; another site opens no second one while this one waits.`,
+            `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star: that pop scores ×${bonus}. Only one bounty at a time; another site opens no second one while this one waits.`,
         },
         shrine: {
           name: 'SHRINE',
@@ -479,7 +479,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
       cache: (tiles) => `CACHE: build a tile touching it to claim ${tiles} tiles on the spot.`,
       siteClaimed: 'SITE: already claimed.',
       site: (pays, bonus) =>
-        `SITE: build a tile touching it to claim it: ${pays} pts × its distance. That opens a bounty: then pop for POINTS in a big pocket near it for ×${bonus}.`,
+        `SITE: build a tile touching it to claim it: ${pays} pts × its distance. That opens a bounty: then pop a big pocket near it for ×${bonus}.`,
       shrineDetourClaimed: 'SHRINE: woken. On your own world, this switches a system on for good.',
       shrineDetour:
         'SHRINE: touch it with a tile. On your own world, waking one switches a system on for good.',
@@ -675,7 +675,7 @@ The pocket turned to STONE. It still surrounds, but never matches. Ground you ha
 +${tiles} tiles, on the spot.`,
     site: (pts, need, radius, bonus) =>
       `SITE CLAIMED
-+${pts} pts banked, and this star has set a BOUNTY: pop a pocket of ${need}+ for POINTS within ${radius} hexes of it for ×${bonus}.`,
++${pts} pts banked, and this star has set a BOUNTY: pop a pocket of ${need}+ within ${radius} hexes of it for ×${bonus}.`,
     territory: (radius, owns) =>
       `TERRITORY CLAIMED
 Ground within ${radius} hexes is native to ${owns} now, and it stays yours between runs.`,

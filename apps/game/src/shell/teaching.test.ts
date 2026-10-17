@@ -694,6 +694,28 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
     expect(fired).toBeGreaterThan(0);
   });
 
+  it('tells a cache the same way, one tile before it, in a real run', () => {
+    let fired = 0;
+    for (let seed = 1; seed <= 30; seed += 1) {
+      const s = createSession({
+        seed,
+        theme: resolveTheme(null),
+        strings: stringsFor(pickLocale(['en'])),
+      });
+      // The tour has already told the site, so the next card to fire is a cache.
+      for (let step = 0; step < 40; step += 1) {
+        walk(s, 1);
+        const snap = s.get();
+        const now: Moment = { board: snap.board, hud: snap.hud, placed: true, since: 0 };
+        if (nextLesson(now, afterSite)?.id === 'cache') {
+          fired += 1;
+          break;
+        }
+      }
+    }
+    expect(fired).toBeGreaterThan(0);
+  });
+
   it('is a card in the tour, not a chip', () => {
     expect(nextLesson(board(), touring)?.id).not.toBe('site');
     expect(nextLesson(board(), afterSite)).toEqual({ id: 'territory', as: 'card' });

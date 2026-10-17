@@ -290,7 +290,7 @@ export const STRINGS_FR: Strings = {
           core: (pays) =>
             `Un SITE se réclame en posant une tuile qui le touche. Il paie alors ${pays} points × sa distance du départ, et il ouvre une PRIME. Les sites se réarment à chaque partie, alors un site réclamé vaut la peine d’y retourner.`,
           bounty: (need, radius, bonus) =>
-            `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site, en prenant les POINTS (pas les tuiles)${D}: cette récolte marque ×${bonus}. Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant que celle-ci attend.`,
+            `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site${D}: cette récolte marque ×${bonus}. Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant que celle-ci attend.`,
         },
         shrine: {
           name: 'SANCTUAIRE',
@@ -487,7 +487,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle ne ressemble j
         `CACHE${D}: pose une tuile qui la touche pour réclamer ${tiles} tuiles sur-le-champ.`,
       siteClaimed: `SITE${D}: déjà réclamé.`,
       site: (pays, bonus) =>
-        `SITE${D}: pose une tuile qui le touche pour le réclamer${D}: ${pays} pts × sa distance. Ça ouvre une prime${D}: récolte ensuite des POINTS dans une grosse poche près de lui pour ×${bonus}.`,
+        `SITE${D}: pose une tuile qui le touche pour le réclamer${D}: ${pays} pts × sa distance. Ça ouvre une prime${D}: récolte ensuite une grosse poche près de lui pour ×${bonus}.`,
       shrineDetourClaimed: `SANCTUAIRE${D}: éveillé. Sur ton propre monde, ça allume un système pour de bon.`,
       shrineDetour: `SANCTUAIRE${D}: touche-le avec une tuile. Sur ton propre monde, en éveiller un allume un système pour de bon.`,
       shrineClaimed: `SANCTUAIRE${D}: éveillé. Il a allumé un système pour ce monde.`,
@@ -686,7 +686,7 @@ La poche est devenue de la PIERRE. Elle entoure encore, mais elle ne ressemble j
 +${nb(tiles)} tuiles, sur-le-champ.`,
     site: (pts, need, radius, bonus) =>
       `SITE RÉCLAMÉ
-+${nb(pts)} pts en banque, et cette étoile ouvre une PRIME${D}: récolte des POINTS dans une poche de ${need}+ à moins de ${radius} hexes de lui pour ×${bonus}.`,
++${nb(pts)} pts en banque, et cette étoile ouvre une PRIME${D}: récolte une poche de ${need}+ à moins de ${radius} hexes de lui pour ×${bonus}.`,
     territory: (radius, owns) =>
       `TERRITOIRE RÉCLAMÉ
 Le sol à moins de ${radius} hexes est natif de ${owns} maintenant, et il te reste entre les parties.`,
