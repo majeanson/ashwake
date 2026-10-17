@@ -602,10 +602,13 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
 });
 
 describe('a chip stays until it is opened (2026-10-12)', () => {
-  it('keeps both chips when one is opened, and when the pace would hide them', () => {
-    // Both offered; the pace now says there is nothing fresh.
-    const both = offerDots([], ['territory', 'rareUnique'], MAPPED);
+  it('offers one chip at a time, and keeps both when the pace would hide them', () => {
+    // Two are true at once and only the first appears (2026-10-17: "they all
+    // come at once"); the second follows once the pace lets it.
+    expect(offerDots([], ['territory', 'rareUnique'], MAPPED)).toEqual(['territory']);
+    const both = offerDots(['territory'], ['territory', 'rareUnique'], MAPPED);
     expect(both).toEqual(['territory', 'rareUnique']);
+    // The pace now says there is nothing fresh.
     expect(offerDots(both, [], MAPPED)).toEqual(both);
     // Opening one (its lesson met) takes that one away and leaves the other.
     expect(offerDots(both, [], told(MAPPED, 'territory'))).toEqual(['rareUnique']);
@@ -663,11 +666,29 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
   it('explains the site only when the next tile can claim it, and not the other kinds', () => {
     expect(nextLesson(withSiteNext(false), touring)?.id).not.toBe('site');
     expect(nextLesson(withSiteNext(true), touring)).toEqual({ id: 'site', as: 'card' });
-    // And the pace does not hold it back: it is told the moment it is needed.
-    expect(nextLesson({ ...withSiteNext(true), since: 0 }, touring)).toEqual({
+    // The pace does not hold it back, only a card spoken on this very placement:
+    // one placement behind another, it is told the moment it is needed.
+    expect(nextLesson({ ...withSiteNext(true), since: 1 }, touring)).toEqual({
       id: 'site',
       as: 'card',
     });
+    expect(nextLesson({ ...withSiteNext(true), since: 0 }, touring)?.id).not.toBe('site');
+  });
+
+  it('still tells a site that was reached before it was explained', () => {
+    // Seed 4 at 20 has a site already claimed and none left beside it. The
+    // one-tile moment went by under something else; the card comes after.
+    const s = createSession({
+      seed: 4,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+    });
+    walk(s, 20);
+    const snap = s.get();
+    const now: Moment = { board: snap.board, hud: snap.hud, placed: true };
+    expect(snap.board.cells.some((c) => c.landmark === 'site' && c.claimed)).toBe(true);
+    expect(nextLesson(now, touring)).toEqual({ id: 'site', as: 'card' });
+    expect(nextLesson(now, afterSite)?.id).not.toBe('site');
   });
 
   it('fires in a real run, the move before the site is claimed', () => {
@@ -684,7 +705,7 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
       for (let step = 0; step < 40; step += 1) {
         walk(s, 1);
         const snap = s.get();
-        const now: Moment = { board: snap.board, hud: snap.hud, placed: true, since: 0 };
+        const now: Moment = { board: snap.board, hud: snap.hud, placed: true, since: 1 };
         if (nextLesson(now, touring)?.id === 'site') {
           fired += 1;
           break;
@@ -706,7 +727,7 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
       for (let step = 0; step < 40; step += 1) {
         walk(s, 1);
         const snap = s.get();
-        const now: Moment = { board: snap.board, hud: snap.hud, placed: true, since: 0 };
+        const now: Moment = { board: snap.board, hud: snap.hud, placed: true, since: 1 };
         if (nextLesson(now, afterSite)?.id === 'cache') {
           fired += 1;
           break;

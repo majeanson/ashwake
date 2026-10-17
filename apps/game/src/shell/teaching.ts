@@ -158,6 +158,14 @@ type Slot = {
    */
   readonly paced?: false;
   /**
+   * How many placements after the game last spoke this may speak, where that is
+   * not `CARD_GAP` (2026-10-17). A card about a place the player is reaching
+   * cannot wait four placements, but it must not chain straight off the card
+   * before it either: Marc, the same day, of the three kinds in a row:
+   * _"they all come at once"_.
+   */
+  readonly gap?: number;
+  /**
    * Whether the moment is happening.
    *
    * Every one reads the CURRENT view and nothing else — no diffing, no
@@ -193,6 +201,7 @@ const onCell = (p: (c: CellView) => boolean): Pick<Slot, 'when' | 'target'> => (
 });
 
 /** The four destinations, all one test — a fifth reward kind lands here or nowhere. */
+type Kind = 'cache' | 'site' | 'shrine';
 const landmark =
   (id: 'cache' | 'site' | 'shrine' | 'territory') =>
   (c: CellView): boolean =>
@@ -206,7 +215,7 @@ const landmark =
  * first version asked for a revealed one and so could never fire).
  */
 const withinOneTile =
-  (kind: 'cache' | 'site') =>
+  (kind: Kind) =>
   (board: BoardView): CellView | undefined => {
     const legal = new Set(board.cells.filter((c) => c.legal).map((c) => c.key));
     return board.cells.find(
@@ -215,10 +224,19 @@ const withinOneTile =
     );
   };
 
-/** The tour's way of telling a kind: when the next tile reaches it, and the
- *  camera goes to that one rather than the first in the list. */
-const oneTileAway = (kind: 'cache' | 'site'): Pick<Slot, 'guidedWhen' | 'target'> => ({
-  guidedWhen: (now) => withinOneTile(kind)(now.board) !== undefined,
+/** One of this kind that has been reached this run: the card's second chance,
+ *  for the player whose one-tile moment went by under another card or a pop. */
+const reached = (kind: Kind) => (board: BoardView) =>
+  board.cells.find(
+    (c) => c.kind === 'landmark' && c.claimed && c.landmark === kind && !c.beacon && !c.remembered,
+  );
+
+/** The tour's way of telling a kind: when the next tile reaches it, or once it
+ *  has been reached and never explained. The camera goes to the one the next
+ *  tile reaches, and to no reached one: the player has just been there. */
+const oneTileAway = (kind: Kind): Pick<Slot, 'guidedWhen' | 'target'> => ({
+  guidedWhen: (now) =>
+    withinOneTile(kind)(now.board) !== undefined || reached(kind)(now.board) !== undefined,
   target: (board) => (withinOneTile(kind)(board) ?? board.cells.find(landmark(kind)))?.key ?? null,
 });
 
@@ -379,7 +397,7 @@ export const SCHEDULE: readonly Slot[] = [
     // Told on the tour like the site, one tile before it (2026-10-17, Marc:
     // caches showed on the horizon and said nothing).
     phase: 'tour',
-    paced: false,
+    gap: 1,
     after: 'map',
     opens: { lesson: 'map', row: 'cache' },
     ...onCell(landmark('cache')),
@@ -391,10 +409,10 @@ export const SCHEDULE: readonly Slot[] = [
     // In the tour a site is a card like a territory (2026-10-16, Marc: explain
     // the site when the tutorial approaches it): see `nextLesson`.
     phase: 'tour',
-    // Unpaced (2026-10-17, Marc: a card the player has never seen and needs
-    // disregards the pace): its moment is one tile wide, and four placements of
-    // waiting is a site claimed unexplained.
-    paced: false,
+    // A short gap, not the pace (2026-10-17, Marc: a card the player has never
+    // seen and needs disregards the pace; then: the kinds came all at once):
+    // its moment is one tile wide, but it waits a placement behind another card.
+    gap: 1,
     after: 'map',
     opens: { lesson: 'map', row: 'site' },
     ...onCell(landmark('site')),
@@ -403,16 +421,19 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'shrine',
     as: 'chip',
+    phase: 'tour',
+    gap: 1,
     after: 'map',
     opens: { lesson: 'map', row: 'shrine' },
     ...onCell(landmark('shrine')),
+    ...oneTileAway('shrine'),
   },
   // In the tour a territory is a card, not a chip: see `nextLesson`.
   {
     id: 'territory',
     as: 'chip',
     phase: 'tour',
-    paced: false,
+    gap: 1,
     after: 'map',
     opens: { lesson: 'map', row: 'territory' },
     ...onCell(landmark('territory')),
@@ -708,14 +729,17 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     // chip waits on (`afterMet`): it is the card that satisfies it.
     const magicTurn = phase === 'tour' && id === 'rare';
     const tourCard =
-      magicTurn || (phase === 'tour' && (id === 'territory' || id === 'site' || id === 'cache'));
+      magicTurn ||
+      (phase === 'tour' &&
+        (id === 'territory' || id === 'site' || id === 'cache' || id === 'shrine'));
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;
     const happening =
       phase !== 'free' && slot.guidedWhen !== undefined ? slot.guidedWhen(now) : slot.when(now);
     if (!(magicTurn ? hasMet(progress, 'luck') : happening)) continue;
-    if (slot.paced !== false && now.since !== undefined && now.since < CARD_GAP) continue;
+    const gap = slot.paced === false ? 0 : (slot.gap ?? CARD_GAP);
+    if (now.since !== undefined && now.since < gap) continue;
     return { id, as: slot.as === 'toast' ? 'toast' : 'card' };
   }
   return null;
@@ -757,7 +781,10 @@ export const offerDots = (
   fresh: readonly TeachId[],
   progress: Progress,
 ): readonly TeachId[] =>
-  [...offered, ...fresh.filter((id) => !offered.includes(id))].filter(
+  // AT MOST ONE NEW CHIP APPEARS AT A TIME (2026-10-17, Marc: the concepts after
+  // the tutorial "all come at once"): the pace gates a window, and every chip
+  // that was true used to walk through it together.
+  [...offered, ...fresh.filter((id) => !offered.includes(id)).slice(0, 1)].filter(
     (id) => !hasMet(progress, id) && afterMet(id, progress),
   );
 

@@ -1892,6 +1892,14 @@ function Game() {
     setOfferedDots(offeredNow);
   }
   const dots = started && !snap.hud.ended ? offeredNow : [];
+  // A chip APPEARING spends the game's turn to speak, so the next one waits out
+  // the pace instead of arriving beside it.
+  const dotsShown = offeredDots.length;
+  const dotsBefore = useRef(dotsShown);
+  useEffect(() => {
+    if (dotsShown > dotsBefore.current) markSpoke(session.get().hud.placements);
+    dotsBefore.current = dotsShown;
+  }, [dotsShown, markSpoke, session]);
   const [dotOpen, setDotOpen] = useState<TeachId | null>(null);
 
   /**
