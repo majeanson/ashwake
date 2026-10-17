@@ -663,6 +663,11 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
   it('explains the site only when the next tile can claim it, and not the other kinds', () => {
     expect(nextLesson(withSiteNext(false), touring)?.id).not.toBe('site');
     expect(nextLesson(withSiteNext(true), touring)).toEqual({ id: 'site', as: 'card' });
+    // And the pace does not hold it back: it is told the moment it is needed.
+    expect(nextLesson({ ...withSiteNext(true), since: 0 }, touring)).toEqual({
+      id: 'site',
+      as: 'card',
+    });
   });
 
   it('is a card in the tour, not a chip', () => {

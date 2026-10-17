@@ -374,6 +374,10 @@ export const SCHEDULE: readonly Slot[] = [
     // In the tour a site is a card like a territory (2026-10-16, Marc: explain
     // the site when the tutorial approaches it): see `nextLesson`.
     phase: 'tour',
+    // Unpaced (2026-10-17, Marc: a card the player has never seen and needs
+    // disregards the pace): its moment is one tile wide, and four placements of
+    // waiting is a site claimed unexplained.
+    paced: false,
     after: 'map',
     opens: { lesson: 'map', row: 'site' },
     ...onCell(landmark('site')),
@@ -391,6 +395,7 @@ export const SCHEDULE: readonly Slot[] = [
     id: 'territory',
     as: 'chip',
     phase: 'tour',
+    paced: false,
     after: 'map',
     opens: { lesson: 'map', row: 'territory' },
     ...onCell(landmark('territory')),
