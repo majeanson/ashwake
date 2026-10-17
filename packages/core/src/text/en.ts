@@ -904,6 +904,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     resume: 'RESUME',
     fromTerritories: (tiles) => `+${tiles} tiles from the territories you hold.`,
     gotIt: 'GOT IT',
+    cardNext: 'NEXT',
     newChip: 'NEW',
     thisDevice: 'THIS DEVICE',
     noStorage: 'This browser is not keeping anything: your run will not survive closing the tab.',

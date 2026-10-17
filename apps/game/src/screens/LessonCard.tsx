@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { TUNING } from '@content/tuning';
 import type { Theme } from '@theme/tokens';
 import {
@@ -49,6 +50,9 @@ type LessonCardProps = {
   /** Fired BY a moment rather than opened by a tap: it adds the lesson's
    *  first-contact sentence, where the lesson keeps one. */
   readonly firstContact?: boolean | undefined;
+  /** A NEW chip's card: the concept was already told, so THE MAP's opening
+   *  page is left out and the card opens straight on its row. */
+  readonly skipIntro?: boolean | undefined;
   /** The row of the lesson to lead, where it has rows and one was asked about:
    *  a chip for CACHE, a tap on a cache, a destination just found. */
   readonly row?: RowKey | undefined;
@@ -67,12 +71,66 @@ export function LessonCard({
   dismiss,
   onDismiss,
   firstContact,
+  skipIntro,
   row,
   onTerm,
   onManual,
 }: LessonCardProps) {
+  // The page belongs to the card it was turned on: a term that replaces this
+  // card (one slot) starts again at its first page.
+  const cardKey = `${id}/${row ?? ''}`;
+  const [turned, setTurned] = useState({ cardKey, page: 0 });
+  const page = turned.cardKey === cardKey ? turned.page : 0;
+  const setPage = (next: number): void => setTurned({ cardKey, page: next });
   const lesson = lessonOf(id);
   if (lesson === undefined) return null;
+
+  /*
+   * THE MAP IS ONE CARD PER THING, AND A THING WITH DEPTH GETS MORE THAN ONE
+   * (2026-10-16, Marc: split every kind of thing on the map across cards, one
+   * card was too big). Opened at a row, THE MAP prints that row alone, not the
+   * six, and its `lines` (the site's bounty, the territory's native ground)
+   * follow as pages of their own. A concept card that is FIRED leads with the
+   * lesson's words, as a page, so the row is not stacked under them.
+   */
+  if (id === 'map' && row !== undefined && lesson.rows !== undefined) {
+    const own = lesson.rows(TUNING, theme, s).find((r) => r.key === row);
+    if (own !== undefined) {
+      const intro = firstContact === true && !skipIntro;
+      const pages = [
+        ...(intro ? [{ text: lessonCardDefine(lesson, TUNING, theme, s), row: null }] : []),
+        { text: null, row: own },
+        ...(own.lines ?? []).map((line) => ({
+          text: null,
+          row: {
+            ...own,
+            ...((line.head ?? own.name) === undefined ? {} : { name: line.head ?? own.name }),
+            text: line.text,
+          },
+        })),
+      ];
+      const at = Math.min(page, pages.length - 1);
+      const last = at === pages.length - 1;
+      const shown = pages[at]!;
+      return (
+        <Card
+          id={`lesson-${id}`}
+          icon={lesson.icon}
+          name={lessonName(lesson, s)}
+          ink={lesson.ink}
+          dismiss={last ? dismiss : s.ui.cardNext}
+          onDismiss={last ? onDismiss : () => setPage(at + 1)}
+          manual={onManual === undefined ? undefined : { label: s.ui.howToPlay, onOpen: onManual }}
+        >
+          {shown.row === null ? (
+            <ProseLines text={shown.text ?? ''} s={s} onTerm={onTerm} within={id} />
+          ) : (
+            <TipRows rows={[shown.row]} theme={theme} s={s} onTerm={onTerm} within={id} />
+          )}
+        </Card>
+      );
+    }
+  }
   const draws = cardDraws(lesson, row);
 
   return (

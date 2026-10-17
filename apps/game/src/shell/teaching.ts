@@ -353,6 +353,9 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'site',
     as: 'chip',
+    // In the tour a site is a card like a territory (2026-10-16, Marc: explain
+    // the site when the tutorial approaches it): see `nextLesson`.
+    phase: 'tour',
     after: 'map',
     opens: { lesson: 'map', row: 'site' },
     ...onCell(landmark('site')),
@@ -663,7 +666,7 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     // the concept (`toldBy`), and so it is not held for `after`, which only a
     // chip waits on (`afterMet`): it is the card that satisfies it.
     const magicTurn = phase === 'tour' && id === 'rare';
-    const tourCard = magicTurn || (phase === 'tour' && id === 'territory');
+    const tourCard = magicTurn || (phase === 'tour' && (id === 'territory' || id === 'site'));
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;

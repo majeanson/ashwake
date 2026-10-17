@@ -4848,6 +4848,7 @@ function Game() {
           theme={theme}
           s={s}
           firstContact
+          skipIntro
           dismiss={s.ui.gotIt}
           onTerm={openTerm}
           onManual={() => openManualFor(dotAt)}

@@ -1138,6 +1138,8 @@ export type Strings = {
     readonly fromTerritories: (tiles: number) => string;
     /** What a card is dismissed with, once it has been read. */
     readonly gotIt: string;
+    /** What a card that goes on to a second page is advanced with. */
+    readonly cardNext: string;
     /** The word on a chip that offers a lesson without interrupting (`DOTS`). */
     readonly newChip: string;
     /** The heading over everything that can destroy something. */

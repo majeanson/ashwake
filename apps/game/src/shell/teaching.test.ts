@@ -635,13 +635,18 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
     ...(['story', 'goal', 'place', 'colours', 'ripe', 'pop', 'walked'] as const),
   ].reduce<Progress>((p, id) => told(p, id), EMPTY_PROGRESS);
 
+  // A site is explained on the tour the way a territory is (2026-10-16): it is
+  // the first of the two in the schedule, so it speaks first.
+  const afterSite = told(touring, 'site');
+
   it('is a card in the tour, not a chip', () => {
-    expect(nextLesson(board(), touring)).toEqual({ id: 'territory', as: 'card' });
+    expect(nextLesson(board(), touring)).toEqual({ id: 'site', as: 'card' });
+    expect(nextLesson(board(), afterSite)).toEqual({ id: 'territory', as: 'card' });
     expect(newDots(board(), touring)).toEqual([]);
   });
 
-  it('does not bring the shrine with it: only the territory is on the tour', () => {
-    const afterTerritory = told(touring, 'territory');
+  it('does not bring the shrine with it: only the site and the territory are on the tour', () => {
+    const afterTerritory = told(afterSite, 'territory');
     expect(nextLesson(board(), afterTerritory)?.id).not.toBe('shrine');
   });
 
@@ -658,7 +663,7 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
     // The tour's exception bypasses `after`: this card tells the concept, so it
     // cannot wait on itself.
     expect(touring.met).not.toContain('map');
-    expect(nextLesson(board(), touring)).toEqual({ id: 'territory', as: 'card' });
+    expect(nextLesson(board(), afterSite)).toEqual({ id: 'territory', as: 'card' });
     expect(opensAt('territory')).toEqual({ lesson: 'map', row: 'territory' });
     expect(toldBy('territory', board().board)).toEqual(['territory', 'map']);
   });
