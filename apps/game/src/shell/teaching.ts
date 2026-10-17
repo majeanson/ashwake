@@ -198,15 +198,18 @@ const landmark =
   (c: CellView): boolean =>
     c.kind === 'landmark' && !c.claimed && c.landmark === id;
 
-/** A site that the very next tile can claim: a legal hex touches it. */
-const siteWithinOneTile = (now: Moment): boolean => {
-  const legal = new Set(now.board.cells.filter((c) => c.legal).map((c) => c.key));
-  return now.board.cells.some(
+/**
+ * A site that the very next tile can claim: a legal hex touches it. It is a
+ * BEACON at that moment, not a revealed cell — placing a tile reveals its
+ * neighbours and claims a touching destination in the same move, so a site is
+ * never seen unclaimed on revealed ground (2026-10-17: the first version asked
+ * for a revealed one and so could never fire).
+ */
+const siteWithinOneTile = (board: BoardView): CellView | undefined => {
+  const legal = new Set(board.cells.filter((c) => c.legal).map((c) => c.key));
+  return board.cells.find(
     (c) =>
-      landmark('site')(c) &&
-      !c.beacon &&
-      !c.remembered &&
-      neighbourKeys(c.q, c.r).some((k) => legal.has(k)),
+      landmark('site')(c) && !c.remembered && neighbourKeys(c.q, c.r).some((k) => legal.has(k)),
   );
 };
 
@@ -381,7 +384,10 @@ export const SCHEDULE: readonly Slot[] = [
     after: 'map',
     opens: { lesson: 'map', row: 'site' },
     ...onCell(landmark('site')),
-    guidedWhen: siteWithinOneTile,
+    guidedWhen: (now) => siteWithinOneTile(now.board) !== undefined,
+    // Fly to the site the card is about, not to the first one in the list.
+    target: (board) =>
+      (siteWithinOneTile(board) ?? board.cells.find(landmark('site')))?.key ?? null,
   },
   {
     id: 'shrine',

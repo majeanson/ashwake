@@ -644,9 +644,9 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
     const [nq, nr] = [site.q + 1, site.r];
     const cells = now.board.cells
       .filter((c) => c.key !== `${nq},${nr}`)
-      // The site is made a real cell (this seed shows it as a far glow), and
-      // nothing else on the board is placeable.
-      .map((c) => ({ ...c, legal: false, ...(c.key === site.key ? { beacon: false } : {}) }));
+      // Nothing else on the board is placeable. The site stays what it is the
+      // move before it is claimed: a far glow, not revealed ground.
+      .map((c) => ({ ...c, legal: false }));
     if (near)
       cells.push({
         ...site,
@@ -668,6 +668,30 @@ describe('a territory is explained as it appears, in the tour (2026-10-13)', () 
       id: 'site',
       as: 'card',
     });
+  });
+
+  it('fires in a real run, the move before the site is claimed', () => {
+    // The site is a far glow until the tile that claims it, so this walks real
+    // runs a placement at a time and looks for the moment (2026-10-17: the
+    // first version only matched revealed ground and never fired in play).
+    let fired = 0;
+    for (let seed = 1; seed <= 30; seed += 1) {
+      const s = createSession({
+        seed,
+        theme: resolveTheme(null),
+        strings: stringsFor(pickLocale(['en'])),
+      });
+      for (let step = 0; step < 40; step += 1) {
+        walk(s, 1);
+        const snap = s.get();
+        const now: Moment = { board: snap.board, hud: snap.hud, placed: true, since: 0 };
+        if (nextLesson(now, touring)?.id === 'site') {
+          fired += 1;
+          break;
+        }
+      }
+    }
+    expect(fired).toBeGreaterThan(0);
   });
 
   it('is a card in the tour, not a chip', () => {
