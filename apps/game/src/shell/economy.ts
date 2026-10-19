@@ -43,7 +43,14 @@ type RunKind =
   /** Somebody else's seed. A replay scored under this device's upgrades would
    *  not be a replay of anything, so it plays a daily's economy: no relics, no
    *  ledger, and the offer to keep the board at the end (2026-09-09). */
-  | { readonly kind: 'detour' };
+  | { readonly kind: 'detour' }
+  /** THE TUTORIAL A DAILY LINK SENT (2026-10-19, Marc: _"a tutorial for dailys
+   *  (if we come from a daily share link) that doesnt include none of those
+   *  vs. a full tutorial if were playing in WORLD mode"_). A daily's economy,
+   *  since that is the game it teaches — no relics, no finds, shrines as caches
+   *  and sites — and without the two things a first board does not need:
+   *  magic and unique tiles, and the caravan. */
+  | { readonly kind: 'learn' };
 
 /**
  * A run that cannot bank pays no relics either.
@@ -134,6 +141,16 @@ const NO_LEDGER = {
 export function economyFor(run: RunKind, base: Tuning = TUNING): Tuning {
   if (run.kind === 'daily' || run.kind === 'detour') {
     return { ...base, ...NO_RELICS, ...NO_LEDGER };
+  }
+  if (run.kind === 'learn') {
+    return {
+      ...base,
+      ...NO_RELICS,
+      ...NO_LEDGER,
+      magicChance: 0,
+      uniqueChance: 0,
+      caravanEvery: 0,
+    };
   }
 
   const woken = applyUnlocks(base, unlockedBy(run.world));

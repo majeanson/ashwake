@@ -11305,3 +11305,52 @@ all"_, then _"relics will belong in WORLD mode only"_).
   (`MODES.md`).
 - `endscreen.test.tsx` holds both endings. First paint is 195.8 KB, under the
   201,000-byte bar.
+
+**Later still — six more from one list** (Marc: _"1, 2, 3. as long it appears
+at the right time and not randomly … 5. explain it rapidly … 6. ok do so 7. …
+8. territory tiles given is a bit op right now id tune that"_).
+
+1. **The red e2e test** ("a tap on a touring board…") had failed on every push
+   since 2026-10-17. THE MAP's card opens on its intro page, and its next page
+   is the one kind's row alone, so the test turns the page and asks for exactly
+   one row.
+2. **Stone, at the first pop.** `firstPop` takes QUARRY's name where
+   `redAshMatches` is on and says only QUARRY counts stone as a match. The card
+   is raised by the first pop, which is when stone first exists.
+3. **A claim before its card.** `ReceiptContext.untold` (passed by `App` through
+   `createSession`, read off the disk at the claim): during the first run, a
+   cache or site whose moment is not met says its number alone (`claim.cachePlain`,
+   `sitePlain`). Its own card fires once one is reached (the `reached` half of
+   `oneTileAway`), so the bounty is explained by the card, not by a toast
+   naming a word nobody has met. `receipts.test.ts` holds both.
+4. Not now.
+5. **UNDO, in one line.** A new teaching moment, `undo`, is a walk toast once
+   two tiles are down and nothing is ripe: "Placed one wrong? UNDO takes back
+   your last tile." It speaks through `speakLesson` on a dispatch, and a film
+   dispatches nothing, so it cannot play over a replay. A replay never showed
+   an undone tile either: `Session.undo` cuts the film with the state.
+6. **HOW IT WORKS** ends with the opening strategy: "To start, grow ONE colour
+   into one big blob." It is `howItWorks`, so the manual's opening says it too.
+7. **A daily link's tutorial is small.** LEARN FIRST from a `?daily=` link no
+   longer goes through NEW RUN. It is its own door: the chosen board under
+   `economyFor({ kind: 'learn' })`, which is the daily's economy with no magic
+   or unique tiles and no caravan (finds were already off), as a detour, so it
+   banks nothing. Its ending has no keep-this-board offer and no share chain.
+   A `?seed=` link's LEARN FIRST is still NEW RUN, the world's full tutorial.
+   `MODES.md` has the row, and the claim that a detour is boot-only is now
+   "boot, and this door", in the three places that said it. `learn.test.ts`
+   runs seed 933 under the small rules: the wall, the cache and the first pop
+   land in the same window, and no magic tile or caravan in forty placements.
+8. **Territories +3 each, capped at +9** (was +6, cap +24). The +6 was written
+   against a 30-tile purse; the shipped purse is 22, so four territories more
+   than doubled the start. **The golden sim did not move**: it plays single
+   runs, and this bonus applies only between runs in a world. Pins re-recorded:
+   the TERRITORY row, HOW IT WORKS, and `firstPop` in both forms.
+
+**Verified:** typecheck, lint, 1632 unit tests, the golden sim unchanged, the
+sweep at 0 findings, the budget (first paint 196.2 KB, 0.1 KB under the bar, so
+the next sentence added to the first paint will need a bar move or bytes back),
+and the five touched e2e specs on Chromium, 94 green including the touring
+test. **Open:** Marc's _"tidy up this screen"_ next to the replay. The film
+already draws only its bar (`menus.spec.ts` pins it), so which screen was
+meant is a question for him.

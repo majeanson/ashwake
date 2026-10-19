@@ -164,6 +164,7 @@ import {
   opensAt,
   phaseOf,
   purseOpened,
+  guided,
   shows,
   sinceSpoke,
   stepCue,
@@ -1048,7 +1049,8 @@ function Game() {
      * WHICH BOARD THIS PAGE OPENS ON — the ladder is `shell/boot.ts`.
      *
      * It is `MODES.md`'s **boot** door: the one door that is not `enterRun`,
-     * and the only place in the game where `detour` can become true. The
+     * and one of the two places where `detour` can become true (the other is
+     * LEARN FIRST from a daily link, `learnFirst`). The
      * decision is nothing but its inputs, so it is a function with the disk
      * passed in; what stays here is the session itself, whose callbacks close
      * over the very object being built.
@@ -1141,6 +1143,18 @@ function Game() {
       shrinesClaimed: () => {
         const here = made.get().state;
         return detour ? 0 : (worldHeld(here.rootSeed)?.shrines.length ?? 0);
+      },
+      /*
+       * A cache or a site claimed before the first run has explained it says
+       * its number alone (2026-10-19): the walk can reach one before any card
+       * about it may speak, and "this star has set a BOUNTY" is a word nobody
+       * has met. Its card fires once one has been reached. Read off the disk
+       * at the claim, like `readProgress` everywhere a callback outlives a
+       * render.
+       */
+      untold: (reward) => {
+        const p = readProgress();
+        return (reward === 'cache' || reward === 'site') && guided(p) && !hasMet(p, reward);
       },
     });
     // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so
@@ -2309,7 +2323,14 @@ function Game() {
           // this had its own `\n\n`, which is one card's spacing decided in a
           // second place (2026-09-02). See `paragraphs`.
           // POP's card, a breath earlier, already said when to pop (2026-10-19).
-          text: paragraphs(s.view.harvest.firstPop, said.text),
+          // Stone is first on the board right now, so QUARRY's twist is told
+          // here, under the dial that makes it true (2026-10-19).
+          text: paragraphs(
+            s.view.harvest.firstPop(
+              now.state.tuning.redAshMatches ? namesOf(theme, s.locale).red : null,
+            ),
+            said.text,
+          ),
           card: true,
         };
         const wait = reducedMotion ? 0 : cascadeMs(theme.motion, did.pocket);
@@ -3199,10 +3220,34 @@ function Game() {
    * ending offers it back. Cleared by either door off that ending.
    */
   const [learnedFrom, setLearnedFrom] = useState<typeof today | null>(null);
+  /*
+   * AND FROM A DAILY IT IS THE DAILY'S TUTORIAL (2026-10-19, Marc: _"a
+   * tutorial for dailys (if we come from a daily share link) that doesnt
+   * include none of those vs. a full tutorial if were playing in WORLD
+   * mode"_). The chosen board, under a daily's economy with no magic tiles
+   * and no caravan (`economyFor`'s `learn`), and banked nowhere: a detour,
+   * the second door after boot that opens one (`MODES.md`). A shared seed's
+   * LEARN FIRST is the world's own tutorial, through NEW RUN.
+   */
   const learnFirst = useCallback(() => {
+    if (daily === null) {
+      newRun();
+      return;
+    }
     setLearnedFrom(daily);
-    newRun();
-  }, [daily, newRun]);
+    enterRun(wiring, {
+      daily: null,
+      resume: null,
+      seed: LEARN_SEED,
+      memory: undefined,
+      economy: economyFor({ kind: 'learn' }),
+      wakeAt: null,
+      from: null,
+      detour: true,
+      keepsWorld: false,
+      fromMenus: false,
+    });
+  }, [daily, newRun, wiring]);
   const backToDaily = useCallback(() => {
     if (learnedFrom === null) return;
     setLearnedFrom(null);
@@ -4341,7 +4386,8 @@ function Game() {
                     streak: dailyStreak(readDailyBook(), today),
                   }
             }
-            importDaily={importDaily}
+            // The daily's tutorial is a practice board: nothing to keep.
+            importDaily={learnedFrom === null ? importDaily : undefined}
             /* BACK UP, once, and only when there is something to lose — the
                threshold and the once-ever mark are settled where the ending
                banks, because `markSaid` is a write. See the banking effect. */
@@ -4351,7 +4397,7 @@ function Game() {
                on a daily and a detour, so `=== 1` is the whole of "first".
                Dark behind `ui.firstRun` until Session C has run. */
             firstRun={isEnabled(features, 'ui.firstRun') && standing?.run === 1}
-            fromLink={session.detour}
+            fromLink={session.detour && learnedFrom === null}
             /* THE ENDING'S TOUR: the device's first finished run in a world,
                once ever (`standing.run` is null on a daily and a detour). It
                waits while a card or panel is over the screen. */
@@ -4468,9 +4514,10 @@ function Game() {
            * A SHARED BOARD IS NOT OFFERED A RESTART, and hiding it is the
            * honest answer rather than a third branch (2026-09-10).
            *
-           * `MODES.md`: *"a detour can only be ENTERED at boot, from the
-           * URL"* — every door states `detour: false`, and that is the check
-           * a sixth door cannot forget. A mid-run RESTART that dealt the same
+           * `MODES.md`: a detour is entered at boot, from the URL (and, since
+           * 2026-10-19, by LEARN FIRST's practice board) — every other door
+           * states `detour: false`, and that is the check a new door cannot
+           * forget. A mid-run RESTART that dealt the same
            * shared seed again would be that sixth door, and it would be a
            * design change to the one invariant three sessions of bugs bought.
            *

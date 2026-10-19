@@ -273,7 +273,9 @@ describe('MODES.md’s guards, readers and kinds are real', () => {
   it('maps every kind `economyFor` knows onto a column', () => {
     const economy = read('apps/game/src/shell/economy.ts');
     const kinds = new Set([...economy.matchAll(/readonly kind: '(\w+)'/g)].map((m) => m[1]));
-    expect(kinds.size, 'no economy kinds parsed from `economyFor`').toBe(3);
+    // Four since 2026-10-19: `learn`, the tutorial a daily link sends a
+    // first-timer to, plays in the Shared column (a detour that banks nothing).
+    expect(kinds.size, 'no economy kinds parsed from `economyFor`').toBe(4);
 
     const row = rowsOf(modes, '## The three kinds').find((r) => r.startsWith('| Economy'));
     expect(row, "MODES.md's three-kinds table has no Economy row").toBeDefined();

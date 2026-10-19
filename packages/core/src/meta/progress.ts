@@ -219,6 +219,9 @@ export const TEACH_IDS = [
   // only the tour speaks. Sealed like `walked` for a ledger past the tour's own
   // lessons.
   'toured',
+  // UNDO, said once in the walk (2026-10-19, Marc: _"explain it rapidly"_).
+  // Strangers asked for it, it existed, and nothing on a first run said so.
+  'undo',
 ] as const;
 
 export type TeachId = (typeof TEACH_IDS)[number];

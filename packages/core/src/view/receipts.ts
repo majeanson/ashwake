@@ -132,6 +132,13 @@ type ReceiptContext = {
    * existed.
    */
   readonly crossingCarries?: () => { readonly dowry: number; readonly carried: number };
+  /**
+   * A kind of place the first run has not explained yet (2026-10-19, Marc:
+   * claims must speak "at the right time and not randomly"). Its claim says the
+   * number alone, and its own card, which fires once one is reached, says the
+   * rest. Absent says everything, which is every run after the first.
+   */
+  readonly untold?: (reward: LandmarkReward) => boolean;
 };
 
 /**
@@ -249,12 +256,18 @@ function receiptFor(
       // `cachePaysAt(hex, t, homeOf(state))`; Ashwake 1's UI once dropped that
       // argument and priced from the world origin, so a camp run announced
       // several times what it actually banked.
-      return c.cache(cachePaysAt(hex, t, homeOf(after)));
+      return (ctx.untold?.('cache') === true ? c.cachePlain : c.cache)(
+        cachePaysAt(hex, t, homeOf(after)),
+      );
 
     case 'site':
       // The number at the moment of touch (Marc, Day 2: "make sure we see the
       // + points banked the moment we touch") — the same arithmetic the engine
-      // just paid.
+      // just paid. Before the first run has explained a site, the points
+      // alone: the BOUNTY is its card's to explain (`untold`).
+      if (ctx.untold?.('site') === true) {
+        return c.sitePlain(t.sitePays * distanceMultiplierAt(hex, t, homeOf(after)));
+      }
       return c.site(
         t.sitePays * distanceMultiplierAt(hex, t, homeOf(after)),
         t.questNeed,

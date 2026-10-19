@@ -273,7 +273,7 @@ describe('the schedule covers every moment (2026-10-13)', () => {
   it('puts RIPE and POP under their own lessons and the expedition’s moments under THE EXPEDITION', () => {
     expect([...momentsOf('ripe')].sort()).toEqual(['ripe']);
     expect([...momentsOf('pop')].sort()).toEqual(['pop']);
-    expect([...momentsOf('expedition')].sort()).toEqual(['goal', 'place', 'story', 'wall']);
+    expect([...momentsOf('expedition')].sort()).toEqual(['goal', 'place', 'story', 'undo', 'wall']);
     expect(opensAt('ripe')).toEqual({ lesson: 'ripe' });
     expect(opensAt('pop')).toEqual({ lesson: 'pop' });
     expect(opensAt('wall')).toEqual({ lesson: 'expedition', row: 'wall' });

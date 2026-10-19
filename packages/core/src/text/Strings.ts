@@ -317,6 +317,8 @@ export type Strings = {
   };
   /** The drip's one line on a poor hand: REDRAW exists, and what it costs. */
   readonly rerollHint: (cost: number) => string;
+  /** The walk's one line on UNDO. */
+  readonly undoHint: string;
 
   readonly view: {
     /**
@@ -405,7 +407,8 @@ export type Strings = {
        * have already cashed grows poorer, and the world stays rich farther
        * out. A toast is too quiet for a rule that reshapes the board.
        */
-      readonly firstPop: string;
+      /** `red` is QUARRY's name where it counts stone as a match, else null. */
+      readonly firstPop: (red: string | null) => string;
       readonly bountyCollected: (bonus: number) => string;
       readonly bountyMissed: (bonus: number, need: number, radius: number) => string;
       readonly tiles: (
@@ -718,6 +721,9 @@ export type Strings = {
   readonly claim: {
     readonly cache: (tiles: number) => string;
     readonly site: (pts: number, need: number, radius: number, bonus: number) => string;
+    /** The same claims before the first run has explained them: the number only. */
+    readonly cachePlain: (tiles: number) => string;
+    readonly sitePlain: (pts: number) => string;
     readonly territory: (radius: number, owns: string) => string;
     /**
      * The same claim on a board that cannot keep it — a daily, or a shared

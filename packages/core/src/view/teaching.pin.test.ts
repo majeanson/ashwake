@@ -4,7 +4,7 @@ import { newRun } from '@engine/reduce';
 import { PERKS, UPGRADES, upgradeText } from '@meta/progress';
 import { SETTLEMENT } from '@theme/themes/settlement';
 import { DAYLIGHT } from '@theme/themes/daylight';
-import type { Theme } from '@theme/tokens';
+import { namesOf, type Theme } from '@theme/tokens';
 import { STRINGS_EN } from '@text/en';
 import { STRINGS_FR } from '@text/fr-CA';
 import type { Strings } from '@text/Strings';
@@ -284,7 +284,8 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
           }
         }
       }
-      out['firstPop'] = s.view.harvest.firstPop;
+      out['firstPop'] = s.view.harvest.firstPop(null);
+      out['firstPop · quarry'] = s.view.harvest.firstPop(namesOf(SETTLEMENT, s.locale).red);
       expect(out).toMatchSnapshot();
     });
 

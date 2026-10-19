@@ -343,6 +343,7 @@ export const STRINGS_FR: Strings = {
   },
   rerollHint: (cost) =>
     `Une main faible? REPIOCHER la jette pour une nouvelle, au prix de ${cost} de CHANCE.`,
+  undoHint: 'Une pose ratée? ANNULER reprend ta dernière tuile.',
 
   view: {
     groundHead: (name, word) => `${name}${D}: ${word}.`,
@@ -423,8 +424,8 @@ export const STRINGS_FR: Strings = {
         `${n} tuile${pl(n, '', 's')} rare${pl(n, '', 's')} là-dedans ser${pl(n, 'a', 'ont')} dépensée${pl(n, '', 's')} par la récolte.`,
     },
     harvest: {
-      firstPop: `TA PREMIÈRE RÉCOLTE
-La poche est devenue de la PIERRE. Elle entoure encore. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
+      firstPop: (red) => `TA PREMIÈRE RÉCOLTE
+La poche est devenue de la PIERRE. ${red === null ? 'Elle entoure encore, mais elle ne ressemble jamais.' : `Elle entoure encore, et seules ${red} la comptent comme une ressemblance.`} Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
 
       head: (count, worth) => `RÉCOLTÉ ${count}, valeur totale ${d1(worth)}`,
       bountyCollected: (bonus) => `Prime ×${bonus}${D}: ENCAISSÉE.`,
@@ -662,7 +663,7 @@ La poche est devenue de la PIERRE. Elle entoure encore. Le sol déjà récolté 
   ],
 
   howItWorks:
-    'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand.',
+    'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Pour commencer, fais grandir UNE couleur en un seul gros bloc.',
 
   share: {
     run: (name, pts, placements, arc) =>
@@ -682,6 +683,8 @@ La poche est devenue de la PIERRE. Elle entoure encore. Le sol déjà récolté 
       (streak > 1 ? ` · ${streak} jours d’affilée` : ''),
   },
   claim: {
+    cachePlain: (tiles) => `+${nb(tiles)} tuiles.`,
+    sitePlain: (pts) => `+${nb(pts)} points.`,
     cache: (tiles) => `CACHE RÉCLAMÉE
 +${nb(tiles)} tuiles, sur-le-champ.`,
     site: (pts, need, radius, bonus) =>

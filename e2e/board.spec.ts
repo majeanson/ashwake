@@ -1830,13 +1830,12 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
     await page.waitForTimeout(120);
   }
   expect(await place.count(), 'no card for a place ever came').toBe(1);
-  // ...and it opens at the row of the destination that fired it, led first.
-  const led = page.locator('[data-card="lesson-map"] .tip-lead');
-  await expect(led, 'the map card led no row').toHaveCount(1);
-  expect(
-    await page.locator('[data-card="lesson-map"] [data-row]').first().getAttribute('class'),
-    'the led row is not the first',
-  ).toContain('tip-lead');
+  // THE MAP's own card leads with the concept as a page of its own, and its
+  // next page is the one destination that fired it, alone (2026-10-17,
+  // `LessonCard`'s `skipIntro`; Marc: the site "without explaining all types").
+  const rows = page.locator('[data-card="lesson-map"] [data-row]');
+  await scrim.locator('button').last().click({ force: true });
+  await expect(rows, 'the map card turned to no row, or to more than one').toHaveCount(1);
 
   // The card now comes some placements in (the pace), so the camera is still
   // easing after the last tile: let it come to rest first.

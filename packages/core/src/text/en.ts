@@ -336,6 +336,7 @@ export const STRINGS_EN: Strings = {
     pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP.',
   },
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
+  undoHint: 'Placed one wrong? UNDO takes back your last tile.',
 
   view: {
     groundHead: (name, word) => `${name}: ${word}.`,
@@ -414,8 +415,8 @@ export const STRINGS_EN: Strings = {
       rares: (n) => `${n} rare tile${plural(n, '', 's')} in here will be spent by popping it.`,
     },
     harvest: {
-      firstPop: `YOUR FIRST POP
-The pocket turned to STONE. It still surrounds. Ground you have cashed grows poorer; the world stays rich farther out.`,
+      firstPop: (red) => `YOUR FIRST POP
+The pocket turned to STONE. ${red === null ? 'It still surrounds, but never matches.' : `It still surrounds, and only ${red} counts it as a match.`} Ground you have cashed grows poorer; the world stays rich farther out.`,
 
       head: (count, worth) => `POPPED ${count}, total worth ${d1(worth)}`,
       bountyCollected: (bonus) => `Bounty ×${bonus}: COLLECTED.`,
@@ -651,7 +652,7 @@ The pocket turned to STONE. It still surrounds. Ground you have cashed grows poo
   ],
 
   howItWorks:
-    'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger.',
+    'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. To start, grow ONE colour into one big blob.',
 
   share: {
     run: (name, pts, placements, arc) =>
@@ -671,6 +672,8 @@ The pocket turned to STONE. It still surrounds. Ground you have cashed grows poo
       (streak > 1 ? ` · ${streak} days in a row` : ''),
   },
   claim: {
+    cachePlain: (tiles) => `+${tiles} tiles.`,
+    sitePlain: (pts) => `+${pts} pts.`,
     cache: (tiles) => `CACHE CLAIMED
 +${tiles} tiles, on the spot.`,
     site: (pts, need, radius, bonus) =>

@@ -224,3 +224,24 @@ describe('a shrine', () => {
     expect(said[0]?.text).not.toContain(s.unlock.draft);
   });
 });
+
+describe('a place the first run has not explained (2026-10-19)', () => {
+  it('says the number alone, and the whole claim once it has been told', () => {
+    for (const reward of ['cache', 'site'] as const) {
+      const before = withLandmark('2,0', reward, false);
+      const after = withLandmark('2,0', reward, true);
+      const plain = claimsBetween(before, after, { ...ctx, untold: () => true })[0]!.text;
+      const whole = claimsBetween(before, after, ctx)[0]!.text;
+      expect(plain).toMatch(/^\+\d+ (tiles|pts)\.$/);
+      expect(plain).not.toMatch(/BOUNTY|CLAIMED/);
+      expect(whole).toMatch(/CLAIMED/);
+    }
+    // A territory, a shrine and a find hold the screen and say what they are.
+    const t = claimsBetween(
+      withLandmark('2,0', 'territory', false),
+      withLandmark('2,0', 'territory', true),
+      { ...ctx, untold: () => true },
+    )[0]!.text;
+    expect(t).toMatch(/TERRITORY/);
+  });
+});

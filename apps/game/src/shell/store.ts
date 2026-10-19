@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { TUNING, type Colour, type Tuning } from '@content/tuning';
 import { newRun, reduce } from '@engine/reduce';
 import { harvestValue } from '@engine/rules';
-import type { Action, GameState } from '@engine/state';
+import type { Action, GameState, LandmarkReward } from '@engine/state';
 import { distance, parse, type HexKey } from '@engine/hex';
 import type { BoardView, CellView } from '@render/Renderer';
 import type { Strings } from '@text/Strings';
@@ -386,6 +386,9 @@ export function createSession(opts: {
    *  at the moment of a claim — see `ReceiptContext.shrinesClaimed`. Absent
    *  is a world-less run (a detour, a test), which has no ledger to name. */
   readonly shrinesClaimed?: () => number;
+  /** A kind of place the first run has not explained yet: its claim says the
+   *  number alone — see `ReceiptContext.untold`. Read at the moment of a claim. */
+  readonly untold?: (reward: LandmarkReward) => boolean;
   /** BEGIN AT CAMP at boot — `?camp=1`. Ignored when a run is resumed, which
    *  carries its own wake hex. */
   readonly wakeAt?: HexKey | null;
@@ -562,6 +565,7 @@ export function createSession(opts: {
         ...(opts.wornPerk === undefined ? {} : { worn: opts.wornPerk }),
         ...(opts.crossingCarries === undefined ? {} : { crossingCarries: opts.crossingCarries }),
         ...(opts.shrinesClaimed === undefined ? {} : { shrinesClaimed: opts.shrinesClaimed() }),
+        ...(opts.untold === undefined ? {} : { untold: opts.untold }),
       }),
     );
     let offers: 'crossing' | undefined;

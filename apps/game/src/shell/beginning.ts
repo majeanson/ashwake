@@ -96,9 +96,10 @@ export type Door = {
    * worlds kept the flag too — see `Session.detour` for the fourteen things
    * that then answered for the wrong run.
    *
-   * Every door here is `false`, and that is not a redundancy worth collapsing:
-   * a detour can only be ENTERED at boot, from the URL, and the compiler asking
-   * each door to say so is the check that a sixth door cannot forget.
+   * Every door here is `false` but one, and that is not a redundancy worth
+   * collapsing: a detour is entered at boot, from the URL, and by LEARN FIRST
+   * from a daily link (2026-10-19), whose practice board banks nothing. The
+   * compiler asking each door to say so is the check that another cannot forget.
    */
   readonly detour: boolean;
   /** Pressed from inside a panel, so the panels have to close behind it. */

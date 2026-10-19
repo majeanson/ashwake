@@ -14,20 +14,20 @@ the doors, and `shell/settle.ts` for what banks.
 
 ## The three kinds
 
-|                           | **World**                                       | **Daily**                         | **Shared**                        |
-| ------------------------- | ----------------------------------------------- | --------------------------------- | --------------------------------- |
-| Seed                      | the slot's `worldSeed`, minted once             | `dailySeed(date)`                 | the `?seed=` in the link          |
-| Flag that says so         | neither flag set                                | `daily !== null`                  | `session.detour`                  |
-| Economy (`economyFor`)    | `home`: unlocks, then shop + perks              | `daily`                           | `detour` — same dials as `daily`  |
-| Shrines                   | yes, and they unlock                            | rewritten to cache/site           | rewritten to cache/site           |
-| Hidden finds              | yes, grant a perk                               | none generated                    | none generated                    |
-| Territory                 | field + `territoryTiles` later + dowry          | field + `territoryPays` tiles now | field + `territoryPays` tiles now |
-| Relics                    | earned                                          | all faucets 0                     | all faucets 0                     |
-| Shop upgrades / worn perk | applied                                         | ignored                           | ignored                           |
-| Fog + claims lent in      | `memoryFor(slot, seed)`                         | none                              | none                              |
-| World learns mid-run      | `mergeRun` every action                         | no                                | no                                |
-| Banks at the end          | `settle`: world, records, relics, survey, diary | `settleDaily`: ladder + diary     | nothing                           |
-| Ending offers             | NEW RUN, crossing (if awake)                    | TRY AGAIN, KEEP THIS BOARD        | KEEP THIS BOARD                   |
+|                           | **World**                                       | **Daily**                         | **Shared**                                                                                                 |
+| ------------------------- | ----------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Seed                      | the slot's `worldSeed`, minted once             | `dailySeed(date)`                 | the `?seed=` in the link                                                                                   |
+| Flag that says so         | neither flag set                                | `daily !== null`                  | `session.detour`                                                                                           |
+| Economy (`economyFor`)    | `home`: unlocks, then shop + perks              | `daily`                           | `detour` — same dials as `daily`; `learn` (a daily link's tutorial) also has no magic tiles and no caravan |
+| Shrines                   | yes, and they unlock                            | rewritten to cache/site           | rewritten to cache/site                                                                                    |
+| Hidden finds              | yes, grant a perk                               | none generated                    | none generated                                                                                             |
+| Territory                 | field + `territoryTiles` later + dowry          | field + `territoryPays` tiles now | field + `territoryPays` tiles now                                                                          |
+| Relics                    | earned                                          | all faucets 0                     | all faucets 0                                                                                              |
+| Shop upgrades / worn perk | applied                                         | ignored                           | ignored                                                                                                    |
+| Fog + claims lent in      | `memoryFor(slot, seed)`                         | none                              | none                                                                                                       |
+| World learns mid-run      | `mergeRun` every action                         | no                                | no                                                                                                         |
+| Banks at the end          | `settle`: world, records, relics, survey, diary | `settleDaily`: ladder + diary     | nothing                                                                                                    |
+| Ending offers             | NEW RUN, crossing (if awake)                    | TRY AGAIN, KEEP THIS BOARD        | KEEP THIS BOARD                                                                                            |
 
 **Only shrines differ in the GEOGRAPHY**, and only by wearing a cache's or a
 site's face instead (`engine/world.ts`'s `reborn`). Ground, walls, caches,
@@ -47,6 +47,7 @@ Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
 | **enterWorld** (world switch, kept board, front-door SETTLE, RESTORE)                              | null           | false               | the slot's                                                     | `economyAt`             | false        |
 | **REPLAY THE TUTORIAL** (a free slot minted on `content/learn`'s seed, or a played tutorial world) | null           | false               | a fresh world's (`tutorialDoor`)                               | a fresh world's         | false        |
 | **enterDaily**                                                                                     | the date       | false               | none                                                           | `daily`                 | false        |
+| **LEARN FIRST** from a daily link (`learnFirst`)                                                   | null           | **true**            | none                                                           | `learn`                 | false        |
 | **takeCrossing**                                                                                   | null           | false               | none (fresh world)                                             | `economyAt`             | **true**     |
 | **RESET ALL** (direct `session.restart`)                                                           | null           | false (default)     | none                                                           | `economyAt`             | —            |
 
@@ -55,14 +56,13 @@ Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
   handed a world nobody has played — no fog, no claims, no finds, the chosen deal, the
   bare economy — whatever the slot holds, as a daily has no world to remember. The slot
   is not touched.
-- **LEARN FIRST is NEW RUN, not a new door** (2026-10-19): a `?daily=` or `?seed=` link
-  opened on a device that has never finished a run (`hasMet` says no tour) leads its front
-  door with LEARN FIRST, and that button is `newRun` — the row above, so `daily` null
-  and `detour` false, into this device's own world and the tutorial board. The link's
-  own BEGIN stays beside it. From a daily, the day is kept and the tutorial's ending
-  offers it back through `openDaily` (the **enterDaily** row, on that date), with no
-  relics or shop on that ending. From a shared seed there is no way back: a detour is
-  entered at boot only.
+- **LEARN FIRST** (2026-10-19): a `?daily=` or `?seed=` link opened on a device that has
+  never finished a run (`hasMet` says no tour) leads its front door with LEARN FIRST, and
+  the link's own BEGIN stays beside it. **From a daily** it is its own row above: the
+  chosen board under a daily's economy with no magic tiles and no caravan, banked nowhere,
+  and its ending says the tutorial is done and offers that day's daily back through
+  `openDaily`, with no relics, shop or keep-this-board offer. **From a shared seed** it is
+  NEW RUN's row, the world's own full tutorial, and there is no way back to the board.
 
 ## A SEVENTH SESSION THAT IS NOT A DOOR — the projector (2026-09-23)
 
@@ -104,10 +104,11 @@ above, where it belongs. **An eleventh field fails `shell/modes.test.ts` until
 somebody decides which of the two it is**, which is the one question the
 compiler cannot ask — it can only insist every door answers.
 
-**`detour` is false on every door and that is not redundancy.** A detour can
-only be ENTERED at boot, from the URL. Making each door say so is the check
-that a sixth door cannot forget — which is exactly what went wrong when the
-flag lived on the session instead.
+**`detour` is false on every door but one, and that is not redundancy.** A
+detour is entered at boot, from the URL, and by LEARN FIRST from a daily link,
+whose practice board banks nothing (2026-10-19). Making each door say so is the
+check that another door cannot forget — which is exactly what went wrong when
+the flag lived on the session instead.
 
 **RESTART uses two of these doors rather than being a seventh** (Marc's ruling,
 2026-09-10: _"restart should restart whats being played currently (world or

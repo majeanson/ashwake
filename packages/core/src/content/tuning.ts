@@ -1010,13 +1010,14 @@ const PLANE: Tuning = {
 
   poorHandBelow: 2,
 
-  // Six tiles a territory, capped at 24 — four territories' worth. That is
-  // about a fifth of the starting purse per territory and never more than
-  // four-fifths of it in total: felt on the first placements of a run,
-  // powerless to change how it ends. Swept in Session 13 against runs 0-8 of
-  // a world; the clock and the optimum are unmoved.
-  territoryTiles: 6,
-  territoryTilesCap: 24,
+  // Three tiles a territory, capped at 9 — three territories' worth
+  // (2026-10-19, Marc: "territory tiles given is a bit op right now"). It was
+  // 6 capped at 24, written against a 30-tile purse ("a fifth of it per
+  // territory"); the shipped purse is 22, so four territories more than
+  // doubled the start and decided the run. Now under half of it at most:
+  // felt on the first placements, powerless to change how a run ends.
+  territoryTiles: 3,
+  territoryTilesCap: 9,
 
   // Treasure is retired (Marc, 2026-09-24) — see `treasureNeed`. It was
   // 10 and 20: a pocket of 10 for a magic tile, 20 for a unique.

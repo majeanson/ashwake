@@ -449,6 +449,17 @@ export const SCHEDULE: readonly Slot[] = [
     ...onCell((c) => c.kind === 'wall'),
     line: (_now, _t, _theme, s) => s.lesson.expedition.row.wall.core,
   },
+  // UNDO in one line, in the walk (2026-10-19, Marc: _"explain it rapidly"_):
+  // once a couple of tiles are down, on a quiet beat, never over a pocket the
+  // walk is about to make the player pop.
+  {
+    id: 'undo',
+    as: 'toast',
+    phase: 'walk',
+    opens: { lesson: 'expedition' },
+    when: ({ hud }) => hud.placements >= 2 && !hud.canHarvest && !hud.ended,
+    line: (_now, _t, _theme, s) => s.undoHint,
+  },
   {
     id: 'field',
     as: 'toast',

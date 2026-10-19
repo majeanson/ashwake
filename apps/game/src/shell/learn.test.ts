@@ -3,6 +3,8 @@ import { LEARN_SEED } from '@content/learn';
 import { pickLocale } from '@content/locale';
 import { stringsFor } from '@text/index';
 import { resolveTheme } from '@theme/index';
+import type { Tuning } from '@content/tuning';
+import { economyFor } from './economy';
 import { createSession } from './store';
 import { walk } from './walk';
 
@@ -19,11 +21,13 @@ import { walk } from './walk';
 const firstSeen = (
   seed: number,
   steps: number,
+  tuning?: Tuning,
 ): { first: Record<string, number>; best: number[] } => {
   const s = createSession({
     seed,
     theme: resolveTheme(null),
     strings: stringsFor(pickLocale(['en'])),
+    ...(tuning === undefined ? {} : { tuning }),
   });
   const first: Record<string, number> = {};
   const best: number[] = [];
@@ -88,5 +92,38 @@ describe('the chosen first world', () => {
     expect(at('shrine')).toBeGreaterThan(24);
     expect(at('territory')).toBeGreaterThan(24);
     expect(at('rare')).toBeGreaterThan(14);
+  });
+});
+
+/**
+ * The same board, as the tutorial a daily link sends a stranger to (2026-10-19):
+ * a daily's economy with no magic tiles and no caravan (`economyFor`'s
+ * `learn`). The ground is the same seed, so the walk's moments must still land.
+ */
+describe('the chosen first world, as the daily link’s tutorial', () => {
+  const tuning = economyFor({ kind: 'learn' });
+  const { first: seen } = firstSeen(LEARN_SEED, 30, tuning);
+  const at = (k: string): number => seen[k] ?? Infinity;
+
+  it('keeps the walk’s moments: a wall, a cache, and a first pop in the same window', () => {
+    expect(at('wall')).toBeLessThanOrEqual(6);
+    expect(at('cache')).toBeLessThanOrEqual(8);
+    expect(at('pop')).toBeGreaterThanOrEqual(8);
+    expect(at('pop')).toBeLessThanOrEqual(14);
+  });
+
+  it('deals no magic tile and brings no caravan, all run long', () => {
+    expect(at('rare')).toBe(Infinity);
+    const s = createSession({
+      seed: LEARN_SEED,
+      theme: resolveTheme(null),
+      strings: stringsFor(pickLocale(['en'])),
+      tuning,
+    });
+    for (let i = 0; i < 40; i++) {
+      walk(s, 1);
+      expect(s.get().hud.caravan).toBeNull();
+      expect(s.get().hud.draft.every((d) => d.rarity === 'common')).toBe(true);
+    }
   });
 });
