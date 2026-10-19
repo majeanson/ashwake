@@ -11307,8 +11307,7 @@ all"_, then _"relics will belong in WORLD mode only"_).
   201,000-byte bar.
 
 **Later still — six more from one list** (Marc: _"1, 2, 3. as long it appears
-at the right time and not randomly … 5. explain it rapidly … 6. ok do so 7. …
-8. territory tiles given is a bit op right now id tune that"_).
+at the right time and not randomly … 5. explain it rapidly … 6. ok do so 7. … 8. territory tiles given is a bit op right now id tune that"_).
 
 1. **The red e2e test** ("a tap on a touring board…") had failed on every push
    since 2026-10-17. THE MAP's card opens on its intro page, and its next page
