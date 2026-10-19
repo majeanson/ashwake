@@ -11281,3 +11281,10 @@ fixed here. WebKit was cut short when the machine ran low on memory. Seven
 specs were changed with the flow: the refusal text, THE FOUR GROUNDS and the
 first purse open on a device past its first pop, RUN 1's short ending, and the
 fresh front door (`framed.spec.ts`).
+
+**Budget bar moved, 200,000 -> 201,000** (`budget.json`), in the follow-up
+commit. CI measured first paint at 195.5 KB gzipped against a 195.3 KB bar,
+0.2 KB over; locally it was 195.2 KB, which is why the first push went red.
+The bytes are LEARN FIRST and its note, `map.rearm` and `map.oneBounty` in
+both catalogues, and the reveal table. The renderer-by-name check is
+untouched.
