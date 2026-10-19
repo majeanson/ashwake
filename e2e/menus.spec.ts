@@ -153,9 +153,17 @@ test('a finished run banks, and the end screen spends it', async ({ page }) => {
   // RUN 1, the one ending it would speak on, and it must not.
   expect(await end.locator('[data-hud="first-run"]').count()).toBe(0);
 
+  // RUN 1 is the short ending (2026-10-19): the score, the relics, the shop and
+  // NEW RUN, and nothing folded. The breakdown arrives with the second.
+  expect(await end.locator('[data-end="details"]').count()).toBe(0);
+  expect(await end.locator('[data-buy]').count()).toBeGreaterThan(0);
+  await page.goto('/?end=1&taught=1&runs=1');
+  await begin(page);
+  await end.waitFor({ state: 'visible' });
+
   // The breakdown is folded, and opening it is the whole of the answer to
   // "why was the number what it was".
-  await end.locator('summary').first().click();
+  await end.locator('[data-end="details"] summary').first().click();
   expect(await end.locator('.bars').count()).toBeGreaterThan(0);
   expect(await end.locator('.arc-chart').count()).toBe(1);
 

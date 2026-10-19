@@ -207,18 +207,17 @@ type EndScreenProps = {
  * THE ENDING'S TOUR (2026-10-15): the same idea as the board's cue
  * (`shell/teaching.ts`, `CueId`) on the one screen that is a page rather than a
  * board. The things worth pointing at, in the order a thumb meets them going
- * down: what the run banked, why the number was what it was, what the bank
- * buys, and the button that goes again. Each is lit until it is tapped (or
- * `CUE_MS`), and the relics line is a real term, so lighting it is also
- * explaining it. A step the screen does not show (no relics on a daily, no shop
- * off a world) is not in the list.
+ * down: what the run banked, what the bank buys, and the button that goes
+ * again. Each is lit until it is tapped (or `CUE_MS`), and the relics line is a
+ * real term, so lighting it is also explaining it. A step the screen does not
+ * show (no relics on a daily, no shop off a world) is not in the list. DETAILS
+ * was a step until 2026-10-19, when the toured ending stopped drawing it.
  */
-type EndStep = 'relics' | 'details' | 'shop' | 'again';
+type EndStep = 'relics' | 'shop' | 'again';
 
 /** Where each step lives, for the tap that moves the tour on and the scroll. */
 const END_SELECTOR: Readonly<Record<EndStep, string>> = {
   relics: '[data-hud="banked"] .term',
-  details: '[data-end="details"]',
   shop: '[data-end="shop"]',
   again: '[data-action="retry"], [data-action="new-run"]',
 };
@@ -317,12 +316,19 @@ export function EndScreen({
   const hero = useArtSlot(theme.id, 'ui.runEnd');
 
   const summary = hud.summary;
+  /*
+   * THE FIRST ENDING IS SHORT (2026-10-19, Marc: "rework this screen its
+   * bloated", and two strangers: too much, too soon). The toured ending — the
+   * device's first in a world — is the score, the relics, the shop and NEW RUN:
+   * the four things its tour points at. The run's facts, the survey, DETAILS
+   * and THIS WORLD are reference, and arrive with the second ending.
+   */
+  const slim = tour === true;
   const steps: readonly EndStep[] =
-    tour !== true || CUE_MS === 0
+    !slim || CUE_MS === 0
       ? []
       : [
           ...(world != null && hud.relics > 0 ? (['relics'] as const) : []),
-          ...(summary !== null ? (['details'] as const) : []),
           ...(world != null ? (['shop'] as const) : []),
           'again',
         ];
@@ -505,28 +511,30 @@ export function EndScreen({
         the screen it came off. Fixed at six so the ending does not change shape
         between a short run and a long one.
       */}
-      <FactGrid
-        facts={[
-          { label: statLabel('map', s), value: hud.depthValue },
-          { label: s.ui.ending.placements, value: hud.placements },
-          { label: s.ui.ending.popped, value: summary?.harvests ?? 0 },
-          {
-            label: s.ui.ending.biggestPop,
-            // How big, and how far through the run it landed — the second half
-            // is Gate D's whole subject, and the arc below draws the same fact
-            // as a picture.
-            value:
-              summary != null && summary.biggestHarvest > 0
-                ? s.ui.ending.biggestPopAt(
-                    summary.biggestHarvest,
-                    Math.round(summary.biggestAt * 100),
-                  )
-                : s.ui.ending.none,
-          },
-          { label: s.ui.ending.destinations, value: summary?.claims ?? 0 },
-          { label: s.ui.ending.bounties, value: summary?.quests ?? 0 },
-        ]}
-      />
+      {!slim && (
+        <FactGrid
+          facts={[
+            { label: statLabel('map', s), value: hud.depthValue },
+            { label: s.ui.ending.placements, value: hud.placements },
+            { label: s.ui.ending.popped, value: summary?.harvests ?? 0 },
+            {
+              label: s.ui.ending.biggestPop,
+              // How big, and how far through the run it landed — the second half
+              // is Gate D's whole subject, and the arc below draws the same fact
+              // as a picture.
+              value:
+                summary != null && summary.biggestHarvest > 0
+                  ? s.ui.ending.biggestPopAt(
+                      summary.biggestHarvest,
+                      Math.round(summary.biggestAt * 100),
+                    )
+                  : s.ui.ending.none,
+            },
+            { label: s.ui.ending.destinations, value: summary?.claims ?? 0 },
+            { label: s.ui.ending.bounties, value: summary?.quests ?? 0 },
+          ]}
+        />
+      )}
 
       {/*
         WHAT THE RUN PAID INTO THE NEXT ONE (2026-09-02).
@@ -589,7 +597,7 @@ export function EndScreen({
         Above the breakdown, because a goal met is the rarest thing an ending
         can carry and the payout is always there.
       */}
-      {goals.length > 0 && (
+      {!slim && goals.length > 0 && (
         <ul className="goals-met">
           {goals.map((id) => (
             <li key={id}>{s.goalMet(s.goal[id], GOALS.find((g) => g.id === id)?.reward ?? 0)}</li>
@@ -600,7 +608,7 @@ export function EndScreen({
       {/* Why the number was what it was, one tap down — see `Payout`. The arc's
           sentence goes with it: it is the curve, said in words, and it stood
           loose in the column above until 2026-10-16. */}
-      {summary !== null && (
+      {!slim && summary !== null && (
         <div data-end="details">
           <Payout
             summary={summary}
@@ -626,7 +634,7 @@ export function EndScreen({
         WOKE line above already says what this run changed. One tap, like the
         breakdown, and drawn as a ledger inside (`.end .atlas .facts`).
       */}
-      {world != null && (
+      {!slim && world != null && (
         <Fold summary={s.ui.thisWorld}>
           <Atlas world={world} s={s} />
         </Fold>

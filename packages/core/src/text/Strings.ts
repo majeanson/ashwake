@@ -62,8 +62,6 @@ type LessonStrings = {
     readonly ripens: string;
     /** What a pocket is. */
     readonly pocket: string;
-    /** First contact only: tap a ripe tile to price its pocket. */
-    readonly pocketCard: string;
     /** What a tile's worth counts. */
     readonly worth: string;
     /** What surrounds a ripening tile besides tiles; `red` counts stone. */
@@ -230,6 +228,10 @@ type LessonStrings = {
     readonly core: string;
     /** First contact only: what every destination has in common. */
     readonly pays: string;
+    /** DETAILS only: caches and sites come back every run. */
+    readonly rearm: string;
+    /** DETAILS only: one bounty open at a time. */
+    readonly oneBounty: string;
     readonly row: {
       readonly cache: LessonHead & {
         readonly coreRing: (pays: number, perRing: number) => string;
@@ -1287,6 +1289,9 @@ export type Strings = {
      */
     readonly beginShared: string;
     readonly beginDaily: (day: string) => string;
+    /** A shared link on a device that has never finished a run: the tutorial first. */
+    readonly learnFirst: string;
+    readonly learnFirstNote: string;
     /**
      * The onward invitation, beside SHARE on a run that arrived by link.
      *

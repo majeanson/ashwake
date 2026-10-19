@@ -104,7 +104,6 @@ export const STRINGS_EN: Strings = {
       ripens:
         'Surrounded on all six sides, a tile RIPENS and shows its WORTH: how many neighbours match it.',
       pocket: 'A POCKET is a ripe tile and every ripe tile touching it. They pop together, as one.',
-      pocketCard: 'Tap any ripe tile to price its pocket; the buttons show what it pays.',
       worth:
         'WORTH counts how many of a tile’s six sides touch a match: the same colour, or a wild rare tile.',
       surroundsAsh: (red) =>
@@ -124,7 +123,7 @@ export const STRINGS_EN: Strings = {
       verb: ['POP'],
       core: 'POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score.',
       paid: 'A pop scores the pocket’s worth added up, so the more that ripen together, the more it pays.',
-      wait: 'Waiting grows the pocket and pays more, but every placement still costs tiles, so waiting too long can end a run before it pops.',
+      wait: 'Waiting grows the pocket and pays more, but every placement still costs tiles. A ripe pocket never expires: you can pop it even at zero.',
       lean: 'POP also leans your next draws toward the colour you popped.',
       when: 'Small and often buys LUCK and steers your draws. Big and late buys tiles and score.',
       row: {
@@ -265,23 +264,26 @@ export const STRINGS_EN: Strings = {
       terms: [],
       core: 'The world remembers. Ground you have walked stays on the map between runs, dimmed under the fog, and unclaimed destinations glow through it.',
       pays: 'Every destination pays the moment a placed tile touches it.',
+      rearm:
+        'Caches and sites re-arm every run, so ground you already know stays worth walking to.',
+      oneBounty: 'Only one bounty at a time: another site opens no second one while one waits.',
       row: {
         cache: {
           name: 'CACHE',
           terms: ['CACHE'],
           coreRing: (pays, perRing) =>
-            `A CACHE pays ${pays} tiles on the spot, +${perRing} per ring out, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.`,
+            `A CACHE pays ${pays} tiles on the spot, +${perRing} per ring out, the moment you build a tile touching it.`,
           core: (pays) =>
-            `A CACHE pays ${pays} tiles on the spot, the moment you build a tile touching it. Caches re-arm every run, so ground you already know stays worth walking to.`,
+            `A CACHE pays ${pays} tiles on the spot, the moment you build a tile touching it.`,
         },
         site: {
           name: 'SITE',
           terms: ['BOUNTY', 'SITE'],
           bountyName: 'BOUNTY',
           core: (pays) =>
-            `A SITE is claimed by building a tile touching it. It pays ${pays} points × its distance from home, and it opens a BOUNTY. Sites re-arm every run, so a claimed one is worth returning to.`,
+            `A SITE is claimed by building a tile touching it. It pays ${pays} points × its distance from home, and it opens a BOUNTY.`,
           bounty: (need, radius, bonus) =>
-            `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star: that pop scores ×${bonus}. Only one bounty at a time; another site opens no second one while this one waits.`,
+            `A BOUNTY is a site’s second payout: it opens when you claim the site. To collect it, pop ${need}+ tiles within ${radius} hexes of the site’s star: that pop scores ×${bonus}.`,
         },
         shrine: {
           name: 'SHRINE',
@@ -324,16 +326,14 @@ export const STRINGS_EN: Strings = {
   coach: {
     place:
       'The tiles under the board are your hand, and the lit one is the next you will place. Tap a glowing edge on the board to put it down: every tile you place is ground you build, and ground is what scores.',
-    match:
-      'Most tiles earn WORTH from neighbours of their own colour, so place the next ones beside matches. Each colour also bends that rule its own way: THE FOUR GROUNDS explains them.',
-    grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in. Each placement spends tiles from your supply, so build with a plan.',
-    popFirst:
-      'Pop this pocket before you place anything else. Tap a ripe tile to price it, then press POP.',
+    match: 'Place the next tiles beside ones of the same colour: matching neighbours give WORTH.',
+    grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in.',
+    popFirst: 'Pop this pocket first.',
     build:
-      'Now keep building. A bigger pocket pays more than its pieces, so grow one on purpose, but every placement spends tiles from TILES.',
-    bank: 'Tiles are running low. Cash your biggest pocket now: tap its ripe tile to price it, then press POP. Tiles are what keep you placing.',
-    end: `With fewer tiles than the COST, you can still place. ${LAST_GASP_RULE} At zero with nothing ripe to pop, the run ends. ${SHAPE}`,
-    pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP: it gives you tiles back to keep placing, and points toward your score.',
+      'Now keep building. Pick ONE colour and grow a single blob of it: neighbours of the same colour raise each tile’s WORTH, and a bigger pocket pays more than its pieces. Every placement spends tiles from TILES.',
+    bank: 'Tiles are low. A pop pays tiles back: tap your biggest ripe pocket, then press POP. A ripe pocket can still be popped at zero.',
+    end: `Fewer tiles than the COST: you can still place. At zero, pop anything ripe; with nothing ripe, the run ends. ${SHAPE}`,
+    pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP.',
   },
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,
 
@@ -415,7 +415,7 @@ export const STRINGS_EN: Strings = {
     },
     harvest: {
       firstPop: `YOUR FIRST POP
-The pocket turned to STONE. It still surrounds, but never matches. Ground you have cashed grows poorer; the world stays rich farther out.`,
+The pocket turned to STONE. It still surrounds. Ground you have cashed grows poorer; the world stays rich farther out.`,
 
       head: (count, worth) => `POPPED ${count}, total worth ${d1(worth)}`,
       bountyCollected: (bonus) => `Bounty ×${bonus}: COLLECTED.`,
@@ -951,6 +951,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     },
     beginShared: 'BEGIN · SHARED RUN',
     beginDaily: (day) => `BEGIN DAILY ${day}`,
+    learnFirst: 'LEARN FIRST',
+    learnFirstNote: 'First time? Learn on a practice board, then come back to this one.',
     cameByLink: 'This world reached you by a link. It travels the same way out.',
     ending: {
       scored: (n) => `Run over: ${n} point${plural(n, '', 's')}`,

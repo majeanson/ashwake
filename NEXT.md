@@ -96,10 +96,18 @@ and the chips, the REDRAW hint) and round thirteen adds the merge's own
 looks. **Play it as a stranger would**: clear the site's data, open it, touch
 nothing the first card does not say.
 
-- **The walk, at 8 cards**: story → HOW IT WORKS → LES QUATRE SOLS → ONE
-  RÉCOLTER card at the first ripe tile (it teaches mûrir → poche → récolter
-  in one card now). Does it read as one idea at a time, and is that one card
-  too heavy?
+- **The walk, shorter (2026-10-19, Session 139)**: story → HOW IT WORKS →
+  MÛRE → RÉCOLTER, and LES QUATRE SOLS moved to the tour's first card, after
+  the first pop. About 250 words before the first pop instead of 550. No
+  LUCK, LENS, stash, caravan, PORTÉE or COÛT until the lesson that names them
+  (COÛT with the tour). Can a stranger now say what a pocket is and when to
+  pop it?
+- **The first ending, slim (Session 139)**: score, relics, the shop and NEW
+  RUN only; the six facts, DÉTAILS, the survey and CE MONDE wait for the
+  second ending. Too bare, or right?
+- **The front door, fresh (Session 139)**: BEGIN alone on a device that has
+  never finished a run; a shared `?daily=`/`?seed=` link leads with
+  APPRENDRE D’ABORD. Read `learnFirstNote` in French.
 - **LA CARTE's card**: six rows (cache, site, sanctuaire, territoire,
   trouvaille, la lentille) with the found kind's row led. Does it fit in
   portrait, and do the destination marks on the rows read at a glance?

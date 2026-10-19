@@ -121,7 +121,7 @@ test('never shows two cards at once', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('THE FOUR GROUNDS: a new device is shown all four, with their real tiles', async ({
+test('THE FOUR GROUNDS: a device past its first pop is shown all four, with their real tiles', async ({
   page,
 }) => {
   /*
@@ -129,9 +129,21 @@ test('THE FOUR GROUNDS: a new device is shown all four, with their real tiles', 
    * placement, and it had no lesson: `LessonCard` drew nothing, nothing ever
    * told it, and LAST GASP, behind it in the drip's order, never spoke. The
    * card is Ashwake 1's (Marc, 2026-08-27: "teach all tiles at one in a
-   * beautiful tip"), with the real baked tile beside each ground.
+   * beautiful tip"), with the real baked tile beside each ground. Since
+   * 2026-10-19 it is the tour's, after the first pop, so the device here has
+   * popped once (`walked`) and the walk's own cards are already read.
    */
   const errors = watchErrors(page);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ashwake.progress.v1',
+      JSON.stringify({
+        relics: 0,
+        bought: {},
+        met: ['story', 'goal', 'place', 'wall', 'ripe', 'pop', 'walked'],
+      }),
+    );
+  });
   await page.goto('/?seed=7');
   await begin(page);
   await clearCards(page);

@@ -28,6 +28,7 @@ import {
   guided,
   mustPop,
   phaseOf,
+  shows,
 } from './teaching';
 import { walk } from './walk';
 
@@ -75,6 +76,12 @@ const momentAt = (n: number): Moment => {
   return { board: snap.board, hud: snap.hud, placed: n > 0 };
 };
 
+/** Eight placements deep with luck in the purse: WALL and LUCK both true. */
+const lucky = (): Moment => {
+  const at = momentAt(8);
+  return { ...at, hud: { ...at.hud, luck: 3 } };
+};
+
 /** A device that has met everything except the named lessons. */
 const taughtExcept = (...keep: readonly string[]): Progress =>
   TEACH_IDS.filter((id) => !keep.includes(id)).reduce<Progress>((p, id) => meet(p, id), {
@@ -114,7 +121,7 @@ describe('the teaching drip', () => {
     // card behind it. The speaker exists now (`App`'s `speakLesson`), so the
     // priority list is whole again: WALL, a toast, fires ahead of the cards
     // behind it in `ORDER`.
-    const said = nextLesson(momentAt(8), taughtExcept('wall', 'colours'));
+    const said = nextLesson(lucky(), taughtExcept('wall', 'luck'));
     expect(said?.id).toBe('wall');
     expect(said?.as).toBe('toast');
   });
@@ -122,12 +129,13 @@ describe('the teaching drip', () => {
   it('a spoken toast unblocks the card standing behind it', () => {
     // THE JAM the one-day skip existed to break, now broken the honest way:
     // the toast SPEAKS and is told, and the card behind it fires on the next
-    // ask. COLOURS is true on any walked board with a hand.
-    const jammed = taughtExcept('wall', 'colours');
-    const first = nextLesson(momentAt(8), jammed);
+    // ask. LUCK is true on any board with luck in the purse. (COLOURS was the
+    // card here until 2026-10-19, when it moved ahead of WALL.)
+    const jammed = taughtExcept('wall', 'luck');
+    const first = nextLesson(lucky(), jammed);
     expect(first?.as).toBe('toast');
-    const next = nextLesson(momentAt(8), told(jammed, 'wall'));
-    expect(next?.id).toBe('colours');
+    const next = nextLesson(lucky(), told(jammed, 'wall'));
+    expect(next?.id).toBe('luck');
     expect(next?.as).toBe('card');
   });
 
@@ -285,7 +293,8 @@ describe('the schedule covers every moment (2026-10-13)', () => {
     // The purse opened first, mid-tour, before the pace has let LUCK's own card
     // out: once that card is read, LUCK is not offered a second time.
     const now = { ...momentAt(3), hud: { ...momentAt(3).hud, luck: 1 } };
-    const tour = meet({ ...EMPTY_PROGRESS }, 'walked');
+    // THE FOUR GROUNDS is the tour's first card since 2026-10-19; told here.
+    const tour = meet(meet({ ...EMPTY_PROGRESS }, 'walked'), 'colours');
     expect(nextLesson(now, tour)).toEqual({ id: 'luck', as: 'card' });
     const read = toldBy('purse', destinations().board).reduce(told, tour);
     expect(nextLesson(now, read)).not.toEqual({ id: 'luck', as: 'card' });
@@ -500,9 +509,67 @@ describe('the chips keep the pace too (2026-10-12)', () => {
 });
 
 describe('the first run is walked, then toured (2026-10-12)', () => {
-  const walkLessons = ['story', 'goal', 'place', 'colours', 'ripe', 'pop'] as const;
+  const walkLessons = ['story', 'goal', 'place', 'wall', 'ripe', 'pop'] as const;
   const afterWalk = walkLessons.reduce<Progress>((p, id) => told(p, id), EMPTY_PROGRESS);
-  const touring = told(afterWalk, 'walked');
+  // THE FOUR GROUNDS is the tour's first card (2026-10-19): told here, so the
+  // tests below about what follows it start from after it.
+  const justPopped = told(afterWalk, 'walked');
+  const touring = told(justPopped, 'colours');
+
+  // 2026-10-19: the first run shows only what it has explained. A control a
+  // sentence points at and the screen does not draw is the failure here.
+  it('draws every control a first-run sentence points at, while it points', () => {
+    const inPhase = { walk: EMPTY_PROGRESS, tour: justPopped } as const;
+    for (const slot of SCHEDULE) {
+      if (slot.cue === undefined || slot.phase === undefined) continue;
+      const before =
+        slot.after === undefined ? inPhase[slot.phase] : told(inPhase[slot.phase], slot.after);
+      expect(shows(slot.cue, before, slot.id), slot.id).toBe(true);
+    }
+    for (const step of ['place', 'match', 'grow', 'pop', 'build', 'bank', 'end'] as const) {
+      expect(shows(stepCue(step), touring, null), step).toBe(true);
+      expect(shows(stepCue(step), EMPTY_PROGRESS, null), step).toBe(true);
+    }
+  });
+
+  it('keeps the untaught controls off a first run, and every one on after it', () => {
+    for (const c of ['lens', 'hold', 'caravan', 'reach', 'purse'] as const) {
+      expect(shows(c, EMPTY_PROGRESS, null), c).toBe(false);
+      expect(shows(c, WALKED, null), c).toBe(true);
+    }
+    // The purse arrives with LUCK's card, and stays.
+    expect(shows('purse', touring, 'luck')).toBe(true);
+    expect(shows('purse', told(touring, 'luck'), null)).toBe(true);
+    // COST arrives with the tour, whose last two steps name it.
+    expect(shows('cost', EMPTY_PROGRESS, null)).toBe(false);
+    expect(shows('cost', touring, null)).toBe(true);
+  });
+
+  it('keeps THE FOUR GROUNDS out of the walk and opens the tour with it', () => {
+    const now = { ...momentAt(10), hud: { ...momentAt(10).hud, luck: 3 } };
+    // In the walk: never, whatever the hand.
+    expect(nextLesson(momentAt(2), told(afterWalk, 'wall'))?.id).not.toBe('colours');
+    // After the first pop, ahead of LUCK, and under the pace like any card.
+    expect(nextLesson(now, justPopped)).toEqual({ id: 'colours', as: 'card' });
+    expect(nextLesson({ ...now, since: 1 }, justPopped)).toBeNull();
+  });
+
+  it('teaches REDRAW on the tour, and only once LUCK has introduced the purse', () => {
+    const base = momentAt(10);
+    const poor: Moment = {
+      ...base,
+      hud: {
+        ...base.hud,
+        luck: 20,
+        poorHand: true,
+        // No magic tile, so MAGIC's card is not the one due.
+        draft: base.hud.draft.map((c) => ({ ...c, rarity: 'common' as const })),
+        spends: [{ on: 'reroll', colour: null, cost: 12, affordable: true }],
+      },
+    };
+    expect(nextLesson(poor, told(touring, 'luck'))).toEqual({ id: 'reroll', as: 'toast' });
+    expect(nextLesson(poor, touring)?.id).not.toBe('reroll');
+  });
 
   it('has three phases: walk until the first pop lands, tour until the first run ends', () => {
     expect(phaseOf(EMPTY_PROGRESS)).toBe('walk');
@@ -563,9 +630,30 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
   });
 
   it('explains LUCK, then MAGIC as a card (a chip nobody taps is a lesson that never happens)', () => {
-    const now = { ...momentAt(10), hud: { ...momentAt(10).hud, luck: 3 } };
+    const base = { ...momentAt(10), hud: { ...momentAt(10).hud, luck: 3 } };
+    const magic = {
+      ...base,
+      hud: {
+        ...base.hud,
+        draft: base.hud.draft.map((c, i) => (i === 0 ? { ...c, rarity: 'magic' as const } : c)),
+      },
+    };
+    const now = magic;
     expect(nextLesson(now, touring)).toEqual({ id: 'luck', as: 'card' });
     const told1 = told(touring, 'luck');
+    // Not before there is a magic tile in hand (2026-10-17).
+    expect(
+      nextLesson(
+        {
+          ...base,
+          hud: {
+            ...base.hud,
+            draft: base.hud.draft.map((c) => ({ ...c, rarity: 'common' as const })),
+          },
+        },
+        told1,
+      )?.id,
+    ).not.toBe('rare');
     expect(nextLesson(now, told1)).toEqual({ id: 'rare', as: 'card' });
     expect(nextLesson(now, told(told1, 'rare'))).toBeNull();
     // Outside the tour MAGIC stays a chip, never a card.

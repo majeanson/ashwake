@@ -650,9 +650,8 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
       const lines = lessonLines(pop, TUNING, SETTLEMENT, s);
       for (const line of [p.wait, p.when]) expect(lines).toContain(line);
       expect(lessonDetail(pop, TUNING, SETTLEMENT, s)).toContain(p.paid);
-      // The tap-a-ripe-tile sentence is the card's alone.
-      expect(lessonLines(ripe, TUNING, SETTLEMENT, s)).not.toContain(r.pocketCard);
-      expect(lessonCardDefine(ripe, TUNING, SETTLEMENT, s).endsWith(r.pocketCard)).toBe(true);
+      // The RIPE card says the idea only: the `pop` coach line says what to tap.
+      expect(lessonCardDefine(ripe, TUNING, SETTLEMENT, s)).toBe(`${r.ripens} ${r.pocket}`);
     });
 
     it('keeps the draw lean and the surrounds fork under the dials that speak them', () => {

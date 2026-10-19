@@ -55,6 +55,11 @@ Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
   handed a world nobody has played — no fog, no claims, no finds, the chosen deal, the
   bare economy — whatever the slot holds, as a daily has no world to remember. The slot
   is not touched.
+- **LEARN FIRST is NEW RUN, not a new door** (2026-10-19): a `?daily=` or `?seed=` link
+  opened on a device that has never finished a run (`hasMet` says no tour) leads its front
+  door with LEARN FIRST, and that button is `newRun` — the row above, so `daily` null
+  and `detour` false, into this device's own world and the tutorial board. The link's
+  own BEGIN stays beside it.
 
 ## A SEVENTH SESSION THAT IS NOT A DOOR — the projector (2026-09-23)
 

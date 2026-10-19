@@ -441,6 +441,9 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'wall',
     as: 'toast',
+    // In the walk (2026-10-19): the tutorial seed puts a wall in view by the
+    // sixth placement, and a grey hex nobody names is a mystery.
+    phase: 'walk',
     // The wall's own row in THE EXPEDITION: the toast and the row are one sentence.
     opens: { lesson: 'expedition', row: 'wall' },
     ...onCell((c) => c.kind === 'wall'),
@@ -480,11 +483,30 @@ export const SCHEDULE: readonly Slot[] = [
     when: ({ board }) => board.cells.filter((c) => c.kind === 'tile').length >= 6,
     line: (_now, _t, _theme, s) => s.lensHint,
   },
+  // THE FOUR GROUNDS waits for the tour (2026-10-19, Marc): at the first
+  // placement it was four rules and a decimal before WORTH or RIPE meant
+  // anything. The walk teaches one rule, match your colour; the four ways a
+  // colour bends it come once the player has popped and BUILD has said to
+  // pick one. Ahead of LUCK, because the hand is what the player is choosing;
+  // behind the places, whose moment is one tile wide.
+  {
+    id: 'colours',
+    cue: 'hand',
+    opens: { lesson: 'grounds' },
+    as: 'card',
+    phase: 'tour',
+    when: ({ placed, hud }) => placed && hud.draft.length > 0,
+  },
   { id: 'luck', cue: 'purse', as: 'card', phase: 'tour', when: ({ hud }) => hud.luck > 0 },
   {
     id: 'reroll',
     cue: 'purse',
     as: 'toast',
+    // On the tour, after LUCK (2026-10-19): the tutorial seed was chosen for a
+    // poor hand right after the first pop (`content/learn.ts`), and with no
+    // phase this lesson waited for the second run.
+    phase: 'tour',
+    after: 'luck',
     opens: { lesson: 'luck' },
     // A poor hand AND the luck to do something about it: a hint about a button
     // that cannot be pressed is a taunt.
@@ -524,15 +546,6 @@ export const SCHEDULE: readonly Slot[] = [
     as: 'chip',
     opens: { lesson: 'end', row: 'relic' },
     when: ({ hud }) => hud.relics > 0,
-  },
-  {
-    id: 'colours',
-    cue: 'hand',
-    opens: { lesson: 'grounds' },
-    as: 'card',
-    phase: 'walk',
-    paced: false,
-    when: ({ placed, hud }) => placed && hud.draft.length > 0,
   },
   {
     id: 'lastGasp',
@@ -691,6 +704,39 @@ export const stepCue = (step: CoachStep): CueId => STEP_CUE[step];
 export const cueOf = (id: TeachId): CueId | null =>
   SCHEDULE.find((slot) => slot.id === id)?.cue ?? null;
 
+/** Everything the first run can keep off screen: the cues, and three more. */
+type Control = CueId | 'caravan' | 'hold' | 'reach';
+
+/**
+ * WHAT THE FIRST RUN SHOWS (2026-10-19, two strangers: _"trop d'information
+ * trop vite trop tôt"_; Marc: _"overall there is too much buttons"_). A
+ * control nobody has explained stays off screen until its lesson: a phase, or
+ * the moment that introduces it. Absent means always shown. Every rule still
+ * runs underneath; only the control waits. `teaching.test.ts` holds that every
+ * cue a sentence points at is on screen when it is pointed at.
+ */
+const REVEALED_BY: Readonly<Partial<Record<Control, Phase | TeachId>>> = {
+  purse: 'luck',
+  cost: 'tour',
+  lens: 'free',
+  hold: 'free',
+  caravan: 'free',
+  reach: 'free',
+};
+
+const PHASES: readonly Phase[] = ['walk', 'tour', 'free'];
+
+/** Whether a control is on screen, `showing` being the card up right now. */
+export function shows(control: Control, progress: Progress, showing: TeachId | null): boolean {
+  const by = REVEALED_BY[control];
+  if (by === undefined) return true;
+  const phase = phaseOf(progress);
+  if (phase === 'free') return true;
+  return PHASES.includes(by as Phase)
+    ? PHASES.indexOf(phase) >= PHASES.indexOf(by as Phase)
+    : hasMet(progress, by as TeachId) || showing === by;
+}
+
 /**
  * The first thing worth saying that this device has not been told.
  *
@@ -719,9 +765,11 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
   for (const slot of SCHEDULE) {
     const { id } = slot;
     // In the tour MAGIC and a TERRITORY are cards, not chips: a chip nobody
-    // taps is a lesson that never happens. MAGIC is told once LUCK has been,
-    // because a magic tile cannot be dealt on cue and so the concept is taught
-    // on its own turn; a territory is told as it comes into view (2026-10-13,
+    // taps is a lesson that never happens. MAGIC is told once LUCK has been AND
+    // a magic tile is in hand (2026-10-17, Marc: the card came two turns before
+    // there was one). Until 2026-10-17 it came on its own turn, tile or none,
+    // because a magic tile cannot be dealt on cue; if the tour ends first it is
+    // the chip it is outside the tour; a territory is told as it comes into view (2026-10-13,
     // Marc: _"explain territories as they spawn on tiles too"_), and the card's
     // dismissal flies the camera to it like every place's does. That card is
     // THE MAP at the territory row (2026-10-13), so it tells the territory AND
@@ -735,9 +783,12 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
     if (phase !== 'free' && slot.phase !== phase) continue;
+    // A toast waits on its `after` like a chip: REDRAW points at the purse,
+    // which LUCK's card introduces.
+    if (slot.as === 'toast' && !afterMet(id, progress)) continue;
     const happening =
       phase !== 'free' && slot.guidedWhen !== undefined ? slot.guidedWhen(now) : slot.when(now);
-    if (!(magicTurn ? hasMet(progress, 'luck') : happening)) continue;
+    if (!(magicTurn ? hasMet(progress, 'luck') && happening : happening)) continue;
     const gap = slot.paced === false ? 0 : (slot.gap ?? CARD_GAP);
     if (now.since !== undefined && now.since < gap) continue;
     return { id, as: slot.as === 'toast' ? 'toast' : 'card' };

@@ -27,10 +27,28 @@ test('framed, the door is BEGIN, MENU and a way out — and no DAILY', async ({ 
 });
 
 test('on its own, the door keeps DAILY and offers no way out', async ({ page }) => {
-  await page.goto('/');
+  // A device that has finished a run: a fresh one's door is BEGIN alone (2026-10-19).
+  await page.goto('/?taught=1');
   await expect(page.locator('[data-door="begin"]')).toBeVisible();
   await expect(page.locator('[data-door="daily"]')).toBeVisible();
   await expect(page.locator('[data-door="open-full"]')).toHaveCount(0);
+});
+
+test('a fresh device is offered BEGIN alone, and a shared daily leads with LEARN FIRST', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('[data-door="begin"]')).toBeVisible();
+  await expect(page.locator('[data-door="daily"]')).toHaveCount(0);
+  await expect(page.locator('[data-door="learn"]')).toHaveCount(0);
+
+  await page.goto('/?daily=2026-08-26');
+  const learn = page.locator('[data-door="learn"]');
+  await expect(learn).toBeVisible();
+  await expect(page.locator('[data-door="begin"]')).toBeVisible();
+  await learn.click();
+  // Into a live board: NEW RUN's door, the device's own world.
+  await page.locator('[data-hud="hand"]').waitFor({ state: 'visible' });
 });
 
 test('a wide screen keeps the header in the dock’s column', async ({ page }) => {

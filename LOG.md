@@ -11219,3 +11219,65 @@ Round fourteen on the sheet gained `r14-rework`, the ending's own question
 (version 23). **Verified:** typecheck, lint, 1616 unit tests, the Chromium
 specs for the cue, the shop and the header (teaching, menus, hud, a11y), and
 a look at a perk row open on the 300-run fixture.
+
+### Session 139 — the first run says less, shows less, ends shorter (2026-10-19)
+
+**Question:** with about 250 words, no colour twists and no untaught controls
+before the first pop, can a new player say what a pocket is and when to pop it?
+(Answered on the phone, not here.)
+
+**Why.** Marc: a hint said there might not be time to pop before the end, and
+that is false. It was `pop.wait`: "waiting too long can end a run before it
+pops", while `endIfStuck` (`reduce.ts`) never ends a run with anything ripe.
+Then: suggest an early strategy, and plan a whole simpler first run. The two
+strangers' _"trop d'information trop vite trop tôt"_ is the brief.
+
+**This touches the first minute. It ships because Marc asked.** No rule moved:
+`pnpm sim` is byte-identical to the golden file.
+
+- **Words.** Four contradictions fixed: `pop.wait` (above); `coach.bank`, which
+  said "running low… no rush" in one breath; `firstPop`'s stone "never matches"
+  when QUARRY matches it; and `coach.match`'s "their own colour" beside BUILD's
+  "pick ONE colour". BUILD now says to grow one blob of one colour.
+  `pocketCard` is gone (the `pop` coach line says what to tap, on the same
+  frame). Shorter: `grow`, `popFirst`, `pop`, `bank`, `end` (no
+  `LAST_GASP_RULE` on the card). `pop.when` was said twice, seconds apart: the
+  first-pop card no longer repeats it, and POP's card and the manual keep it.
+  Moved to the manual's DETAILS, out of the cards: `rareStar`, and the cache
+  and site "re-arm every run" and "one bounty at a time" clauses, now
+  `map.rearm` and `map.oneBounty`. The LUCK
+  card's "5% … mostly gone" stayed: without it, "you CAN lose it all" is untrue
+  when `luckToRelics` is on.
+- **Order.** THE FOUR GROUNDS (`colours`) is a tour card, after the first
+  pop, instead of the walk's at the first placement. It sits ahead of LUCK and
+  behind the places, whose moment is one tile wide. WALL is a walk
+  toast. REDRAW is a tour toast after LUCK, which is the moment seed 933 was
+  chosen for and which could not fire until run two. A toast now waits on its
+  `after` like a chip. And since the coach line held the strip for the whole
+  walk and tour, a beat where the step has not changed now lets a toast
+  through; before, those two could never have spoken.
+- **Controls.** `shows` and `REVEALED_BY` in `shell/teaching.ts`: the purse with
+  LUCK's card, COST with the tour, LENS, the stash, the long-press lens, the
+  caravan line and REACH in the free phase. A test holds that every control a
+  first-run sentence cues is on screen while it cues.
+- **The first ending** (`tour`, i.e. `standing.run === 1`) is the score, the
+  epitaph, the relics, the shop and NEW RUN. The end tour lost its DETAILS step.
+- **The front door.** DAILY is hidden until `toured`. A shared `?daily=` or
+  `?seed=` on such a device leads with LEARN FIRST (`ui.learnFirst`,
+  `ui.learnFirstNote`), which is `newRun`. See `MODES.md`.
+
+**Snapshots re-recorded on purpose:** `teaching.pin.test.ts.snap`, over both
+languages: the SITE and CACHE rows, MAGIC, and POP's `wait`.
+Nothing else moved. The French is Marc's review: `coach.*`, `pop.wait`,
+`firstPop`, `map.rearm`, `map.oneBounty`, `learnFirst*`.
+
+**Verified:** typecheck, lint, 1627 unit tests, the golden sim, the sweep (0
+findings, after `Hud`'s `hide[id]` was spelled out as two reads the field pass
+can see), the budget. E2E on Chromium: 196 passed, 1 failed. The failure is
+"a tap on a touring board brings it home", red on `main` before this session
+(CI for 42ef995, the same assertion): THE MAP's card opens on its intro page
+since 2026-10-17 and the test expects the led row on the first page. Not
+fixed here. WebKit was cut short when the machine ran low on memory. Seven
+specs were changed with the flow: the refusal text, THE FOUR GROUNDS and the
+first purse open on a device past its first pop, RUN 1's short ending, and the
+fresh front door (`framed.spec.ts`).

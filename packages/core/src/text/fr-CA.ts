@@ -111,8 +111,6 @@ export const STRINGS_FR: Strings = {
       ripens: `Entourée sur ses six côtés, une tuile MÛRIT et montre sa VALEUR${D}: le nombre de voisines qui lui ressemblent.`,
       pocket:
         'Une POCHE, c’est une tuile mûre et toutes les tuiles mûres qui la touchent. Elles se récoltent ensemble, d’un coup.',
-      pocketCard:
-        'Touche n’importe quelle tuile mûre pour évaluer sa poche; les boutons montrent ce qu’elle paie.',
       worth: `La VALEUR compte combien des six côtés d’une tuile touchent une ressemblance${D}: la même couleur, ou une tuile rare passe-partout.`,
       surroundsAsh: (red) =>
         `La pierre, les murs et le bord de la carte entourent aussi. Seules ${red} comptent la pierre comme une ressemblance.`,
@@ -131,7 +129,7 @@ export const STRINGS_FR: Strings = {
       verb: ['RÉCOLTER', 'RÉCOLTE'],
       core: `RÉCOLTER encaisse une poche mûre${D}: ça paie des tuiles pour continuer à poser, et des points pour le score.`,
       paid: 'Une récolte marque la valeur totale de la poche, alors plus il en mûrit ensemble, plus ça paie.',
-      wait: 'Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles, alors trop attendre peut finir la partie avant la récolte.',
+      wait: `Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles. Une poche mûre n’expire jamais${D}: tu peux la récolter même à zéro.`,
       lean: 'RÉCOLTER fait aussi pencher tes prochaines pioches vers la couleur récoltée.',
       when: 'Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.',
       row: {
@@ -274,23 +272,27 @@ export const STRINGS_FR: Strings = {
       terms: [],
       core: 'Le monde se souvient. Le sol que tu as parcouru reste sur la carte entre les parties, tamisé sous le brouillard, et les destinations non réclamées luisent au travers.',
       pays: 'Chaque destination paie dès qu’une tuile posée la touche.',
+      rearm:
+        'Les caches et les sites se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.',
+      oneBounty:
+        'Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant qu’une attend.',
       row: {
         cache: {
           name: 'CACHE',
           terms: ['CACHE'],
           coreRing: (pays, perRing) =>
-            `Une CACHE paie ${pays} tuiles sur-le-champ, +${perRing} par anneau de distance, dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.`,
+            `Une CACHE paie ${pays} tuiles sur-le-champ, +${perRing} par anneau de distance, dès que tu poses une tuile qui la touche.`,
           core: (pays) =>
-            `Une CACHE paie ${pays} tuiles sur-le-champ dès que tu poses une tuile qui la touche. Les caches se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.`,
+            `Une CACHE paie ${pays} tuiles sur-le-champ dès que tu poses une tuile qui la touche.`,
         },
         site: {
           name: 'SITE',
           terms: ['PRIME', 'SITE'],
           bountyName: 'PRIME',
           core: (pays) =>
-            `Un SITE se réclame en posant une tuile qui le touche. Il paie alors ${pays} points × sa distance du départ, et il ouvre une PRIME. Les sites se réarment à chaque partie, alors un site réclamé vaut la peine d’y retourner.`,
+            `Un SITE se réclame en posant une tuile qui le touche. Il paie alors ${pays} points × sa distance du départ, et il ouvre une PRIME.`,
           bounty: (need, radius, bonus) =>
-            `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site${D}: cette récolte marque ×${bonus}. Une seule prime à la fois; un autre site n’en ouvre pas une deuxième tant que celle-ci attend.`,
+            `Une PRIME, c’est le deuxième paiement d’un site${D}: elle s’ouvre quand tu le réclames. Pour l’encaisser, récolte une poche de ${need} tuiles ou plus à ${radius} hex de l’étoile du site${D}: cette récolte marque ×${bonus}.`,
         },
         shrine: {
           name: 'SANCTUAIRE',
@@ -331,15 +333,13 @@ export const STRINGS_FR: Strings = {
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
   coach: {
     place: `Les tuiles sous le plateau forment ta main, et la tuile éclairée est la prochaine que tu poseras. Touche une arête lumineuse du plateau pour la poser${D}: chaque tuile posée agrandit ton terrain, et c’est le terrain qui marque.`,
-    match:
-      'La plupart des tuiles gagnent de la VALEUR auprès des voisines de leur couleur, alors pose les prochaines contre des tuiles semblables. Chaque couleur plie aussi cette règle à sa façon, et LES QUATRE SOLS les expliquent.',
-    grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent. Chaque pose dépense des tuiles de ta réserve, alors bâtis avec un plan.',
-    popFirst: `Récolte cette poche avant de poser autre chose. Touche une tuile mûre pour l’évaluer, puis appuie sur RÉCOLTER.`,
-    build:
-      'Maintenant, continue de bâtir. Une grosse poche paie plus que ses morceaux, alors fais-en grandir une exprès, mais chaque pose dépense des tuiles, et TUILES te dit combien il t’en reste.',
-    bank: `Tes tuiles s’épuisent. Encaisse ta plus grosse poche maintenant${D}: touche sa tuile mûre pour l’évaluer, puis appuie sur RÉCOLTER. Les tuiles sont ce qui te garde en train de poser.`,
-    end: `Avec moins de tuiles que le COÛT, tu peux quand même poser. ${LAST_GASP_RULE} À zéro sans rien de mûr à récolter, la partie finit. ${SHAPE}`,
-    pop: `Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER${D}: ça te redonne des tuiles pour continuer à poser, et des points pour ton score.`,
+    match: `Pose les prochaines tuiles contre des tuiles de la même couleur${D}: les voisines semblables donnent de la VALEUR.`,
+    grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent.',
+    popFirst: 'Récolte d’abord cette poche.',
+    build: `Maintenant, continue de bâtir. Choisis UNE couleur et fais grandir un seul bloc de celle-ci${D}: les voisines de même couleur augmentent la VALEUR de chaque tuile, et une grosse poche paie plus que ses morceaux. Chaque pose dépense des tuiles, et TUILES te dit combien il t’en reste.`,
+    bank: `Tes tuiles s’épuisent. Une récolte redonne des tuiles${D}: touche ta plus grosse poche mûre, puis appuie sur RÉCOLTER. Une poche mûre se récolte encore rendu à zéro.`,
+    end: `Moins de tuiles que le COÛT${D}: tu peux quand même poser. À zéro, récolte ce qui est mûr; sans rien de mûr, la partie finit. ${SHAPE}`,
+    pop: 'Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER.',
   },
   rerollHint: (cost) =>
     `Une main faible? REPIOCHER la jette pour une nouvelle, au prix de ${cost} de CHANCE.`,
@@ -424,7 +424,7 @@ export const STRINGS_FR: Strings = {
     },
     harvest: {
       firstPop: `TA PREMIÈRE RÉCOLTE
-La poche est devenue de la PIERRE. Elle entoure encore, mais elle ne ressemble jamais. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
+La poche est devenue de la PIERRE. Elle entoure encore. Le sol déjà récolté s’appauvrit; le monde reste riche plus loin.`,
 
       head: (count, worth) => `RÉCOLTÉ ${count}, valeur totale ${d1(worth)}`,
       bountyCollected: (bonus) => `Prime ×${bonus}${D}: ENCAISSÉE.`,
@@ -974,6 +974,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     },
     beginShared: 'COMMENCER · PARTIE PARTAGÉE',
     beginDaily: (day) => `COMMENCER LE QUOTIDIEN ${day}`,
+    learnFirst: 'APPRENDRE D’ABORD',
+    learnFirstNote: 'Première fois? Apprends sur un plateau d’essai, puis reviens à celui-ci.',
     cameByLink: 'Ce monde t’est arrivé par un lien. Il repart par le même chemin.',
     ending: {
       scored: (n) => `Partie terminée${D}: ${nb(n)} point${pl(n, '', 's')}`,

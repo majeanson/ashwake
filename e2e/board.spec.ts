@@ -1022,10 +1022,12 @@ test('the first time the purse opens, it says what luck buys', async ({ page }) 
    * it — so the drip's most expensive card spent its own ledger entry to say
    * nothing. Found 2026-08-30 by grepping for a consumer.
    *
-   * A device that has NOT been taught, so the ledger is empty and the first
-   * open is a first open.
+   * A device that has NOT been taught, so the first open is a first open —
+   * but one past its first run: the purse waits off screen until LUCK's card
+   * on a first run (2026-10-19, `shell/teaching`'s `shows`).
    */
   const errors = watchErrors(page);
+  await walkedDevice(page);
   await page.goto('/?seed=7&place=24');
   await begin(page);
   await page.waitForTimeout(600);

@@ -402,7 +402,7 @@ test('the first pop is forced: a waiting pocket refuses placement until it is po
   await begin(page);
 
   const toast = page.locator('.toast');
-  const refusal = /Pop this pocket before you place|Récolte cette poche avant de poser/;
+  const refusal = /Pop this pocket first|Récolte d’abord cette poche/;
   let refused = false;
   for (let i = 0; i < 40 && !refused; i++) {
     try {

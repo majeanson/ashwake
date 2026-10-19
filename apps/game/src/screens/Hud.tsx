@@ -28,6 +28,8 @@ type HudProps = {
    * handed in so the row does not learn what it opens.
    */
   readonly menu?: ReactNode;
+  /** Stats the first run has not explained yet (`shell/teaching`'s `shows`). */
+  readonly hide: { readonly map: boolean; readonly cost: boolean };
 };
 
 /** The ids `statNote` answers to, in the order Ashwake 1 laid them out. */
@@ -50,7 +52,7 @@ type StatId = (typeof STATS)[number];
  */
 const MINOR: ReadonlySet<StatId> = new Set(['map', 'cost', 'left']);
 
-export function Hud({ hud, s, onNote, menu }: HudProps) {
+export function Hud({ hud, s, onNote, menu, hide }: HudProps) {
   /*
    * A NUMBER LIGHTS WHEN IT CHANGES (2026-10-16, Marc: "a little oomph").
    *
@@ -93,7 +95,9 @@ export function Hud({ hud, s, onNote, menu }: HudProps) {
     <div className="hud" data-hud="stats">
       {STATS.map((id) => {
         const shown = valueOf(id, hud);
-        if (shown === null) return null;
+        if (shown === null || (id === 'map' && hide.map) || (id === 'cost' && hide.cost)) {
+          return null;
+        }
         const n = changes[id] ?? 0;
         const askedN = asked?.id === id ? asked.n : 0;
         const lit = n > 0 || askedN > 0;

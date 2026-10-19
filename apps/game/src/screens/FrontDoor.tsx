@@ -83,6 +83,16 @@ type FrontDoorProps = {
    * page in its own tab, because a scaled-down frame is a poor place to play.
    */
   readonly framed?: boolean | undefined;
+  /**
+   * A DEVICE THAT HAS NEVER FINISHED A RUN (2026-10-19, Marc: hide DAILY until
+   * the first run ends, and _"make sure if someone sends you a daily it
+   * suggests you do the tutorial first"_). Its own door is BEGIN alone, the
+   * tutorial; a shared or daily door leads with LEARN FIRST, which goes to it.
+   * The shell decides: "finished a run" is the teaching ledger's `toured`.
+   */
+  readonly fresh?: boolean | undefined;
+  /** The tutorial, from a shared or daily door — NEW RUN in this device's world. */
+  readonly onLearn?: (() => void) | undefined;
 };
 
 export function FrontDoor({
@@ -98,8 +108,11 @@ export function FrontDoor({
   onInstall,
   handInstall,
   framed = false,
+  fresh = false,
+  onLearn,
 }: FrontDoorProps) {
   const lockup = useArtSlot(themeId, 'ui.logo');
+  const learn = fresh && mode !== 'world' && onLearn !== undefined;
   return (
     <div className="front-door" role="dialog" aria-modal="true" aria-label={NAME} tabIndex={-1}>
       {/*
@@ -120,7 +133,25 @@ export function FrontDoor({
       )}
       <h1 className={lockup === null ? 'door-name' : 'door-name visually-hidden'}>{NAME}</h1>
 
-      <button type="button" className="door-begin" data-door="begin" onClick={onBegin}>
+      {/* LEARN FIRST, on a link a first-timer was sent — see `fresh`. The
+          link's own BEGIN stays, as the second door. */}
+      {learn && (
+        <>
+          <p className="note" data-door="learn-note">
+            {s.ui.learnFirstNote}
+          </p>
+          <button type="button" className="door-begin" data-door="learn" onClick={onLearn}>
+            {s.ui.learnFirst}
+          </button>
+        </>
+      )}
+
+      <button
+        type="button"
+        className={learn ? 'door-daily' : 'door-begin'}
+        data-door="begin"
+        onClick={onBegin}
+      >
         {resuming
           ? s.ui.resume
           : mode === 'shared'
@@ -172,8 +203,8 @@ export function FrontDoor({
 
       {/* DAILY, uniform with BEGIN now — see the doc comment above and
           `.door-begin, .door-daily` in ui.css. Absent on a door that is
-          already a daily's. */}
-      {mode !== 'daily' && !framed && (
+          already a daily's, and on a device that has not finished a run. */}
+      {mode !== 'daily' && !framed && !fresh && (
         <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
           {dailyBadge}
         </button>

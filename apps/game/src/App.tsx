@@ -164,6 +164,7 @@ import {
   opensAt,
   phaseOf,
   purseOpened,
+  shows,
   sinceSpoke,
   stepCue,
   toastLine,
@@ -2206,7 +2207,12 @@ function Game() {
             }
             // The ending has been explained: its toast need not say it again.
             if (step === 'end') setProgress((p) => told(p, 'lastGasp'));
+            return;
           }
+          // A step already said leaves the beat quiet, and a toast its phase
+          // allows may take it (2026-10-19: the walk's WALL, the tour's REDRAW,
+          // which could otherwise never speak). The step is said again after.
+          if (speakLesson(progress, now)) coached.current = null;
           return;
         }
         const mark = onceARun(
@@ -2302,7 +2308,8 @@ function Game() {
           // Joined the way the store joins every other multi-part utterance —
           // this had its own `\n\n`, which is one card's spacing decided in a
           // second place (2026-09-02). See `paragraphs`.
-          text: paragraphs(s.view.harvest.firstPop, said.text, s.lesson.pop.when),
+          // POP's card, a breath earlier, already said when to pop (2026-10-19).
+          text: paragraphs(s.view.harvest.firstPop, said.text),
           card: true,
         };
         const wait = reducedMotion ? 0 : cascadeMs(theme.motion, did.pocket);
@@ -3420,6 +3427,9 @@ function Game() {
     term === null
       ? card
       : null;
+  /** Whether the first run has explained this control yet — see `shows`. */
+  const reveal = (control: Parameters<typeof shows>[0]): boolean =>
+    shows(control, progress, teaching);
   /**
    * THE CUE SHOWS only while the player can act on it: a run in play, nothing
    * open over the board, no card up or due. Armed under a card, it waits, and
@@ -3701,6 +3711,7 @@ function Game() {
           hud={snap.hud}
           s={s}
           onNote={say}
+          hide={{ map: !reveal('reach'), cost: !reveal('cost') }}
           menu={
             <MenuButton
               s={s}
@@ -3710,7 +3721,7 @@ function Game() {
           }
         />
       )}
-      {playing && (
+      {playing && reveal('caravan') && (
         <CaravanAsk
           hud={snap.hud}
           s={s}
@@ -4010,14 +4021,14 @@ function Game() {
             // gates it the same way `hand-host` used to gate the button that
             // opened it, back when the button lived there.
             luck={snap.hud.luck}
-            canSpend={playing && snap.hud.spends.length > 0}
+            canSpend={playing && snap.hud.spends.length > 0 && reveal('purse')}
             onPurse={onPurse}
             purseOpen={purseOpen}
             chips={playing ? <NewChips ids={dots} s={s} onOpen={setDotOpen} /> : null}
             showUndo={playing}
             canUndo={playing && snap.undoable}
             onUndo={undoLast}
-            canLens={playing}
+            canLens={playing && reveal('lens')}
             onLensPanel={onLensPanel}
             lensOpen={lensOpen}
             /*
@@ -4150,11 +4161,13 @@ function Game() {
             />
           )}
           <ActionBar
-            hud={snap.hud}
+            // The stash and the long-press lens wait for the free phase like
+            // the lens button: no sentence of the first run names them.
+            hud={reveal('hold') ? snap.hud : { ...snap.hud, canHold: false }}
             theme={theme}
             s={s}
             onSelect={onSelect}
-            onLens={onLens}
+            onLens={reveal('lens') ? onLens : () => {}}
             onHold={onHold}
           />
         </div>
@@ -4343,6 +4356,10 @@ function Game() {
             onInstall={offerInstall}
             handInstall={showHandInstall}
             framed={framed}
+            fresh={!hasMet(progress, 'toured')}
+            // NEW RUN's own door: this device's world, daily and detour off,
+            // and the tutorial board while the tutorial is unfinished.
+            onLearn={newRun}
           />
         </div>
       )}

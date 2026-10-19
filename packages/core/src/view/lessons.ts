@@ -421,9 +421,8 @@ export const LESSONS: readonly Lesson[] = [
             ? s.lesson.ripe.surroundsAsh(namesOf(theme, s.locale).red)
             : s.lesson.ripe.surrounds,
       },
-      // First contact only: the card fires at the first ripe tile, where the
-      // player has not read the pocket's price yet.
-      { at: 'card', say: (_t, _theme, s) => s.lesson.ripe.pocketCard },
+      // "Tap a ripe tile to price it" was a card beat here until 2026-10-19;
+      // the `pop` coach line says it on the same frame, so it is said once.
     ],
     rowHeads: (s) => {
       const r = s.lesson.ripe.row;
@@ -455,7 +454,7 @@ export const LESSONS: readonly Lesson[] = [
       // (2026-09-04). It was said only in `s.view.harvest.firstPopWhen`, the
       // first-ever-pop toast — a sentence a player who dismissed that toast
       // once could never see again, on the one door that exists to explain
-      // POP.
+      // POP. The first-pop card said it again, seconds later, until 2026-10-19.
       { say: (_t, _theme, s) => s.lesson.pop.when },
     ],
     rowHeads: (s) => {
@@ -573,6 +572,13 @@ export const LESSONS: readonly Lesson[] = [
       // The one thing every destination has in common, for the card that fires
       // the first time one is in view; the rows say what each pays.
       { at: 'card', say: (_t, _theme, s) => s.lesson.map.pays },
+      // What a first run cannot use yet, out of the rows a card prints
+      // (2026-10-19): the manual keeps them.
+      { at: 'detail', say: (_t, _theme, s) => s.lesson.map.rearm },
+      {
+        at: 'detail',
+        say: (t, _theme, s) => (t.questNeed > 0 ? s.lesson.map.oneBounty : null),
+      },
     ],
     rowHeads: (s) => {
       const r = s.lesson.map.row;
@@ -787,7 +793,9 @@ export const LESSONS: readonly Lesson[] = [
     manualFigure: 'rare',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.lesson.magic.core },
-      { say: (_t, _theme, s) => s.rareStar },
+      // How a placed rare tile looks: the manual's DETAILS, not the card
+      // (2026-10-19), which says what it does and where to spend it.
+      { at: 'detail', say: (_t, _theme, s) => s.rareStar },
       { at: 'card', say: (_t, _theme, s) => s.lesson.magic.card },
     ],
     rowHeads: (s) => [

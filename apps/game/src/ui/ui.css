@@ -4455,10 +4455,9 @@ button.caravan-ask.waiting {
 /*
  * THE ENDING'S TOUR (2026-10-15) — the same ring as the board's cue, on the end
  * screen, one part at a time (`EndStep` in `screens/EndScreen.tsx`). Keep the
- * four selectors in step with its `END_SELECTOR`.
+ * three steps' selectors in step with its `END_SELECTOR`.
  */
 .end[data-end-cue='relics'] [data-hud='banked'] .term,
-.end[data-end-cue='details'] [data-end='details'],
 .end[data-end-cue='shop'] [data-end='shop'],
 .end[data-end-cue='again'] [data-action='retry'],
 .end[data-end-cue='again'] [data-action='new-run'] {
@@ -4469,7 +4468,6 @@ button.caravan-ask.waiting {
 
 @media (prefers-reduced-motion: no-preference) {
   .end[data-end-cue='relics'] [data-hud='banked'] .term,
-  .end[data-end-cue='details'] [data-end='details'],
   .end[data-end-cue='shop'] [data-end='shop'],
   .end[data-end-cue='again'] [data-action='retry'],
   .end[data-end-cue='again'] [data-action='new-run'] {
