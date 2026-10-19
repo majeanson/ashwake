@@ -1403,6 +1403,9 @@ export type Strings = {
        * ruling: run one already opens those, and what was missing was saying so.
        */
       readonly firstRun: string;
+      /** The tutorial a daily link sent the player to, over: said, and the way back. */
+      readonly tutorialDone: string;
+      readonly tutorialDoneNote: string;
       /**
        * The run's own shape, as the six facts Ashwake 1 fixed the grid at.
        *

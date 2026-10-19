@@ -59,7 +59,10 @@ Every door goes through `enterRun` (`shell/beginning.ts`) and states its whole
   opened on a device that has never finished a run (`hasMet` says no tour) leads its front
   door with LEARN FIRST, and that button is `newRun` — the row above, so `daily` null
   and `detour` false, into this device's own world and the tutorial board. The link's
-  own BEGIN stays beside it.
+  own BEGIN stays beside it. From a daily, the day is kept and the tutorial's ending
+  offers it back through `openDaily` (the **enterDaily** row, on that date), with no
+  relics or shop on that ending. From a shared seed there is no way back: a detour is
+  entered at boot only.
 
 ## A SEVENTH SESSION THAT IS NOT A DOOR — the projector (2026-09-23)
 

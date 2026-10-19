@@ -201,6 +201,14 @@ type EndScreenProps = {
   readonly tour?: boolean | undefined;
   /** A card or panel is over this screen: the ring waits for it to close. */
   readonly hold?: boolean | undefined;
+  /**
+   * THE TUTORIAL A DAILY LINK SENT THE PLAYER TO, OVER (2026-10-19, Marc: _"a
+   * button to go back to the daily and a clear indication that the tutorial is
+   * done, no relics screen at all"_, and _"relics will belong in WORLD mode
+   * only"_). The ending says the tutorial is done, its first button is that
+   * daily, and nothing about relics, the shop or what the world gained shows.
+   */
+  readonly learned?: { readonly day: string; readonly onBack: () => void } | undefined;
 };
 
 /**
@@ -252,6 +260,7 @@ export function EndScreen({
   goals,
   tour,
   hold,
+  learned,
 }: EndScreenProps) {
   /* The daily's KEEP THIS BOARD picker: shut until asked for, and `armed` is
      the slot whose second press would abandon it. Both reset with the screen,
@@ -323,13 +332,16 @@ export function EndScreen({
    * the four things its tour points at. The run's facts, the survey, DETAILS
    * and THIS WORLD are reference, and arrive with the second ending.
    */
-  const slim = tour === true;
+  const slim = tour === true || learned !== undefined;
+  // Relics and the shop are a world's, and the tutorial a daily link sent the
+  // player to is not where they came to play: see `learned`.
+  const relicsShown = world != null && learned === undefined;
   const steps: readonly EndStep[] =
-    !slim || CUE_MS === 0
+    !slim || CUE_MS === 0 || learned !== undefined
       ? []
       : [
-          ...(world != null && hud.relics > 0 ? (['relics'] as const) : []),
-          ...(world != null ? (['shop'] as const) : []),
+          ...(relicsShown && hud.relics > 0 ? (['relics'] as const) : []),
+          ...(relicsShown ? (['shop'] as const) : []),
           'again',
         ];
   const [at, setAt] = useState(0);
@@ -481,9 +493,32 @@ export function EndScreen({
         (2026-09-03, Marc: didn't see a way back to his world from a daily's
         end screen; the door was there, worded for the wrong context).
       */}
+      {/* THE TUTORIAL IS DONE, and the daily that sent the player is the way
+          on — see `learned`. NEW RUN stays, quieter, for a player who would
+          rather keep playing their own world. */}
+      {learned !== undefined && (
+        <>
+          <p className="end-best" data-hud="tutorial-done">
+            {s.ui.ending.tutorialDone}
+          </p>
+          <p className="note">{s.ui.ending.tutorialDoneNote}</p>
+          <button
+            type="button"
+            className="door-begin"
+            data-action="back-to-daily"
+            onClick={learned.onBack}
+          >
+            {s.ui.beginDaily(learned.day)}
+          </button>
+        </>
+      )}
       {daily != null ? (
         <button type="button" className="door-begin" data-action="retry" onClick={daily.onRetry}>
           {s.ui.ending.tryAgain}
+        </button>
+      ) : learned !== undefined ? (
+        <button type="button" className="door-daily" data-action="new-run" onClick={onNewRun}>
+          {s.ui.newRun}
         </button>
       ) : (
         <button type="button" className="door-begin" data-action="new-run" onClick={onNewRun}>
@@ -548,7 +583,7 @@ export function EndScreen({
         Absent on a detour and a daily, where nothing is banked and saying so
         would be the ending lying about the one thing those modes promise.
       */}
-      {world != null && hud.relics > 0 && (
+      {relicsShown && hud.relics > 0 && (
         <p className="note end-banked" data-hud="banked">
           {/* A term, so the line that names the currency explains it on a tap:
               THE RUN'S END at its relic row, the same card the NEW chip opens. */}
@@ -563,7 +598,7 @@ export function EndScreen({
         Under the relics and over the shop it points at, because the sentence
         is about the two of them.
       */}
-      {firstRun === true && (
+      {firstRun === true && learned === undefined && (
         <p className="note end-first" data-hud="first-run">
           {s.ui.ending.firstRun}
         </p>
@@ -581,7 +616,7 @@ export function EndScreen({
         Above the payout for the same reason the survey is: rare beats routine,
         and the breakdown is always there.
       */}
-      {(newPerks ?? []).length + (newUnlocks ?? []).length > 0 && (
+      {learned === undefined && (newPerks ?? []).length + (newUnlocks ?? []).length > 0 && (
         <ul className="goals-met" data-hud="gained">
           {(newUnlocks ?? []).map((label) => (
             <li key={`u-${label}`}>{s.ui.woke(label)}</li>
@@ -651,7 +686,7 @@ export function EndScreen({
           spend a currency this ending could not have earned is world-chrome
           bleeding onto a board that has no world (2026-09-03, Marc: "when
           playing dailies, dont show the shop or anything world-related"). */}
-      {world != null && (
+      {relicsShown && (
         <div data-end="shop">
           <Shop progress={progress} theme={theme} s={s} onProgress={onProgress} onTerm={onTerm} />
         </div>

@@ -11288,3 +11288,20 @@ commit. CI measured first paint at 195.5 KB gzipped against a 195.3 KB bar,
 The bytes are LEARN FIRST and its note, `map.rearm` and `map.oneBounty` in
 both catalogues, and the reveal table. The renderer-by-name check is
 untouched.
+
+**Later the same day — the way back from LEARN FIRST** (Marc: _"make sure when
+we choose the tutorial in the daily (learn) we have a button to go back to the
+daily and a clear indication that the tutorial is done, no relics screen at
+all"_, then _"relics will belong in WORLD mode only"_).
+
+- `App` keeps the link's day (`learnedFrom`) through LEARN FIRST.
+- The tutorial's ending (`EndScreen`'s `learned`) says TUTORIAL DONE with one
+  line under it.
+- Its first button is BEGIN DAILY for that day (`backToDaily`; `openDaily`
+  now takes a date). NEW RUN stays as the quieter second door.
+- That ending shows no relics line, no shop, no relics tour and no perks or
+  unlocks gained. Either door off it clears `learnedFrom`.
+- A `?seed=` link has no way back: a detour is only entered at boot
+  (`MODES.md`).
+- `endscreen.test.tsx` holds both endings. First paint is 195.8 KB, under the
+  201,000-byte bar.

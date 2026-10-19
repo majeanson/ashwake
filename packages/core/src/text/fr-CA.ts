@@ -993,6 +993,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
       relicsBanked: (n) => `${nb(n)} reliques mises de côté`,
       firstRun:
         'Ta première partie est faite, et ton monde s’en souvient. LA BOUTIQUE plus bas dépense les reliques, et ce que tu achètes te suit dans chaque partie qui vient.',
+      tutorialDone: 'TUTORIEL TERMINÉ',
+      tutorialDoneNote: 'Tu connais l’essentiel. Le plateau du quotidien t’attend.',
       placements: 'POSES',
       popped: 'RÉCOLTES',
       biggestPop: 'PLUS GROSSE',

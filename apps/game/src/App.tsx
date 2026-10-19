@@ -3159,11 +3159,13 @@ function Game() {
    * phone.
    */
   const openDaily = useCallback(
-    (resume: GameState | null) => {
+    // `on` is today's date except from the tutorial a daily link sent the
+    // player to, which goes back to the link's own day (2026-10-19).
+    (resume: GameState | null, on: typeof today = today) => {
       enterRun(wiring, {
-        daily: today,
+        daily: on,
         resume,
-        seed: dailySeed(today),
+        seed: dailySeed(on),
         // A daily has no world memory at all, and letting go of the held copy is
         // what stops a board the world never walked being merged into it.
         memory: undefined,
@@ -3188,6 +3190,24 @@ function Game() {
 
   /** The front door's daily: today's board, picked up where it was left. */
   const enterDaily = useCallback(() => openDaily(readDailyRun(today)), [openDaily, today]);
+
+  /**
+   * THE DAILY A LINK SENT, KEPT THROUGH ITS TUTORIAL (2026-10-19, Marc: _"make
+   * sure when we choose the tutorial in the daily (learn) we have a button to
+   * go back to the daily"_). LEARN FIRST leaves the daily for this device's own
+   * world, which clears `daily`; this remembers the day, and the tutorial's
+   * ending offers it back. Cleared by either door off that ending.
+   */
+  const [learnedFrom, setLearnedFrom] = useState<typeof today | null>(null);
+  const learnFirst = useCallback(() => {
+    setLearnedFrom(daily);
+    newRun();
+  }, [daily, newRun]);
+  const backToDaily = useCallback(() => {
+    if (learnedFrom === null) return;
+    setLearnedFrom(null);
+    openDaily(readDailyRun(learnedFrom), learnedFrom);
+  }, [learnedFrom, openDaily]);
 
   /** TRY AGAIN, on a daily's ending: today's board, from the first tile. */
   const retryDaily = useCallback(() => openDaily(null), [openDaily]);
@@ -4265,7 +4285,18 @@ function Game() {
             theme={theme}
             progress={progress}
             onTerm={openTerm}
-            onNewRun={newRun}
+            onNewRun={() => {
+              setLearnedFrom(null);
+              newRun();
+            }}
+            /* The tutorial a daily link sent the player to: it says it is done
+               and offers that daily back, and shows nothing of relics, which
+               belong to a world (2026-10-19, Marc). */
+            learned={
+              learnedFrom === null
+                ? undefined
+                : { day: dailyName(learnedFrom), onBack: backToDaily }
+            }
             onProgress={setProgress}
             onMore={() => more.show()}
             onShare={onShare}
@@ -4358,8 +4389,9 @@ function Game() {
             framed={framed}
             fresh={!hasMet(progress, 'toured')}
             // NEW RUN's own door: this device's world, daily and detour off,
-            // and the tutorial board while the tutorial is unfinished.
-            onLearn={newRun}
+            // and the tutorial board while the tutorial is unfinished. A daily's
+            // day is kept for the way back — see `learnedFrom`.
+            onLearn={learnFirst}
           />
         </div>
       )}

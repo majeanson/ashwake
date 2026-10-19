@@ -970,6 +970,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
       relicsBanked: (n) => `${n} relics banked`,
       firstRun:
         'Your first run is done, and your world remembers it. THE SHOP below spends relics, and what you buy comes with you into every run after this one.',
+      tutorialDone: 'TUTORIAL DONE',
+      tutorialDoneNote: 'You know the basics. The daily board is waiting.',
       placements: 'PLACEMENTS',
       popped: 'POPPED',
       biggestPop: 'BIGGEST POP',
