@@ -14,7 +14,7 @@
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
   "firstPaint": {
-    "gzip": 201000,
+    "gzip": 203000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -100,7 +100,15 @@
       "locally): LEARN FIRST and its note, map.rearm and map.oneBounty in both",
       "catalogues, and the reveal table (shows, REVEALED_BY) in",
       "shell/teaching.ts. Net of the sentences cut from the cards, which moved",
-      "to DETAILS rather than leaving. Renderer-by-name check untouched."
+      "to DETAILS rather than leaving. Renderer-by-name check untouched.",
+      "",
+      "MOVED 2026-10-21, from 201,000 to 203,000, for THE STRANGERS' ASKS",
+      "(LOG.md Session 140). Measured 196.5 KB gzipped, 0.2 KB over: five coach",
+      "clauses (the number on a lit edge, COÛT, the hoard at the end), the wait",
+      "clause on the pocket's note, a lesson of its own for native ground (LE",
+      "SOL NATAL, three sentences in both languages) and the receipt's `untold`",
+      "words. Nine model strangers asked for every one of them by name. First",
+      "minute again; renderer-by-name check untouched."
     ]
   },
   "renderer": {

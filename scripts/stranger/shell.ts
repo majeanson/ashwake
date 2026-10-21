@@ -172,7 +172,11 @@ const REFUSAL = {
 
 export function newTable(condition: Condition, seed: number): Table {
   // A fresh phone's NEW RUN: the home world with nothing earned.
-  const tuning = economyFor({ kind: 'home', world: newWorld(seed), progress: EMPTY_PROGRESS });
+  const tuning = economyFor(
+    { kind: 'home', world: newWorld(seed), progress: EMPTY_PROGRESS },
+    undefined,
+    guided(EMPTY_PROGRESS),
+  );
   return {
     condition,
     state: newRun(seed, tuning),

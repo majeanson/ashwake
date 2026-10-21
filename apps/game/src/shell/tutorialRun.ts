@@ -28,6 +28,6 @@ export function tutorialDoor(): { readonly memory: RunMemory; readonly economy: 
   const world = newWorld(LEARN_SEED);
   return {
     memory: memoryOf(world),
-    economy: economyFor({ kind: 'home', world, progress: EMPTY_PROGRESS }),
+    economy: economyFor({ kind: 'home', world, progress: EMPTY_PROGRESS }, undefined, true),
   };
 }

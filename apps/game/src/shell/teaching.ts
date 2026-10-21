@@ -2,7 +2,7 @@ import { type Tuning } from '@content/tuning';
 import { neighbourKeys, type HexKey } from '@engine/hex';
 import { hasMet, meet, type Progress, type TeachId } from '@meta/progress';
 import type { BoardView, CellView } from '@render/Renderer';
-import { namesOf, type Theme } from '@theme/tokens';
+import type { Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
 import { LESSON_FOR_REWARD, type LessonId, type RowKey } from '@view/lessons';
 import { statNote, type HudView } from '@view/view';
@@ -357,15 +357,23 @@ export const SCHEDULE: readonly Slot[] = [
     when: ({ hud }) => hud.canHarvest,
   },
   // The caravan's card, the first time it is IN TOWN with a pocket to try
-  // (2026-09-30). It is a free-phase card, so the walk's POP card has always
-  // been told by then: the card about a reason to pop never lands before the
-  // card about popping.
+  // (2026-09-30). The walk's POP card has always been told by then: the card
+  // about a reason to pop never lands before the card about popping.
+  //
+  // AND IN THE TOUR, WHEN THE PICKER OPENS (2026-10-21, Marc: _"same for la
+  // caravane paie"_). The first run hides the ask line (`reveal`), but a pop
+  // the caravan takes opens the three wares on any run (`caravanOpen` reads
+  // only `offersWaiting`) — so a stranger met LA POSE PAIE, LA ROUTE PAIE,
+  // with the caravan never named. In the tour the card fires on the picker
+  // alone, since the ask it would otherwise fire on is not on screen.
   {
     id: 'caravan',
     as: 'card',
+    phase: 'tour',
     // In town AND something to pop: the card says "that is the moment to try a
-    // pop", so it fires when a pop can be tried.
-    when: ({ hud }) => hud.caravan === 'town' && hud.canHarvest,
+    // pop", so it fires when a pop can be tried — or when an offer waits.
+    when: ({ hud }) => hud.offer !== null || (hud.caravan === 'town' && hud.canHarvest),
+    guidedWhen: ({ hud }) => hud.offer !== null,
   },
   {
     id: 'costRise',
@@ -460,30 +468,62 @@ export const SCHEDULE: readonly Slot[] = [
     when: ({ hud }) => hud.placements >= 2 && !hud.canHarvest && !hud.ended,
     line: (_now, _t, _theme, s) => s.undoHint,
   },
+  // THE FOUR GROUNDS waits for the tour (2026-10-19, Marc): at the first
+  // placement it was four rules and a decimal before WORTH or RIPE meant
+  // anything. The walk teaches one rule, match your colour; the four ways a
+  // colour bends it come once the player has popped and BUILD has said to
+  // pick one. Ahead of LUCK, because the hand is what the player is choosing;
+  // behind the places, whose moment is one tile wide — and ahead of MAGIC and
+  // native ground (2026-10-21), so the tour still opens with it.
   {
-    id: 'field',
-    as: 'toast',
-    // Native ground is the territory row's depth.
-    opens: { lesson: 'map', row: 'territory' },
-    ...onCell((c) => c.kind === 'empty' && c.native !== null),
-    line: (now, _t, theme, s) => {
-      const cell = now.board.cells.find((c) => c.kind === 'empty' && c.native !== null);
-      return cell?.native == null ? null : s.view.hex.native(namesOf(theme, s.locale)[cell.native]);
-    },
+    id: 'colours',
+    cue: 'hand',
+    opens: { lesson: 'grounds' },
+    as: 'card',
+    phase: 'tour',
+    when: ({ placed, hud }) => placed && hud.draft.length > 0,
   },
-  // In the tour MAGIC is a card, told once LUCK has been: see `nextLesson`.
+  // In the tour MAGIC is a card, told as soon as a magic tile is in sight: see
+  // `nextLesson`.
+  //
+  // A MAGIC TILE IN HAND OR ON THE BOARD (2026-10-21, Marc: _"a magic tile
+  // appeared but the concept never got explained"_). The moment was the hand
+  // alone, and the hand is where a tile spends one placement: the chosen
+  // first world deals a magic tile at placement 0–6 in 13 of 20 seeds, it is
+  // placed before LUCK's card and the pace have cleared, and the card then
+  // waited for a SECOND magic tile to be dealt — placement 65 on seed 2,
+  // never on one of the nine strangers' runs. A placed magic tile keeps its
+  // ring and stands taller (`rareStar`), so it is still the thing the card
+  // is about; the moment holds while one is anywhere in sight.
   {
     id: 'rare',
     as: 'chip',
     phase: 'tour',
     opens: { lesson: 'magic', row: 'magic' },
-    when: ({ hud }) => hud.draft.some((c) => c.rarity === 'magic'),
+    when: ({ hud, board }) =>
+      hud.draft.some((c) => c.rarity === 'magic') ||
+      board.cells.some((c) => c.kind === 'tile' && c.rarity === 'magic'),
   },
   {
     id: 'rareUnique',
     as: 'chip',
     opens: { lesson: 'magic', row: 'unique' },
     when: ({ hud }) => hud.draft.some((c) => c.rarity === 'unique'),
+  },
+  // NATIVE GROUND, THE FIRST TIME IT IS IN VIEW (2026-10-21, Marc: _"if we see
+  // native grounds for the first time, a zoom in and card could be good, not
+  // related to territory"_). It was a toast naming the hex's ground and THE
+  // MAP's territory row carried the rule; now it is a tour card of its own
+  // lesson, LE SOL NATAL, flown to like a place's card is (`tourTarget` reads
+  // the same `onCell` predicate, so the card and the trip agree). Behind
+  // MAGIC, which Marc wanted as soon as a magic tile is in sight; ahead of
+  // LUCK, like the grounds it is about.
+  {
+    id: 'field',
+    as: 'card',
+    phase: 'tour',
+    opens: { lesson: 'native' },
+    ...onCell((c) => c.kind === 'empty' && c.native !== null),
   },
   {
     id: 'lens',
@@ -493,20 +533,6 @@ export const SCHEDULE: readonly Slot[] = [
     // Only worth explaining once there is enough board to sort through.
     when: ({ board }) => board.cells.filter((c) => c.kind === 'tile').length >= 6,
     line: (_now, _t, _theme, s) => s.lensHint,
-  },
-  // THE FOUR GROUNDS waits for the tour (2026-10-19, Marc): at the first
-  // placement it was four rules and a decimal before WORTH or RIPE meant
-  // anything. The walk teaches one rule, match your colour; the four ways a
-  // colour bends it come once the player has popped and BUILD has said to
-  // pick one. Ahead of LUCK, because the hand is what the player is choosing;
-  // behind the places, whose moment is one tile wide.
-  {
-    id: 'colours',
-    cue: 'hand',
-    opens: { lesson: 'grounds' },
-    as: 'card',
-    phase: 'tour',
-    when: ({ placed, hud }) => placed && hud.draft.length > 0,
   },
   { id: 'luck', cue: 'purse', as: 'card', phase: 'tour', when: ({ hud }) => hud.luck > 0 },
   {
@@ -784,10 +810,13 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
   for (const slot of SCHEDULE) {
     const { id } = slot;
     // In the tour MAGIC and a TERRITORY are cards, not chips: a chip nobody
-    // taps is a lesson that never happens. MAGIC is told once LUCK has been AND
-    // a magic tile is in hand (2026-10-17, Marc: the card came two turns before
-    // there was one). Until 2026-10-17 it came on its own turn, tile or none,
-    // because a magic tile cannot be dealt on cue; if the tour ends first it is
+    // taps is a lesson that never happens. MAGIC is told as soon as a magic
+    // tile is in sight (2026-10-21, Marc: _"tell MAGIC as soon as a magic tile
+    // is in sight"_) — it waited for LUCK's card from 2026-10-17, and with the
+    // first world dealing a magic tile at placement 0–6, that put the card at
+    // placement ~20 for a tile placed at 3 on 12 of 20 seeds. Until 2026-10-17
+    // it came on its own turn, tile or none, because a magic tile cannot be
+    // dealt on cue; if the tour ends first it is
     // the chip it is outside the tour; a territory is told as it comes into view (2026-10-13,
     // Marc: _"explain territories as they spawn on tiles too"_), and the card's
     // dismissal flies the camera to it like every place's does. That card is
@@ -807,7 +836,7 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
     if (slot.as === 'toast' && !afterMet(id, progress)) continue;
     const happening =
       phase !== 'free' && slot.guidedWhen !== undefined ? slot.guidedWhen(now) : slot.when(now);
-    if (!(magicTurn ? hasMet(progress, 'luck') && happening : happening)) continue;
+    if (!happening) continue;
     const gap = slot.paced === false ? 0 : (slot.gap ?? CARD_GAP);
     if (now.since !== undefined && now.since < gap) continue;
     return { id, as: slot.as === 'toast' ? 'toast' : 'card' };

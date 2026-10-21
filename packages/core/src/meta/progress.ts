@@ -504,13 +504,26 @@ export function decodeProgress(raw: string | null): Progress {
     // 'toured' likewise, past the lessons the tour itself teaches: LUCK, MAGIC,
     // a territory as it comes into view (whose card also tells THE MAP), and
     // the purse, whose card is LUCK's and which the player may open at any time.
-    const TOUR = new Set<string>([...WALK, 'walked', 'luck', 'rare', 'territory', 'map', 'purse']);
+    // ...and, since 2026-10-21, native ground and the caravan's picker, which
+    // are tour cards too.
+    const TOUR = new Set<string>([
+      ...WALK,
+      'walked',
+      'luck',
+      'rare',
+      'territory',
+      'map',
+      'purse',
+      'field',
+      'caravan',
+    ]);
     if (!taught.includes('toured') && taught.some((id) => !TOUR.has(id))) taught.push('toured');
     // 'map' groups the fog's moments (2026-10-13). A ledger that holds any of
     // them has had the fog explained piecemeal, one kind at a time — seal the
     // grouping card rather than re-teach it. A mid-walk ledger holds none (the
-    // walk's own lessons are all in WALK), so it keeps 'map' armed.
-    const FOG = ['cache', 'site', 'shrine', 'territory', 'lens', 'field'];
+    // walk's own lessons are all in WALK), so it keeps 'map' armed. `field`
+    // left this list on 2026-10-21: native ground has its own lesson now.
+    const FOG = ['cache', 'site', 'shrine', 'territory', 'lens'];
     if (!taught.includes('map') && taught.some((id) => FOG.includes(id))) taught.push('map');
 
     return {

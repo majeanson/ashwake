@@ -224,6 +224,10 @@ exports[`the prose pins — every other word, exactly as it reads today · en > 
       "grounds",
       "THE FOUR GROUNDS",
     ],
+    [
+      "native",
+      "NATIVE GROUND",
+    ],
   ],
   "shared": {
     "LAST_GASP_RULE": "You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
@@ -810,6 +814,10 @@ exports[`the prose pins — every other word, exactly as it reads today · fr-CA
     [
       "grounds",
       "LES QUATRE SOLS",
+    ],
+    [
+      "native",
+      "LE SOL NATAL",
     ],
   ],
   "shared": {

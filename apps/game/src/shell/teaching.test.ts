@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { WARE_IDS } from '@content/caravan';
 import { pickLocale } from '@content/locale';
 import { TUNING } from '@content/tuning';
 import { stringsFor } from '@text/index';
@@ -357,10 +358,12 @@ describe('the schedule covers every moment (2026-10-13)', () => {
     }
   });
 
-  it('moves the fog’s six moments, and only them, under THE MAP', () => {
+  it('moves the fog’s five moments, and only them, under THE MAP', () => {
+    // Native ground (`field`) left on 2026-10-21 for a lesson of its own.
     expect([...momentsOf('map')].sort()).toEqual(
-      ['map', 'cache', 'site', 'shrine', 'territory', 'lens', 'field'].sort(),
+      ['map', 'cache', 'site', 'shrine', 'territory', 'lens'].sort(),
     );
+    expect(momentsOf('native')).toEqual(['field']);
   });
 
   it('gives every chip a moment to be offered by', () => {
@@ -567,8 +570,10 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
         spends: [{ on: 'reroll', colour: null, cost: 12, affordable: true }],
       },
     };
-    expect(nextLesson(poor, told(touring, 'luck'))).toEqual({ id: 'reroll', as: 'toast' });
-    expect(nextLesson(poor, touring)?.id).not.toBe('reroll');
+    // Native ground is a tour card since 2026-10-21; told, so the toast is next.
+    const seen = told(touring, 'field');
+    expect(nextLesson(poor, told(seen, 'luck'))).toEqual({ id: 'reroll', as: 'toast' });
+    expect(nextLesson(poor, seen)?.id).not.toBe('reroll');
   });
 
   it('has three phases: walk until the first pop lands, tour until the first run ends', () => {
@@ -639,9 +644,15 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
       },
     };
     const now = magic;
-    expect(nextLesson(now, touring)).toEqual({ id: 'luck', as: 'card' });
-    const told1 = told(touring, 'luck');
-    // Not before there is a magic tile in hand (2026-10-17).
+    // Native ground is a tour card of its own since 2026-10-21 and this board
+    // shows some; it is told here so the two cards under test are the next.
+    const seen = told(touring, 'field');
+    // A magic tile in sight is told first (2026-10-21, Marc); LUCK's card
+    // follows on the next beat. Neither waits on the other.
+    expect(nextLesson(now, seen)).toEqual({ id: 'rare', as: 'card' });
+    expect(nextLesson(now, told(seen, 'rare'))).toEqual({ id: 'luck', as: 'card' });
+    const told1 = told(seen, 'luck');
+    // Not before there is a magic tile in sight (2026-10-17).
     expect(
       nextLesson(
         {
@@ -658,6 +669,48 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
     expect(nextLesson(now, told(told1, 'rare'))).toBeNull();
     // Outside the tour MAGIC stays a chip, never a card.
     expect(nextLesson(now, told(WALKED, 'luck'))?.id).not.toBe('rare');
+  });
+
+  it('tells MAGIC while a magic tile is on the BOARD too, not only in hand (2026-10-21)', () => {
+    // The chosen first world deals a magic tile early; it is placed before
+    // LUCK's card, and the moment used to end with the placement — the card
+    // then waited for a second magic tile, placement 65 on seed 2, never on
+    // one stranger's run. Marc: "a magic tile appeared but the concept never
+    // got explained."
+    const base = { ...momentAt(10), hud: { ...momentAt(10).hud, luck: 3 } };
+    const first = base.board.cells.find((c) => c.kind === 'tile')!;
+    const placed = {
+      ...base,
+      hud: { ...base.hud, draft: base.hud.draft.map((c) => ({ ...c, rarity: 'common' as const })) },
+      board: {
+        ...base.board,
+        cells: base.board.cells.map((c) => (c === first ? { ...c, rarity: 'magic' as const } : c)),
+      },
+    };
+    const seen = told(touring, 'field');
+    expect(nextLesson(placed, seen)).toEqual({ id: 'rare', as: 'card' });
+    expect(nextLesson(placed, told(seen, 'luck'))).toEqual({ id: 'rare', as: 'card' });
+  });
+
+  it('tells the CARAVAN in the tour when its picker opens, and not before (2026-10-21)', () => {
+    // The first run hides the ask line, but a pop the caravan takes opens the
+    // three wares on any run: a stranger met LA POSE PAIE with the caravan
+    // never named. Marc: "same for la caravane paie".
+    const base = momentAt(10);
+    const since = { since: CARD_GAP };
+    const quiet = {
+      ...base,
+      ...since,
+      hud: { ...base.hud, caravan: 'town' as const, canHarvest: true, offer: null },
+    };
+    const offered = { ...quiet, hud: { ...quiet.hud, offer: [WARE_IDS[0]], offersWaiting: 1 } };
+    // Every tour lesson the picker could be standing behind is told.
+    const far = ['luck', 'rare', 'field', 'territory', 'site', 'cache', 'shrine', 'map'] as const;
+    const tour = far.reduce((p, id) => told(p, id), touring);
+    expect(nextLesson(quiet, tour)?.id).not.toBe('caravan');
+    expect(nextLesson(offered, tour)).toEqual({ id: 'caravan', as: 'card' });
+    // In the walk, never: nothing about a reason to pop before the pop itself.
+    expect(nextLesson(offered, afterWalk)?.id).not.toBe('caravan');
   });
 
   it('teaches how a run ends where there is no clock, not only on the last placement', () => {

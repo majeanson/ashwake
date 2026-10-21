@@ -138,7 +138,21 @@ const NO_LEDGER = {
  * board as a world does not rearrange it, it WAKES it: the doors appear where
  * the caches were.
  */
-export function economyFor(run: RunKind, base: Tuning = TUNING): Tuning {
+export function economyFor(run: RunKind, base: Tuning = TUNING, firstRun = false): Tuning {
+  const economy = economyOf(run, base);
+  // A FIRST RUN HAS NO STASH SLOT (2026-10-21, Marc: _"don't offer wares for
+  // hidden controls in the first run"_). The first run keeps the stash off
+  // screen until it has ended (`shell/teaching.ts`'s `reveal`), and the
+  // caravan was offering UNE PLUS GRANDE RÉSERVE for it all the same — a slot
+  // bought for a control the player could not see. The engine's offers read
+  // the tuning and nothing else (a replay must reproduce them from state), so
+  // the first run's ECONOMY has no slot: `wareDoesSomething('hold')` is false,
+  // HOLD is a no-op it already was behind `canHold: false`, and the slot is
+  // back with the next run, which `reveal` shows.
+  return firstRun ? { ...economy, holdSlots: 0 } : economy;
+}
+
+function economyOf(run: RunKind, base: Tuning): Tuning {
   if (run.kind === 'daily' || run.kind === 'detour') {
     return { ...base, ...NO_RELICS, ...NO_LEDGER };
   }

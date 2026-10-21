@@ -275,6 +275,15 @@ type LessonStrings = {
       };
     };
   };
+  /**
+   * LE SOL NATAL (2026-10-21): a card of its own, the first time native ground
+   * is in view, flown to. It was the territory row's depth alone.
+   */
+  readonly native: LessonHead & {
+    readonly core: string;
+    readonly more: string;
+    readonly card: string;
+  };
 };
 
 export type Strings = {

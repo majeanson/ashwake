@@ -14,8 +14,10 @@ const s = stringsFor('fr-CA');
 const theme = SETTLEMENT;
 
 describe('the table', () => {
-  it('plays a fresh phone’s first run: the default economy, nothing earned', () => {
-    expect(newTable('drip', 1).state.tuning).toEqual(TUNING);
+  it('plays a fresh phone’s first run: the default economy, nothing earned, no stash slot', () => {
+    // A first run hides the stash, so its economy has no slot for the caravan
+    // to sell (2026-10-21, `shell/economy.ts`).
+    expect(newTable('drip', 1).state.tuning).toEqual({ ...TUNING, holdSlots: 0 });
   });
 
   it('opens on the story, the goal and the walk’s first line, said once each — or on nothing', () => {

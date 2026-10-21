@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TUNING } from '@content/tuning';
 import { EMPTY_PROGRESS } from '@meta/progress';
+import { offerFor } from '@engine/caravan';
 import { newWorld, UNLOCKS } from '@meta/world';
 import { economyFor } from './economy';
 
@@ -198,5 +199,24 @@ describe('the two kinds of run that earn nothing', () => {
       progress: EMPTY_PROGRESS,
     });
     expect(home.territoryPays, 'a world paid a territory in tiles').toBe(0);
+  });
+});
+
+describe('a first run', () => {
+  it('has no stash slot, so the caravan never sells one for a control it hides (2026-10-21)', () => {
+    const first = economyFor(
+      { kind: 'home', world: newWorld(7), progress: EMPTY_PROGRESS },
+      TUNING,
+      true,
+    );
+    expect(first.holdSlots).toBe(0);
+    for (let seed = 1; seed <= 30; seed++) {
+      for (let made = 0; made < 4; made++) {
+        expect(offerFor(seed, made, first, []), `seed ${seed} offer ${made}`).not.toContain('hold');
+      }
+    }
+    // A daily played as a first run too; and the slot is back once it is over.
+    expect(economyFor({ kind: 'daily' }, TUNING, true).holdSlots).toBe(0);
+    expect(economyFor({ kind: 'daily' }).holdSlots).toBe(TUNING.holdSlots);
   });
 });

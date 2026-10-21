@@ -559,9 +559,10 @@ describe('the map seal (2026-10-13)', () => {
     decodeProgress(JSON.stringify({ relics: 0, bought: {}, met: ids })).met;
 
   it('seals a device that met any one of the fog’s moments piecemeal', () => {
-    // THE MAP groups cache, site, shrine, territory, lens and field. A ledger
-    // that holds one has had the fog explained a kind at a time: not re-taught.
-    for (const id of ['cache', 'site', 'shrine', 'territory', 'lens', 'field']) {
+    // THE MAP groups cache, site, shrine, territory and lens (native ground
+    // has its own lesson since 2026-10-21). A ledger that holds one has had
+    // the fog explained a kind at a time: not re-taught.
+    for (const id of ['cache', 'site', 'shrine', 'territory', 'lens']) {
       expect(decode('story', 'goal', id), id).toContain('map');
     }
   });

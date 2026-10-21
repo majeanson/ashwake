@@ -264,9 +264,21 @@ read, and the record found two more (the manual's lookup wanted a curly
 apostrophe; the board printed every tile's worth, which the phone shows only
 ripe) — both fixed after the nine, so **the nine were read with the unripe
 worths visible**, which is why "the value rises when I place" came so early
-to them (`LOG.md` Session 140). Nothing in `apps/` or `packages/` moved but
-the two word changes Marc ruled and one `export` keyword: the first-minute
-freeze holds for everything else.
+to them (`LOG.md` Session 140).
+
+**And from Marc's own replay of the tutorial, the same evening** (`LOG.md`
+Session 140, rulings 14–17): MAGIC's card fires as soon as a magic tile is in
+sight, in hand or on the board, no longer behind LUCK's; the CARAVAN's card
+fires in the tour when its picker opens; native ground has a card of its own,
+LE SOL NATAL, flown to the first native hex; a first run has no stash slot, so
+the caravan never sells UNE PLUS GRANDE RÉSERVE for a control the run hides.
+Worth knowing on the phone: _Refaire le tutoriel_ puts a veteran device back
+under the first-run reveal — no stash, no lens, no caravan line — until that
+run ends; that is the tutorial, not a bug.
+
+The first minute moved, on Marc's word, in every one of these: the freeze
+(§0) is lifted for them and holds for everything else. Session C plays the
+build these land in.
 
 ---
 

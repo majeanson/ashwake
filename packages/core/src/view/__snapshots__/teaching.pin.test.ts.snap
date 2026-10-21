@@ -239,6 +239,10 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "luck · BARE_TUNING · settlement": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
   "luck · TUNING · daylight": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
   "luck · TUNING · settlement": "LUCK is a purse, not a score. Every pop pays a little of it, and the row under your hand spends it: a fresh draw, a colour called, a rare tile forged.",
+  "native · BARE_TUNING · daylight": "NATIVE GROUND carries one ground’s colour: a tile of that colour placed there is worth one more. It gets in the way of nothing; anything can be built on it.",
+  "native · BARE_TUNING · settlement": "NATIVE GROUND carries one ground’s colour: a tile of that colour placed there is worth one more. It gets in the way of nothing; anything can be built on it.",
+  "native · TUNING · daylight": "NATIVE GROUND carries one ground’s colour: a tile of that colour placed there is worth one more. It gets in the way of nothing; anything can be built on it.",
+  "native · TUNING · settlement": "NATIVE GROUND carries one ground’s colour: a tile of that colour placed there is worth one more. It gets in the way of nothing; anything can be built on it.",
   "pop · BARE_TUNING · daylight": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles. A ripe pocket never expires: you can pop it even at zero. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
   "pop · BARE_TUNING · settlement": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles. A ripe pocket never expires: you can pop it even at zero. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
   "pop · TUNING · daylight": "POP cashes a ripe pocket. It pays tiles to keep you placing, and points as your score. Waiting grows the pocket and pays more, but every placement still costs tiles. A ripe pocket never expires: you can pop it even at zero. Small and often buys LUCK and steers your draws. Big and late buys tiles and score.",
@@ -304,6 +308,14 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     "ink": null,
     "terms": [
       "THE FOUR GROUNDS",
+    ],
+  },
+  {
+    "icon": null,
+    "id": "native",
+    "ink": null,
+    "terms": [
+      "NATIVE GROUND",
     ],
   },
 ]
@@ -704,6 +716,10 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "luck · BARE_TUNING · settlement": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
   "luck · TUNING · daylight": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
   "luck · TUNING · settlement": "La CHANCE est une bourse, pas un score. Chaque récolte en paie un peu, et la rangée sous ta main la dépense : une nouvelle pioche, une couleur appelée, une tuile rare forgée.",
+  "native · BARE_TUNING · daylight": "Un SOL NATAL porte la couleur d’un sol : une tuile de cette couleur posée là vaut un de plus. Il ne gêne rien d’autre; on bâtit n’importe quoi dessus.",
+  "native · BARE_TUNING · settlement": "Un SOL NATAL porte la couleur d’un sol : une tuile de cette couleur posée là vaut un de plus. Il ne gêne rien d’autre; on bâtit n’importe quoi dessus.",
+  "native · TUNING · daylight": "Un SOL NATAL porte la couleur d’un sol : une tuile de cette couleur posée là vaut un de plus. Il ne gêne rien d’autre; on bâtit n’importe quoi dessus.",
+  "native · TUNING · settlement": "Un SOL NATAL porte la couleur d’un sol : une tuile de cette couleur posée là vaut un de plus. Il ne gêne rien d’autre; on bâtit n’importe quoi dessus.",
   "pop · BARE_TUNING · daylight": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles. Une poche mûre n’expire jamais : tu peux la récolter même à zéro. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
   "pop · BARE_TUNING · settlement": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles. Une poche mûre n’expire jamais : tu peux la récolter même à zéro. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
   "pop · TUNING · daylight": "RÉCOLTER encaisse une poche mûre : ça paie des tuiles pour continuer à poser, et des points pour le score. Attendre laisse la poche grandir et paie plus, mais chaque pose coûte encore des tuiles. Une poche mûre n’expire jamais : tu peux la récolter même à zéro. Petit et souvent achète de la CHANCE et oriente tes pioches. Gros et tard achète des tuiles et du score.",
@@ -770,6 +786,14 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     "ink": null,
     "terms": [
       "LES QUATRE SOLS",
+    ],
+  },
+  {
+    "icon": null,
+    "id": "native",
+    "ink": null,
+    "terms": [
+      "SOL NATAL",
     ],
   },
 ]

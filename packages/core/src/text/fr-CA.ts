@@ -326,6 +326,13 @@ export const STRINGS_FR: Strings = {
         },
       },
     },
+    native: {
+      name: 'LE SOL NATAL',
+      terms: ['SOL NATAL'],
+      core: `Un SOL NATAL porte la couleur d’un sol${D}: une tuile de cette couleur posée là vaut un de plus.`,
+      more: 'Il ne gêne rien d’autre; on bâtit n’importe quoi dessus.',
+      card: 'Garde-le pour la bonne couleur quand ta main l’a.',
+    },
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,

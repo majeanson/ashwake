@@ -11544,8 +11544,61 @@ registry's one wording; `NEXT.md` §1c keeps the list:
     first run); the readers who asked were silent ones, who get none by
     condition.
 
-First paint after all of it: 196.2 KB gzip, under the 201,000 bar; no bar
-moved. The golden sim did not move.
+**Then Marc replayed the tutorial on his phone** (_"Refaire le tutoriel"_) and
+sent four more, each checked against twenty scripted runs through the harness
+before and after:
+
+14. **"A magic tile appeared but the concept never got explained."** True on
+    every one of the ten strangers' runs and 13 of 20 seeds: the first world
+    deals a magic tile at placement 0–6, MAGIC's moment was "a magic tile in
+    HAND" — which a tile leaves at its placement — and the card waited on
+    LUCK's. The card then waited for a SECOND magic tile: placement 65 on
+    seed 2, never on `ask` seed 2. Now the moment holds while a magic tile is
+    in hand **or on the board** (it keeps its ring), and it no longer waits
+    on LUCK (Marc: _"tell MAGIC as soon as a magic tile is in sight"_). The
+    tour still opens with THE FOUR GROUNDS (2026-10-19), so `colours` moved
+    ahead of it in `SCHEDULE`. Measured: the card lands at placement 14–16
+    where it landed at 18–26 — the second beat of the tour, which is as early
+    as a walk that says nothing else allows; a magic tile popped before the
+    tour (seeds 2, 6, 11, 19) still waits for the next one, because a popped
+    tile is stone.
+15. **"Same for la caravane paie."** The caravan's card was free-phase only,
+    but the picker opens on any run, so a first run met LA POSE PAIE with the
+    caravan never named. The card is a tour card now, fired by the picker
+    alone (`guidedWhen: offer !== null`; the ask line it would otherwise fire
+    on is hidden). Measured: told at the offer's own placement, 18 of 18 runs
+    with an offer.
+16. **Native ground, the first time it is seen: "a zoom in and a card, not
+    related to territory."** `field` was a toast naming the hex's ground, and
+    the rule lived in THE MAP's territory row. It is a lesson of its own now,
+    LE SOL NATAL (`lesson.native`: the rule, one line more, one for first
+    contact; tab LES SOLS), a tour card behind MAGIC and ahead of LUCK, flown
+    to like a place's card (`tourTarget` reads the same `onCell`). `field`
+    left THE MAP's moments and the FOG seal; `field` and `caravan` joined the
+    TOUR seal in `decodeProgress`. Measured: placement 14–22.
+17. **"Bugs with tuile de plus, réserve de plus — I only have 3 tiles
+    constantly."** Not the engine: `applyWare('hand')` widens the draft and
+    the next placement rolls it (proven: 3 → 4), `'hold'` adds a slot. What
+    Marc saw was the first-run reveal: _Refaire le tutoriel_ resets the ledger,
+    and `reveal` hides the stash, the lens button and the caravan's line until
+    that run ends — so UNE PLUS GRANDE RÉSERVE bought a slot for a control
+    off screen, and UNE TUILE DE PLUS showed on the next placement, not at the
+    pick. Ruled: **a first run has no stash slot** (`economyFor(…, firstRun)`
+    sets `holdSlots: 0`; the engine's offers read tuning alone, so a replay
+    reproduces them, and `wareDoesSomething('hold')` is false). The harness
+    plays under the same rule. A daily or a detour played as a first run is a
+    first run too. Not ruled, noted: a veteran who replays the tutorial loses
+    the stash and the lens for one run, which is what the tutorial is.
+
+A fourth harness lesson came free with it: `?taught=1` is a FLAG over the
+disk (`overrides`), and `App`'s `untold` read the disk, so a taught device
+kept the first run's silences — the caravan e2e caught it. `untold` reads the
+flag first. Both specs green on Chromium (32).
+
+First paint after all of it: 196.5 KB gzip, 0.2 KB over the 201,000 bar,
+**moved to 203,000** (`budget.json` says why: five coach clauses, the wait
+clause on the pocket, a lesson for native ground, the receipt's untold words
+— every one asked for by name). The golden sim did not move.
 
 **A tenth stranger read the new words** (`drip`, seed 4, under
 `runs/hand-2026-10-21-words/`, graded like the nine): 580 points, 81

@@ -86,7 +86,7 @@ import { colourLesson, type TipRow } from './view';
  * extras are the ones `glossary.ts` added on 2026-08-27 for exactly that
  * reason.
  */
-export type LessonId = TeachId | 'expedition' | 'stash' | 'grounds' | 'magic' | 'end';
+export type LessonId = TeachId | 'expedition' | 'stash' | 'grounds' | 'magic' | 'end' | 'native';
 
 /** A hex has six sides, and the ground advice's figures are "all six paying". */
 const SIDES = 6;
@@ -909,6 +909,23 @@ export const LESSONS: readonly Lesson[] = [
             ];
       });
     },
+  },
+  /**
+   * LE SOL NATAL (2026-10-21, Marc: _"if we see native grounds for the first
+   * time, a zoom in and card could be good, not related to territory"_). Its
+   * moment is `field`, the first native hex in view — a tour card flown to
+   * like a place's (`shell/teaching.ts`). The rule was the territory row's
+   * depth alone (`map.row.territory.native`), which a first run never reaches
+   * before it has been standing on native ground for twenty placements.
+   */
+  {
+    id: 'native',
+    tab: 'grounds',
+    beats: [
+      { at: 'core', say: (_t, _theme, s) => s.lesson.native.core },
+      { say: (_t, _theme, s) => s.lesson.native.more },
+      { at: 'card', say: (_t, _theme, s) => s.lesson.native.card },
+    ],
   },
 ];
 

@@ -318,6 +318,13 @@ export const STRINGS_EN: Strings = {
         },
       },
     },
+    native: {
+      name: 'NATIVE GROUND',
+      terms: ['NATIVE GROUND'],
+      core: 'NATIVE GROUND carries one ground’s colour: a tile of that colour placed there is worth one more.',
+      more: 'It gets in the way of nothing; anything can be built on it.',
+      card: 'Keep it for the right colour when your hand has one.',
+    },
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,

@@ -341,9 +341,11 @@ const SHED_AT_BOARD_MS = 600;
  */
 const economyAt = (at: Slot, seed: number) => {
   const world = readWorld(at);
+  // A first run (walk or tour) has no stash slot — see `economyFor`.
+  const firstRun = guided(readProgress());
   return world === null || world.worldSeed !== seed
-    ? economyFor({ kind: 'detour' })
-    : economyFor({ kind: 'home', world, progress: readProgress() });
+    ? economyFor({ kind: 'detour' }, undefined, firstRun)
+    : economyFor({ kind: 'home', world, progress: readProgress() }, undefined, firstRun);
 };
 
 /**
@@ -1074,7 +1076,10 @@ function Game() {
        * upgrades, every perk found or worn, and all four shrine unlocks were
        * announced and changed nothing. See `shell/economy.ts`.
        */
-      tuning: opening !== null ? economyFor({ kind: 'daily' }) : economyAt(slot, seed),
+      tuning:
+        opening !== null
+          ? economyFor({ kind: 'daily' }, undefined, guided(readProgress()))
+          : economyAt(slot, seed),
       // A daily is walled off by construction; everything else asks the world,
       // and `memoryFor` hands back nothing when the seed is not its own — so
       // a shared link borrows a geography and never this device's history.
@@ -1153,6 +1158,10 @@ function Game() {
        * render.
        */
       untold: (what) => {
+        // `?taught=1` is a device that has met every lesson, and it is a flag
+        // over the disk, not on it (`overrides`): read the flag, or a taught
+        // device's receipts would keep the first run's silences.
+        if (overrides().taught === true) return false;
         const p = readProgress();
         if (!guided(p)) return false;
         // The harvest receipt's three words (2026-10-21): CHANCE until LUCK's
@@ -3199,7 +3208,7 @@ function Game() {
         // No ledger, so no unlocks and no relics — and its shrines are rewritten
         // into caches and sites, because a door that opens nothing is worse than
         // no door at all.
-        economy: economyFor({ kind: 'daily' }),
+        economy: economyFor({ kind: 'daily' }, undefined, guided(readProgress())),
         wakeAt: null,
         // NULL IS THE MODE. A daily has no world, so there is nothing for NEW
         // GROUND to be new against — which is different from a world whose reach
@@ -3246,7 +3255,7 @@ function Game() {
       resume: null,
       seed: LEARN_SEED,
       memory: undefined,
-      economy: economyFor({ kind: 'learn' }),
+      economy: economyFor({ kind: 'learn' }, undefined, true),
       wakeAt: null,
       from: null,
       detour: true,
