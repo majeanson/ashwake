@@ -11514,6 +11514,54 @@ seven things the nine asked for):
    26% important for the user? most likely 2"_); the receipt carries the
    arithmetic. Pins re-recorded (fr, en).
 
+**Then the strangers' own asks, ruled in one word** (Marc: _"improve 1, 2,
+3, 4, 5, 6, 7 if still unclear"_). Each the smallest change, in the
+registry's one wording; `NEXT.md` §1c keeps the list:
+
+8. **The number on a lit edge** (five of nine lost at turns 2–5):
+   `coach.match` ends with _"Le chiffre sur une arête lumineuse est la
+   valeur que ta tuile y prendrait."_
+9. **COÛT with no word** (four readers asked the stat or guessed):
+   `coach.build` names both stats — _"TUILES te dit combien il t'en reste,
+   et COÛT ce que la prochaine coûte."_
+10. **The end as a surprise** (six of nine): `LOW_TILES` 5 → 8 in
+    `shell/teaching.ts`, so the `bank` line fires with two placements in hand
+    at cost 3 instead of none. `teaching.test.ts` holds at 4 and 30 and did
+    not move.
+11. **CHANCE hoarded** (219–330 unspent, "ma plus grande erreur" ×3):
+    `coach.end` adds _"La CHANCE qui reste à la fin est presque toute
+    perdue : dépense-la avant."_
+12. **Words on a receipt before their card**: `harvestNote` takes the claims'
+    `untold` (Session 139), widened to `UntoldWord` — `'luck'` drops the
+    "Chance +10" line until LUCK's card, `'caravan'` drops the refusal until
+    the caravan's (a caravan that TAKES the pocket still says so: the picker
+    opens), `'bounty'` drops "Prime ×3 : manquée" until the site's. `App`'s
+    `untold` answers all three off the ledger; the harness's `untoldFor` is
+    the same rule. `caravan.test.ts` holds that only the words wait and the
+    numbers are the same receipt.
+13. **MUR vs PIERRE, la RÉSERVE** — left: each has its moment (the wall's walk
+    toast, the stone on the first pop's card, the RÉSERVE revealed after the
+    first run); the readers who asked were silent ones, who get none by
+    condition.
+
+First paint after all of it: 196.2 KB gzip, under the 201,000 bar; no bar
+moved. The golden sim did not move.
+
+**A tenth stranger read the new words** (`drip`, seed 4, under
+`runs/hand-2026-10-21-words/`, graded like the nine): 580 points, 81
+placements, 41 harvests, no confusion, eight quiz answers right. In its
+transcript each change did what it was written for: the `match` clause fired
+at turn 2 and it wrote at turn 3 _"le chiffre entre parenthèses… semble être
+la valeur gagnée"_; the `build` line at turn 11, and COÛT read as the next
+placement's price from then on; no "Chance +10" on any receipt until CHANCE's
+card at turn 20, then on every one after; the `bank` line at turns 105 and
+118; the `end` line with its luck sentence at 111 and 121 — and it spent its
+luck, _"très rentable"_, closing with _"la chance restante est presque
+perdue"_. What it still named as lost: tiles falling at cost 4 **with
+nothing ripe**, which `bank` cannot say, being advice to pop — the end a
+player builds toward without a pocket ripening in time is a strategy, not a
+word, and no line here claims otherwise.
+
 Session C itself is unchanged: this measured the words.
 
 **Verified:** typecheck, lint, prettier, the 15 harness tests, the whole

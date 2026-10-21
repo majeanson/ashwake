@@ -1575,11 +1575,22 @@ function caravanWhere(state: GameState): HudView['caravan'] {
  * moment it pays is the cheapest teaching in the game: two or three of
  * these and the formula stops being a thing to read in the manual.
  */
+/**
+ * A word the first run has not explained yet (2026-10-21, `LOG.md` Session
+ * 140): the claims' `untold` (2026-10-19), widened to the three words a
+ * harvest receipt can say before their card — CHANCE ("Chance +10" nine
+ * turns before LUCK's card), the caravan's refusal ("n'en a pas voulu" with
+ * no caravan in sight) and a bounty missed ("Prime ×3 : manquée" read as a
+ * puzzle). A caravan that TAKES the pocket is never untold: the picker opens.
+ */
+export type UntoldWord = LandmarkReward | 'luck' | 'caravan' | 'bounty';
+
 export function harvestNote(
   before: GameState,
   choice: HarvestChoice,
   value: ReturnType<typeof harvestValue>,
   s: Strings,
+  untold?: (what: UntoldWord) => boolean,
 ): string {
   const t = before.tuning;
   const h = s.view.harvest;
@@ -1603,7 +1614,7 @@ export function harvestNote(
     ? null
     : value.caravan !== null
       ? s.caravan.answered(picksFor(value.caravan.kind, t))
-      : inTown && value.count >= CARAVAN_BANDS[0][0]
+      : inTown && value.count >= CARAVAN_BANDS[0][0] && untold?.('caravan') !== true
         ? s.caravan.passed
         : null;
   const head =
@@ -1625,7 +1636,9 @@ ${answered}`;
       ? ''
       : value.questPays
         ? `\n${h.bountyCollected(before.quest.bonus)}`
-        : `\n${h.bountyMissed(before.quest.bonus, before.quest.need, before.quest.radius)}`;
+        : untold?.('bounty') === true
+          ? ''
+          : `\n${h.bountyMissed(before.quest.bonus, before.quest.need, before.quest.radius)}`;
 
   if (choice === 'tiles') {
     // The true gain, matching `reduce.ts`'s own arithmetic exactly (flat
@@ -1641,7 +1654,7 @@ ${answered}`;
     // rare-tile chances — in the shipped economy it does not, and saying
     // so anyway was the other half of this line lying.
     const oddsRose = t.luckMagicPerPop + t.luckUniquePerPop > 0;
-    const luck = `\n${h.luck(gained, oddsRose)}`;
+    const luck = untold?.('luck') === true ? '' : `\n${h.luck(gained, oddsRose)}`;
     // The depth grade, shown only when it actually paid something — the
     // arithmetic on screen has to sum to the number on screen.
     const rings = ringTiles(before, value.count, multiplier);

@@ -326,13 +326,14 @@ export const STRINGS_EN: Strings = {
   coach: {
     place:
       'The tiles under the board are your hand, and the lit one is the next you will place. Tap a glowing edge on the board to put it down: every tile you place is ground you build, and ground is what scores.',
-    match: 'Place the next tiles beside ones of the same colour: matching neighbours give WORTH.',
+    match:
+      'Place the next tiles beside ones of the same colour: matching neighbours give WORTH. The number on a glowing edge is the worth your tile would have there.',
     grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in.',
     popFirst: 'Pop this pocket first.',
     build:
-      'Now keep building. Pick ONE colour and grow a single blob of it: neighbours of the same colour raise each tile’s WORTH, and a bigger pocket pays more than its pieces. Every placement spends tiles from TILES.',
+      'Now keep building. Pick ONE colour and grow a single blob of it: neighbours of the same colour raise each tile’s WORTH, and a bigger pocket pays more than its pieces. Every placement spends tiles: TILES says how many you have left, and COST what the next one costs.',
     bank: 'Tiles are low. A pop pays tiles back: tap your biggest ripe pocket, then press POP. A ripe pocket can still be popped at zero.',
-    end: `Fewer tiles than the COST: you can still place. At zero, pop anything ripe; with nothing ripe, the run ends. ${SHAPE}`,
+    end: `Fewer tiles than the COST: you can still place. At zero, pop anything ripe; with nothing ripe, the run ends. LUCK left at the end is mostly lost: spend it first. ${SHAPE}`,
     pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP.',
   },
   rerollHint: (cost) => `A poor hand? REDRAW throws it away for a new one, for ${cost} luck.`,

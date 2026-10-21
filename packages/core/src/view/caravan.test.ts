@@ -90,6 +90,28 @@ describe('what a pop in town says', () => {
     expect(took).toBeGreaterThan(0);
     expect(passed).toBeGreaterThan(0);
   });
+
+  it('keeps a word the first run has not explained off the receipt — the refusal, and CHANCE', () => {
+    // 2026-10-21 (`LOG.md` Session 140): strangers met "La caravane n’en a pas
+    // voulu" with no caravan card in sight, and "Chance +10" nine turns before
+    // CHANCE's. `untold` is the claims' mechanism (2026-10-19), widened.
+    for (let seed = 1; seed <= 12; seed++) {
+      const { state, pocket } = ripe(seed);
+      const visit = caravanVisitAt(seed, 0, TUNING)!;
+      const inTown = at(state, visit.from);
+      const value = harvestValue(inTown, pocket[0]);
+      const quiet = harvestNote(inTown, 'tiles', value, s, () => true);
+      const loud = harvestNote(inTown, 'tiles', value, s, () => false);
+      expect(quiet).not.toContain(s.caravan.passed);
+      // The test's catalogue is English: LUCK there, CHANCE in French.
+      expect(quiet).not.toMatch(/luck|chance/i);
+      expect(loud).toMatch(/luck|chance/i);
+      // A caravan that TAKES the pocket still says so: the picker opens.
+      if (answers(value.count, visit.kind)) expect(quiet).toContain(s.caravan.answered(1));
+      // Only the words wait; the numbers are the same receipt.
+      expect(quiet.split('\n')[0]).toBe(loud.split('\n')[0]);
+    }
+  });
 });
 
 describe('what the manual says of it', () => {

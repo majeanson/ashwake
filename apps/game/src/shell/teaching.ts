@@ -671,8 +671,16 @@ export const phaseOf = (progress: Progress): Phase =>
 export const mustPop = (now: Moment, progress: Progress): boolean =>
   phaseOf(progress) === 'walk' && now.hud.canHarvest && !now.hud.ended;
 
-/** Tiles at which "pop your biggest" is the advice: the tour's bank step. */
-const LOW_TILES = 5;
+/**
+ * Tiles at which "pop your biggest" is the advice: the tour's bank step.
+ *
+ * 8, from 5 (2026-10-21, `LOG.md` Session 140): six of nine strangers said
+ * the end came as a surprise at COÛT 3–4, and the one who quoted this line
+ * said it arrived "trop tard pour y remédier". At cost 3 the old threshold
+ * was 6; a reader at 7 tiles facing a cost of 3 has two placements left and
+ * had not been told.
+ */
+const LOW_TILES = 8;
 
 /** The step of the walk or the tour the player is on. */
 type CoachStep = 'place' | 'match' | 'grow' | 'pop' | 'build' | 'bank' | 'end';

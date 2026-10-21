@@ -40,11 +40,13 @@ import {
   toHudView,
   type HudView,
   type TipRow,
+  type UntoldWord,
 } from '../../packages/core/src/view/view';
 import { economyFor } from '../../apps/game/src/shell/economy';
 import { onceARun, type OnceId } from '../../apps/game/src/shell/onceARun';
 import {
   coachStep,
+  guided,
   mustPop,
   nextLesson,
   opensAt,
@@ -215,6 +217,16 @@ export const controls = (p: Progress): Controls => ({
   caravan: shows('caravan', p, null),
   reach: shows('reach', p, null),
 });
+
+/** The words a first run keeps off a receipt until their card — `App`'s `untold`, for the harness. */
+const untoldFor =
+  (p: Progress) =>
+  (what: UntoldWord): boolean => {
+    if (!guided(p)) return false;
+    if (what === 'luck' || what === 'caravan') return !hasMet(p, what);
+    if (what === 'bounty') return !hasMet(p, 'site');
+    return (what === 'cache' || what === 'site') && !hasMet(p, what);
+  };
 
 /** The gestures the screen offers this turn. A gesture not offered is refused, as a hidden button would be. */
 export function offered(table: Table, snap: Snapshot): readonly GestureName[] {
@@ -517,7 +529,10 @@ export function apply(table: Table, g: Gesture, s: Strings, theme: Theme): Turn 
         t.singlePayout && (g.choice === 'tiles' || g.choice === 'points') ? 'tiles' : g.choice;
       const state = reduce(before, { type: 'HARVEST', choice, at });
       if (state === before) return refuse(REFUSAL.notRipe(at));
-      said.push({ kind: 'receipt', text: harvestNote(before, choice, value, s) });
+      said.push({
+        kind: 'receipt',
+        text: harvestNote(before, choice, value, s, untoldFor(table.progress)),
+      });
       let progress = table.progress;
       // The walk ends at the first pop that actually lands (`App`, `did.popped`).
       if (state.log.popped > before.log.popped) progress = told(progress, 'walked');

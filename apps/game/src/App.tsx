@@ -1152,9 +1152,15 @@ function Game() {
        * at the claim, like `readProgress` everywhere a callback outlives a
        * render.
        */
-      untold: (reward) => {
+      untold: (what) => {
         const p = readProgress();
-        return (reward === 'cache' || reward === 'site') && guided(p) && !hasMet(p, reward);
+        if (!guided(p)) return false;
+        // The harvest receipt's three words (2026-10-21): CHANCE until LUCK's
+        // card, the caravan's refusal until its card, a missed bounty until
+        // the site's — the site's card is where the bounty is explained.
+        if (what === 'luck' || what === 'caravan') return !hasMet(p, what);
+        if (what === 'bounty') return !hasMet(p, 'site');
+        return (what === 'cache' || what === 'site') && !hasMet(p, what);
       },
     });
     // `?place=n` plays a fixed opening; `?end=1` plays a whole fixed run, so

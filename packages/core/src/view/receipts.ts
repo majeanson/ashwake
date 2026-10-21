@@ -14,7 +14,7 @@ import { LANDMARK_ICON, type IconName } from '@theme/icons';
 import { namesOf, type Theme } from '@theme/tokens';
 import type { Strings } from '@text/Strings';
 import { perkRows } from './tips';
-import type { TipRow } from './view';
+import type { TipRow, UntoldWord } from './view';
 
 /**
  * What the game says when a claim lands.
@@ -138,7 +138,7 @@ type ReceiptContext = {
    * number alone, and its own card, which fires once one is reached, says the
    * rest. Absent says everything, which is every run after the first.
    */
-  readonly untold?: (reward: LandmarkReward) => boolean;
+  readonly untold?: (what: UntoldWord) => boolean;
 };
 
 /**

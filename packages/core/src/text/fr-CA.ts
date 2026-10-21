@@ -333,12 +333,18 @@ export const STRINGS_FR: Strings = {
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
   coach: {
     place: `Les tuiles sous le plateau forment ta main, et la tuile éclairée est la prochaine que tu poseras. Touche une arête lumineuse du plateau pour la poser${D}: chaque tuile posée agrandit ton terrain, et c’est le terrain qui marque.`,
-    match: `Pose les prochaines tuiles contre des tuiles de la même couleur${D}: les voisines semblables donnent de la VALEUR.`,
+    // The number on a lit edge named (2026-10-21, `LOG.md` Session 140): five
+    // of nine strangers called turns 2–5 their most lost moment, "+3 — je ne
+    // savais pas ce que ça voulait dire".
+    match: `Pose les prochaines tuiles contre des tuiles de la même couleur${D}: les voisines semblables donnent de la VALEUR. Le chiffre sur une arête lumineuse est la valeur que ta tuile y prendrait.`,
     grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent.',
     popFirst: 'Récolte d’abord cette poche.',
-    build: `Maintenant, continue de bâtir. Choisis UNE couleur et fais grandir un seul bloc de celle-ci${D}: les voisines de même couleur augmentent la VALEUR de chaque tuile, et une grosse poche paie plus que ses morceaux. Chaque pose dépense des tuiles, et TUILES te dit combien il t’en reste.`,
+    build: `Maintenant, continue de bâtir. Choisis UNE couleur et fais grandir un seul bloc de celle-ci${D}: les voisines de même couleur augmentent la VALEUR de chaque tuile, et une grosse poche paie plus que ses morceaux. Chaque pose dépense des tuiles${D}: TUILES te dit combien il t’en reste, et COÛT ce que la prochaine coûte.`,
     bank: `Tes tuiles s’épuisent. Une récolte redonne des tuiles${D}: touche ta plus grosse poche mûre, puis appuie sur RÉCOLTER. Une poche mûre se récolte encore rendu à zéro.`,
-    end: `Moins de tuiles que le COÛT${D}: tu peux quand même poser. À zéro, récolte ce qui est mûr; sans rien de mûr, la partie finit. ${SHAPE}`,
+    // The hoard named at the end (2026-10-21, `LOG.md` Session 140): five
+    // strangers finished with 219 to 330 of CHANCE unspent, three calling it
+    // their biggest mistake afterwards.
+    end: `Moins de tuiles que le COÛT${D}: tu peux quand même poser. À zéro, récolte ce qui est mûr; sans rien de mûr, la partie finit. La CHANCE qui reste à la fin est presque toute perdue${D}: dépense-la avant. ${SHAPE}`,
     pop: 'Une poche est mûre. Touche une tuile mûre pour voir ce que la poche rapporte, puis appuie sur RÉCOLTER.',
   },
   rerollHint: (cost) =>

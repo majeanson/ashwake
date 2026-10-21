@@ -233,31 +233,27 @@ things the words lost:
   (`drip` ×2, one each of the rest) — nine runs in `STRANGER.md`.
 
 **What the nine strangers asked for, in their closing reports** (verbatim in
-`STRANGER.md`, "What the stranger said afterwards"). Each is a question for
-Marc, not a change; the first minute is frozen until Session C:
+`STRANGER.md`, "What the stranger said afterwards") — **all ruled by Marc on
+2026-10-21** (_"improve 1–7 if still unclear"_), each the smallest change in
+the registry's one wording; `LOG.md` Session 140 has the diff of each:
 
-1. **The number on a lit edge is never explained in words.** Five of nine
-   named turns 2–5 as their most lost moment: "+3 / +2,7 — je ne savais pas
-   ce que ça voulait dire". The coach's `place` line names the lit edge and
-   not the number on it. _One clause — "le chiffre est la valeur que la tuile
-   y prendrait"?_
-2. **COÛT appears without a word.** The stat arrives with the tour and the
-   `costRise` toast speaks only when it rises; four readers asked the stat
-   box or guessed. _A line when it first shows?_
-3. **The end comes as a surprise at COÛT 3–4.** Six readers said so; the
-   `bank` line ("tes tuiles s'épuisent") arrived "trop tard pour y remédier"
-   for the one who quoted it. _Earlier, or twice?_
-4. **CHANCE is hoarded** — 219, 278, 281, 288, 330 unspent at the end, three
-   readers calling it "ma plus grande erreur" afterwards; one thought it
-   might convert to tiles. The LUCK card says it is lost. _Does the end
-   screen want to say what the hoard would have bought?_
-5. **Words on a receipt before their card:** "Chance +10" nine turns before
-   CHANCE's card (`drip`), "La caravane n'en a pas voulu" with no caravan
-   card in the first run, "Prime ×3 : manquée" read as a puzzle by three.
-   Session 139 gave the cache and the site a plain number until their card;
-   _the caravan's and the bounty's lines too?_
+1. ~~**The number on a lit edge is never explained in words.**~~ `coach.match`
+   ends with "Le chiffre sur une arête lumineuse est la valeur que ta tuile y
+   prendrait."
+2. ~~**COÛT appears without a word.**~~ `coach.build` names both stats: "TUILES
+   te dit combien il t'en reste, et COÛT ce que la prochaine coûte."
+3. ~~**The end comes as a surprise at COÛT 3–4.**~~ The `bank` line fires at 8
+   tiles instead of 5 (`LOW_TILES`, `shell/teaching.ts`).
+4. ~~**CHANCE is hoarded.**~~ `coach.end` says it: "La CHANCE qui reste à la
+   fin est presque toute perdue : dépense-la avant."
+5. ~~**Words on a receipt before their card.**~~ `harvestNote` takes the
+   claims' `untold`, widened: no "Chance +10" before LUCK's card, no "n'en a
+   pas voulu" before the caravan's, no "Prime ×3 : manquée" before the site's.
+   A caravan that takes the pocket still says so — the picker opens.
 6. **MUR vs PIERRE** (two readers) and **la RÉSERVE** read as the tile stock
-   (two) — both unexplained in a first run by design; noted, not asked.
+   (two) — each already has its moment (the wall's walk toast, the stone at
+   the first pop's card, the RÉSERVE revealed after the first run); the two
+   who asked were silent readers, who get none of them by condition. Left.
 7. ~~**The POINTS stat says « valeur × taille × distance »; the receipt pays
    a quarter of it.**~~ Ruled 2026-10-21: the formula is gone from the stat
    ("POINTS : le score."); the rate is not for the player, and the receipt
