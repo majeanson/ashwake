@@ -91,6 +91,10 @@ export type LessonId = TeachId | 'expedition' | 'stash' | 'grounds' | 'magic' | 
 /** A hex has six sides, and the ground advice's figures are "all six paying". */
 const SIDES = 6;
 
+/** Whether this run can bank a relic at all — a world; never a daily, a shared board or LEARN FIRST. */
+const relicsFlow = (t: Tuning): boolean =>
+  t.claimRelics > 0 || t.luckToRelics > 0 || t.burnRelics > 0;
+
 /** How heavy a sentence is. Absent means `more`. */
 type Weight = 'core' | 'more' | 'card' | 'detail';
 
@@ -358,9 +362,13 @@ export const LESSONS: readonly Lesson[] = [
     manualFigure: 'place',
     beats: [
       { at: 'core', say: (_t, _theme, s) => s.howItWorks },
-      ...[0, 1, 2].map((n): Beat => ({
+      ...[0, 1].map((n): Beat => ({
         say: (_t, _theme, s) => s.lesson.expedition.lines[n] ?? null,
       })),
+      // The relics line only where relics flow (2026-10-21): a daily, a shared
+      // board and LEARN FIRST have every faucet at 0, and the card promised
+      // them a shop. The dial picks the sentence, as the territory row's does.
+      { say: (t, _theme, s) => (relicsFlow(t) ? (s.lesson.expedition.lines[2] ?? null) : null) },
     ],
     rows: (_t, _theme, s) => [
       // Neither prints its name: the sentence leads with it ("Mur : ...").
@@ -533,14 +541,19 @@ export const LESSONS: readonly Lesson[] = [
         terms: s.lesson.end.row.relic.terms,
       },
     ],
-    rows: (_t, _theme, s) => [
-      {
-        key: 'relic',
-        icon: CONCEPT_ICON.relic,
-        name: s.lesson.end.row.relic.name,
-        text: s.lesson.end.row.relic.core,
-      },
-    ],
+    // The relic row only where relics flow (2026-10-21); its chip (`relic`)
+    // already waited on `relics > 0`, the printed row did not.
+    rows: (t, _theme, s) =>
+      relicsFlow(t)
+        ? [
+            {
+              key: 'relic',
+              icon: CONCEPT_ICON.relic,
+              name: s.lesson.end.row.relic.name,
+              text: s.lesson.end.row.relic.core,
+            },
+          ]
+        : [],
   },
   // SACRIFICE was deleted here on 2026-10-13 (Marc's merge ruling): `burnRelics` and
   // `burnLuck` are 0 for good, so its lesson was unreachable. Resurrectable from git
@@ -567,7 +580,14 @@ export const LESSONS: readonly Lesson[] = [
     id: 'map',
     tab: 'world',
     beats: [
-      { at: 'core', say: (_t, _theme, s) => s.lesson.map.core },
+      // "The world remembers" only where there is a world to (2026-10-21): a
+      // daily and a shared board pay their territories in tiles instead
+      // (`territoryPays`, the dial the territory row forks on too), and
+      // remember nothing unless kept.
+      {
+        at: 'core',
+        say: (t, _theme, s) => (t.territoryPays > 0 ? s.lesson.map.coreKept : s.lesson.map.core),
+      },
       { say: (_t, _theme, s) => s.lensHint },
       // The one thing every destination has in common, for the card that fires
       // the first time one is in view; the rows say what each pays.

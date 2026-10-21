@@ -339,10 +339,17 @@ const SHED_AT_BOARD_MS = 600;
  * economy: a replay scored under this device's upgrades would not be a replay
  * of anything, and `economyFor` is where that is decided rather than here.
  */
+/**
+ * Whether the run about to begin is a FIRST run (walk or tour), which has no
+ * stash slot — see `economyFor`. `?taught=1` is a flag over the disk, not on
+ * it (`overrides`), so it is read first: the stash e2e found a taught device
+ * dealt no slot, the same hole `untold` had the same day (2026-10-21).
+ */
+const firstRunNow = (): boolean => overrides().taught !== true && guided(readProgress());
+
 const economyAt = (at: Slot, seed: number) => {
   const world = readWorld(at);
-  // A first run (walk or tour) has no stash slot — see `economyFor`.
-  const firstRun = guided(readProgress());
+  const firstRun = firstRunNow();
   return world === null || world.worldSeed !== seed
     ? economyFor({ kind: 'detour' }, undefined, firstRun)
     : economyFor({ kind: 'home', world, progress: readProgress() }, undefined, firstRun);
@@ -1078,7 +1085,7 @@ function Game() {
        */
       tuning:
         opening !== null
-          ? economyFor({ kind: 'daily' }, undefined, guided(readProgress()))
+          ? economyFor({ kind: 'daily' }, undefined, firstRunNow())
           : economyAt(slot, seed),
       // A daily is walled off by construction; everything else asks the world,
       // and `memoryFor` hands back nothing when the seed is not its own — so
@@ -1250,6 +1257,18 @@ function Game() {
    * A state for the render that decides whether a card is due and a ref for the
    * handler that has just spoken, which cannot wait for React's copy.
    */
+  /**
+   * WHICH OF THE THREE THIS RUN IS: a world, a shared seed, or the daily.
+   *
+   * Written out twice, ten lines apart, in the two places that print the
+   * sentence explaining it — the front door and the manual (2026-09-02). Two
+   * copies of one three-way decision is two chances for a screen to disagree
+   * with the screen beside it about what the player is even playing. Up here
+   * since 2026-10-21, because the drip reads it too (`Moment.kind`).
+   */
+  const mode: 'world' | 'shared' | 'daily' =
+    daily !== null ? 'daily' : session.detour ? 'shared' : 'world';
+
   const [spokeAt, setSpokeAt] = useState<number | null>(null);
   const spokeRef = useRef<number | null>(null);
   const markSpoke = useCallback((placements: number) => {
@@ -1266,6 +1285,7 @@ function Game() {
         hud: at.hud,
         placed: at.hud.placements > 0,
         since: sinceSpoke(spokeRef.current, at.hud.placements),
+        kind: mode,
       };
       const due = nextLesson(moment, after);
       if (due === null || due.as !== 'toast') return false;
@@ -1277,7 +1297,7 @@ function Game() {
       arm(cueOf(due.id));
       return true;
     },
-    [theme, s, say, setProgress, markSpoke, arm],
+    [theme, s, say, setProgress, markSpoke, arm, mode],
   );
 
   /**
@@ -1866,17 +1886,6 @@ function Game() {
    */
   const leaveMenus = useDialogStack().closeAll;
 
-  /**
-   * WHICH OF THE THREE THIS RUN IS: a world, a shared seed, or the daily.
-   *
-   * Written out twice, ten lines apart, in the two places that print the
-   * sentence explaining it — the front door and the manual (2026-09-02). Two
-   * copies of one three-way decision is two chances for a screen to disagree
-   * with the screen beside it about what the player is even playing.
-   */
-  const mode: 'world' | 'shared' | 'daily' =
-    daily !== null ? 'daily' : session.detour ? 'shared' : 'world';
-
   // What the game wants to say, if anything: a priority list rather than a
   // queue, so the first unmet moment fires and the rest stay armed.
   const teach = useMemo(
@@ -1888,11 +1897,12 @@ function Game() {
               hud: snap.hud,
               placed: snap.hud.placements > 0,
               since: sinceSpoke(spokeAt, snap.hud.placements),
+              kind: mode,
             },
             progress,
           )
         : null,
-    [started, snap.board, snap.hud, progress, spokeAt],
+    [started, snap.board, snap.hud, progress, spokeAt, mode],
   );
   const card = teach !== null && teach.as === 'card' ? teach.id : null;
   /** The NEW chips showing over the hand, and the one whose card is open. */
@@ -3208,7 +3218,7 @@ function Game() {
         // No ledger, so no unlocks and no relics — and its shrines are rewritten
         // into caches and sites, because a door that opens nothing is worse than
         // no door at all.
-        economy: economyFor({ kind: 'daily' }, undefined, guided(readProgress())),
+        economy: economyFor({ kind: 'daily' }, undefined, firstRunNow()),
         wakeAt: null,
         // NULL IS THE MODE. A daily has no world, so there is nothing for NEW
         // GROUND to be new against — which is different from a world whose reach
@@ -3581,7 +3591,7 @@ function Game() {
     readonly row?: RowKey | undefined;
   }): void => openManual({ at: opened.lesson, row: opened.row });
 
-  const tellOpener = (id: 'story' | 'goal'): void => {
+  const tellOpener = (id: 'story' | 'goal' | 'daily' | 'shared'): void => {
     setProgress((p) => told(p, id));
     markSpoke(session.get().hud.placements);
     speakLesson(told(progress, id), session.get());
@@ -4888,6 +4898,22 @@ function Game() {
           onTerm={openTerm}
           onManual={() => openManual({ at: 'expedition' })}
           onDismiss={() => tellOpener('goal')}
+        />
+      )}
+
+      {/*
+        THE KINDS, once each (2026-10-21, Marc: "a small explainer of how it
+        works"): what this visit is and what carries over. The same `SaidCard`
+        door — `s.kinds` is the one source, no `LESSONS` entry.
+      */}
+      {(card === 'daily' || card === 'shared') && cardRoom && (
+        <SaidCard
+          text={`${s.kinds[card].name}\n${s.kinds[card].lines.join('\n')}`}
+          theme={theme}
+          s={s}
+          onTerm={openTerm}
+          onManual={() => openManual({ at: 'expedition' })}
+          onDismiss={() => tellOpener(card)}
         />
       )}
 

@@ -274,7 +274,15 @@ describe('the schedule covers every moment (2026-10-13)', () => {
   it('puts RIPE and POP under their own lessons and the expedition’s moments under THE EXPEDITION', () => {
     expect([...momentsOf('ripe')].sort()).toEqual(['ripe']);
     expect([...momentsOf('pop')].sort()).toEqual(['pop']);
-    expect([...momentsOf('expedition')].sort()).toEqual(['goal', 'place', 'story', 'undo', 'wall']);
+    expect([...momentsOf('expedition')].sort()).toEqual([
+      'daily',
+      'goal',
+      'place',
+      'shared',
+      'story',
+      'undo',
+      'wall',
+    ]);
     expect(opensAt('ripe')).toEqual({ lesson: 'ripe' });
     expect(opensAt('pop')).toEqual({ lesson: 'pop' });
     expect(opensAt('wall')).toEqual({ lesson: 'expedition', row: 'wall' });
@@ -522,7 +530,7 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
   // 2026-10-19: the first run shows only what it has explained. A control a
   // sentence points at and the screen does not draw is the failure here.
   it('draws every control a first-run sentence points at, while it points', () => {
-    const inPhase = { walk: EMPTY_PROGRESS, tour: justPopped } as const;
+    const inPhase = { walk: EMPTY_PROGRESS, tour: justPopped, any: EMPTY_PROGRESS } as const;
     for (const slot of SCHEDULE) {
       if (slot.cue === undefined || slot.phase === undefined) continue;
       const before =
@@ -711,6 +719,25 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
     expect(nextLesson(offered, tour)).toEqual({ id: 'caravan', as: 'card' });
     // In the walk, never: nothing about a reason to pop before the pop itself.
     expect(nextLesson(offered, afterWalk)?.id).not.toBe('caravan');
+  });
+
+  it('tells a device what a DAILY and a SHARED board are, once each, behind the story and the goal (2026-10-21)', () => {
+    const opening = momentAt(0);
+    // A first run that is a daily link: story, goal, then THE DAILY.
+    const daily = { ...opening, kind: 'daily' as const };
+    const afterGoal = told(told(EMPTY_PROGRESS, 'story'), 'goal');
+    expect(nextLesson(daily, EMPTY_PROGRESS)?.id).toBe('story');
+    expect(nextLesson(daily, afterGoal)).toEqual({ id: 'daily', as: 'card' });
+    expect(nextLesson(daily, told(afterGoal, 'daily'))?.id).not.toBe('daily');
+    // A veteran opening BEGIN DAILY gets it too, in any phase; a world never does.
+    const veteran = taughtExcept('daily', 'shared');
+    expect(nextLesson(daily, veteran)).toEqual({ id: 'daily', as: 'card' });
+    expect(nextLesson({ ...opening, kind: 'shared' as const }, veteran)).toEqual({
+      id: 'shared',
+      as: 'card',
+    });
+    expect(nextLesson({ ...opening, kind: 'world' as const }, veteran)).toBeNull();
+    expect(nextLesson(opening, veteran)).toBeNull();
   });
 
   it('teaches how a run ends where there is no clock, not only on the last placement', () => {

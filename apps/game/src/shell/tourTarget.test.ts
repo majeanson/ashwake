@@ -78,6 +78,8 @@ const TARGETED: readonly TeachId[] = [
 const DECLINED: readonly TeachId[] = [
   'story', // what this place is; no place in it
   'goal', // what to do; no place in it either
+  'daily', // which kind of visit this is (2026-10-21); the whole board is the place
+  'shared',
   'place', // the legal edge, which is everywhere at once
   'pop', // a companion of RIPE (ripe tells it), which already flew to the pocket
   'costRise', // the run's own arithmetic

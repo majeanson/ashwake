@@ -271,6 +271,8 @@ export const STRINGS_FR: Strings = {
       name: 'LA CARTE',
       terms: [],
       core: 'Le monde se souvient. Le sol que tu as parcouru reste sur la carte entre les parties, tamisé sous le brouillard, et les destinations non réclamées luisent au travers.',
+      coreKept:
+        'Ce plateau ne se souvient de rien entre les parties, à moins que tu le gardes comme un monde à la fin. Les destinations non réclamées luisent sous le brouillard.',
       pays: 'Chaque destination paie dès qu’une tuile posée la touche.',
       rearm:
         'Les caches et les sites se réarment à chaque partie, alors un terrain déjà connu vaut encore le détour.',
@@ -683,6 +685,25 @@ La poche est devenue de la PIERRE. ${red === null ? 'Elle entoure encore, mais e
 
   howItWorks:
     'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Pour commencer, fais grandir UNE couleur en un seul gros bloc.',
+
+  kinds: {
+    daily: {
+      name: 'LE QUOTIDIEN',
+      lines: [
+        'Le même plateau pour tout le monde aujourd’hui, une fois par jour.',
+        `Ton score monte sur l’échelle du jour; rien ne rentre avec toi${D}: pas de reliques, pas de monde.`,
+        'À la fin, GARDE CE PLATEAU pour en faire un monde à toi.',
+      ],
+    },
+    shared: {
+      name: 'UN PLATEAU PARTAGÉ',
+      lines: [
+        `Quelqu’un t’a envoyé son plateau${D}: le même sol, les mêmes caches, les mêmes sites.`,
+        `Rien ne rentre avec toi${D}: pas de reliques, pas de monde.`,
+        'À la fin, GARDE CE PLATEAU pour en faire un monde à toi.',
+      ],
+    },
+  },
 
   share: {
     run: (name, pts, placements, arc) =>

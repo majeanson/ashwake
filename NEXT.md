@@ -276,6 +276,12 @@ Worth knowing on the phone: _Refaire le tutoriel_ puts a veteran device back
 under the first-run reveal — no stash, no lens, no caravan line — until that
 run ends; that is the tutorial, not a bug.
 
+**Daily vs world** (ruling 18): one tutorial, the dials pick the sentence —
+the relics line, the relic row and "the world remembers" now fork on the
+run's economy — and each kind gets one card the first time a device enters
+it (LE QUOTIDIEN, UN PLATEAU PARTAGÉ). A `?seed=` link on a fresh device is a
+shared board and says so.
+
 The first minute moved, on Marc's word, in every one of these: the freeze
 (§0) is lifted for them and holds for everything else. Session C plays the
 build these land in.

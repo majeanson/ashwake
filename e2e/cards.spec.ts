@@ -131,7 +131,8 @@ test('THE FOUR GROUNDS: a device past its first pop is shown all four, with thei
    * card is Ashwake 1's (Marc, 2026-08-27: "teach all tiles at one in a
    * beautiful tip"), with the real baked tile beside each ground. Since
    * 2026-10-19 it is the tour's, after the first pop, so the device here has
-   * popped once (`walked`) and the walk's own cards are already read.
+   * popped once (`walked`) and the walk's own cards are already read — and
+   * A SHARED BOARD's card too (2026-10-21), since a `?seed=` link is one.
    */
   const errors = watchErrors(page);
   await page.addInitScript(() => {
@@ -140,7 +141,7 @@ test('THE FOUR GROUNDS: a device past its first pop is shown all four, with thei
       JSON.stringify({
         relics: 0,
         bought: {},
-        met: ['story', 'goal', 'place', 'wall', 'ripe', 'pop', 'walked'],
+        met: ['story', 'goal', 'shared', 'place', 'wall', 'ripe', 'pop', 'walked'],
       }),
     );
   });

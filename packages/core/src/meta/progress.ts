@@ -135,6 +135,10 @@ export const TEACH_IDS = [
   // after it. For fresh devices only — `decodeProgress` seals it for any
   // ledger that already holds something past `story`.
   'goal',
+  // THE KINDS (2026-10-21): the daily and a shared board, told once each the
+  // first time a device enters one — a `SaidCard` like the story's.
+  'daily',
+  'shared',
   // The very first lesson (2026-08-20, the launch audit's finding: nobody was
   // ever told how to place a tile outside the opt-in manual): one card, at
   // the start of a genuinely virgin device's first run — see
@@ -499,7 +503,18 @@ export function decodeProgress(raw: string | null): Progress {
     if (!taught.includes('goal') && taught.some((id) => id !== 'story')) taught.push('goal');
     // `walked` likewise, but a device mid-walk has met the walk's own lessons,
     // so only a ledger holding something BEYOND them belongs to a veteran.
-    const WALK = new Set<string>(['story', 'goal', 'place', 'ripe', 'pop', 'colours']);
+    // The kinds' cards (2026-10-21) can be met on a device's very first frame
+    // — a daily link — so they are walk-level too.
+    const WALK = new Set<string>([
+      'story',
+      'goal',
+      'daily',
+      'shared',
+      'place',
+      'ripe',
+      'pop',
+      'colours',
+    ]);
     if (!taught.includes('walked') && taught.some((id) => !WALK.has(id))) taught.push('walked');
     // 'toured' likewise, past the lessons the tour itself teaches: LUCK, MAGIC,
     // a territory as it comes into view (whose card also tells THE MAP), and

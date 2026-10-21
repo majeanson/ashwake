@@ -263,6 +263,8 @@ export const STRINGS_EN: Strings = {
       name: 'THE MAP',
       terms: [],
       core: 'The world remembers. Ground you have walked stays on the map between runs, dimmed under the fog, and unclaimed destinations glow through it.',
+      coreKept:
+        'This board remembers nothing between runs, unless you keep it as a world at the end. Unclaimed destinations glow under the fog.',
       pays: 'Every destination pays the moment a placed tile touches it.',
       rearm:
         'Caches and sites re-arm every run, so ground you already know stays worth walking to.',
@@ -664,6 +666,25 @@ The pocket turned to STONE. ${red === null ? 'It still surrounds, but never matc
 
   howItWorks:
     'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. To start, grow ONE colour into one big blob.',
+
+  kinds: {
+    daily: {
+      name: 'THE DAILY',
+      lines: [
+        'The same board for everyone today, once a day.',
+        'Your score climbs today’s ladder; nothing comes home with you: no relics, no world.',
+        'At the end, KEEP THIS BOARD to make it a world of your own.',
+      ],
+    },
+    shared: {
+      name: 'A SHARED BOARD',
+      lines: [
+        'Someone sent you their board: the same ground, the same caches, the same sites.',
+        'Nothing comes home with you: no relics, no world.',
+        'At the end, KEEP THIS BOARD to make it a world of your own.',
+      ],
+    },
+  },
 
   share: {
     run: (name, pts, placements, arc) =>

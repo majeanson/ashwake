@@ -785,3 +785,41 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     }
   },
 );
+
+/**
+ * THE KINDS (2026-10-21, Marc: _"should the tutorial be different for daily vs
+ * world?"_). One tutorial; the dials pick the sentence. A daily, a shared board
+ * and LEARN FIRST have every relic faucet at 0 and pay territories in tiles
+ * (`shell/economy.ts`), and three sentences promised them relics and a world
+ * that remembers.
+ */
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
+  'the dials pick the kind · %s',
+  (_l, s) => {
+    const relicless: Tuning = { ...TUNING, claimRelics: 0, luckToRelics: 0, burnRelics: 0 };
+    const kept: Tuning = { ...relicless, territoryPays: 5 };
+    const relicWord = /relic|relique/i;
+
+    it('THE EXPEDITION promises relics only where one can be banked', () => {
+      expect(
+        lessonLines(lessonOf('expedition')!, TUNING, SETTLEMENT, s).some((l) => relicWord.test(l)),
+      ).toBe(true);
+      expect(
+        lessonLines(lessonOf('expedition')!, relicless, SETTLEMENT, s).some((l) =>
+          relicWord.test(l),
+        ),
+      ).toBe(false);
+    });
+
+    it('THE RUN’S END prints its relic row only where one can be banked', () => {
+      const end = lessonOf('end')!;
+      expect(end.rows?.(TUNING, SETTLEMENT, s).map((r) => r.key)).toEqual(['relic']);
+      expect(end.rows?.(relicless, SETTLEMENT, s)).toEqual([]);
+    });
+
+    it('THE MAP says the world remembers only where there is a world to', () => {
+      expect(lessonCore(lessonOf('map')!, TUNING, SETTLEMENT, s)).toBe(s.lesson.map.core);
+      expect(lessonCore(lessonOf('map')!, kept, SETTLEMENT, s)).toBe(s.lesson.map.coreKept);
+    });
+  },
+);

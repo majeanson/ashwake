@@ -11593,7 +11593,33 @@ before and after:
 A fourth harness lesson came free with it: `?taught=1` is a FLAG over the
 disk (`overrides`), and `App`'s `untold` read the disk, so a taught device
 kept the first run's silences — the caravan e2e caught it. `untold` reads the
-flag first. Both specs green on Chromium (32).
+flag first. Both specs green on Chromium (32). The same hole, once more, in
+`economyAt` and the daily's two doors: `firstRun` read the disk, so a taught
+device was dealt no stash slot — the stash e2e caught it on CI's non-gating
+job after `3827f4a` had deployed. One `firstRunNow()` now, read by all three.
+
+18. **"Should the tutorial be different for daily vs world, and a small
+    explainer of how it works?"** No second tutorial: one walk and tour, and
+    **the dials pick the sentence**, which is the rule the territory row and
+    the luck line already lived by. Three sentences did not: THE EXPEDITION's
+    third line promised relics and a shop, THE RUN'S END printed a relic row,
+    and THE MAP opened with _"le monde se souvient"_ — on a daily, a shared
+    board and LEARN FIRST, where every relic faucet is 0 and nothing is
+    remembered unless kept. Each forks now (`relicsFlow` on the three relic
+    dials; `territoryPays > 0` for the map, with `map.coreKept`), and
+    `lessons.test.ts` holds the fork in both languages. The explainer is **one
+    `SaidCard` per kind, told once per device** — LE QUOTIDIEN / UN PLATEAU
+    PARTAGÉ, three lines each: what it is, that nothing comes home, GARDE CE
+    PLATEAU — a `Moment.kind` the drip reads, `phase: 'any'` so a stranger's
+    first daily link and a veteran's hundredth BEGIN DAILY both get it, behind
+    the story and the goal. The world has no card: the story is its. Found on
+    the way: a `?seed=` link on a fresh device IS a shared board, so every e2e
+    that opens one past the walk now tells `shared` in its fixture; and the
+    kinds' ids had to join `mayTeach`'s story/goal exception, or the card came
+    twice (the generic `LessonCard` renders anything with `opens`).
+
+First paint with the kinds' cards and the forks: 197.1 KB gzip, under the
+203,000 bar moved above.
 
 First paint after all of it: 196.5 KB gzip, 0.2 KB over the 201,000 bar,
 **moved to 203,000** (`budget.json` says why: five coach clauses, the wait

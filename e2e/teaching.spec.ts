@@ -622,3 +622,38 @@ test('a term in the book takes you to its section, on whichever tab it lives', a
   ).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('a fresh device entering the DAILY is told what it is, once, behind the story and the goal (2026-10-21)', async ({
+  page,
+}) => {
+  /*
+   * Marc, 2026-10-21: "should tutorial be different for daily vs world, and a
+   * small explainer of how it works?" One tutorial; the dials pick the
+   * sentences (lessons.test.ts), and each kind gets one card the first time a
+   * device enters it. A daily link on a fresh device is the walk's first frame.
+   */
+  const errors = watchErrors(page);
+  await page.goto('/?daily=2026-08-26');
+  await page.locator('[data-door="begin"]').click();
+
+  const card = page.locator('.card-scrim .card');
+  await expect(card).toContainText(/THE STORY|L’HISTOIRE/);
+  await card.locator('.card-acts button').last().click();
+  await expect(card).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
+  await card.locator('.card-acts button').last().click();
+  await expect(card).toContainText(/THE DAILY|LE QUOTIDIEN/);
+  await expect(card).toContainText(/KEEP THIS BOARD|GARDE CE PLATEAU/);
+  await card.locator('.card-acts button').last().click();
+  // `toHaveCount(0)` on a filtered locator: a negated `toContainText` FAILS on
+  // a locator that matches nothing, and GOT IT here leaves no card at all.
+  const dailyCard = page.locator('.card-scrim .card').filter({ hasText: /THE DAILY|LE QUOTIDIEN/ });
+  await expect(dailyCard).toHaveCount(0);
+
+  // Told: the same device opening the daily again gets no card.
+  await page.reload();
+  await page.locator('[data-door="begin"]').click();
+  await page.locator('[data-hud="hand"]').waitFor({ state: 'visible' });
+  await page.waitForTimeout(600);
+  await expect(dailyCard).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

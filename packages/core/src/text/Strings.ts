@@ -226,6 +226,8 @@ type LessonStrings = {
    */
   readonly map: LessonHead & {
     readonly core: string;
+    /** The core where nothing is remembered — a daily, a shared board (2026-10-21). */
+    readonly coreKept: string;
     /** First contact only: what every destination has in common. */
     readonly pays: string;
     /** DETAILS only: caches and sites come back every run. */
@@ -674,6 +676,20 @@ export type Strings = {
    * later, each at its own moment.
    */
   readonly howItWorks: string;
+
+  /**
+   * THE KINDS OF RUN, told once each (2026-10-21, Marc: _"a small explainer
+   * of how it works"_): a `SaidCard` the first time a device enters the daily
+   * and the first time it opens a shared board, like the story — what this
+   * kind is, what carries over, and the door that keeps the board. The world
+   * needs none: the story is its card.
+   */
+  readonly kinds: Readonly<
+    Record<
+      'daily' | 'shared',
+      { readonly name: string; readonly lines: readonly [string, string, string] }
+    >
+  >;
 
   readonly share: {
     readonly run: (name: string, pts: number, placements: number, arc: string) => string;

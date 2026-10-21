@@ -110,7 +110,9 @@ export type Floor = {
  *
  *  - **`card`** — there has to be a lesson due at all.
  *  - **`'story'`** and **`'goal'`** are not raised here. They have their own
- *    doors on the front screen and would otherwise arrive twice.
+ *    doors on the front screen and would otherwise arrive twice. The kinds'
+ *    cards, **`'daily'`** and **`'shared'`** (2026-10-21), are `SaidCard`s
+ *    the same way, and arrived twice for an afternoon until this said so.
  *  - **`said`** — a RECEIPT OUTRANKS A LESSON. One card at a time, and the
  *    receipt is about something that just happened.
  *  - **`touring`** — a card raised while the board is away showing the last
@@ -142,6 +144,8 @@ export const mayTeach = (floor: Floor): boolean =>
   floor.card !== null &&
   floor.card !== 'story' &&
   floor.card !== 'goal' &&
+  floor.card !== 'daily' &&
+  floor.card !== 'shared' &&
   !floor.said &&
   !floor.touring &&
   !floor.watching &&

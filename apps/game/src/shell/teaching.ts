@@ -48,6 +48,12 @@ export type Moment = {
    * `CARD_GAP`.
    */
   readonly since?: number | undefined;
+  /**
+   * Which of the three this run is (2026-10-21), for the one card each kind
+   * gets the first time a device enters it. Absent is a world — a test, the
+   * harness, a first frame.
+   */
+  readonly kind?: 'world' | 'daily' | 'shared' | undefined;
 };
 
 type Phase = 'walk' | 'tour' | 'free';
@@ -145,8 +151,13 @@ type Slot = {
   readonly tells?: readonly TeachId[];
   /** The control this moment talks about, lit once it has been said (`cueOf`). */
   readonly cue?: CueId;
-  /** The phase of the first run in which this may still speak. Absent: only once the run is free. */
-  readonly phase?: 'walk' | 'tour';
+  /**
+   * The phase of the first run in which this may still speak. Absent: only
+   * once the run is free. `any`: in every phase — the kinds' cards
+   * (2026-10-21), which a device meets on whichever run first enters a daily
+   * or a shared board, a stranger's first frame or a veteran's hundredth.
+   */
+  readonly phase?: 'walk' | 'tour' | 'any';
   /**
    * Present (as `false`) when the pace never holds this back. The opening
    * beats come before there is a pace to keep; RIPE and POP are the two ideas
@@ -319,6 +330,28 @@ export const SCHEDULE: readonly Slot[] = [
     // Right behind the story, on the same first frame: what this place is, then
     // what to do in it.
     when: () => true,
+  },
+  // THE KINDS, once each (2026-10-21, Marc: _"a small explainer of how it
+  // works"_): the daily and a shared board are each a `SaidCard` the first
+  // time a device enters one, in any phase — a veteran opening BEGIN DAILY
+  // gets it as much as a stranger whose first run is a daily link. Behind
+  // the story and the goal, which say what the place is before this says
+  // which kind of visit it is. The world has no card: the story is its.
+  {
+    id: 'daily',
+    as: 'card',
+    opens: { lesson: 'expedition' },
+    phase: 'any',
+    paced: false,
+    when: ({ kind }) => kind === 'daily',
+  },
+  {
+    id: 'shared',
+    as: 'card',
+    opens: { lesson: 'expedition' },
+    phase: 'any',
+    paced: false,
+    when: ({ kind }) => kind === 'shared',
   },
   {
     id: 'place',
@@ -830,7 +863,7 @@ export function nextLesson(now: Moment, progress: Progress): Teach | null {
         (id === 'territory' || id === 'site' || id === 'cache' || id === 'shrine'));
     if (hasMet(progress, id) || (slot.as === 'chip' && !tourCard)) continue;
     // Held back, not dropped: the moment stays armed for its own phase.
-    if (phase !== 'free' && slot.phase !== phase) continue;
+    if (phase !== 'free' && slot.phase !== phase && slot.phase !== 'any') continue;
     // A toast waits on its `after` like a chip: REDRAW points at the purse,
     // which LUCK's card introduces.
     if (slot.as === 'toast' && !afterMet(id, progress)) continue;
