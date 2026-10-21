@@ -424,8 +424,8 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "luck · TUNING": "LUCK is a purse, not a score. The row under your hand spends it; whatever is left when the run ends comes home as relics, at 5%.",
   "map · BARE_TUNING": "REACH: how far from home you have built. Every 4 hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops.",
   "map · TUNING": "REACH: how far from home you have built. Every 3 hexes out raises the distance multiplier by 1, so the same pocket scores more the deeper it pops.",
-  "points · BARE_TUNING": "POINTS: the score. A pocket popped for points pays its worth × its size × its distance from home.",
-  "points · TUNING": "POINTS: the score. A pocket popped for points pays its worth × its size × its distance from home.",
+  "points · BARE_TUNING": "POINTS: the score.",
+  "points · TUNING": "POINTS: the score.",
   "tiles · BARE_TUNING": "TILES: what keeps you alive. Every placement spends them; pops, caches and territories pay them back. At zero with nothing ripe to pop, the run ends.",
   "tiles · TUNING": "TILES: what keeps you alive. Every placement spends them; pops, caches and territories pay them back. At zero with nothing ripe to pop, the run ends.",
 }
@@ -890,8 +890,8 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "luck · TUNING": "La CHANCE est une bourse, pas un score. La rangée sous ta main la dépense; ce qui reste à la fin de la partie revient en reliques, à 5 %.",
   "map · BARE_TUNING": "PORTÉE : jusqu’où tu as bâti depuis le départ. Chaque 4 hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée.",
   "map · TUNING": "PORTÉE : jusqu’où tu as bâti depuis le départ. Chaque 3 hex de plus monte le multiplicateur de distance de 1, alors la même poche marque plus loin qu’elle est récoltée.",
-  "points · BARE_TUNING": "POINTS : le score. Une poche récoltée en points paie sa valeur × sa taille × sa distance du départ.",
-  "points · TUNING": "POINTS : le score. Une poche récoltée en points paie sa valeur × sa taille × sa distance du départ.",
+  "points · BARE_TUNING": "POINTS : le score.",
+  "points · TUNING": "POINTS : le score.",
   "tiles · BARE_TUNING": "TUILES : ce qui te garde en vie. Chaque pose en dépense; les récoltes, les caches et les territoires en redonnent. À zéro sans rien de mûr à récolter, la partie finit.",
   "tiles · TUNING": "TUILES : ce qui te garde en vie. Chaque pose en dépense; les récoltes, les caches et les territoires en redonnent. À zéro sans rien de mûr à récolter, la partie finit.",
 }

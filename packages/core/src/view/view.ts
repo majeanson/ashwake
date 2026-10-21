@@ -1549,6 +1549,13 @@ export function pocketNote(state: GameState, at: HexKey, s: Strings): string {
     // of them — this rider named a button that no longer exists.
     lines.push(p.bounty(t.questBonus));
   if (rares > 0) lines.push(p.rares(rares));
+  // THE WAIT CLAUSE, AT THE MOMENT THE CHOICE IS LIVE (2026-10-21, `LOG.md`
+  // Session 140). RÉCOLTER's card says it once; two of three strangers who
+  // had read it believed the opposite within twenty turns — a waiting pocket
+  // "s'use", "ne rapporte pas plus". A tap on a ripe tile is the one moment a
+  // player is deciding exactly that, so the pocket's own note says it, in the
+  // lesson's one wording (`pop.wait`), every time.
+  lines.push(s.lesson.pop.wait);
   return lines.join('\n');
 }
 
@@ -2010,8 +2017,15 @@ export function describeHexOf(ctx: DescribeContext, hex: HexKey): string {
       // not explained") — a tapped tile is the cheapest place to learn
       // what its colour wants, right where it is wanting it.
       const personality = colourLesson(cell.colour, t, ctx.theme, s);
+      // THE RULE BEFORE THE TWIST (2026-10-21, `LOG.md` Session 140). This
+      // answer said when a tile ripens and then the colour's own power, and
+      // never what VALEUR counts; a stranger with no cards read "+1 par
+      // voisine d'une autre couleur" off a MARCHÉ and made it the rule of
+      // every tile, to the quiz. The ripening sentence is the registry's one
+      // wording — `ripe.ripens` says the six sides AND what the number is —
+      // so the tap and the card cannot describe it two ways.
       return (
-        x.tile(name(cell.colour), worth) +
+        `${x.tile(name(cell.colour), worth)}\n${s.lesson.ripe.ripens}` +
         (personality === null ? '' : `\n${personality}`) +
         (power === null ? '' : `\n${power}`)
       );

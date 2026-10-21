@@ -175,3 +175,13 @@ suspect the pass before you suspect the subject.
 The stranger test (`PLAYTEST.md` Session C) is v2.0's gate and has never been
 run on either body. A stranger is a one-shot resource: nothing that changes the
 first minute ships between Session A's last clean pass and their run.
+
+**The words can be tested without a stranger** (2026-10-21, `LOG.md` Session
+140): `pnpm stranger` plays the first run with a model that has never read
+this repository and writes `STRANGER.md` — the row in the sim's table, the
+untaught gestures, the beliefs that contradict a lesson already told, the
+quiz. `scripts/stranger/README.md` is the procedure, including how it runs on
+a subscription with no key. It measures the words and their timing, not the
+screen; and what the model reads is not what the phone shows until it has
+been checked turn by turn against `App.tsx` — the first batch found four
+harness defects before it found anything about the game.

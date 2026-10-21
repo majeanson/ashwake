@@ -24,6 +24,8 @@
     "format:check": "prettier --check .",
     "sim": "pnpm --filter @ashwake/core sim",
     "sweep": "tsx scripts/sweep/index.ts",
+    "stranger": "tsx scripts/stranger/index.ts",
+    "stranger:play": "tsx scripts/stranger/play.ts",
     "test:e2e": "pnpm build && playwright test --project=chromium && playwright test --project=webkit",
     "audit:screens": "pnpm build && playwright test --config playwright.audit.config.ts e2e/audit/screens.audit.ts",
     "audit:perf": "pnpm build && playwright test --config playwright.audit.config.ts e2e/audit/perf.audit.ts",
@@ -31,6 +33,7 @@
     "bake:notices": "tsx scripts/notices.ts"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "1.0.0",
     "@eslint/js": "^10.0.1",
     "@phosphor-icons/core": "^2.1.1",
     "@playwright/test": "^1.62.1",

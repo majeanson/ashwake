@@ -90,7 +90,7 @@ const progress = (s: GameState): string =>
  * nothing at all — still has nowhere to hide.
  */
 
-function summarise(
+export function summarise(
   state: GameState,
   policy: string,
   seed: number,

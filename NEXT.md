@@ -200,6 +200,80 @@ At 320px in French the result itself still takes two lines, beside the ✕.
 
 ---
 
+## 1c. The stranger harness — played once, three things for Marc (2026-10-21)
+
+`pnpm stranger` (`scripts/stranger/`, `LOG.md` Session 140, `STRANGER.md`):
+a model plays the first run as a stranger would — the drip's cards, lines and
+coach at their moments, through the shell's own gates (`mustPop`, `reveal`),
+one sentence of belief per turn — and the report puts its row in the sim's
+table beside `random-legal`, `blind` and `bank20`, with the gestures it never
+made, the beliefs that contradict a lesson already told, and an end-of-run
+quiz. Four conditions: `drip`, `ask` (the manual on demand), `flood` (the
+whole manual up front, nothing after), `silent` (the game never speaks
+first). It measures **the words and their timing, not the screen** — Session
+C keeps the screen. Played on the subscription: `pnpm stranger:play` one turn
+at a time by a Haiku subagent that never read the repo, graded by hand.
+
+**The record (one seed, one reader each — a journal, not a ranking):** the
+`drip` reader knew what a pocket was, and the wait, at its first pop. The
+things the words lost:
+
+- **RÉCOLTER's wait clause** — the one belief two readers reversed after
+  being told it (`drip` t27 "ne pas laisser la valeur s'user", `flood` t23
+  "ne rapporte pas plus"). _Marc: does "n'expire jamais / attendre paie plus"
+  want a second door — the pocket's own tap, the first-pop receipt?_
+- **The tile's tap answer** says the ground's twist ("MARCHÉ … +1 par voisine
+  d'une autre couleur") and never the rule (VALEUR counts the neighbours that
+  resemble). A reader with nothing else made the twist the rule, to the quiz.
+  _Marc: should `describeHexOf`'s tile line lead with the rule?_
+- **Nobody undid**, in four runs, with UNDO offered and its toast in the
+  walk. Three of four never tapped a hex. CARAVANE and RÉSERVE were "je ne
+  sais pas" for all four — `reveal` working as built.
+- ~~_Marc: more seeds before Session C?_~~ Ruled the same evening: five more
+  (`drip` ×2, one each of the rest) — nine runs in `STRANGER.md`.
+
+**What the nine strangers asked for, in their closing reports** (verbatim in
+`STRANGER.md`, "What the stranger said afterwards"). Each is a question for
+Marc, not a change; the first minute is frozen until Session C:
+
+1. **The number on a lit edge is never explained in words.** Five of nine
+   named turns 2–5 as their most lost moment: "+3 / +2,7 — je ne savais pas
+   ce que ça voulait dire". The coach's `place` line names the lit edge and
+   not the number on it. _One clause — "le chiffre est la valeur que la tuile
+   y prendrait"?_
+2. **COÛT appears without a word.** The stat arrives with the tour and the
+   `costRise` toast speaks only when it rises; four readers asked the stat
+   box or guessed. _A line when it first shows?_
+3. **The end comes as a surprise at COÛT 3–4.** Six readers said so; the
+   `bank` line ("tes tuiles s'épuisent") arrived "trop tard pour y remédier"
+   for the one who quoted it. _Earlier, or twice?_
+4. **CHANCE is hoarded** — 219, 278, 281, 288, 330 unspent at the end, three
+   readers calling it "ma plus grande erreur" afterwards; one thought it
+   might convert to tiles. The LUCK card says it is lost. _Does the end
+   screen want to say what the hoard would have bought?_
+5. **Words on a receipt before their card:** "Chance +10" nine turns before
+   CHANCE's card (`drip`), "La caravane n'en a pas voulu" with no caravan
+   card in the first run, "Prime ×3 : manquée" read as a puzzle by three.
+   Session 139 gave the cache and the site a plain number until their card;
+   _the caravan's and the bounty's lines too?_
+6. **MUR vs PIERRE** (two readers) and **la RÉSERVE** read as the tile stock
+   (two) — both unexplained in a first run by design; noted, not asked.
+7. ~~**The POINTS stat says « valeur × taille × distance »; the receipt pays
+   a quarter of it.**~~ Ruled 2026-10-21: the formula is gone from the stat
+   ("POINTS : le score."); the rate is not for the player, and the receipt
+   carries the arithmetic.
+
+The shakedown run found four harness defects before any of this could be
+read, and the record found two more (the manual's lookup wanted a curly
+apostrophe; the board printed every tile's worth, which the phone shows only
+ripe) — both fixed after the nine, so **the nine were read with the unripe
+worths visible**, which is why "the value rises when I place" came so early
+to them (`LOG.md` Session 140). Nothing in `apps/` or `packages/` moved but
+the two word changes Marc ruled and one `export` keyword: the first-minute
+freeze holds for everything else.
+
+---
+
 ## 2. Somebody else's device
 
 - **~~P6.7, the iOS install offer~~ — CLOSED 2026-09-24.** Marc: it shows

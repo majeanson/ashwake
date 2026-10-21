@@ -459,7 +459,11 @@ La poche est devenue de la PIERRE. ${red === null ? 'Elle entoure encore, mais e
     },
     stat: {
       tiles: `TUILES${D}: ce qui te garde en vie. Chaque pose en dépense; les récoltes, les caches et les territoires en redonnent. À zéro sans rien de mûr à récolter, la partie finit.`,
-      points: `POINTS${D}: le score. Une poche récoltée en points paie sa valeur × sa taille × sa distance du départ.`,
+      // The formula left this line on 2026-10-21 (`LOG.md` Session 140, Marc:
+      // the rate is not for the player): it omitted `pointsPerPop`, so a
+      // reader who multiplied got a number the receipt never paid. The
+      // receipt is where the arithmetic lives.
+      points: `POINTS${D}: le score.`,
       luck: (rate) =>
         `${LUCK_CORE} La rangée sous ta main la dépense` +
         (rate === null
@@ -518,8 +522,10 @@ La poche est devenue de la PIERRE. ${red === null ? 'Elle entoure encore, mais e
         `${standing} Il entoure, alors il aide à mûrir, mais il ne ressemble jamais.`,
       stone: (red) =>
         `Sol usé, une tuile récoltée. Il entoure mais ne ressemble jamais, sauf pour ${red}, qui s’en nourrissent.`,
-      tile: (name, worth) =>
-        `Tuile ${name}, valeur ${worth}. Elle mûrit quand ses six côtés sont couverts.`,
+      // The ripening rule follows as `lesson.ripe.ripens`, one wording
+      // (2026-10-21, `LOG.md` Session 140): this line used to carry a second
+      // one that never said what VALEUR counts.
+      tile: (name, worth) => `Tuile ${name}, valeur ${worth}.`,
       open: `Sol libre${D}: tu peux bâtir ici dès que quelque chose à toi le touche.`,
       native: (name) => `Sol natal de ${name}${D}: une tuile ${name} ici vaut un de plus.`,
     },

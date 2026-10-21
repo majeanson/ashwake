@@ -452,7 +452,9 @@ The pocket turned to STONE. ${red === null ? 'It still surrounds, but never matc
       tiles:
         'TILES: what keeps you alive. Every placement spends them; pops, caches and territories pay them back. At zero with nothing ripe to pop, the run ends.',
       points:
-        'POINTS: the score. A pocket popped for points pays its worth × its size × its distance from home.',
+        // The formula left on 2026-10-21 (`LOG.md` Session 140): it omitted
+        // `pointsPerPop`. The receipt carries the arithmetic.
+        'POINTS: the score.',
       luck: (rate) =>
         `${LUCK_CORE} The row under your hand spends it` +
         (rate === null
@@ -512,8 +514,9 @@ The pocket turned to STONE. ${red === null ? 'It still surrounds, but never matc
         `${standing} It surrounds, so it helps things ripen, but it never matches.`,
       stone: (red) =>
         `Spent ground, a popped tile. It surrounds but never matches, except for ${red}, which feeds on it.`,
-      tile: (name, worth) =>
-        `${name} tile, worth ${worth}. It ripens when all six sides are covered.`,
+      // The ripening rule follows as `lesson.ripe.ripens`, one wording
+      // (2026-10-21, `LOG.md` Session 140).
+      tile: (name, worth) => `${name} tile, worth ${worth}.`,
       open: 'Open ground: you can build here once something of yours touches it.',
       native: (name) => `Ground native to ${name}: a ${name} tile here is worth one more.`,
     },

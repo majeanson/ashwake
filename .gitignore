@@ -10,3 +10,5 @@ Thumbs.db
 !.vscode/extensions.json
 test-results/
 playwright-report/
+# The stranger harness's transcripts: model output, large, regenerable.
+scripts/stranger/runs/

@@ -11353,3 +11353,179 @@ and the five touched e2e specs on Chromium, 94 green including the touring
 test. **Open:** Marc's _"tidy up this screen"_ next to the replay. The film
 already draws only its bar (`menus.spec.ts` pins it), so which screen was
 meant is a question for him.
+
+### Session 140 — a reader who meets the lessons as the game delivers them (2026-10-21)
+
+**Question:** does a reader who meets the lessons only as the drip delivers
+them know what a POCKET is before their first pop — and does it ever pop at
+all? Measured on the words and their timing, not the screen.
+
+**Why.** Two strangers said _"trop d'information trop vite trop tôt"_
+(Session 127), Session 139 cut the first run to about 250 words on that brief,
+and Session C — the one test of it — is a one-shot resource that has never
+been run on either body. The words, unlike the screen, can be tested without
+a phone: `shell/teaching.ts` is pure, `view.ts` already prints every fact the
+screen shows, and `sim/run.ts` already plays a run without one.
+
+**Built: `pnpm stranger`** (`scripts/stranger/`, writes `STRANGER.md`). A
+model plays a fresh phone's first run through the shell's own door:
+
+- `shell.ts` is `App.tsx` without React — the first-run economy
+  (`economyFor`, `home`, nothing earned), the drip in `App`'s order (a card
+  whenever one is due, then on a quiet beat one toast, else the coach, else a
+  once-a-run line), the walk's refusal (`mustPop`, in the coach's own words),
+  `walked` at the first pop and `toured` at the end, and `shows` deciding
+  which gestures are even offered. The rules are `reduce`; it decides nothing.
+- `screen.ts` prints the phone as text in the catalogue's words — the stat
+  row the phase reveals, the hand, every cell as `q,r colour(worth)` with `*`
+  for ripe, the legal edges with the chosen tile's preview, each pocket priced
+  both ways, the GESTES line.
+- `gestures.ts` is `INTERACTIONS.md` as ten tools, one fixed list so the
+  prefix caches; a gesture the screen does not offer is refused as a hidden
+  button would be.
+- `player.ts` is the stranger: Haiku, one sentence of belief then one gesture
+  per turn, the last six turns verbatim, every card and line the game said as
+  a journal, its own last five sentences. `grader.ts` (Opus, one call per run)
+  marks beliefs that contradict a lesson already told, and the end-of-run
+  quiz. `report.ts` puts the stranger's row in the sim's own table beside
+  `random-legal`, `blind` and `bank20` on the same seeds and economy.
+- Four conditions: `drip` (as the phone delivers), `ask` (plus the manual on
+  demand), `flood` (the whole manual before the first tile, nothing after),
+  `silent` (the game never speaks first).
+- **`play.ts` is the same loop one command at a time** (`pnpm stranger:play
+new|turn|quiz`), the session in a JSON file between turns — because Marc
+  has a subscription and no API key. The player is then a Claude Code
+  subagent (Haiku) that has never read this repository, told to run that
+  command and nothing else; its transcript under `~/.claude/projects/…/
+subagents/` shows every tool call, and each of the four was audited: Bash
+  only, every command `stranger:play`, no file read. `pnpm stranger --from
+  <dir>` builds the report from such a folder, with a `<run>.verdict.json`
+  beside each run as its grading — written by hand, against the manual.
+
+**What it cannot see, stated in the report's header:** the pictures (their
+captions are given), the glow, the ripe ring, a lit cue, the camera. It reads
+perfectly and never gets bored. So it measures the words and their timing;
+Session C keeps the screen.
+
+**The dry run is the proof of the harness.** `pnpm stranger --dry` plays
+`bank20` through the shell with no model: it dies, is refused nothing legal,
+and lands at 795 median where the sim's `bank20` lands at 926 — the walk's
+forced first pop, which is the gate doing its job, and the first number the
+harness produced that the sim could not have.
+
+**The shakedown came first, and it was the harness that failed it.** The first
+four strangers (kept under `runs/hand-2026-10-21-shakedown/`) reported the same
+confusion three times over — "the receipt says +36 pts and PTS rose 9" — and
+it was mine: the screen offered a tiles/points fork the live economy does not
+have (`singlePayout`), quoted the raw worth where the phone's bar shows
+`scoreOf`, and passed `'points'` to the reducer, which took the receipt down
+the fork's branch. Three more of the same kind: the purse never appeared in
+`flood` and `silent` (301 luck unspent) because `shows` reads the drip's
+ledger and the drip did not run — the ledger now walks silently and only the
+words are dropped; `CARRIERE` was refused for `CARRIÈRE`, which a button never
+would; and the caravan's picker was hidden behind the ask line's `reveal`,
+when `App`'s `caravanOpen` reads only `offersWaiting`. All four fixed, the
+four runs replayed. **What a stranger reads is not what the phone shows until
+it has been checked turn by turn against the phone's own code**; the
+shakedown is why the record below can be trusted at all.
+
+**Answer, on nine runs — `drip` seeds 1–3, the other three conditions seeds
+1–2, one Haiku reader each — a journal, not a ranking.** `STRANGER.md` has
+the whole of it, each stranger's closing report verbatim. Seed 1 was played
+on the morning's words; seeds 2–3 after the two word changes Marc ruled that
+evening (below). **All nine were read with every tile's worth printed on the
+board** — a number the phone shows only once a tile is ripe (`labelFor`), a
+harness defect found and fixed after the ninth — so "the value rises when I
+place beside it" reached these readers at placement 3, which it would not on
+the phone. The medians: `drip` 513 (3 runs), `flood` 564, `ask` 375,
+`silent` 300, between `blind` (219) and `bank20` (926) on the same seeds.
+
+- **Yes to both halves of the question.** The `drip` reader popped at its
+  seventh placement, the turn MÛR and RÉCOLTER's cards fired, and wrote at
+  that moment: _"la récolte encaisse maintenant, et attendre la ferait
+  grossir, mais chaque pose coûte une tuile"_ — the pocket and the tension,
+  in its own words, before the first pop landed. It had said "une tuile mûrit
+  quand ses six côtés sont couverts" three placements earlier, off the coach's
+  `grow` line. 40 harvests, 513 points, between `blind` (318) and `bank20`
+  (926) on the same seed.
+- **The one lesson two readers lost after being told it is RÉCOLTER's wait
+  clause.** `drip` at turn 27 harvested "pour ne pas laisser la valeur
+  s'user"; `flood`, with the whole manual in hand, believed at turn 23 that a
+  waiting pocket "ne rapporte pas plus" — having said the opposite at turn 16.
+  "Une poche mûre n'expire jamais" and "attendre laisse la poche grandir" are
+  the two sentences the card spends on it, and they did not hold. The pop-vs-
+  wait decision (Session B's question) is the one the words teach least well.
+- **The tap on a tile teaches the ground's twist and not the rule.** The
+  `silent` reader tapped a MARCHÉ at turn 6, read _"MARCHÉ. Marque dans le sol
+  mêlé : +1 de valeur par voisine d'une autre couleur"_, and from turn 8 to
+  the quiz believed every tile grows from neighbours of another colour. The
+  first line of that answer says when a tile ripens; nothing in it says what
+  VALEUR counts. A board with no cards teaches that sentence as the rule.
+- **The manual on demand was opened three times and did not help the score**
+  (`ask`: 259 points, 58 placements, the lowest row) — the reader asked for
+  MÛR at placement 4, before the game's own MÛR card, and still had LA FIN
+  wrong at the quiz ("plus de case lumineuse"). One seed; what it says is
+  only that a reader who can ask, asks early, and that asking is not reading.
+- **Untaught:** nobody undid (`annuler`, offered to all four, made by none —
+  the walk's UNDO toast exists), and three of four never tapped a hex
+  (`toucher`); the one who did was the silent reader, who had nothing else.
+- **The quiz:** MÛR, RÉCOLTER and CHANCE right in all four; CARAVANE and
+  RÉSERVE "je ne sais pas" in all four, which is the first run's `reveal`
+  doing what it was built to do; LA CARTE right for what one run can show;
+  L'EXPÉDITION wrong or unknown for the two readers who did not get its card
+  as a card.
+- **The score order on seed 1 was flood 597 > drip 513 > silent 382 > ask
+  259**; on seed 2, drip 552 > flood 531 > ask 490 > silent 218. Not a
+  ranking of the conditions; nine runs.
+- **Seeds 2–3, on the new words.** The `silent` reader tapped a tile at turn
+  8 and wrote, off the tap alone, _"une tuile mûrit quand elle est entourée
+  sur ses six côtés, et sa valeur compte les voisines semblables"_ — the
+  sentence seed 1's silent reader never got (ruling 2 below, evidenced).
+  The wait clause held in all five (`drip` seed 3, turn 16: _"la carte dit
+  qu'une poche mûre n'expire pas, je la laisse grossir"_), but no `drip`,
+  `ask` or `flood` reader ever tapped a ripe tile, so the pocket's new line
+  (ruling 1) was never read by the readers it was written for; the card
+  alone held this time. `drip` seed 3 is the first stranger to pick a
+  caravan ware (TOUS LES POUVOIRS) and to define CARAVANE right at the quiz.
+  `ask` seed 2 could not open a manual section — `manuel L'EXPÉDITION`,
+  `expedition`, `MUR` all failed on the lookup's curly apostrophe — and
+  played as a `drip` reader with a table of contents; fixed after.
+
+**Ruled with Marc the same evening, one by one** (`NEXT.md` §1c keeps the
+seven things the nine asked for):
+
+1. The wait clause gets a second door: `pocketNote` — the sentence a tap on a
+   ripe tile prints — ends with `pop.wait`, the lesson's one wording. Pins
+   re-recorded (fr, en).
+2. The tile's tap answer leads with the rule: `x.tile` is "Tuile MARCHÉ,
+   valeur 3." and the next line is `ripe.ripens` — one wording for ripening
+   where there were two, and the one that says what VALEUR counts. Pins
+   re-recorded (fr, en).
+3. `annuler` and `toucher` unused is the instrument's limit, stated in the
+   report's header: a model never mis-taps and rarely explores.
+4. Five more runs, played; the nine are the record.
+5. Repeatable, no history: `scripts/stranger/README.md` holds the procedure
+   and the subagent prompt; `runs/` stays out of git; one pointer in
+   `CLAUDE.md`.
+6. The nine stand as the record, with what they were read with stated
+   (above); the next batch plays on the fixed harness.
+7. The POINTS stat's formula is gone — "POINTS : le score." — because it
+   omitted `pointsPerPop` and the rate is not for the player (Marc: _"is the
+   26% important for the user? most likely 2"_); the receipt carries the
+   arithmetic. Pins re-recorded (fr, en).
+
+Session C itself is unchanged: this measured the words.
+
+**Verified:** typecheck, lint, prettier, the 15 harness tests, the whole
+workspace, `pnpm sim` byte-identical to the golden file, and the sweep at 0
+findings (76 rulings) after its reports on the new files: 15 exports demoted,
+`Table.seed` and `Turn.snap` cut (written, never read), two option hooks wired
+to `--max-turns` and `--patience` so nothing injectable is unproven, three
+rulings (`STRANGER_HARNESS`), and one orphan cut (`RunResult.seed`, read
+now). **Changes outside `scripts/`:** `summarise` in `sim/run.ts` exported,
+so the stranger's row and the policies' rows are one function; and the two
+word changes Marc ruled (`pocketNote`'s last line, `x.tile` + `ripe.ripens`
+in `describeHexOf`), with `prose.pin` re-recorded twice. Nothing else in the
+first minute moved. The SDK install re-keyed the
+pnpm store and left `apps/game`'s `jest-dom` link dangling until
+`pnpm install`; noted so the next session does not hunt for it.

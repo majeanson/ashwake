@@ -111,7 +111,8 @@ const DESIGN_RECORD: readonly Ruling[] = (
  * a table can show — medians over four hundred runs. Three fields are not
  * among them: `policy` and `seed`, which identify a run rather than measure
  * it, and `bestHarvest`, whose POSITION (`bestHarvestAt`) is aggregated while
- * its magnitude is not.
+ * its magnitude is not. (`seed` left this list on 2026-10-21: the stranger
+ * harness sorts its runs by it, so the pass sees it read.)
  *
  * Identity is read the moment a single run is inspected instead of counted —
  * `sim.test.ts`'s cap test does exactly that. `bestHarvest` is the one with a
@@ -123,7 +124,6 @@ const DESIGN_RECORD: readonly Ruling[] = (
 const HARNESS_RECORD: readonly Ruling[] = (
   [
     'packages/core/src/sim/run.ts#RunResult.policy',
-    'packages/core/src/sim/run.ts#RunResult.seed',
     'packages/core/src/sim/run.ts#RunResult.bestHarvest',
   ] as const
 ).map((id) => ({
@@ -451,6 +451,43 @@ const REPLAY_ORACLE: readonly Ruling[] = [
   },
 ];
 
+/**
+ * THE STRANGER HARNESS (ruled 2026-10-21, `LOG.md` Session 140).
+ *
+ * `pnpm stranger` writes one JSON transcript per run under
+ * `scripts/stranger/runs/`, and the screen a player read each turn is the
+ * transcript's whole point — a person opens it to see what the model saw. No
+ * code reads `TurnRecord.screen` back, because the reader is a person. And
+ * `Said.kind` is a label table (`screen.ts`'s `SAID_LABEL`, keyed by every
+ * kind) plus one filter naming the kinds a player would remember; two kinds
+ * are never COMPARED against because a lookup is not a comparison.
+ */
+const STRANGER_HARNESS: readonly Ruling[] = [
+  {
+    id: 'scripts/stranger/run.ts#TurnRecord.screen',
+    on: '2026-10-21',
+    why:
+      'Serialised to the transcript on disk for a person to read — see ' +
+      '`STRANGER_HARNESS`. The pass cannot see a `JSON.stringify` reader.',
+  },
+  {
+    id: 'scripts/stranger/run.ts#TurnRecord.said',
+    on: '2026-10-21',
+    why:
+      'What the game had just said when the player wrote that sentence: the ' +
+      'other half of the transcript a grader reads beside `screen` — see ' +
+      '`STRANGER_HARNESS`.',
+  },
+  {
+    id: 'scripts/stranger/shell.ts#Said.kind',
+    on: '2026-10-21',
+    why:
+      'Every kind is a key of `SAID_LABEL`; the two never compared against ' +
+      '(`receipt`, `answer`) are printed through the table like the rest — see ' +
+      '`STRANGER_HARNESS`.',
+  },
+];
+
 export const ALLOW: readonly Ruling[] = [
   {
     id: 'apps/game/src/board/rings.ts#Ring.width',
@@ -610,6 +647,7 @@ export const ALLOW: readonly Ruling[] = [
   ...RULE_LIVES_IN_A_TEST,
   ...TIMELINE_SLOT_FILTER,
   ...REPLAY_ORACLE,
+  ...STRANGER_HARNESS,
 ];
 
 /** Index, so a pass can ask in one call. */
