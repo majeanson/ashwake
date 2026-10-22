@@ -54,6 +54,13 @@ export type Moment = {
    * harness, a first frame.
    */
   readonly kind?: 'world' | 'daily' | 'shared' | undefined;
+  /**
+   * A world run opened over ground a past run walked (the world's second run
+   * or later): the moment LE MONDE's card is about, since the growth it
+   * describes is then on screen (2026-10-21). Absent: a first run, or not a
+   * world.
+   */
+  readonly grown?: boolean | undefined;
 };
 
 type Phase = 'walk' | 'tour' | 'free';
@@ -336,11 +343,23 @@ export const SCHEDULE: readonly Slot[] = [
   // time a device enters one, in any phase — a veteran opening BEGIN DAILY
   // gets it as much as a stranger whose first run is a daily link. Behind
   // the story and the goal, which say what the place is before this says
-  // which kind of visit it is. The world has no card: the story is its.
+  // which kind of visit it is. The world's card (Marc, later: _"WORLD being a
+  // plateau that grows over time, finding uniques, etc. too as a third
+  // type"_) waits for a world's SECOND run — the first frame over remembered
+  // ground — because it is about growth, and a fresh device's first run has
+  // two opening cards already.
+  {
+    id: 'world',
+    as: 'card',
+    opens: { lesson: 'kinds', row: 'world' },
+    phase: 'any',
+    paced: false,
+    when: ({ kind, grown }) => kind === 'world' && grown === true,
+  },
   {
     id: 'daily',
     as: 'card',
-    opens: { lesson: 'expedition' },
+    opens: { lesson: 'kinds', row: 'daily' },
     phase: 'any',
     paced: false,
     when: ({ kind }) => kind === 'daily',
@@ -348,7 +367,7 @@ export const SCHEDULE: readonly Slot[] = [
   {
     id: 'shared',
     as: 'card',
-    opens: { lesson: 'expedition' },
+    opens: { lesson: 'kinds', row: 'shared' },
     phase: 'any',
     paced: false,
     when: ({ kind }) => kind === 'shared',

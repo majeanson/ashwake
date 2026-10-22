@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { begin, clearCards, openMore, placeOneTile, tilesLeft, watchErrors } from './helpers';
+import { TEACH_IDS } from '../packages/core/src/meta/progress';
 
 /**
  * Dismiss the card on screen, then give the NEXT one time to arrive. A card
@@ -655,5 +656,75 @@ test('a fresh device entering the DAILY is told what it is, once, behind the sto
   await page.locator('[data-hud="hand"]').waitFor({ state: 'visible' });
   await page.waitForTimeout(600);
   await expect(dailyCard).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('THE WORLD is told the first time a world opens over remembered ground, not before (2026-10-21)', async ({
+  page,
+}) => {
+  /*
+   * Marc, 2026-10-21: "WORLD being a plateau that grows over time, finding
+   * uniques, etc. too as a third type". Its card waits for a world's second
+   * run — the first frame over ground a past run walked — because it is about
+   * growth, and a fresh device's first run has two opening cards already. The
+   * device here has met every lesson but this one, so nothing else speaks,
+   * and its slot holds a world that has settled one run (`?end=1` cannot
+   * stand in: its fixture meets every lesson, this one included). The world's
+   * seed is the first world's, `content/learn`'s.
+   */
+  const errors = watchErrors(page);
+  const seedDevice = (met: readonly string[], runs: number) =>
+    page.addInitScript(
+      ({ met, runs }: { met: readonly string[]; runs: number }) => {
+        localStorage.setItem('ashwake.progress.v1', JSON.stringify({ relics: 0, bought: {}, met }));
+        localStorage.setItem(
+          'ashwake.world.1.v1',
+          JSON.stringify({
+            worldSeed: 933,
+            revealed: ['0,0', '1,0', '0,1'],
+            territories: [],
+            shrines: [],
+            finds: [],
+            goalsMet: [],
+            perks: [],
+            worn: null,
+            runs,
+          }),
+        );
+      },
+      { met, runs },
+    );
+  const met = TEACH_IDS.filter((id) => id !== 'world');
+  const worldCard = page.locator('.card-scrim .card').filter({ hasText: /THE WORLD|LE MONDE/ });
+
+  // A world that has settled one run: its next run opens over remembered ground.
+  await seedDevice(met, 1);
+  await page.goto('/');
+  // The door itself, not `begin`: that helper clears the opening card it is waiting for.
+  await page.locator('[data-door="begin"]').click();
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+  await expect(worldCard).toBeVisible();
+  await expect(worldCard).toContainText(/UNIQUE/i);
+  await worldCard.locator('.card-acts button').last().click();
+  await expect(worldCard).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('THE WORLD is not told on a world’s first run (2026-10-21)', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.addInitScript(
+    (met: readonly string[]) => {
+      localStorage.setItem('ashwake.progress.v1', JSON.stringify({ relics: 0, bought: {}, met }));
+    },
+    TEACH_IDS.filter((id) => id !== 'world'),
+  );
+  await page.goto('/');
+  // The door itself, not `begin`: that helper clears the opening card it is waiting for.
+  await page.locator('[data-door="begin"]').click();
+  await expect(page.locator('[data-hud="stats"]')).toBeVisible();
+  await page.waitForTimeout(600);
+  await expect(
+    page.locator('.card-scrim .card').filter({ hasText: /THE WORLD|LE MONDE/ }),
+  ).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });

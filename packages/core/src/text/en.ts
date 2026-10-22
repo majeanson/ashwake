@@ -327,6 +327,40 @@ export const STRINGS_EN: Strings = {
       more: 'It gets in the way of nothing; anything can be built on it.',
       card: 'Keep it for the right colour when your hand has one.',
     },
+    kinds: {
+      name: 'THE THREE KINDS OF RUN',
+      terms: [],
+      core: 'Three kinds of run, the same ground and the same rules: what changes is what follows you home.',
+      row: {
+        world: {
+          name: 'THE WORLD',
+          terms: [],
+          lines: [
+            'A WORLD is a board of your own that grows from one run to the next: ground you walked stays on the map, and so do the territories you claimed.',
+            'Woken shrines unlock for good (more magic and unique tiles, a wider hand), finds give perks, and relics buy the shop.',
+            'Every run starts stronger than the last.',
+          ],
+        },
+        daily: {
+          name: 'THE DAILY',
+          terms: [],
+          lines: [
+            'THE DAILY is the same board for everyone today, once a day.',
+            'Your score climbs today’s ladder; nothing comes home with you: no relics, no world.',
+            'At the end, KEEP THIS BOARD to make it a world of your own.',
+          ],
+        },
+        shared: {
+          name: 'A SHARED BOARD',
+          terms: [],
+          lines: [
+            'A SHARED BOARD is one someone sent you: the same ground, the same caches, the same sites.',
+            'Nothing comes home with you: no relics, no world.',
+            'At the end, KEEP THIS BOARD to make it a world of your own.',
+          ],
+        },
+      },
+    },
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,
@@ -666,25 +700,6 @@ The pocket turned to STONE. ${red === null ? 'It still surrounds, but never matc
 
   howItWorks:
     'Place tiles until they’re surrounded and ripe, then POP them to score or to earn tiles to keep going. Every move is a bet between cashing in now and building toward something bigger. To start, grow ONE colour into one big blob.',
-
-  kinds: {
-    daily: {
-      name: 'THE DAILY',
-      lines: [
-        'The same board for everyone today, once a day.',
-        'Your score climbs today’s ladder; nothing comes home with you: no relics, no world.',
-        'At the end, KEEP THIS BOARD to make it a world of your own.',
-      ],
-    },
-    shared: {
-      name: 'A SHARED BOARD',
-      lines: [
-        'Someone sent you their board: the same ground, the same caches, the same sites.',
-        'Nothing comes home with you: no relics, no world.',
-        'At the end, KEEP THIS BOARD to make it a world of your own.',
-      ],
-    },
-  },
 
   share: {
     run: (name, pts, placements, arc) =>

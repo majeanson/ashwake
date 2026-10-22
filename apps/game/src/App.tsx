@@ -1268,6 +1268,15 @@ function Game() {
    */
   const mode: 'world' | 'shared' | 'daily' =
     daily !== null ? 'daily' : session.detour ? 'shared' : 'world';
+  /**
+   * A world run opened over ground a past run walked — the world's second run
+   * or later (`runs` counts settled runs). THE WORLD's card is told then, when
+   * the growth it describes is on screen (2026-10-21, Marc).
+   */
+  const grown = useCallback(
+    (rootSeed: number): boolean => mode === 'world' && (worldHeld(rootSeed)?.runs ?? 0) > 0,
+    [mode, worldHeld],
+  );
 
   const [spokeAt, setSpokeAt] = useState<number | null>(null);
   const spokeRef = useRef<number | null>(null);
@@ -1286,6 +1295,7 @@ function Game() {
         placed: at.hud.placements > 0,
         since: sinceSpoke(spokeRef.current, at.hud.placements),
         kind: mode,
+        grown: grown(at.state.rootSeed),
       };
       const due = nextLesson(moment, after);
       if (due === null || due.as !== 'toast') return false;
@@ -1297,7 +1307,7 @@ function Game() {
       arm(cueOf(due.id));
       return true;
     },
-    [theme, s, say, setProgress, markSpoke, arm, mode],
+    [theme, s, say, setProgress, markSpoke, arm, mode, grown],
   );
 
   /**
@@ -1898,11 +1908,12 @@ function Game() {
               placed: snap.hud.placements > 0,
               since: sinceSpoke(spokeAt, snap.hud.placements),
               kind: mode,
+              grown: grown(snap.state.rootSeed),
             },
             progress,
           )
         : null,
-    [started, snap.board, snap.hud, progress, spokeAt, mode],
+    [started, snap.board, snap.hud, snap.state.rootSeed, progress, spokeAt, mode, grown],
   );
   const card = teach !== null && teach.as === 'card' ? teach.id : null;
   /** The NEW chips showing over the hand, and the one whose card is open. */
@@ -3591,7 +3602,7 @@ function Game() {
     readonly row?: RowKey | undefined;
   }): void => openManual({ at: opened.lesson, row: opened.row });
 
-  const tellOpener = (id: 'story' | 'goal' | 'daily' | 'shared'): void => {
+  const tellOpener = (id: 'story' | 'goal' | 'world' | 'daily' | 'shared'): void => {
     setProgress((p) => told(p, id));
     markSpoke(session.get().hud.placements);
     speakLesson(told(progress, id), session.get());
@@ -4904,15 +4915,17 @@ function Game() {
       {/*
         THE KINDS, once each (2026-10-21, Marc: "a small explainer of how it
         works"): what this visit is and what carries over. The same `SaidCard`
-        door — `s.kinds` is the one source, no `LESSONS` entry.
+        door; the words are the rows of THE THREE KINDS OF RUN in the manual
+        (`lesson.kinds`), so the card and the section cannot differ.
       */}
-      {(card === 'daily' || card === 'shared') && cardRoom && (
+      {(card === 'world' || card === 'daily' || card === 'shared') && cardRoom && (
         <SaidCard
-          text={`${s.kinds[card].name}\n${s.kinds[card].lines.join('\n')}`}
+          text={`${s.lesson.kinds.row[card].name}\n${s.lesson.kinds.row[card].lines.join('\n')}`}
           theme={theme}
           s={s}
           onTerm={openTerm}
-          onManual={() => openManual({ at: 'expedition' })}
+          // HOW TO PLAY › lands on this kind's row of THE THREE KINDS OF RUN.
+          onManual={() => openManual({ at: 'kinds', row: card })}
           onDismiss={() => tellOpener(card)}
         />
       )}

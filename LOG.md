@@ -11617,9 +11617,23 @@ job after `3827f4a` had deployed. One `firstRunNow()` now, read by all three.
     that opens one past the walk now tells `shared` in its fixture; and the
     kinds' ids had to join `mayTeach`'s story/goal exception, or the card came
     twice (the generic `LessonCard` renders anything with `opens`).
+19. **"WORLD being a plateau that grows over time, finding uniques, etc. too
+    as a third type"**, and **"make sure the how to play is clear about those
+    3 types, make it a section if necessary."** A section: THE THREE KINDS
+    OF RUN opens the WORLD tab, ahead of THE MAP — one core line, then a row
+    each for a world, the daily and a shared board, and **the rows ARE the
+    cards**: the three `SaidCard`s print a row's name and lines
+    (`lesson.kinds.row`), and each card's HOW TO PLAY › lands on its row, so
+    the card and the section cannot differ. LE MONDE's card fires the first
+    time a world opens over remembered ground — its second run, `runs > 0` on
+    the held world — because it is about growth and a fresh device's first
+    run has two opening cards already (Marc chose this over the first frame).
+    What it says: the ground and the territories stay; woken shrines unlock
+    for good (more magic and unique tiles, a wider hand), finds give perks,
+    relics buy the shop; every run starts stronger than the last.
 
-First paint with the kinds' cards and the forks: 197.1 KB gzip, under the
-203,000 bar moved above.
+First paint with the kinds' cards, the forks and THE THREE KINDS OF RUN:
+197.6 KB gzip, under the 203,000 bar moved above.
 
 First paint after all of it: 196.5 KB gzip, 0.2 KB over the 201,000 bar,
 **moved to 203,000** (`budget.json` says why: five coach clauses, the wait

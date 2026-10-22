@@ -274,8 +274,8 @@ function cardText(
   if (id === 'goal') return `${s.ui.theGoal} — ${s.howItWorks}`;
   // The kinds' cards (2026-10-21), the same shape; the harness plays worlds,
   // so neither fires here, but the wording is the phone's.
-  if (id === 'daily' || id === 'shared')
-    return `${s.kinds[id].name} — ${s.kinds[id].lines.join(' ')}`;
+  if (id === 'world' || id === 'daily' || id === 'shared')
+    return `${s.lesson.kinds.row[id].name} — ${s.lesson.kinds.row[id].lines.join(' ')}`;
   const at = opensAt(id, board);
   const lesson = lessonOf(at.lesson);
   if (lesson === undefined) return null;

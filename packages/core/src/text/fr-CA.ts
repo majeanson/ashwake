@@ -335,6 +335,40 @@ export const STRINGS_FR: Strings = {
       more: 'Il ne gêne rien d’autre; on bâtit n’importe quoi dessus.',
       card: 'Garde-le pour la bonne couleur quand ta main l’a.',
     },
+    kinds: {
+      name: 'LES TROIS SORTES DE PARTIE',
+      terms: [],
+      core: `Trois sortes de partie, le même sol et les mêmes règles${D}: ce qui change, c’est ce qui te suit après.`,
+      row: {
+        world: {
+          name: 'LE MONDE',
+          terms: [],
+          lines: [
+            `Un MONDE est un plateau à toi, qui grandit d’une partie à l’autre${D}: le sol parcouru reste sur la carte, les territoires réclamés aussi.`,
+            'Les sanctuaires éveillés débloquent pour de bon (plus de tuiles magiques et uniques, une main plus large), les trouvailles donnent des atouts, et les reliques achètent la boutique.',
+            'Chaque partie commence plus forte que la dernière.',
+          ],
+        },
+        daily: {
+          name: 'LE QUOTIDIEN',
+          terms: [],
+          lines: [
+            'LE QUOTIDIEN est le même plateau pour tout le monde aujourd’hui, une fois par jour.',
+            `Ton score monte sur l’échelle du jour; rien ne rentre avec toi${D}: pas de reliques, pas de monde.`,
+            'À la fin, GARDE CE PLATEAU pour en faire un monde à toi.',
+          ],
+        },
+        shared: {
+          name: 'UN PLATEAU PARTAGÉ',
+          terms: [],
+          lines: [
+            `Un PLATEAU PARTAGÉ est celui que quelqu’un t’a envoyé${D}: le même sol, les mêmes caches, les mêmes sites.`,
+            `Rien ne rentre avec toi${D}: pas de reliques, pas de monde.`,
+            'À la fin, GARDE CE PLATEAU pour en faire un monde à toi.',
+          ],
+        },
+      },
+    },
   },
   luckCore: LUCK_CORE,
   rareStar: RARE_STAR,
@@ -685,25 +719,6 @@ La poche est devenue de la PIERRE. ${red === null ? 'Elle entoure encore, mais e
 
   howItWorks:
     'Pose des tuiles jusqu’à ce qu’elles soient entourées et mûres, puis RÉCOLTE-les pour marquer des points ou gagner des tuiles et continuer. Chaque geste est un pari entre encaisser maintenant et bâtir vers plus grand. Pour commencer, fais grandir UNE couleur en un seul gros bloc.',
-
-  kinds: {
-    daily: {
-      name: 'LE QUOTIDIEN',
-      lines: [
-        'Le même plateau pour tout le monde aujourd’hui, une fois par jour.',
-        `Ton score monte sur l’échelle du jour; rien ne rentre avec toi${D}: pas de reliques, pas de monde.`,
-        'À la fin, GARDE CE PLATEAU pour en faire un monde à toi.',
-      ],
-    },
-    shared: {
-      name: 'UN PLATEAU PARTAGÉ',
-      lines: [
-        `Quelqu’un t’a envoyé son plateau${D}: le même sol, les mêmes caches, les mêmes sites.`,
-        `Rien ne rentre avec toi${D}: pas de reliques, pas de monde.`,
-        'À la fin, GARDE CE PLATEAU pour en faire un monde à toi.',
-      ],
-    },
-  },
 
   share: {
     run: (name, pts, placements, arc) =>

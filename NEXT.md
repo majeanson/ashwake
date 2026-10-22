@@ -279,8 +279,10 @@ run ends; that is the tutorial, not a bug.
 **Daily vs world** (ruling 18): one tutorial, the dials pick the sentence —
 the relics line, the relic row and "the world remembers" now fork on the
 run's economy — and each kind gets one card the first time a device enters
-it (LE QUOTIDIEN, UN PLATEAU PARTAGÉ). A `?seed=` link on a fresh device is a
-shared board and says so.
+it (LE MONDE on a world's second run, LE QUOTIDIEN, UN PLATEAU PARTAGÉ), and
+the three are a section of the manual's WORLD tab, THE THREE KINDS OF RUN,
+whose rows are the cards' words (ruling 19). A `?seed=` link on a fresh
+device is a shared board and says so.
 
 The first minute moved, on Marc's word, in every one of these: the freeze
 (§0) is lifted for them and holds for everything else. Session C plays the

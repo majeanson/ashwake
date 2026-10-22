@@ -274,15 +274,10 @@ describe('the schedule covers every moment (2026-10-13)', () => {
   it('puts RIPE and POP under their own lessons and the expedition’s moments under THE EXPEDITION', () => {
     expect([...momentsOf('ripe')].sort()).toEqual(['ripe']);
     expect([...momentsOf('pop')].sort()).toEqual(['pop']);
-    expect([...momentsOf('expedition')].sort()).toEqual([
-      'daily',
-      'goal',
-      'place',
-      'shared',
-      'story',
-      'undo',
-      'wall',
-    ]);
+    expect([...momentsOf('expedition')].sort()).toEqual(['goal', 'place', 'story', 'undo', 'wall']);
+    // The three kinds' cards open THE THREE KINDS OF RUN at their row (2026-10-21).
+    expect([...momentsOf('kinds')].sort()).toEqual(['daily', 'shared', 'world']);
+    expect(opensAt('world')).toEqual({ lesson: 'kinds', row: 'world' });
     expect(opensAt('ripe')).toEqual({ lesson: 'ripe' });
     expect(opensAt('pop')).toEqual({ lesson: 'pop' });
     expect(opensAt('wall')).toEqual({ lesson: 'expedition', row: 'wall' });
@@ -738,6 +733,23 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
     });
     expect(nextLesson({ ...opening, kind: 'world' as const }, veteran)).toBeNull();
     expect(nextLesson(opening, veteran)).toBeNull();
+  });
+
+  it('tells THE WORLD the first time a world opens over remembered ground, in any phase (2026-10-21)', () => {
+    const opening = momentAt(0);
+    const grown = { ...opening, kind: 'world' as const, grown: true };
+    // A fresh device's first world run has its two opening cards and no more;
+    // its second run in that world — the growth on screen — gets the third.
+    expect(
+      nextLesson({ ...opening, kind: 'world' as const, grown: false }, EMPTY_PROGRESS)?.id,
+    ).toBe('story');
+    const afterGoal = told(told(EMPTY_PROGRESS, 'story'), 'goal');
+    expect(nextLesson({ ...opening, kind: 'world' as const }, afterGoal)?.id).not.toBe('world');
+    expect(nextLesson(grown, afterGoal)).toEqual({ id: 'world', as: 'card' });
+    expect(nextLesson(grown, taughtExcept('world'))).toEqual({ id: 'world', as: 'card' });
+    expect(nextLesson(grown, taughtExcept())).toBeNull();
+    // Not a world: never, however grown the board.
+    expect(nextLesson({ ...grown, kind: 'daily' as const }, taughtExcept('world'))).toBeNull();
   });
 
   it('teaches how a run ends where there is no clock, not only on the last placement', () => {

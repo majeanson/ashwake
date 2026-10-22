@@ -823,3 +823,22 @@ describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
     });
   },
 );
+
+describe.each(LANGUAGES.map((s) => [s.locale, s] as const))(
+  'THE THREE KINDS OF RUN · %s',
+  (_l, s) => {
+    it('lists a world, the daily and a shared board as rows, in the words their cards say', () => {
+      const kinds = lessonOf('kinds')!;
+      expect(kinds.tab).toBe('world');
+      expect(LESSONS.filter((l) => l.tab === 'world')[0]?.id).toBe('kinds');
+      const rows = kinds.rows!(TUNING, SETTLEMENT, s);
+      expect(rows.map((r) => r.key)).toEqual(['world', 'daily', 'shared']);
+      for (const r of rows) {
+        const row = s.lesson.kinds.row[r.key as 'world' | 'daily' | 'shared'];
+        expect(r.text).toBe(row.lines.join(' '));
+        // Each row leads with its own name, since a row prints no name of its own.
+        expect(r.text.toUpperCase()).toContain(row.name.replace(/^(LE |UN |THE |A )/, ''));
+      }
+    });
+  },
+);

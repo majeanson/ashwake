@@ -136,7 +136,9 @@ export const TEACH_IDS = [
   // ledger that already holds something past `story`.
   'goal',
   // THE KINDS (2026-10-21): the daily and a shared board, told once each the
-  // first time a device enters one — a `SaidCard` like the story's.
+  // first time a device enters one — a `SaidCard` like the story's; the world,
+  // the first time one opens over remembered ground.
+  'world',
   'daily',
   'shared',
   // The very first lesson (2026-08-20, the launch audit's finding: nobody was
@@ -508,6 +510,7 @@ export function decodeProgress(raw: string | null): Progress {
     const WALK = new Set<string>([
       'story',
       'goal',
+      'world',
       'daily',
       'shared',
       'place',

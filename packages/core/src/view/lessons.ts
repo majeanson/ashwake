@@ -86,10 +86,14 @@ import { colourLesson, type TipRow } from './view';
  * extras are the ones `glossary.ts` added on 2026-08-27 for exactly that
  * reason.
  */
-export type LessonId = TeachId | 'expedition' | 'stash' | 'grounds' | 'magic' | 'end' | 'native';
+export type LessonId =
+  TeachId | 'expedition' | 'stash' | 'grounds' | 'magic' | 'end' | 'native' | 'kinds';
 
 /** A hex has six sides, and the ground advice's figures are "all six paying". */
 const SIDES = 6;
+
+/** The three kinds of run, in the manual's order (`MODES.md`). */
+const KINDS = ['world', 'daily', 'shared'] as const;
 
 /** Whether this run can bank a relic at all — a world; never a daily, a shared board or LEARN FIRST. */
 const relicsFlow = (t: Tuning): boolean =>
@@ -202,7 +206,11 @@ export type RowKey =
   | 'forge'
   | 'sacrifice'
   // THE RUN'S END's relics.
-  | 'relic';
+  | 'relic'
+  // THE THREE KINDS OF RUN, one row each (2026-10-21).
+  | 'world'
+  | 'daily'
+  | 'shared';
 
 /** A row's name and tappable spellings, like a lesson's own. */
 type RowHead = {
@@ -576,6 +584,28 @@ export const LESSONS: readonly Lesson[] = [
    * `lensHint` is the toast's own sentence and stays shared: the manual and
    * the drip cannot describe the gesture two ways.
    */
+  /**
+   * THE THREE KINDS OF RUN (2026-10-21, Marc: _"make sure the how to play is
+   * clear about those 3 types, make it a section if necessary"_). The WORLD
+   * tab's first section, ahead of THE MAP, which is the world's memory: a
+   * world, the daily, a shared board, one row each. Each row's three lines
+   * are also the `SaidCard` the game tells once per device
+   * (`shell/teaching.ts`, `world` / `daily` / `shared`); the card prints the
+   * row's name and lines, and HOW TO PLAY › lands on the row.
+   */
+  {
+    id: 'kinds',
+    tab: 'world',
+    beats: [{ at: 'core', say: (_t, _theme, s) => s.lesson.kinds.core }],
+    rows: (_t, _theme, s) =>
+      KINDS.map((k) => ({ key: k, text: s.lesson.kinds.row[k].lines.join(' ') })),
+    rowHeads: (s) =>
+      KINDS.map((k) => ({
+        key: k,
+        name: s.lesson.kinds.row[k].name,
+        terms: s.lesson.kinds.row[k].terms,
+      })),
+  },
   {
     id: 'map',
     tab: 'world',

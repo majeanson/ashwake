@@ -286,6 +286,25 @@ type LessonStrings = {
     readonly more: string;
     readonly card: string;
   };
+  /**
+   * THE KINDS OF RUN (2026-10-21, Marc: _"a small explainer of how it works"_,
+   * then _"make sure the how to play is clear about those 3 types, make it a
+   * section if necessary"_). A manual section of three rows — a world, the
+   * daily, a shared board — and each row is also a `SaidCard`, told once per
+   * device: the daily's and the shared board's the first time a device enters
+   * one, the world's (_"WORLD being a plateau that grows over time, finding
+   * uniques, etc. too as a third type"_) the first time a world opens over
+   * ground a past run walked, when the growth it describes is on screen.
+   */
+  readonly kinds: LessonHead & {
+    readonly core: string;
+    readonly row: Readonly<
+      Record<
+        'world' | 'daily' | 'shared',
+        LessonHead & { readonly lines: readonly [string, string, string] }
+      >
+    >;
+  };
 };
 
 export type Strings = {
@@ -676,20 +695,6 @@ export type Strings = {
    * later, each at its own moment.
    */
   readonly howItWorks: string;
-
-  /**
-   * THE KINDS OF RUN, told once each (2026-10-21, Marc: _"a small explainer
-   * of how it works"_): a `SaidCard` the first time a device enters the daily
-   * and the first time it opens a shared board, like the story — what this
-   * kind is, what carries over, and the door that keeps the board. The world
-   * needs none: the story is its card.
-   */
-  readonly kinds: Readonly<
-    Record<
-      'daily' | 'shared',
-      { readonly name: string; readonly lines: readonly [string, string, string] }
-    >
-  >;
 
   readonly share: {
     readonly run: (name: string, pts: number, placements: number, arc: string) => string;
