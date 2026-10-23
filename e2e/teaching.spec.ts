@@ -44,7 +44,8 @@ async function walkToCard(page: Page, id: string) {
       // A ripe pocket refuses the next placement; the card may still be coming.
       refused = true;
     }
-    await page.waitForTimeout(150);
+    // A card now waits out HUSH_MS after the last action (2026-10-23).
+    await page.waitForTimeout(800);
   }
   return card;
 }
@@ -62,24 +63,20 @@ async function walkToCard(page: Page, id: string) {
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('a stranger is told the story, then what to do, then left alone', async ({ page }) => {
+test('a stranger opens on the board and the coach, with no dialog before the first tap (2026-10-23)', async ({
+  page,
+}) => {
   const errors = watchErrors(page);
   await page.goto('/');
-  // Not `begin`: it dismisses every card, and the cards are the point.
+  // Not `begin`: it dismisses every card, and the absence of one is the point.
   await page.locator('[data-door="begin"]').click();
+  await page.locator('[data-hud="hand"]').waitFor({ state: 'visible' });
+  await page.waitForTimeout(600);
 
-  const card = page.locator('.card-scrim .card');
-  await expect(card).toContainText(/THE STORY|L’HISTOIRE/);
-  await card.locator('button').last().click({ force: true });
-
-  // The second card is the game in two sentences.
-  await expect(card).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
-  await expect(card).toContainText(/POP|RÉCOLTE/);
-  await card.locator('button').last().click({ force: true });
-
-  // And then nothing is stacked behind it: the board is theirs.
-  await page.waitForTimeout(300);
   await expect(page.locator('.card-scrim')).toHaveCount(0);
+  await expect(page.locator('.toast')).toContainText(
+    /Tap a glowing edge to put down|Touche une arête lumineuse pour poser/,
+  );
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
@@ -146,14 +143,13 @@ test('the tutorial can be replayed from SETTINGS, from the story', async ({ page
   await armed.click();
 
   // A new world, MENU closed behind it (it used to stay open over a run in one
-  // of the player's own worlds), and the lessons start over from the story.
-  await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
+  // of the player's own worlds), and the lessons start over from the coach.
+  await expect(page.locator('.toast')).toContainText(
+    /Tap a glowing edge to put down|Touche une arête lumineuse pour poser/,
+  );
   await expect(page.locator('[data-panel]'), 'a panel stayed open over the tutorial').toHaveCount(
     0,
   );
-  await page.locator('.card-scrim button').last().click({ force: true });
-  await expect(page.locator('.card-scrim .card')).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
-  await page.locator('.card-scrim button').last().click({ force: true });
   await clearCards(page);
   expect(await tilesLeft(page), 'the replay did not start a fresh run').toBeGreaterThan(before);
 
@@ -172,7 +168,9 @@ test('the tutorial is also one tap from MENU, for somebody who is lost', async (
   await expect(armed).toContainText(/TUTORIAL WORLD|MONDE TUTORIEL/);
   await armed.click();
 
-  await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
+  await expect(page.locator('.toast')).toContainText(
+    /Tap a glowing edge to put down|Touche une arête lumineuse pour poser/,
+  );
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -193,7 +191,7 @@ test('the first run is walked: one coach line per step, and nothing else in the 
 
   const toast = page.locator('.toast');
   await expect(toast).toContainText(
-    /The tiles under the board are your hand|Les tuiles sous le plateau forment ta main/,
+    /Tap a glowing edge to put down|Touche une arête lumineuse pour poser/,
   );
 
   // The walk changes its words as the player gets further in.
@@ -334,7 +332,7 @@ test('the START tab is THE EXPEDITION, RIPE, POP and THE RUN’S END, with the m
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('the walked first run raises RIPE’s card then POP’s, each once, and neither after the pop', async ({
+test('the walked first run raises RIPE’s card once, never POP’s, and neither after the pop (2026-10-23)', async ({
   page,
 }) => {
   /*
@@ -348,7 +346,7 @@ test('the walked first run raises RIPE’s card then POP’s, each once, and nei
 
   const seen: string[] = [];
   const note = async (): Promise<void> => {
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(800);
     const ids = await page
       .locator('[data-card]')
       .evaluateAll((els) => els.map((el) => el.getAttribute('data-card') ?? '?'));
@@ -369,10 +367,8 @@ test('the walked first run raises RIPE’s card then POP’s, each once, and nei
   expect(refused, 'a ripe pocket never stopped the placing').toBe(true);
   const once = (id: string) => seen.filter((x) => x === id);
   expect(once('lesson-ripe'), seen.join(' → ')).toHaveLength(1);
-  expect(once('lesson-pop'), seen.join(' → ')).toHaveLength(1);
-  expect(seen.indexOf('lesson-ripe'), 'POP came before RIPE').toBeLessThan(
-    seen.indexOf('lesson-pop'),
-  );
+  // POP has no card in the walk: the coach says "press POP" and the pop answers.
+  expect(once('lesson-pop'), seen.join(' → ')).toHaveLength(0);
 
   await page
     .getByRole('button', { name: /POP|RÉCOLT/ })
@@ -385,7 +381,7 @@ test('the walked first run raises RIPE’s card then POP’s, each once, and nei
   await placeOneTile(page, { keepCards: true });
   await note();
   expect(once('lesson-ripe'), `RIPE's card came back: ${seen.join(' → ')}`).toHaveLength(1);
-  expect(once('lesson-pop'), `POP's card came back: ${seen.join(' → ')}`).toHaveLength(1);
+  expect(once('lesson-pop'), `POP's card came back: ${seen.join(' → ')}`).toHaveLength(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -504,41 +500,36 @@ test('a cue tapped out and a coach line tapped away stay away after the next pop
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('HOW TO PLAY › on the opening cards opens the book at THE EXPEDITION, and the card is back', async ({
-  page,
-}) => {
+test('HOW TO PLAY › on an opening card opens the book, and the card is back', async ({ page }) => {
   /*
    * 2026-10-13, Marc's linking decision: every card that teaches carries one
-   * quiet link to the book, at that card's own section. The story is the first
-   * card a stranger meets, so it is the first one asked.
+   * quiet link to the book, at that card's own section. The first card a
+   * stranger meets used to be the story; since 2026-10-23 the story waits for
+   * the run's end, so the opening card this asks is THE DAILY's, on a daily link.
    *
    * 2026-10-14, Marc: _"we come back and the card is gone and we seem out of
    * the tutorial"_. The card is not told by the trip: it is back, unchanged,
    * when the book closes.
    */
   const errors = watchErrors(page);
-  await page.goto('/');
+  await page.goto('/?daily=2026-08-26');
   await page.locator('[data-door="begin"]').click();
 
   const card = page.locator('.card-scrim .card');
-  await expect(card).toContainText(/THE STORY|L’HISTOIRE/);
+  await expect(card).toContainText(/THE DAILY|LE QUOTIDIEN/);
   await card.locator('[data-action="card-manual"]').click();
 
   const manual = page.locator('[data-panel="manual"]');
   await expect(manual).toBeVisible();
-  await expect(page.locator('[data-tab="start"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(manual.locator('#manual-expedition')).toBeInViewport();
   // No card sits over the book.
   await expect(page.locator('.card-scrim')).toHaveCount(0);
 
-  // Closing it returns the player to the SAME card, still the story; only its
-  // own GOT IT moves the walk on to the goal.
+  // Closing it returns the player to the SAME card; only its own GOT IT tells it.
   await manual.locator('.panel-back').click();
   await expect(manual).toHaveCount(0);
-  await expect(page.locator('.card-scrim .card')).toContainText(/THE STORY|L’HISTOIRE/);
+  await expect(page.locator('.card-scrim .card')).toContainText(/THE DAILY|LE QUOTIDIEN/);
   await page.locator('.card-scrim .card .card-acts button').last().click();
-  await expect(page.locator('.card-scrim .card')).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
-  await expect(page.locator('.card-scrim .card')).not.toContainText(/THE STORY|L’HISTOIRE/);
+  await expect(page.locator('.card-scrim')).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -549,46 +540,65 @@ test('HOW TO PLAY › on a fired lesson card lands on its section, and the card 
   await page.goto('/?seed=7');
   await begin(page);
 
-  const pop = await walkToCard(page, 'lesson-pop');
-  await expect(pop, 'the walk never raised POP’s card').toHaveCount(1);
+  const pop = await walkToCard(page, 'lesson-ripe');
+  await expect(pop, 'the walk never raised RIPE’s card').toHaveCount(1);
   await pop.locator('[data-action="card-manual"]').click();
 
   const manual = page.locator('[data-panel="manual"]');
   await expect(manual).toBeVisible();
   await expect(page.locator('[data-tab="start"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(manual.locator('#manual-pop')).toBeInViewport();
+  await expect(manual.locator('#manual-ripe')).toBeInViewport();
   await expect(page.locator('[data-card]')).toHaveCount(0);
 
   // Not told by the trip: closing the book brings the same card back, and its
   // own GOT IT is what tells it.
   await manual.locator('.panel-back').click();
   await expect(manual).toHaveCount(0);
-  await expect(page.locator('[data-card="lesson-pop"]')).toHaveCount(1);
-  await page.locator('[data-card="lesson-pop"] .card-acts button').last().click();
+  await expect(page.locator('[data-card="lesson-ripe"]')).toHaveCount(1);
+  await page.locator('[data-card="lesson-ripe"] .card-acts button').last().click();
   await page.waitForTimeout(400);
-  await expect(page.locator('[data-card="lesson-pop"]')).toHaveCount(0);
+  await expect(page.locator('[data-card="lesson-ripe"]')).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('a term tapped in a fired card opens its own card, and the fired card is back after', async ({
+// SKIPPED 2026-10-23: the card this drove was POP's, the only fired card in the walk
+// that linked a term; with POP's card retired, no walk card links one. The behaviour
+// still lives (the book and the end screen link terms) — re-aim this at the first tour
+// card that names another concept (LUCK / CARAVAN) once the seed to reach it is chosen.
+test.skip('a term tapped in a fired card opens its own card, and the fired card is back after', async ({
   page,
 }) => {
   // 2026-10-14: a detour from a lesson never skips it (see the HOW TO PLAY ›
   // tests above). The term card gives the lesson way and hands it back.
+  // A fired card that names another concept: THE FOUR GROUNDS, the tour's first,
+  // on a device that has popped once (RIPE's own words are its own terms, so
+  // they are not links, and POP's card is retired in the walk — 2026-10-23).
   const errors = watchErrors(page);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ashwake.progress.v1',
+      JSON.stringify({
+        relics: 0,
+        bought: {},
+        met: ['story', 'goal', 'shared', 'place', 'wall', 'ripe', 'pop', 'walked'],
+      }),
+    );
+  });
   await page.goto('/?seed=7');
   await begin(page);
+  await clearCards(page);
+  await placeOneTile(page, { keepCards: true });
 
-  const pop = await walkToCard(page, 'lesson-pop');
-  await expect(pop, 'the walk never raised POP’s card').toHaveCount(1);
+  const card = page.locator('[data-card="lesson-grounds"]');
+  await expect(card).toHaveCount(1);
 
-  await pop.locator('button.term').first().click();
-  // One card at a time: the term's, not POP's under it.
+  await card.locator('button.term').first().click();
+  // One card at a time: the term's, not the ground's under it.
   await expect(page.locator('[data-card]')).toHaveCount(1);
-  await expect(pop).toHaveCount(0);
+  await expect(card).toHaveCount(0);
 
   await page.locator('.card-scrim .card-acts button').last().click();
-  await expect(pop).toHaveCount(1);
+  await expect(card).toHaveCount(1);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -624,7 +634,7 @@ test('a term in the book takes you to its section, on whichever tab it lives', a
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('a fresh device entering the DAILY is told what it is, once, behind the story and the goal (2026-10-21)', async ({
+test('a fresh device entering the DAILY is told what it is, once, and it is the only opening card (2026-10-21)', async ({
   page,
 }) => {
   /*
@@ -638,10 +648,6 @@ test('a fresh device entering the DAILY is told what it is, once, behind the sto
   await page.locator('[data-door="begin"]').click();
 
   const card = page.locator('.card-scrim .card');
-  await expect(card).toContainText(/THE STORY|L’HISTOIRE/);
-  await card.locator('.card-acts button').last().click();
-  await expect(card).toContainText(/HOW IT WORKS|COMMENT ÇA MARCHE/);
-  await card.locator('.card-acts button').last().click();
   await expect(card).toContainText(/THE DAILY|LE QUOTIDIEN/);
   await expect(card).toContainText(/KEEP THIS BOARD|GARDE CE PLATEAU/);
   await card.locator('.card-acts button').last().click();

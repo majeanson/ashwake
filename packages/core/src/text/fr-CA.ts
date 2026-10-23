@@ -375,7 +375,7 @@ export const STRINGS_FR: Strings = {
   lastGaspRule: LAST_GASP_RULE,
   lensHint: 'Touche le brouillard dont tu te souviens pour éclairer son sol.',
   coach: {
-    place: `Les tuiles sous le plateau forment ta main, et la tuile éclairée est la prochaine que tu poseras. Touche une arête lumineuse du plateau pour la poser${D}: chaque tuile posée agrandit ton terrain, et c’est le terrain qui marque.`,
+    place: `Touche une arête lumineuse pour poser la tuile éclairée de ta main${D}: entoure tes tuiles jusqu’à ce qu’elles mûrissent, puis RÉCOLTE-les pour marquer et gagner des tuiles.`,
     // The number on a lit edge named (2026-10-21, `LOG.md` Session 140): five
     // of nine strangers called turns 2–5 their most lost moment, "+3 — je ne
     // savais pas ce que ça voulait dire".
@@ -875,7 +875,8 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     newRun: 'NOUVELLE PARTIE',
     mainMenu: 'MENU PRINCIPAL',
     settings: 'RÉGLAGES',
-    restart: 'RECOMMENCER',
+    restart: 'RECOMMENCER LA PARTIE',
+    advanced: 'AVANCÉ',
     newWorld: 'NOUVEAU MONDE',
     back: 'RETOUR',
     closeAll: 'TOUT FERMER',
@@ -1034,6 +1035,7 @@ Rien de neuf dedans. Une trouvaille ne donne que ce que tu ne portes pas déjà,
     beginDaily: (day) => `COMMENCER LE QUOTIDIEN ${day}`,
     learnFirst: 'APPRENDRE D’ABORD',
     learnFirstNote: 'Première fois? Apprends sur un plateau d’essai, puis reviens à celui-ci.',
+    pitch: 'Pose des tuiles, fais-les mûrir, récolte. Une partie dure quelques minutes.',
     cameByLink: 'Ce monde t’est arrivé par un lien. Il repart par le même chemin.',
     ending: {
       scored: (n) => `Partie terminée${D}: ${nb(n)} point${pl(n, '', 's')}`,

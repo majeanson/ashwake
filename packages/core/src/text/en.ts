@@ -77,7 +77,7 @@ export const STRINGS_EN: Strings = {
       name: 'THE EXPEDITION',
       terms: [],
       lines: [
-        'You are walking out into a dark plane, and you push on as far as your tiles last.',
+        'You are walking out into a dark plain, and you push on as far as your tiles last.',
         `Every placement costs tiles. Popping pays them back. A run ends when you run out, and ${mid(SHAPE)}`,
         'Relics come home with you. The shop spends them, so the next expedition starts stronger than this one.',
       ],
@@ -368,7 +368,7 @@ export const STRINGS_EN: Strings = {
   lensHint: 'Tap remembered fog to light its ground.',
   coach: {
     place:
-      'The tiles under the board are your hand, and the lit one is the next you will place. Tap a glowing edge on the board to put it down: every tile you place is ground you build, and ground is what scores.',
+      'Tap a glowing edge to put down the lit tile from your hand. Surround your tiles until they ripen, then POP them to score and earn tiles to keep going.',
     match:
       'Place the next tiles beside ones of the same colour: matching neighbours give WORTH. The number on a glowing edge is the worth your tile would have there.',
     grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in.',
@@ -410,14 +410,14 @@ export const STRINGS_EN: Strings = {
     epitaph: {
       broke: [
         (p, cost) =>
-          `Out of tiles on the plane, after ${p} placements. They cost ${cost} each by the end.`,
+          `Out of tiles on the plain, after ${p} placements. They cost ${cost} each by the end.`,
         (p, cost) =>
           `The purse ran dry after ${p} placements. Tiles were ${cost} apiece, and nothing was left to pay it.`,
         (p, cost) =>
           `${p} placements, and the last tile went down alone. The next would have cost ${cost}.`,
         (p, cost) => `The expedition spent itself: ${p} placements, the price risen to ${cost}.`,
         (p, cost) =>
-          `No tiles left after ${p} placements. The plane was charging ${cost} each by then.`,
+          `No tiles left after ${p} placements. The plain was charging ${cost} each by then.`,
         (p, cost) =>
           `The lamps carried ${p} placements out. At ${cost} a tile, the dark had the last one.`,
         (p, cost) =>
@@ -429,7 +429,7 @@ export const STRINGS_EN: Strings = {
         (p) => `Walled in after ${p} placements. Nowhere left to build, nothing left to pop.`,
         (p) => `The stone closed in at ${p} placements. Every open hex was spoken for.`,
         (p) => `${p} placements, and the walls had the last word.`,
-        (p) => `Nowhere left to stand after ${p} placements. The plane walled the run in.`,
+        (p) => `Nowhere left to stand after ${p} placements. The plain walled the run in.`,
         (p) =>
           `The run built itself into a corner: ${p} placements, and no ground a tile could take.`,
         (p) => `Stone on every side after ${p} placements. The way out never opened.`,
@@ -585,7 +585,7 @@ The pocket turned to STONE. ${red === null ? 'It still surrounds, but never matc
       name: 'ROOTBOUND',
       note: `Native ground pays up to ${PERK_DIALS.rootboundNativeMax}×, and ground that is not yours pays less. Both sharpen as your luck fills.`,
       gain: `Your own ground pays ${PERK_DIALS.rootboundNative}× to start and ${PERK_DIALS.rootboundNativeMax}× at full luck. The ground’s own bonus is counted first, then the whole lot multiplies.`,
-      lose: `Ground that is not yours pays ${PERK_DIALS.rootboundStray}× to start, and NOTHING once your luck is full. The better your odds get, the less the plane forgives.`,
+      lose: `Ground that is not yours pays ${PERK_DIALS.rootboundStray}× to start, and NOTHING once your luck is full. The better your odds get, the less the plain forgives.`,
       play: 'Grow along ONE colour’s field and pop inside it. Early on a strayed pocket still pays something; bank enough luck and it stops paying at all, so the rule gets stricter exactly as you get richer.',
     },
     secondwind: {
@@ -851,7 +851,8 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     newRun: 'NEW RUN',
     mainMenu: 'MAIN MENU',
     settings: 'SETTINGS',
-    restart: 'RESTART',
+    restart: 'RESTART THIS RUN',
+    advanced: 'ADVANCED',
     newWorld: 'NEW WORLD',
     back: 'BACK',
     closeAll: 'CLOSE ALL',
@@ -1003,6 +1004,7 @@ Nothing new inside. A find grants only what you do not already carry, and only o
     beginDaily: (day) => `BEGIN DAILY ${day}`,
     learnFirst: 'LEARN FIRST',
     learnFirstNote: 'First time? Learn on a practice board, then come back to this one.',
+    pitch: 'Place tiles, let them ripen, pop them for points. A run takes a few minutes.',
     cameByLink: 'This world reached you by a link. It travels the same way out.',
     ending: {
       scored: (n) => `Run over: ${n} point${plural(n, '', 's')}`,

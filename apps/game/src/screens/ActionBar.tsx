@@ -156,6 +156,7 @@ function ActButton({
   value,
   bounty = null,
   note = null,
+  worded = false,
   onClick,
 }: {
   readonly testId: string;
@@ -167,6 +168,8 @@ function ActButton({
   readonly bounty?: string | null | undefined;
   /** A third, dim line under the value — POP's pocket count. */
   readonly note?: string | null | undefined;
+  /** Say the verb on the button, not only in its name — the first run's POP. */
+  readonly worded?: boolean | undefined;
   readonly onClick: () => void;
 }) {
   const name = value === '' ? label : `${label}, ${value}`;
@@ -190,7 +193,7 @@ function ActButton({
           accessible name above, and the manual's section head; on the button
           the mark and the value carry it.
         */}
-        <span className="visually-hidden">{label}</span>
+        <span className={worded ? 'act-word' : 'visually-hidden'}>{label}</span>
         {bounty !== null && (
           <span className="act-mark act-bounty" aria-hidden="true">
             <Icon name={LANDMARK_ICON.site} />
@@ -225,12 +228,15 @@ export function PocketActions({
   s,
   onHarvest,
   knowsRelics,
+  wordedPop = false,
   onNewRun,
 }: {
   readonly hud: HudView;
   readonly s: Strings;
   readonly onHarvest: (choice: HarvestChoice) => void;
   readonly knowsRelics: boolean;
+  /** THE WORD POP ON POP (2026-10-23, a stranger's review: every card says "press POP" and the button showed a hand). On until the device's first pop; the mark alone serves after (Marc, 2026-09-25). */
+  readonly wordedPop?: boolean;
   readonly onNewRun: () => void;
 }) {
   // See SACRIFICE below: a burn is only offered once relics mean something.
@@ -241,6 +247,7 @@ export function PocketActions({
       {hud.canHarvest && (
         <ActButton
           testId="pop"
+          worded={wordedPop}
           icon={CONCEPT_ICON.pop}
           label={s.ui.pop}
           value={

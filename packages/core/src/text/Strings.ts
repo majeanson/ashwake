@@ -867,6 +867,8 @@ export type Strings = {
     readonly mainMenu: string;
     readonly settings: string;
     readonly restart: string;
+    /** The fold in SETTINGS that holds the dials a player sets once, or never (2026-10-23). */
+    readonly advanced: string;
     readonly newWorld: string;
     readonly back: string;
     /** Leave every open panel at once — the escape hatch out of a deep stack. */
@@ -1328,6 +1330,8 @@ export type Strings = {
     /** A shared link on a device that has never finished a run: the tutorial first. */
     readonly learnFirst: string;
     readonly learnFirstNote: string;
+    /** One line under the logo: what this is and how long it takes (2026-10-23). */
+    readonly pitch: string;
     /**
      * The onward invitation, beside SHARE on a run that arrived by link.
      *

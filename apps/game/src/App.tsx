@@ -8,7 +8,7 @@ import { startingPerk } from '@engine/reduce';
 import { NAME } from '@meta/identity';
 import type { Action, GameState, HarvestChoice } from '@engine/state';
 import type { CellView } from '@render/Renderer';
-import { distance, key, parse, type HexKey } from '@engine/hex';
+import { distance, key, neighbourKeys, parse, type HexKey } from '@engine/hex';
 import { namesOf } from '@theme/tokens';
 import { colourLesson, debugLine, describeHexOf, pocketNote, rememberedNativeAt } from '@view/view';
 import { isEnabled } from '@meta/features';
@@ -159,6 +159,7 @@ import {
   cueOf,
   mustPop,
   newDots,
+  HUSH_MS,
   nextLesson,
   offerDots,
   opensAt,
@@ -917,7 +918,7 @@ function Game() {
     [storedTheme, wantsLight, wantsContrast],
   );
   useThemeVars(theme);
-  useDocumentLocale(locale);
+  useDocumentLocale(locale, s.ui.pitch);
   /*
    * This session's live copy of the world — `shell/held.ts` holds the ref, the
    * one door every writer goes through, and the argument for both.
@@ -1278,6 +1279,28 @@ function Game() {
     [mode, worldHeld],
   );
 
+  /**
+   * THE HAND IS BUSY, SO NO CARD (2026-10-23, a stranger's review: _"of five
+   * placement taps, one landed and the dialog ate the rest"_). A card is raised
+   * by the state a placement leaves behind, so it arrived under the player's
+   * next tap and took it. Every action holds cards back for `HUSH_MS`; a moment
+   * that stays true stays armed (the priority list's own contract), so a card
+   * comes when the player stops, never between two taps. Do the action, then
+   * show the tip.
+   */
+  const [hushed, setHushed] = useState(false);
+  const hushTimer = useRef<ReturnType<typeof setTimeout> | 0>(0);
+  const hush = useCallback(() => {
+    setHushed(true);
+    if (hushTimer.current !== 0) clearTimeout(hushTimer.current);
+    hushTimer.current = setTimeout(() => setHushed(false), HUSH_MS);
+  }, []);
+  useEffect(
+    () => () => {
+      if (hushTimer.current !== 0) clearTimeout(hushTimer.current);
+    },
+    [],
+  );
   const [spokeAt, setSpokeAt] = useState<number | null>(null);
   const spokeRef = useRef<number | null>(null);
   const markSpoke = useCallback((placements: number) => {
@@ -1915,7 +1938,7 @@ function Game() {
         : null,
     [started, snap.board, snap.hud, snap.state.rootSeed, progress, spokeAt, mode, grown],
   );
-  const card = teach !== null && teach.as === 'card' ? teach.id : null;
+  const card = !hushed && teach !== null && teach.as === 'card' ? teach.id : null;
   /** The NEW chips showing over the hand, and the one whose card is open. */
   const freshDots = useMemo(
     () =>
@@ -1998,6 +2021,7 @@ function Game() {
       // happened yet. One read, not three: `session.get()` builds a whole
       // snapshot — the board view and the HUD included — and this was calling
       // it three times in six lines for three fields of one state.
+      hush();
       const at = session.get();
       const before = at.state;
       /*
@@ -2060,6 +2084,17 @@ function Game() {
        * nothing.
        */
       const did = whatHappened(action, before, now.state);
+      /*
+       * THE COACH DOES NOT OUTLIVE ITS STEP (2026-10-23, a stranger's review:
+       * _"A pocket is ripe… press POP" stayed up after the pop_). The receipt
+       * waits out the cascade, so until it lands the strip kept the old line;
+       * a pop ends the `pop`/`bank` step, so the line goes with it and the
+       * next quiet beat says the step the player is on.
+       */
+      if (did.popped && (coached.current === 'pop' || coached.current === 'bank')) {
+        coached.current = null;
+        say(null);
+      }
 
       /*
        * The board's voice, on the same seam the receipts use.
@@ -2138,6 +2173,16 @@ function Game() {
        */
       if (did.placed) {
         startWatching();
+        // The ground the placement opens up stays on screen (`keepInView`).
+        if (action.type === 'PLACE') {
+          const { q, r } = parse(action.hex);
+          // The placed hex and every legal edge within three of it: the review's
+          // cut-off edge hexes were the ring, not the neighbours.
+          const edges = now.board.cells
+            .filter((c) => c.legal && distance(parse(c.key), { q, r }) <= 3)
+            .map((c) => c.key);
+          board.current?.keepInView([action.hex, ...neighbourKeys(q, r), ...edges]);
+        }
         witness('placed');
       }
       if (did.popped) witness('popped');
@@ -2449,6 +2494,7 @@ function Game() {
       daily,
       say,
       speakLesson,
+      hush,
       arm,
     ],
   );
@@ -3135,7 +3181,10 @@ function Game() {
       keepsWorld: false,
       fromMenus: true,
     });
-  }, [say, s, setProgress, setSlot, wiring, progress.found, startsFrom]);
+    // No opening card since 2026-10-23, so nothing else says the coach's first
+    // line: the story's dismissal used to be the quiet beat that did (`beginRun`).
+    speakLesson({ ...progress, met: [] }, session.get());
+  }, [say, s, setProgress, setSlot, wiring, progress, startsFrom, speakLesson, session]);
 
   /**
    * BEGIN AT CAMP — the fifth shrine's unlock, finally opening onto something.
@@ -3930,7 +3979,13 @@ function Game() {
             // And never while a film plays (2026-09-24): a replay with its
             // dives runs past the fifteen seconds, nobody touches a film, and
             // a board that rested mid-film dimmed the thing being watched.
-            restMs={isEnabled(features, 'board.awake') || film !== null ? 0 : look.rest * 1000}
+            // Awake while the first run is walked (2026-10-23, a stranger: the logo was
+            // stamped over the board while the coach was still asking for a move).
+            restMs={
+              isEnabled(features, 'board.awake') || film !== null || guided(progress)
+                ? 0
+                : look.rest * 1000
+            }
             wakeMs={look.wake}
             onTap={onTap}
             onHold={onHoldHex}
@@ -4143,6 +4198,7 @@ function Game() {
                 hud={snap.hud}
                 s={s}
                 knowsRelics={hasMet(progress, 'relic')}
+                wordedPop={phaseOf(progress) === 'walk'}
                 onHarvest={onHarvest}
                 onNewRun={newRun}
               />

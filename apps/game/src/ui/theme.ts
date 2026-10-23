@@ -58,8 +58,14 @@ export function useThemeVars(theme: Theme): void {
  * New in this body rather than a regression: Ashwake 1 spoke one language, so
  * the attribute could be a constant in its markup and stay true.
  */
-export function useDocumentLocale(locale: string): void {
+export function useDocumentLocale(locale: string, blurb: string): void {
   useLayoutEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
+  // The description follows the language the first run shows (2026-10-23, a
+  // stranger's review: the page meta was French over an English game). The
+  // static tags in `index.html` say both, for crawlers that run no script.
+  useLayoutEffect(() => {
+    document.querySelector('meta[name="description"]')?.setAttribute('content', blurb);
+  }, [blurb]);
 }

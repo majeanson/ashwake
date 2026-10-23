@@ -1823,7 +1823,7 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   for (let i = 0; i < 24 && (await place.count()) === 0; i++) {
     if ((await scrim.count()) === 0) {
       await placeOneTile(page, { keepCards: true });
-      await page.waitForTimeout(120);
+      await page.waitForTimeout(800); // a card waits out HUSH_MS (2026-10-23)
       continue;
     }
     await scrim.locator('button').last().click({ force: true });

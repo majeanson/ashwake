@@ -321,12 +321,13 @@ export const SCHEDULE: readonly Slot[] = [
     as: 'card',
     // A SaidCard delivers it (`App`), but the manual's opening is its home.
     opens: { lesson: 'expedition' },
-    phase: 'walk',
+    phase: 'any',
     paced: false,
-    // Ahead of PLACE by construction: true from the first frame of any run,
-    // board geometry included, so it is the one card a stranger cannot fail to
-    // meet.
-    when: () => true,
+    // AFTER THE FIRST RUN, not before it (2026-10-23, a stranger's review: two
+    // dialogs before the first tap; _"it lands better once you've felt the
+    // dark"_). The coach strip carries run one, so the story is what the first
+    // run's end says. A veteran has it met already (`decode`).
+    when: ({ hud }) => hud.ended,
   },
   {
     id: 'goal',
@@ -334,9 +335,11 @@ export const SCHEDULE: readonly Slot[] = [
     opens: { lesson: 'expedition' },
     phase: 'walk',
     paced: false,
-    // Right behind the story, on the same first frame: what this place is, then
-    // what to do in it.
-    when: () => true,
+    // RETIRED (2026-10-23): what to do is the coach's first line now
+    // (`coach.place` carries `howItWorks`'s clause), so run one opens on the
+    // board and not on a dialog. The id stays: it is in every ledger, and the
+    // manual's THE EXPEDITION still carries the core.
+    when: () => false,
   },
   // THE KINDS, once each (2026-10-21, Marc: _"a small explainer of how it
   // works"_): the daily and a shared board are each a `SaidCard` the first
@@ -406,7 +409,11 @@ export const SCHEDULE: readonly Slot[] = [
     opens: { lesson: 'pop' },
     phase: 'walk',
     paced: false,
-    when: ({ hud }) => hud.canHarvest,
+    // RETIRED IN THE WALK (2026-10-23, a stranger's review: pressing POP opened
+    // the POP card and did not pop): the coach's `pop` step already says "press
+    // POP" and the first pop's receipt is the explanation, after the action.
+    // RIPE stays the walk's one dialog.
+    when: () => false,
   },
   // The caravan's card, the first time it is IN TOWN with a pocket to try
   // (2026-09-30). The walk's POP card has always been told by then: the card
@@ -986,3 +993,10 @@ export const purseOpened = (progress: Progress): 'card' | 'silent' | null =>
 
 /** Mark one told. Idempotent, so a double-dismiss cannot double-write. */
 export const told = (progress: Progress, id: TeachId): Progress => meet(progress, id);
+
+/**
+ * How long after an action no card may open, in ms (2026-10-23): a card raised
+ * by the state a placement leaves behind arrived under the next tap and took it.
+ * 0 turns the hold off, as every system's dial does.
+ */
+export const HUSH_MS = 700;

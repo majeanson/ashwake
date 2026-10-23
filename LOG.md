@@ -11670,3 +11670,60 @@ in `describeHexOf`), with `prose.pin` re-recorded twice. Nothing else in the
 first minute moved. The SDK install re-keyed the
 pnpm store and left `apps/game`'s `jest-dom` link dangling until
 `pnpm install`; noted so the next session does not hunt for it.
+
+### Session 141 — a stranger's review of the first minute, on a 375 px phone (2026-10-23)
+
+**Question:** a person who had never seen the game played the first minute on
+a phone and wrote down where it hurt (`docs/stranger-review-2026-10-23.md`).
+`STRANGER.md` measures the WORDS and cannot see the screen, so most of what
+they found is new: how many of the first minute's dialogs are in front of a
+tap, and what the camera and the strip do.
+
+**What was already covered:** the first-pop score breakdown, the coach's
+wording, the idea of a daily door (all `STRANGER.md` / `NEXT.md`). **What was
+new:** the first POP press not popping, THE MAP eating placement taps, the
+camera, the strip over the bottom row, the logo stamped mid-tutorial, the
+title screen, the plane/plain split, the page meta, SETTINGS' developer rows,
+the manual's tab row.
+
+**Answer, in the review's order:**
+
+1. _Never swallow the action that triggered a tip._ Every action now holds
+   cards back for `HUSH_MS` (700 ms, `teaching.ts`): a card is raised by the
+   state a placement leaves, so it arrived under the next tap. A card comes
+   when the player stops, never between two taps. The moment stays armed.
+2. _One thing before the first tap._ THE STORY fires when the first run ENDS
+   (phase `any`, `hud.ended`); HOW IT WORKS is retired (its clause is
+   `coach.place`'s first line); the POP card is retired in the walk — the
+   coach's `pop` step says "press POP" and the first pop's receipt is the
+   explanation, after the action. RIPE stays the walk's one dialog.
+3. _POP says POP_ on the button until the device's first pop (Marc's
+   2026-09-25 symbols ruling stands after it); and a pop clears the coach
+   line it ended.
+4. _The camera._ `keepInView` pans (never zooms) when a placement's
+   neighbours would be off screen, and does nothing otherwise, so Marc's
+   2026-08-29 "a placement does not move the board" stands.
+5. _The idle logo_ never rests during the first run (`guided`).
+6. _Title:_ one line of pitch (`ui.pitch`), MENU in BEGIN's shape.
+7. _Copy:_ « plane » is « plain » in the English the player reads (the
+   settlement's own line, the epitaphs, the perk row; French already said
+   « plaine »); the page `<title>` is "Ashwake" and the description names both
+   languages in the HTML and follows the locale at runtime; SHARPNESS and
+   LAST ERROR sit under ADVANCED; RESTART reads RESTART THIS RUN.
+8. _Manual tabs_ fade at the edge that has more behind it.
+
+**Budget:** firstPaint 203,000 → 204,000, precache 2,190,000 → 2,200,000 (see
+`budget.json`). **Re-recorded:** the two English pins that quote « plane ».
+
+**Not done, and why:** the Daily chip on the title — the front door hides
+DAILY on a device that has not finished a run on purpose (a second door before
+the first lesson), so surfacing it is Marc's ruling; the first-pop score
+breakdown (`STRANGER.md`'s ask, and a look); THE MAP's two-page card in the
+tour.
+
+**Later the same day (Marc: _"put daily in… make sure rest of ui/ux is fixed"_):**
+DAILY is on a first-timer's front door now (`FrontDoor`, `framed.spec.ts`
+updated). The camera keeps a placement's legal edges within three hexes on
+screen as well as its neighbours (`keepInView`, margin 96 px), and the coach
+strip is a little smaller. The strip can still cover the bottom row on a big
+board with a five-line BUILD; the camera's zoom on RIPE stays.

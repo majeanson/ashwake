@@ -97,6 +97,8 @@ type RigHandle = {
   /** Slide the board by screen pixels, exactly as a drag does. */
   panBy(dx: number, dy: number): void;
   flyToHex(hex: HexKey, zoom: number): void;
+  /** Pan, only as far as it must, until every hex is on screen — see the rig. */
+  keepInView(hexes: readonly HexKey[]): void;
   flyToFit(): void;
   /** The two-leg opening — see `BoardHandle.open`. */
   open(wake: HexKey): void;
@@ -126,6 +128,7 @@ export type BoardHandle = {
   zoomBy(factor: number): void;
   panBy(dx: number, dy: number): void;
   flyToHex(hex: HexKey, zoom: number): void;
+  keepInView(hexes: readonly HexKey[]): void;
   flyToFit(): void;
   zoomLevel(): number;
   zoomMax(): number;
@@ -390,6 +393,10 @@ const EYE_DISTANCE = 200;
  *  Wide enough that a hex arrives whole rather than sliced by the edge, and
  *  clear of the chrome the board is drawn under. */
 const CURSOR_MARGIN = 72;
+
+/** How far inside the viewport a placement's neighbours are kept, in CSS pixels:
+ *  a hex and a bit, so an edge worth reading is not half under the screen. */
+const VIEW_MARGIN = 96;
 
 /** Half a degree, which is the finest step worth re-fitting a board for. */
 const round2 = (deg: number): number => Math.round(deg * 2) / 2;
@@ -745,6 +752,7 @@ export function Board(props: BoardProps) {
       zoomBy: (factor) => rig.current?.zoomBy(factor),
       panBy: (dx, dy) => rig.current?.panBy(dx, dy),
       flyToHex: (hex, zoom) => rig.current?.flyToHex(hex, zoom),
+      keepInView: (hexes) => rig.current?.keepInView(hexes),
       flyToFit: () => rig.current?.flyToFit(),
       /*
        * The one door a run opens through, so it is the one place the opening
@@ -1529,6 +1537,29 @@ function Rig({
         const { q, r } = parse(hex);
         const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
         fly(cameraAt(frameRef.current, zoom, p.x, p.y));
+      },
+      /*
+       * A PLACEMENT'S NEIGHBOURS STAY ON SCREEN (2026-10-23, a stranger's
+       * review: the right-hand edge hexes were cut off after a few placements).
+       * A pan and never a zoom, and nothing at all when every hex is already in
+       * frame, so a placement still does not move the board (Marc, 2026-08-29):
+       * it moves only when the next move would have been off the screen.
+       */
+      keepInView(hexes) {
+        let next = cam.current;
+        for (const hex of hexes) {
+          const { q, r } = parse(hex);
+          const p = place({ q, r }, { ...UNIT, orientation: theme.orientation });
+          next = nudgeInto(frameRef.current, next, p.x, p.y, VIEW_MARGIN);
+        }
+        if (next === cam.current) return;
+        wasFit.current = false;
+        flight.current = null;
+        glide.current = null;
+        chase.current = null;
+        cam.current = next;
+        keepMine();
+        invalidate();
       },
       flyToFit() {
         fly(fitCamera(frameRef.current, focusRef.current));

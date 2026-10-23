@@ -108,8 +108,13 @@ const destinations = (): Moment => {
 };
 
 describe('the teaching drip', () => {
-  it('opens on STORY: the first thing a stranger is told is what this place is', () => {
-    const said = nextLesson(momentAt(0), EMPTY_PROGRESS);
+  it('opens on the board, and tells the STORY when the first run ends (2026-10-23)', () => {
+    // Run one starts on the coach's line, not a dialog (a stranger's review:
+    // two modals before the first tap).
+    const opening = nextLesson(momentAt(0), EMPTY_PROGRESS);
+    expect(opening).toEqual({ id: 'place', as: 'toast' });
+    const over = { ...momentAt(0), hud: { ...momentAt(0).hud, ended: true } };
+    const said = nextLesson(over, EMPTY_PROGRESS);
     expect(said?.id).toBe('story');
     // A concept, not a consequence: it holds the screen rather than pointing
     // at the board.
@@ -218,7 +223,7 @@ describe('the teaching drip', () => {
   });
 
   it('says nothing twice, even while its moment is still true', () => {
-    const now = momentAt(0);
+    const now = { ...momentAt(0), hud: { ...momentAt(0).hud, ended: true } };
     const first = nextLesson(now, EMPTY_PROGRESS);
     expect(first?.id).toBe('story');
     // The board has not changed at all; only the ledger has.
@@ -283,13 +288,14 @@ describe('the schedule covers every moment (2026-10-13)', () => {
     expect(opensAt('wall')).toEqual({ lesson: 'expedition', row: 'wall' });
   });
 
-  it('tells RIPE and POP with a card each: the walk has two short ones, not one wall', () => {
+  it('tells RIPE with a card and POP with the coach: the walk has one dialog (2026-10-23)', () => {
     const { board } = destinations();
     expect(toldBy('ripe', board)).toEqual(['ripe']);
     expect(toldBy('pop', board)).toEqual(['pop']);
-    // With RIPE told the walk goes on to the pop, on the first pocket that can be cashed.
+    // The pop's card is retired in the walk: pressing POP must pop, and the coach's
+    // `pop` step already says so.
     const now = { ...momentAt(3), hud: { ...momentAt(3).hud, canHarvest: true } };
-    expect(nextLesson(now, taughtExcept('pop'))?.id).toBe('pop');
+    expect(nextLesson(now, taughtExcept('pop'))).toBeNull();
   });
 
   it('tells LUCK with the purse card, so the tour’s LUCK card does not repeat it', () => {
@@ -386,11 +392,11 @@ describe('the pace (2026-10-12): one new idea at a time', () => {
   });
 
   it('never holds back the opening beats, RIPE, POP or LAST GASP', () => {
-    // A first frame an instant after the game spoke: the story still comes.
-    expect(nextLesson({ ...momentAt(0), since: 0 }, EMPTY_PROGRESS)?.id).toBe('story');
-    expect(nextLesson({ ...momentAt(0), since: 0 }, told(EMPTY_PROGRESS, 'story'))?.id).toBe(
-      'goal',
-    );
+    // A first frame an instant after the game spoke: the coach's first line
+    // still comes, and so does the story when the run is over.
+    expect(nextLesson({ ...momentAt(0), since: 0 }, EMPTY_PROGRESS)?.id).toBe('place');
+    const over = { ...momentAt(0), hud: { ...momentAt(0).hud, ended: true }, since: 0 };
+    expect(nextLesson(over, EMPTY_PROGRESS)?.id).toBe('story');
   });
 
   it('keeps the held moment armed rather than dropping it', () => {
@@ -716,13 +722,13 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
     expect(nextLesson(offered, afterWalk)?.id).not.toBe('caravan');
   });
 
-  it('tells a device what a DAILY and a SHARED board are, once each, behind the story and the goal (2026-10-21)', () => {
+  it('tells a device what a DAILY and a SHARED board are, once each, on a first run too (2026-10-21)', () => {
     const opening = momentAt(0);
-    // A first run that is a daily link: story, goal, then THE DAILY.
+    // A first run that is a daily link: THE DAILY is its only opening card (the
+    // story waits for the run's end, the goal is the coach's).
     const daily = { ...opening, kind: 'daily' as const };
-    const afterGoal = told(told(EMPTY_PROGRESS, 'story'), 'goal');
-    expect(nextLesson(daily, EMPTY_PROGRESS)?.id).toBe('story');
-    expect(nextLesson(daily, afterGoal)).toEqual({ id: 'daily', as: 'card' });
+    const afterGoal = EMPTY_PROGRESS;
+    expect(nextLesson(daily, EMPTY_PROGRESS)).toEqual({ id: 'daily', as: 'card' });
     expect(nextLesson(daily, told(afterGoal, 'daily'))?.id).not.toBe('daily');
     // A veteran opening BEGIN DAILY gets it too, in any phase; a world never does.
     const veteran = taughtExcept('daily', 'shared');
@@ -738,12 +744,12 @@ describe('the first run is walked, then toured (2026-10-12)', () => {
   it('tells THE WORLD the first time a world opens over remembered ground, in any phase (2026-10-21)', () => {
     const opening = momentAt(0);
     const grown = { ...opening, kind: 'world' as const, grown: true };
-    // A fresh device's first world run has its two opening cards and no more;
-    // its second run in that world — the growth on screen — gets the third.
+    // A fresh device's first world run has no opening card; its second run in
+    // that world — the growth on screen — gets THE WORLD's.
     expect(
       nextLesson({ ...opening, kind: 'world' as const, grown: false }, EMPTY_PROGRESS)?.id,
-    ).toBe('story');
-    const afterGoal = told(told(EMPTY_PROGRESS, 'story'), 'goal');
+    ).toBe('place');
+    const afterGoal = EMPTY_PROGRESS;
     expect(nextLesson({ ...opening, kind: 'world' as const }, afterGoal)?.id).not.toBe('world');
     expect(nextLesson(grown, afterGoal)).toEqual({ id: 'world', as: 'card' });
     expect(nextLesson(grown, taughtExcept('world'))).toEqual({ id: 'world', as: 'card' });

@@ -132,6 +132,7 @@ export function FrontDoor({
         <img className="door-lockup" src={lockup} alt="" width={876} height={450} />
       )}
       <h1 className={lockup === null ? 'door-name' : 'door-name visually-hidden'}>{NAME}</h1>
+      <p className="door-pitch">{s.ui.pitch}</p>
 
       {/* LEARN FIRST, on a link a first-timer was sent — see `fresh`. The
           link's own BEGIN stays, as the second door. */}
@@ -203,8 +204,8 @@ export function FrontDoor({
 
       {/* DAILY, uniform with BEGIN now — see the doc comment above and
           `.door-begin, .door-daily` in ui.css. Absent on a door that is
-          already a daily's, and on a device that has not finished a run. */}
-      {mode !== 'daily' && !framed && !fresh && (
+          already a daily's, and in a frame (2026-10-23: shown to a first-timer too). */}
+      {mode !== 'daily' && !framed && (
         <button type="button" className="door-daily" data-door="daily" onClick={onDaily}>
           {dailyBadge}
         </button>

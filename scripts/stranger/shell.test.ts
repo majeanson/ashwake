@@ -20,12 +20,10 @@ describe('the table', () => {
     expect(newTable('drip', 1).state.tuning).toEqual({ ...TUNING, holdSlots: 0 });
   });
 
-  it('opens on the story, the goal and the walk’s first line, said once each — or on nothing', () => {
+  it('opens on the walk’s first line alone (the story waits for the run’s end, 2026-10-23) — or on nothing', () => {
     const drip = begin(newTable('drip', 1), s, theme);
-    // The two SaidCards chain on the first frame; `place` is the toast behind them.
+    // No opening card since 2026-10-23: `place` is the whole first beat.
     expect(drip.said.map((x) => `${x.kind}:${x.text.split(' — ')[0]!.slice(0, 20)}`)).toEqual([
-      `card:${s.ui.theStory}`,
-      `card:${s.ui.theGoal}`,
       `toast:${s.coach.place.slice(0, 20)}`,
     ]);
     // ...and neither the goal nor the expedition is said again on the next beat.

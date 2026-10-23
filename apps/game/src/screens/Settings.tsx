@@ -198,35 +198,6 @@ export function Settings({
         ratio is already 1 has nothing a slider could raise, and a dead slider
         teaches a player that this screen has controls that do nothing.
       */}
-      {maxRenderScale > MIN_RENDER_SCALE && (
-        <section>
-          <h2 className="fact-label">{s.ui.sharpness.label}</h2>
-          <div className="sharpness-row">
-            <input
-              type="range"
-              data-action="sharpness-slider"
-              aria-label={s.ui.sharpness.label}
-              min={MIN_RENDER_SCALE}
-              max={maxRenderScale}
-              step={0.25}
-              value={renderScale}
-              onChange={(e) => onRenderScale(Number(e.target.value))}
-            />
-            <span className="sharpness-value">{renderScale.toFixed(2)}×</span>
-          </div>
-          <p className="note">{s.ui.sharpness.note}</p>
-        </section>
-      )}
-
-      {/*
-        An ANTIALIASING row sat here from 2026-09-11 to 2026-09-16 — AUTO / ON /
-        OFF, stored, read once when the canvas was built — so Marc could
-        compare the two on his phone without typing `?aa=`. He did, said "hard
-        to tell", and the cheap one ships (`board/antialias.ts`). The row, its
-        three props, the storage pair and the two catalogue entries went with
-        the answer, as the row's own comment said they would.
-      */}
-
       {/*
         THE STORY, moved in from MENU (2026-09-08).
 
@@ -247,7 +218,39 @@ export function Settings({
         </Fold>
       </section>
 
-      {/*
+      {/* ADVANCED (2026-10-23, a stranger's review: LAST ERROR and SHARPNESS sat among player settings): the dials set once for a phone, and the diagnostic record, one fold down. */}
+      <section>
+        <Fold summary={s.ui.advanced}>
+          {maxRenderScale > MIN_RENDER_SCALE && (
+            <section>
+              <h2 className="fact-label">{s.ui.sharpness.label}</h2>
+              <div className="sharpness-row">
+                <input
+                  type="range"
+                  data-action="sharpness-slider"
+                  aria-label={s.ui.sharpness.label}
+                  min={MIN_RENDER_SCALE}
+                  max={maxRenderScale}
+                  step={0.25}
+                  value={renderScale}
+                  onChange={(e) => onRenderScale(Number(e.target.value))}
+                />
+                <span className="sharpness-value">{renderScale.toFixed(2)}×</span>
+              </div>
+              <p className="note">{s.ui.sharpness.note}</p>
+            </section>
+          )}
+
+          {/*
+        An ANTIALIASING row sat here from 2026-09-11 to 2026-09-16 — AUTO / ON /
+        OFF, stored, read once when the canvas was built — so Marc could
+        compare the two on his phone without typing `?aa=`. He did, said "hard
+        to tell", and the cheap one ships (`board/antialias.ts`). The row, its
+        three props, the storage pair and the two catalogue entries went with
+        the answer, as the row's own comment said they would.
+      */}
+
+          {/*
         LAST ERROR (Stage 4, 2026-08-29).
 
         The failure panel is a moment; this is the door that stays open. A
@@ -257,35 +260,38 @@ export function Settings({
         Folded, because on a device where nothing has broken it is a heading
         about nothing, and it must never be the first thing SETTINGS says.
       */}
-      <section>
-        <Fold summary={s.ui.crash.lastError}>
-          {lastError === null ? (
-            <p className="note">{s.ui.crash.noError}</p>
-          ) : (
-            <>
-              <p className="note">
-                {lastError.sha} · {lastError.at.slice(0, 10)} · {s.ui.crash.seen(lastError.count)}
-              </p>
-              <p className="crash-detail">{lastError.text}</p>
-              <button
-                type="button"
-                data-crash="send-kept"
-                disabled={send === 'sending' || send === 'sent'}
-                onClick={() => {
-                  setSend('sending');
-                  void sendCrashReport({
-                    build: lastError.sha,
-                    mode: 'settings',
-                    count: lastError.count,
-                    userAgent: navigator.userAgent,
-                    detail: lastError.text,
-                  }).then((ok) => setSend(ok ? 'sent' : 'failed'));
-                }}
-              >
-                {sendSays[send]}
-              </button>
-            </>
-          )}
+          <section>
+            <Fold summary={s.ui.crash.lastError}>
+              {lastError === null ? (
+                <p className="note">{s.ui.crash.noError}</p>
+              ) : (
+                <>
+                  <p className="note">
+                    {lastError.sha} · {lastError.at.slice(0, 10)} ·{' '}
+                    {s.ui.crash.seen(lastError.count)}
+                  </p>
+                  <p className="crash-detail">{lastError.text}</p>
+                  <button
+                    type="button"
+                    data-crash="send-kept"
+                    disabled={send === 'sending' || send === 'sent'}
+                    onClick={() => {
+                      setSend('sending');
+                      void sendCrashReport({
+                        build: lastError.sha,
+                        mode: 'settings',
+                        count: lastError.count,
+                        userAgent: navigator.userAgent,
+                        detail: lastError.text,
+                      }).then((ok) => setSend(ok ? 'sent' : 'failed'));
+                    }}
+                  >
+                    {sendSays[send]}
+                  </button>
+                </>
+              )}
+            </Fold>
+          </section>
         </Fold>
       </section>
 

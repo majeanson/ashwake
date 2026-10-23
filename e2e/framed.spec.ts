@@ -27,19 +27,19 @@ test('framed, the door is BEGIN, MENU and a way out — and no DAILY', async ({ 
 });
 
 test('on its own, the door keeps DAILY and offers no way out', async ({ page }) => {
-  // A device that has finished a run: a fresh one's door is BEGIN alone (2026-10-19).
+  // Any device: DAILY is on a fresh one's door too since 2026-10-23.
   await page.goto('/?taught=1');
   await expect(page.locator('[data-door="begin"]')).toBeVisible();
   await expect(page.locator('[data-door="daily"]')).toBeVisible();
   await expect(page.locator('[data-door="open-full"]')).toHaveCount(0);
 });
 
-test('a fresh device is offered BEGIN alone, and a shared daily leads with LEARN FIRST', async ({
+test('a fresh device is offered BEGIN and DAILY (2026-10-23), and a shared daily leads with LEARN FIRST', async ({
   page,
 }) => {
   await page.goto('/');
   await expect(page.locator('[data-door="begin"]')).toBeVisible();
-  await expect(page.locator('[data-door="daily"]')).toHaveCount(0);
+  await expect(page.locator('[data-door="daily"]')).toBeVisible();
   await expect(page.locator('[data-door="learn"]')).toHaveCount(0);
 
   await page.goto('/?daily=2026-08-26');

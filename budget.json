@@ -14,7 +14,7 @@
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
   "firstPaint": {
-    "gzip": 203000,
+    "gzip": 204000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -108,7 +108,12 @@
       "clause on the pocket's note, a lesson of its own for native ground (LE",
       "SOL NATAL, three sentences in both languages) and the receipt's `untold`",
       "words. Nine model strangers asked for every one of them by name. First",
-      "minute again; renderer-by-name check untouched."
+      "minute again; renderer-by-name check untouched.",
+      "",
+      "MOVED 2026-10-23, from 203,000 to 204,000, for THE STRANGER REVIEW (LOG.md",
+      "Session 141). 203.0 KB over by under 0.1: the front door's pitch line,",
+      "ADVANCED, the word on POP, the hush window and the board's keepInView, in",
+      "both languages. First minute again; renderer-by-name check untouched."
     ]
   },
   "renderer": {
@@ -140,7 +145,7 @@
     ]
   },
   "precache": {
-    "raw": 2190000,
+    "raw": 2200000,
     "$why": [
       "WHAT AN OFFLINE INSTALL COSTS A PHONE'S STORAGE — the worker's own",
       "list, read off the BUILT worker because `__PRECACHE_ASSETS__` is",
@@ -152,7 +157,10 @@
       "moving it without noticing is what this file is against.",
       "",
       "MOVED 2026-09-29, from 2,135,000 to 2,190,000, for the same caravan: 2093.9",
-      "KB raw, the same code and sentences counted uncompressed."
+      "KB raw, the same code and sentences counted uncompressed.",
+      "",
+      "MOVED 2026-10-23, from 2,190,000 to 2,200,000, for the same stranger review:",
+      "2139.8 KB raw (1.1 KB over), the same code counted uncompressed."
     ]
   }
 }
