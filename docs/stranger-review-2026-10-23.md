@@ -21,7 +21,7 @@ the onboarding is thorough but arrives as two dialogs and a manual before the fi
 3. **Language mismatch.** The page `<title>` and meta are French (« un établissement au bord
    d'une plaine noire »), `lang="en"`, and the whole UI is English. Link previews will be FR,
    the game EN. Either offer FR or make the meta EN.
-4. **Typo: « You are walking out into a dark *plane* »** in How to play (the story says
+4. **Typo: « You are walking out into a dark _plane_ »** in How to play (the story says
    « plain »).
 5. **How to play is dense ALL-CAPS jargon** (POCKET, RIPE, POP, STONE, SIZE BONUS, REACH,
    RELICS, COST) in one long scroll. Most of it is only needed after run one. Split into
@@ -71,7 +71,7 @@ popped. The end-of-run screen and shop were not reached.
     among player settings; « RESTART » sits under « THIS DEVICE » next to Settings with no hint
     of what it restarts (the run? the world? everything?).
 
-Good: MENU has DAILY and MY WORLDS (so the daily idea below is about *surfacing* it on the
+Good: MENU has DAILY and MY WORLDS (so the daily idea below is about _surfacing_ it on the
 title screen); vibration and sound exist (off by default); « Nothing leaves your phone: no
 account, no analytics, no server » is stated plainly; the title screen switches BEGIN to RESUME
 once a run exists.

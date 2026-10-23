@@ -529,6 +529,7 @@ function Game() {
   /** The coach step last spoken, so a step is said once and again only after
    *  something louder (a receipt) has taken the strip. Null between runs. */
   const coached = useRef<string | null>(null);
+  const lastPlaced = useRef<HexKey | null>(null);
   /**
    * The control the game is lighting right now, or null (2026-10-15). Armed when
    * a lesson, a toast or a coach step talks about a control, put out by a tap on
@@ -2182,10 +2183,26 @@ function Game() {
             .filter((c) => c.legal && distance(parse(c.key), { q, r }) <= 3)
             .map((c) => c.key);
           board.current?.keepInView([action.hex, ...neighbourKeys(q, r), ...edges]);
+          lastPlaced.current = action.hex;
         }
         witness('placed');
       }
       if (did.popped) witness('popped');
+      /*
+       * ...and again once the pop's own flight has landed (2026-10-23, the
+       * review: the right-hand edge hexes were still cut off after a pop). The
+       * same pan around the last tile placed, so nothing moves if it is in frame.
+       */
+      if (did.popped && lastPlaced.current !== null) {
+        const at = parse(lastPlaced.current);
+        const around = now.board.cells
+          .filter((c) => c.legal && distance(parse(c.key), at) <= 3)
+          .map((c) => c.key);
+        window.setTimeout(
+          () => board.current?.keepInView(around),
+          reducedMotion ? 0 : cascadeMs(theme.motion, did.pocket) + 150,
+        );
+      }
       // The walk ends at the first pop that actually lands (`shell/teaching`).
       if (did.popped) setProgress((p) => told(p, 'walked'));
       // ...and the tour ends with the first run that ends after it.

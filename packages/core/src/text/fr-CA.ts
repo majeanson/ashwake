@@ -382,7 +382,7 @@ export const STRINGS_FR: Strings = {
     match: `Pose les prochaines tuiles contre des tuiles de la même couleur${D}: les voisines semblables donnent de la VALEUR. Le chiffre sur une arête lumineuse est la valeur que ta tuile y prendrait.`,
     grow: 'Continue d’entourer tes tuiles. Une tuile mûrit quand ses six côtés sont couverts, et seules les tuiles mûres s’encaissent.',
     popFirst: 'Récolte d’abord cette poche.',
-    build: `Maintenant, continue de bâtir. Choisis UNE couleur et fais grandir un seul bloc de celle-ci${D}: les voisines de même couleur augmentent la VALEUR de chaque tuile, et une grosse poche paie plus que ses morceaux. Chaque pose dépense des tuiles${D}: TUILES te dit combien il t’en reste, et COÛT ce que la prochaine coûte.`,
+    build: `Maintenant, continue de bâtir. Fais grandir UNE couleur en un seul bloc${D}: les voisines de même couleur augmentent la VALEUR, et une grosse poche paie plus. Chaque tuile posée coûte le COÛT. TUILES est ce qu’il te reste.`,
     bank: `Tes tuiles s’épuisent. Une récolte redonne des tuiles${D}: touche ta plus grosse poche mûre, puis appuie sur RÉCOLTER. Une poche mûre se récolte encore rendu à zéro.`,
     // The hoard named at the end (2026-10-21, `LOG.md` Session 140): five
     // strangers finished with 219 to 330 of CHANCE unspent, three calling it

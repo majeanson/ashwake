@@ -374,7 +374,7 @@ export const STRINGS_EN: Strings = {
     grow: 'Keep surrounding your tiles. A tile ripens when all six of its sides are covered, and only ripe tiles can be cashed in.',
     popFirst: 'Pop this pocket first.',
     build:
-      'Now keep building. Pick ONE colour and grow a single blob of it: neighbours of the same colour raise each tile’s WORTH, and a bigger pocket pays more than its pieces. Every placement spends tiles: TILES says how many you have left, and COST what the next one costs.',
+      'Now keep building. Grow ONE colour as a single blob: same-colour neighbours raise WORTH, and a bigger pocket pays more. Each tile you place costs COST; TILES is what you have left.',
     bank: 'Tiles are low. A pop pays tiles back: tap your biggest ripe pocket, then press POP. A ripe pocket can still be popped at zero.',
     end: `Fewer tiles than the COST: you can still place. At zero, pop anything ripe; with nothing ripe, the run ends. LUCK left at the end is mostly lost: spend it first. ${SHAPE}`,
     pop: 'A pocket is ripe. Tap a ripe tile to see what the pocket pays, then press POP.',

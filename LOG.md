@@ -11733,3 +11733,5 @@ n**Third pass (Marc, answering the open list):** THE MAP is one page when fired
 world (NEW RUN under it); the title has a CSS-only loop behind it; the
 first-pop card prints results, not recipes. The e2e for a term in a fired card
 is deleted, not re-aimed: no card a first run reaches links a term.
+
+**Fourth pass (2026-10-23, same session).** CI on `29078c6` and `e8d1f6e` was red at `format:check` (the stranger review's own markdown, committed unformatted), so neither deployed; fixed, and `prettier --check` now runs over `docs` before a push. Marc picked three more: `coach.build` cut from five lines to three in both languages (the strip no longer reaches the bottom row; the English line is a deliberate rewrite, not a silent re-record, and no pin held it), and a second `keepInView` after a pop's flight lands, around the last tile placed. The French lines and the 700 ms hush stay for the phone sitting.
