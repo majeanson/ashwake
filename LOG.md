@@ -11727,3 +11727,9 @@ updated). The camera keeps a placement's legal edges within three hexes on
 screen as well as its neighbours (`keepInView`, margin 96 px), and the coach
 strip is a little smaller. The strip can still cover the bottom row on a big
 board with a five-line BUILD; the camera's zoom on RIPE stays.
+n**Third pass (Marc, answering the open list):** THE MAP is one page when fired
+(the concept alone, the row alone after it); vibration is ON by default
+(`ui.haptics`, the registry's one exception); SHARE leads the end screen of a
+world (NEW RUN under it); the title has a CSS-only loop behind it; the
+first-pop card prints results, not recipes. The e2e for a term in a fired card
+is deleted, not re-aimed: no card a first run reaches links a term.

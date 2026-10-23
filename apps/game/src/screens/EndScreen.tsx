@@ -521,9 +521,23 @@ export function EndScreen({
           {s.ui.newRun}
         </button>
       ) : (
-        <button type="button" className="door-begin" data-action="new-run" onClick={onNewRun}>
-          {s.ui.newRun}
-        </button>
+        <>
+          {/* SHARE LEADS, in a world (2026-10-23, Marc: make the share card the
+              end screen's default action): it is the game's whole distribution,
+              so it is the loud button and NEW RUN the quieter one under it. */}
+          <button
+            type="button"
+            className="door-begin"
+            data-action="share"
+            aria-label={s.ui.share}
+            onClick={onShare2}
+          >
+            {said ?? s.ui.share}
+          </button>
+          <button type="button" className="door-daily" data-action="new-run" onClick={onNewRun}>
+            {s.ui.newRun}
+          </button>
+        </>
       )}
 
       {hud.glowBeyondEdge !== null && (
@@ -773,9 +787,11 @@ export function EndScreen({
             listing and no account, so a run reaches another person because
             somebody pasted this. It sits under the score rather than beside
             NEW RUN, which is the one button the v2.0 gate turns on. */}
-        <button type="button" data-action="share" aria-label={s.ui.share} onClick={onShare2}>
-          {said ?? s.ui.share}
-        </button>
+        {(daily != null || learned !== undefined) && (
+          <button type="button" data-action="share" aria-label={s.ui.share} onClick={onShare2}>
+            {said ?? s.ui.share}
+          </button>
+        )}
         {/* In the document before it has anything to say — the rule
             `screens/Device` states and the reason a live region works at all. */}
         <span className="visually-hidden" role="status">

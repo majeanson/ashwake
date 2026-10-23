@@ -80,7 +80,9 @@ export const FEATURES = [
   // leaves the phone and can surprise a quiet room; a buzz does not leave the
   // phone, so it is the feedback a silent player can still have.
   //
-  // Off by default all the same, because `CLAUDE.md` says every system ships
+  // ON BY DEFAULT since 2026-10-23 (Marc, after a stranger review: the ripen
+  // and pop moment is the hook and a short buzz makes it felt). It was off all
+  // the same, because `CLAUDE.md` says every system ships
   // that way and because an unrequested buzz is the same intrusion an
   // unrequested noise is, one room quieter.
   //
@@ -91,7 +93,7 @@ export const FEATURES = [
   // `shell/touch.ts`.
   {
     id: 'ui.haptics',
-    defaultOn: false,
+    defaultOn: true,
     wired: true,
     player: true,
   },

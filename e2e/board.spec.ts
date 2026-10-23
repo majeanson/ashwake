@@ -1833,9 +1833,7 @@ test('a tap on a touring board brings it home instead of placing a tile', async 
   // THE MAP's own card leads with the concept as a page of its own, and its
   // next page is the one destination that fired it, alone (2026-10-17,
   // `LessonCard`'s `skipIntro`; Marc: the site "without explaining all types").
-  const rows = page.locator('[data-card="lesson-map"] [data-row]');
-  await scrim.locator('button').last().click({ force: true });
-  await expect(rows, 'the map card turned to no row, or to more than one').toHaveCount(1);
+  // One page since 2026-10-23: the concept alone, so no Next and no row to turn to.
 
   // The card now comes some placements in (the pace), so the camera is still
   // easing after the last tile: let it come to rest first.

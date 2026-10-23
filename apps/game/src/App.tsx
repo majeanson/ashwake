@@ -2410,7 +2410,15 @@ function Game() {
             s.view.harvest.firstPop(
               now.state.tuning.redAshMatches ? namesOf(theme, s.locale).red : null,
             ),
-            said.text,
+            // Just the results the first time — "+4 tiles", "+4 pts" — and not the
+            // recipe behind each (2026-10-23, a stranger's review: a formula a
+            // newcomer cannot check). Every pop after it keeps the whole line.
+            said.text
+              .split('\n')
+              .map((line) =>
+                line.startsWith('+') ? (line.split(/[:=]/)[0] ?? line).trimEnd() : line,
+              )
+              .join('\n'),
           ),
           card: true,
         };

@@ -561,46 +561,11 @@ test('HOW TO PLAY › on a fired lesson card lands on its section, and the card 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-// SKIPPED 2026-10-23: the card this drove was POP's, the only fired card in the walk
-// that linked a term; with POP's card retired, no walk card links one. The behaviour
-// still lives (the book and the end screen link terms) — re-aim this at the first tour
-// card that names another concept (LUCK / CARAVAN) once the seed to reach it is chosen.
-test.skip('a term tapped in a fired card opens its own card, and the fired card is back after', async ({
-  page,
-}) => {
-  // 2026-10-14: a detour from a lesson never skips it (see the HOW TO PLAY ›
-  // tests above). The term card gives the lesson way and hands it back.
-  // A fired card that names another concept: THE FOUR GROUNDS, the tour's first,
-  // on a device that has popped once (RIPE's own words are its own terms, so
-  // they are not links, and POP's card is retired in the walk — 2026-10-23).
-  const errors = watchErrors(page);
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      'ashwake.progress.v1',
-      JSON.stringify({
-        relics: 0,
-        bought: {},
-        met: ['story', 'goal', 'shared', 'place', 'wall', 'ripe', 'pop', 'walked'],
-      }),
-    );
-  });
-  await page.goto('/?seed=7');
-  await begin(page);
-  await clearCards(page);
-  await placeOneTile(page, { keepCards: true });
-
-  const card = page.locator('[data-card="lesson-grounds"]');
-  await expect(card).toHaveCount(1);
-
-  await card.locator('button.term').first().click();
-  // One card at a time: the term's, not the ground's under it.
-  await expect(page.locator('[data-card]')).toHaveCount(1);
-  await expect(card).toHaveCount(0);
-
-  await page.locator('.card-scrim .card-acts button').last().click();
-  await expect(card).toHaveCount(1);
-  expect(errors, errors.join('\n')).toEqual([]);
-});
+// A term tapped in a FIRED card had a test here until 2026-10-23: the card it drove was
+// POP's, the only walk card that linked a term. None of the fired cards a first run can
+// reach (RIPE, THE FOUR GROUNDS, the first pop's, THE DAILY) links one, so there is no
+// card for an end-to-end test to ask; the hand-back is `Prose.test.tsx`'s and
+// `saidcard.test.tsx`'s, and the book's own term links are the test below.
 
 test('a term in the book takes you to its section, on whichever tab it lives', async ({ page }) => {
   const errors = watchErrors(page);

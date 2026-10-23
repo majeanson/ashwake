@@ -126,6 +126,15 @@ export function FrontDoor({
         outline and for anyone listening rather than looking. A screen whose
         title exists only inside a PNG has no title.
       */}
+      {/* THE LOOP, behind everything (2026-10-23, a stranger's review: sell the
+          game on the title). Seven hexes place around a centre, the centre
+          ripens and pops. Pure CSS, a few hundred bytes, still under reduced
+          motion — see `.door-demo` in ui.css. */}
+      <div className="door-demo" aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+          <span key={i} className={`demo-hex demo-${i}`} />
+        ))}
+      </div>
       {lockup === null ? (
         <img className="door-mark" src={ICON_DATA_URI} alt="" width={72} height={72} />
       ) : (

@@ -77,10 +77,9 @@ describe('THE MAP, one card per thing (2026-10-16)', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('leads a fired card with the concept as its own page', async () => {
+  it('is one page when fired: the concept alone, with no Next (2026-10-23)', () => {
     map('territory', true);
     expect(document.querySelector('[data-row]')).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: s.ui.cardNext }));
-    expect(document.querySelector('[data-row="territory"]')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: s.ui.cardNext })).toBeNull();
   });
 });

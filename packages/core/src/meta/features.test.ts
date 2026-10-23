@@ -28,8 +28,9 @@ describe('the registry', () => {
    * the game its sender was playing rather than whatever the receiver had
    * switched on. A flag that changes the GAME does not belong here again.
    */
-  it('defaults every flag off, with no exceptions left', () => {
-    for (const on of Object.values(defaultFeatures())) expect(on).toBe(false);
+  it('defaults every flag off, except the one buzz Marc ruled on (2026-10-23)', () => {
+    for (const [id, on] of Object.entries(defaultFeatures()))
+      expect(on, id).toBe(id === 'ui.haptics');
   });
 
   it('holds no flag that changes what game is being played', () => {

@@ -97,10 +97,14 @@ export function LessonCard({
     const own = lesson.rows(TUNING, theme, s).find((r) => r.key === row);
     if (own !== undefined) {
       const intro = firstContact === true && !skipIntro;
+      // ONE PAGE WHEN FIRED (2026-10-23, a stranger's review: THE MAP was two
+      // pages mid-run, SITE then BOUNTY). The concept's own words when this is
+      // the first card of the family, the row alone after it; the bounty and the
+      // native-ground pages stay for a tapped chip and the manual.
       const pages = [
         ...(intro ? [{ text: lessonCardDefine(lesson, TUNING, theme, s), row: null }] : []),
-        { text: null, row: own },
-        ...(own.lines ?? []).map((line) => ({
+        ...(intro ? [] : [{ text: null, row: own }]),
+        ...(firstContact === true ? [] : (own.lines ?? [])).map((line) => ({
           text: null,
           row: {
             ...own,
