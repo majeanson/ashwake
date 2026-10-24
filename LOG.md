@@ -11735,3 +11735,64 @@ first-pop card prints results, not recipes. The e2e for a term in a fired card
 is deleted, not re-aimed: no card a first run reaches links a term.
 
 **Fourth pass (2026-10-23, same session).** CI on `29078c6` and `e8d1f6e` was red at `format:check` (the stranger review's own markdown, committed unformatted), so neither deployed; fixed, and `prettier --check` now runs over `docs` before a push. Marc picked three more: `coach.build` cut from five lines to three in both languages (the strip no longer reaches the bottom row; the English line is a deliberate rewrite, not a silent re-record, and no pin held it), and a second `keepInView` after a pop's flight lands, around the last tile placed. The French lines and the 700 ms hush stay for the phone sitting.
+
+### Session 127 — the rule move after Session C, built and parked (2026-10-01)
+
+**Question:** can the move Marc queued for after the stranger (`NEXT.md` §0
+item 2) wait as one commit, so v2.0 is a fast-forward the day Session C is
+done? Built on the branch `after-session-c`, not on `main`: it changes the
+first minute (a fresh run's cost line and its first cache), which stays
+frozen until the stranger has played.
+
+**The dials** (`content/tuning.ts`, all in `TUNING`): `costGrace` 0 → 40,
+`costRisesEvery` 22 → 10, `pointsPerPop` 0.26 → 0.20 (the knee, ruled
+2026-10-01), `cachePays` 6 → 10 and `beaconHorizon` 4 → 3 (ruled
+2026-09-29). **D23 is not in it**: lighting `ui.firstRun` is its own step.
+
+**The golden moves, every row, and that is the reason this entry exists.**
+`pnpm sim` (200 seeds, the legacy policies), mean points old → new:
+bank20 1066 → 1444, seeker 1020 → 1486, farm/survivor/hoard 1016 → 1390,
+spender 1326 → 1520, chooser 737 → 1147, blind 272 → 471, greedy 473 → 520,
+tourist 440 → 440 (its best 1905 → 4150). Placements rise 10-30 a row. These
+policies choose tiles or points by runway, and the knee hands them runway, so
+they bank more as points: the sim's rows rise further than the study's lines
+did. The study, re-run on this tuning at 1000 seeds, reproduces Session 124
+exactly: `take:popAt8` 1291 at 117 placements, `seeker` 0 runs dead before 40. **The study is the ruling's measure, and it holds.**
+
+**What else moved with it.** The prose pins: every epitaph that names a price
+(cost 2-3 → 1-2 at the same placement counts), the COST glossary takes the
+grace clause in both languages (_"It stays 1 for the first 40 placements,
+then rises +1 every 10"_), the CACHE line pays 10 (and 14 at ring one), and a
+territory's _"glows 5 out"_ hint is gone from the opening fixture, because 5
+is past the new horizon. `progress.test.ts`'s ladder tests are restated: a
+maxed ring-2 cache pays 30 (four past the pre-rebalance 26), and STEADY PACE
+buys 10 → 18 on the knee, not 22 → 30. A daily's and shared board's
+territories pay `cachePays` (`shell/economy.ts`), so they pay 10 too —
+not measured, and not in any ruling.
+
+**One test left red on purpose:** `progress.test.ts` _"sharpens the nose one
+hex a level, and never out to the beacons"_. KEEN NOSE maxed is 3 hexes and
+the horizon is now 3, so a shimmer reaches as far as a beacon. No study
+models the nose, so the ruling never saw it. Marc's: fewer nose levels, a
+horizon of 4, or accept the equality.
+
+**Ruled the same day: the nose caps at 2** (Marc, offered the three). The
+next commit takes KEEN NOSE to two levels, so a maxed shimmer reaches 2 under
+a horizon of 3, and `decodeProgress` keeps any level over an upgrade's cap
+at the cap and refunds each level above it at its price — 120 relics for a
+third nose already bought, the SECOND SLOT's precedent. The test is green;
+the sim golden did not move.
+
+**A test this branch makes flaky (found 2026-10-01, CI run 36912227367).**
+`a11y.spec.ts` "a run can be started, played, finished and restarted on keys
+alone" failed once in CI on this branch (both attempts) and passed on the
+re-run and in 3/3 local runs. CI's snapshot at failure: TILES 80, COST 1,
+REACH 21, a lens left on, the bot pressing Enter on a wall. The bot walks
+Right-Up-Left-Down and presses Enter, a loop that can circle one spot; on the
+shipped rules the purse empties first and the run ends, but under the knee
+(cost 1 for 40 placements) with caches paying 10, an unlucky path keeps the
+purse full and 240 actions are not enough. Before landing: make the bot's
+walk leave the spot it is on (or press toward legal ground), rather than
+raising the bound.
+
+**The knee lands (2026-10-24, Marc: "do it now lets try it").** `after-session-c` merged into `main`: `costGrace` 40, `costRisesEvery` 10, `pointsPerPop` 0.20, `cachePays` 10, `beaconHorizon` 3, KEEN NOSE capped at 2 (a third level refunded). The rule move is the sim golden's and the pin snapshots' (`prose.pin`, `teaching.pin`, both languages, re-recorded on this merge; the diff is the branch's own, re-derived over this branch's plane to plain). Two things the branch had not met, both from horizon 3: the chosen first world (seed 933) now sees its cache at the 10th placement, not the 8th, and 400 seeds were scanned and none kept all six criteria (seed 25 kept five and has no poor hand for REDRAW), so `learn.test.ts` and `content/learn.ts` take 10; and the territory fixture in `teaching.test.ts` (seed 122) no longer shows a territory at depth 20, so it is seed 7. Marc asked for this before Session C has run; it moves every score a player sees, so the phone check is: placements 22-40 cost 1 now, and the first cache is two placements later in the tutorial.

@@ -70,7 +70,7 @@ describe('the chosen first world', () => {
 
   it('shows a wall and a cache early, so there is ground to name and somewhere to go', () => {
     expect(at('wall')).toBeLessThanOrEqual(6);
-    expect(at('cache')).toBeLessThanOrEqual(8);
+    expect(at('cache')).toBeLessThanOrEqual(10);
   });
 
   it('lets the first pocket be popped between the 8th and 14th placement', () => {
@@ -107,7 +107,7 @@ describe('the chosen first world, as the daily link’s tutorial', () => {
 
   it('keeps the walk’s moments: a wall, a cache, and a first pop in the same window', () => {
     expect(at('wall')).toBeLessThanOrEqual(6);
-    expect(at('cache')).toBeLessThanOrEqual(8);
+    expect(at('cache')).toBeLessThanOrEqual(10);
     expect(at('pop')).toBeGreaterThanOrEqual(8);
     expect(at('pop')).toBeLessThanOrEqual(14);
   });

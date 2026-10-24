@@ -8,8 +8,8 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "end · card · TUNING · settlement": "Every placement spends tiles; the COST stat is the next one’s price. The price only rises; it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
   "end · detail · BARE_TUNING · daylight": "It rises +1 every 70 placed.",
   "end · detail · BARE_TUNING · settlement": "It rises +1 every 70 placed.",
-  "end · detail · TUNING · daylight": "It rises +1 every 22 placed.",
-  "end · detail · TUNING · settlement": "It rises +1 every 22 placed.",
+  "end · detail · TUNING · daylight": "It stays 1 for the first 40 placements, then rises +1 every 10 placed.",
+  "end · detail · TUNING · settlement": "It stays 1 for the first 40 placements, then rises +1 every 10 placed.",
   "end · lesson · BARE_TUNING · daylight": "Every placement spends tiles; the COST stat is the next one’s price. The price only rises; it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
   "end · lesson · BARE_TUNING · settlement": "Every placement spends tiles; the COST stat is the next one’s price. The price only rises; it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
   "end · lesson · TUNING · daylight": "Every placement spends tiles; the COST stat is the next one’s price. The price only rises; it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
@@ -189,8 +189,8 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
   "name": "THE MAP",
   "row · cache · BARE_TUNING · daylight": "CACHE | A CACHE pays 12 tiles on the spot, the moment you build a tile touching it.",
   "row · cache · BARE_TUNING · settlement": "CACHE | A CACHE pays 12 tiles on the spot, the moment you build a tile touching it.",
-  "row · cache · TUNING · daylight": "CACHE | A CACHE pays 6 tiles on the spot, +4 per ring out, the moment you build a tile touching it.",
-  "row · cache · TUNING · settlement": "CACHE | A CACHE pays 6 tiles on the spot, +4 per ring out, the moment you build a tile touching it.",
+  "row · cache · TUNING · daylight": "CACHE | A CACHE pays 10 tiles on the spot, +4 per ring out, the moment you build a tile touching it.",
+  "row · cache · TUNING · settlement": "CACHE | A CACHE pays 10 tiles on the spot, +4 per ring out, the moment you build a tile touching it.",
   "row · find · BARE_TUNING · daylight": "FIND | A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
   "row · find · BARE_TUNING · settlement": "FIND | A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
   "row · find · TUNING · daylight": "FIND | A FIND is buried treasure. Touch it with a tile and it gives you a PERK, yours for good in this world. Finds do not come back, and each one grants only something you do not already carry.",
@@ -219,7 +219,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
     "find: FINDS, FIND",
     "lens: ",
   ],
-  "territory · no ledger": "A TERRITORY hands you +6 tiles and claims the ground within 2 hexes as native to its colour. On this board it lasts the run, unless you keep the board as one of your worlds.",
+  "territory · no ledger": "A TERRITORY hands you +10 tiles and claims the ground within 2 hexes as native to its colour. On this board it lasts the run, unless you keep the board as one of your worlds.",
 }
 `;
 
@@ -427,7 +427,7 @@ exports[`the teaching pins — every word, exactly as it reads today · en > pin
 exports[`the teaching pins — every word, exactly as it reads today · en > pins every stat note on an opening board 1`] = `
 {
   "cost · BARE_TUNING": "COST: the next placement’s price, 1. It rises +1 every 70 placed, and it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
-  "cost · TUNING": "COST: the next placement’s price, 1. It rises +1 every 22 placed, and it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
+  "cost · TUNING": "COST: the next placement’s price, 1. It stays 1 for the first 40 placements, then rises +1 every 10 placed, and it never comes back down. It is the clock that ends every run. You may place while ANY tiles remain. The difference is forgiven at zero, and it cannot chain: only a pop lifts you back above zero.",
   "left · BARE_TUNING": "LEFT: placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.",
   "left · TUNING": "LEFT: placements remaining in the expedition. At zero it ends; anything already ripe can still be popped.",
   "luck · BARE_TUNING": "LUCK is a purse, not a score. The row under your hand spends it.",
@@ -482,8 +482,8 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "end · card · TUNING · settlement": "Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine. Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
   "end · detail · BARE_TUNING · daylight": "Il monte de +1 toutes les 70 poses.",
   "end · detail · BARE_TUNING · settlement": "Il monte de +1 toutes les 70 poses.",
-  "end · detail · TUNING · daylight": "Il monte de +1 toutes les 22 poses.",
-  "end · detail · TUNING · settlement": "Il monte de +1 toutes les 22 poses.",
+  "end · detail · TUNING · daylight": "Il reste à 1 pour les 40 premières poses, puis monte de +1 toutes les 10 poses.",
+  "end · detail · TUNING · settlement": "Il reste à 1 pour les 40 premières poses, puis monte de +1 toutes les 10 poses.",
   "end · lesson · BARE_TUNING · daylight": "Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine. Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
   "end · lesson · BARE_TUNING · settlement": "Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine. Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
   "end · lesson · TUNING · daylight": "Chaque pose dépense des tuiles; la stat COÛT est le prix de la prochaine. Le prix ne fait que monter; il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
@@ -664,8 +664,8 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
   "name": "LA CARTE",
   "row · cache · BARE_TUNING · daylight": "CACHE | Une CACHE paie 12 tuiles sur-le-champ dès que tu poses une tuile qui la touche.",
   "row · cache · BARE_TUNING · settlement": "CACHE | Une CACHE paie 12 tuiles sur-le-champ dès que tu poses une tuile qui la touche.",
-  "row · cache · TUNING · daylight": "CACHE | Une CACHE paie 6 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche.",
-  "row · cache · TUNING · settlement": "CACHE | Une CACHE paie 6 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche.",
+  "row · cache · TUNING · daylight": "CACHE | Une CACHE paie 10 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche.",
+  "row · cache · TUNING · settlement": "CACHE | Une CACHE paie 10 tuiles sur-le-champ, +4 par anneau de distance, dès que tu poses une tuile qui la touche.",
   "row · find · BARE_TUNING · daylight": "TROUVAILLE | Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
   "row · find · BARE_TUNING · settlement": "TROUVAILLE | Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
   "row · find · TUNING · daylight": "TROUVAILLE | Une TROUVAILLE, c’est un trésor enfoui. Touche-la avec une tuile et elle te donne un ATOUT, à toi pour de bon dans ce monde. Les trouvailles ne reviennent pas, et chacune ne donne que ce que tu ne portes pas déjà.",
@@ -694,7 +694,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
     "find: TROUVAILLES, TROUVAILLE",
     "lens: ",
   ],
-  "territory · no ledger": "Un TERRITOIRE te donne +6 tuiles et rend le sol à 2 hex à la ronde natal de sa couleur. Sur ce plateau, ça dure la partie, à moins que tu gardes le plateau comme l’un de tes mondes.",
+  "territory · no ledger": "Un TERRITOIRE te donne +10 tuiles et rend le sol à 2 hex à la ronde natal de sa couleur. Sur ce plateau, ça dure la partie, à moins que tu gardes le plateau comme l’un de tes mondes.",
 }
 `;
 
@@ -903,7 +903,7 @@ exports[`the teaching pins — every word, exactly as it reads today · fr-CA > 
 exports[`the teaching pins — every word, exactly as it reads today · fr-CA > pins every stat note on an opening board 1`] = `
 {
   "cost · BARE_TUNING": "COÛT : le prix de la prochaine pose, 1. Il monte de +1 toutes les 70 poses, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
-  "cost · TUNING": "COÛT : le prix de la prochaine pose, 1. Il monte de +1 toutes les 22 poses, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
+  "cost · TUNING": "COÛT : le prix de la prochaine pose, 1. Il reste à 1 pour les 40 premières poses, puis monte de +1 toutes les 10 poses, et il ne redescend jamais. C’est l’horloge qui finit chaque partie. Tu peux poser tant qu’il te reste UNE tuile. La différence est pardonnée à zéro, et ça ne s’enchaîne pas : seule une récolte te ramène au-dessus de zéro.",
   "left · BARE_TUNING": "RESTE : les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.",
   "left · TUNING": "RESTE : les poses qu’il reste à l’expédition. À zéro elle finit; ce qui est déjà mûr peut encore être récolté.",
   "luck · BARE_TUNING": "La CHANCE est une bourse, pas un score. La rangée sous ta main la dépense.",

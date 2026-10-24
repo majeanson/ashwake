@@ -809,10 +809,10 @@ describe('a chip stays until it is opened (2026-10-12)', () => {
 });
 
 describe('a territory is explained as it appears, in the tour (2026-10-13)', () => {
-  // Seed 122 at depth 20 shows a shrine and a territory unclaimed.
+  // Seed 7 at depth 20 shows a site and a territory unclaimed (seed 122 until beaconHorizon went 4 to 3, 2026-10-23).
   const board = (): Moment => {
     const s = createSession({
-      seed: 122,
+      seed: 7,
       theme: resolveTheme(null),
       strings: stringsFor(pickLocale(['en'])),
     });

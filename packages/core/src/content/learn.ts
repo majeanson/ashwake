@@ -14,7 +14,9 @@
  * placements:
  *
  *  - a wall is in view by the 6th, so WALL is met early;
- *  - a cache is in view by the 8th, so there is somewhere to build TOWARD;
+ *  - a cache is in view by the 10th (the 8th until beaconHorizon went 4 to 3,
+ *    2026-10-23, which moved 933's from 8 to 10 and no seed in 400 kept all six),
+ *    so there is somewhere to build TOWARD;
  *  - the first pocket can be popped between the 8th and 14th, so the central
  *    idea arrives while the player still remembers what the card said;
  *  - a site is in view by the 16th, a goal a short way off;
