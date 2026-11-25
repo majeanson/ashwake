@@ -14,7 +14,7 @@
     "That is the whole ritual, and it is the same one the golden sim has."
   ],
   "firstPaint": {
-    "gzip": 204000,
+    "gzip": 215000,
     "$why": [
       "EVERYTHING THE FRONT DOOR PARSES BEFORE IT DRAWS — the number the",
       "stranger test is actually about. Read off `index.html`'s own script and",
@@ -113,11 +113,16 @@
       "MOVED 2026-10-23, from 203,000 to 204,000, for THE STRANGER REVIEW (LOG.md",
       "Session 141). 203.0 KB over by under 0.1: the front door's pitch line,",
       "ADVANCED, the word on POP, the hush window and the board's keepInView, in",
-      "both languages. First minute again; renderer-by-name check untouched."
+      "both languages. First minute again; renderer-by-name check untouched.",
+      "",
+      "MOVED 2026-11-25, from 204,000 to 215,000, for THE DEPENDABOT BATCH (LOG.md",
+      "Session 142). No code of ours: CI measured 198.9 KB before it, 207.8 KB",
+      "after. React 19.2.8 -> 19.3.1 is ~7 KB of that; Vite 8.3 and plugin-react",
+      "6 the other ~1.8. Renderer-by-name check untouched."
     ]
   },
   "renderer": {
-    "gzip": 291500,
+    "gzip": 304000,
     "$why": [
       "THE BOARD'S OWN CHUNK — three, `@react-three/fiber`, drei and troika.",
       "Measured 279.0 KB gzipped on 2026-09-10.",
@@ -126,7 +131,12 @@
       "and that is a fact about the import GRAPH rather than about this number,",
       "which is why `pnpm budget` also searches the entry chunk for the",
       "renderer's own module specifiers. A byte count notices a leak only after",
-      "it has happened; a name is caught on the build that introduces it."
+      "it has happened; a name is caught on the build that introduces it.",
+      "",
+      "MOVED 2026-11-25, from 291,500 to 304,000, for THE DEPENDABOT BATCH",
+      "(LOG.md Session 142): 281.1 KB -> 291.4 KB gzipped. three 0.183 -> 0.187",
+      "is ~5 KB, drei 10.7.9 and fiber 9.8.2 the rest. troika stays at 0.52.5,",
+      "the version drei resolves (`Labels.tsx`): 0.53.1 put a second copy here."
     ]
   },
   "fonts": {
@@ -145,7 +155,7 @@
     ]
   },
   "precache": {
-    "raw": 2200000,
+    "raw": 2290000,
     "$why": [
       "WHAT AN OFFLINE INSTALL COSTS A PHONE'S STORAGE — the worker's own",
       "list, read off the BUILT worker because `__PRECACHE_ASSETS__` is",
@@ -160,7 +170,10 @@
       "KB raw, the same code and sentences counted uncompressed.",
       "",
       "MOVED 2026-10-23, from 2,190,000 to 2,200,000, for the same stranger review:",
-      "2139.8 KB raw (1.1 KB over), the same code counted uncompressed."
+      "2139.8 KB raw (1.1 KB over), the same code counted uncompressed.",
+      "",
+      "MOVED 2026-11-25, from 2,200,000 to 2,290,000, for THE DEPENDABOT BATCH:",
+      "2142.3 KB -> 2216.6 KB raw, the same dependency bytes counted uncompressed."
     ]
   }
 }

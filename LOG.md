@@ -11796,3 +11796,28 @@ walk leave the spot it is on (or press toward legal ground), rather than
 raising the bound.
 
 **The knee lands (2026-10-24, Marc: "do it now lets try it").** `after-session-c` merged into `main`: `costGrace` 40, `costRisesEvery` 10, `pointsPerPop` 0.20, `cachePays` 10, `beaconHorizon` 3, KEEN NOSE capped at 2 (a third level refunded). The rule move is the sim golden's and the pin snapshots' (`prose.pin`, `teaching.pin`, both languages, re-recorded on this merge; the diff is the branch's own, re-derived over this branch's plane to plain). Two things the branch had not met, both from horizon 3: the chosen first world (seed 933) now sees its cache at the 10th placement, not the 8th, and 400 seeds were scanned and none kept all six criteria (seed 25 kept five and has no poor hand for REDRAW), so `learn.test.ts` and `content/learn.ts` take 10; and the territory fixture in `teaching.test.ts` (seed 122) no longer shows a territory at depth 20, so it is seed 7. Marc asked for this before Session C has run; it moves every score a player sees, so the phone check is: placements 22-40 cost 1 now, and the first cache is two placements later in the tutorial.
+
+### Session 142 — the Dependabot batch (2026-11-25)
+
+**Question:** do the six open Dependabot upgrades land without moving a rule
+or the screen? Unattended (DevHub), so no phone; the checks are the answer.
+
+**Answer:** yes, with three things worth knowing.
+
+1. _plugin-react 6 no longer runs Babel._ The React Compiler is the same
+   `babel-plugin-react-compiler` 1.0.0 with the same (default) options, now
+   through `@rolldown/plugin-babel` + `reactCompilerPreset()` in
+   `vite.config.ts`, as plugin-react's own migration note says. Both skip
+   node_modules, as before.
+2. _troika stays at 0.52.5._ Dependabot offered 0.53.1, but drei 10.7.9 still
+   asks for `^0.52.4`, so the bump put a SECOND troika in the renderer
+   (+31 KB gzipped). `Labels.tsx` says troika is pinned to drei's version;
+   `pnpm budget` caught it, as that docblock promised. Bump it when drei does.
+3. _Three bars moved_ (`budget.json`), all dependency bytes and none of
+   ours: first paint 198.9 -> 207.8 KB gzipped (React 19.3 ~7 KB, Vite 8.3 /
+   plugin-react 6 ~1.8 KB), renderer 281.1 -> 291.4 KB (three 0.187 ~5 KB,
+   drei/fiber the rest), precache 2142 -> 2217 KB raw. Holding React and three
+   back would have saved them; that is Marc's call if 9 KB on the door matters.
+
+The Playwright container in `ci.yml` follows `@playwright/test` to 1.65.1
+(`ciImage.test.ts` is the check). The sim golden did not move.

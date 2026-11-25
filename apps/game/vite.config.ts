@@ -1,4 +1,5 @@
-import react from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
@@ -471,7 +472,11 @@ const sha = buildSha();
  */
 export default defineConfig({
   plugins: [
-    react({ babel: { plugins: [['babel-plugin-react-compiler', {}]] } }),
+    react(),
+    // plugin-react 6 no longer runs Babel; the same compiler plugin runs
+    // through `@rolldown/plugin-babel` instead, with its default options
+    // (which, like plugin-react 5's Babel pass, skip node_modules).
+    babel({ presets: [reactCompilerPreset()] }),
     versionStamp(sha),
     /*
      * ORDER IS LOAD-BEARING HERE (2026-09-14), and only between these two.

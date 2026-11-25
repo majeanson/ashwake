@@ -8,7 +8,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       - run: pnpm format:check
@@ -107,10 +107,10 @@ jobs:
     # job) would have blocked a deploy outright here. `ciImage.test.ts` holds
     # this tag to the lockfile's Playwright along with `e2e`'s.
     container:
-      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
       options: --ipc=host
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       - run: pnpm exec playwright test e2e/board.spec.ts --project=chromium --grep "boots, draws a board with WebGL" --retries=2
@@ -170,10 +170,10 @@ jobs:
     # image does not have; `apps/game/src/shell/ciImage.test.ts`, in the
     # gating `ci` job, holds the two together.
     container:
-      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
       options: --ipc=host
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       # TWO engines since 2026-09-08. WebKit is the one the game is actually
@@ -196,7 +196,7 @@ jobs:
       # this is evidence for the session that follows the failure, not an
       # archive.
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-failures
           path: |
@@ -220,7 +220,7 @@ jobs:
       cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       - run: pnpm build
