@@ -208,7 +208,7 @@ jobs:
       # this is evidence for the session that follows the failure, not an
       # archive.
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-failures
           path: |
