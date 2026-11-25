@@ -100,10 +100,23 @@ async function cachedPaths(page: Page): Promise<string[]> {
   });
 }
 
-/** Every request the network refused, by path — what offline actually cost. */
+/**
+ * Every request the network refused, by path — what offline actually cost.
+ *
+ * **`net::ERR_ABORTED` is not a refusal, it is a page going away** (2026-11-25).
+ * The listener is attached before the ONLINE visit, so whatever that page still
+ * has in flight when `reload()` tears it down is reported here too. After the
+ * three 0.187 bump that was troika's text worker — two `blob:` script loads,
+ * the second visit's art fetches unaffected — and the light-device test failed
+ * on both attempts, naming two UUIDs it took for paths. A refusal from the
+ * worker's cache is `net::ERR_FAILED`, which is what the art still reports.
+ */
 function watchFailures(page: Page): string[] {
   const failed: string[] = [];
-  page.on('requestfailed', (r) => failed.push(new URL(r.url()).pathname));
+  page.on('requestfailed', (r) => {
+    if (r.failure()?.errorText === 'net::ERR_ABORTED') return;
+    failed.push(new URL(r.url()).pathname);
+  });
   return failed;
 }
 

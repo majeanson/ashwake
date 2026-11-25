@@ -19,15 +19,22 @@ import { brotliDecompressSync } from 'node:zlib';
  * copy is sitting in the bytes being served. Swap a font and its notice
  * follows.
  *
- * The OFL body is copied verbatim from a licence already vendored in
- * `node_modules`, for the same reason — legal text must not be retyped.
+ * The OFL body is read from a verbatim copy vendored in `docs/licences`, for
+ * the same reason — legal text must not be retyped.
  *
  *   pnpm exec tsx scripts/notices.ts
  */
 
-/** Where the licence body comes from, so it is never retyped. */
-const OFL_SOURCE =
-  'node_modules/.pnpm/three@0.183.2/node_modules/three/examples/fonts/MPLUSRounded1c/OFL.txt';
+/**
+ * Where the licence body comes from, so it is never retyped.
+ *
+ * Until 2026-11-25 this was three's own `examples/fonts/MPLUSRounded1c/OFL.txt`
+ * at a pinned `.pnpm/three@0.183.2` store path — a path that named a version,
+ * so the Dependabot bump to three 0.187 broke `pnpm bake` in CI, and 0.187 no
+ * longer ships `examples/fonts` at all. The file here was cut byte-for-byte
+ * from the body this script had already written out of that copy.
+ */
+const OFL_SOURCE = 'docs/licences/OFL-1.1.txt';
 
 /** The `name` table out of an uncompressed OpenType file. */
 function sfntNameTable(b: Buffer): Buffer {
