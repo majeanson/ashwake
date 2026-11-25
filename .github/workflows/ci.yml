@@ -8,7 +8,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       - run: pnpm format:check
@@ -110,7 +110,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
       options: --ipc=host
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       - run: pnpm exec playwright test e2e/board.spec.ts --project=chromium --grep "boots, draws a board with WebGL" --retries=2
@@ -173,7 +173,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
       options: --ipc=host
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       # TWO engines since 2026-09-08. WebKit is the one the game is actually
@@ -220,7 +220,7 @@ jobs:
       cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with: { node-version: '22' }
       - run: pnpm build
