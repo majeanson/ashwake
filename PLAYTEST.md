@@ -109,6 +109,10 @@ Before they arrive, on the phone they will play on:
 - A fresh phone is the honest one: no teaching seen, no world. A phone that
   has played already wants SETTINGS ▸ RESET TEACHING, and still carries its
   worlds.
+- The knee landed on 2026-10-24, ahead of this session, at Marc's word
+  (`LOG.md` Session 127, "The knee lands"), and it moves every score a player
+  sees: placements 22-40 cost 1 now, and the first cache is two placements
+  later in the tutorial. Check both on the phone.
 
 **A and B are paid as of 2026-08-28. This is the only thing left.**
 

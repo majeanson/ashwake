@@ -74,10 +74,14 @@ So the road to v2.0 is now:
    either body.
 2. **Then light D23**: delete the `ui.firstRun` flag in `meta/features.ts`
    so the first-run line is unconditional (built and tested dark on
-   2026-09-29, §3). D22 is ruled and needs nothing: the promise stays. And
-   set `beaconHorizon: 3` and `cachePays: 10` (§3a, ruled 2026-09-29), and
-   the knee, `costGrace: 40`, `costRisesEvery: 10`, `pointsPerPop: 0.20`
-   (§3a, ruled 2026-10-01). Rule moves, so `sim.golden.txt` moves with them.
+   2026-09-29, §3). D22 is ruled and needs nothing: the promise stays.
+   ~~And set `beaconHorizon: 3` and `cachePays: 10` (§3a, ruled 2026-09-29),
+   and the knee, `costGrace: 40`, `costRisesEvery: 10`, `pointsPerPop: 0.20`
+   (§3a, ruled 2026-10-01). Rule moves, so `sim.golden.txt` moves with
+   them.~~ **LANDED 2026-10-24, ahead of Session C, at Marc's word** (_"do it
+   now lets try it"_; `LOG.md` Session 127, "The knee lands"): all five dials
+   are in `TUNING`, KEEN NOSE is capped at 2, and the golden and the pin
+   snapshots moved in the merge. D23 is the part of this item still open.
 3. **Then the cutover** (§5c, `CUTOVER.md`), and v2.0.
 
 The friends keep playing through all of it — Marc: _"carry on forward while
@@ -367,7 +371,8 @@ rule, so it moves `sim.golden.txt` in the same commit.**
   caches "the survival engine", and they are a supplement now.
 
 **Ruled 2026-09-29:** forge at 40, shipped. Horizon 3 and caches paying 10
-are queued for after Session C. Escalation and overripe pockets are dropped.
+~~are queued for after Session C~~ landed 2026-10-24, ahead of it (§0
+item 2). Escalation and overripe pockets are dropped.
 Colour now counts at every stage (the placing paid twice, pocket size +0.4 a
 tile: colour's share 34/26/38% → 47/37/50%), and steer is a GUARANTEE —
 six draws of the colour named, at 20 luck — which pays when it reads the
@@ -394,8 +399,10 @@ and **trying at 8 scores what waiting to 20 does** (1293 against 1295). So
 the caravan gives an earlier habit a way to match the patient one; it does
 not make waiting wrong. Marc's, if it matters: whether that is enough.
 
-**And the rule move queued for after Session C is measured and ready**
-(`beaconHorizon: 3`, `cachePays: 10`). `seeker`'s trap closes: runs dying
+**~~And the rule move queued for after Session C is measured and ready~~ —
+LANDED 2026-10-24, ahead of Session C** (§0 item 2; `LOG.md` Session 127).
+The measurement, as it stood before the merge (`beaconHorizon: 3`,
+`cachePays: 10`): `seeker`'s trap closes: runs dying
 before 40 placements go 41 → 9 per 1000, and its median 1052 → 1131. Other
 lines move 1-2% (bank20 1076 → 1089, try12 1387 → 1417, lengths +0-1). `pnpm
 sim` moves in the points and best columns (e.g. seeker 1020 → 1185, bank20
@@ -410,8 +417,8 @@ with `pointsPerPop` 0.20, medians stay within 7% of shipped, the points peak
 moves to the run's last fifth, the singles tail halves and the glow trap
 closes (41 → 6), for +9 placements. Its cost: waiting gets more right
 (+27% → +56% from pop-at-4 to pop-at-20) and small-pocket play almost never
-nearly dies. **Ruled 2026-10-01: queued for after Session C**, beside the
-horizon/cache move (§0). Measured together at 1000 seeds: the trap closes
+nearly dies. **Ruled 2026-10-01: ~~queued for after Session C~~ LANDED
+2026-10-24, ahead of it**, with the horizon/cache move (§0 item 2). Measured together at 1000 seeds: the trap closes
 entirely (0 runs dead before 40), other lines move 0-1% from the knee alone,
 runs +10 over shipped. It is three dials, so nothing needs building. The day
 it ships, the cost-curve sentences take the grace clause (`COST_CURVE_GRACE`),
@@ -429,8 +436,12 @@ redrew worthless hands). Forge pays about 3× either per point of luck (+33%).
 Cheaper prices (reroll 8, steer 15) take them to +11% and +10%. **Ruled
 2026-10-01: leave it.** All three pay, and forge being the strong one is fine.
 
-**Prepping the post-Session-C move found seven failures that are not
-snapshots (2026-10-15, dials applied then reverted, nothing shipped).**
+**~~Prepping the post-Session-C move found seven failures that are not
+snapshots (2026-10-15, dials applied then reverted, nothing shipped).~~ —
+ANSWERED 2026-10-24 by the merge** (`LOG.md` Session 127, "The knee lands"):
+KEEN NOSE capped at 2, the pins re-aimed, the first world's cache at placement
+10 in `learn.test.ts`, the territory fixture on seed 7, the snapshots and the
+golden re-recorded. The finding, as it stood:
 With `beaconHorizon 3`, `cachePays 10`, `costGrace 40`, `costRisesEvery 10`,
 `pointsPerPop 0.20`: (1) the shop's maxed `findSense` (3) equals the beacon
 horizon, breaking `progress.test.ts` "never out to the beacons" — cap it or cut
