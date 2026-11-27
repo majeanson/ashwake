@@ -128,6 +128,53 @@ async function look(page: Page): Promise<{
 }
 
 /**
+ * A WALK THAT LEAVES THE SPOT IT IS ON (2026-11-27, `LOG.md` Session 127).
+ *
+ * The bot used to press Right, Up, Left, Down, Enter, forever — and a cycle of
+ * four quarter-turns is a square, which closes. On ground where none of those
+ * four hexes is legal it pressed Enter on the same walls until the bound ran
+ * out: CI run 36912227367, TILES 80, COST 1, REACH 21. On the shipped rules
+ * an empty purse ended the run anyway; under the knee (cost 1 for forty
+ * placements, caches paying 10) the purse stays full, and nothing did.
+ *
+ * So a run of misses makes the walk a SPIRAL — Right 1, Up 1, Left 2, Down 2,
+ * Right 3 — which never stands on the same hex twice until it reaches the
+ * board's edge. A hit still turns a quarter and nothing more, as the square
+ * did, and that half is not negotiable: the square is what packs tiles close
+ * enough to ripen a pocket. The first draft reset the spiral to Right on every
+ * hit, laid its tiles in a line, and ended ten runs out of ten without a
+ * single harvest. The marker's position is not on the DOM and is not added for this:
+ * the walk only needs to know whether the last Enter changed the board.
+ * Deterministic on purpose, so a failure can be replayed; and the bound was
+ * not raised, because a run that cannot end on keys is still the finding.
+ */
+const TURNS = ['ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowDown'] as const;
+
+function spiral(): { next: () => string; landed: (changed: boolean) => void } {
+  let turn = 0;
+  let step = 0;
+  let missedLegs = 0;
+  return {
+    next: () => TURNS[turn % TURNS.length] as string,
+    landed: (changed) => {
+      if (changed) {
+        turn += 1;
+        step = 0;
+        missedLegs = 0;
+        return;
+      }
+      step += 1;
+      // Legs of 1, 1, 2, 2, 3, 3…: each pair of turns walks one hex further out.
+      if (step >= Math.floor(missedLegs / 2) + 1) {
+        turn += 1;
+        step = 0;
+        missedLegs += 1;
+      }
+    },
+  };
+}
+
+/**
  * EVERY LIVE REGION, WATCHED FROM BEFORE THE FIRST WORD.
  *
  * P4.4 asked to prove there is ONE speaker. There are three, and each one has
@@ -243,10 +290,13 @@ test('a run can be started, played, finished and restarted on keys alone', async
    *
    * The bound is on actions rather than on time, and it is generous: what it
    * protects against is a run that cannot END on keys, which would be the
-   * finding — a game a keyboard player can start and never finish.
+   * finding — a game a keyboard player can start and never finish. Which is
+   * why the walk is a `spiral` and not a square: a bot that circles four walls
+   * cannot end a run either, and that is a finding about the bot (`LOG.md`
+   * Session 127), not about the game.
    */
   await tabTo(page, /\[application\]/);
-  const ARROWS = ['ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowDown'] as const;
+  const walk = spiral();
   let popped = 0;
   let placed = 0;
   let over = false;
@@ -274,16 +324,29 @@ test('a run can be started, played, finished and restarted on keys alone', async
       await tabTo(page, /^BUTTON .*POP/);
       await page.keyboard.press('Enter');
       popped += 1;
-      await page.waitForTimeout(300);
+      /*
+       * Wait for the receipt that may be coming, then close it, as the voices
+       * test below learned on 2026-09-29: a card makes the board inert, so a
+       * tab walk that starts before it lands ends inside it. The square rarely
+       * reached the POP button; the spiral does, and WebKit lost the race in
+       * two runs of ten on a 300 ms wait.
+       */
+      await page
+        .locator('[role="dialog"]')
+        .first()
+        .waitFor({ state: 'visible', timeout: 1500 })
+        .catch(() => undefined);
+      await dismissCards(page);
       await tabTo(page, /\[application\]/);
       continue;
     }
 
-    await page.keyboard.press(ARROWS[action % ARROWS.length] as string);
+    await page.keyboard.press(walk.next());
     await page.keyboard.press('Enter');
     const after = await look(page);
     if (after.tiles < board.tiles) placed += 1;
     if (after.tiles > board.tiles) popped += 1;
+    walk.landed(after.tiles !== board.tiles);
   }
 
   expect(placed, 'not one tile went down on keys alone').toBeGreaterThan(0);
@@ -449,9 +512,11 @@ test('a harvest takes the reader to its receipt', async ({ page }) => {
   await boardDrawn(page);
   await dismissCards(page);
 
-  // Walk until the board offers a harvest, which `?place=12` makes quick.
+  // Walk until the board offers a harvest, which `?place=12` makes quick. A
+  // `spiral`, because ripening needs tiles to go down and a square can circle
+  // four walls (`LOG.md` Session 127).
   await tabTo(page, /\[application\]/);
-  const ARROWS = ['ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowDown'] as const;
+  const walk = spiral();
   for (let i = 0; i < 40; i++) {
     const board = await look(page);
     if (board.pop) break;
@@ -460,8 +525,9 @@ test('a harvest takes the reader to its receipt', async ({ page }) => {
       await tabTo(page, /\[application\]/);
       continue;
     }
-    await page.keyboard.press(ARROWS[i % ARROWS.length] as string);
+    await page.keyboard.press(walk.next());
     await page.keyboard.press('Enter');
+    walk.landed((await look(page)).tiles !== board.tiles);
   }
   expect((await look(page)).pop, 'the board never ripened, so this test saw no harvest').toBe(true);
 

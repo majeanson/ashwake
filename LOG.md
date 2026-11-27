@@ -11821,3 +11821,28 @@ or the screen? Unattended (DevHub), so no phone; the checks are the answer.
 
 The Playwright container in `ci.yml` follows `@playwright/test` to 1.65.1
 (`ciImage.test.ts` is the check). The sim golden did not move.
+
+### Session 143 — the keyboard bot leaves the spot it is on (2026-11-27)
+
+**Question:** with the knee on `main`, can the keys-alone run in
+`e2e/a11y.spec.ts` finish inside its 240 actions on every run, without
+raising the bound? Session 127 asked for this fix before the knee landed. It
+landed without it.
+
+**Answer:** yes: 11 of 11 on each engine at the desk (two batches of five,
+then the whole file once).
+Unattended (DevHub), so CI is the next witness. The walk still turns a quarter
+after every hit, which is what packs tiles close enough to ripen a pocket. A
+run of misses now grows into a spiral (1, 1, 2, 2, 3…) instead of a square
+that closes on itself. Two things worth knowing:
+
+1. _The first draft reset the spiral to Right on every hit._ It laid its tiles
+   in a line, and ten runs of ten ended without a harvest. The square was doing
+   a job nobody had written down.
+2. _The spiral reaches the POP button, and the square almost never did._ That
+   exposed the race the voices test fixed on 2026-09-29: a 300 ms wait, then a
+   receipt card that lands late and makes the board inert. WebKit lost it in
+   two runs of ten. The POP branch now waits for the card and closes it, as
+   the voices test does. "A harvest takes the reader to its receipt" walks the
+   same way; the voices loop keeps the square, because it only has to hear
+   something.
